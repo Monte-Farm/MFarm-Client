@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "msedge",
+            "request": "launch",
+            "name": "Launch Edge against localhost",
+            "url": "http://localhost:3000", // Cambia a la URL de tu aplicación
+            "webRoot": "${workspaceFolder}/src",
+            "sourceMaps": false // Desactivar los source maps
+        }
+    ]
+}
