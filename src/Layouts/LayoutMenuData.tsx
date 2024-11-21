@@ -44,7 +44,7 @@ const Navdata = () => {
             id: "home",
             label: "Home",
             icon: "ri-home-2-line",
-            link: "/#",
+            link: "/home",
             click: function (e: any) {
                 e.preventDefault();
                 setIscurrentState('Home');
@@ -66,7 +66,7 @@ const Navdata = () => {
                 {
                     id: "inventory",
                     label: "Inventory",
-                    link: "#",
+                    link: "/view_inventory",
                     parentId: "warehouse",
                 }
             ],

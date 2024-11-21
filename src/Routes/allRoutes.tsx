@@ -1,8 +1,11 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
 
-//Dashboard
-import DashboardEcommerce from "../pages/DashboardEcommerce";
+//Home
+import Home from "pages/Home/Index";
+
+//Inventory
+import ViewInventory from "pages/Warehouse/Inventory";
 
 import Basic404 from '../pages/AuthenticationInner/Errors/Basic404';
 import Cover404 from '../pages/AuthenticationInner/Errors/Cover404';
@@ -24,7 +27,10 @@ import UserProfile from "../pages/Authentication/user-profile";
 const authProtectedRoutes = [
 
   // home
-  { path: "/home", component: <DashboardEcommerce /> },
+  { path: "/home", component: <Home /> },
+
+  //Inventory
+  { path: '/view_inventory', component: <ViewInventory /> },
 
   //User Profile
   { path: "/profile", component: <UserProfile /> },
@@ -46,7 +52,7 @@ const publicRoutes = [
   { path: "/forgot-password", component: <ForgetPasswordPage /> },
   { path: "/register", component: <Register /> },
 
- 
+
   { path: "/auth-404-basic", component: <Basic404 /> },
   { path: "/auth-404-cover", component: <Cover404 /> },
   { path: "/auth-404-alt", component: <Alt404 /> },
