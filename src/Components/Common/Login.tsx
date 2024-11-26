@@ -26,7 +26,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
                 await onSubmit(values);
             } catch (error: any) {
                 console.error("Error al iniciar sesión:", error);
-                if ((error.response && error.response.status === 401) || (error.response && error.response.status === 404)) {
+                if ((error && error.status === 401) || (error && error.status === 404)) {
                     setErrors({
                         user_number: "Nombre de usuario o contraseña incorrectos.",
                         password: "Nombre de usuario o contraseña incorrectos.",

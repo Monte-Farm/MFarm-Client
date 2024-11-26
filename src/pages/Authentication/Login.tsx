@@ -2,27 +2,30 @@ import React from "react";
 import { Card, Col, Container, Row } from "reactstrap";
 import loginImage from "../../assets/images/login_image.jpg";
 import LoginForm from "../../Components/Common/Login";
-import axios from "axios";
-import { getLoggedinUser, setAuthorization } from "helpers/api_helper";
+import axios, { AxiosError, AxiosResponse } from "axios";
+import { APIClient, getLoggedinUser, setAuthorization } from "helpers/api_helper";
 import { useNavigate } from "react-router-dom";
 import VelzonLogo from '../../assets/images/logo-dark.png'
 
 
 const CoverSignIn = () => {
-    const apiUrl = process.env.REACT_APP_API_URL_DEVELOP;
+    const apiUrl = process.env.REACT_APP_API_URL;
     document.title = "Inicio de sesión | MFarm";
-    const history = useNavigate()
+    const history = useNavigate();
+    const axiosHelper = new APIClient();
 
     const handleLogin = async (values: { user_number: string; password: string }) => {
-        try {
-            const response = await axios.post(`${apiUrl}/user/login`, values);
-            sessionStorage.setItem('authUser', JSON.stringify(response.data))
-            history('/home')
 
-        } catch (error) {
-            console.error("Error en la petición de inicio de sesión:", error);
-            throw error;
-        }
+        await axios.post(`${apiUrl}/user/login`, values)
+            .then(function (response: AxiosResponse) {
+                sessionStorage.setItem('authUser', JSON.stringify(response.data.data))
+                history('/home')
+            })
+            .catch(function (error: AxiosError) {
+                console.error(error.response)
+                throw error;
+            })
+
     };
 
     return (
