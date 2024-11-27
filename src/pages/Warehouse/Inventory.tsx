@@ -1,15 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { Badge, Button, Container } from "reactstrap";
-import { createColumnHelper } from "@tanstack/react-table";
+import { useEffect, useState } from "react";
+import { Badge, Button, Container, Modal, ModalHeader, ModalBody, Alert, ModalFooter } from "reactstrap";
 import BreadCrumb from "Components/Common/BreadCrumb";
-import TableContainer from "Components/Common/TableContainer";
 import { APIClient } from "helpers/api_helper";
 import CustomTable from "Components/Common/CustomTable";
-
-
-// ri-pencil-fill
-// ri-delete-bin-fill
-// ri-eye-fill
+import ProductForm from "Components/Common/ProductForm";
+import { ProductData } from "Components/Common/ProductForm";
 
 const ViewInventory = () => {
   document.title = "Inventory | Warehouse";
@@ -18,7 +13,15 @@ const ViewInventory = () => {
 
   const [productsData, setProductsData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<boolean>(false);
+  const [getError, setGetError] = useState<boolean>(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [postError, setPostError] = useState<boolean>(false);
+  const [postSuccess, setPostSuccess] = useState<boolean>(false);
+  const [selectedProduct, setSelectedProduct] = useState<ProductData | undefined>(undefined);
+  const [deleteSuccess, setDeleteSuccess] = useState<boolean>(false);
+  const [modalDelete, setModalDelete] = useState<boolean>(false);
+
+
   const columnsTable = [
     { header: "Código", accessor: "id" },
     { header: "Producto", accessor: "productName" },
@@ -42,11 +45,11 @@ const ViewInventory = () => {
             <i className="ri-eye-fill align-middle"></i>
           </a>
 
-          <a href="#" className="" title="Editar">
+          <a href="#" className="" title="Editar" onClick={() => handleEditProduct(row)}>
             <i className="ri-pencil-fill align-middle"></i>
           </a>
 
-          <a href="#" className="link-danger" title="Eliminar">
+          <a href="#" className="link-danger" title="Eliminar" onClick={() => handleSelectDeleteProduct(row)}>
             <i className="ri-delete-bin-fill align-middle"></i>
           </a>
         </div>
@@ -59,22 +62,92 @@ const ViewInventory = () => {
     await axiosHelper.get(`${apiUrl}/product`)
       .then(function (response) {
         setProductsData(response.data.data);
+        setGetError(false)
       })
       .catch(function (error) {
-        setError(true);
-        console.error(`Failed to fetch products: ${error}`)
+        setGetError(true);
+        setTimeout(() => setGetError(false), 5000);
+        console.error(`Failed to fetch products: ${error}`);
       })
       .finally(function () {
-        setLoading(false)
-      })
+        setLoading(false);
+      });
   };
+
 
   useEffect(() => {
     fetchProductsData();
   }, []);
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+
+  const handleAddProduct = async (data: any) => {
+    await axiosHelper.create(`${apiUrl}/product/create_product`, data)
+      .then((response) => {
+        fetchProductsData()
+        setPostSuccess(true)
+        setPostError(false);
+        setModalOpen(false);
+      })
+      .catch((error) => {
+        console.error(`Error adding product: ${error}`);
+        setPostError(true)
+        setTimeout(() => setGetError(false), 5000);
+      })
+      .finally(() => {
+        setTimeout(() => setPostSuccess(false), 5000);
+      })
+  };
+
+
+  const handleEditProduct = (product: ProductData) => {
+    setSelectedProduct(product);
+    setModalOpen(true);
+  };
+
+
+  const handleSelectDeleteProduct = (product: ProductData) => {
+    setSelectedProduct(product)
+    setModalDelete(true);
+  }
+
+  const handleUpdateProduct = async (data: ProductData) => {
+    await axiosHelper.put(`${apiUrl}/product/update_product/${data.id}`, data)
+      .then((response) => {
+        fetchProductsData();
+        setPostSuccess(true);
+        setPostError(false);
+        setModalOpen(false);
+        setSelectedProduct(undefined); // Limpia el producto seleccionado
+      })
+      .catch((error) => {
+        console.error(`Error updating product: ${error}`);
+        setPostError(true);
+        setTimeout(() => setPostError(false), 5000);
+      })
+      .finally(() => {
+        setTimeout(() => setPostSuccess(false), 5000);
+      });
+  };
+
+
+  const handleDeleteProduct = async (id: string) => {
+    await axiosHelper.delete(`${apiUrl}/product/delete_product/${id}`)
+      .then((response) => {
+        fetchProductsData();
+        setDeleteSuccess(true);
+        setModalDelete(false);
+        setSelectedProduct(undefined);
+      })
+      .catch((error) => {
+        setGetError(true)
+      })
+      .finally(() => {
+        setTimeout(() => setDeleteSuccess(false), 5000)
+      })
+  }
+
+
+
 
   return (
     <div className="page-content">
@@ -82,24 +155,90 @@ const ViewInventory = () => {
         <BreadCrumb title="Inventory" pageTitle="Warehouse" />
 
         <div className="bg-white rounded shadow">
-
           <div className="d-flex justify-content-between">
             <h4 className="m-4">Productos</h4>
-            <Button className="m-3 h-50 " color="success">
+            <Button
+              className="m-3 h-50"
+              color="success"
+              onClick={() => setModalOpen(true)} // Abre el modal
+            >
               <i className="ri-add-line pe-2" />
               Añadir producto
             </Button>
           </div>
 
-          <div className="border w-100 h-0"/>
-
+          <div className="border w-100 h-0" />
 
           <CustomTable className="mt-3" columns={columnsTable} data={productsData} />
         </div>
 
+        <Modal isOpen={modalOpen} size="lg" keyboard={false} backdrop="static" toggle={() => setModalOpen(!modalOpen)} centered>
+          <ModalHeader>
+            {selectedProduct ? "Editar producto" : "Añadir producto"}
+          </ModalHeader>
+          <ModalBody>
+            <ProductForm
+              initialData={selectedProduct}
+              onSubmit={selectedProduct ? handleUpdateProduct : handleAddProduct}
+              onCancel={() => {
+                setModalOpen(false);
+                setSelectedProduct(undefined);
+              }}
+            />
+          </ModalBody>
+          <ModalFooter>
+            {postError && (
+              <Alert color="danger" className="mt-4 w-100">
+                Ha ocurrido un error guardando el producto. Inténtelo de nuevo más tarde.
+              </Alert>
+            )}
+          </ModalFooter>
+        </Modal>
+
+        <Modal isOpen={modalDelete} size="md" keyboard={false} backdrop="static" centered>
+          <ModalHeader>
+            Confirmación de Eliminación
+          </ModalHeader>
+          <ModalBody>
+            {`¿Estás seguro de que deseas eliminar el producto "${selectedProduct?.productName}"?`}
+          </ModalBody>
+          <ModalFooter>
+            <Button color="danger" onClick={() => setModalDelete(false)}>
+              Cancelar
+            </Button>
+            <Button
+              color="success"
+              onClick={() => {
+                if (selectedProduct) {
+                  handleDeleteProduct(selectedProduct.id);
+                }
+              }}
+            >
+              Eliminar
+            </Button>
+          </ModalFooter>
+        </Modal>
+
 
       </Container>
+
+      {getError && (
+        <Alert color="danger" className="position-fixed bottom-0 start-50 translate-middle-x p-3">
+          El servicio no está disponible. Inténtelo de nuevo más tarde.
+        </Alert>
+      )}
+      {postSuccess && (
+        <Alert color="success" className="position-fixed bottom-0 start-50 translate-middle-x p-3">
+          Producto guardado correctamente!
+        </Alert>
+      )}
+      {deleteSuccess && (
+        <Alert color="success" className="position-fixed bottom-0 start-50 translate-middle-x p-3">
+          Producto eliminado correctamente!
+        </Alert>
+      )}
     </div>
+
   );
 };
 
