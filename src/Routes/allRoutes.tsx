@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Component } from "react";
 import { Navigate } from "react-router-dom";
 
 //Home
@@ -6,6 +6,7 @@ import Home from "pages/Home/Index";
 
 //Inventory
 import ViewInventory from "pages/Warehouse/Inventory";
+import ProductDetails from "pages/Warehouse/ProductDetails";
 
 import Basic404 from '../pages/AuthenticationInner/Errors/Basic404';
 import Cover404 from '../pages/AuthenticationInner/Errors/Cover404';
@@ -30,7 +31,8 @@ const authProtectedRoutes = [
   { path: "/home", component: <Home /> },
 
   //Inventory
-  { path: '/view_inventory', component: <ViewInventory /> },
+  { path: '/warehouse/view_inventory', component: <ViewInventory /> },
+  {path: '/warehouse/product_details/:id_product', component: <ProductDetails/>},
 
   //User Profile
   { path: "/profile", component: <UserProfile /> },

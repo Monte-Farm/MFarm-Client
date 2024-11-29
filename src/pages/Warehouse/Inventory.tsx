@@ -5,11 +5,13 @@ import { APIClient } from "helpers/api_helper";
 import CustomTable from "Components/Common/CustomTable";
 import ProductForm from "Components/Common/ProductForm";
 import { ProductData } from "Components/Common/ProductForm";
+import { useNavigate } from "react-router-dom";
 
 const ViewInventory = () => {
   document.title = "Inventory | Warehouse";
   const apiUrl = process.env.REACT_APP_API_URL;
   const axiosHelper = new APIClient();
+  const history = useNavigate();
 
   const [productsData, setProductsData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -40,18 +42,19 @@ const ViewInventory = () => {
       header: "Acciones",
       accessor: "action",
       render: (value: any, row: any) => (
-        <div className="d-flex gap-2">
-          <a href="#" className="" title="Ver">
+        <div className="d-flex gap-1">
+          <Button className="btn-secondary btn-icon" onClick={() => handleProductDetails(row)}>
             <i className="ri-eye-fill align-middle"></i>
-          </a>
+          </Button>
 
-          <a href="#" className="" title="Editar" onClick={() => handleEditProduct(row)}>
+          <Button className="btn-secondary btn-icon" disabled={row.status !== "Active"} onClick={() => handleEditProduct(row)}>
             <i className="ri-pencil-fill align-middle"></i>
-          </a>
+          </Button>
 
-          <a href="#" className="link-danger" title="Eliminar" onClick={() => handleSelectDeleteProduct(row)}>
+          <Button className="btn-danger btn-icon" disabled={row.status !== 'Active'} onClick={() => handleSelectDeleteProduct(row)}>
             <i className="ri-delete-bin-fill align-middle"></i>
-          </a>
+          </Button>
+
         </div>
       ),
     },
@@ -146,6 +149,10 @@ const ViewInventory = () => {
       })
   }
 
+
+  const handleProductDetails = (product: ProductData) =>{
+    history(`/warehouse/product_details/${product.id}`)
+  }
 
 
 

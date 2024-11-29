@@ -66,7 +66,7 @@ const Navdata = () => {
                 {
                     id: "inventory",
                     label: "Inventory",
-                    link: "/view_inventory",
+                    link: "/warehouse/view_inventory",
                     parentId: "warehouse",
                 }
             ],
