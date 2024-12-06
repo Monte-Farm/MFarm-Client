@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Badge, Button, Container, Modal, ModalHeader, ModalBody, Alert, ModalFooter } from "reactstrap";
+import { Badge, Button, Container, Modal, ModalHeader, ModalBody, Alert, ModalFooter, Card, CardHeader, CardBody } from "reactstrap";
 import BreadCrumb from "Components/Common/BreadCrumb";
 import { APIClient } from "helpers/api_helper";
 import CustomTable from "Components/Common/CustomTable";
@@ -32,9 +32,9 @@ const ViewInventory = () => {
     {
       header: "Estado",
       accessor: "status",
-      render: (value: string) => (
-        <Badge color={value === "Active" ? "success" : "danger"}>
-          {value === "Active" ? "Activo" : "Inactivo"}
+      render: (value: boolean) => (
+        <Badge color={value === true ? "success" : "danger"}>
+          {value === true ? "Activo" : "Inactivo"}
         </Badge>
       ),
     },
@@ -47,11 +47,11 @@ const ViewInventory = () => {
             <i className="ri-eye-fill align-middle"></i>
           </Button>
 
-          <Button className="btn-secondary btn-icon" disabled={row.status !== "Active"} onClick={() => handleEditProduct(row)}>
+          <Button className="btn-secondary btn-icon" disabled={row.status !== true} onClick={() => handleEditProduct(row)}>
             <i className="ri-pencil-fill align-middle"></i>
           </Button>
 
-          <Button className="btn-danger btn-icon" disabled={row.status !== 'Active'} onClick={() => handleSelectDeleteProduct(row)}>
+          <Button className="btn-danger btn-icon" disabled={row.status !== true} onClick={() => handleSelectDeleteProduct(row)}>
             <i className="ri-delete-bin-fill align-middle"></i>
           </Button>
 
@@ -120,7 +120,7 @@ const ViewInventory = () => {
         setPostSuccess(true);
         setPostError(false);
         setModalOpen(false);
-        setSelectedProduct(undefined); // Limpia el producto seleccionado
+        setSelectedProduct(undefined);
       })
       .catch((error) => {
         console.error(`Error updating product: ${error}`);
@@ -150,8 +150,8 @@ const ViewInventory = () => {
   }
 
 
-  const handleProductDetails = (product: ProductData) =>{
-    history(`/warehouse/product_details/${product.id}`)
+  const handleProductDetails = (product: ProductData) => {
+    history(`/warehouse/inventory/product_details/${product.id}`)
   }
 
 
@@ -161,23 +161,20 @@ const ViewInventory = () => {
       <Container fluid>
         <BreadCrumb title="Inventory" pageTitle="Warehouse" />
 
-        <div className="bg-white rounded shadow">
-          <div className="d-flex justify-content-between">
-            <h4 className="m-4">Productos</h4>
-            <Button
-              className="m-3 h-50"
-              color="success"
-              onClick={() => setModalOpen(true)} // Abre el modal
-            >
-              <i className="ri-add-line pe-2" />
-              Añadir producto
-            </Button>
-          </div>
-
-          <div className="border w-100 h-0" />
-
-          <CustomTable className="mt-3" columns={columnsTable} data={productsData} />
-        </div>
+        <Card className="rounded">
+          <CardHeader>
+            <div className="d-flex justify-content-between">
+              <h4 className="m-2">Productos</h4>
+              <Button className="h-50" color="success" onClick={() => setModalOpen(true)}>
+                <i className="ri-add-line pe-2" />
+                Añadir producto
+              </Button>
+            </div>
+          </CardHeader>
+          <CardBody>
+            <CustomTable className="" columns={columnsTable} data={productsData} showSearchAndFilter={true} rowClickable={false}/>
+          </CardBody>
+        </Card>
 
         <Modal isOpen={modalOpen} size="lg" keyboard={false} backdrop="static" toggle={() => setModalOpen(!modalOpen)} centered>
           <ModalHeader>

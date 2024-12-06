@@ -40,7 +40,7 @@ export const initialState: LayoutState = {
   leftSidebarViewType: LEFT_SIDEBAR_VIEW_TYPES.DEFAULT,
   leftSidebarImageType: LEFT_SIDEBAR_IMAGE_TYPES.NONE,
   preloader: PERLOADER_TYPES.DISABLE,
-  sidebarVisibilitytype: SIDEBAR_VISIBILITY_TYPES.SHOW
+  sidebarVisibilitytype: SIDEBAR_VISIBILITY_TYPES.HIDDEN
 };
 
 const LayoutSlice = createSlice({

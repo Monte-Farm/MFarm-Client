@@ -1,6 +1,5 @@
 import React from "react";
-import { Badge, Col, Label, Row } from "reactstrap";
-import exampleImage from '../../assets/images/auth-one-bg.jpg'
+import { Badge } from "reactstrap";
 
 interface Attribute {
     key: string;
@@ -10,35 +9,47 @@ interface Attribute {
 interface ProductDetailsProps {
     attributes: Attribute[]; // Array de atributos a mostrar
     object: Record<string, any>; // Objeto con los datos del producto
+    showImage?: boolean; // Propiedad para decidir si se muestra la imagen
+    imageSrc?: string; // URL o ruta de la imagen a mostrar
 }
 
-const ObjectDetails: React.FC<ProductDetailsProps> = ({ attributes, object }) => {
+const ObjectDetails: React.FC<ProductDetailsProps> = ({ attributes, object, showImage = true, imageSrc }) => {
     return (
         <React.Fragment>
-            <img src={exampleImage} className="img-fluid rounded" alt="Example image" />
-            {attributes.map(({ key, label }) => (
-                <div key={key}>
-                    <div className="border" />
-                    <Row className="mt-3 mb-3">
-                        <Col lg={4}>
-                            <Label className="g-col-6 fs-5">{label}</Label>
-                        </Col>
-                        <Col lg={8}>
-                            {key === "status" ? (
-                                object[key] === "Active" ? (
-                                    <Badge color="success" className="fs-6">Activo</Badge>
-                                ) : object[key] === "Unactive" ? (
-                                    <Badge color="danger" className="fs-6">Inactivo</Badge>
-                                ) : null
-                            ) : (
-                                <Label className="g-col-6 fs-5 text-body-secondary">
-                                    {object[key] || "No disponible"}
-                                </Label>
-                            )}
-                        </Col>
-                    </Row>
-                </div>
-            ))}
+            <div className="table-card table-responsive">
+                {showImage && imageSrc && (
+                    <div className="mb-3 text-center">
+                        <img
+                            src={imageSrc}
+                            alt="Detalle del objeto"
+                            className="img-fluid rounded-top"
+                        />
+                    </div>
+                )}
+
+                <table className="table">
+                    <tbody>
+                        {attributes.map(({ key, label }) => (
+                            <tr key={key}>
+                                <td className="fw-medium fs-5">{label}</td>
+                                <td className="fs-5">
+                                    {key === "status" ? (
+                                        object[key] === true ? (
+                                            <Badge color="success">Activo</Badge>
+                                        ) : object[key] === false ? (
+                                            <Badge color="danger">Inactivo</Badge>
+                                        ) : (
+                                            "No disponible"
+                                        )
+                                    ) : (
+                                        object[key] || "No disponible"
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </React.Fragment>
     );
 };

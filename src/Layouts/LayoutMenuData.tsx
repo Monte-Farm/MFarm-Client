@@ -4,8 +4,13 @@ import { useNavigate } from "react-router-dom";
 const Navdata = () => {
     const history = useNavigate();
 
+    //state data
     const [isHome, setIsHome] = useState<boolean>(false);
     const [isWarehouse, setIsWarehouse] = useState<boolean>(false);
+
+    //Warehouse
+    const [isSuppliers, setIsSupplier] = useState<boolean>(false)
+    const [isIncomes, setIsIncomes] = useState<boolean>(false)
 
     const [iscurrentState, setIscurrentState] = useState('Home');
 
@@ -29,13 +34,14 @@ const Navdata = () => {
         if (iscurrentState !== 'Home') {
             setIsHome(false);
         }
-        if(iscurrentState !== 'Warehouse'){
+        if (iscurrentState !== 'Warehouse') {
             setIsWarehouse(false)
         }
     }, [
         history,
         iscurrentState,
         isHome,
+        isWarehouse,
     ]);
 
     const menuItems: any = [
@@ -54,21 +60,73 @@ const Navdata = () => {
             id: "warehouse",
             label: "Warehouse",
             icon: "ri-building-line",
-            link: "#",
-            stateVariables: isWarehouse,
+            link: "/#",
             click: function (e: any) {
                 e.preventDefault();
                 setIsWarehouse(!isWarehouse);
                 setIscurrentState('Warehouse');
                 updateIconSidebar(e);
             },
+            stateVariables: isWarehouse,
             subItems: [
                 {
                     id: "inventory",
                     label: "Inventory",
-                    link: "/warehouse/view_inventory",
+                    link: "/warehouse/inventory/view_inventory",
                     parentId: "warehouse",
-                }
+                },
+                {
+                    id: "suppliers",
+                    label: "Suppliers",
+                    link: "/#",
+                    parentId: "warehouse",
+                    isChildItem: true,
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsSupplier(!isSuppliers);
+                    },
+                    stateVariables: isSuppliers,
+                    childItems: [
+                        {
+                            id: 1,
+                            label: "Create Supplier",
+                            link: "/warehouse/suppliers/create_supplier",
+                            parentId: "suppliers"
+                        },
+                        {
+                            id: 2,
+                            label: "View Supplier",
+                            link: "/warehouse/suppliers/view_suppliers",
+                            parentId: "suppliers"
+                        },
+                    ]
+                },
+                {
+                    id: "incomes",
+                    label: "Incomes",
+                    link: "/#",
+                    parentId: "warehouse",
+                    isChildItem: true,
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsIncomes(!isIncomes);
+                    },
+                    stateVariables: isIncomes,
+                    childItems: [
+                        {
+                            id: 1,
+                            label: "Create Incomes",
+                            link: "/warehouse/incomes/create_income",
+                            parentId: "incomes"
+                        },
+                        {
+                            id: 2,
+                            label: "View Incomes",
+                            link: "/#",
+                            parentId: "incomes"
+                        },
+                    ]
+                },
             ],
         },
     ];

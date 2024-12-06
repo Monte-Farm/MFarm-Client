@@ -6,7 +6,8 @@ import Spinners from "Components/Common/Spinner";
 import { APIClient } from "helpers/api_helper";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom"
-import { Button, Card, CardHeader, Col, Container, Label, Row, Spinner } from "reactstrap"
+import { Button, Card, CardBody, CardHeader, Col, Container, Label, Row, Spinner } from "reactstrap"
+import exampleImage from '../../assets/images/alimento.png'
 
 
 interface ProductDetails {
@@ -44,7 +45,7 @@ const ProductDetails = () => {
     const getProductDetails = async () => {
         await axiosHelper.get(`${apiUrl}/product/find_product_id/${id_product}`)
             .then((response) => {
-                setProductDetails(response.data.productFound)
+                setProductDetails(response.data.data)
                 setLoading(false)
                 setIsError(false)
             })
@@ -73,53 +74,69 @@ const ProductDetails = () => {
                     <Button color="danger"> Eliminar producto</Button>
                     <Button color="success"> Editar producto</Button>
                 </div>
-                
+
                 <Row className="mt-4">
-                    <Col lg={4}>
-                        <Card className="p-2 h-100">
-                            {productDetails && loading === false ? (
-                                <ObjectDetails attributes={displayAttributes} object={productDetails} />
-                            ) : (
-                                <div className="position-relative top-50 start-50">
-                                    <Spinner color="primary"></Spinner>
-                                </div>
-                            )}
+                    <Col lg={2}>
+                        <Card className="h-100">
+                            <CardBody>
+                                {productDetails && loading === false ? (
+                                    <ObjectDetails attributes={displayAttributes} object={productDetails} showImage={true} imageSrc={exampleImage} />
+                                ) : (
+                                    <div className="position-relative top-50 start-50">
+                                        <Spinner color="primary"></Spinner>
+                                    </div>
+                                )}
+                            </CardBody>
                         </Card>
                     </Col>
 
-                    <Col lg={4}>
-                        <Card className="h-25">
-                            <LineChart dataColors='["--vz-primary"]' series={[]} categories={[]} title={""} />
-                        </Card>
-                        <Card className="h-75">
-                            <CardHeader>
-                                <h5>Precio Historico</h5>
-                            </CardHeader>
-                            <LineChart dataColors='["--vz-primary"]' series={[]} categories={[]} title={""} />
+                    <Col lg={5}>
+                        <Card className="h-100">
+                            <CardHeader> <h4>Compras | Altas</h4></CardHeader>
+                            <CardBody>
+                                <CustomTable columns={[]} data={[]} showSearchAndFilter={false} />
+                            </CardBody>
                         </Card>
                     </Col>
 
-                    <Col lg={4}>
-                        <div className="text-bg-danger h-100">Hola</div>
+                    <Col lg={5}>
+                        <Card className="h-100">
+                            <CardHeader> <h4>Ventas | Bajas</h4></CardHeader>
+                            <CardBody>
+                                <CustomTable columns={[]} data={[]} showSearchAndFilter={false} />
+                            </CardBody>
+                        </Card>
                     </Col>
                 </Row>
 
                 <Row className="mt-4">
                     <Col lg={6}>
                         <Card>
-                            <CustomTable columns={[]} data={[]}></CustomTable>
+                            <CardHeader>
+                                <div className="d-flex">
+                                    <h4>Proveedor más reciente</h4>
+                                    <Button className="ms-auto" color="secondary">
+                                        Detalles de Proveedor
+                                    </Button>
+                                </div>
+
+                            </CardHeader>
+
+                            <CardBody>
+                                <ObjectDetails attributes={[]} object={{}}></ObjectDetails>
+                            </CardBody>
                         </Card>
+
                     </Col>
 
                     <Col lg={6}>
-                    <Card>
-                        <CustomTable columns={[]} data={[]}></CustomTable>
-                    </Card>
+
                     </Col>
                 </Row>
 
 
             </Container>
+            {/*<LineChart dataColors='["--vz-primary"]' series={[]} categories={[]} title={""} />*/}
         </div>
     );
 };

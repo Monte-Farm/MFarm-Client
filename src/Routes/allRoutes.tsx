@@ -7,6 +7,8 @@ import Home from "pages/Home/Index";
 //Inventory
 import ViewInventory from "pages/Warehouse/Inventory";
 import ProductDetails from "pages/Warehouse/ProductDetails";
+import Suppliers from "pages/Suppliers/Suppliers";
+import CreateSupplier from "pages/Suppliers/CreateSupplier";
 
 import Basic404 from '../pages/AuthenticationInner/Errors/Basic404';
 import Cover404 from '../pages/AuthenticationInner/Errors/Cover404';
@@ -23,6 +25,9 @@ import Register from "../pages/Authentication/Register";
 
 // // User Profile
 import UserProfile from "../pages/Authentication/user-profile";
+import SupplierDetails from "pages/Suppliers/SupplierDetails";
+import path from "path";
+import CreateIncome from "pages/Incomes/CreateIncome";
 
 
 const authProtectedRoutes = [
@@ -31,8 +36,12 @@ const authProtectedRoutes = [
   { path: "/home", component: <Home /> },
 
   //Inventory
-  { path: '/warehouse/view_inventory', component: <ViewInventory /> },
-  {path: '/warehouse/product_details/:id_product', component: <ProductDetails/>},
+  { path: '/warehouse/inventory/view_inventory', component: <ViewInventory /> },
+  { path: '/warehouse/inventory/product_details/:id_product', component: <ProductDetails /> },
+  { path: '/warehouse/suppliers/view_suppliers', component: <Suppliers /> },
+  { path: '/warehouse/suppliers/create_supplier', component: <CreateSupplier /> },
+  { path: '/warehouse/suppliers/supplier_details/:id_supplier', component: <SupplierDetails /> },
+  { path: '/warehouse/incomes/create_income', component: <CreateIncome /> },
 
   //User Profile
   { path: "/profile", component: <UserProfile /> },
