@@ -2,11 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Button, Col, Row, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback, Alert } from "reactstrap";
 import * as Yup from "yup";
 import { useFormik } from "formik";
-import Flatpickr from "react-flatpickr";
 import CustomTable from "./CustomTable";
 import { APIClient } from "helpers/api_helper";
 import SupplierForm from "./SupplierForm";
 import ProductForm, { ProductData } from "./ProductForm";
+import Flatpickr from 'react-flatpickr';
+import SelectTable from "./SelectTable";
+import { useNavigate } from "react-router-dom";
 
 interface IncomeFormProps {
     initialData?: IncomeData;
@@ -42,8 +44,8 @@ const incomeTypeOptions = [
 ];
 
 const columns = [
-    {header: 'Código', accessor: 'id'},
-    {header: 'Producto', accessor: 'productName'}
+    { header: 'Código', accessor: 'id' },
+    { header: 'Producto', accessor: 'productName' }
 ]
 
 const validationSchema = Yup.object({
@@ -58,6 +60,7 @@ const validationSchema = Yup.object({
 const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel }) => {
     const axiosHelper = new APIClient()
     const apiUrl = process.env.REACT_APP_API_URL
+    const history = useNavigate()
 
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
     const [suppliers, setSuppliers] = useState<SupplierData[]>([]);
@@ -78,14 +81,14 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
 
     const fetchSuppliers = async () => {
         try {
-            const response = await axiosHelper.get(`${apiUrl}/supplier/`);
+            const response = await axiosHelper.get(`${apiUrl}/supplier/find_supplier_status/${true}`);
             setSuppliers(response.data.data);
         } catch (error) {
             handleError(error, 'Ha ocurrido un error al obtener a los proveedores, intentelo más tarde')
         }
     };
 
-    const fetchProducts = async () =>{
+    const fetchProducts = async () => {
         try {
             const response = await axiosHelper.get(`${apiUrl}/product`)
             setProducts(response.data.data)
@@ -127,23 +130,50 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
         formik.setFieldValue("supplier", supplierId);
     };
 
-
     const handleCreateSupplier = async (supplierData: SupplierData) => {
         try {
             const response = await axiosHelper.create(`${apiUrl}/supplier/create_supplier`, supplierData);
-            const newSupplier = response.data.data; 
+            const newSupplier = response.data.data;
 
             await fetchSuppliers();
             setSelectedSupplier(newSupplier);
             formik.setFieldValue("supplier", newSupplier.id);
 
             toggleModal("createSupplier");
-            setAlertConfig({visible: true, color: 'success', message: 'Proveedor creado con éxito'})
+            setAlertConfig({ visible: true, color: 'success', message: 'Proveedor creado con éxito' })
             setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
         } catch (error) {
-            console.error("Error al crear proveedor:", error);
+            toggleModal('createSupplier')
+            handleError(error, 'Ha ocurrido un error al crear al proveedor, intentelo más tarde')
         }
     };
+
+    const handleCreateProduct = async (productData: ProductData) => {
+        try {
+            const response = await axiosHelper.create(`${apiUrl}/product/create_product`, productData)
+
+            await fetchProducts();
+            toggleModal('createProduct')
+            setAlertConfig({ visible: true, color: 'success', message: 'Producto creado con éxito' })
+            setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000)
+        } catch (error) {
+            toggleModal('createProduct')
+            handleError(error, 'Ha ocurrido un error al crear el producto, intentelo más tarde')
+        }
+    }
+
+    const handleProductSelect = (selectedProducts: Array<{ id: string; quantity: number; unitPrice: number }>) => {
+        formik.setFieldValue("products", selectedProducts);
+    };
+
+    const handleCancelRegister = () => {
+        history('/#')
+    }
+
+    const handleCreateIncome = () => {
+        console.log(formik.values)
+    }
+    
 
     useEffect(() => {
         fetchProducts();
@@ -186,6 +216,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                     <Col lg={8}>
                         <div className="">
                             <Label htmlFor="dateInput" className="form-label">Fecha</Label>
+
                             <Flatpickr
                                 id="dateInput"
                                 className="form-control"
@@ -197,6 +228,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                                 onChange={(date) => formik.setFieldValue("date", date[0].toISOString())}
                             />
                             {formik.touched.date && formik.errors.date && <FormFeedback className="d-block">{formik.errors.date}</FormFeedback>}
+
                         </div>
                     </Col>
                 </Row>
@@ -262,9 +294,9 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                 </Row>
 
                 {/* Productos */}
-                <div className="d-flex mt-4">
+                <div className="d-flex mt-5">
                     <h5 className="me-auto">Productos</h5>
-                    <Button color="secondary" className="h-50 mb-2" onClick={() => {toggleModal('createProduct')}}>
+                    <Button color="secondary" className="h-50 mb-2" onClick={() => { toggleModal('createProduct') }}>
                         <i className="ri-add-line me-2"></i>
                         Agregar Producto
                     </Button>
@@ -272,9 +304,12 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                 <div className="border"></div>
 
                 {/* Tabla de productos */}
-                <CustomTable columns={columns} data={products} showSearchAndFilter={false}></CustomTable>
+                <div className="mt-3 border" style={{ height: '300px', overflowY: 'auto' }}>
+                    <SelectTable data={products} onProductSelect={handleProductSelect}></SelectTable>
+                </div>
 
-                {/* Precio Total */}
+
+                {/* Precio Total 
                 <div className="mt-4">
                     <Label htmlFor="totalPriceInput" className="form-label">Precio Total</Label>
                     <Input
@@ -288,6 +323,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                     />
                     {formik.touched.totalPrice && formik.errors.totalPrice && <FormFeedback>{formik.errors.totalPrice}</FormFeedback>}
                 </div>
+                */}
 
                 {/* Tipo de Ingreso */}
                 <div className="mt-4">
@@ -335,7 +371,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                     <Button color="danger" onClick={() => setCancelModalOpen(true)} disabled={formik.isSubmitting}>
                         Cancelar
                     </Button>
-                    <Button color="success" type="submit" disabled={formik.isSubmitting}>
+                    <Button color="success" type="submit" disabled={formik.isSubmitting} onClick={handleCreateIncome}>
                         {formik.isSubmitting ? "Guardando..." : initialData ? "Actualizar Transacción" : "Registrar Transacción"}
                     </Button>
                 </div>
@@ -346,7 +382,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                 <ModalHeader>Confirmación</ModalHeader>
                 <ModalBody>¿Estás seguro de que deseas cancelar? Los datos no se guardarán.</ModalBody>
                 <ModalFooter>
-                    <Button color="danger" onClick={onCancel}>Sí, cancelar</Button>
+                    <Button color="danger" onClick={handleCancelRegister}>Sí, cancelar</Button>
                     <Button color="success" onClick={() => setCancelModalOpen(false)}>No, continuar</Button>
                 </ModalFooter>
             </Modal>
@@ -361,9 +397,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
             <Modal size="lg" isOpen={modals.createProduct} toggle={() => toggleModal("createProduct")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("createProduct")}>Nuevo Producto</ModalHeader>
                 <ModalBody>
-                    <ProductForm onCancel={() => toggleModal("createProduct", false)} onSubmit={function (data: ProductData): Promise<void> {
-                        throw new Error("Function not implemented.");
-                    } } />
+                    <ProductForm onCancel={() => toggleModal("createProduct", false)} onSubmit={handleCreateProduct} />
                 </ModalBody>
             </Modal>
 

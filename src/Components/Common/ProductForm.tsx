@@ -15,9 +15,11 @@ export interface ProductData {
     quantity: number;
     category: string;
     description: string;
-    status: string;
+    status: boolean;
     price: number;
     unit_measurement: string;
+    incomes: string[];
+    outcomes: string[];
 }
 
 const categories = [
@@ -60,9 +62,11 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
             quantity: 0,
             category: "",
             description: "",
-            status: "Active",
+            status: true,
             price: 0,
             unit_measurement: "",
+            incomes: [],
+            outcomes: []
         },
         enableReinitialize: true,
         validationSchema,

@@ -78,7 +78,8 @@
     ]
   },
   "resolutions": {
-    "autoprefixer": "10.4.5"
+    "autoprefixer": "10.4.5",
+    "@types/react": "^18.0.0"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.0",

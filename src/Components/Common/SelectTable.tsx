@@ -1,109 +1,91 @@
-import React, { useState } from "react";
+import React from "react";
 import { Input, Table } from "reactstrap";
+import { ProductData } from "./ProductForm";
 
-type RowData = Record<string, any>; // Tipo flexible para los datos
+interface SelectTableProps {
+  data: ProductData[];
+  onProductSelect: (selectedProducts: Array<{ id: string; quantity: number; unitPrice: number }>) => void;
+}
 
-type Column<T> = {
-  header: string;
-  accessor: keyof T;
-  editable?: boolean; // Añadido para saber qué campos se pueden editar
-};
+const SelectTable: React.FC<SelectTableProps> = ({ data, onProductSelect }) => {
+  const [selectedProducts, setSelectedProducts] = React.useState<Array<{ id: string; quantity: number; unitPrice: number }>>([]);
 
-type SelectableTableProps<T> = {
-  columns: Column<T>[]; // Columnas dinámicas
-  data: T[]; // Datos dinámicos
-  onSelectionChange?: (selectedRows: T[]) => void; // Callback para los datos seleccionados
-};
-
-const SelectableTable = <T extends RowData>({
-  columns,
-  data,
-  onSelectionChange,
-}: SelectableTableProps<T>) => {
-  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
-  const [editedData, setEditedData] = useState<T[]>([...data]);
-
-  // Manejar selección de checkbox
-  const handleCheckboxChange = (rowIndex: number) => {
-    const updatedSelection = new Set(selectedRows);
-    if (updatedSelection.has(rowIndex)) {
-      updatedSelection.delete(rowIndex);
-    } else {
-      updatedSelection.add(rowIndex);
+  // Manejar cambios de cantidad y precio
+  const handleInputChange = (id: string, field: string, value: any) => {
+    // Permitir que el campo quede vacío
+    if (value === "") {
+      value = 0; // O puedes decidir no actualizar el valor si está vacío
     }
-    setSelectedRows(updatedSelection);
 
-    if (onSelectionChange) {
-      const selectedData = Array.from(updatedSelection).map((index) => editedData[index]);
-      onSelectionChange(selectedData);
+    const updatedProducts = selectedProducts.map((product) =>
+      product.id === id ? { ...product, [field]: value } : product
+    );
+    setSelectedProducts(updatedProducts);
+    onProductSelect(updatedProducts);
+  };
+
+  const handleCheckboxChange = (id: string, checked: boolean) => {
+    if (checked) {
+      const newProduct = { id, quantity: 0, unitPrice: 0 };
+      setSelectedProducts((prev) => [...prev, newProduct]);
+    } else {
+      setSelectedProducts((prev) => prev.filter((product) => product.id !== id));
     }
   };
 
-  // Manejar cambios en inputs
-  const handleInputChange = (rowIndex: number, field: keyof T, value: string) => {
-    const updatedData = [...editedData];
-    updatedData[rowIndex] = { ...updatedData[rowIndex], [field]: value };
-    setEditedData(updatedData);
-
-    if (selectedRows.has(rowIndex) && onSelectionChange) {
-      const selectedData = Array.from(selectedRows).map((index) => updatedData[index]);
-      onSelectionChange(selectedData);
-    }
+  const handleRowClick = (id: string) => {
+    const productChecked = selectedProducts.some((product) => product.id === id);
+    handleCheckboxChange(id, !productChecked);
   };
 
   return (
-    <div className="table-responsive mt-3">
-      <Table className="table-hover align-middle table-nowrap mb-0">
+    <div className="table-responsive">
+      <Table className="table-hover align-middle table-nowrap mb-0" striped>
         <thead className="table-light">
           <tr>
-            <th>
-              <Input
-                type="checkbox"
-                onChange={(e) => {
-                  const isChecked = e.target.checked;
-                  const updatedSelection = new Set<number>();
-                  if (isChecked) {
-                    data.forEach((_, index) => updatedSelection.add(index));
-                  }
-                  setSelectedRows(updatedSelection);
-
-                  if (onSelectionChange) {
-                    const selectedData = Array.from(updatedSelection).map((index) => editedData[index]);
-                    onSelectionChange(selectedData);
-                  }
-                }}
-              />
-            </th>
-            {columns.map((col, index) => (
-              <th key={index}>{col.header}</th>
-            ))}
+            <th>Seleccionar</th>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio Unitario</th>
           </tr>
         </thead>
         <tbody>
-          {data.map((row, rowIndex) => (
-            <tr key={rowIndex}>
+          {data.map((product) => (
+            <tr
+              key={product.id}
+              onClick={() => handleRowClick(product.id)}
+              style={{ cursor: "pointer" }}
+            >
               <td>
                 <Input
                   type="checkbox"
-                  checked={selectedRows.has(rowIndex)}
-                  onChange={() => handleCheckboxChange(rowIndex)}
+                  checked={selectedProducts.some((p) => p.id === product.id)}
+                  onChange={(e) => handleCheckboxChange(product.id, e.target.checked)}
+                  onClick={(e) => e.stopPropagation()} />
+              </td>
+              <td>{product.productName}</td>
+              <td>
+                <Input
+                  type="number"
+                  value={selectedProducts.find((p) => p.id === product.id)?.quantity || ""}
+                  onChange={(e) =>
+                    handleInputChange(product.id, "quantity", e.target.value === "" ? "" : parseInt(e.target.value, 10))
+                  }
+                  disabled={!selectedProducts.some((p) => p.id === product.id)}
+                  onClick={(e) => e.stopPropagation()}
                 />
               </td>
-              {columns.map((col, colIndex) => (
-                <td key={colIndex}>
-                  {col.editable && selectedRows.has(rowIndex) ? (
-                    <Input
-                      type="text"
-                      value={editedData[rowIndex][col.accessor]}
-                      onChange={(e) =>
-                        handleInputChange(rowIndex, col.accessor, e.target.value)
-                      }
-                    />
-                  ) : (
-                    row[col.accessor]
-                  )}
-                </td>
-              ))}
+              <td>
+                <Input
+                  type="number"
+                  value={selectedProducts.find((p) => p.id === product.id)?.unitPrice || ""}
+                  onChange={(e) =>
+                    handleInputChange(product.id, "unitPrice", e.target.value === "" ? "" : parseFloat(e.target.value))
+                  }
+                  disabled={!selectedProducts.some((p) => p.id === product.id)}
+                  onClick={(e) => e.stopPropagation()} 
+                />
+              </td>
             </tr>
           ))}
         </tbody>
@@ -112,4 +94,4 @@ const SelectableTable = <T extends RowData>({
   );
 };
 
-export default SelectableTable;
+export default SelectTable;
