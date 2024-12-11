@@ -1,5 +1,6 @@
 import BreadCrumb from "Components/Common/BreadCrumb";
 import CustomTable from "Components/Common/CustomTable";
+import { IncomeData } from "Components/Common/IncomeForm";
 import ObjectDetails from "Components/Common/ObjectDetails";
 import SupplierForm from "Components/Common/SupplierForm";
 import { APIClient } from "helpers/api_helper";
@@ -12,6 +13,7 @@ const supplierAttributes = [
     { key: 'name', label: 'Nombre del proveedor' },
     { key: 'phone_number', label: 'Número telefónico' },
     { key: 'email', label: 'Correo electrónico' },
+    { key: 'address', label: 'Dirección' },
     { key: 'supplier_type', label: 'Tipo de proveedor' },
     { key: 'rnc', label: 'RNC' },
     { key: 'status', label: 'Estado' }
@@ -28,6 +30,14 @@ export interface SupplierData {
     rnc: string;
 }
 
+const incomesColumns = [
+    { header: 'Identificador', accessor: 'id' },
+    { header: 'Fecha de entrada', accessor: 'date' },
+    { header: 'Proveedor', accessor: 'supplier' },
+    { header: 'Precio Total', accessor: 'totalPrice' },
+    { header: 'Tipo de entrada', accessor: 'incomeType' }
+]
+
 const SupplierDetails = () => {
     document.title = 'Supplier details | Suppliers';
     const apiUrl = process.env.REACT_APP_API_URL;
@@ -36,6 +46,7 @@ const SupplierDetails = () => {
     const history = useNavigate();
 
     const [supplierDetails, setSupplierDetails] = useState<SupplierData | undefined>(undefined);
+    const [supplierIncomes, setSupplierIncomes] = useState([]);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [loading, setLoading] = useState<boolean>(true);
     const [modals, setModals] = useState({ update: false, delete: false });
@@ -61,10 +72,21 @@ const SupplierDetails = () => {
         }
     };
 
+    const handleGetIncomes = async () => {
+        await axiosHelper.get(`${apiUrl}/incomes/find_incomes/supplier/${id_supplier}/true`)
+            .then((response) => {
+                setSupplierIncomes(response.data.data)
+            })
+            .catch((error) => {
+                handleError(error, 'El servicio no esta disponible, intentelo más tarde');
+            })
+    }
+
     const handleUpdateSupplier = async (supplierData: SupplierData) => {
         try {
             await axiosHelper.put(`${apiUrl}/supplier/update_supplier/${supplierData.id}`, supplierData);
             setAlertConfig({ visible: true, color: "success", message: "Proveedor actualizado correctamente." });
+            setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
             toggleModal("update", false);
             handleGetSupplierDetails();
         } catch (error) {
@@ -76,16 +98,29 @@ const SupplierDetails = () => {
         try {
             await axiosHelper.delete(`${apiUrl}/supplier/delete_supplier/${supplierData.id}`);
             setAlertConfig({ visible: true, color: "success", message: "Proveedor desactivado correctamente." });
+            setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
             toggleModal("delete", false);
         } catch (error) {
             handleError(error, "Error al desactivar el proveedor.");
         }
     };
 
-    const handleBack = () => history('/warehouse/suppliers/view_suppliers');
+    const handleRowClicIncomeDetails = (row: any) => {
+        console.log(row)
+    }
+
+    const handleBack = () => {
+        if (window.history.length > 1) {
+            history(-1);
+        } else {
+            history('/warehouse/suppliers/view_suppliers');
+        }
+
+    }
 
     useEffect(() => {
         handleGetSupplierDetails();
+        handleGetIncomes();
     }, []);
 
     return (
@@ -97,7 +132,7 @@ const SupplierDetails = () => {
                     <Button className="me-auto" color="secondary" onClick={handleBack}>
                         <i className="ri-arrow-left-line me-3"></i>Regresar
                     </Button>
-                    <Button color="danger" onClick={() => toggleModal("delete")}>
+                    <Button color="danger" onClick={() => toggleModal("delete")} disabled={!supplierDetails?.status}>
                         <i className="ri-delete-bin-line me-3"></i>Desactivar Proveedor
                     </Button>
                     <Button color="success" onClick={() => toggleModal("update")}>
@@ -108,9 +143,9 @@ const SupplierDetails = () => {
                     </Button>
                 </div>
 
-                <Row>
-                    <Col lg={3}>
-                        <Card className="rounded">
+                <Row className="d-flex" style={{alignItems: 'stretch'}}>
+                    <Col lg={3} className="d-flex">
+                        <Card className="rounded h-100">
                             <CardHeader><h4>Información del proveedor</h4></CardHeader>
                             <CardBody>
                                 {supplierDetails && !loading ? (
@@ -123,11 +158,13 @@ const SupplierDetails = () => {
                             </CardBody>
                         </Card>
                     </Col>
-                    <Col lg={9}>
-                        <Card>
+                    <Col lg={9} className="d-flex">
+                        <Card className="h-100 w-100">
                             <CardHeader><h4>Historial de Compras</h4></CardHeader>
                             <CardBody>
-                                <CustomTable columns={[]} data={[]} showSearchAndFilter={false} />
+                                {supplierIncomes && (
+                                    <CustomTable columns={incomesColumns} data={supplierIncomes} showSearchAndFilter={false} rowClickable={true} onRowClick={handleRowClicIncomeDetails}/>
+                                )}
                             </CardBody>
                         </Card>
                     </Col>
@@ -137,7 +174,7 @@ const SupplierDetails = () => {
                 <Modal size="lg" isOpen={modals.update} toggle={() => toggleModal("update")} backdrop='static' keyboard={false} centered>
                     <ModalHeader toggle={() => toggleModal("update")}>Modificar Proveedor</ModalHeader>
                     <ModalBody>
-                        <SupplierForm initialData={supplierDetails} onSubmit={handleUpdateSupplier} onCancel={() => toggleModal("update", false)} />
+                        <SupplierForm initialData={supplierDetails} onSubmit={handleUpdateSupplier} onCancel={() => toggleModal("update", false)} isCodeDisabled={true} />
                     </ModalBody>
                 </Modal>
 

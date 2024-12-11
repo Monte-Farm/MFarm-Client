@@ -4,11 +4,11 @@ import { ProductData } from "./ProductForm";
 
 interface SelectTableProps {
   data: ProductData[];
-  onProductSelect: (selectedProducts: Array<{ id: string; quantity: number; unitPrice: number }>) => void;
+  onProductSelect: (selectedProducts: Array<{ id: string; quantity: number; price: number }>) => void;
 }
 
 const SelectTable: React.FC<SelectTableProps> = ({ data, onProductSelect }) => {
-  const [selectedProducts, setSelectedProducts] = React.useState<Array<{ id: string; quantity: number; unitPrice: number }>>([]);
+  const [selectedProducts, setSelectedProducts] = React.useState<Array<{ id: string; quantity: number; price: number }>>([]);
 
   // Manejar cambios de cantidad y precio
   const handleInputChange = (id: string, field: string, value: any) => {
@@ -26,7 +26,7 @@ const SelectTable: React.FC<SelectTableProps> = ({ data, onProductSelect }) => {
 
   const handleCheckboxChange = (id: string, checked: boolean) => {
     if (checked) {
-      const newProduct = { id, quantity: 0, unitPrice: 0 };
+      const newProduct = { id, quantity: 0, price: 0 };
       setSelectedProducts((prev) => [...prev, newProduct]);
     } else {
       setSelectedProducts((prev) => prev.filter((product) => product.id !== id));
@@ -44,6 +44,7 @@ const SelectTable: React.FC<SelectTableProps> = ({ data, onProductSelect }) => {
         <thead className="table-light">
           <tr>
             <th>Seleccionar</th>
+            <th>Código</th>
             <th>Producto</th>
             <th>Cantidad</th>
             <th>Precio Unitario</th>
@@ -63,6 +64,7 @@ const SelectTable: React.FC<SelectTableProps> = ({ data, onProductSelect }) => {
                   onChange={(e) => handleCheckboxChange(product.id, e.target.checked)}
                   onClick={(e) => e.stopPropagation()} />
               </td>
+              <td>{product.id}</td>
               <td>{product.productName}</td>
               <td>
                 <Input
@@ -78,9 +80,9 @@ const SelectTable: React.FC<SelectTableProps> = ({ data, onProductSelect }) => {
               <td>
                 <Input
                   type="number"
-                  value={selectedProducts.find((p) => p.id === product.id)?.unitPrice || ""}
+                  value={selectedProducts.find((p) => p.id === product.id)?.price || ""}
                   onChange={(e) =>
-                    handleInputChange(product.id, "unitPrice", e.target.value === "" ? "" : parseFloat(e.target.value))
+                    handleInputChange(product.id, "price", e.target.value === "" ? "" : parseFloat(e.target.value))
                   }
                   disabled={!selectedProducts.some((p) => p.id === product.id)}
                   onClick={(e) => e.stopPropagation()} 

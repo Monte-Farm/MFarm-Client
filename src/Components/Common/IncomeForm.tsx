@@ -9,6 +9,7 @@ import ProductForm, { ProductData } from "./ProductForm";
 import Flatpickr from 'react-flatpickr';
 import SelectTable from "./SelectTable";
 import { useNavigate } from "react-router-dom";
+import FileUploader from "./FileUploader";
 
 interface IncomeFormProps {
     initialData?: IncomeData;
@@ -39,14 +40,9 @@ export interface SupplierData {
 }
 
 const incomeTypeOptions = [
-    { label: "Purchase", value: "purchase" },
-    { label: "Sale", value: "sale" },
+    { label: "Compra", value: "purchase" },
 ];
 
-const columns = [
-    { header: 'Código', accessor: 'id' },
-    { header: 'Producto', accessor: 'productName' }
-]
 
 const validationSchema = Yup.object({
     id: Yup.string().required("Por favor, ingrese el ID"),
@@ -112,7 +108,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
         },
         enableReinitialize: true,
         validationSchema,
-        onSubmit: async (values, { setSubmitting }) => {
+        onSubmit: async (values, { setSubmitting, resetForm }) => {
             try {
                 setSubmitting(true);
                 await onSubmit(values);
@@ -162,18 +158,17 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
         }
     }
 
-    const handleProductSelect = (selectedProducts: Array<{ id: string; quantity: number; unitPrice: number }>) => {
+    const handleFileUpload = (file: File) => {
+        console.log('Archivo cargado:', file.name);
+    }
+
+    const handleProductSelect = (selectedProducts: Array<{ id: string; quantity: number; price: number }>) => {
         formik.setFieldValue("products", selectedProducts);
     };
 
     const handleCancelRegister = () => {
         history('/#')
-    }
-
-    const handleCreateIncome = () => {
-        console.log(formik.values)
-    }
-    
+    } 
 
     useEffect(() => {
         fetchProducts();
@@ -237,7 +232,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                     <h5 className="me-auto">Datos del Proveedor</h5>
                     <Button color="secondary" className="h-50 mb-2" onClick={() => toggleModal('createSupplier')}>
                         <i className="ri-add-line me-2"></i>
-                        Agregar Proveedor
+                        Nuevo Proveedor
                     </Button>
                 </div>
 
@@ -298,7 +293,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                     <h5 className="me-auto">Productos</h5>
                     <Button color="secondary" className="h-50 mb-2" onClick={() => { toggleModal('createProduct') }}>
                         <i className="ri-add-line me-2"></i>
-                        Agregar Producto
+                        Nuevo Producto
                     </Button>
                 </div>
                 <div className="border"></div>
@@ -352,18 +347,11 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                 {/* Documentos */}
                 <div className="mt-4">
                     <Label htmlFor="documentsInput" className="form-label">Documentos</Label>
-                    <Input
-                        type="textarea"
-                        id="documentsInput"
-                        name="documents"
-                        value={formik.values.documents.join(", ")}
-                        onChange={(e) =>
-                            formik.setFieldValue("documents", e.target.value.split(",").map((doc) => doc.trim()))
-                        }
-                        onBlur={formik.handleBlur}
-                        invalid={formik.touched.documents && !!formik.errors.documents}
+                    <FileUploader
+                        acceptedFileTypes={['image/*', 'application/pdf']} // Imágenes y PDFs
+                        onFileUpload={handleFileUpload}
                     />
-                    {formik.touched.documents && formik.errors.documents && <FormFeedback>{formik.errors.documents}</FormFeedback>}
+
                 </div>
 
                 {/* Botones */}
@@ -371,7 +359,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                     <Button color="danger" onClick={() => setCancelModalOpen(true)} disabled={formik.isSubmitting}>
                         Cancelar
                     </Button>
-                    <Button color="success" type="submit" disabled={formik.isSubmitting} onClick={handleCreateIncome}>
+                    <Button color="success" type="submit" disabled={formik.isSubmitting}>
                         {formik.isSubmitting ? "Guardando..." : initialData ? "Actualizar Transacción" : "Registrar Transacción"}
                     </Button>
                 </div>

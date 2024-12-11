@@ -7,6 +7,7 @@ interface ProductFormProps {
     initialData?: ProductData;
     onSubmit: (data: ProductData) => Promise<void>;
     onCancel: () => void;
+    isCodeDisabled?: boolean
 }
 
 export interface ProductData {
@@ -51,7 +52,7 @@ const validationSchema = Yup.object({
     description: Yup.string().required("Por favor, ingrese la descripción"),
 });
 
-const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCancel }) => {
+const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCancel, isCodeDisabled }) => {
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
     const [showErrorAlert, setShowErrorAlert] = useState(false);
 
@@ -104,6 +105,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
                         invalid={formik.touched.id && !!formik.errors.id}
+                        disabled={isCodeDisabled}
                     />
                     {formik.touched.id && formik.errors.id && (
                         <FormFeedback>{formik.errors.id}</FormFeedback>

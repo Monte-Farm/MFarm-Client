@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Col, Row, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback, Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from "reactstrap";
+import { Button, Col, Row, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback } from "reactstrap";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 
@@ -7,6 +7,7 @@ interface SupplierFormProps {
   initialData?: SupplierData;
   onSubmit: (data: SupplierData) => Promise<void>;
   onCancel: () => void;
+  isCodeDisabled?: boolean
 }
 
 export interface SupplierData {
@@ -21,9 +22,10 @@ export interface SupplierData {
 }
 
 const supplierTypes = [
-  { label: "Equipos", value: "Equipos" },
-  { label: "Materiales", value: "Materiales" },
-  { label: "Servicios", value: "Servicios" },
+  { label: "Alimentos", value: "Alimentos" },
+  { label: "Medicamentos", value: "Medicamentos" },
+  { label: "Suministros", value: "Suministros" },
+  { label: "Equipamiento", value: "Equipamiento" },
 ];
 
 
@@ -37,7 +39,7 @@ const validationSchema = Yup.object({
   rnc: Yup.string().required("Por favor, ingrese el RNC"),
 });
 
-const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCancel }) => {
+const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCancel, isCodeDisabled }) => {
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [showErrorAlert, setShowErrorAlert] = useState(false);
 
@@ -88,6 +90,7 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCa
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             invalid={formik.touched.id && !!formik.errors.id}
+            disabled={isCodeDisabled}
           />
           {formik.touched.id && formik.errors.id && <FormFeedback>{formik.errors.id}</FormFeedback>}
         </div>
@@ -137,8 +140,8 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCa
               value={formik.values.phone_number}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
-              invalid={formik.touched.phone_number && !!formik.errors.phone_number}/>
-              {formik.touched.phone_number && formik.errors.phone_number && <FormFeedback>{formik.errors.phone_number}</FormFeedback>}
+              invalid={formik.touched.phone_number && !!formik.errors.phone_number} />
+            {formik.touched.phone_number && formik.errors.phone_number && <FormFeedback>{formik.errors.phone_number}</FormFeedback>}
           </Col>
         </Row>
 

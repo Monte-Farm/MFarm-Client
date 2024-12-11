@@ -188,6 +188,7 @@ const ViewInventory = () => {
                 setModalOpen(false);
                 setSelectedProduct(undefined);
               }}
+              isCodeDisabled={selectedProduct ? true : false}
             />
           </ModalBody>
           <ModalFooter>
