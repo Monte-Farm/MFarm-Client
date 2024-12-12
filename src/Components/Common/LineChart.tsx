@@ -49,7 +49,7 @@ const LineChart: React.FC<LineChartProps> = ({
     },
     xaxis: {
       categories: categories,
-    },
+    }
   };
 
   return (

@@ -106,7 +106,7 @@ const SupplierDetails = () => {
     };
 
     const handleRowClicIncomeDetails = (row: any) => {
-        console.log(row)
+        history(`/warehouse/incomes/income_details/${row.id}`)
     }
 
     const handleBack = () => {
@@ -160,7 +160,7 @@ const SupplierDetails = () => {
                     </Col>
                     <Col lg={9} className="d-flex">
                         <Card className="h-100 w-100">
-                            <CardHeader><h4>Historial de Compras</h4></CardHeader>
+                            <CardHeader><h4>Historial de Altas | Compras</h4></CardHeader>
                             <CardBody>
                                 {supplierIncomes && (
                                     <CustomTable columns={incomesColumns} data={supplierIncomes} showSearchAndFilter={false} rowClickable={true} onRowClick={handleRowClicIncomeDetails}/>

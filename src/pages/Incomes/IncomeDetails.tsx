@@ -51,6 +51,7 @@ const IncomeDetails = () => {
         await axiosHelper.get(`${apiUrl}/incomes/find_incomes_id/${id_income}`)
             .then((response) => {
                 setIncomeDetails(response.data.data)
+                console.log(response.data.data)
             })
             .catch((error) => {
                 handleError(error, 'El servicio no esta disponible, intentelo más tarde')
