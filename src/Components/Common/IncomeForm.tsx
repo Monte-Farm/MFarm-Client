@@ -11,19 +11,34 @@ import SelectTable from "./SelectTable";
 import { useNavigate } from "react-router-dom";
 import FileUploader from "./FileUploader";
 
+const axiosHelper = new APIClient();
+const apiUrl = process.env.REACT_APP_API_URL;
+
 interface IncomeFormProps {
     initialData?: IncomeData;
     onSubmit: (data: IncomeData) => Promise<void>;
     onCancel: () => void;
 }
 
+interface Product {
+    id: string;
+    quantity: number;
+    price: number;
+}
+
+interface Origin {
+    originType: string,
+    id: string
+}
+
 export interface IncomeData {
     id: string;
+    warehouse: string;
     date: string; // ISO string
-    products: Array<string>;
+    products: Array<Product>;
     totalPrice: number;
     incomeType: string;
-    supplier: string;
+    origin: Origin;
     documents: Array<string>;
     status: boolean;
 }
@@ -45,13 +60,27 @@ const incomeTypeOptions = [
 
 
 const validationSchema = Yup.object({
-    id: Yup.string().required("Por favor, ingrese el ID"),
-    date: Yup.date().required("Por favor, ingrese la fecha"),
+    id: Yup.string()
+        .required("Por favor, ingrese el ID")
+        .test('unique_id', "Este identificador ya existe, por favor ingrese otro", async (value) => {
+            if (!value) return false;
+            try {
+                const result = await axiosHelper.get(`${apiUrl}/incomes/income_id_exists/${value}`);
+                return !result.data.data;
+            } catch (error) {
+                console.error(`Error al validar el ID: ${error}`);
+                return false;
+            }
+        }),
+    date: Yup.string().required("Por favor, ingrese la fecha"),
     totalPrice: Yup.number().min(0, "El precio total debe ser positivo").required("Por favor, ingrese el precio total"),
     incomeType: Yup.string().required("Por favor, seleccione el tipo de ingreso"),
-    supplier: Yup.string().required("Por favor, ingrese el nombre del proveedor"),
+    origin: Yup.object({
+        id: Yup.string().required("Por favor, seleccione un proveedor"),
+    }),
     documents: Yup.array().of(Yup.string()).required("Por favor, agregue al menos un documento"),
 });
+
 
 const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel }) => {
     const axiosHelper = new APIClient()
@@ -88,7 +117,6 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
         try {
             const response = await axiosHelper.get(`${apiUrl}/product`)
             setProducts(response.data.data)
-            console.log(products)
         } catch (error) {
             handleError(error, 'Ha ocurrido un error al obtener los productos, intentelo más tarde')
         }
@@ -98,16 +126,22 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
     const formik = useFormik({
         initialValues: initialData || {
             id: "",
+            warehouse: 'AG001',
             date: "",
             products: [],
             totalPrice: 0,
             incomeType: "",
-            supplier: "",
+            origin: {
+                originType: 'supplier',
+                id: ""
+            },
             documents: [],
             status: true,
         },
         enableReinitialize: true,
         validationSchema,
+        validateOnChange: false,
+        validateOnBlur: true,
         onSubmit: async (values, { setSubmitting, resetForm }) => {
             try {
                 setSubmitting(true);
@@ -123,7 +157,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
     const handleSupplierChange = (supplierId: string) => {
         const supplier = suppliers.find((s) => s.id === supplierId) || null;
         setSelectedSupplier(supplier);
-        formik.setFieldValue("supplier", supplierId);
+        formik.setFieldValue("origin.id", supplierId);
     };
 
     const handleCreateSupplier = async (supplierData: SupplierData) => {
@@ -133,7 +167,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
 
             await fetchSuppliers();
             setSelectedSupplier(newSupplier);
-            formik.setFieldValue("supplier", newSupplier.id);
+            formik.setFieldValue("origin.id", newSupplier.id);
 
             toggleModal("createSupplier");
             setAlertConfig({ visible: true, color: 'success', message: 'Proveedor creado con éxito' })
@@ -166,19 +200,26 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
         formik.setFieldValue("products", selectedProducts);
     };
 
-    const handleCancelRegister = () => {
-        history('/#')
-    } 
-
     useEffect(() => {
         fetchProducts();
         fetchSuppliers();
     }, [])
 
     useEffect(() => {
-        const supplier = suppliers.find((s) => s.id === formik.values.supplier) || null;
+        const supplier = suppliers.find((s) => s.id === formik.values.origin.id) || null;
         setSelectedSupplier(supplier);
-    }, [formik.values.supplier, suppliers]);
+        console.log(formik.values)
+    }, [formik.values.origin.id, suppliers]);
+
+    useEffect(() => {
+        const subtotal = formik.values.products.reduce(
+            (sum, product) => sum + (product.quantity * product.price || 0),
+            0
+        );
+        const totalWithTax = subtotal * 1.18;
+        formik.setFieldValue("totalPrice", parseFloat(totalWithTax.toFixed(2)));
+    }, [formik.values.products]);
+
 
 
     return (
@@ -190,7 +231,6 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                 }}
             >
                 <Row>
-                    {/* ID */}
                     <Col lg={4}>
                         <div className="">
                             <Label htmlFor="idInput" className="form-label">Identificador</Label>
@@ -220,7 +260,10 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                                     dateFormat: "d-m-Y",
                                     defaultDate: formik.values.date,
                                 }}
-                                onChange={(date) => formik.setFieldValue("date", date[0].toISOString())}
+                                onChange={(date) => {
+                                    const formattedDate = date[0].toLocaleDateString("es-ES");
+                                    formik.setFieldValue("date", formattedDate);
+                                }}
                             />
                             {formik.touched.date && formik.errors.date && <FormFeedback className="d-block">{formik.errors.date}</FormFeedback>}
 
@@ -228,6 +271,31 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                     </Col>
                 </Row>
 
+                {/* Agregar campo de compra de contado o a meses cuando el tipo de ingreso sea compra */}
+
+                {/* Tipo de Ingreso */}
+                <div className="mt-4">
+                    <Label htmlFor="incomeTypeInput" className="form-label">Tipo de Ingreso</Label>
+                    <Input
+                        type="select"
+                        id="incomeTypeInput"
+                        name="incomeType"
+                        value={formik.values.incomeType}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        invalid={formik.touched.incomeType && !!formik.errors.incomeType}
+                    >
+                        <option value="">Seleccione un tipo</option>
+                        {incomeTypeOptions.map((type) => (
+                            <option key={type.value} value={type.value}>
+                                {type.label}
+                            </option>
+                        ))}
+                    </Input>
+                    {formik.touched.incomeType && formik.errors.incomeType && <FormFeedback>{formik.errors.incomeType}</FormFeedback>}
+                </div>
+
+                {/* Datos del proveedor */}
                 <div className="d-flex mt-4">
                     <h5 className="me-auto">Datos del Proveedor</h5>
                     <Button color="secondary" className="h-50 mb-2" onClick={() => toggleModal('createSupplier')}>
@@ -244,11 +312,11 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                     <Input
                         type="select"
                         id="supplierInput"
-                        name="supplier"
-                        value={formik.values.supplier} // Valor controlado por formik
+                        name="origin.id"
+                        value={formik.values.origin.id} // Valor controlado por formik
                         onChange={(e) => handleSupplierChange(e.target.value)} // Sincroniza el cambio
                         onBlur={formik.handleBlur}
-                        invalid={formik.touched.supplier && !!formik.errors.supplier}
+                        invalid={formik.touched.origin?.id && !!formik.errors.origin?.id}
                     >
                         <option value=''>Seleccione un proveedor</option>
                         {suppliers.map((supplier) => (
@@ -258,7 +326,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                         ))}
                     </Input>
 
-                    {formik.touched.supplier && formik.errors.supplier && <FormFeedback>{formik.errors.supplier}</FormFeedback>}
+                    {formik.touched.origin?.id && formik.errors.origin?.id && <FormFeedback>{formik.errors.origin?.id}</FormFeedback>}
                 </div>
 
                 <Row className="mt-4">
@@ -299,49 +367,31 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                 <div className="border"></div>
 
                 {/* Tabla de productos */}
-                <div className="mt-3 border" style={{ height: '300px', overflowY: 'auto' }}>
+                <div className="mt-3 border border-0">
                     <SelectTable data={products} onProductSelect={handleProductSelect}></SelectTable>
                 </div>
 
-
-                {/* Precio Total 
+                {/* Precio Total  */}
                 <div className="mt-4">
                     <Label htmlFor="totalPriceInput" className="form-label">Precio Total</Label>
-                    <Input
-                        type="number"
-                        id="totalPriceInput"
-                        name="totalPrice"
-                        value={formik.values.totalPrice}
-                        onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
-                        invalid={formik.touched.totalPrice && !!formik.errors.totalPrice}
-                    />
+                    <div className="form-icon">
+                        <Input
+                            className="form-control form-control-icon"
+                            type="number"
+                            id="totalPriceInput"
+                            name="totalPrice"
+                            value={formik.values.totalPrice}
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
+                            invalid={formik.touched.totalPrice && !!formik.errors.totalPrice}
+                            disabled={true}
+                        />
+                        <i>$</i>
+                    </div>
                     {formik.touched.totalPrice && formik.errors.totalPrice && <FormFeedback>{formik.errors.totalPrice}</FormFeedback>}
                 </div>
-                */}
 
-                {/* Tipo de Ingreso */}
-                <div className="mt-4">
-                    <Label htmlFor="incomeTypeInput" className="form-label">Tipo de Ingreso</Label>
-                    <Input
-                        type="select"
-                        id="incomeTypeInput"
-                        name="incomeType"
-                        value={formik.values.incomeType}
-                        onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
-                        invalid={formik.touched.incomeType && !!formik.errors.incomeType}
-                    >
-                        <option value="">Seleccione un tipo</option>
-                        {incomeTypeOptions.map((type) => (
-                            <option key={type.value} value={type.value}>
-                                {type.label}
-                            </option>
-                        ))}
-                    </Input>
-                    {formik.touched.incomeType && formik.errors.incomeType && <FormFeedback>{formik.errors.incomeType}</FormFeedback>}
-                </div>
-
+                <Label className="mt-1">ITBIS: 18%</Label>
 
 
                 {/* Documentos */}
@@ -370,7 +420,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                 <ModalHeader>Confirmación</ModalHeader>
                 <ModalBody>¿Estás seguro de que deseas cancelar? Los datos no se guardarán.</ModalBody>
                 <ModalFooter>
-                    <Button color="danger" onClick={handleCancelRegister}>Sí, cancelar</Button>
+                    <Button color="danger" onClick={onCancel}>Sí, cancelar</Button>
                     <Button color="success" onClick={() => setCancelModalOpen(false)}>No, continuar</Button>
                 </ModalFooter>
             </Modal>

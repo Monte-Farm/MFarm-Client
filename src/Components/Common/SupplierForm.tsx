@@ -2,6 +2,10 @@ import React, { useState } from "react";
 import { Button, Col, Row, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback } from "reactstrap";
 import * as Yup from "yup";
 import { useFormik } from "formik";
+import { APIClient } from "helpers/api_helper";
+
+const axiosHelper = new APIClient();
+const apiUrl = process.env.REACT_APP_API_URL;
 
 interface SupplierFormProps {
   initialData?: SupplierData;
@@ -28,20 +32,32 @@ const supplierTypes = [
   { label: "Equipamiento", value: "Equipamiento" },
 ];
 
-
-const validationSchema = Yup.object({
-  id: Yup.string().required("Por favor, ingrese el código"),
-  name: Yup.string().required("Por favor, ingrese el nombre"),
-  address: Yup.string().required("Por favor, ingrese la dirección"),
-  phone_number: Yup.string().required("Por favor, ingrese el número de teléfono"),
-  email: Yup.string().email("Ingrese un correo válido").required("Por favor, ingrese el correo electrónico"),
-  supplier_type: Yup.string().required("Por favor, seleccione el tipo de proveedor"),
-  rnc: Yup.string().required("Por favor, ingrese el RNC"),
-});
-
 const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCancel, isCodeDisabled }) => {
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [showErrorAlert, setShowErrorAlert] = useState(false);
+
+  const validationSchema = Yup.object({
+    id: Yup.string()
+      .required("Por favor, ingrese el código")
+      .test('unique_id', 'Este identificador ya existe, por favor ingrese otro', async (value) => {
+        if (initialData) return true
+        if (!value) return false 
+        try {
+          const result = await axiosHelper.get(`${apiUrl}/supplier/supplier_id_exists/${value}`)
+          return !result.data.data
+        } catch (error) {
+          console.error(`Error al validar el ID: ${error}`)
+          return false
+        }
+      }),
+    name: Yup.string().required("Por favor, ingrese el nombre"),
+    address: Yup.string().required("Por favor, ingrese la dirección"),
+    phone_number: Yup.string().required("Por favor, ingrese el número de teléfono"),
+    email: Yup.string().email("Ingrese un correo válido").required("Por favor, ingrese el correo electrónico"),
+    supplier_type: Yup.string().required("Por favor, seleccione el tipo de proveedor"),
+    rnc: Yup.string().required("Por favor, ingrese el RNC"),
+  });
+
 
   const formik = useFormik({
     initialValues: initialData || {
@@ -56,6 +72,8 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCa
     },
     enableReinitialize: true,
     validationSchema,
+    validateOnChange: false,
+    validateOnBlur: true,
     onSubmit: async (values, { setSubmitting }) => {
       try {
         setSubmitting(true);

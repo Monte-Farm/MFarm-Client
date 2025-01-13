@@ -9,12 +9,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Alert, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalFooter, ModalHeader, Row, Spinner } from "reactstrap";
 
 const supplierAttributes = [
-    { key: 'id', label: 'Código' },
-    { key: 'name', label: 'Nombre del proveedor' },
-    { key: 'phone_number', label: 'Número telefónico' },
-    { key: 'email', label: 'Correo electrónico' },
+    { key: 'id', label: 'Identificador' },
+    { key: 'name', label: 'Nombre' },
+    { key: 'phone_number', label: 'Teléfono' },
+    { key: 'email', label: 'Correo' },
     { key: 'address', label: 'Dirección' },
-    { key: 'supplier_type', label: 'Tipo de proveedor' },
+    { key: 'supplier_type', label: 'Categoría' },
     { key: 'rnc', label: 'RNC' },
     { key: 'status', label: 'Estado' }
 ];
@@ -30,13 +30,6 @@ export interface SupplierData {
     rnc: string;
 }
 
-const incomesColumns = [
-    { header: 'Identificador', accessor: 'id' },
-    { header: 'Fecha de entrada', accessor: 'date' },
-    { header: 'Proveedor', accessor: 'supplier' },
-    { header: 'Precio Total', accessor: 'totalPrice' },
-    { header: 'Tipo de entrada', accessor: 'incomeType' }
-]
 
 const SupplierDetails = () => {
     document.title = 'Supplier details | Suppliers';
@@ -50,6 +43,24 @@ const SupplierDetails = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [loading, setLoading] = useState<boolean>(true);
     const [modals, setModals] = useState({ update: false, delete: false });
+
+    const incomesColumns = [
+        { header: 'Identificador', accessor: 'id', isFilterable: true },
+        { header: 'Fecha de entrada', accessor: 'date', isFilterable: true },
+        { header: 'Precio Total', accessor: 'totalPrice' },
+        { header: 'Tipo de entrada', accessor: 'incomeType', isFilterable: true, options: [{ label: 'Compra', value: 'Compra' }] },
+        {
+            header: "Acciones",
+            accessor: "action",
+            render: (value: any, row: any) => (
+              <div className="d-flex gap-1">
+                <Button className="btn-secondary btn-icon" onClick={() => handleIncomeDetails(row)}>
+                  <i className="ri-eye-fill align-middle"></i>
+                </Button>
+              </div>
+            ),
+          },
+    ]
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -73,7 +84,7 @@ const SupplierDetails = () => {
     };
 
     const handleGetIncomes = async () => {
-        await axiosHelper.get(`${apiUrl}/incomes/find_incomes/supplier/${id_supplier}/true`)
+        await axiosHelper.get(`${apiUrl}/incomes/find_incomes/origin.id/${id_supplier}/true`)
             .then((response) => {
                 setSupplierIncomes(response.data.data)
             })
@@ -105,7 +116,7 @@ const SupplierDetails = () => {
         }
     };
 
-    const handleRowClicIncomeDetails = (row: any) => {
+    const handleIncomeDetails = (row: any) => {
         history(`/warehouse/incomes/income_details/${row.id}`)
     }
 
@@ -143,8 +154,8 @@ const SupplierDetails = () => {
                     </Button>
                 </div>
 
-                <Row className="d-flex" style={{alignItems: 'stretch'}}>
-                    <Col lg={3} className="d-flex">
+                <Row className="d-flex" style={{ alignItems: 'stretch', height: '75vh' }}>
+                    <Col lg={3}>
                         <Card className="rounded h-100">
                             <CardHeader><h4>Información del proveedor</h4></CardHeader>
                             <CardBody>
@@ -158,12 +169,12 @@ const SupplierDetails = () => {
                             </CardBody>
                         </Card>
                     </Col>
-                    <Col lg={9} className="d-flex">
+                    <Col lg={9}>
                         <Card className="h-100 w-100">
                             <CardHeader><h4>Historial de Altas | Compras</h4></CardHeader>
                             <CardBody>
                                 {supplierIncomes && (
-                                    <CustomTable columns={incomesColumns} data={supplierIncomes} showSearchAndFilter={false} rowClickable={true} onRowClick={handleRowClicIncomeDetails}/>
+                                    <CustomTable columns={incomesColumns} data={supplierIncomes} showSearchAndFilter={true} defaultFilterField='supplier' rowClickable={false} rowsPerPage={15} />
                                 )}
                             </CardBody>
                         </Card>

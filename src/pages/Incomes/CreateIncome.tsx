@@ -21,22 +21,32 @@ const CreatIncome = () => {
         setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
     };
 
+    const showAlert = (color: string, message: string) => {
+        setAlertConfig({visible: true, color: color, message: message})
+        setTimeout(() => {
+            setAlertConfig({...alertConfig, visible: false})
+        }, 5000);
+    }
+
     const handleCreateIncome = async (data: any) => {
         await axiosHelper.create(`${apiUrl}/incomes/create_income`, data)
-        .then((response) => {
-            setAlertConfig({ visible: true, color: 'success', message: 'Datos guardados con éxito' });
-            setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-            setTimeout(() => history('/warehouse/incomes/view_incomes'), 5000);
-        })
-        .catch((error) => {
-            handleError(error, 'Ha ocurrido un error guardando la información, intentelo más tarde')
-        })
+            .then((response) => {
+                showAlert('success', 'Entrada creada con éxito')
+                setTimeout(() => history('/warehouse/incomes/view_incomes'), 2500);
+            })
+            .catch((error) => {
+                handleError(error, 'Ha ocurrido un error guardando la información, intentelo más tarde')
+            })
     }
 
     const handleCancel = () => {
-        history('/warehouse/incomes/view_incomes')
+        if (window.history.length > 1) {
+            history(-1)
+        } else {
+            history('/warehouse/incomes/view_incomes')
+        }
     }
-    
+
     return (
         <div className="page-content">
             <Container fluid>

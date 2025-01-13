@@ -55,6 +55,20 @@ class APIClient {
     return axios.post(url, data);
   };
 
+   /**
+   * Uploads an image
+   */
+  uploadImage = (url: string, file: File): Promise<AxiosResponse> => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    return axios.post(url, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  };
+
   /**
    * Updates data
    */

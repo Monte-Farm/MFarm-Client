@@ -9,39 +9,52 @@ import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 registerPlugin(FilePondPluginImagePreview, FilePondPluginFileValidateType);
 
 interface FileUploaderProps {
-  serverUrl?: string;
   acceptedFileTypes?: string[];
   onFileUpload?: (file: File) => void;
+  maxFiles?: number
+  imageSrc?: string
 }
 
 const FileUploader: React.FC<FileUploaderProps> = ({
-  serverUrl = '/upload',
   acceptedFileTypes = ['image/*'],
   onFileUpload,
+  maxFiles,
+  imageSrc
 }) => {
   const [files, setFiles] = useState<File[]>([]);
 
+  const handleFileUpload = async (file: File) => {
+    // Llamar a la función onFileUpload (deberías definirla en el componente padre)
+    if (onFileUpload) {
+      await onFileUpload(file);
+    }
+  };
+  
   return (
     <div className="file-uploader">
       <FilePond
         files={files}
         onupdatefiles={(fileItems) => {
-
           const updatedFiles = fileItems.map((fileItem) => fileItem.file as File);
           setFiles(updatedFiles);
-          if (onFileUpload) {
-            updatedFiles.forEach(onFileUpload);
+        }}
+        onaddfile={(error, fileItem) => {
+          if (error) {
+            console.error('Error al agregar archivo:', error);
+            return;
           }
+          // Convertimos explícitamente el archivo a tipo File
+          const file = fileItem.file as File;
+          handleFileUpload(file);  // Pasamos el archivo como un `File` estándar
         }}
         allowMultiple={true}
-        maxFiles={5}
-        server={serverUrl}
+        maxFiles={maxFiles}
         name="files"
         acceptedFileTypes={acceptedFileTypes}
         labelIdle='Arrastra tus archivos o <span class="filepond--label-action">explora</span>'
-      />
+      >
+      </FilePond>
     </div>
   );
-};
-
+};  
 export default FileUploader;

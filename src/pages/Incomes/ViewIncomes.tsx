@@ -3,25 +3,59 @@ import CustomTable from "Components/Common/CustomTable"
 import { APIClient } from "helpers/api_helper"
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { Alert, Card, CardBody, CardHeader, Container } from "reactstrap"
+import { Alert, Button, Card, CardBody, CardHeader, Container } from "reactstrap"
 
-
-const columns = [
-    { header: 'Identificador', accessor: 'id' },
-    { header: 'Fecha de entrada', accessor: 'date' },
-    { header: 'Proveedor', accessor: 'supplier' },
-    { header: 'Tipo de entrada', accessor: 'incomeType' },
-    { header: 'Precio Total', accessor: 'totalPrice' },
-]
 
 const ViewIncomes = () => {
     document.title = 'View Incomes | Warehouse'
     const apiUrl = process.env.REACT_APP_API_URL;
     const axiosHelper = new APIClient();
     const history = useNavigate()
+    const idWarehouse = 'AG001'
 
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [incomes, setIncomes] = useState([])
+
+    const columns = [
+        {
+            header: 'Identificador',
+            accessor: 'id',
+            isFilterable: true
+        },
+        {
+            header: 'Proveedor',
+            accessor: 'originName',
+            isFilterable: true
+        },
+        {
+            header: 'Fecha de entrada',
+            accessor: 'date',
+            isFilterable: true
+        },
+        {
+            header: 'Tipo de entrada',
+            accessor: 'incomeType',
+            isFilterable: true,
+            options: [
+                { label: 'Compra', value: 'Compra' }
+            ]
+        },
+        {
+            header: 'Precio Total',
+            accessor: 'totalPrice'
+        },
+        {
+            header: "Acciones",
+            accessor: "action",
+            render: (value: any, row: any) => (
+                <div className="d-flex gap-1">
+                    <Button className="btn-secondary btn-icon" onClick={() => handleProductDetails(row)}>
+                        <i className="ri-eye-fill align-middle"></i>
+                    </Button>
+                </div>
+            ),
+        },
+    ]
 
     const handleError = (error: any, message: string) => {
         console.error(message, error);
@@ -30,7 +64,7 @@ const ViewIncomes = () => {
     };
 
     const handleFetchIncomes = async () => {
-        await axiosHelper.get(`${apiUrl}/incomes`)
+        await axiosHelper.get(`${apiUrl}/incomes/find_warehouse_incomes/${idWarehouse}`)
             .then((response) => {
                 const incomesData = response.data.data;
                 setIncomes(incomesData)
@@ -40,9 +74,13 @@ const ViewIncomes = () => {
             })
     }
 
-    const handleRowClick = (row: any) => {
+    const handleProductDetails = (row: any) => {
         const id_income = row.id
         history(`/warehouse/incomes/income_details/${id_income}`);
+    }
+
+    const handleAddIncome = () => {
+        history('/warehouse/incomes/create_income')
     }
 
     useEffect(() => {
@@ -54,12 +92,19 @@ const ViewIncomes = () => {
             <Container fluid>
                 <BreadCrumb title={"Incomes"} pageTitle={"View Incomes"} />
 
-                <Card>
+                <Card style={{ height: '75vh' }}>
                     <CardHeader>
-                        <h4>Entradas</h4>
+                        <div className="d-flex gap-2">
+                            <h4 className="me-auto">Entradas</h4>
+                            <Button color="success" onClick={handleAddIncome}>
+                                <i className="ri-add-line me-3" />
+                                Nueva Entrada
+                            </Button>
+                        </div>
+
                     </CardHeader>
                     <CardBody>
-                        <CustomTable columns={columns} data={incomes} rowClickable={true} onRowClick={handleRowClick}></CustomTable>
+                        <CustomTable columns={columns} data={incomes} defaultFilterField={'id'}></CustomTable>
                     </CardBody>
                 </Card>
 

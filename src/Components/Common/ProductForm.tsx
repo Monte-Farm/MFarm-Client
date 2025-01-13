@@ -1,26 +1,31 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Col, Row, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback } from "reactstrap";
 import * as Yup from "yup";
 import { useFormik } from "formik";
+import axios, { AxiosHeaders } from "axios";
+import { APIClient } from "helpers/api_helper";
+import FileUploader from "./FileUploader";
+import { error } from "console";
+
+const axiosHelper = new APIClient();
+const apiUrl = process.env.REACT_APP_API_URL;
 
 interface ProductFormProps {
     initialData?: ProductData;
     onSubmit: (data: ProductData) => Promise<void>;
     onCancel: () => void;
-    isCodeDisabled?: boolean
+    isCodeDisabled?: boolean,
+    foldersArray?: string[]
 }
 
 export interface ProductData {
     id: string;
-    productName: string;
-    quantity: number;
+    name: string;
     category: string;
     description: string;
     status: boolean;
-    price: number;
     unit_measurement: string;
-    incomes: string[];
-    outcomes: string[];
+    image: string;
 }
 
 const categories = [
@@ -42,38 +47,53 @@ const unitMeasurements = [
     "Metros",
 ];
 
-const validationSchema = Yup.object({
-    id: Yup.string().required("Por favor, ingrese el código"),
-    productName: Yup.string().required("Por favor, ingrese el nombre del producto"),
-    quantity: Yup.number().required("Por favor, ingrese la cantidad del producto"),
-    category: Yup.string().required("Por favor, seleccione una categoría"),
-    unit_measurement: Yup.string().required("Por favor, seleccione una unidad de medida"),
-    price: Yup.number().required("Por favor, ingrese el precio"),
-    description: Yup.string().required("Por favor, ingrese la descripción"),
-});
 
-const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCancel, isCodeDisabled }) => {
+const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCancel, isCodeDisabled, foldersArray }) => {
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
     const [showErrorAlert, setShowErrorAlert] = useState(false);
+    const [fileToUpload, setFileToUpload] = useState<File | null>(null)
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+    const validationSchema = Yup.object({
+        id: Yup.string()
+            .required("Por favor, ingrese el código")
+            .test('unique_id', 'Este codigo ya existe, por favor ingrese otro', async (value) => {
+                if (initialData) return true
+                if (!value) return false
+                try {
+                    const response = await axiosHelper.get(`${apiUrl}/product/product_id_exists/${value}`);
+                    return !response.data.data
+                } catch (error) {
+                    console.error(`Error al verificar el id: ${error}`)
+                    return false
+                }
+            }),
+        name: Yup.string().required("Por favor, ingrese el nombre del producto"),
+        category: Yup.string().required("Por favor, seleccione una categoría"),
+        unit_measurement: Yup.string().required("Por favor, seleccione una unidad de medida"),
+        description: Yup.string().required("Por favor, ingrese la descripción"),
+    });
 
     const formik = useFormik({
         initialValues: initialData || {
             id: "",
-            productName: "",
-            quantity: 0,
+            name: "",
             category: "",
             description: "",
             status: true,
-            price: 0,
             unit_measurement: "",
-            incomes: [],
-            outcomes: []
+            image: "",
         },
         enableReinitialize: true,
         validationSchema,
+        validateOnChange: false,
+        validateOnBlur: true,
         onSubmit: async (values, { setSubmitting }) => {
             try {
                 setSubmitting(true);
+                if (fileToUpload) {
+                    await fileUpload(fileToUpload)
+                }
                 await onSubmit(values);
             } catch (error) {
                 console.error("Error al enviar el formulario:", error);
@@ -85,6 +105,47 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
         },
     });
 
+    const fileUpload = async (file: File) => {
+        await axiosHelper.create(`${apiUrl}/google_drive/create_folders`, foldersArray)
+            .then(async (response) => {
+                const folderId = response.data.data;
+
+                await axiosHelper.uploadImage(`${apiUrl}/google_drive/upload_file/${folderId}`, file)
+                    .then((response) => {
+                        const imageId = response.data.data;
+                        formik.values.image = imageId;
+                    })
+                    .catch((error) => {
+                        throw error
+                    })
+            })
+            .catch((error) => {
+                setShowErrorAlert(true);
+                setTimeout(() => setShowErrorAlert(false), 5000)
+                console.log(error)
+            })
+
+
+    }
+
+    const getImageProduct = async () => {
+        try {
+            const response = await axiosHelper.get(`${apiUrl}/google_drive/download_file/${initialData?.image}`, { responseType: 'blob' });
+
+            const imageUrl = URL.createObjectURL(response.data);
+            setImagePreview(imageUrl);
+            console.log(imageUrl)
+        } catch (error) {
+            console.error('Error al recuperar la imagen: ', error);
+        }
+    }
+
+    useEffect(() => {
+        if (initialData && initialData.image) {
+            getImageProduct();
+        }
+    }, [initialData]);
+
     return (
         <>
             <form
@@ -93,13 +154,21 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                     formik.handleSubmit();
                 }}
             >
+
+                {/* Imagen */}
+                <div className="mt-4">
+                    <Label htmlFor="imageInput" className="form-label">Imagen del producto</Label>
+                    <FileUploader acceptedFileTypes={['image/*']} maxFiles={1} onFileUpload={(file) => setFileToUpload(file)} />
+                </div>
+
+
                 {/* Campo Código */}
                 <div className="mt-4">
                     <Label htmlFor="idInput" className="form-label">Código</Label>
                     <Input
                         type="text"
                         id="idInput"
-                        className="form-control w-50"
+                        className="form-control"
                         name="id"
                         value={formik.values.id}
                         onChange={formik.handleChange}
@@ -114,90 +183,44 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
 
                 {/* Campo Nombre del producto */}
                 <div className="mt-4">
-                    <Label htmlFor="productNameInput" className="form-label">Nombre del producto</Label>
+                    <Label htmlFor="nameInput" className="form-label">Nombre</Label>
                     <Input
                         type="text"
-                        id="productNameInput"
+                        id="nameInput"
                         className="form-control"
-                        name="productName"
-                        value={formik.values.productName}
+                        name="name"
+                        value={formik.values.name}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
-                        invalid={formik.touched.productName && !!formik.errors.productName}
+                        invalid={formik.touched.name && !!formik.errors.name}
                     />
-                    {formik.touched.productName && formik.errors.productName && (
-                        <FormFeedback>{formik.errors.productName}</FormFeedback>
+                    {formik.touched.name && formik.errors.name && (
+                        <FormFeedback>{formik.errors.name}</FormFeedback>
                     )}
                 </div>
 
-                <Row className="mt-4">
-                    {/* Campo Cantidad */}
-                    <Col lg={4}>
-                        <div>
-                            <Label htmlFor="quantityInput" className="form-label">Cantidad</Label>
-                            <Input
-                                type="number"
-                                id="quantityInput"
-                                className="form-input"
-                                name="quantity"
-                                value={formik.values.quantity}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                invalid={formik.touched.quantity && !!formik.errors.quantity}
-                            />
-                            {formik.touched.quantity && formik.errors.quantity && (
-                                <FormFeedback>{formik.errors.quantity}</FormFeedback>
-                            )}
-                        </div>
-                    </Col>
-
-                    {/* Campo Unidad de Medida */}
-                    <Col lg={4}>
-                        <div>
-                            <Label htmlFor="unit_measurementInput" className="form-label">Unidad de medida</Label>
-                            <Input
-                                type="select"
-                                id="unit_measurementInput"
-                                name="unit_measurement"
-                                value={formik.values.unit_measurement}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                invalid={formik.touched.unit_measurement && !!formik.errors.unit_measurement}
-                            >
-                                <option value="">Seleccione una unidad</option>
-                                {unitMeasurements.map((unit) => (
-                                    <option key={unit} value={unit}>
-                                        {unit}
-                                    </option>
-                                ))}
-                            </Input>
-                            {formik.touched.unit_measurement && formik.errors.unit_measurement && (
-                                <FormFeedback>{formik.errors.unit_measurement}</FormFeedback>
-                            )}
-                        </div>
-                    </Col>
-
-                    {/* Campo Precio */}
-                    <Col lg={4}>
-                        <div>
-                            <Label htmlFor="priceInput" className="form-label">Precio</Label>
-                            <Input
-                                type="number"
-                                id="priceInput"
-                                className="form-control"
-                                name="price"
-                                value={formik.values.price}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                step="0.01"
-                                invalid={formik.touched.price && !!formik.errors.price}
-                            />
-                            {formik.touched.price && formik.errors.price && (
-                                <FormFeedback>{formik.errors.price}</FormFeedback>
-                            )}
-                        </div>
-                    </Col>
-                </Row>
+                <div className="mt-4">
+                    <Label htmlFor="unit_measurementInput" className="form-label">Unidad de medida</Label>
+                    <Input
+                        type="select"
+                        id="unit_measurementInput"
+                        name="unit_measurement"
+                        value={formik.values.unit_measurement}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        invalid={formik.touched.unit_measurement && !!formik.errors.unit_measurement}
+                    >
+                        <option value="">Seleccione una unidad</option>
+                        {unitMeasurements.map((unit) => (
+                            <option key={unit} value={unit}>
+                                {unit}
+                            </option>
+                        ))}
+                    </Input>
+                    {formik.touched.unit_measurement && formik.errors.unit_measurement && (
+                        <FormFeedback>{formik.errors.unit_measurement}</FormFeedback>
+                    )}
+                </div>
 
                 {/* Campo Categoría */}
                 <div className="mt-4">

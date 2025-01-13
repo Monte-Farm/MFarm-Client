@@ -10,7 +10,7 @@ import flagarabic from "../assets/images/flags/ae.svg";
 
 const languages = {
   sp: {
-    label: "Española",
+    label: "Español",
     flag: flagspain,
   },
   gr: {

@@ -7,10 +7,14 @@ const Navdata = () => {
     //state data
     const [isHome, setIsHome] = useState<boolean>(false);
     const [isWarehouse, setIsWarehouse] = useState<boolean>(false);
+    const [isSubwarehouse, setIsSubwarehouse] = useState<boolean>(false);
 
     //Warehouse
     const [isSuppliers, setIsSupplier] = useState<boolean>(false)
     const [isIncomes, setIsIncomes] = useState<boolean>(false)
+    const [isOutcomes, setIsOutcomes] = useState<boolean>(false)
+    const [isInventory, setIsInventory] = useState<boolean>(false)
+    const [isProducts, setIsProducts] = useState<boolean>(false)
 
     const [iscurrentState, setIscurrentState] = useState('Home');
 
@@ -37,6 +41,9 @@ const Navdata = () => {
         if (iscurrentState !== 'Warehouse') {
             setIsWarehouse(false)
         }
+        if (iscurrentState !== 'Subwarehouse') {
+            setIsSubwarehouse(false)
+        }
     }, [
         history,
         iscurrentState,
@@ -58,8 +65,8 @@ const Navdata = () => {
         },
         {
             id: "warehouse",
-            label: "Warehouse",
-            icon: "ri-building-line",
+            label: "Almacén General",
+            icon: "ri-community-line",
             link: "/#",
             click: function (e: any) {
                 e.preventDefault();
@@ -71,39 +78,18 @@ const Navdata = () => {
             subItems: [
                 {
                     id: "inventory",
-                    label: "Inventory",
+                    label: "Inventario",
                     link: "/warehouse/inventory/view_inventory",
                     parentId: "warehouse",
-                },
-                {
-                    id: "suppliers",
-                    label: "Suppliers",
-                    link: "/#",
-                    parentId: "warehouse",
-                    isChildItem: true,
                     click: function (e: any) {
                         e.preventDefault();
-                        setIsSupplier(!isSuppliers);
+                        setIsInventory(!isInventory)
                     },
-                    stateVariables: isSuppliers,
-                    childItems: [
-                        {
-                            id: 1,
-                            label: "Create Supplier",
-                            link: "/warehouse/suppliers/create_supplier",
-                            parentId: "suppliers"
-                        },
-                        {
-                            id: 2,
-                            label: "View Supplier",
-                            link: "/warehouse/suppliers/view_suppliers",
-                            parentId: "suppliers"
-                        },
-                    ]
+                    stateVariables: isInventory,
                 },
                 {
                     id: "incomes",
-                    label: "Incomes",
+                    label: "Entradas",
                     link: "/#",
                     parentId: "warehouse",
                     isChildItem: true,
@@ -115,20 +101,79 @@ const Navdata = () => {
                     childItems: [
                         {
                             id: 1,
-                            label: "Create Incomes",
+                            label: "Nueva Entrada",
                             link: "/warehouse/incomes/create_income",
                             parentId: "incomes"
                         },
                         {
                             id: 2,
-                            label: "View Incomes",
+                            label: "Ver Entradas",
                             link: "/warehouse/incomes/view_incomes",
                             parentId: "incomes"
                         },
                     ]
                 },
+                {
+                    id: "outcomes",
+                    label: "Salidas",
+                    link: "/#",
+                    parentId: "warehouse",
+                    isChildItem: true,
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsIncomes(!isOutcomes);
+                    },
+                    stateVariables: isOutcomes,
+                    childItems: [
+                        {
+                            id: 1,
+                            label: "Nueva Salida",
+                            link: "/warehouse/outcomes/create_outcome",
+                            parentId: "outcomes"
+                        },
+                        {
+                            id: 2,
+                            label: "Ver Salidas",
+                            link: "/warehouse/outcomes/view_outcomes",
+                            parentId: "outcomes"
+                        },
+                    ]
+                },
+                {
+                    id: "suppliers",
+                    label: "Proveedores",
+                    link: "/warehouse/suppliers/view_suppliers",
+                    parentId: "warehouse",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsSupplier(!isSuppliers);
+                    },
+                    stateVariables: isSuppliers,
+                },
+                {
+                    id: "products",
+                    label: "Catálogo de Productos",
+                    link: "/warehouse/products/product_catalog",
+                    parentId: "warehouse",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsIncomes(!isProducts);
+                    },
+                },
             ],
         },
+        {
+            id: 'subwarehouse',
+            label: 'Subalmacénes',
+            icon: 'ri-building-3-line',
+            link: '/subwarehouse/view_subwarehouse',
+            click: function (e: any) {
+                e.preventDefault();
+                setIsSubwarehouse(!isSubwarehouse);
+                setIscurrentState('Subwarehouse');
+                updateIconSidebar(e);
+            },
+        }
     ];
     return <React.Fragment>{menuItems}</React.Fragment>;
 };

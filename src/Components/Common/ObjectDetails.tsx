@@ -13,6 +13,11 @@ interface ProductDetailsProps {
     imageSrc?: string; // URL o ruta de la imagen a mostrar
 }
 
+// Función para obtener valores anidados a partir de un path
+const getNestedValue = (obj: Record<string, any>, path: string): any => {
+    return path.split('.').reduce((acc, key) => acc?.[key], obj);
+};
+
 const ObjectDetails: React.FC<ProductDetailsProps> = ({ attributes, object, showImage = true, imageSrc }) => {
     return (
         <React.Fragment>
@@ -22,7 +27,8 @@ const ObjectDetails: React.FC<ProductDetailsProps> = ({ attributes, object, show
                         <img
                             src={imageSrc}
                             alt="Detalle del objeto"
-                            className="img-fluid rounded-top"
+                            className="rounded-top"
+                            style={{ maxHeight: "250px" }}
                         />
                     </div>
                 )}
@@ -42,7 +48,7 @@ const ObjectDetails: React.FC<ProductDetailsProps> = ({ attributes, object, show
                                             "No disponible"
                                         )
                                     ) : (
-                                        object[key] || "No disponible"
+                                        getNestedValue(object, key) || "No disponible"
                                     )}
                                 </td>
                             </tr>
