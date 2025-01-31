@@ -40,10 +40,16 @@ const ObjectDetails: React.FC<ProductDetailsProps> = ({ attributes, object, show
                                 <td className="fw-medium fs-5">{label}</td>
                                 <td className="fs-5">
                                     {key === "status" ? (
-                                        object[key] === true ? (
-                                            <Badge color="success">Activo</Badge>
-                                        ) : object[key] === false ? (
-                                            <Badge color="danger">Inactivo</Badge>
+                                        typeof object[key] === "boolean" ? (
+                                            object[key] ? (
+                                                <Badge color="success">Activo</Badge>
+                                            ) : (
+                                                <Badge color="danger">Inactivo</Badge>
+                                            )
+                                        ) : object[key] === "pending" ? (
+                                            <Badge color="warning">Pendiente</Badge>
+                                        ) : object[key] === "completed" ? (
+                                            <Badge color="primary">Completado</Badge>
                                         ) : (
                                             "No disponible"
                                         )

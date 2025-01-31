@@ -71,7 +71,7 @@ const ViewOutcomes = () => {
 
                     </CardHeader>
                     <CardBody>
-                        <CustomTable columns={columns} data={outcomes} showSearchAndFilter={true} defaultFilterField='id' />
+                        <CustomTable columns={columns} data={outcomes} showSearchAndFilter={true}/>
                     </CardBody>
                 </Card>
             </Container>

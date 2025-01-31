@@ -1,18 +1,19 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Button, Col, Row, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback, Alert } from "reactstrap";
 import * as Yup from "yup";
 import { useFormik } from "formik";
-import CustomTable from "./CustomTable";
 import { APIClient } from "helpers/api_helper";
 import SupplierForm from "./SupplierForm";
-import ProductForm, { ProductData } from "./ProductForm";
+import ProductForm from "./ProductForm";
 import Flatpickr from 'react-flatpickr';
 import SelectTable from "./SelectTable";
 import { useNavigate } from "react-router-dom";
 import FileUploader from "./FileUploader";
+import { IncomeData, ProductData, SupplierData } from "common/data_interfaces";
+import { ConfigContext } from "App";
 
-const axiosHelper = new APIClient();
-const apiUrl = process.env.REACT_APP_API_URL;
+const axiosHelper = new APIClient()
+const apiUrl = process.env.REACT_APP_API_URL
 
 interface IncomeFormProps {
     initialData?: IncomeData;
@@ -20,44 +21,7 @@ interface IncomeFormProps {
     onCancel: () => void;
 }
 
-interface Product {
-    id: string;
-    quantity: number;
-    price: number;
-}
-
-interface Origin {
-    originType: string,
-    id: string
-}
-
-export interface IncomeData {
-    id: string;
-    warehouse: string;
-    date: string; // ISO string
-    products: Array<Product>;
-    totalPrice: number;
-    incomeType: string;
-    origin: Origin;
-    documents: Array<string>;
-    status: boolean;
-}
-
-export interface SupplierData {
-    id: string;
-    name: string;
-    address: string;
-    phone_number: string;
-    email: string;
-    supplier_type: string;
-    status: boolean;
-    rnc: string;
-}
-
-const incomeTypeOptions = [
-    { label: "Compra", value: "purchase" },
-];
-
+const arrayFolders: string[] = []
 
 const validationSchema = Yup.object({
     id: Yup.string()
@@ -73,6 +37,7 @@ const validationSchema = Yup.object({
             }
         }),
     date: Yup.string().required("Por favor, ingrese la fecha"),
+    emissionDate: Yup.string().required("Por favor, ingrese la fecha"),
     totalPrice: Yup.number().min(0, "El precio total debe ser positivo").required("Por favor, ingrese el precio total"),
     incomeType: Yup.string().required("Por favor, seleccione el tipo de ingreso"),
     origin: Yup.object({
@@ -83,9 +48,11 @@ const validationSchema = Yup.object({
 
 
 const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel }) => {
-    const axiosHelper = new APIClient()
-    const apiUrl = process.env.REACT_APP_API_URL
+
     const history = useNavigate()
+    const configContext = useContext(ConfigContext)
+    const axiosHelper = new APIClient();
+    const apiUrl = process.env.REACT_APP_API_URL;
 
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
     const [suppliers, setSuppliers] = useState<SupplierData[]>([]);
@@ -93,6 +60,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
     const [modals, setModals] = useState({ createSupplier: false, createProduct: false });
     const [products, setProducts] = useState([])
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
+    const [fileToUpload, setFileToUpload] = useState<File | null>(null)
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -122,12 +90,26 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
         }
     }
 
+    const fetchNextId = async () => {
+        if (!initialData) {
+            await axiosHelper.get(`${apiUrl}/incomes/income_next_id`)
+                .then((response) => {
+                    const nextId = response.data.data;
+                    formik.setFieldValue('id', nextId)
+                })
+                .catch((error) => {
+                    console.error('Ha ocurrido un error obteniendo el id')
+                })
+        }
+    }
+
 
     const formik = useFormik({
         initialValues: initialData || {
             id: "",
             warehouse: 'AG001',
             date: "",
+            emissionDate: "",
             products: [],
             totalPrice: 0,
             incomeType: "",
@@ -145,6 +127,9 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
         onSubmit: async (values, { setSubmitting, resetForm }) => {
             try {
                 setSubmitting(true);
+                if (fileToUpload) {
+                    await uploadFile(fileToUpload)
+                }
                 await onSubmit(values);
             } catch (error) {
                 console.error("Error al enviar el formulario:", error);
@@ -153,6 +138,30 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
             }
         },
     });
+
+    const uploadFile = async (file: File) => {
+        arrayFolders.push(`${formik.values.warehouse}`)
+        arrayFolders.push('Incomes')
+        arrayFolders.push(`${formik.values.id}`)
+
+
+        await axiosHelper.create(`${apiUrl}/google_drive/create_folders`, arrayFolders)
+            .then(async (response) => {
+                const folderId = response.data.data;
+
+                await axiosHelper.uploadImage(`${apiUrl}/google_drive/upload_file/${folderId}`, file)
+                    .then((response) => {
+                        const imageId = response.data.data;
+                        formik.values.documents.push(imageId)
+                    })
+                    .catch((error) => {
+                        throw error
+                    })
+            })
+            .catch((error) => {
+                handleError(error, 'Ha ocurrido un error al guardar el archivo, intentelo mâs tarde')
+            })
+    }
 
     const handleSupplierChange = (supplierId: string) => {
         const supplier = suppliers.find((s) => s.id === supplierId) || null;
@@ -192,10 +201,6 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
         }
     }
 
-    const handleFileUpload = (file: File) => {
-        console.log('Archivo cargado:', file.name);
-    }
-
     const handleProductSelect = (selectedProducts: Array<{ id: string; quantity: number; price: number }>) => {
         formik.setFieldValue("products", selectedProducts);
     };
@@ -203,17 +208,17 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
     useEffect(() => {
         fetchProducts();
         fetchSuppliers();
+        fetchNextId();
     }, [])
 
     useEffect(() => {
         const supplier = suppliers.find((s) => s.id === formik.values.origin.id) || null;
         setSelectedSupplier(supplier);
-        console.log(formik.values)
     }, [formik.values.origin.id, suppliers]);
 
     useEffect(() => {
         const subtotal = formik.values.products.reduce(
-            (sum, product) => sum + (product.quantity * product.price || 0),
+            (sum, product) => sum + (product.quantity * (product.price ?? 0)),
             0
         );
         const totalWithTax = subtotal * 1.18;
@@ -247,10 +252,10 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                         </div>
                     </Col>
 
-                    {/* Fecha */}
-                    <Col lg={8}>
+                    {/* Fecha de registro */}
+                    <Col lg={4}>
                         <div className="">
-                            <Label htmlFor="dateInput" className="form-label">Fecha</Label>
+                            <Label htmlFor="dateInput" className="form-label">Fecha de registro</Label>
 
                             <Flatpickr
                                 id="dateInput"
@@ -266,6 +271,29 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                                 }}
                             />
                             {formik.touched.date && formik.errors.date && <FormFeedback className="d-block">{formik.errors.date}</FormFeedback>}
+
+                        </div>
+                    </Col>
+
+                    {/* Fecha de emision*/}
+                    <Col lg={4}>
+                        <div className="">
+                            <Label htmlFor="emissionDateInput" className="form-label">Fecha de emisión</Label>
+
+                            <Flatpickr
+                                id="emissionDateInput"
+                                className="form-control"
+                                value={formik.values.emissionDate}
+                                options={{
+                                    dateFormat: "d-m-Y",
+                                    defaultDate: formik.values.emissionDate,
+                                }}
+                                onChange={(date) => {
+                                    const formattedDate = date[0].toLocaleDateString("es-ES");
+                                    formik.setFieldValue("emissionDate", formattedDate);
+                                }}
+                            />
+                            {formik.touched.emissionDate && formik.errors.emissionDate && <FormFeedback className="d-block">{formik.errors.emissionDate}</FormFeedback>}
 
                         </div>
                     </Col>
@@ -286,9 +314,9 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                         invalid={formik.touched.incomeType && !!formik.errors.incomeType}
                     >
                         <option value="">Seleccione un tipo</option>
-                        {incomeTypeOptions.map((type) => (
-                            <option key={type.value} value={type.value}>
-                                {type.label}
+                        {configContext?.configurationData?.incomeTypes.map((type) => (
+                            <option key={type} value={type}>
+                                {type}
                             </option>
                         ))}
                     </Input>
@@ -397,10 +425,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                 {/* Documentos */}
                 <div className="mt-4">
                     <Label htmlFor="documentsInput" className="form-label">Documentos</Label>
-                    <FileUploader
-                        acceptedFileTypes={['image/*', 'application/pdf']} // Imágenes y PDFs
-                        onFileUpload={handleFileUpload}
-                    />
+                    <FileUploader acceptedFileTypes={['image/*', 'application/pdf']} onFileUpload={(file) => setFileToUpload(file)} maxFiles={1} />
 
                 </div>
 

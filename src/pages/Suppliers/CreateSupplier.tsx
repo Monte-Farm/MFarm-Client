@@ -1,5 +1,5 @@
 import BreadCrumb from "Components/Common/BreadCrumb"
-import SupplierForm, { SupplierData } from "Components/Common/SupplierForm"
+import SupplierForm from "Components/Common/SupplierForm"
 import { APIClient } from "helpers/api_helper"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"

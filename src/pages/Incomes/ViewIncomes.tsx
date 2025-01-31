@@ -90,7 +90,7 @@ const ViewIncomes = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Incomes"} pageTitle={"View Incomes"} />
+                <BreadCrumb title={"Ver Entradas"} pageTitle={"Entradas"} />
 
                 <Card style={{ height: '75vh' }}>
                     <CardHeader>
@@ -104,7 +104,7 @@ const ViewIncomes = () => {
 
                     </CardHeader>
                     <CardBody>
-                        <CustomTable columns={columns} data={incomes} defaultFilterField={'id'}></CustomTable>
+                        <CustomTable columns={columns} data={incomes}></CustomTable>
                     </CardBody>
                 </Card>
 

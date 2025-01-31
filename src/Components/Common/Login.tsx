@@ -4,7 +4,7 @@ import * as Yup from "yup";
 import { useFormik } from "formik";
 
 interface LoginFormProps {
-    onSubmit: (values: { user_number: string; password: string }) => Promise<void>;
+    onSubmit: (values: { username: string; password: string }) => Promise<void>;
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
@@ -13,11 +13,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
 
     const validation = useFormik({
         initialValues: {
-            user_number: "",
+            username: "",
             password: "",
         },
         validationSchema: Yup.object({
-            user_number: Yup.string().required("Por favor, ingrese su número de usuario"),
+            username: Yup.string().required("Por favor, ingrese su número de usuario"),
             password: Yup.string().required("Por favor, ingrese su contraseña"),
         }),
         onSubmit: async (values, { setSubmitting, setErrors }) => {
@@ -28,7 +28,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
                 console.error("Error al iniciar sesión:", error);
                 if ((error && error.status === 401) || (error && error.status === 404)) {
                     setErrors({
-                        user_number: "Nombre de usuario o contraseña incorrectos.",
+                        username: "Nombre de usuario o contraseña incorrectos.",
                         password: "Nombre de usuario o contraseña incorrectos.",
                     });
                 } else {
@@ -50,26 +50,26 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
                 }}
             >
                 <div className="mb-3">
-                    <Label htmlFor="user_number" className="form-label">
+                    <Label htmlFor="username" className="form-label">
                         Número de usuario
                     </Label>
                     <Input
                         type="text"
                         className="form-control"
-                        id="user_number"
+                        id="username"
                         placeholder="Ingrese su número de usuario"
-                        name="user_number"
+                        name="username"
                         onChange={validation.handleChange}
                         onBlur={validation.handleBlur}
-                        value={validation.values.user_number || ""}
+                        value={validation.values.username || ""}
                         invalid={
-                            validation.touched.user_number && validation.errors.user_number
+                            validation.touched.username && validation.errors.username
                                 ? true
                                 : false
                         }
                     />
-                    {validation.touched.user_number && validation.errors.user_number && (
-                        <FormFeedback type="invalid">{validation.errors.user_number}</FormFeedback>
+                    {validation.touched.username && validation.errors.username && (
+                        <FormFeedback type="invalid">{validation.errors.username}</FormFeedback>
                     )}
                 </div>
 

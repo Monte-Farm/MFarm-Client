@@ -1,12 +1,14 @@
 import { APIClient } from 'helpers/api_helper';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Alert, Button, Col, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Row, Spinner } from 'reactstrap';
 import * as Yup from 'yup'
 import Flatpickr from 'react-flatpickr';
 import { useFormik } from 'formik';
-import SubwarehouseForm, { SubwarehouseData } from './SubwarehouseForm';
+import SubwarehouseForm from './SubwarehouseForm';
 import { useNavigate } from 'react-router-dom';
 import SelectTable from './SelectTable';
+import { OutcomeData, SubwarehouseData } from 'common/data_interfaces';
+import { ConfigContext } from 'App';
 
 const axiosHelper = new APIClient();
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -16,27 +18,6 @@ interface OutcomeFormProps {
     onSubmit: (data: OutcomeData) => Promise<void>
     onCancel: () => void;
 }
-
-interface Product {
-    id: string;
-    quantity: number;
-    price: number
-}
-
-export interface OutcomeData {
-    id: string;
-    date: string;
-    products: Array<Product>;
-    outcomeType: string;
-    status: boolean;
-    warehouseDestiny: string;
-    warehouseOrigin: string;
-    totalPrice: number;
-}
-
-const outcomeTypeOptions = [
-    { label: "Traspaso", value: "transfer" },
-];
 
 const validationSchema = Yup.object({
     id: Yup.string()
@@ -53,16 +34,15 @@ const validationSchema = Yup.object({
         }),
     date: Yup.string().required('Por favor, ingrese la fecha'),
     outcomeType: Yup.string().required('Por favor, seleccione el tipo de salida'),
-    warehouseDestiny: Yup.string().required('Pro favor, seleccione un subalmacén')
+    warehouseDestiny: Yup.string().required('Por favor, seleccione un subalmacén')
 })
 
 const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSubmit, onCancel }) => {
-    const axiosHelper = new APIClient()
-    const apiUrl = process.env.REACT_APP_API_URL
     const history = useNavigate()
     const warehouseId = 'AG001'
     const [modals, setModals] = useState({ createWarehouse: false, cancel: false });
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
+    const configContext = useContext(ConfigContext);     
 
     const [subwarehouses, setSubwarehouses] = useState<SubwarehouseData[]>([])
     const [selectedSubwarehouse, setSelectedSubwarehouse] = useState<SubwarehouseData | null>(null)
@@ -104,7 +84,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSubmit, onCanc
             } catch (error) {
                 console.error("Error al enviar el formulario:", error);
             } finally {
-                //setSubmitting(false);
+                setSubmitting(false);
             }
         },
     });
@@ -134,6 +114,17 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSubmit, onCanc
                 console.error(error)
                 history('/auth-500')
             })
+    }
+
+    const fetchNextId = async () => {
+        await axiosHelper.get(`${apiUrl}/outcomes/outcome_next_id`)
+        .then((response) => {
+            const nextId = response.data.data
+            formik.setFieldValue('id', nextId)
+        })
+        .catch((error) => {
+            console.error('Ha ocurrido un error obteniendo el id')
+        })
     }
 
     const handleFetchWarehouseProducts = async () => {
@@ -174,6 +165,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSubmit, onCanc
     useEffect(() => {
         handleFetchsubwarehouses();
         handleFetchWarehouseProducts();
+        fetchNextId();
     }, [])
 
     useEffect(() => {
@@ -233,9 +225,9 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSubmit, onCanc
                         invalid={formik.touched.outcomeType && !!formik.errors.outcomeType}
                     >
                         <option value=''>Seleccione un motivo</option>
-                        {outcomeTypeOptions.map((type) => (
-                            <option key={type.value} value={type.value}>
-                                {type.label}
+                        {configContext?.configurationData?.outcomeTypes.map((value) => (
+                            <option key={value} value={value}>
+                                {value}
                             </option>
                         ))}
                     </Input>

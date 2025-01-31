@@ -1,5 +1,5 @@
 import BreadCrumb from "Components/Common/BreadCrumb";
-import OutcomeForm, { OutcomeData } from "Components/Common/OutcomeForm";
+import OutcomeForm from "Components/Common/OutcomeForm";
 import { APIClient } from "helpers/api_helper";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";

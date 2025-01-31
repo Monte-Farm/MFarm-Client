@@ -1,14 +1,13 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Input, Table } from "reactstrap";
 import Pagination from "./Pagination";
-import { ProductData } from "./ProductForm";
 
 interface SelectTableProps {
   data: any[];
   onProductSelect: (
     selectedProducts: Array<{ id: string; quantity: number; price: number }>
   ) => void;
-  showStock?: boolean; // Nuevo prop opcional
+  showStock?: boolean;
 }
 
 const SelectTable: React.FC<SelectTableProps> = ({ data, onProductSelect, showStock = false }) => {

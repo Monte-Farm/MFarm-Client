@@ -24,7 +24,6 @@ const FileUploader: React.FC<FileUploaderProps> = ({
   const [files, setFiles] = useState<File[]>([]);
 
   const handleFileUpload = async (file: File) => {
-    // Llamar a la función onFileUpload (deberías definirla en el componente padre)
     if (onFileUpload) {
       await onFileUpload(file);
     }
@@ -43,9 +42,9 @@ const FileUploader: React.FC<FileUploaderProps> = ({
             console.error('Error al agregar archivo:', error);
             return;
           }
-          // Convertimos explícitamente el archivo a tipo File
+
           const file = fileItem.file as File;
-          handleFileUpload(file);  // Pasamos el archivo como un `File` estándar
+          handleFileUpload(file);
         }}
         allowMultiple={true}
         maxFiles={maxFiles}

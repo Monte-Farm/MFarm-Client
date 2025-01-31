@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Table } from "reactstrap";
+import { Table, Input } from "reactstrap";
 import Pagination from "./Pagination";
-import TableFilter from "./TableFilter";
 
 type Column<T> = {
   header: string;
   accessor: keyof T;
   render?: (value: any, row: T) => React.ReactNode;
-  isFilterable?: boolean;
+  isFilterable?: boolean; // Nuevo campo para indicar si la columna es filtrable
 };
 
 type CustomTableProps<T> = {
@@ -18,7 +17,6 @@ type CustomTableProps<T> = {
   rowClickable?: boolean;
   onRowClick?: (row: T) => void;
   rowsPerPage?: number;
-  defaultFilterField?: keyof T;
 };
 
 const CustomTable = <T,>({
@@ -29,23 +27,29 @@ const CustomTable = <T,>({
   rowClickable = false,
   onRowClick,
   rowsPerPage = 10,
-  defaultFilterField,
 }: CustomTableProps<T>) => {
   const [filterText, setFilterText] = useState<string>("");
-  const [selectedFilter, setSelectedFilter] = useState<keyof T | "">("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [filteredData, setFilteredData] = useState<T[]>(data);
 
-  // Filtrar datos según texto y filtro seleccionado
+  // Filtrar datos según texto de búsqueda
   useEffect(() => {
     const result = data.filter((row) => {
-      if (!filterText || !selectedFilter) return true;
-      const cellValue = row[selectedFilter];
-      return cellValue?.toString().toLowerCase().includes(filterText.toLowerCase());
+      if (!filterText) return true;
+
+      // Buscar en columnas marcadas como filtrables
+      return columns.some((col) => {
+        if (col.isFilterable) {
+          const cellValue = row[col.accessor];
+          return cellValue?.toString().toLowerCase().includes(filterText.toLowerCase());
+        }
+        return false;
+      });
     });
+
     setFilteredData(result);
     setCurrentPage(1); // Reinicia a la primera página al filtrar
-  }, [filterText, selectedFilter, data]);
+  }, [filterText, columns, data]);
 
   // Datos paginados según la página actual
   const paginatedData = filteredData.slice(
@@ -56,13 +60,15 @@ const CustomTable = <T,>({
   return (
     <>
       {showSearchAndFilter && (
-        <TableFilter
-          columns={columns}
-          filterText={filterText}
-          selectedFilter={selectedFilter}
-          onFilterTextChange={setFilterText}
-          onFilterChange={setSelectedFilter}
-          defaultFilterField={defaultFilterField}/>
+        <div className="d-flex justify-content-between mb-3">
+          <Input
+            type="text"
+            placeholder="Buscar..."
+            value={filterText}
+            onChange={(e) => setFilterText(e.target.value)}
+            aria-label="Buscar en la tabla"
+          />
+        </div>
       )}
 
       {/* Tabla */}

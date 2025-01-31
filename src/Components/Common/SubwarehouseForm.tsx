@@ -1,5 +1,7 @@
+import { SubwarehouseData } from 'common/data_interfaces';
 import { useFormik } from 'formik';
-import { useState } from 'react';
+import { APIClient } from 'helpers/api_helper';
+import { useEffect, useState } from 'react';
 import { Button, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from 'reactstrap';
 import * as Yup from 'yup';
 
@@ -10,38 +12,35 @@ interface SubwarehouseFormProps {
     isCodeDisabled?: boolean
 }
 
-interface Product {
-    id: string;
-    name: string;
-    quantity: string;
-    category: string;
-    description: string;
-    status: boolean;
-    unit_measurement: string
-}
 
-export interface SubwarehouseData {
-    id: string;
-    name: string;
-    location: string;
-    manager: string;
-    status: boolean;
-    products: Product[]
-    incomes: string[]
-    outcomes: string[]
-    isSubwarehouse: boolean
-}
 
-const validationSchema = Yup.object({
-    id: Yup.string().required('Por favor, ingrese el código'),
-    name: Yup.string().required('Por favor, ingrese el nombre'),
-    location: Yup.string().required('Por favor, ingrese la ubicación'),
-    manager: Yup.string().required('Por favor, ingrese el nombre del responsable')
-})
 
 const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ initialData, onSubmit, onCancel, isCodeDisabled }) => {
+    const axiosHelper = new APIClient();
+    const apiUrl = process.env.REACT_APP_API_URL;
+
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
     const [showErrorAlert, setShowErrorAlert] = useState(false);
+    const [users, setUsers] = useState<{ username: string; name: string; lastname: string }[]>([])
+
+    const validationSchema = Yup.object({
+        id: Yup.string()
+            .required('Por favor, ingrese el código')
+            .test('unique_id', 'Este identificador ya existe, por favor ingrese otro', async (value) => {
+                if (initialData) return true
+                if (!value) return false
+                try {
+                    const response = await axiosHelper.get(`${apiUrl}/warehouse/warehouse_id_exists/${value}`);
+                    return !response.data.data
+                } catch (error) {
+                    console.error(`Error al verificar el id: ${error}`)
+                    return false
+                }
+            }),
+        name: Yup.string().required('Por favor, ingrese el nombre'),
+        location: Yup.string().required('Por favor, ingrese la ubicación'),
+        manager: Yup.string().required('Por favor, seleccione el responsable')
+    })
 
     const formik = useFormik({
         initialValues: initialData || {
@@ -56,6 +55,8 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ initialData, onSubm
             isSubwarehouse: true
         },
         enableReinitialize: true,
+        validateOnChange: false,
+        validateOnBlur: true,
         validationSchema,
         onSubmit: async (values, { setSubmitting }) => {
             try {
@@ -72,6 +73,35 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ initialData, onSubm
             }
         }
     })
+
+    const fetchNextId = async () => {
+        if (!initialData) {
+            await axiosHelper.get(`${apiUrl}/warehouse/warehouse_next_id`)
+                .then((response) => {
+                    const lastId = response.data.data
+                    formik.setFieldValue('id', lastId)
+                })
+                .catch((error) => {
+                    console.error('Ha ocurrido un error al obtener el id')
+                })
+        }
+    }
+
+    const fetchUsers = async () => {
+        await axiosHelper.get(`${apiUrl}/user/find_by_role/Encargado de subalmacen`)
+            .then((response) => {
+                setUsers(response.data.data)
+            })
+            .catch((error) => {
+                console.error('Ha ocurrido un error al obtener los usuarios')
+            })
+    }
+
+    useEffect(() => {
+        fetchNextId();
+        fetchUsers();
+    }, [])
+
     return (
         <>
             <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }}>
@@ -81,7 +111,7 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ initialData, onSubm
                     <Input
                         type="text"
                         id="idInput"
-                        className="form-control w-50"
+                        className="form-control"
                         name="id"
                         value={formik.values.id}
                         onChange={formik.handleChange}
@@ -111,41 +141,47 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ initialData, onSubm
                     )}
                 </div>
 
-                <div className='d-flex gap-2'>
 
-                    <div className='mt-4 w-50'>
-                        <Label htmlFor='managerInput' className='form-input'>Responsable</Label>
-                        <Input
-                            type='text'
-                            id='managerInput'
-                            className='form-control'
-                            name='manager'
-                            value={formik.values.manager}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            invalid={formik.touched.manager && !!formik.errors.manager}
-                        />
-                        {formik.touched.manager && formik.errors.manager && (
-                            <FormFeedback>{formik.errors.manager}</FormFeedback>
-                        )}
-                    </div>
+                <div className='mt-4'>
+                    <Label htmlFor='managerInput' className='form-input'>Responsable</Label>
+                    <Input
+                        type='select'
+                        id='managerInput'
+                        className='form-control'
+                        name='manager'
+                        value={formik.values.manager}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        invalid={formik.touched.manager && !!formik.errors.manager}
+                    >
+                        <option value="">Selecciona un responsable</option>
+                        {users.map((user) => (
+                            <option key={user.username} value={user.username}>
+                                {user.name} {user.lastname} {/* Mostrar nombre completo */}
+                            </option>
+                        ))}
+                    </Input>
+                    {formik.touched.manager && formik.errors.manager && (
+                        <FormFeedback>{formik.errors.manager}</FormFeedback>
+                    )}
+                </div>
 
-                    <div className='mt-4 w-50'>
-                        <Label htmlFor='locationInput' className='form-input'>Ubicación</Label>
-                        <Input
-                            type='text'
-                            id='locationInput'
-                            className='form-control'
-                            name='location'
-                            value={formik.values.location}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            invalid={formik.touched.location && !!formik.errors.location}
-                        />
-                        {formik.touched.location && formik.errors.location && (
-                            <FormFeedback>{formik.errors.location}</FormFeedback>
-                        )}
-                    </div>
+
+                <div className='mt-4'>
+                    <Label htmlFor='locationInput' className='form-input'>Ubicación</Label>
+                    <Input
+                        type='text'
+                        id='locationInput'
+                        className='form-control'
+                        name='location'
+                        value={formik.values.location}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        invalid={formik.touched.location && !!formik.errors.location}
+                    />
+                    {formik.touched.location && formik.errors.location && (
+                        <FormFeedback>{formik.errors.location}</FormFeedback>
+                    )}
                 </div>
 
                 <div className="d-flex justify-content-end mt-4 gap-2">

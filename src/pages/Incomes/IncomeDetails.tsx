@@ -1,6 +1,6 @@
+import { IncomeData } from "common/data_interfaces"
 import BreadCrumb from "Components/Common/BreadCrumb"
 import CustomTable from "Components/Common/CustomTable"
-import { IncomeData } from "Components/Common/IncomeForm"
 import ObjectDetails from "Components/Common/ObjectDetails"
 import { APIClient } from "helpers/api_helper"
 import { useEffect, useState } from "react"
@@ -10,7 +10,8 @@ import { Alert, Button, Card, CardBody, CardHeader, Col, Container, Row } from "
 const incomeAttributes = [
     { key: 'id', label: 'Identificador' },
     { key: 'warehouse', label: 'Almacén' },
-    { key: 'date', label: 'Fecha' },
+    { key: 'date', label: 'Fecha de registro' },
+    { key: 'emissionDate', label: 'Fecha de emisión' },
     { key: 'origin.id', label: '' },
     { key: 'totalPrice', label: 'Precio Total' },
     { key: 'incomeType', label: 'Tipo de alta' }
@@ -35,28 +36,9 @@ const IncomeDetails = () => {
         { header: 'Código', accessor: 'id', isFilterable: true },
         { header: 'Producto', accessor: 'name', isFilterable: true },
         { header: 'Cantidad', accessor: 'quantity', isFilterable: true },
-        { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true,
-            options: [
-                { label: "Galones", value: 'Galones' },
-                { label: "Litros", value: 'Litros' },
-                { label: "Frascos", value: 'Frascos' },
-                { label: "Piezas", value: 'Piezas' },
-                { label: "Kilos", value: 'Kilos' },
-                { label: "Dosis", value: 'Dosis' },
-                { label: "Paquetes", value: 'Paquetes' },
-                { label: "Cajas", value: 'Cajas' },
-                { label: "Metros", value: 'Metros' },
-              ]
-         },
+        { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true, },
         { header: 'Precio Unitario', accessor: 'price' },
-        { header: 'Categoría', accessor: 'category', isFilterable: true,
-            options: [
-                { label: 'Alimentos', value: 'Alimentos' },
-                { label: 'Medicamentos', value: 'Medicamentos' },
-                { label: 'Suministros', value: 'Suministros' },
-                { label: 'Equipamiento', value: 'Equipamientos' }
-              ]
-         },
+        { header: 'Categoría', accessor: 'category', isFilterable: true, },
         { header: 'Descripción', accessor: 'description', isFilterable: true },
         {
             header: "Acciones",
@@ -92,23 +74,22 @@ const IncomeDetails = () => {
             })
     }
 
-    const handleFetchIncomeDisplay = async() => {
+    const handleFetchIncomeDisplay = async () => {
         await axiosHelper.get(`${apiUrl}/incomes/income_display_details/${id_income}`)
-        .then((response) => {
-            const incomeFound = response.data.data
-            console.log(incomeFound)
+            .then((response) => {
+                const incomeFound = response.data.data
 
-            if (incomeFound.origin.originType === 'supplier') {
-                incomeAttributes[3].label = 'Proveedor'
-            } else {
-                incomeAttributes[3].label = 'Almacén de origen'
-            }
+                if (incomeFound.origin.originType === 'supplier') {
+                    incomeAttributes[4].label = 'Proveedor'
+                } else {
+                    incomeAttributes[4].label = 'Almacén de origen'
+                }
 
-            setIncomeDisplay(incomeFound)
-        })
-        .catch((error) => {
-            handleError(error, 'Ha ocurrido un error al obtener los datos de la entrada, intentelo más tarde');
-        })
+                setIncomeDisplay(incomeFound)
+            })
+            .catch((error) => {
+                handleError(error, 'Ha ocurrido un error al obtener los datos de la entrada, intentelo más tarde');
+            })
     }
 
     const handleFetchIncomeProducts = async () => {
@@ -177,7 +158,7 @@ const IncomeDetails = () => {
                                 <h4>Productos</h4>
                             </CardHeader>
                             <CardBody>
-                                <CustomTable columns={productColumns} data={productsIncome} rowClickable={false} defaultFilterField='name'/>
+                                <CustomTable columns={productColumns} data={productsIncome} rowClickable={false} />
                             </CardBody>
                         </Card>
                     </Col>

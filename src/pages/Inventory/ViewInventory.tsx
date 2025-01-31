@@ -4,9 +4,9 @@ import BreadCrumb from "Components/Common/BreadCrumb";
 import { APIClient } from "helpers/api_helper";
 import CustomTable from "Components/Common/CustomTable";
 import ProductForm from "Components/Common/ProductForm";
-import { ProductData } from "Components/Common/ProductForm";
 import { useNavigate } from "react-router-dom";
 import { size } from "lodash";
+import { ProductData } from "common/data_interfaces";
 
 const ViewInventory = () => {
   document.title = "Inventario | Almacén General";
@@ -180,7 +180,7 @@ const ViewInventory = () => {
             </div>
           </CardHeader>
           <CardBody>
-            <CustomTable columns={columnsTable} data={productsData} showSearchAndFilter={true} rowClickable={false} defaultFilterField='name' />
+            <CustomTable columns={columnsTable} data={productsData} showSearchAndFilter={true} rowClickable={false}/>
           </CardBody>
         </Card>
 

@@ -1,11 +1,13 @@
 import BreadCrumb from "Components/Common/BreadCrumb";
 import CustomTable from "Components/Common/CustomTable";
 import ObjectDetails from "Components/Common/ObjectDetails";
-import ProductForm, { ProductData } from "Components/Common/ProductForm";
+import ProductForm from "Components/Common/ProductForm";
 import { APIClient } from "helpers/api_helper";
-import { error } from "node:console";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
+import noImageUrl from '../../assets/images/no-image.png'
+import { ProductData } from "common/data_interfaces";
+import { ConfigContext } from "App";
 
 
 const productAttributes = [
@@ -32,30 +34,9 @@ const ViewProducts = () => {
     const columns = [
         { header: 'Código', accessor: 'id', isFilterable: true },
         { header: 'Nombre', accessor: 'name', isFilterable: true },
-        {
-            header: 'Categoría', accessor: 'category', isFilterable: true,
-            options: [
-                { label: 'Alimentos', value: 'Alimentos' },
-                { label: 'Medicamentos', value: 'Medicamentos' },
-                { label: 'Suministros', value: 'Suministros' },
-                { label: 'Equipamiento', value: 'Equipamientos' }
-            ]
-        },
+        { header: 'Categoría', accessor: 'category', isFilterable: true, },
         { header: 'Descripción', accessor: 'description', isFilterable: true },
-        {
-            header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true,
-            options: [
-                { label: "Galones", value: 'Galones' },
-                { label: "Litros", value: 'Litros' },
-                { label: "Frascos", value: 'Frascos' },
-                { label: "Piezas", value: 'Piezas' },
-                { label: "Kilos", value: 'Kilos' },
-                { label: "Dosis", value: 'Dosis' },
-                { label: "Paquetes", value: 'Paquetes' },
-                { label: "Cajas", value: 'Cajas' },
-                { label: "Metros", value: 'Metros' },
-            ]
-        },
+        { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true, },
         {
             header: 'Estado', accessor: 'status', isFilterable: true, render: (value: boolean) => (
                 <Badge color={value === true ? "success" : "danger"}>
@@ -108,6 +89,8 @@ const ViewProducts = () => {
         if (modal === 'details' || modal === 'update') {
             if (data.image) {
                 await fetchImageById(data.image)
+            } else {
+                setUrlImageProduct(noImageUrl)
             }
         }
     }

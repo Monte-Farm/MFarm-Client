@@ -1,5 +1,5 @@
 import BreadCrumb from "Components/Common/BreadCrumb"
-import IncomeForm, { IncomeData } from "Components/Common/IncomeForm"
+import IncomeForm from "Components/Common/IncomeForm"
 import { APIClient } from "helpers/api_helper"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
@@ -50,7 +50,7 @@ const CreatIncome = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"New Income"} pageTitle={"Incomes"} />
+                <BreadCrumb title={"Nueva Entrada"} pageTitle={"Entradas"} />
 
                 <Card className="rounded">
                     <CardBody>

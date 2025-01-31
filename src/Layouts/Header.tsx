@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Dropdown, DropdownMenu, DropdownToggle, Form } from 'reactstrap';
 
@@ -20,18 +20,23 @@ import LightDark from '../Components/Common/LightDark';
 import { changeSidebarVisibility } from '../slices/thunks';
 import { useSelector, useDispatch } from "react-redux";
 import { createSelector } from 'reselect';
+import Configuration from 'Components/Common/Configuration';
+import { ConfigContext } from 'App';
+import Logout from 'Components/Common/Logout';
+import { getLoggedinUser } from 'helpers/api_helper';
 
-const Header = ({ onChangeLayoutMode, layoutModeType, headerClass } : any) => {
-    const dispatch : any = useDispatch();
-
+const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
+    const dispatch: any = useDispatch();
+    const configContext = useContext(ConfigContext)
+    const userLogged = getLoggedinUser();
 
     const selectDashboardData = createSelector(
         (state) => state.Layout,
         (sidebarVisibilitytype) => sidebarVisibilitytype.sidebarVisibilitytype
-      );
+    );
     // Inside your component
     const sidebarVisibilitytype = useSelector(selectDashboardData);
-    
+
 
     const [search, setSearch] = useState<boolean>(false);
     const toogleSearch = () => {
@@ -82,19 +87,19 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass } : any) => {
                             <div className="navbar-brand-box horizontal-logo">
                                 <Link to="/" className="logo logo-dark">
                                     <span className="logo-sm">
-                                        <img src={logoSm} alt="" height="22" />
+                                        <img src={configContext?.logoUrl} alt="" height="22" />
                                     </span>
                                     <span className="logo-lg">
-                                        <img src={logoDark} alt="" height="17" />
+                                        <img src={configContext?.logoUrl} alt="" height="17" />
                                     </span>
                                 </Link>
 
                                 <Link to="/" className="logo logo-light">
                                     <span className="logo-sm">
-                                        <img src={logoSm} alt="" height="22" />
+                                        <img src={configContext?.logoUrl} alt="" height="22" />
                                     </span>
                                     <span className="logo-lg">
-                                        <img src={logoLight} alt="" height="17" />
+                                        <img src={configContext?.logoUrl} alt="" height="17" />
                                     </span>
                                 </Link>
                             </div>
@@ -112,7 +117,7 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass } : any) => {
                             </button>
 
 
-                            <SearchOption />
+                            {/* <SearchOption /> */}
                         </div>
 
                         <div className="d-flex align-items-center">
@@ -148,16 +153,21 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass } : any) => {
                             {/* <FullScreenDropdown /> */}
 
                             {/* Dark/Light Mode set */}
-                            {/* <LightDark
+                            <LightDark
                                 layoutMode={layoutModeType}
                                 onChangeLayoutMode={onChangeLayoutMode}
-                            /> */}
+                            />
+
+                            {userLogged?.role === "Superadmin" && <Configuration />}
+
+                            <Logout />
 
                             {/* NotificationDropdown */}
                             {/* <NotificationDropdown /> */}
 
                             {/* ProfileDropdown */}
                             {/*<ProfileDropdown /> */}
+
                         </div>
                     </div>
                 </div>

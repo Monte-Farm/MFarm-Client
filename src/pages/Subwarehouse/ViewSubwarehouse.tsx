@@ -1,8 +1,9 @@
+import { SubwarehouseData } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/BreadCrumb";
 import CustomTable from "Components/Common/CustomTable";
 import ObjectDetails from "Components/Common/ObjectDetails";
-import SubwarehouseForm, { SubwarehouseData } from "Components/Common/SubwarehouseForm";
-import { APIClient } from "helpers/api_helper";
+import SubwarehouseForm from "Components/Common/SubwarehouseForm";
+import { APIClient, getLoggedinUser } from "helpers/api_helper";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
@@ -14,6 +15,7 @@ const ViewSubwarehouse = () => {
     const axiosHelper = new APIClient();
     const history = useNavigate();
     const warehouseId = 'AG001'
+    const userLogged = getLoggedinUser();
 
     const columns = [
         { header: 'Código', accessor: 'id', isFilterable: true },
@@ -148,6 +150,10 @@ const ViewSubwarehouse = () => {
 
     useEffect(() => {
         handleFetchSubwarehouses()
+
+        if(userLogged.role === 'Encargado de subalmacen'){
+            history(`/subwarehouse/subwarehouse_details/${userLogged.assigment}`);
+        }
     }, [])
 
     return (
@@ -166,7 +172,7 @@ const ViewSubwarehouse = () => {
                         </div>
                     </CardHeader>
                     <CardBody>
-                        <CustomTable columns={columns} data={warehouses} defaultFilterField='name'></CustomTable>
+                        <CustomTable columns={columns} data={warehouses}></CustomTable>
                     </CardBody>
                 </Card>
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Card, Col, Container, Row } from "reactstrap";
 import loginImage from "../../assets/images/login_image.jpg";
 import LoginForm from "../../Components/Common/Login";
@@ -6,6 +6,7 @@ import axios, { AxiosError, AxiosResponse } from "axios";
 import { APIClient, getLoggedinUser, setAuthorization } from "helpers/api_helper";
 import { useNavigate } from "react-router-dom";
 import VelzonLogo from '../../assets/images/logo-dark.png'
+import { ConfigContext } from "App";
 
 
 const CoverSignIn = () => {
@@ -13,8 +14,9 @@ const CoverSignIn = () => {
     document.title = "Inicio de sesión | MFarm";
     const history = useNavigate();
     const axiosHelper = new APIClient();
+    const configContext = useContext(ConfigContext)
 
-    const handleLogin = async (values: { user_number: string; password: string }) => {
+    const handleLogin = async (values: { username: string; password: string }) => {
 
         await axios.post(`${apiUrl}/user/login`, values)
             .then(function (response: AxiosResponse) {
@@ -45,7 +47,12 @@ const CoverSignIn = () => {
                                             <div className="p-lg-5">
                                                 <div>
                                                     <div className="d-flex justify-content-center pb-5 pt-3">
-                                                        <img src={VelzonLogo} className="" alt="" />
+                                                        <img
+                                                            src={configContext?.logoUrl}
+                                                            style={{ maxWidth: '200px', maxHeight: '100px', width: 'auto', height: 'auto' }}
+                                                            alt="Logo"
+                                                        />
+
                                                     </div>
                                                     <h5 className="text-primary">Bienvenido!</h5>
                                                     <p className="text-muted">Inicie Sesión para continuar.</p>

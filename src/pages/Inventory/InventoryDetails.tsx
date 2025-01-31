@@ -6,9 +6,9 @@ import { APIClient } from "helpers/api_helper";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { Alert, Button, Card, CardBody, CardHeader, Col, Container, Label, Modal, ModalBody, ModalFooter, ModalHeader, Row, Spinner } from "reactstrap"
-import exampleImage from '../../assets/images/alimento.png'
-import ProductForm, { ProductData } from "Components/Common/ProductForm";
-import { SupplierData } from "Components/Common/SupplierForm";
+import ProductForm from "Components/Common/ProductForm";
+import noImageUrl from '../../assets/images/no-image.png'
+import { ProductData } from "common/data_interfaces";
 
 
 const displayAttributes = [
@@ -40,6 +40,7 @@ const ProductDetails = () => {
     const [lastPrice, setLastPrice] = useState<number>(0);
     const [averagePrice, setAveragePrice] = useState<string>('');
     const [productExistences, setProductExistences] = useState<string>('')
+    const [productImageUrl, setProductImageUrl] = useState<string>('')
 
     const [loading, setLoading] = useState<boolean>(true)
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -99,6 +100,20 @@ const ProductDetails = () => {
             .catch((error) => {
                 handleError(error, 'El servicio no esta disponible, intentelo más tarde');
             })
+    }
+
+    const handleFetchProductImage = async () => {
+        if (productDetails && productDetails.image) {
+            try {
+                const response = await axiosHelper.get(`${apiUrl}/google_drive/download_file/${productDetails.image}`, { responseType: 'blob' });
+                const imageUrl = URL.createObjectURL(response.data)
+                setProductImageUrl(imageUrl)
+            } catch (error) {
+                console.error('Ha ocurrido un error al obtener la imagen del producto')
+            }
+        } else {
+            setProductImageUrl(noImageUrl)
+        }
     }
 
     const handleFetchProductIncomes = async () => {
@@ -245,10 +260,14 @@ const ProductDetails = () => {
         handleFetchProductOutcomes();
     }, []);
 
+    useEffect(() => {
+        handleFetchProductImage();
+    }, [productDetails])
+
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title="Product Details" pageTitle="Inventory" />
+                <BreadCrumb title="Detalles de Producto" pageTitle="Inventario" />
 
                 <div className="d-flex gap-2">
                     <div className="flex-grow-1">
@@ -264,7 +283,7 @@ const ProductDetails = () => {
                         <Card className="h-100">
                             <CardBody>
                                 {productDetails && loading === false ? (
-                                    <ObjectDetails attributes={displayAttributes} object={productDetails} showImage={true} imageSrc={exampleImage} />
+                                    <ObjectDetails attributes={displayAttributes} object={productDetails} showImage={true} imageSrc={productImageUrl} />
                                 ) : null
                                 }
                             </CardBody>
@@ -315,7 +334,7 @@ const ProductDetails = () => {
                             <Card className="m-0 h-75">
                                 <CardHeader> <h4>Salidas</h4></CardHeader>
                                 <CardBody>
-                                    <CustomTable columns={outcomesColumns} data={productOutcomes} showSearchAndFilter={false} rowsPerPage={4}/>
+                                    <CustomTable columns={outcomesColumns} data={productOutcomes} showSearchAndFilter={false} rowsPerPage={4} />
                                 </CardBody>
                             </Card>
                         </div>

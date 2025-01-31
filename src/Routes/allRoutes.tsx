@@ -34,11 +34,20 @@ import Register from "../pages/Authentication/Register";
 import UserProfile from "../pages/Authentication/user-profile";
 import SupplierDetails from "pages/Suppliers/SupplierDetails";
 import IncomeDetails from "pages/Incomes/IncomeDetails";
-import CreateProduct from "pages/Inventory/CreateProduct";  
+import CreateProduct from "pages/Inventory/CreateProduct";
 import SubwarehouseDetails from "pages/Subwarehouse/SubwarehouseDetails";
 import ViewOutcomes from "pages/Outcomes/ViewOutcomes";
 import CreateOutcome from "pages/Outcomes/CreateOutcome";
 import OutcomeDetails from "pages/Outcomes/OutcomeDetails";
+
+//Configuration
+import ConfigurationPage from "pages/Configuration/ConfigurationPage";
+import path from "path";
+import CreateOrder from "pages/Orders/CreateOrder";
+import ViewUsers from "pages/Users/ViewUsers";
+import SendOrders from "pages/Orders/SendOrders";
+import OrderDetails from "pages/Orders/OrderDetails";
+import CompleteOrder from "pages/Orders/CompleteOrder";
 
 
 
@@ -76,8 +85,21 @@ const authProtectedRoutes = [
   { path: '/subwarehouse/view_subwarehouse', component: <ViewSubwarehouse /> },
   { path: '/subwarehouse/subwarehouse_details/:id_subwarehouse', component: <SubwarehouseDetails /> },
 
+  //Orders
+  { path: '/orders/create_order', component: <CreateOrder /> },
+  { path: '/orders/send_orders', component: <SendOrders /> },
+  { path: '/orders/order_details/:id_order', component: <OrderDetails /> },
+  { path: '/orders/complete_order/:id_order', component: <CompleteOrder /> },
+
+
+  //Users
+  { path: 'users/view_users', component: <ViewUsers /> },
+
   //User Profile
   { path: "/profile", component: <UserProfile /> },
+
+  //Configuration
+  { path: '/configuration', component: <ConfigurationPage /> },
 
   // this route should be at the end of all other routes
   // eslint-disable-next-line react/display-name

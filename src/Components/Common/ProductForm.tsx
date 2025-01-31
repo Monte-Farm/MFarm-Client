@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Button, Col, Row, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback } from "reactstrap";
 import * as Yup from "yup";
 import { useFormik } from "formik";
@@ -6,6 +6,8 @@ import axios, { AxiosHeaders } from "axios";
 import { APIClient } from "helpers/api_helper";
 import FileUploader from "./FileUploader";
 import { error } from "console";
+import { ProductData } from "common/data_interfaces";
+import { ConfigContext } from "App";
 
 const axiosHelper = new APIClient();
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -18,41 +20,13 @@ interface ProductFormProps {
     foldersArray?: string[]
 }
 
-export interface ProductData {
-    id: string;
-    name: string;
-    category: string;
-    description: string;
-    status: boolean;
-    unit_measurement: string;
-    image: string;
-}
-
-const categories = [
-    { label: "Alimentos", value: "Alimentos" },
-    { label: "Medicamentos", value: "Medicamentos" },
-    { label: "Suministros", value: "Suministros" },
-    { label: "Equipamiento", value: "Equipamiento" },
-];
-
-const unitMeasurements = [
-    "Galones",
-    "Litros",
-    "Frascos",
-    "Piezas",
-    "Kilos",
-    "Dosis",
-    "Paquetes",
-    "Cajas",
-    "Metros",
-];
-
 
 const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCancel, isCodeDisabled, foldersArray }) => {
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
     const [showErrorAlert, setShowErrorAlert] = useState(false);
     const [fileToUpload, setFileToUpload] = useState<File | null>(null)
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const configContext = useContext(ConfigContext)
 
     const validationSchema = Yup.object({
         id: Yup.string()
@@ -134,7 +108,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
 
             const imageUrl = URL.createObjectURL(response.data);
             setImagePreview(imageUrl);
-            console.log(imageUrl)
         } catch (error) {
             console.error('Error al recuperar la imagen: ', error);
         }
@@ -211,7 +184,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                         invalid={formik.touched.unit_measurement && !!formik.errors.unit_measurement}
                     >
                         <option value="">Seleccione una unidad</option>
-                        {unitMeasurements.map((unit) => (
+                        {configContext?.configurationData?.unitMeasurements.map((unit) => (
                             <option key={unit} value={unit}>
                                 {unit}
                             </option>
@@ -235,9 +208,9 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                         invalid={formik.touched.category && !!formik.errors.category}
                     >
                         <option value="">Seleccione una categoría</option>
-                        {categories.map((category) => (
-                            <option key={category.value} value={category.value}>
-                                {category.label}
+                        {configContext?.configurationData?.categories.map((category) => (
+                            <option key={category} value={category}>
+                                {category}
                             </option>
                         ))}
                     </Input>

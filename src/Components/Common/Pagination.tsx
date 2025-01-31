@@ -40,7 +40,7 @@ const Pagination: React.FC<PaginationProps> = ({
   }, [totalPages]);
 
   return (
-    <Row className="g-0 justify-content-end mb-4">
+    <Row className="g-0 justify-content-center mb-4">
       <div className="col-sm-auto">
         <ul className="pagination-block pagination pagination-separated justify-content-center justify-content-sm-end mb-sm-0">
           {/* Botón "Previous" */}

@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Button, Col, Row, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback } from "reactstrap";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import { APIClient } from "helpers/api_helper";
+import { SupplierData } from "common/data_interfaces";
+import { ConfigContext } from "App";
 
 const axiosHelper = new APIClient();
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -14,34 +16,17 @@ interface SupplierFormProps {
   isCodeDisabled?: boolean
 }
 
-export interface SupplierData {
-  id: string;
-  name: string;
-  address: string;
-  phone_number: string;
-  email: string;
-  supplier_type: string;
-  status: boolean;
-  rnc: string;
-}
-
-const supplierTypes = [
-  { label: "Alimentos", value: "Alimentos" },
-  { label: "Medicamentos", value: "Medicamentos" },
-  { label: "Suministros", value: "Suministros" },
-  { label: "Equipamiento", value: "Equipamiento" },
-];
-
 const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCancel, isCodeDisabled }) => {
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [showErrorAlert, setShowErrorAlert] = useState(false);
+  const configContext = useContext(ConfigContext)
 
   const validationSchema = Yup.object({
     id: Yup.string()
       .required("Por favor, ingrese el código")
       .test('unique_id', 'Este identificador ya existe, por favor ingrese otro', async (value) => {
         if (initialData) return true
-        if (!value) return false 
+        if (!value) return false
         try {
           const result = await axiosHelper.get(`${apiUrl}/supplier/supplier_id_exists/${value}`)
           return !result.data.data
@@ -87,6 +72,21 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCa
       }
     },
   });
+
+  const fetchNextId = async () => {
+    await axiosHelper.get(`${apiUrl}/supplier/supplier_next_id`)
+      .then((response) => {
+        const nextId = response.data.data;
+        formik.setFieldValue('id', nextId)
+      })
+      .catch((error) => {
+        console.error('Ha ocurrido un error al obtener el id')
+      })
+  }
+
+  useEffect(() => {
+    fetchNextId();
+  }, [])
 
   return (
     <>
@@ -194,9 +194,9 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCa
               invalid={formik.touched.supplier_type && !!formik.errors.supplier_type}
             >
               <option value="">Seleccione un tipo</option>
-              {supplierTypes.map((type) => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
+              {configContext?.configurationData?.categories.map((value) => (
+                <option key={value} value={value}>
+                  {value}
                 </option>
               ))}
             </Input>

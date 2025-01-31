@@ -1,7 +1,7 @@
+import { OutcomeData } from "common/data_interfaces"
 import BreadCrumb from "Components/Common/BreadCrumb"
 import CustomTable from "Components/Common/CustomTable"
 import ObjectDetails from "Components/Common/ObjectDetails"
-import { OutcomeData } from "Components/Common/OutcomeForm"
 import { APIClient } from "helpers/api_helper"
 import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"

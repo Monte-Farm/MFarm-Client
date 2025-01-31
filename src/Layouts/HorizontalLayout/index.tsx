@@ -8,11 +8,30 @@ import withRouter from '../../Components/Common/withRouter';
 import navdata from "../LayoutMenuData";
 //i18n
 import { withTranslation } from "react-i18next";
+import { getLoggedinUser } from 'helpers/api_helper';
 
 const HorizontalLayout = (props : any) => {
     const [isMoreMenu, setIsMoreMenu] = useState<boolean>(false);
     const navData = navdata().props.children;
     let menuItems: any[] = [];
+    const userLogged = getLoggedinUser();
+
+    const filterMenuItems = (items: any[]) => {
+        return items.filter((item: any) => {
+            // Si el ítem no tiene roles definidos o el rol del usuario está en la lista, se incluye
+            if (!item.roles || item.roles.includes(userLogged.role)) {
+                if (item.subItems) {
+                    // Filtrar subitems también
+                    item.subItems = filterMenuItems(item.subItems);
+                }
+                return true;
+            }
+            return false;
+        });
+    };
+
+    const visibleMenuItems = filterMenuItems(navData);
+
     let splitMenuItems : Array<any> = [];
     let menuSplitContainer = 6;
     navData.forEach(function (value : any, key : number) {
@@ -102,7 +121,7 @@ const HorizontalLayout = (props : any) => {
 
     return (
         <React.Fragment>
-            {(menuItems || []).map((item  :any, key : number) => {
+            {(visibleMenuItems || []).map((item  :any, key : number) => {
                 return (
                     <React.Fragment key={key}>
                         {/* Main Header */}

@@ -1,6 +1,6 @@
+import { SupplierData } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/BreadCrumb";
 import CustomTable from "Components/Common/CustomTable";
-import { IncomeData } from "Components/Common/IncomeForm";
 import ObjectDetails from "Components/Common/ObjectDetails";
 import SupplierForm from "Components/Common/SupplierForm";
 import { APIClient } from "helpers/api_helper";
@@ -18,18 +18,6 @@ const supplierAttributes = [
     { key: 'rnc', label: 'RNC' },
     { key: 'status', label: 'Estado' }
 ];
-
-export interface SupplierData {
-    id: string;
-    name: string;
-    address: string;
-    phone_number: string;
-    email: string;
-    supplier_type: string;
-    status: boolean;
-    rnc: string;
-}
-
 
 const SupplierDetails = () => {
     document.title = 'Supplier details | Suppliers';
@@ -174,7 +162,7 @@ const SupplierDetails = () => {
                             <CardHeader><h4>Historial de Altas | Compras</h4></CardHeader>
                             <CardBody>
                                 {supplierIncomes && (
-                                    <CustomTable columns={incomesColumns} data={supplierIncomes} showSearchAndFilter={true} defaultFilterField='supplier' rowClickable={false} rowsPerPage={15} />
+                                    <CustomTable columns={incomesColumns} data={supplierIncomes} showSearchAndFilter={true} rowClickable={false} rowsPerPage={15} />
                                 )}
                             </CardBody>
                         </Card>

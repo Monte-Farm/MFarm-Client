@@ -4,9 +4,9 @@ import { APIClient } from "helpers/api_helper";
 import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
-import { SupplierData } from "./SupplierDetails";
 import { size } from "lodash";
 import SupplierForm from "Components/Common/SupplierForm";
+import { SupplierData } from "common/data_interfaces";
 
 
 
@@ -176,7 +176,7 @@ const Suppliers = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb pageTitle="Suppliers" title="View Suppliers" ></BreadCrumb>
+                <BreadCrumb pageTitle="Ver Proveedores" title="Proveedores" ></BreadCrumb>
 
                 <Card className="rounded" style={{height: '75vh'}}>
                     <CardHeader>
@@ -191,7 +191,7 @@ const Suppliers = () => {
 
                     </CardHeader>
                     <CardBody>
-                        <CustomTable columns={supplierColumn} data={suppliersData} showSearchAndFilter={true} defaultFilterField='name' />
+                        <CustomTable columns={supplierColumn} data={suppliersData} showSearchAndFilter={true} />
                     </CardBody>
                 </Card>
 
