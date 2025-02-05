@@ -1,8 +1,9 @@
 import { ConfigContext } from "App"
-import { OutcomeData } from "common/data_interfaces"
+import { OutcomeData, SubwarehouseData } from "common/data_interfaces"
 import BreadCrumb from "Components/Common/BreadCrumb"
 import CustomTable from "Components/Common/CustomTable"
 import ObjectDetails from "Components/Common/ObjectDetails"
+import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal"
 import { useContext, useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { Alert, Button, Card, CardBody, CardHeader, Col, Container, Row } from "reactstrap"
@@ -10,15 +11,8 @@ import { Alert, Button, Card, CardBody, CardHeader, Col, Container, Row } from "
 const outcomeAttributes = [
     { key: 'id', label: 'Identificador' },
     { key: 'date', label: 'Fecha' },
-    { key: 'warehouseOrigin', label: 'Almacén de salida' },
+    { key: 'warehouseDestiny', label: 'Almacén de destino' },
     { key: 'outcomeType', label: 'Motivo de salida' },
-]
-
-const warehouseDestinyAttributes = [
-    { key: 'id', label: 'Identificador' },
-    { key: 'name', label: 'Nombre' },
-    { key: 'manager', label: 'Responsable' },
-    { key: 'location', label: 'Ubicación' },
 ]
 
 const OutcomeDetails = () => {
@@ -28,8 +22,9 @@ const OutcomeDetails = () => {
     const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const [outcome, setOutcome] = useState<OutcomeData>();
-    const [warehouseDestiny, setWarehouseDestiny] = useState({})
-    const [productsOutcome, setProductsOutcome] = useState([])
+    const [warehouseDestiny, setWarehouseDestiny] = useState<SubwarehouseData>();
+    const [productsOutcome, setProductsOutcome] = useState([]);
+    const [outcomeDisplay, setOutcomeDisplay] = useState({});
 
     const productColumns = [
         { header: 'Código', accessor: 'id' },
@@ -102,6 +97,8 @@ const OutcomeDetails = () => {
         if (outcome) {
             handleFetchWarehouseDestiny();
             handleFetchOutcomeProducts();
+
+            setOutcomeDisplay({...outcome, warehouseDestiny: warehouseDestiny?.name})
         }
     }, [outcome])
 
@@ -117,41 +114,25 @@ const OutcomeDetails = () => {
                     </Button>
                 </div>
 
-                <Row className="d-flex mt-3" style={{ alignItems: 'stretch', height: '75vh' }}>
-                    <Col lg={4}>
-                        <div className="d-flex flex-column gap-3 h-100">
-                            <Card className="m-0 h-50">
-                                <CardHeader>
-                                    <h4>Detalles de Salida</h4>
-                                </CardHeader>
-                                <CardBody>
-                                    <ObjectDetails attributes={outcomeAttributes} object={outcome || {}} />
-                                </CardBody>
-                            </Card>
+                <div className="d-flex-column gap-3 mt-4">
+                    <Card className="">
+                        <CardHeader>
+                            <h4>Detalles de Salida</h4>
+                        </CardHeader>
+                        <CardBody>
+                            <ObjectDetailsHorizontal attributes={outcomeAttributes} object={outcomeDisplay || {}} />
+                        </CardBody>
+                    </Card>
 
-                            <Card className="m-0 h-50">
-                                <CardHeader>
-                                    <h4>Almacén de destino</h4>
-                                </CardHeader>
-                                <CardBody>
-                                    <ObjectDetails attributes={warehouseDestinyAttributes} object={warehouseDestiny} />
-                                </CardBody>
-                            </Card>
-                        </div>
-
-                    </Col>
-
-                    <Col lg={8}>
-                        <Card className="h-100">
-                            <CardHeader>
-                                <h4>Productos</h4>
-                            </CardHeader>
-                            <CardBody>
-                                <CustomTable columns={productColumns} data={productsOutcome} />
-                            </CardBody>
-                        </Card>
-                    </Col>
-                </Row>
+                    <Card className="h-100">
+                        <CardHeader>
+                            <h4>Productos</h4>
+                        </CardHeader>
+                        <CardBody>
+                            <CustomTable columns={productColumns} data={productsOutcome} />
+                        </CardBody>
+                    </Card>
+                </div>
 
                 {alertConfig.visible && (
                     <Alert color={alertConfig.color} className="position-fixed bottom-0 start-50 translate-middle-x p-3">

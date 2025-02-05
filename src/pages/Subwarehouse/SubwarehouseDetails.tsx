@@ -3,6 +3,7 @@ import { SubwarehouseData } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/BreadCrumb";
 import CustomTable from "Components/Common/CustomTable";
 import ObjectDetails from "Components/Common/ObjectDetails";
+import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button, Card, CardBody, CardHeader, Col, Container, Row } from "reactstrap";
@@ -175,32 +176,26 @@ const SubwarehouseDetails = () => {
                     </div>
                 </div>
 
-                <div className="mt-3">
-                    <Row className="d-flex" style={{ alignItems: 'stretch', height: '60vh   ' }}>
-                        <Col lg={4}>
-                            <Card className="h-100">
-                                <CardHeader>
-                                    <h4>Información de Subalmacén</h4>
-                                </CardHeader>
-                                <CardBody>
-                                    {subwarehouseDetails && (
-                                        <ObjectDetails attributes={subwarehouseAttributes} object={subwarehouseDetails} />
-                                    )}
-                                </CardBody>
-                            </Card>
-                        </Col>
+                <div className="d-flex-column gap-3 mt-4">
+                    <Card className="h-100">
+                        <CardHeader>
+                            <h4>Información de Subalmacén</h4>
+                        </CardHeader>
+                        <CardBody>
+                            {subwarehouseDetails && (
+                                <ObjectDetailsHorizontal attributes={subwarehouseAttributes} object={subwarehouseDetails} />
+                            )}
+                        </CardBody>
+                    </Card>
 
-                        <Col lg={8}>
-                            <Card className="h-100">
-                                <CardHeader>
-                                    <h4>Inventario</h4>
-                                </CardHeader>
-                                <CardBody>
-                                    <CustomTable columns={inventoryColumns} data={subwarehouseInventory} />
-                                </CardBody>
-                            </Card>
-                        </Col>
-                    </Row>
+                    <Card className="h-100">
+                        <CardHeader>
+                            <h4>Inventario</h4>
+                        </CardHeader>
+                        <CardBody>
+                            <CustomTable columns={inventoryColumns} data={subwarehouseInventory} />
+                        </CardBody>
+                    </Card>
                 </div>
 
                 <div className=" mt-4">

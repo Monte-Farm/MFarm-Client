@@ -235,10 +235,10 @@ const CompleteOrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, on
                 <div className="border"></div>
 
                 <div className="mt-3 border border-0">
-                    <OrderTable data={products} onProductSelect={(selectedProducts: any) => handleProductSelect(selectedProducts)}></OrderTable>
+                    <OrderTable data={products} onProductSelect={(selectedProducts: any) => handleProductSelect(selectedProducts)} fixedColumnNames={true}/>
                 </div>
 
-                <div className='d-flex justify-content-end mt-4 gap-2'>
+                <div className='d-flex justify-content-end mt-5 gap-2'>
                     <Button color='danger' disabled={formik.isSubmitting} onClick={() => toggleModal('cancel')}>
                         Cancelar
                     </Button>

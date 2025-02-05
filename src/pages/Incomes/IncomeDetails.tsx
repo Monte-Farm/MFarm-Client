@@ -3,6 +3,7 @@ import { IncomeData } from "common/data_interfaces"
 import BreadCrumb from "Components/Common/BreadCrumb"
 import CustomTable from "Components/Common/CustomTable"
 import ObjectDetails from "Components/Common/ObjectDetails"
+import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal"
 import { APIClient } from "helpers/api_helper"
 import { useContext, useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
@@ -62,7 +63,7 @@ const IncomeDetails = () => {
 
     const handleFetchIncome = async () => {
         if (!configContext) return;
-    
+
         try {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/incomes/find_incomes_id/${id_income}`);
             const incomeFound = response.data.data;
@@ -71,31 +72,31 @@ const IncomeDetails = () => {
             handleError(error, 'El servicio no esta disponible, intentelo más tarde');
         }
     };
-    
+
 
     const handleFetchIncomeDisplay = async () => {
         if (!configContext) return;
-    
+
         try {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/incomes/income_display_details/${id_income}`);
             const incomeFound = response.data.data;
-    
+
             if (incomeFound.origin.originType === 'supplier') {
                 incomeAttributes[4].label = 'Proveedor';
             } else {
                 incomeAttributes[4].label = 'Almacén de origen';
             }
-    
+
             setIncomeDisplay(incomeFound);
         } catch (error) {
             handleError(error, 'Ha ocurrido un error al obtener los datos de la entrada, intentelo más tarde');
         }
     };
-    
+
 
     const handleFetchIncomeProducts = async () => {
         if (!configContext || !incomeDetails) return;
-    
+
         try {
             const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/product/find_products_by_array`, incomeDetails?.products);
             setProductsIncome(response.data.data);
@@ -103,7 +104,7 @@ const IncomeDetails = () => {
             handleError(error, 'El servicio no esta disponible, intentelo más tarde');
         }
     };
-    
+
 
     const handleClicProductDetails = (row: any) => {
         history(`/warehouse/inventory/product_details?warehouse=${incomeDetails?.warehouse}&product=${row.id}`)
@@ -139,45 +140,40 @@ const IncomeDetails = () => {
                     </Button>
                 </div>
 
-                <Row className="d-flex" style={{ alignItems: 'stretch', height: '60vh   ' }}>
-                    <Col lg={4} className="d-flex">
-                        <Card className="w-100 h-100">
-                            <CardHeader>
-                                <h4>Detalles</h4>
-                            </CardHeader>
-                            <CardBody>
-                                {incomeDetails && (
-                                    <ObjectDetails attributes={incomeAttributes} object={incomeDisplay}></ObjectDetails>
-                                )}
-                            </CardBody>
-                        </Card>
-                    </Col>
+                <div className="d-flex-column gap-3">
+                    <Card className="w-100 h-100">
+                        <CardHeader>
+                            <h4>Detalles</h4>
+                        </CardHeader>
+                        <CardBody>
+                            {incomeDetails && (
+                                <ObjectDetailsHorizontal attributes={incomeAttributes} object={incomeDisplay} />
+                            )}
+                        </CardBody>
+                    </Card>
 
-                    <Col lg={8} className="d-flex">
-                        <Card className="w-100 h-100">
-                            <CardHeader>
-                                <h4>Productos</h4>
-                            </CardHeader>
-                            <CardBody>
-                                <CustomTable columns={productColumns} data={productsIncome} rowClickable={false} />
-                            </CardBody>
-                        </Card>
-                    </Col>
-                </Row>
+                    <Card className="w-100 h-100">
+                        <CardHeader>
+                            <h4>Productos</h4>
+                        </CardHeader>
+                        <CardBody>
+                            <CustomTable columns={productColumns} data={productsIncome} rowClickable={false}/>
+                        </CardBody>
+                    </Card>
 
-                {/* Tarjeta de abajo se empuja hacia abajo */}
-                <Card className="mt-4">
-                    <CardHeader className="d-flex">
-                        <h4>Archivos Adjuntos</h4>
-                        <Button className="ms-auto">
-                            <i className="ri-download-line me-2"></i>
-                            Descargar Archivos
-                        </Button>
-                    </CardHeader>
-                    <CardBody>
-                        No hay archivos adjuntos
-                    </CardBody>
-                </Card>
+                    <Card className="mt-4">
+                        <CardHeader className="d-flex">
+                            <h4>Archivos Adjuntos</h4>
+                            <Button className="ms-auto">
+                                <i className="ri-download-line me-2"></i>
+                                Descargar Archivos
+                            </Button>
+                        </CardHeader>
+                        <CardBody>
+                            No hay archivos adjuntos
+                        </CardBody>
+                    </Card>
+                </div>
 
                 {alertConfig.visible && (
                     <Alert color={alertConfig.color} className="position-fixed bottom-0 start-50 translate-middle-x p-3">

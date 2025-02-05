@@ -2,7 +2,7 @@ import { ConfigContext } from "App"
 import { OrderData } from "common/data_interfaces"
 import BreadCrumb from "Components/Common/BreadCrumb"
 import CustomTable from "Components/Common/CustomTable"
-import ObjectDetails from "Components/Common/ObjectDetails"
+import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal"
 import { useContext, useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { Button, Card, CardBody, CardHeader, Col, Container, Row, Spinner } from "reactstrap"
@@ -12,7 +12,6 @@ const orderAttributes = [
     { key: 'date', label: 'Fecha de pedido' },
     { key: 'user', label: 'Usuario' },
     { key: 'orderDestiny', label: 'Almacén de destino' },
-    { key: 'orderOrigin', label: 'Almacén de origen' },
     { key: 'status', label: 'Estado' }
 ]
 
@@ -43,9 +42,8 @@ const OrderDetails = () => {
             const orderData: OrderData = response.data.data;
             setOrderDetails(orderData);
 
-            const [userResponse, originResponse, destinyResponse, productsResponse] = await Promise.all([
+            const [userResponse, destinyResponse, productsResponse] = await Promise.all([
                 configContext.axiosHelper.get(`${configContext.apiUrl}/user/find_by_id/${orderData.user}`),
-                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_id/${orderData.orderOrigin}`),
                 configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_id/${orderData.orderDestiny}`),
                 configContext.axiosHelper.create(`${configContext.apiUrl}/product/find_products_by_array`, orderData.productsRequested)
             ]);
@@ -53,7 +51,6 @@ const OrderDetails = () => {
             setOrderDisplay({
                 ...orderData,
                 user: `${userResponse.data.data.name} ${userResponse.data.data.lastname}`,
-                orderOrigin: originResponse.data.data.name,
                 orderDestiny: destinyResponse.data.data.name,
             });
 
@@ -85,29 +82,26 @@ const OrderDetails = () => {
                         <Spinner color="primary" />
                     </div>
                 ) : (
-                    <Row className="d-flex mt-4" style={{ alignItems: 'stretch', height: '60vh' }}>
-                        <Col lg={4} className="d-flex">
-                            <Card className="w-100 h-100">
-                                <CardHeader>
-                                    <h4>Detalles</h4>
-                                </CardHeader>
-                                <CardBody>
-                                    {orderDisplay && <ObjectDetails attributes={orderAttributes} object={orderDisplay} />}
-                                </CardBody>
-                            </Card>
-                        </Col>
 
-                        <Col lg={8} className="d-flex">
-                            <Card className="w-100 h-100">
-                                <CardHeader>
-                                    <h4>Productos</h4>
-                                </CardHeader>
-                                <CardBody>
-                                    <CustomTable columns={productsColumns} data={products} rowClickable={false} />
-                                </CardBody>
-                            </Card>
-                        </Col>
-                    </Row>
+                    <div className="d-flex-column gap-2 mt-3">
+                        <Card className="w-100 h-100">
+                            <CardHeader>
+                                <h4>Detalles del Pedido</h4>
+                            </CardHeader>
+                            <CardBody>
+                                {orderDisplay && <ObjectDetailsHorizontal attributes={orderAttributes} object={orderDisplay} />}
+                            </CardBody>
+                        </Card>
+
+                        <Card className="w-100 h-100">
+                            <CardHeader>
+                                <h4>Productos</h4>
+                            </CardHeader>
+                            <CardBody>
+                                <CustomTable columns={productsColumns} data={products} rowClickable={false} />
+                            </CardBody>
+                        </Card>
+                    </div>
                 )}
             </Container>
         </div>

@@ -21,13 +21,15 @@ const Pagination: React.FC<PaginationProps> = ({
   const totalPages = Math.ceil(data.length / perPageData);
   const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 
-  const handlePrevPage = () => {
+  const handlePrevPage = (e: React.MouseEvent) => {
+    e.preventDefault();
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
     }
   };
 
-  const handleNextPage = () => {
+  const handleNextPage = (e: React.MouseEvent) => {
+    e.preventDefault();
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
     }

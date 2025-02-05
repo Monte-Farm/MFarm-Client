@@ -6,7 +6,7 @@ type Column<T> = {
   header: string;
   accessor: keyof T;
   render?: (value: any, row: T) => React.ReactNode;
-  isFilterable?: boolean; // Nuevo campo para indicar si la columna es filtrable
+  isFilterable?: boolean;
 };
 
 type CustomTableProps<T> = {
@@ -32,12 +32,12 @@ const CustomTable = <T,>({
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [filteredData, setFilteredData] = useState<T[]>(data);
 
-  // Filtrar datos según texto de búsqueda
+
   useEffect(() => {
     const result = data.filter((row) => {
       if (!filterText) return true;
 
-      // Buscar en columnas marcadas como filtrables
+
       return columns.some((col) => {
         if (col.isFilterable) {
           const cellValue = row[col.accessor];
@@ -48,7 +48,7 @@ const CustomTable = <T,>({
     });
 
     setFilteredData(result);
-    setCurrentPage(1); // Reinicia a la primera página al filtrar
+    setCurrentPage(1);
   }, [filterText, columns, data]);
 
   // Datos paginados según la página actual
@@ -73,7 +73,7 @@ const CustomTable = <T,>({
 
       {/* Tabla */}
       <div className="table-responsive mt-3">
-        <Table className={`table-hover align-middle table-nowrap mb-0 ${className}`}>
+        <Table className={`table-hover align-middle table-nowrap mb-0 ${className} fs-5`}>
           <thead className="table-light">
             <tr>
               {columns.map((col, index) => (
