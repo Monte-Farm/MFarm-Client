@@ -91,7 +91,7 @@ const ViewSubwarehouse = () => {
 
     const handleFetchSubwarehouses = async () => {
         if (!configContext) return;
-
+    
         try {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/`);
             const warehouses = response.data.data;
@@ -102,57 +102,57 @@ const ViewSubwarehouse = () => {
             handleError(error, 'El servicio no esta disponible, intentelo más tarde');
         }
     };
-
+    
 
     const handleCreateSubwarehouse = async (data: SubwarehouseData) => {
-        if (!configContext) return;
+    if (!configContext) return;
 
-        try {
-            await configContext.axiosHelper.create(`${configContext.apiUrl}/warehouse/create_warehouse`, data);
-            showAlert('success', 'Subalmacén agregado con éxito');
-            handleFetchSubwarehouses();
-        } catch (error) {
-            handleError(error, 'Ha ocurrido un error agregando el subalmacén, intentelo más tarde');
-        } finally {
-            toggleModal('create', false);
-        }
-    };
-
-
-    const handleUpdateSubwarehouse = async (data: SubwarehouseData) => {
-        if (!configContext) return;
-
-        try {
-            await configContext.axiosHelper.put(`${configContext.apiUrl}/warehouse/update_warehouse/${data.id}`, data);
-            showAlert('success', 'Subalmacén actualizado con éxito');
-            handleFetchSubwarehouses();
-        } catch (error) {
-            handleError(error, 'El servicio no esta disponible, intentelo más tarde');
-        } finally {
-            toggleModal('update', false);
-        }
-    };
+    try {
+        await configContext.axiosHelper.create(`${configContext.apiUrl}/warehouse/create_warehouse`, data);
+        showAlert('success', 'Subalmacén agregado con éxito');
+        handleFetchSubwarehouses();
+    } catch (error) {
+        handleError(error, 'Ha ocurrido un error agregando el subalmacén, intentelo más tarde');
+    } finally {
+        toggleModal('create', false);
+    }
+};
 
 
-    const handleDeleteSubwarehouse = async (subwarehouse_id: string) => {
-        if (!configContext) return;
+const handleUpdateSubwarehouse = async (data: SubwarehouseData) => {
+    if (!configContext) return;
 
-        try {
-            await configContext.axiosHelper.delete(`${configContext.apiUrl}/warehouse/delete_warehouse/${subwarehouse_id}`);
-            showAlert('success', 'Subalmacén desactivado con éxito');
-            handleFetchSubwarehouses();
-        } catch (error) {
-            handleError(error, 'El servicio no esta disponible, intentelo más tarde');
-        } finally {
-            toggleModal('delete', false);
-        }
-    };
+    try {
+        await configContext.axiosHelper.put(`${configContext.apiUrl}/warehouse/update_warehouse/${data.id}`, data);
+        showAlert('success', 'Subalmacén actualizado con éxito');
+        handleFetchSubwarehouses();
+    } catch (error) {
+        handleError(error, 'El servicio no esta disponible, intentelo más tarde');
+    } finally {
+        toggleModal('update', false);
+    }
+};
+
+
+const handleDeleteSubwarehouse = async (subwarehouse_id: string) => {
+    if (!configContext) return;
+
+    try {
+        await configContext.axiosHelper.delete(`${configContext.apiUrl}/warehouse/delete_warehouse/${subwarehouse_id}`);
+        showAlert('success', 'Subalmacén desactivado con éxito');
+        handleFetchSubwarehouses();
+    } catch (error) {
+        handleError(error, 'El servicio no esta disponible, intentelo más tarde');
+    } finally {
+        toggleModal('delete', false);
+    }
+};
 
     useEffect(() => {
-        handleFetchSubwarehouses()
-
-        if (configContext?.userLogged.role === 'Encargado de subalmacen') {
+        if(configContext?.userLogged.role === 'Encargado de subalmacen'){
             history(`/subwarehouse/subwarehouse_details/${configContext?.userLogged.assigment}`);
+        } else {
+            handleFetchSubwarehouses()
         }
     }, [])
 

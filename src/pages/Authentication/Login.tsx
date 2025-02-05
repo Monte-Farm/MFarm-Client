@@ -19,6 +19,7 @@ const CoverSignIn = () => {
         await axios.post(`${configContext?.apiUrl}/user/login`, values)
             .then(function (response: AxiosResponse) {
                 sessionStorage.setItem('authUser', JSON.stringify(response.data.data))
+                configContext?.setUserLogged(getLoggedinUser())
                 history('/home')
             })
             .catch(function (error: AxiosError) {

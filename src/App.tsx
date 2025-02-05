@@ -17,6 +17,7 @@ export const ConfigContext = React.createContext<{
   apiUrl: string
   axiosHelper: APIClient
   userLogged: any
+  setUserLogged: any
 } | null>(null);
 
 function App() {
@@ -24,9 +25,9 @@ function App() {
   const [configurationData, setConfigurationData] = useState<ConfigurationData | null>(null)
   const [logoUrl, setLogoUrl] = useState<string>('')
   const [iconUrl, setIconUrl] = useState<string>('')
+  const [userLogged, setUserLogged] = useState()
   const apiUrl = process.env.REACT_APP_API_URL || '';
   const axiosHelper = useMemo(() => new APIClient(), []);
-  const userLogged = getLoggedinUser();
 
   const getConfigurationData = async () => {
     await axiosHelper.get(`${apiUrl}/configurations/get_configurations`)
@@ -69,7 +70,7 @@ function App() {
   }, [configurationData])
 
   return (
-    <ConfigContext.Provider value={{ configurationData, setConfigurationData, logoUrl, iconUrl, apiUrl, axiosHelper, userLogged }}>
+    <ConfigContext.Provider value={{ configurationData, setConfigurationData, logoUrl, iconUrl, apiUrl, axiosHelper, userLogged, setUserLogged }}>
       <React.Fragment>
         <Route />
       </React.Fragment>

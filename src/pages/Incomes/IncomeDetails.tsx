@@ -37,7 +37,6 @@ const IncomeDetails = () => {
         { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true, },
         { header: 'Precio Unitario', accessor: 'price' },
         { header: 'Categoría', accessor: 'category', isFilterable: true, },
-        { header: 'Descripción', accessor: 'description', isFilterable: true },
         {
             header: "Acciones",
             accessor: "action",

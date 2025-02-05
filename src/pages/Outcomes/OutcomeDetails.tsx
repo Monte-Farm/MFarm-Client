@@ -38,7 +38,6 @@ const OutcomeDetails = () => {
         { header: 'Unidad de Medida', accessor: 'unit_measurement' },
         { header: 'Precio Promedio (Unidad)', accessor: 'price' },
         { header: 'Categoría', accessor: 'category' },
-        { header: 'Descripción', accessor: 'description' },
     ]
 
 

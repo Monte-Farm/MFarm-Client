@@ -22,7 +22,6 @@ const ViewInventory = () => {
     { header: 'Existencias', accessor: 'quantity', isFilterable: true },
     { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true, },
     { header: 'Categoría', accessor: 'category', isFilterable: true, },
-    { header: "Descripción", accessor: "description", isFilterable: true },
     {
       header: "Acciones",
       accessor: "action",
@@ -87,7 +86,7 @@ const ViewInventory = () => {
       <Container fluid>
         <BreadCrumb title="Inventario" pageTitle="Almacén General" />
 
-        <Card className="rounded" style={{ height: '75vh' }}>
+        <Card className="rounded" style={{ minHeight: '75vh' }}>
           <CardHeader>
             <div className="d-flex justify-content-between">
               <h4 className="m-2">Productos</h4>
