@@ -9,9 +9,6 @@ import { ConfigurationData, Tax } from "common/data_interfaces";
 import { ConfigContext } from "App";
 
 const SystemConfiguration = () => {
-    const apiUrl = process.env.REACT_APP_API_URL;
-    const axiosHelper = new APIClient();
-
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [configuration, setConfiguration] = useState<ConfigurationData | null>(null);
     const [systemLogo, setSystemLogo] = useState<File | null>(null);
@@ -65,73 +62,69 @@ const SystemConfiguration = () => {
     }
 
     const handleFetchConfiguration = async () => {
-        await axiosHelper
-            .get(`${apiUrl}/configurations/get_configurations`)
-            .then((response) => {
-                setConfiguration(response.data.data);
-                formik.setValues(response.data.data);
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error al recuperar las configuraciones, intentelo más tarde')
-            });
+        if (!configContext) return;
+
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/configurations/get_configurations`);
+            setConfiguration(response.data.data);
+            formik.setValues(response.data.data);
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al recuperar las configuraciones, intentelo más tarde');
+        }
     };
 
+
     const handleCreateFolder = async (): Promise<string> => {
-        let idFolder: string = ''
-        const folders = [
-            'Configuration'
-        ]
+        if (!configContext) return '';
 
-        await axiosHelper.create(`${apiUrl}/google_drive/create_folders`, folders)
-            .then((response) => {
-                idFolder = response.data.data
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error al guardar los datos, intentelo más tarde')
-            })
+        try {
+            const folders = ['Configuration'];
+            const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/google_drive/create_folders`, folders);
+            return response.data.data;
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al guardar los datos, intentelo más tarde');
+            return '';
+        }
+    };
 
-        return idFolder
-    }
 
     const handleUploadLogo = async (folderId: string) => {
-        if (systemLogo) {
-            await axiosHelper.uploadImage(`${apiUrl}/google_drive/upload_file/${folderId}`, systemLogo)
-                .then((response) => {
-                    const idImage = response.data.data;
-                    formik.values.farmLogo = idImage
-                })
-                .catch((error) => {
-                    handleError(error, 'Ha ocurrido un error al guardar los datos, intentelo más tarde')
-                })
+        if (!configContext || !systemLogo) return;
+
+        try {
+            const response = await configContext.axiosHelper.uploadImage(`${configContext.apiUrl}/google_drive/upload_file/${folderId}`, systemLogo);
+            formik.values.farmLogo = response.data.data;
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al guardar los datos, intentelo más tarde');
         }
-    }
+    };
+
 
     const handleUploadIcon = async (folderId: string) => {
-        if (systemIcon) {
-            await axiosHelper.uploadImage(`${apiUrl}/google_drive/upload_file/${folderId}`, systemIcon)
-                .then((response) => {
-                    const idImage = response.data.data;
-                    formik.values.farmIcon = idImage
-                })
-                .catch((error) => {
-                    handleError(error, 'Ha ocurrido un error al guardar los datos, intentelo más tarde')
-                })
+        if (!configContext || !systemIcon) return;
+
+        try {
+            const response = await configContext.axiosHelper.uploadImage(`${configContext.apiUrl}/google_drive/upload_file/${folderId}`, systemIcon);
+            formik.values.farmIcon = response.data.data;
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al guardar los datos, intentelo más tarde');
         }
-    }
+    };
+
 
     const handleSaveConfiguration = async (data: ConfigurationData) => {
-        await axiosHelper.put(`${apiUrl}/configurations/update_configurations`, data)
-            .then((resonse) => {
-                configContext?.setConfigurationData(data)
-                setAlertConfig({ visible: true, color: 'success', message: 'Configuraciones guardadas con éxito' })
-                setTimeout(() => {
-                    setAlertConfig({ ...alertConfig, visible: false })
-                }, 5000);
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error al guardar las configuraciones, intentelo más tarde')
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            await configContext.axiosHelper.put(`${configContext.apiUrl}/configurations/update_configurations`, data);
+            configContext.setConfigurationData(data);
+            setAlertConfig({ visible: true, color: 'success', message: 'Configuraciones guardadas con éxito' });
+            setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al guardar las configuraciones, intentelo más tarde');
+        }
+    };
+
 
     const handleFormChange = (name: string, newValues: string[]) => {
         formik.setFieldValue(name, newValues);
@@ -147,7 +140,13 @@ const SystemConfiguration = () => {
 
     return (
         <form onSubmit={formik.handleSubmit}> {/* Envolver en un formulario */}
-            <h5>Configuración del sistema</h5>
+            <div className="d-flex">
+                <h5>Configuración del sistema</h5>
+
+                <Button type="submit" color="success" className="ms-auto" disabled={formik.isSubmitting}>
+                    {formik.isSubmitting ? <Spinner></Spinner> : 'Guardar'}
+                </Button>
+            </div>
 
             <div className="mt-4">
                 <Label htmlFor="nameInput">Nombre del sistema</Label>
@@ -188,86 +187,85 @@ const SystemConfiguration = () => {
                 />
             </div>
 
-            <div className="d-flex gap-3">
-                <Card className="w-50 border">
-                    <CardHeader>
-                        <h5>Categorias</h5>
-                    </CardHeader>
-                    <CardBody>
-                        <StringTable
-                            name="categories"
-                            values={formik.values.categories}
-                            onChange={handleFormChange}
-                        />
-                    </CardBody>
-                </Card>
 
-                <Card className="w-50 border">
-                    <CardHeader>
-                        <h5>Roles de usuario</h5>
-                    </CardHeader>
-                    <CardBody>
-                        <StringTable
-                            name="userRoles"
-                            values={formik.values.userRoles}
-                            onChange={handleFormChange}
-                        />
-                    </CardBody>
-                </Card>
-            </div>
+            <Card className="border">
+                <CardHeader>
+                    <h5>Categorias</h5>
+                </CardHeader>
+                <CardBody>
+                    <StringTable
+                        name="categories"
+                        values={formik.values.categories}
+                        onChange={handleFormChange}
+                    />
+                </CardBody>
+            </Card>
 
-            <div className="d-flex gap-3">
-                <Card className="w-50 border">
-                    <CardHeader>
-                        <h5>Unidades de medida</h5>
-                    </CardHeader>
-                    <CardBody>
-                        <StringTable
-                            name="unitMeasurements"
-                            values={formik.values.unitMeasurements}
-                            onChange={handleFormChange}
-                        />
-                    </CardBody>
-                </Card>
+            <Card className="border">
+                <CardHeader>
+                    <h5>Roles de usuario</h5>
+                </CardHeader>
+                <CardBody>
+                    <StringTable
+                        name="userRoles"
+                        values={formik.values.userRoles}
+                        onChange={handleFormChange}
+                    />
+                </CardBody>
+            </Card>
 
-                <Card className="w-50 border">
-                    <CardHeader>
-                        <h5>Impuestos</h5>
-                    </CardHeader>
-                    <CardBody>
-                        <TaxesTable name="taxes" taxes={formik.values.taxes} onChange={handleFormTaxChange}></TaxesTable>
-                    </CardBody>
-                </Card>
-            </div>
 
-            <div className="d-flex gap-3">
-                <Card className="w-50 border">
-                    <CardHeader>
-                        <h5>Tipo de entrada</h5>
-                    </CardHeader>
-                    <CardBody>
-                        <StringTable
-                            name="incomeTypes"
-                            values={formik.values.incomeTypes}
-                            onChange={handleFormChange}
-                        />
-                    </CardBody>
-                </Card>
 
-                <Card className="w-50 border">
-                    <CardHeader>
-                        <h5>Tipos de salida</h5>
-                    </CardHeader>
-                    <CardBody>
-                        <StringTable
-                            name="outcomeTypes"
-                            values={formik.values.outcomeTypes}
-                            onChange={handleFormChange}
-                        />
-                    </CardBody>
-                </Card>
-            </div>
-           
+            <Card className="border">
+                <CardHeader>
+                    <h5>Unidades de medida</h5>
+                </CardHeader>
+                <CardBody>
+                    <StringTable
+                        name="unitMeasurements"
+                        values={formik.values.unitMeasurements}
+                        onChange={handleFormChange}
+                    />
+                </CardBody>
+            </Card>
+
+            <Card className="border">
+                <CardHeader>
+                    <h5>Impuestos</h5>
+                </CardHeader>
+                <CardBody>
+                    <TaxesTable name="taxes" taxes={formik.values.taxes} onChange={handleFormTaxChange}></TaxesTable>
+                </CardBody>
+            </Card>
+
+
+            <Card className="border">
+                <CardHeader>
+                    <h5>Tipo de entrada</h5>
+                </CardHeader>
+                <CardBody>
+                    <StringTable
+                        name="incomeTypes"
+                        values={formik.values.incomeTypes}
+                        onChange={handleFormChange}
+                    />
+                </CardBody>
+            </Card>
+
+            <Card className="border">
+                <CardHeader>
+                    <h5>Tipos de salida</h5>
+                </CardHeader>
+                <CardBody>
+                    <StringTable
+                        name="outcomeTypes"
+                        values={formik.values.outcomeTypes}
+                        onChange={handleFormChange}
+                    />
+                </CardBody>
+            </Card>
+
+
 
             <div className="d-flex">
                 <Button type="submit" color="success" className="mt-4 ms-auto" disabled={formik.isSubmitting}>

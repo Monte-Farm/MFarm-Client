@@ -1,17 +1,17 @@
-import { render } from "@testing-library/react";
+import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/BreadCrumb";
 import CustomTable from "Components/Common/CustomTable";
-import { APIClient } from "helpers/api_helper";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Card, CardBody, CardHeader, Container } from "reactstrap";
 
 const ViewOutcomes = () => {
     document.title = 'Ver Salidas'
     const history = useNavigate();
-    const axiosHelper = new APIClient();
-    const apiUrl = process.env.REACT_APP_API_URL;
+    const configContext = useContext(ConfigContext);
     const warehouseId = 'AG001'
+    const [outcomes, setOutcomes] = useState([])
+
     const columns = [
         { header: 'Identificador', accessor: 'id', isFilterable: true },
         { header: 'Fecha de Salida', accessor: 'date', isFilterable: true },
@@ -29,17 +29,17 @@ const ViewOutcomes = () => {
         }
     ]
 
-    const [outcomes, setOutcomes] = useState([])
-
     const handleFetchOutcomes = async () => {
-        await axiosHelper.get(`${apiUrl}/outcomes/find_warehouse_outcomes/${warehouseId}`)
-            .then((response) => {
-                setOutcomes(response.data.data)
-            })
-            .catch((error) => {
-                history('/auth-500')
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/outcomes/find_warehouse_outcomes/${warehouseId}`);
+            setOutcomes(response.data.data);
+        } catch (error) {
+            history('/auth-500');
+        }
+    };
+
 
     const handleClicOutcomeDetails = (row: any) => {
         history(`/warehouse/outcomes/outcome_details/${row.id}`)
@@ -71,7 +71,7 @@ const ViewOutcomes = () => {
 
                     </CardHeader>
                     <CardBody>
-                        <CustomTable columns={columns} data={outcomes} showSearchAndFilter={true}/>
+                        <CustomTable columns={columns} data={outcomes} showSearchAndFilter={true} />
                     </CardBody>
                 </Card>
             </Container>

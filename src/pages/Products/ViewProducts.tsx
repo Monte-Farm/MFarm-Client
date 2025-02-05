@@ -2,7 +2,6 @@ import BreadCrumb from "Components/Common/BreadCrumb";
 import CustomTable from "Components/Common/CustomTable";
 import ObjectDetails from "Components/Common/ObjectDetails";
 import ProductForm from "Components/Common/ProductForm";
-import { APIClient } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
 import noImageUrl from '../../assets/images/no-image.png'
@@ -22,8 +21,7 @@ const foldersArray = ['Products', 'Images']
 
 const ViewProducts = () => {
     document.title = "Catálogo de Productos"
-    const axiosHelper = new APIClient();
-    const apiUrl = process.env.REACT_APP_API_URL;
+    const configContext = useContext(ConfigContext);
 
     const [products, setProducts] = useState([])
     const [selectedProduct, setSelectedProduct] = useState<ProductData>()
@@ -96,69 +94,76 @@ const ViewProducts = () => {
     }
 
     const handleFetchProducts = async () => {
-        await axiosHelper.get(`${apiUrl}/product`)
-            .then((response) => {
-                setProducts(response.data.data)
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error al recuperar los productos, intentelo más tarde')
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/product`);
+            setProducts(response.data.data);
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al recuperar los productos, intentelo más tarde');
+        }
+    };
+
 
     const handleCreateProduct = async (data: ProductData) => {
-        await axiosHelper.create(`${apiUrl}/product/create_product`, data)
-            .then(() => {
-                showAlert('success', 'Producto creado con éxito')
-                handleFetchProducts()
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error al crear el producto, intentelo más tarde')
-            })
-            .finally(() => {
-                toggleModal('create')
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            await configContext.axiosHelper.create(`${configContext.apiUrl}/product/create_product`, data);
+            showAlert('success', 'Producto creado con éxito');
+            handleFetchProducts();
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al crear el producto, intentelo más tarde');
+        } finally {
+            toggleModal('create');
+        }
+    };
+
 
     const handleUpdateProduct = async (data: ProductData) => {
-        await axiosHelper.put(`${apiUrl}/product/update_product/${data.id}`, data)
-            .then(() => {
-                showAlert('success', 'Producto actualizado con éxito')
-                handleFetchProducts()
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error al actualizar el producto, intentelo más tarde')
-            })
-            .finally(() => {
-                toggleModal('update')
-                setSelectedProduct(undefined)
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            await configContext.axiosHelper.put(`${configContext.apiUrl}/product/update_product/${data.id}`, data);
+            showAlert('success', 'Producto actualizado con éxito');
+            handleFetchProducts();
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al actualizar el producto, intentelo más tarde');
+        } finally {
+            toggleModal('update');
+            setSelectedProduct(undefined);
+        }
+    };
+
 
     const handleDeleteProduct = async (product_id: string) => {
-        await axiosHelper.delete(`${apiUrl}/product/delete_product/${product_id}`)
-            .then(() => {
-                showAlert('success', 'Producto desactivado con éxito')
-                handleFetchProducts()
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error al desactivar el producto, intentelo más tarde')
-            })
-            .finally(() => {
-                toggleModal('delete')
-                setSelectedProduct(undefined)
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            await configContext.axiosHelper.delete(`${configContext.apiUrl}/product/delete_product/${product_id}`);
+            showAlert('success', 'Producto desactivado con éxito');
+            handleFetchProducts();
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al desactivar el producto, intentelo más tarde');
+        } finally {
+            toggleModal('delete');
+            setSelectedProduct(undefined);
+        }
+    };
+
 
     const fetchImageById = async (imageId: string) => {
-        try {
-            const response = await axiosHelper.get(`${apiUrl}/google_drive/download_file/${imageId}`, { responseType: 'blob' });
+        if (!configContext) return;
 
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/google_drive/download_file/${imageId}`, { responseType: 'blob' });
             const imageUrl = URL.createObjectURL(response.data);
             setUrlImageProduct(imageUrl);
         } catch (error) {
             console.error('Error al recuperar la imagen: ', error);
         }
-    }
+    };
+
 
     useEffect(() => {
         handleFetchProducts();
@@ -176,7 +181,7 @@ const ViewProducts = () => {
             <Container fluid>
                 <BreadCrumb title={"Catálogo de Productos"} pageTitle={"Almacén General"}></BreadCrumb>
 
-                <Card style={{ height: '75vh' }}>
+                <Card>
                     <CardHeader>
                         <div className="d-flex">
                             <Button color="success" className="ms-auto" onClick={() => toggleModal('create')}>

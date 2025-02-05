@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 //import Scss
 import './assets/scss/themes.scss';
 
-//imoprt Route
+//import Route
 import Route from './Routes';
-import { APIClient } from 'helpers/api_helper';
+import { APIClient, getLoggedinUser } from 'helpers/api_helper';
 import { ConfigurationData } from 'common/data_interfaces';
 
 // Define el contexto con una estructura para exponer tanto el estado como el setter
@@ -14,52 +14,53 @@ export const ConfigContext = React.createContext<{
   setConfigurationData: React.Dispatch<React.SetStateAction<ConfigurationData | null>>;
   logoUrl: string
   iconUrl: string
+  apiUrl: string
+  axiosHelper: APIClient
+  userLogged: any
 } | null>(null);
 
 function App() {
-  const apiUrl = process.env.REACT_APP_API_URL;
-  const axiosHelper = new APIClient();
 
   const [configurationData, setConfigurationData] = useState<ConfigurationData | null>(null)
   const [logoUrl, setLogoUrl] = useState<string>('')
   const [iconUrl, setIconUrl] = useState<string>('')
+  const apiUrl = process.env.REACT_APP_API_URL || '';
+  const axiosHelper = useMemo(() => new APIClient(), []);
+  const userLogged = getLoggedinUser();
 
-  const getCondigurationData = async () => {
+  const getConfigurationData = async () => {
     await axiosHelper.get(`${apiUrl}/configurations/get_configurations`)
       .then((response) => {
         setConfigurationData(response.data.data)
       })
       .catch((error) => {
-        console.error('Ha ocurrido un error al recuperar las configuraciones')
+        console.error('Ha ocurrido un error al recuperar las configuraciones', error)
       })
   }
 
   const getSystemLogo = async () => {
-    if (configurationData) {
-      try {
-        const response = await axiosHelper.get(`${apiUrl}/google_drive/download_file/${configurationData.farmLogo}`, { responseType: 'blob' });
-        const logoUrl = URL.createObjectURL(response.data);
-        setLogoUrl(logoUrl);
-      } catch (error) {
-        console.error('Ha ocurrido un error al obtener el logo');
-      }
+    if (!configurationData?.farmLogo) return;
+    try {
+      const response = await axiosHelper.get(`${apiUrl}/google_drive/download_file/${configurationData.farmLogo}`, { responseType: 'blob' });
+      setLogoUrl(URL.createObjectURL(response.data));
+    } catch (error) {
+      console.error('Error al obtener el logo:', error);
     }
-  }
+  };
 
   const getSystemIcon = async () => {
-    if (configurationData) {
-      try {
-        const response = await axiosHelper.get(`${apiUrl}/google_drive/download_file/${configurationData.farmIcon}`, { responseType: 'blob' });
-        const iconUrl = URL.createObjectURL(response.data);
-        setIconUrl(iconUrl);
-      } catch (error) {
-        console.error('Ha ocurrido un error al obtener el logo');
-      }
+    if (!configurationData?.farmIcon) return;
+    try {
+      const response = await axiosHelper.get(`${apiUrl}/google_drive/download_file/${configurationData.farmIcon}`, { responseType: 'blob' });
+      setIconUrl(URL.createObjectURL(response.data));
+    } catch (error) {
+      console.error('Error al obtener el icono:', error);
     }
-  }
+  };
+
 
   useEffect(() => {
-    getCondigurationData();
+    getConfigurationData();
   }, [])
 
   useEffect(() => {
@@ -68,7 +69,7 @@ function App() {
   }, [configurationData])
 
   return (
-    <ConfigContext.Provider value={{ configurationData, setConfigurationData, logoUrl, iconUrl }}>
+    <ConfigContext.Provider value={{ configurationData, setConfigurationData, logoUrl, iconUrl, apiUrl, axiosHelper, userLogged }}>
       <React.Fragment>
         <Route />
       </React.Fragment>

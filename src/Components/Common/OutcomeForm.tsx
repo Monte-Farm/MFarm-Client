@@ -1,4 +1,3 @@
-import { APIClient } from 'helpers/api_helper';
 import { useContext, useEffect, useState } from 'react';
 import { Alert, Button, Col, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Row, Spinner } from 'reactstrap';
 import * as Yup from 'yup'
@@ -10,43 +9,39 @@ import SelectTable from './SelectTable';
 import { OutcomeData, SubwarehouseData } from 'common/data_interfaces';
 import { ConfigContext } from 'App';
 
-const axiosHelper = new APIClient();
-const apiUrl = process.env.REACT_APP_API_URL;
-
 interface OutcomeFormProps {
     initialData?: OutcomeData;
     onSubmit: (data: OutcomeData) => Promise<void>
     onCancel: () => void;
 }
 
-const validationSchema = Yup.object({
-    id: Yup.string()
-        .required('Por favor, ingrese el ID')
-        .test('unique_id', 'Este identificador ya existe, por favor ingrese otro', async (value) => {
-            if (!value) return false
-            try {
-                const result = await axiosHelper.get(`${apiUrl}/outcomes/outcome_id_exists/${value}`)
-                return !result.data.data
-            } catch (error) {
-                console.error(`Error al validar el ID: ${error}`)
-                return false
-            }
-        }),
-    date: Yup.string().required('Por favor, ingrese la fecha'),
-    outcomeType: Yup.string().required('Por favor, seleccione el tipo de salida'),
-    warehouseDestiny: Yup.string().required('Por favor, seleccione un subalmacén')
-})
-
 const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSubmit, onCancel }) => {
     const history = useNavigate()
     const warehouseId = 'AG001'
     const [modals, setModals] = useState({ createWarehouse: false, cancel: false });
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
-    const configContext = useContext(ConfigContext);     
-
+    const configContext = useContext(ConfigContext);
     const [subwarehouses, setSubwarehouses] = useState<SubwarehouseData[]>([])
     const [selectedSubwarehouse, setSelectedSubwarehouse] = useState<SubwarehouseData | null>(null)
     const [products, setProducts] = useState([])
+
+    const validationSchema = Yup.object({
+        id: Yup.string()
+            .required('Por favor, ingrese el ID')
+            .test('unique_id', 'Este identificador ya existe, por favor ingrese otro', async (value) => {
+                if (!value) return false
+                try {
+                    const result = await configContext?.axiosHelper.get(`${configContext.apiUrl}/outcomes/outcome_id_exists/${value}`)
+                    return !result?.data.data
+                } catch (error) {
+                    console.error(`Error al validar el ID: ${error}`)
+                    return false
+                }
+            }),
+        date: Yup.string().required('Por favor, ingrese la fecha'),
+        outcomeType: Yup.string().required('Por favor, seleccione el tipo de salida'),
+        warehouseDestiny: Yup.string().required('Por favor, seleccione un subalmacén')
+    })
 
     const showAlert = (color: string, message: string) => {
         setAlertConfig({ visible: true, color: color, message: message })
@@ -100,67 +95,70 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSubmit, onCanc
     };
 
     const handleFetchsubwarehouses = async () => {
-        await axiosHelper.get(`${apiUrl}/warehouse`)
-            .then((response) => {
-                const warehouses = response.data.data;
+        if (!configContext) return;
 
-                setSubwarehouses(
-                    warehouses.filter(function (obj: any) {
-                        return obj.id !== warehouseId && obj.status !== false;
-                    })
-                )
-            })
-            .catch((error) => {
-                console.error(error)
-                history('/auth-500')
-            })
-    }
+        try {
+            const response = await configContext?.axiosHelper.get(`${configContext.apiUrl}/warehouse`);
+            const warehouses = response.data.data;
+
+            setSubwarehouses(
+                warehouses.filter((obj: any) => obj.id !== warehouseId && obj.status !== false)
+            );
+        } catch (error) {
+            console.error(error);
+            history('/auth-500');
+        }
+    };
+
+
 
     const fetchNextId = async () => {
-        await axiosHelper.get(`${apiUrl}/outcomes/outcome_next_id`)
-        .then((response) => {
-            const nextId = response.data.data
-            formik.setFieldValue('id', nextId)
-        })
-        .catch((error) => {
-            console.error('Ha ocurrido un error obteniendo el id')
-        })
-    }
+        if (!configContext) return;
+
+        try {
+            const response = await configContext?.axiosHelper.get(`${configContext.apiUrl}/outcomes/outcome_next_id`);
+            const nextId = response.data.data;
+            formik.setFieldValue('id', nextId);
+        } catch (error) {
+            console.error('Ha ocurrido un error obteniendo el id');
+        }
+    };
+
 
     const handleFetchWarehouseProducts = async () => {
-        await axiosHelper.get(`${apiUrl}/warehouse/get_inventory/${warehouseId}`)
-            .then((response) => {
-                const products = response.data.data;
+        if (!configContext) return;
 
-                const productsWithExistences = products.filter(function (obj: any) {
-                    return obj.quantity !== 0
-                })
+        try {
+            const response = await configContext?.axiosHelper.get(`${configContext.apiUrl}/warehouse/get_inventory/${warehouseId}`);
+            const products = response.data.data;
 
-                setProducts(productsWithExistences)
-            })
-            .catch((error) => {
-                console.error(error)
-                history('/auth-500')
-            })
-    }
+            const productsWithExistences = products.filter((obj: any) => obj.quantity !== 0);
+            setProducts(productsWithExistences);
+        } catch (error) {
+            console.error(error);
+            history('/auth-500');
+        }
+    };
+
 
     const handleCreateWarehouse = async (data: SubwarehouseData) => {
-        await axiosHelper.create(`${apiUrl}/warehouse/create_warehouse`, data)
-            .then(async (response) => {
-                showAlert('success', 'Subalmacén agregado con éxito')
+        if (!configContext) return;
 
-                await handleFetchsubwarehouses();
-                const newWarehouse = response.data.data;
-                setSelectedSubwarehouse(newWarehouse);
-                formik.setFieldValue('warehouseDestiny', newWarehouse.id)
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error al agregar el nuevo subalmacén, intentelo más tarde')
-            })
-            .finally(() => {
-                toggleModal('createWarehouse', false)
-            })
-    }
+        try {
+            const response = await configContext?.axiosHelper.create(`${configContext.apiUrl}/warehouse/create_warehouse`, data);
+
+            showAlert('success', 'Subalmacén agregado con éxito');
+            await handleFetchsubwarehouses();
+            const newWarehouse = response.data.data;
+            setSelectedSubwarehouse(newWarehouse);
+            formik.setFieldValue('warehouseDestiny', newWarehouse.id);
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al agregar el nuevo subalmacén, intentelo más tarde');
+        } finally {
+            toggleModal('createWarehouse', false);
+        }
+    };
+
 
     useEffect(() => {
         handleFetchsubwarehouses();

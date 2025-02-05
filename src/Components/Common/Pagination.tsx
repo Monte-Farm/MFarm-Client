@@ -15,8 +15,8 @@ const Pagination: React.FC<PaginationProps> = ({
   currentPage,
   setCurrentPage,
   perPageData,
-  prevText = "Previous",
-  nextText = "Next",
+  prevText = "Atras",
+  nextText = "Siguiente",
 }) => {
   const totalPages = Math.ceil(data.length / perPageData);
   const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);

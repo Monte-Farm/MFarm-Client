@@ -152,6 +152,12 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
                             {/* FullScreenDropdown */}
                             {/* <FullScreenDropdown /> */}
 
+                            
+                            <div className='d-flex flex-column me-3'>
+                                <span className='fst-italic'>Usuario: {userLogged.name}</span>
+                                <span className='fst-italic'>Rol: {userLogged.role}</span>
+                            </div>
+
                             {/* Dark/Light Mode set */}
                             <LightDark
                                 layoutMode={layoutModeType}

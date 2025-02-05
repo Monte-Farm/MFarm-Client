@@ -2,13 +2,13 @@ import BreadCrumb from "Components/Common/BreadCrumb";
 import CustomTable from "Components/Common/CustomTable";
 import LineChart from "Components/Common/LineChart";
 import ObjectDetails from "Components/Common/ObjectDetails";
-import { APIClient } from "helpers/api_helper";
-import { useEffect, useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom"
-import { Alert, Button, Card, CardBody, CardHeader, Col, Container, Label, Modal, ModalBody, ModalFooter, ModalHeader, Row, Spinner } from "reactstrap"
+import { useContext, useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom"
+import { Alert, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalFooter, ModalHeader, Row } from "reactstrap"
 import ProductForm from "Components/Common/ProductForm";
 import noImageUrl from '../../assets/images/no-image.png'
 import { ProductData } from "common/data_interfaces";
+import { ConfigContext } from "App";
 
 
 const displayAttributes = [
@@ -25,10 +25,8 @@ const ProductDetails = () => {
     const [searchParams] = useSearchParams();
     const productId = searchParams.get('product');
     const warehouseId = searchParams.get('warehouse')
-
     const history = useNavigate();
-    const axiosHelper = new APIClient();
-    const apiUrl = process.env.REACT_APP_API_URL;
+    const configContext = useContext(ConfigContext);
 
     const [productDetails, setProductDetails] = useState<ProductData | undefined>(undefined);
     const [productIncomes, setProductIncomes] = useState([]);
@@ -92,145 +90,164 @@ const ProductDetails = () => {
     };
 
     const handleFetchProductDetails = async () => {
-        await axiosHelper.get(`${apiUrl}/product/find_product_id/${productId}`)
-            .then((response) => {
-                setProductDetails(response.data.data)
-                setLoading(false)
-            })
-            .catch((error) => {
-                handleError(error, 'El servicio no esta disponible, intentelo más tarde');
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/product/find_product_id/${productId}`);
+            setProductDetails(response.data.data);
+            setLoading(false);
+        } catch (error) {
+            handleError(error, 'El servicio no esta disponible, intentelo más tarde');
+        }
+    };
+
 
     const handleFetchProductImage = async () => {
+        if (!configContext) return;
+
         if (productDetails && productDetails.image) {
             try {
-                const response = await axiosHelper.get(`${apiUrl}/google_drive/download_file/${productDetails.image}`, { responseType: 'blob' });
-                const imageUrl = URL.createObjectURL(response.data)
-                setProductImageUrl(imageUrl)
+                const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/google_drive/download_file/${productDetails.image}`, { responseType: 'blob' });
+                const imageUrl = URL.createObjectURL(response.data);
+                setProductImageUrl(imageUrl);
             } catch (error) {
-                console.error('Ha ocurrido un error al obtener la imagen del producto')
+                console.error('Ha ocurrido un error al obtener la imagen del producto');
             }
         } else {
-            setProductImageUrl(noImageUrl)
+            setProductImageUrl(noImageUrl);
         }
-    }
+    };
+
 
     const handleFetchProductIncomes = async () => {
-        await axiosHelper.get(`${apiUrl}/product/find_incomes/${productId}/${warehouseId}`)
-            .then((response) => {
-                const incomes = response.data.data;
-                setProductIncomes(incomes)
-            })
-            .catch((error) => {
-                handleError(error, 'El servicio no esta disponible, intentelo más tarde');
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/product/find_incomes/${productId}/${warehouseId}`);
+            const incomes = response.data.data;
+            setProductIncomes(incomes);
+        } catch (error) {
+            handleError(error, 'El servicio no esta disponible, intentelo más tarde');
+        }
+    };
 
     const handleFetchProductOutcomes = async () => {
-        await axiosHelper.get(`${apiUrl}/product/find_outcomes/${productId}/${warehouseId}`)
-            .then((response) => {
-                const outcomes = response.data.data;
-                setProductOutcomes(outcomes)
-            })
-            .catch((error) => {
-                handleError(error, 'El servicio no esta disponible, intentelo más tarde');
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/product/find_outcomes/${productId}/${warehouseId}`);
+            const outcomes = response.data.data;
+            setProductOutcomes(outcomes);
+        } catch (error) {
+            handleError(error, 'El servicio no esta disponible, intentelo más tarde');
+        }
+    };
+
 
 
     const handleProductExistences = async () => {
-        await axiosHelper.get(`${apiUrl}/product/product_existences/${productId}/${warehouseId}`)
-            .then((response) => {
-                console.log(response.data.data)
-                setProductExistences(response.data.data)
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error al obtener las existencias del producto, intentelo más tarde')
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/product/product_existences/${productId}/${warehouseId}`);
+            setProductExistences(response.data.data);
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al obtener las existencias del producto, intentelo más tarde');
+        }
+    };
 
 
     const handleHistoryProducts = async () => {
-        await axiosHelper.get(`${apiUrl}/product/history_existences/${productId}/${warehouseId}`)
-            .then((response) => {
-                const monthlyExistence = response.data.data;
+        if (!configContext) return;
 
-                const categories: string[] = Object.keys(monthlyExistence);
-                const series: number[] = Object.values(monthlyExistence);
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/product/history_existences/${productId}/${warehouseId}`);
+            const monthlyExistence = response.data.data;
 
-                setCategoriesIncomes(categories);
-                setSeriesIncomes([{ name: "Existencias", data: series }]);
+            const categories: string[] = Object.keys(monthlyExistence);
+            const series: number[] = Object.values(monthlyExistence);
 
-            })
-            .catch((error) => {
-                handleError(error, 'El servicio no esta disponible, intentelo más tarde');
-            })
-    }
-
-    const handleHistoryPrices = async () => {
-        await axiosHelper.get(`${apiUrl}/product/history_prices/${productId}/${warehouseId}`)
-            .then((response) => {
-                const monthlyPrices = response.data.data;
-
-                const categories: string[] = Object.keys(monthlyPrices);
-                const series: number[] = Object.values(monthlyPrices);
-
-                setCategoriesPrices(categories);
-                setSeriesPrices([{ name: 'RD$', data: series }])
-                if (Object.keys(monthlyPrices).length > 0) {
-                    setLastPrice(series[series.length - 1])
-                } else {
-                    setLastPrice(0)
-                }
-
-            })
-            .catch((error) => {
-                handleError(error, 'El servicio no esta disponible, intentelo más tarde')
-            })
-    }
-
-    const handleAveragePrice = async () => {
-        await axiosHelper.get(`${apiUrl}/product/average_price/${productId}/${warehouseId}`)
-            .then((response) => {
-                if (response.data.data !== null) {
-                    const price: number = response.data.data;
-                    setAveragePrice(price.toFixed(2))
-                } else {
-                    setAveragePrice('0');
-                }
-
-            })
-            .catch((error) => {
-                handleError(error, 'El servicio no esta disponible, intentelo más tarde')
-            })
-    }
-
-    const handleUpdateProduct = async (data: ProductData) => {
-        await axiosHelper.put(`${apiUrl}/product/update_product/${data.id}`, data)
-            .then((response) => {
-                handleFetchProductDetails()
-                toggleModal('update', false)
-                setAlertConfig({ visible: true, color: "success", message: "Product actualizado correctamente." });
-                setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un problema actualizando el producto, intentelo más tarde');
-            })
+            setCategoriesIncomes(categories);
+            setSeriesIncomes([{ name: "Existencias", data: series }]);
+        } catch (error) {
+            handleError(error, 'El servicio no esta disponible, intentelo más tarde');
+        }
     };
 
+
+    const handleHistoryPrices = async () => {
+        if (!configContext) return;
+
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/product/history_prices/${productId}/${warehouseId}`);
+            const monthlyPrices = response.data.data;
+
+            const categories: string[] = Object.keys(monthlyPrices);
+            const series: number[] = Object.values(monthlyPrices);
+
+            setCategoriesPrices(categories);
+            setSeriesPrices([{ name: 'RD$', data: series }]);
+
+            if (Object.keys(monthlyPrices).length > 0) {
+                setLastPrice(series[series.length - 1]);
+            } else {
+                setLastPrice(0);
+            }
+        } catch (error) {
+            handleError(error, 'El servicio no esta disponible, intentelo más tarde');
+        }
+    };
+
+
+    const handleAveragePrice = async () => {
+        if (!configContext) return;
+
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/product/average_price/${productId}/${warehouseId}`);
+
+            if (response.data.data !== null) {
+                const price: number = response.data.data;
+                setAveragePrice(price.toFixed(2));
+            } else {
+                setAveragePrice('0');
+            }
+        } catch (error) {
+            handleError(error, 'El servicio no esta disponible, intentelo más tarde');
+        }
+    };
+
+
+    const handleUpdateProduct = async (data: ProductData) => {
+        if (!configContext) return;
+
+        try {
+            const response = await configContext.axiosHelper.put(`${configContext.apiUrl}/product/update_product/${data.id}`, data);
+
+            handleFetchProductDetails();
+            toggleModal('update', false);
+            setAlertConfig({ visible: true, color: "success", message: "Producto actualizado correctamente." });
+            setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un problema actualizando el producto, intentelo más tarde');
+        }
+    };
+
+
     const handleDeleteProduct = async () => {
-        await axiosHelper.delete(`${apiUrl}/product/delete_product/${productId}`)
-            .then((response) => {
-                handleFetchProductDetails()
-                toggleModal('delete', false)
-                setAlertConfig({ visible: true, color: "success", message: "Producto desactivado correctamente." });
-                setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error desactivando el producto, intenlo más tarde');
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            const response = await configContext.axiosHelper.delete(`${configContext.apiUrl}/product/delete_product/${productId}`);
+
+            handleFetchProductDetails();
+            toggleModal('delete', false);
+            setAlertConfig({ visible: true, color: "success", message: "Producto desactivado correctamente." });
+            setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error desactivando el producto, intentelo más tarde');
+        }
+    };
+
 
 
     const handleRowClicIncomeDetails = (row: any) => {

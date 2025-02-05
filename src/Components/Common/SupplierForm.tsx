@@ -2,12 +2,8 @@ import React, { useContext, useEffect, useState } from "react";
 import { Button, Col, Row, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback } from "reactstrap";
 import * as Yup from "yup";
 import { useFormik } from "formik";
-import { APIClient } from "helpers/api_helper";
 import { SupplierData } from "common/data_interfaces";
 import { ConfigContext } from "App";
-
-const axiosHelper = new APIClient();
-const apiUrl = process.env.REACT_APP_API_URL;
 
 interface SupplierFormProps {
   initialData?: SupplierData;
@@ -28,8 +24,8 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCa
         if (initialData) return true
         if (!value) return false
         try {
-          const result = await axiosHelper.get(`${apiUrl}/supplier/supplier_id_exists/${value}`)
-          return !result.data.data
+          const result = await configContext?.axiosHelper.get(`${configContext.apiUrl}/supplier/supplier_id_exists/${value}`)
+          return !result?.data.data
         } catch (error) {
           console.error(`Error al validar el ID: ${error}`)
           return false
@@ -74,15 +70,16 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCa
   });
 
   const fetchNextId = async () => {
-    await axiosHelper.get(`${apiUrl}/supplier/supplier_next_id`)
-      .then((response) => {
-        const nextId = response.data.data;
-        formik.setFieldValue('id', nextId)
-      })
-      .catch((error) => {
-        console.error('Ha ocurrido un error al obtener el id')
-      })
-  }
+    if (!configContext || initialData) return;
+
+    try {
+      const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/supplier/supplier_next_id`);
+      formik.setFieldValue('id', response.data.data);
+    } catch (error) {
+      console.error('Ha ocurrido un error al obtener el id');
+    }
+  };
+
 
   useEffect(() => {
     fetchNextId();

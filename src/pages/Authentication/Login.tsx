@@ -10,15 +10,13 @@ import { ConfigContext } from "App";
 
 
 const CoverSignIn = () => {
-    const apiUrl = process.env.REACT_APP_API_URL;
     document.title = "Inicio de sesión | MFarm";
     const history = useNavigate();
-    const axiosHelper = new APIClient();
     const configContext = useContext(ConfigContext)
 
     const handleLogin = async (values: { username: string; password: string }) => {
 
-        await axios.post(`${apiUrl}/user/login`, values)
+        await axios.post(`${configContext?.apiUrl}/user/login`, values)
             .then(function (response: AxiosResponse) {
                 sessionStorage.setItem('authUser', JSON.stringify(response.data.data))
                 history('/home')

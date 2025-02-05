@@ -1,17 +1,14 @@
-import { OrderData } from "common/data_interfaces";
+import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/BreadCrumb";
 import CustomTable from "Components/Common/CustomTable";
-import { APIClient, getLoggedinUser } from "helpers/api_helper";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container } from "reactstrap";
 
 //Page for warehouse managers
 const SendOrders = () => {
-    const apiUrl = process.env.REACT_APP_API_URL;
-    const axiosHelper = new APIClient();
     const history = useNavigate();
-    const userLogged = getLoggedinUser();
+    const configContext = useContext(ConfigContext);
 
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [orders, setOrders] = useState([])
@@ -49,25 +46,26 @@ const SendOrders = () => {
     }
 
     const fetchOrders = async () => {
-        let query = ''
-        if (userLogged.role === 'Encargado de almacen') {
-            query = `${apiUrl}/orders/find/orderOrigin/AG001`
+        if (!configContext) return;
+
+        let query = '';
+        if (configContext.userLogged.role === 'Encargado de almacen') {
+            query = `${configContext.apiUrl}/orders/find/orderOrigin/AG001`;
         } else {
-            query = `${apiUrl}/orders/find/orderDestiny/${userLogged.assigment}`
+            query = `${configContext.apiUrl}/orders/find/orderDestiny/${configContext.userLogged.assigment}`;
         }
 
-        await axiosHelper.get(`${query}`)
-            .then((response) => {
-                const orders = response.data.data;
-                setOrders(orders)
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error al recuperar los pedidos, intentelo más tarde');
-            })
-    }
+        try {
+            const response = await configContext.axiosHelper.get(query);
+            setOrders(response.data.data);
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al recuperar los pedidos, intentelo más tarde');
+        }
+    };
+
 
     const clicOrder = (row: any) => {
-        if(userLogged.role === 'Encargado de almacen'){
+        if (configContext?.userLogged.role === 'Encargado de almacen') {
             history(`/orders/complete_order/${row.id}`)
         } else {
             history(`/orders/order_details/${row.id}`)
@@ -81,7 +79,7 @@ const SendOrders = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={userLogged.role === 'Encargado de almacen' ? 'Pedidos recibidos' : "Pedidos enviados"} pageTitle={"Pedidos"} />
+                <BreadCrumb title={configContext?.userLogged.role === 'Encargado de almacen' ? 'Pedidos recibidos' : "Pedidos enviados"} pageTitle={"Pedidos"} />
 
                 <Card style={{ height: '70vh' }}>
                     <CardHeader>

@@ -1,24 +1,18 @@
 import BreadCrumb from "Components/Common/BreadCrumb";
 import CustomTable from "Components/Common/CustomTable";
-import { APIClient } from "helpers/api_helper";
-import React, { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
-import { size } from "lodash";
 import SupplierForm from "Components/Common/SupplierForm";
 import { SupplierData } from "common/data_interfaces";
-
-
+import { ConfigContext } from "App";
 
 const Suppliers = () => {
-    document.title = 'View Suppliers | Warehouse'
-    const apiUrl = process.env.REACT_APP_API_URL;
-    const axiosHelper = new APIClient();
+    document.title = 'Ver Proveedores | Almacén'
     const history = useNavigate();
-
+    const configContext = useContext(ConfigContext)
 
     const [suppliersData, setSuppliersData] = useState([]);
-    const [isError, setIsError] = useState<boolean>(false);
     const [selectedSupplier, setSelectedSupplier] = useState<SupplierData | undefined>(undefined);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ create: false, update: false, delete: false });
@@ -39,48 +33,19 @@ const Suppliers = () => {
     };
 
     const supplierColumn = [
+        { header: 'Código', accessor: 'id', isFilterable: true },
+        { header: 'Proveedor', accessor: 'name', isFilterable: true },
+        { header: 'Categoría', accessor: 'supplier_type', isFilterable: true, },
+        { header: 'Telefono', accessor: 'phone_number' },
+        { header: 'Dirección', accessor: 'address' },
         {
-            header: 'Código',
-            accessor: 'id',
-            isFilterable: true
-        },
-        {
-            header: 'Proveedor',
-            accessor: 'name',
-            isFilterable: true
-        },
-        {
-            header: 'Categoría',
-            accessor: 'supplier_type',
-            isFilterable: true,
-            options: [
-                { label: 'Alimentos', value: 'Alimentos' },
-                { label: 'Medicamentos', value: 'Medicamentos' },
-                { label: 'Suministros', value: 'Suministros' },
-                { label: 'Equipamiento', value: 'Equipamientos' }
-            ]
-        },
-        {
-            header: 'Telefono',
-            accessor: 'phone_number'
-        },
-        {
-            header: 'Dirección',
-            accessor: 'address'
-        },
-        {
-            header: "Estado",
-            accessor: "status",
+            header: "Estado", accessor: "status",
             render: (value: boolean) => (
                 <Badge color={value === true ? "success" : "danger"}>
                     {value === true ? "Activo" : "Inactivo"}
                 </Badge>
             ),
             isFilterable: true,
-            options: [
-                { label: 'Activo', value: 'true' },
-                { label: 'Inactivo', value: 'false' }
-            ]
         },
         {
             header: 'Acciones',
@@ -103,15 +68,18 @@ const Suppliers = () => {
         }
     ]
 
+
     const fetchSuppliersData = async () => {
-        await axiosHelper.get(`${apiUrl}/supplier`)
-            .then((response) => {
-                setSuppliersData(response.data.data);
-            })
-            .catch((error) => {
-                handleError(error, 'El servicio no esta disponible, intentelo más tarde')
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/supplier`);
+            setSuppliersData(response.data.data);
+        } catch (error) {
+            handleError(error, 'El servicio no esta disponible, intentelo más tarde');
+        }
+    };
+
 
 
     const handleSupplierDetails = (row: any) => {
@@ -132,42 +100,46 @@ const Suppliers = () => {
     }
 
     const handleCreateSupplier = async (data: SupplierData) => {
-        await axiosHelper.create(`${apiUrl}/supplier/create_supplier`, data)
-            .then(() => {
-                showAlert('success', 'Proveedor registrado con éxito')
-                fetchSuppliersData()
-                toggleModal('create', false)
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error al registrar al proveedor, intentelo más tarde');
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            await configContext.axiosHelper.create(`${configContext.apiUrl}/supplier/create_supplier`, data);
+            showAlert('success', 'Proveedor registrado con éxito');
+            fetchSuppliersData();
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al registrar al proveedor, intentelo más tarde');
+        } finally {
+            toggleModal('create', false);
+        }
+    };
 
     const handleUpdateSupplier = async (data: SupplierData) => {
-        await axiosHelper.put(`${apiUrl}/supplier/update_supplier/${data.id}`, data)
-            .then((response) => {
-                fetchSuppliersData();
-                toggleModal('update', false);
-                showAlert('success', 'El proveedor ha sido actualizado con éxito')
-            })
-            .catch((error) => {
-                toggleModal('update', false)
-                handleError(error, 'Ha ocurrido un error al actualizar al proveedor, intentelo más tarde')
-            })
-    }
+        if (!configContext) return;
+        try {
+            await configContext.axiosHelper.put(`${configContext.apiUrl}/supplier/update_supplier/${data.id}`, data);
+            fetchSuppliersData();
+            showAlert('success', 'El proveedor ha sido actualizado con éxito');
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al actualizar al proveedor, intentelo más tarde');
+        } finally {
+            toggleModal('update', false);
+        }
+    };
+
 
     const handleDeactivateSupplier = async (supplierId: string) => {
-        await axiosHelper.delete(`${apiUrl}/supplier/delete_supplier/${supplierId}`)
-            .then(() => {
-                fetchSuppliersData();
-                toggleModal('delete', false);
-                showAlert('success', 'El proveedor se ha desactivado con éxito')
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error al desactivar al proveedor, intentelo más tarde')
-                toggleModal('delete', false)
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            await configContext.axiosHelper.delete(`${configContext.apiUrl}/supplier/delete_supplier/${supplierId}`);
+            fetchSuppliersData();
+            showAlert('success', 'El proveedor se ha desactivado con éxito');
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al desactivar al proveedor, intentelo más tarde');
+        } finally {
+            toggleModal('delete', false);
+        }
+    };
 
     useEffect(() => {
         fetchSuppliersData();
@@ -178,7 +150,7 @@ const Suppliers = () => {
             <Container fluid>
                 <BreadCrumb pageTitle="Ver Proveedores" title="Proveedores" ></BreadCrumb>
 
-                <Card className="rounded" style={{height: '75vh'}}>
+                <Card className="rounded" style={{ height: '75vh' }}>
                     <CardHeader>
                         <div className="d-flex gap-2">
                             <h4 className="me-auto">Proveedores</h4>

@@ -1,9 +1,10 @@
+import { ConfigContext } from "App"
 import { IncomeData } from "common/data_interfaces"
 import BreadCrumb from "Components/Common/BreadCrumb"
 import CustomTable from "Components/Common/CustomTable"
 import ObjectDetails from "Components/Common/ObjectDetails"
 import { APIClient } from "helpers/api_helper"
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { Alert, Button, Card, CardBody, CardHeader, Col, Container, Row } from "reactstrap"
 
@@ -17,14 +18,11 @@ const incomeAttributes = [
     { key: 'incomeType', label: 'Tipo de alta' }
 ]
 
-
-
 const IncomeDetails = () => {
-    document.title = 'Detalles de entrada'
-    const axiosHelper = new APIClient();
+    document.title = 'Detalles de entrada | Almacén'
     const history = useNavigate();
-    const apiUrl = process.env.REACT_APP_API_URL;
     const { id_income } = useParams();
+    const configContext = useContext(ConfigContext);
 
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ update: false, delete: false });
@@ -64,45 +62,49 @@ const IncomeDetails = () => {
     };
 
     const handleFetchIncome = async () => {
-        await axiosHelper.get(`${apiUrl}/incomes/find_incomes_id/${id_income}`)
-            .then((response) => {
-                const incomeFound = response.data.data;
-                setIncomeDetails(incomeFound)
-            })
-            .catch((error) => {
-                handleError(error, 'El servicio no esta disponible, intentelo más tarde')
-            })
-    }
+        if (!configContext) return;
+    
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/incomes/find_incomes_id/${id_income}`);
+            const incomeFound = response.data.data;
+            setIncomeDetails(incomeFound);
+        } catch (error) {
+            handleError(error, 'El servicio no esta disponible, intentelo más tarde');
+        }
+    };
+    
 
     const handleFetchIncomeDisplay = async () => {
-        await axiosHelper.get(`${apiUrl}/incomes/income_display_details/${id_income}`)
-            .then((response) => {
-                const incomeFound = response.data.data
-
-                if (incomeFound.origin.originType === 'supplier') {
-                    incomeAttributes[4].label = 'Proveedor'
-                } else {
-                    incomeAttributes[4].label = 'Almacén de origen'
-                }
-
-                setIncomeDisplay(incomeFound)
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error al obtener los datos de la entrada, intentelo más tarde');
-            })
-    }
+        if (!configContext) return;
+    
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/incomes/income_display_details/${id_income}`);
+            const incomeFound = response.data.data;
+    
+            if (incomeFound.origin.originType === 'supplier') {
+                incomeAttributes[4].label = 'Proveedor';
+            } else {
+                incomeAttributes[4].label = 'Almacén de origen';
+            }
+    
+            setIncomeDisplay(incomeFound);
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al obtener los datos de la entrada, intentelo más tarde');
+        }
+    };
+    
 
     const handleFetchIncomeProducts = async () => {
-        if (incomeDetails) {
-            await axiosHelper.create(`${apiUrl}/product/find_products_by_array`, incomeDetails?.products)
-                .then((response) => {
-                    setProductsIncome(response.data.data)
-                })
-                .catch((error) => {
-                    handleError(error, 'El servicio no esta disponible, intentelo más tarde');
-                })
+        if (!configContext || !incomeDetails) return;
+    
+        try {
+            const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/product/find_products_by_array`, incomeDetails?.products);
+            setProductsIncome(response.data.data);
+        } catch (error) {
+            handleError(error, 'El servicio no esta disponible, intentelo más tarde');
         }
-    }
+    };
+    
 
     const handleClicProductDetails = (row: any) => {
         history(`/warehouse/inventory/product_details?warehouse=${incomeDetails?.warehouse}&product=${row.id}`)

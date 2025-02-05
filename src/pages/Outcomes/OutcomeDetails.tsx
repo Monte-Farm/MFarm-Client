@@ -1,9 +1,9 @@
+import { ConfigContext } from "App"
 import { OutcomeData } from "common/data_interfaces"
 import BreadCrumb from "Components/Common/BreadCrumb"
 import CustomTable from "Components/Common/CustomTable"
 import ObjectDetails from "Components/Common/ObjectDetails"
-import { APIClient } from "helpers/api_helper"
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { Alert, Button, Card, CardBody, CardHeader, Col, Container, Row } from "reactstrap"
 
@@ -23,13 +23,11 @@ const warehouseDestinyAttributes = [
 
 const OutcomeDetails = () => {
     document.title = 'Detalles de salida'
-    const apiUrl = process.env.REACT_APP_API_URL;
-    const axiosHelper = new APIClient();
     const history = useNavigate();
     const { id_outcome } = useParams();
-
+    const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
-    const [outcome, setOutcome] = useState<OutcomeData>( );
+    const [outcome, setOutcome] = useState<OutcomeData>();
     const [warehouseDestiny, setWarehouseDestiny] = useState({})
     const [productsOutcome, setProductsOutcome] = useState([])
 
@@ -53,39 +51,41 @@ const OutcomeDetails = () => {
     }
 
     const handleFetchOutcome = async () => {
-        await axiosHelper.get(`${apiUrl}/outcomes/find_outcome_id/${id_outcome}`)
-            .then((response) => {
-                setOutcome(response.data.data)
-                console.log(response.data.data)
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error al obtener los datos, intentelo más tarde')
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/outcomes/find_outcome_id/${id_outcome}`);
+            setOutcome(response.data.data);
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al obtener los datos, intentelo más tarde');
+        }
+    };
+
 
     const handleFetchWarehouseDestiny = async () => {
-        await axiosHelper.get(`${apiUrl}/warehouse/find_id/${outcome?.warehouseDestiny}`)
-            .then((response) => {
-                setWarehouseDestiny(response.data.data)
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error al obtener los datos del almacén de destino, intentelo más tarde')
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_id/${outcome?.warehouseDestiny}`);
+            setWarehouseDestiny(response.data.data);
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al obtener los datos del almacén de destino, intentelo más tarde');
+        }
+    };
+
 
     const handleFetchOutcomeProducts = async () => {
-        await axiosHelper.create(`${apiUrl}/product/find_products_by_array`, outcome?.products)
-            .then((response) => {
-                setProductsOutcome(response.data.data);
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error la obtener los datos de los productos, intentelo más tarde');
-            })
-    }
+        if (!configContext) return;
 
-    const handleClicProductDetails = (row: any) => {
-        history(`/warehouse/inventory/product_details?warehouse=${outcome?.warehouseDestiny}&product=${row.id}`)
-    }
+        try {
+            const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/product/find_products_by_array`, outcome?.products);
+            setProductsOutcome(response.data.data);
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al obtener los datos de los productos, intentelo más tarde');
+        }
+    };
+
+
 
     const handleBack = () => {
         if (window.history.length > 1) {

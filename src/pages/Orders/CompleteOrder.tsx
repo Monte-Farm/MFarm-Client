@@ -1,17 +1,15 @@
+import { ConfigContext } from "App";
 import { OrderData, OutcomeData } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/BreadCrumb";
 import CompleteOrderForm from "Components/Common/CompleteOrderForm";
-import { APIClient } from "helpers/api_helper";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Alert, Card, CardBody, Container } from "reactstrap";
 
 const CompleteOrder = () => {
     const history = useNavigate();
-    const axiosHelper = new APIClient();
-    const apiurl = process.env.REACT_APP_API_URL;
     const { id_order } = useParams();
-
+    const configContext = useContext(ConfigContext)
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const [ordersDetails, setOrderDetails] = useState<OrderData>()
 
@@ -31,56 +29,62 @@ const CompleteOrder = () => {
     }
 
     const fetchOrderDetails = async () => {
-        await axiosHelper.get(`${apiurl}/orders/find_id/${id_order}`)
-            .then((response) => {
-                setOrderDetails(response.data.data);
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error al obtener la informacion del pedido')
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/orders/find_id/${id_order}`);
+            setOrderDetails(response.data.data);
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al obtener la información del pedido');
+        }
+    };
 
     const handleCompleteOrder = async (data: OrderData) => {
-        data.status = 'completed'
-        await axiosHelper.put(`${apiurl}/orders/update_order/${data.id}`, data)
-        .then(async (response) => {
-            showAlert('success', 'Se ha completado el pedido con éxito') 
-            await createOutcome(data)
+        if (!configContext) return;
+
+        try {
+            data.status = 'completed';
+            await configContext.axiosHelper.put(`${configContext.apiUrl}/orders/update_order/${data.id}`, data);
+
+            showAlert('success', 'Se ha completado el pedido con éxito');
+            await createOutcome(data);
+
             setTimeout(() => {
-                history('/orders/send_orders')
+                history('/orders/send_orders');
             }, 5000);
-        })
-        .catch((error) => {
-            handleError(error, 'Ha ocurrido un error al completar el pedido, intentelo más tarde')
-        })
-    }
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al completar el pedido, intentelo más tarde');
+        }
+    };
+
 
     const createOutcome = async (data: OrderData) => {
-        let lastOutcomeId = ''
-        await axiosHelper.get(`${apiurl}/outcomes/outcome_next_id`)
-        .then((response) => {
-            lastOutcomeId = response.data.data
-        })
+        if (!configContext) return;
 
-        const outcomeData: OutcomeData = {
-            id: lastOutcomeId,
-            date: data.date,
-            products: data.productsDelivered,
-            outcomeType: "order",
-            status: true,
-            warehouseDestiny: data.orderDestiny,
-            warehouseOrigin: data.orderOrigin,
-            totalPrice: 0
+        try {
+            let lastOutcomeId = '';
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/outcomes/outcome_next_id`);
+            lastOutcomeId = response.data.data;
+
+            const outcomeData: OutcomeData = {
+                id: lastOutcomeId,
+                date: data.date,
+                products: data.productsDelivered,
+                outcomeType: "order",
+                status: true,
+                warehouseDestiny: data.orderDestiny,
+                warehouseOrigin: data.orderOrigin,
+                totalPrice: 0
+            };
+
+            await configContext.axiosHelper.create(`${configContext.apiUrl}/outcomes/create_outcome/true/order`, outcomeData);
+            showAlert('success', 'Se ha completado el pedido con éxito');
+
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al completar el pedido, intentelo más tarde');
         }
+    };
 
-        await axiosHelper.create(`${apiurl}/outcomes/create_outcome/true/order`, outcomeData)
-        .then(() => {
-            showAlert('success', 'Se ha completado el pedido con éxito') 
-        })
-        .catch((error) => {
-            handleError(error, 'Ha ocurrido un error al completar el pedido, intentelo más tarde')
-        })
-    }
 
     useEffect(() => {
         fetchOrderDetails();
@@ -89,11 +93,11 @@ const CompleteOrder = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Completar Pedido"} pageTitle={"Pedidos"}/>
+                <BreadCrumb title={"Completar Pedido"} pageTitle={"Pedidos"} />
 
                 <Card>
                     <CardBody>
-                        <CompleteOrderForm initialData={ordersDetails} onSubmit={(data: OrderData) => handleCompleteOrder(data)} onCancel={() => history('/orders/send_orders')}></CompleteOrderForm>                        
+                        <CompleteOrderForm initialData={ordersDetails} onSubmit={(data: OrderData) => handleCompleteOrder(data)} onCancel={() => history('/orders/send_orders')}></CompleteOrderForm>
                     </CardBody>
                 </Card>
 

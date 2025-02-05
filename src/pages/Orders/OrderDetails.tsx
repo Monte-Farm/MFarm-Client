@@ -1,11 +1,11 @@
+import { ConfigContext } from "App"
 import { OrderData } from "common/data_interfaces"
 import BreadCrumb from "Components/Common/BreadCrumb"
 import CustomTable from "Components/Common/CustomTable"
 import ObjectDetails from "Components/Common/ObjectDetails"
-import { APIClient } from "helpers/api_helper"
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import { Alert, Button, Card, CardBody, CardHeader, Col, Container, Row, Spinner } from "reactstrap"
+import { Button, Card, CardBody, CardHeader, Col, Container, Row, Spinner } from "reactstrap"
 
 const orderAttributes = [
     { key: 'id', label: 'No. de Pedido' },
@@ -26,10 +26,9 @@ const productsColumns = [
 ]
 
 const OrderDetails = () => {
-    const apiUrl = process.env.REACT_APP_API_URL;
-    const axiosHelper = new APIClient();
     const history = useNavigate();
     const { id_order } = useParams();
+    const configContext = useContext(ConfigContext)
 
     const [loading, setLoading] = useState(true);
     const [orderDetails, setOrderDetails] = useState<OrderData | null>(null);
@@ -37,16 +36,18 @@ const OrderDetails = () => {
     const [products, setProducts] = useState([])
 
     const fetchOrderDetails = async () => {
+        if (!configContext) return;
+
         try {
-            const response = await axiosHelper.get(`${apiUrl}/orders/find_id/${id_order}`);
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/orders/find_id/${id_order}`);
             const orderData: OrderData = response.data.data;
             setOrderDetails(orderData);
 
             const [userResponse, originResponse, destinyResponse, productsResponse] = await Promise.all([
-                axiosHelper.get(`${apiUrl}/user/find_by_id/${orderData.user}`),
-                axiosHelper.get(`${apiUrl}/warehouse/find_id/${orderData.orderOrigin}`),
-                axiosHelper.get(`${apiUrl}/warehouse/find_id/${orderData.orderDestiny}`),
-                axiosHelper.create(`${apiUrl}/product/find_products_by_array`, orderData.productsRequested) //Create means post
+                configContext.axiosHelper.get(`${configContext.apiUrl}/user/find_by_id/${orderData.user}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_id/${orderData.orderOrigin}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_id/${orderData.orderDestiny}`),
+                configContext.axiosHelper.create(`${configContext.apiUrl}/product/find_products_by_array`, orderData.productsRequested)
             ]);
 
             setOrderDisplay({
@@ -57,13 +58,13 @@ const OrderDetails = () => {
             });
 
             setProducts(productsResponse.data.data);
-
         } catch (error) {
             console.error('Error al obtener los datos del pedido', error);
         } finally {
             setLoading(false);
         }
     };
+
 
 
     useEffect(() => {

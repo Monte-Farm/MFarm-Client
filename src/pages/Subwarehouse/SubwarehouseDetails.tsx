@@ -1,9 +1,9 @@
+import { ConfigContext } from "App";
 import { SubwarehouseData } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/BreadCrumb";
 import CustomTable from "Components/Common/CustomTable";
 import ObjectDetails from "Components/Common/ObjectDetails";
-import { APIClient } from "helpers/api_helper";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button, Card, CardBody, CardHeader, Col, Container, Row } from "reactstrap";
 
@@ -17,9 +17,8 @@ const subwarehouseAttributes = [
 
 const SubwarehouseDetails = () => {
     document.title = "Detalles de Subalmacén"
-    const apiUrl = process.env.REACT_APP_API_URL;
     const history = useNavigate();
-    const axiosHelper = new APIClient();
+    const configContext = useContext(ConfigContext);
 
     const inventoryColumns = [
         { header: 'Código', accessor: 'id', isFilterable: true },
@@ -92,44 +91,52 @@ const SubwarehouseDetails = () => {
     }
 
     const handleFetchSubwarehouseDetails = async () => {
-        await axiosHelper.get(`${apiUrl}/warehouse/find_id/${id_subwarehouse}`)
-            .then((response) => {
-                setSubwarehouseDetails(response.data.data);
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error al obtener la información del subalmacén, intentelo más tarde');
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_id/${id_subwarehouse}`);
+            setSubwarehouseDetails(response.data.data);
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al obtener la información del subalmacén, intentelo más tarde');
+        }
+    };
+
 
     const handleFetchWarehouseInventory = async () => {
-        await axiosHelper.get(`${apiUrl}/warehouse/get_inventory/${id_subwarehouse}`)
-            .then((response) => {
-                setSubwarehouseInventory(response.data.data)
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error al obtener el inventario del subalmacén, intentelo más tarde')
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/get_inventory/${id_subwarehouse}`);
+            setSubwarehouseInventory(response.data.data);
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al obtener el inventario del subalmacén, intentelo más tarde');
+        }
+    };
+
 
     const handleFetchWarehouseIncomes = async () => {
-        await axiosHelper.get(`${apiUrl}/incomes/find_warehouse_incomes/${id_subwarehouse}`)
-            .then((response) => {
-                setSubwarehouseIncomes(response.data.data)
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error al obtener las entradas, intentelo más tarde')
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/incomes/find_warehouse_incomes/${id_subwarehouse}`);
+            setSubwarehouseIncomes(response.data.data);
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al obtener las entradas, intentelo más tarde');
+        }
+    };
+
 
     const handleFetchWarehouseOutcomes = async () => {
-        await axiosHelper.get(`${apiUrl}/outcomes/find_warehouse_outcomes/${id_subwarehouse}`)
-            .then((response) => {
-                setSubwarehouseOutcomes(response.data.data)
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error al obtener las salidas, intentelo más tarde')
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/outcomes/find_warehouse_outcomes/${id_subwarehouse}`);
+            setSubwarehouseOutcomes(response.data.data);
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al obtener las salidas, intentelo más tarde');
+        }
+    };
+
 
     const handleClicProductDetails = (row: any) => {
         history(`/warehouse/inventory/product_details?warehouse=${id_subwarehouse}&product=${row.id}`)

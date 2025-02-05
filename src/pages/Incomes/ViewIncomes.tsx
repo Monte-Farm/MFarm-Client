@@ -1,49 +1,25 @@
+import { ConfigContext } from "App"
 import BreadCrumb from "Components/Common/BreadCrumb"
 import CustomTable from "Components/Common/CustomTable"
-import { APIClient } from "helpers/api_helper"
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Alert, Button, Card, CardBody, CardHeader, Container } from "reactstrap"
 
 
 const ViewIncomes = () => {
     document.title = 'View Incomes | Warehouse'
-    const apiUrl = process.env.REACT_APP_API_URL;
-    const axiosHelper = new APIClient();
     const history = useNavigate()
     const idWarehouse = 'AG001'
-
+    const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [incomes, setIncomes] = useState([])
 
     const columns = [
-        {
-            header: 'Identificador',
-            accessor: 'id',
-            isFilterable: true
-        },
-        {
-            header: 'Proveedor',
-            accessor: 'originName',
-            isFilterable: true
-        },
-        {
-            header: 'Fecha de entrada',
-            accessor: 'date',
-            isFilterable: true
-        },
-        {
-            header: 'Tipo de entrada',
-            accessor: 'incomeType',
-            isFilterable: true,
-            options: [
-                { label: 'Compra', value: 'Compra' }
-            ]
-        },
-        {
-            header: 'Precio Total',
-            accessor: 'totalPrice'
-        },
+        { header: 'Identificador', accessor: 'id', isFilterable: true },
+        { header: 'Proveedor', accessor: 'originName', isFilterable: true },
+        { header: 'Fecha de entrada', accessor: 'date', isFilterable: true },
+        { header: 'Tipo de entrada', accessor: 'incomeType', isFilterable: true, },
+        { header: 'Precio Total', accessor: 'totalPrice' },
         {
             header: "Acciones",
             accessor: "action",
@@ -64,15 +40,17 @@ const ViewIncomes = () => {
     };
 
     const handleFetchIncomes = async () => {
-        await axiosHelper.get(`${apiUrl}/incomes/find_warehouse_incomes/${idWarehouse}`)
-            .then((response) => {
-                const incomesData = response.data.data;
-                setIncomes(incomesData)
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error al obtener los datos, intentelo más tarde');
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/incomes/find_warehouse_incomes/${idWarehouse}`);
+            const incomesData = response.data.data;
+            setIncomes(incomesData);
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al obtener los datos, intentelo más tarde');
+        }
+    };
+
 
     const handleProductDetails = (row: any) => {
         const id_income = row.id
@@ -92,7 +70,7 @@ const ViewIncomes = () => {
             <Container fluid>
                 <BreadCrumb title={"Ver Entradas"} pageTitle={"Entradas"} />
 
-                <Card style={{ height: '75vh' }}>
+                <Card style={{ height: '90vh' }}>
                     <CardHeader>
                         <div className="d-flex gap-2">
                             <h4 className="me-auto">Entradas</h4>

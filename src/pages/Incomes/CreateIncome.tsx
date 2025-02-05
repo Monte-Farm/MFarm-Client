@@ -1,17 +1,17 @@
+import { ConfigContext } from "App"
 import BreadCrumb from "Components/Common/BreadCrumb"
 import IncomeForm from "Components/Common/IncomeForm"
 import { APIClient } from "helpers/api_helper"
-import { useState } from "react"
+import { useContext, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Alert, Card, CardBody, Container } from "reactstrap"
 
 
 
 const CreatIncome = () => {
-    document.title = 'New Income | Warehouse'
-    const apiUrl = process.env.REACT_APP_API_URL;
-    const axiosHelper = new APIClient()
+    document.title = 'Nueva Entrada | Almacén'
     const history = useNavigate();
+    const configContext = useContext(ConfigContext);
 
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
 
@@ -22,22 +22,23 @@ const CreatIncome = () => {
     };
 
     const showAlert = (color: string, message: string) => {
-        setAlertConfig({visible: true, color: color, message: message})
+        setAlertConfig({ visible: true, color: color, message: message })
         setTimeout(() => {
-            setAlertConfig({...alertConfig, visible: false})
+            setAlertConfig({ ...alertConfig, visible: false })
         }, 5000);
     }
 
     const handleCreateIncome = async (data: any) => {
-        await axiosHelper.create(`${apiUrl}/incomes/create_income`, data)
-            .then((response) => {
-                showAlert('success', 'Entrada creada con éxito')
-                setTimeout(() => history('/warehouse/incomes/view_incomes'), 2500);
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error guardando la información, intentelo más tarde')
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/incomes/create_income`, data);
+            showAlert('success', 'Entrada creada con éxito');
+            setTimeout(() => history('/warehouse/incomes/view_incomes'), 2500);
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error guardando la información, intentelo más tarde');
+        }
+    };
 
     const handleCancel = () => {
         if (window.history.length > 1) {

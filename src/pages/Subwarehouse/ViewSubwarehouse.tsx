@@ -1,21 +1,18 @@
+import { ConfigContext } from "App";
 import { SubwarehouseData } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/BreadCrumb";
 import CustomTable from "Components/Common/CustomTable";
-import ObjectDetails from "Components/Common/ObjectDetails";
 import SubwarehouseForm from "Components/Common/SubwarehouseForm";
-import { APIClient, getLoggedinUser } from "helpers/api_helper";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
 
 
 const ViewSubwarehouse = () => {
     document.title = "Ver Subalmacénes"
-    const apiUrl = process.env.REACT_APP_API_URL;
-    const axiosHelper = new APIClient();
     const history = useNavigate();
     const warehouseId = 'AG001'
-    const userLogged = getLoggedinUser();
+    const configContext = useContext(ConfigContext)
 
     const columns = [
         { header: 'Código', accessor: 'id', isFilterable: true },
@@ -91,68 +88,71 @@ const ViewSubwarehouse = () => {
         toggleModal('delete')
     }
 
+
     const handleFetchSubwarehouses = async () => {
-        await axiosHelper.get(`${apiUrl}/warehouse/`)
-            .then((response) => {
-                const warehouses = response.data.data;
-                setWarehouses(
-                    warehouses.filter(function (obj: any) {
-                        return obj.id !== warehouseId
-                    })
-                )
-            })
-            .catch((error) => {
-                handleError(error, 'El servicio no esta disponible, intentelo más tarde')
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/`);
+            const warehouses = response.data.data;
+            setWarehouses(warehouses.filter(function (obj: any) {
+                return obj.id !== warehouseId;
+            }));
+        } catch (error) {
+            handleError(error, 'El servicio no esta disponible, intentelo más tarde');
+        }
+    };
+
 
     const handleCreateSubwarehouse = async (data: SubwarehouseData) => {
-        await axiosHelper.create(`${apiUrl}/warehouse/create_warehouse`, data)
-            .then((response) => {
-                showAlert('success', 'Subalmacén agregado con éxito')
-                handleFetchSubwarehouses();
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error agregando el subalmacén, intentelo más tarde')
-            })
-            .finally(() => {
-                toggleModal('create', false)
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            await configContext.axiosHelper.create(`${configContext.apiUrl}/warehouse/create_warehouse`, data);
+            showAlert('success', 'Subalmacén agregado con éxito');
+            handleFetchSubwarehouses();
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error agregando el subalmacén, intentelo más tarde');
+        } finally {
+            toggleModal('create', false);
+        }
+    };
+
 
     const handleUpdateSubwarehouse = async (data: SubwarehouseData) => {
-        await axiosHelper.put(`${apiUrl}/warehouse/update_warehouse/${data.id}`, data)
-            .then((response) => {
-                showAlert('success', 'Subalmacén actualizado con éxito')
-                handleFetchSubwarehouses()
-            })
-            .catch((error) => {
-                handleError(error, 'El servicio no esta disponible, intentelo más tarde')
-            })
-            .finally(() => {
-                toggleModal('update', false)
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            await configContext.axiosHelper.put(`${configContext.apiUrl}/warehouse/update_warehouse/${data.id}`, data);
+            showAlert('success', 'Subalmacén actualizado con éxito');
+            handleFetchSubwarehouses();
+        } catch (error) {
+            handleError(error, 'El servicio no esta disponible, intentelo más tarde');
+        } finally {
+            toggleModal('update', false);
+        }
+    };
+
 
     const handleDeleteSubwarehouse = async (subwarehouse_id: string) => {
-        await axiosHelper.delete(`${apiUrl}/warehouse/delete_warehouse/${subwarehouse_id}`)
-            .then((response) => {
-                showAlert('success', 'Subalmacén desactivado con éxito')
-                handleFetchSubwarehouses();
-            })
-            .catch((error) => {
-                handleError(error, 'El servicio no esta disponible, intentelo más tarde')
-            })
-            .finally(() => {
-                toggleModal('delete', false)
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            await configContext.axiosHelper.delete(`${configContext.apiUrl}/warehouse/delete_warehouse/${subwarehouse_id}`);
+            showAlert('success', 'Subalmacén desactivado con éxito');
+            handleFetchSubwarehouses();
+        } catch (error) {
+            handleError(error, 'El servicio no esta disponible, intentelo más tarde');
+        } finally {
+            toggleModal('delete', false);
+        }
+    };
 
     useEffect(() => {
         handleFetchSubwarehouses()
 
-        if(userLogged.role === 'Encargado de subalmacen'){
-            history(`/subwarehouse/subwarehouse_details/${userLogged.assigment}`);
+        if (configContext?.userLogged.role === 'Encargado de subalmacen') {
+            history(`/subwarehouse/subwarehouse_details/${configContext?.userLogged.assigment}`);
         }
     }, [])
 

@@ -1,17 +1,12 @@
-import { APIClient, getLoggedinUser } from 'helpers/api_helper';
-import { useEffect, useState } from 'react';
-import { Alert, Button, Col, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Row, Spinner } from 'reactstrap';
+import { useContext, useEffect, useState } from 'react';
+import { Alert, Button, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from 'reactstrap';
 import * as Yup from 'yup'
 import Flatpickr from 'react-flatpickr';
 import { useFormik } from 'formik';
-import SubwarehouseForm from './SubwarehouseForm';
 import { useNavigate } from 'react-router-dom';
-import SelectTable from './SelectTable';
 import { OrderData } from 'common/data_interfaces';
 import OrderTable from './OrderTable';
-
-const axiosHelper = new APIClient();
-const apiUrl = process.env.REACT_APP_API_URL;
+import { ConfigContext } from 'App';
 
 interface OrderFormProps {
     initialData?: OrderData;
@@ -26,16 +21,14 @@ const validationSchema = Yup.object({
 })
 
 const CompleteOrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }) => {
-
     const history = useNavigate()
 
     const [modals, setModals] = useState({ createWarehouse: false, cancel: false });
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const [orderOrigin, setOrderOrigin] = useState<string>('')
     const [orderDestiny, setOrderDestiny] = useState<string>('')
-    const userLogged = getLoggedinUser()
-
     const [products, setProducts] = useState([])
+    const configContext = useContext(ConfigContext);
 
     const formik = useFormik({
         initialValues: initialData || {
@@ -85,43 +78,52 @@ const CompleteOrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, on
     };
 
     const handleFetchOrderProducts = async () => {
-        await axiosHelper.create(`${apiUrl}/product/find_products_by_array`, formik.values.productsRequested)
-            .then((response) => {
-                const products = response.data.data;
-                setProducts(products)
-            })
-            .catch((error) => {
-                console.error(error)
-                history('/auth-500')
-            })
-    }
+        try {
+            if (!configContext) return;
+
+            const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/product/find_products_by_array`, formik.values.productsRequested);
+
+            const products = response.data.data;
+            setProducts(products);
+        } catch (error) {
+            console.error(error);
+            history("/auth-500");
+        }
+    };
+
 
     const fetchOrderOrigin = async () => {
-        await axiosHelper.get(`${apiUrl}/warehouse/find_id/${formik.values.orderOrigin}`)
-            .then((response) => {
-                const orderOrigin = response.data.data.name
-                setOrderOrigin(orderOrigin)
-            })
-            .catch((error) => {
-                console.error('Ha ocurrido un error al obtener el origen de la orden')
-            })
-    }
+        try {
+            if (!configContext) return;
+
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_id/${formik.values.orderOrigin}`);
+
+            const orderOrigin = response.data.data.name;
+            setOrderOrigin(orderOrigin);
+        } catch (error) {
+            console.error("Ha ocurrido un error al obtener el origen de la orden");
+        }
+    };
+
 
     const fetchOrderDestiny = async () => {
-        await axiosHelper.get(`${apiUrl}/warehouse/find_id/${formik.values.orderDestiny}`)
-            .then((response) => {
-                const orderDestiny = response.data.data
-                setOrderDestiny(orderDestiny.name)
-                formik.setFieldValue('orderDestiny', orderDestiny.id)
-            })
-            .catch((error) => {
-                console.error('Ha ocurrido un error al obtener el destino de la orden')
-            })
-    }
+        try {
+            if (!configContext) return;
+
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_id/${formik.values.orderDestiny}`);
+
+            const orderDestiny = response.data.data;
+            setOrderDestiny(orderDestiny.name);
+            formik.setFieldValue('orderDestiny', orderDestiny.id);
+        } catch (error) {
+            console.error("Ha ocurrido un error al obtener el destino de la orden");
+        }
+    };
+
 
     useEffect(() => {
-        if (userLogged) {
-            formik.setFieldValue('user', userLogged.username)
+        if (configContext?.userLogged) {
+            formik.setFieldValue('user', configContext?.userLogged.username)
         }
     }, [])
 
@@ -180,7 +182,7 @@ const CompleteOrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, on
                         type="text"
                         id="userInput"
                         name="userDisplay"
-                        value={`${userLogged?.name} ${userLogged?.lastname}` || ''}
+                        value={`${configContext?.userLogged.name} ${configContext?.userLogged.lastname}` || ''}
                         disabled
                     />
                     <Input type="hidden" name="user" value={formik.values.user} />

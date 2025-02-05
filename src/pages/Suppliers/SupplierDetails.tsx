@@ -1,10 +1,10 @@
+import { ConfigContext } from "App";
 import { SupplierData } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/BreadCrumb";
 import CustomTable from "Components/Common/CustomTable";
 import ObjectDetails from "Components/Common/ObjectDetails";
 import SupplierForm from "Components/Common/SupplierForm";
-import { APIClient } from "helpers/api_helper";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Alert, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalFooter, ModalHeader, Row, Spinner } from "reactstrap";
 
@@ -21,10 +21,9 @@ const supplierAttributes = [
 
 const SupplierDetails = () => {
     document.title = 'Supplier details | Suppliers';
-    const apiUrl = process.env.REACT_APP_API_URL;
     const { id_supplier } = useParams();
-    const axiosHelper = new APIClient();
     const history = useNavigate();
+    const configContext = useContext(ConfigContext)
 
     const [supplierDetails, setSupplierDetails] = useState<SupplierData | undefined>(undefined);
     const [supplierIncomes, setSupplierIncomes] = useState([]);
@@ -41,13 +40,13 @@ const SupplierDetails = () => {
             header: "Acciones",
             accessor: "action",
             render: (value: any, row: any) => (
-              <div className="d-flex gap-1">
-                <Button className="btn-secondary btn-icon" onClick={() => handleIncomeDetails(row)}>
-                  <i className="ri-eye-fill align-middle"></i>
-                </Button>
-              </div>
+                <div className="d-flex gap-1">
+                    <Button className="btn-secondary btn-icon" onClick={() => handleIncomeDetails(row)}>
+                        <i className="ri-eye-fill align-middle"></i>
+                    </Button>
+                </div>
             ),
-          },
+        },
     ]
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
@@ -60,9 +59,19 @@ const SupplierDetails = () => {
         setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
     };
 
+    const showAlert = (color: string, message: string) => {
+        setAlertConfig({ visible: true, color: color, message: message })
+        setTimeout(() => {
+            setAlertConfig({ ...alertConfig, visible: false })
+        }, 5000);
+    }
+
+
     const handleGetSupplierDetails = async () => {
+        if (!configContext) return;
+
         try {
-            const response = await axiosHelper.get(`${apiUrl}/supplier/find_supplier_id/${id_supplier}`);
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/supplier/find_supplier_id/${id_supplier}`);
             setSupplierDetails(response.data.data);
         } catch (error) {
             handleError(error, "Error al obtener detalles del proveedor.");
@@ -71,38 +80,48 @@ const SupplierDetails = () => {
         }
     };
 
+
     const handleGetIncomes = async () => {
-        await axiosHelper.get(`${apiUrl}/incomes/find_incomes/origin.id/${id_supplier}/true`)
-            .then((response) => {
-                setSupplierIncomes(response.data.data)
-            })
-            .catch((error) => {
-                handleError(error, 'El servicio no esta disponible, intentelo más tarde');
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/incomes/find_incomes/origin.id/${id_supplier}/true`);
+            setSupplierIncomes(response.data.data);
+        } catch (error) {
+            handleError(error, 'El servicio no esta disponible, intentelo más tarde');
+        }
+    };
+
 
     const handleUpdateSupplier = async (supplierData: SupplierData) => {
+        if (!configContext) return;
+
         try {
-            await axiosHelper.put(`${apiUrl}/supplier/update_supplier/${supplierData.id}`, supplierData);
-            setAlertConfig({ visible: true, color: "success", message: "Proveedor actualizado correctamente." });
-            setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-            toggleModal("update", false);
+            await configContext.axiosHelper.put(`${configContext.apiUrl}/supplier/update_supplier/${supplierData.id}`, supplierData);
+            showAlert('success', 'El proveedor ha sido actualizado con éxito');
             handleGetSupplierDetails();
         } catch (error) {
             handleError(error, "Error al actualizar el proveedor.");
+        } finally {
+            toggleModal("update", false);
         }
     };
 
+
     const handleDeleteSupplier = async (supplierData: SupplierData) => {
+        if (!configContext) return;
+
         try {
-            await axiosHelper.delete(`${apiUrl}/supplier/delete_supplier/${supplierData.id}`);
-            setAlertConfig({ visible: true, color: "success", message: "Proveedor desactivado correctamente." });
-            setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-            toggleModal("delete", false);
+            await configContext.axiosHelper.delete(`${configContext.apiUrl}/supplier/delete_supplier/${supplierData.id}`);
+            showAlert('success', 'El proveedor ha sido desactivado con éxito')
+            handleGetSupplierDetails();
         } catch (error) {
             handleError(error, "Error al desactivar el proveedor.");
+        } finally {
+            toggleModal("delete", false);
         }
     };
+
 
     const handleIncomeDetails = (row: any) => {
         history(`/warehouse/incomes/income_details/${row.id}`)

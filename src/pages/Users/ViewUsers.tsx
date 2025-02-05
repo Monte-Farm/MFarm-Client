@@ -1,12 +1,12 @@
+import { ConfigContext } from "App"
 import { UserData } from "common/data_interfaces"
 import BreadCrumb from "Components/Common/BreadCrumb"
 import CustomTable from "Components/Common/CustomTable"
 import ObjectDetails from "Components/Common/ObjectDetails"
 import UserForm from "Components/Common/UserForm"
-import { APIClient, getLoggedinUser } from "helpers/api_helper"
-import { useEffect, useState } from "react"
-import { Alert, Badge, Button, Card, CardBody, Container, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap"
-
+import { getLoggedinUser } from "helpers/api_helper"
+import { useContext, useEffect, useState } from "react"
+import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap"
 
 const userAttributes = [
     { key: 'username', label: 'Usuario' },
@@ -20,9 +20,12 @@ const userAttributes = [
 
 const ViewUsers = () => {
     document.title = 'Ver Usuarios'
+    const configContext = useContext(ConfigContext)
 
-    const apiUrl = process.env.REACT_APP_API_URL
-    const axiosHelper = new APIClient();
+    const [users, setUsers] = useState([]);
+    const [selectedUser, setSelecteduser] = useState<any>()
+    const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
+    const [modals, setModals] = useState({ details: false, create: false, update: false, delete: false });
 
     const columns = [
         { header: 'Usuario', accessor: 'username', isFilterable: true },
@@ -39,10 +42,6 @@ const ViewUsers = () => {
                 </Badge>
             ),
             isFilterable: true,
-            options: [
-                { label: 'Activo', value: 'true' },
-                { label: 'Inactivo', value: 'false' }
-            ]
         },
         {
             header: 'Acciones',
@@ -65,10 +64,7 @@ const ViewUsers = () => {
         }
     ]
 
-    const [users, setUsers] = useState([]);
-    const [selectedUser, setSelecteduser] = useState<any>()
-    const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ details: false, create: false, update: false, delete: false });
+
 
     const handleError = (error: any, message: string) => {
         console.error(message, error);
@@ -91,62 +87,66 @@ const ViewUsers = () => {
     }
 
     const handleFetchUsers = async () => {
-        await axiosHelper.get(`${apiUrl}/user`)
-            .then((response) => {
-                const users = response.data.data;
-                const userLogged = getLoggedinUser();
-                setUsers(
-                    users.filter(function (obj: any) {
-                        return obj.username !== userLogged.username;
-                    })
-                )
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error la obtener a los usuarios')
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/user`);
+            const users = response.data.data;
+            const userLogged = getLoggedinUser();
+            setUsers(
+                users.filter(function (obj: any) {
+                    return obj.username !== userLogged.username;
+                })
+            );
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al obtener a los usuarios');
+        }
+    };
+
 
     const handleCreateUser = async (data: UserData) => {
-        await axiosHelper.create(`${apiUrl}/user/create_user`, data)
-            .then((response) => {
-                showAlert('success', 'Usuario creado con éxito');
-                handleFetchUsers()
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error al crear el usuario, intentelo más tarde')
-            })
-            .finally(() => {
-                toggleModal('create', false)
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            await configContext.axiosHelper.create(`${configContext.apiUrl}/user/create_user`, data);
+            showAlert('success', 'Usuario creado con éxito');
+            handleFetchUsers();
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al crear el usuario, intentelo más tarde');
+        } finally {
+            toggleModal('create', false);
+        }
+    };
 
     const handleUpdateUser = async (data: UserData) => {
-        await axiosHelper.put(`${apiUrl}/user/update_user/${data.username}`, data)
-            .then((response) => {
-                showAlert('success', 'Usuario actualizado con éxito');
-                handleFetchUsers()
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error al actualizar el usuario, intentelo más tarde')
-            })
-            .finally(() => {
-                toggleModal('update', false)
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            await configContext.axiosHelper.put(`${configContext.apiUrl}/user/update_user/${data.username}`, data);
+            showAlert('success', 'Usuario actualizado con éxito');
+            handleFetchUsers();
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al actualizar el usuario, intentelo más tarde');
+        } finally {
+            toggleModal('update', false);
+        }
+    };
+
 
     const handleDeleteUser = async () => {
-        await axiosHelper.delete(`${apiUrl}/user/delete_user/${selectedUser.username}`)
-            .then((response) => {
-                showAlert('success', 'Usuario desactivado con éxito')
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error al desactivar el usuario, intentelo mas tarde')
-            })
-            .finally(() => {
-                handleFetchUsers();
-                toggleModal('delete', false)
-            })
-    }
+        if (!configContext) return;
+
+        try {
+            await configContext.axiosHelper.delete(`${configContext.apiUrl}/user/delete_user/${selectedUser.username}`);
+            showAlert('success', 'Usuario desactivado con éxito');
+            handleFetchUsers();
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al desactivar el usuario, intentelo mas tarde');
+        } finally {
+            toggleModal('delete', false);
+        }
+    };
+
 
     useEffect(() => {
         handleFetchUsers();
@@ -157,14 +157,15 @@ const ViewUsers = () => {
             <Container fluid>
                 <BreadCrumb title={"Usuarios"} pageTitle={"Ver Usuarios"} />
 
-                <div className="d-flex">
-                    <Button color="success" className="ms-auto" onClick={() => toggleModal('create')}>
-                        <i className="ri-add-line me-3" />
-                        Agregar Usuario
-                    </Button>
-                </div>
-
                 <Card className="mt-4">
+                    <CardHeader>
+                        <div className="d-flex">
+                            <Button color="success" className="ms-auto" onClick={() => toggleModal('create')}>
+                                <i className="ri-add-line me-3" />
+                                Agregar Usuario
+                            </Button>
+                        </div>
+                    </CardHeader>
                     <CardBody>
                         <CustomTable columns={columns} data={users} />
                     </CardBody>

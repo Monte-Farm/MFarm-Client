@@ -1,16 +1,10 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Button, Col, Row, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback } from "reactstrap";
+import { Button, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback } from "reactstrap";
 import * as Yup from "yup";
 import { useFormik } from "formik";
-import axios, { AxiosHeaders } from "axios";
-import { APIClient } from "helpers/api_helper";
 import FileUploader from "./FileUploader";
-import { error } from "console";
 import { ProductData } from "common/data_interfaces";
 import { ConfigContext } from "App";
-
-const axiosHelper = new APIClient();
-const apiUrl = process.env.REACT_APP_API_URL;
 
 interface ProductFormProps {
     initialData?: ProductData;
@@ -19,7 +13,6 @@ interface ProductFormProps {
     isCodeDisabled?: boolean,
     foldersArray?: string[]
 }
-
 
 const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCancel, isCodeDisabled, foldersArray }) => {
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
@@ -35,8 +28,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                 if (initialData) return true
                 if (!value) return false
                 try {
-                    const response = await axiosHelper.get(`${apiUrl}/product/product_id_exists/${value}`);
-                    return !response.data.data
+                    const response = await configContext?.axiosHelper.get(`${configContext.apiUrl}/product/product_id_exists/${value}`);
+                    return !response?.data.data
                 } catch (error) {
                     console.error(`Error al verificar el id: ${error}`)
                     return false
@@ -80,38 +73,33 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
     });
 
     const fileUpload = async (file: File) => {
-        await axiosHelper.create(`${apiUrl}/google_drive/create_folders`, foldersArray)
-            .then(async (response) => {
-                const folderId = response.data.data;
-
-                await axiosHelper.uploadImage(`${apiUrl}/google_drive/upload_file/${folderId}`, file)
-                    .then((response) => {
-                        const imageId = response.data.data;
-                        formik.values.image = imageId;
-                    })
-                    .catch((error) => {
-                        throw error
-                    })
-            })
-            .catch((error) => {
-                setShowErrorAlert(true);
-                setTimeout(() => setShowErrorAlert(false), 5000)
-                console.log(error)
-            })
-
-
-    }
-
-    const getImageProduct = async () => {
+        if (!configContext) return;
+      
         try {
-            const response = await axiosHelper.get(`${apiUrl}/google_drive/download_file/${initialData?.image}`, { responseType: 'blob' });
-
-            const imageUrl = URL.createObjectURL(response.data);
-            setImagePreview(imageUrl);
+          const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/google_drive/create_folders`, foldersArray);
+          const folderId = response.data.data;
+      
+          const uploadResponse = await configContext.axiosHelper.uploadImage(`${configContext.apiUrl}/google_drive/upload_file/${folderId}`, file);
+          formik.values.image = uploadResponse.data.data;
         } catch (error) {
-            console.error('Error al recuperar la imagen: ', error);
+          setShowErrorAlert(true);
+          setTimeout(() => setShowErrorAlert(false), 5000);
+          console.log(error);
         }
-    }
+      };
+      
+
+      const getImageProduct = async () => {
+        if (!configContext) return;
+      
+        try {
+          const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/google_drive/download_file/${initialData?.image}`, { responseType: 'blob' });
+          setImagePreview(URL.createObjectURL(response.data));
+        } catch (error) {
+          console.error('Error al recuperar la imagen: ', error);
+        }
+      };
+      
 
     useEffect(() => {
         if (initialData && initialData.image) {

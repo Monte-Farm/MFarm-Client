@@ -1,16 +1,13 @@
-import { APIClient, getLoggedinUser } from 'helpers/api_helper';
-import { useEffect, useState } from 'react';
-import { Alert, Button, Col, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Row, Spinner } from 'reactstrap';
+import { getLoggedinUser } from 'helpers/api_helper';
+import { useContext, useEffect, useState } from 'react';
+import { Alert, Button, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from 'reactstrap';
 import * as Yup from 'yup'
 import Flatpickr from 'react-flatpickr';
 import { useFormik } from 'formik';
-import SubwarehouseForm from './SubwarehouseForm';
 import { useNavigate } from 'react-router-dom';
 import SelectTable from './SelectTable';
 import { OrderData } from 'common/data_interfaces';
-
-const axiosHelper = new APIClient();
-const apiUrl = process.env.REACT_APP_API_URL;
+import { ConfigContext } from 'App';
 
 interface OrderFormProps {
     initialData?: OrderData;
@@ -18,34 +15,33 @@ interface OrderFormProps {
     onCancel: () => void;
 }
 
-const validationSchema = Yup.object({
-    id: Yup.string()
-        .required('Por favor, ingrese el ID')
-        .test('unique_id', 'Este identificador ya existe, por favor ingrese otro', async (value) => {
-            if (!value) return false
-            try {
-                const result = await axiosHelper.get(`${apiUrl}/orders/order_id_exists/${value}`)
-                return !result.data.data
-            } catch (error) {
-                console.error(`Error al validar el ID: ${error}`)
-                return false
-            }
-        }),
-    date: Yup.string().required('Por favor, ingrese la fecha'),
-    user: Yup.string().required('Por favor, seleccione el tipo de salida'),
-})
 
 const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }) => {
 
     const history = useNavigate()
-
     const [modals, setModals] = useState({ createWarehouse: false, cancel: false });
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const [orderOrigin, setOrderOrigin] = useState<string>('')
     const [orderDestiny, setOrderDestiny] = useState<string>('')
-    const userLogged = getLoggedinUser()
-
+    const configContext = useContext(ConfigContext)
     const [products, setProducts] = useState([])
+
+    const validationSchema = Yup.object({
+        id: Yup.string()
+            .required('Por favor, ingrese el ID')
+            .test('unique_id', 'Este identificador ya existe, por favor ingrese otro', async (value) => {
+                if (!value) return false
+                try {
+                    const result = await configContext?.axiosHelper.get(`${configContext.apiUrl}/orders/order_id_exists/${value}`)
+                    return !result?.data.data
+                } catch (error) {
+                    console.error(`Error al validar el ID: ${error}`)
+                    return false
+                }
+            }),
+        date: Yup.string().required('Por favor, ingrese la fecha'),
+        user: Yup.string().required('Por favor, seleccione el tipo de salida'),
+    })
 
     const formik = useFormik({
         initialValues: initialData || {
@@ -95,56 +91,62 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
     };
 
     const handleFetchWarehouseProducts = async () => {
-        await axiosHelper.get(`${apiUrl}/warehouse/get_inventory/AG001`)
-            .then((response) => {
-                const products = response.data.data;
+        try {
+            if (!configContext) return;
 
-                const productsWithExistences = products.filter(function (obj: any) {
-                    return obj.quantity !== 0
-                })
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/get_inventory/AG001`);
+            const products = response.data.data;
 
-                console.log(productsWithExistences)
-                setProducts(productsWithExistences)
-            })
-            .catch((error) => {
-                console.error(error)
-                history('/auth-500')
-            })
-    }
+            const productsWithExistences = products.filter((obj: any) => obj.quantity !== 0);
+
+            setProducts(productsWithExistences);
+        } catch (error) {
+            console.error(error);
+            history("/auth-500");
+        }
+    };
+
 
     const fetchOrderOrigin = async () => {
-        await axiosHelper.get(`${apiUrl}/warehouse/find_id/${formik.values.orderOrigin}`)
-        .then((response) => {
-            const orderOrigin = response.data.data.name
-            setOrderOrigin(orderOrigin)
-        })
-        .catch((error) => {
-            console.error('Ha ocurrido un error al obtener el origen de la orden')
-        })
-    }
+        try {
+            if (!configContext) return;
+
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_id/${formik.values.orderOrigin}`);
+            const orderOrigin = response.data.data.name;
+
+            setOrderOrigin(orderOrigin);
+        } catch (error) {
+            console.error('Ha ocurrido un error al obtener el origen de la orden');
+        }
+    };
+
 
     const fetchOrderDestiny = async () => {
-        await axiosHelper.get(`${apiUrl}/warehouse/find_id/${userLogged.assigment}`)
-        .then((response) => {
-            const orderDestiny = response.data.data
-            setOrderDestiny(orderDestiny.name)
-            formik.setFieldValue('orderDestiny', orderDestiny.id)
-        })
-        .catch((error) => {
-            console.error('Ha ocurrido un error al obtener el destino de la orden')
-        })
-    }
+        try {
+            if (!configContext) return;
+
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_id/${configContext.userLogged.assigment}`);
+            const orderDestiny = response.data.data;
+
+            setOrderDestiny(orderDestiny.name);
+            formik.setFieldValue('orderDestiny', orderDestiny.id);
+        } catch (error) {
+            console.error('Ha ocurrido un error al obtener el destino de la orden');
+        }
+    };
+
 
     const fetchNextId = async () => {
-        await axiosHelper.get(`${apiUrl}/orders/order_next_id`)
-            .then((response) => {
-                const nextId = response.data.data;
-                formik.setFieldValue('id', nextId)
-            })
-            .catch((error) => {
-                console.error('Ha ocurrido un error al obtener el id')
-            })
-    }
+        try {
+            if (!configContext) return;
+
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/orders/order_next_id`);
+            const nextId = response.data.data;
+            formik.setFieldValue('id', nextId);
+        } catch (error) {
+            console.error('Ha ocurrido un error al obtener el id');
+        }
+    };
 
     useEffect(() => {
         handleFetchWarehouseProducts();
@@ -155,8 +157,8 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
         const today = new Date().toLocaleDateString('es-ES')
         formik.setFieldValue('date', today)
 
-        if (userLogged) {
-            formik.setFieldValue('user', userLogged.username)
+        if (configContext?.userLogged) {
+            formik.setFieldValue('user', configContext.userLogged.username)
         }
     }, [])
 
@@ -206,7 +208,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
                         type="text"
                         id="userInput"
                         name="userDisplay"
-                        value={`${userLogged?.name} ${userLogged?.lastname}` || ''}
+                        value={`${configContext?.userLogged?.name} ${configContext?.userLogged?.lastname}` || ''}
                         disabled
                     />
                     <Input type="hidden" name="user" value={formik.values.user} />

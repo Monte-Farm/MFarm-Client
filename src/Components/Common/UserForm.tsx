@@ -1,15 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import {
-    Button,
-    Input,
-    Label,
-    FormFeedback,
-    Modal,
-    ModalHeader,
-    ModalBody,
-    ModalFooter,
-    Alert,
-} from "reactstrap";
+import { Button, Input, Label, FormFeedback, Modal, ModalHeader, ModalBody, ModalFooter, Alert, } from "reactstrap";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { SubwarehouseData, UserData } from "common/data_interfaces";
@@ -24,9 +14,6 @@ interface UserFormProps {
 }
 
 const UserForm: React.FC<UserFormProps> = ({ initialData, onSubmit, onCancel, isUsernameDisable }) => {
-    const apiUrl = process.env.REACT_APP_API_URL;
-    const axiosHelper = new APIClient()
-
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
     const [selectedRole, setSelectedRole] = useState<string | null>(initialData?.role || null);
@@ -80,23 +67,21 @@ const UserForm: React.FC<UserFormProps> = ({ initialData, onSubmit, onCancel, is
         }, 5000);
     }
 
-    const fecthSubwarehouses = async () => {
-        await axiosHelper.get(`${apiUrl}/warehouse`)
-            .then((response) => {
-                const subwarehouses = response.data.data;
-                setSubwarehouses(
-                    subwarehouses.filter(function (obj: any) {
-                        return obj.id !== 'AG001'
-                    })
-                )
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error al obtener los subalmacenes')
-            })
-    }
-
+    const fetchSubwarehouses = async () => {
+        if (!configContext) return;
+      
+        try {
+          const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse`);
+          const subwarehouses = response.data.data;
+          setSubwarehouses(subwarehouses.filter((obj: any) => obj.id !== 'AG001'));
+        } catch (error) {
+          handleError(error, 'Ha ocurrido un error al obtener los subalmacenes');
+        }
+      };
+      
+      
     useEffect(() => {
-        fecthSubwarehouses();
+        fetchSubwarehouses();
     }, [])
 
     return (

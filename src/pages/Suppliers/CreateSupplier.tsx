@@ -1,7 +1,7 @@
+import { ConfigContext } from "App"
 import BreadCrumb from "Components/Common/BreadCrumb"
 import SupplierForm from "Components/Common/SupplierForm"
-import { APIClient } from "helpers/api_helper"
-import { useState } from "react"
+import { useContext, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Alert, Card, CardBody, CardHeader, Container } from "reactstrap"
 
@@ -9,8 +9,7 @@ import { Alert, Card, CardBody, CardHeader, Container } from "reactstrap"
 const CreateSupplier = () => {
     document.title = 'New Supplier | Warehouse'
     const history = useNavigate();
-    const axiosHelper = new APIClient();
-    const apiUrl = process.env.REACT_APP_API_URL;
+    const configContext = useContext(ConfigContext);
 
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
 
@@ -20,18 +19,26 @@ const CreateSupplier = () => {
         setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
     };
 
-    //Agregar manejo de errores
-    const handleCreateSupplier = async (data: any) => {
-        await axiosHelper.create(`${apiUrl}/supplier/create_supplier`, data)
-        .then(() => {
-            setAlertConfig({visible: true, color: 'success', message: 'Proveedor registrado con éxito'})
-            setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-            setTimeout(() => handleCancel(), 5000);
-        })
-        .catch((error) => {
-            handleError(error, 'El servicio no esta disponible, intentelo más tarde');
-        })
+    const showAlert = (color: string, message: string) => {
+        setAlertConfig({ visible: true, color: color, message: message })
+        setTimeout(() => {
+            setAlertConfig({ ...alertConfig, visible: false })
+        }, 5000);
     }
+
+
+    const handleCreateSupplier = async (data: any) => {
+        if (!configContext) return;
+
+        try {
+            await configContext.axiosHelper.create(`${configContext.apiUrl}/supplier/create_supplier`, data);
+            showAlert('success', 'El proveedor se ha creado con éxito');
+            setTimeout(() => handleCancel(), 5000);
+        } catch (error) {
+            handleError(error, 'El servicio no esta disponible, intentelo más tarde');
+        }
+    };
+
 
     const handleCancel = () => {
         history('/warehouse/suppliers/view_suppliers')

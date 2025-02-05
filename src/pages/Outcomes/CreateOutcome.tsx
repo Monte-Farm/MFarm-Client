@@ -1,15 +1,14 @@
+import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/BreadCrumb";
 import OutcomeForm from "Components/Common/OutcomeForm";
-import { APIClient } from "helpers/api_helper";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Alert, Card, CardBody, Container } from "reactstrap";
 
 const CreateOutcome = () => {
     document.title = 'Nueva Salida';
-    const apiUrl = process.env.REACT_APP_API_URL;
-    const axiosHelper = new APIClient();
-    const history = useNavigate()
+    const history = useNavigate();
+    const configContext = useContext(ConfigContext);
 
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' });
 
@@ -30,18 +29,22 @@ const CreateOutcome = () => {
 
 
     const handleCreateOutcome = async (outcomeData: any) => {
+        if (!configContext) return;
 
-        await axiosHelper.create(`${apiUrl}/outcomes/create_outcome/${true}/${outcomeData.outcomeType}`, outcomeData)
-            .then((response) => {
-                showAlert('success', 'La salida se ha creado con éxito')
-                setTimeout(() => {
-                    handleCancel()
-                }, 2500);
-            })
-            .catch((error) => {
-                handleError(error, 'Ha ocurrido un error al crear la salida, intentelo más tarde')
-            })
-    }
+        try {
+            await configContext.axiosHelper.create(
+                `${configContext.apiUrl}/outcomes/create_outcome/${true}/${outcomeData.outcomeType}`,
+                outcomeData
+            );
+            showAlert('success', 'La salida se ha creado con éxito');
+            setTimeout(() => {
+                handleCancel();
+            }, 2500);
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al crear la salida, intentelo más tarde');
+        }
+    };
+
 
     const handleCancel = () => {
         history('/warehouse/outcomes/view_outcomes')
@@ -52,7 +55,7 @@ const CreateOutcome = () => {
             <Container fluid>
                 <BreadCrumb title={"Nueva Salida"} pageTitle={"Salidas"} />
 
-                <Card style={{ height: '85vh' }}>
+                <Card>
                     <CardBody>
                         <OutcomeForm onSubmit={handleCreateOutcome} onCancel={handleCancel}></OutcomeForm>
                     </CardBody>
