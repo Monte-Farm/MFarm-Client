@@ -179,17 +179,6 @@ const SubwarehouseDetails = () => {
                 <div className="d-flex-column gap-3 mt-4">
                     <Card className="h-100">
                         <CardHeader>
-                            <h4>Información de Subalmacén</h4>
-                        </CardHeader>
-                        <CardBody>
-                            {subwarehouseDetails && (
-                                <ObjectDetailsHorizontal attributes={subwarehouseAttributes} object={subwarehouseDetails} />
-                            )}
-                        </CardBody>
-                    </Card>
-
-                    <Card className="h-100">
-                        <CardHeader>
                             <h4>Inventario</h4>
                         </CardHeader>
                         <CardBody>

@@ -62,6 +62,7 @@ function App() {
 
   useEffect(() => {
     getConfigurationData();
+    setUserLogged(getLoggedinUser())
   }, [])
 
   useEffect(() => {

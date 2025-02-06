@@ -1,53 +1,53 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState } from "react";
 import { Input, Table } from "reactstrap";
 import SimpleBar from "simplebar-react";
 
 interface OrderProductsTableProps {
   data: any[];
-  onProductSelect: (selectedProducts: Array<{ id: string; quantity: number, price: number }>) => void;
-  fixedColumnNames?: boolean; // Prop para hacer los nombres de las columnas fijos
+  productsDelivered: Array<{ id: string; quantity: number | "" }>;
+  onProductEdit: (updatedProducts: Array<{ id: string; quantity: number }>) => void;
 }
 
-const OrderTable: React.FC<OrderProductsTableProps> = ({
-  data,
-  onProductSelect,
-  fixedColumnNames
-}) => {
-  const [selectedProducts, setSelectedProducts] = useState<Array<{ id: string; quantity: number; price: number }>>([]);
+const OrderTable: React.FC<OrderProductsTableProps> = ({ data, productsDelivered, onProductEdit }) => {
   const [filterText, setFilterText] = useState<string>("");
 
-  const handleInputChange = useCallback(
-    (id: string, value: number) => {
-      const product = data.find((p) => p.id === id);
-      const maxQuantity = product?.quantity || 0;
-      const updatedQuantity = Math.min(isNaN(value) ? 0 : value, maxQuantity);
+  const [editingValues, setEditingValues] = useState<Record<string, string>>({});
 
-      const updatedProducts = selectedProducts.map((p) =>
-        p.id === id ? { ...p, quantity: updatedQuantity, price: product?.price || p.price } : p
-      );
-      setSelectedProducts(updatedProducts);
-      onProductSelect(updatedProducts);
-    },
-    [selectedProducts, onProductSelect, data]
-  );
+  const handleInputChange = (id: string, value: string) => {
+    let cleanedValue = value.replace(/^0+/, ""); // Elimina ceros iniciales
 
-  const handleCheckboxChange = useCallback((id: string, checked: boolean) => {
-    if (checked) {
-      const product = data.find((p) => p.id === id);
-      const price = product?.price || 0;
-      setSelectedProducts((prev) => [...prev, { id, quantity: 0, price }]);
-    } else {
-      setSelectedProducts((prev) => prev.filter((product) => product.id !== id));
+    if (cleanedValue === "") cleanedValue = "0"; // Si el usuario borra todo, queda "0"
+
+    let parsedValue = parseInt(cleanedValue, 10);
+    if (isNaN(parsedValue)) parsedValue = 0;
+
+    const product = data.find((p) => p.id === id);
+    const maxQuantity = product?.quantity || 0;
+
+    // Limitar el valor en tiempo real
+    if (parsedValue > maxQuantity) {
+      parsedValue = maxQuantity;
     }
-  }, []);
 
-  const handleRowClick = useCallback(
-    (id: string) => {
-      const isSelected = selectedProducts.some((product) => product.id === id);
-      handleCheckboxChange(id, !isSelected);
-    },
-    [selectedProducts, handleCheckboxChange]
-  );
+    // Actualiza el estado del input
+    setEditingValues((prev) => ({ ...prev, [id]: parsedValue.toString() }));
+
+    // Actualiza la lista de productos entregados
+    const updatedProducts = productsDelivered.map((p) =>
+      p.id === id ? { ...p, quantity: parsedValue } : p
+    );
+    onProductEdit(updatedProducts as Array<{ id: string; quantity: number }>);
+  };
+
+
+
+
+  const getInputValue = (id: string) => {
+    if (editingValues[id] !== undefined) return editingValues[id];
+    return productsDelivered.find((p) => p.id === id)?.quantity.toString() || "0";
+  };
+
+
 
   const filteredData = data.filter((product) => {
     const filter = filterText.toLowerCase();
@@ -67,16 +67,13 @@ const OrderTable: React.FC<OrderProductsTableProps> = ({
           placeholder="Buscar por Producto, Categoría o Unidad de medida..."
           value={filterText}
           onChange={(e) => setFilterText(e.target.value)}
-          aria-label="Buscar productos"
         />
       </div>
 
-      {/* Contenedor con desplazamiento cuando no hay paginación */}
       <SimpleBar style={{ height: "500px" }}>
         <Table className="table-hover align-middle table-nowrap mb-0" striped>
           <thead className="table-light sticky-top">
             <tr>
-              <th>Seleccionar</th>
               <th>Código</th>
               <th>Producto</th>
               <th>Categoría</th>
@@ -88,18 +85,9 @@ const OrderTable: React.FC<OrderProductsTableProps> = ({
           <tbody>
             {filteredData.length > 0 ? (
               filteredData.map((product) => {
-                const isSelected = selectedProducts.some((p) => p.id === product.id);
+                const deliveredProduct = productsDelivered.find((p) => p.id === product.id);
                 return (
-                  <tr key={product.id} onClick={() => handleRowClick(product.id)} style={{ cursor: "pointer" }}>
-                    <td>
-                      <Input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={(e) => handleCheckboxChange(product.id, e.target.checked)}
-                        onClick={(e) => e.stopPropagation()}
-                        aria-label={`Seleccionar producto ${product.name}`}
-                      />
-                    </td>
+                  <tr key={product.id}>
                     <td>{product.id}</td>
                     <td>{product.name}</td>
                     <td>{product.category}</td>
@@ -107,10 +95,10 @@ const OrderTable: React.FC<OrderProductsTableProps> = ({
                     <td>
                       <Input
                         type="number"
-                        value={selectedProducts.find((p) => p.id === product.id)?.quantity || ""}
-                        onChange={(e) => handleInputChange(product.id, parseInt(e.target.value, 10))}
-                        disabled={!isSelected}
-                        onClick={(e) => e.stopPropagation()}
+                        value={editingValues[product.id] ?? productsDelivered.find((p) => p.id === product.id)?.quantity.toString() ?? "0"}
+                        onChange={(e) => handleInputChange(product.id, e.target.value)}
+                        min={0}
+                        max={product.quantity}
                       />
                     </td>
                     <td>{product.unit_measurement}</td>

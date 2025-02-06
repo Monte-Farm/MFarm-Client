@@ -24,6 +24,7 @@ const Navdata = () => {
     //Orders
     const [isCreateOrder, setIsCreateOrder] = useState<boolean>(false)
     const [isPendingOrders, setIsPendingOrders] = useState<boolean>(false)
+    const [isCompletedOrders, setIsCompletedOrders] = useState<boolean>(false)
 
     const [iscurrentState, setIscurrentState] = useState('Home');
 
@@ -238,9 +239,22 @@ const Navdata = () => {
 
                     click: function (e: any) {
                         e.preventDefault();
-                        setIsCreateOrder(!isPendingOrders)
+                        setIsPendingOrders(!isPendingOrders)
                     },
                     stateVariables: isPendingOrders,
+                },
+                {
+                    id: "pendingOrders",
+                    label: 'Pedidos Completados',
+                    link: "#",
+                    roles: ['Encargado de almacen'],
+                    parentId: "orders",
+
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsCompletedOrders(!isCompletedOrders)
+                    },
+                    stateVariables: isCompletedOrders,
                 },
             ]
         },

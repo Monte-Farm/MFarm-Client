@@ -57,7 +57,8 @@ const SendOrders = () => {
 
         try {
             const response = await configContext.axiosHelper.get(query);
-            setOrders(response.data.data);
+            const filteredOrders = response.data.data.filter((order: any) => order.status !== 'completed');
+            setOrders(filteredOrders);
         } catch (error) {
             handleError(error, 'Ha ocurrido un error al recuperar los pedidos, intentelo más tarde');
         }
@@ -72,14 +73,18 @@ const SendOrders = () => {
         }
     }
 
+
     useEffect(() => {
+        if (!configContext?.userLogged) return;
+
         fetchOrders();
-    }, [])
+    }, [configContext?.userLogged]);
+
 
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={configContext?.userLogged.role === 'Encargado de almacen' ? 'Pedidos recibidos' : "Pedidos enviados"} pageTitle={"Pedidos"} />
+                {configContext?.userLogged && <BreadCrumb title={configContext?.userLogged.role === 'Encargado de almacen' ? 'Pedidos recibidos' : "Pedidos enviados"} pageTitle={"Pedidos"} />}
 
                 <Card style={{ height: '70vh' }}>
                     <CardHeader>

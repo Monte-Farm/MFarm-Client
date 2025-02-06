@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { Alert, Button, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from 'reactstrap';
+import { Alert, Button, Card, CardBody, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from 'reactstrap';
 import * as Yup from 'yup'
 import Flatpickr from 'react-flatpickr';
 import { useFormik } from 'formik';
@@ -7,12 +7,20 @@ import { useNavigate } from 'react-router-dom';
 import { OrderData } from 'common/data_interfaces';
 import OrderTable from './OrderTable';
 import { ConfigContext } from 'App';
+import ObjectDetailsHorizontal from './ObjectDetailsHorizontal';
 
 interface OrderFormProps {
     initialData?: OrderData;
     onSubmit: (data: OrderData) => Promise<void>
     onCancel: () => void;
 }
+
+const orderAttributes = [
+    { key: 'id', label: 'No. de Pedido' },
+    { key: 'date', label: 'Fecha de Pedido' },
+    { key: 'user', label: 'Usuario' },
+    { key: 'orderDestiny', label: 'Almacén' },
+]
 
 const validationSchema = Yup.object({
     id: Yup.string().required('Por favor, ingrese el ID'),
@@ -25,8 +33,7 @@ const CompleteOrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, on
 
     const [modals, setModals] = useState({ createWarehouse: false, cancel: false });
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
-    const [orderOrigin, setOrderOrigin] = useState<string>('')
-    const [orderDestiny, setOrderDestiny] = useState<string>('')
+    const [orderDisplay, setOrderDisplay] = useState<OrderData | undefined>(undefined)
     const [products, setProducts] = useState([])
     const configContext = useContext(ConfigContext);
 
@@ -73,17 +80,14 @@ const CompleteOrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, on
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
 
-    const handleProductSelect = (selectedProducts: Array<{ id: string; quantity: number; }>) => {
-        formik.setFieldValue("productsDelivered", selectedProducts);
-    };
-
     const handleFetchOrderProducts = async () => {
         try {
-            if (!configContext) return;
+            if (!configContext || !initialData) return;
 
-            const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/product/find_products_by_array`, formik.values.productsRequested);
+            const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/product/find_products_by_array`, initialData.productsRequested);
 
             const products = response.data.data;
+            formik.setFieldValue('productsDelivered', initialData.productsRequested)
             setProducts(products);
         } catch (error) {
             console.error(error);
@@ -91,151 +95,59 @@ const CompleteOrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, on
         }
     };
 
+    const fetchDisplayInfo = async () => {
+        if (!initialData || !configContext) return;
 
-    const fetchOrderOrigin = async () => {
         try {
-            if (!configContext) return;
+            const [userResponse, destinyResponse] = await Promise.all([
+                configContext.axiosHelper.get(`${configContext.apiUrl}/user/find_by_id/${initialData.user}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_id/${initialData.orderDestiny}`)
+            ])
 
-            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_id/${formik.values.orderOrigin}`);
-
-            const orderOrigin = response.data.data.name;
-            setOrderOrigin(orderOrigin);
+            setOrderDisplay({
+                ...initialData,
+                user: `${userResponse.data.data.name} ${userResponse.data.data.lastname}`,
+                orderDestiny: destinyResponse.data.data.name
+            })
         } catch (error) {
-            console.error("Ha ocurrido un error al obtener el origen de la orden");
+            console.error('Error al obtener los detalles del pedido', error);
         }
-    };
-
-
-    const fetchOrderDestiny = async () => {
-        try {
-            if (!configContext) return;
-
-            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_id/${formik.values.orderDestiny}`);
-
-            const orderDestiny = response.data.data;
-            setOrderDestiny(orderDestiny.name);
-            formik.setFieldValue('orderDestiny', orderDestiny.id);
-        } catch (error) {
-            console.error("Ha ocurrido un error al obtener el destino de la orden");
-        }
-    };
+    }
 
 
     useEffect(() => {
-        if (configContext?.userLogged) {
-            formik.setFieldValue('user', configContext?.userLogged.username)
-        }
-    }, [])
-
-    useEffect(() => {
+        fetchDisplayInfo();
         handleFetchOrderProducts();
-        fetchOrderOrigin();
-        fetchOrderDestiny();
-
-    }, [formik.values])
+    }, [initialData])
 
 
     return (
         <>
             <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }}>
-                <div className='d-flex gap-3'>
-                    <div className="w-50">
-                        <Label htmlFor="idInput" className="form-label">Identificador</Label>
-                        <Input
-                            type="text"
-                            id="idInput"
-                            name="id"
-                            value={formik.values.id}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            invalid={formik.touched.id && !!formik.errors.id}
-                            disabled
-                        />
-                        {formik.touched.id && formik.errors.id && <FormFeedback>{formik.errors.id}</FormFeedback>}
-                    </div>
+                <div className=''>
 
-                    <div className="w-50">
-                        <Label htmlFor="dateInput" className="form-label">Fecha</Label>
-
-                        <Flatpickr
-                            id="dateInput"
-                            className="form-control"
-                            value={formik.values.date}
-                            options={{
-                                dateFormat: "d-m-Y",
-                                defaultDate: formik.values.date,
-                            }}
-                            onChange={(date) => {
-                                const formattedDate = date[0].toLocaleDateString("es-ES");
-                                formik.setFieldValue("date", formattedDate);
-                            }}
-                            disabled
-                        />
-                        {formik.touched.date && formik.errors.date && <FormFeedback className="d-block">{formik.errors.date}</FormFeedback>}
-
-                    </div>
-                </div>
-
-                <div className="mt-4">
-                    <Label htmlFor="userInput" className="form-label">¿Quién hace el pedido?</Label>
-                    <Input
-                        type="text"
-                        id="userInput"
-                        name="userDisplay"
-                        value={`${configContext?.userLogged.name} ${configContext?.userLogged.lastname}` || ''}
-                        disabled
-                    />
-                    <Input type="hidden" name="user" value={formik.values.user} />
-                    {formik.touched.user && formik.errors.user && (
-                        <FormFeedback>{formik.errors.user}</FormFeedback>
-                    )}
-                </div>
-
-                <div className='d-flex gap-3 mt-4'>
-                    <div className='w-50'>
-                        <Label>Pedido desde:</Label>
-                        <Input
-                            type="text"
-                            id="orderOriginInput"
-                            name="orderOrigin"
-                            value={orderOrigin || ''}
-                            disabled
-                        />
-                        <Input type="hidden" name="orderOrigin" value={formik.values.orderOrigin} />
-                        {formik.touched.orderOrigin && formik.errors.orderOrigin && (
-                            <FormFeedback>{formik.errors.orderOrigin}</FormFeedback>
-                        )}
-                    </div>
-
-                    <div className='position-relative mt-3'>
-                        <i className=' ri-arrow-right-line position-absolute top-50 start-50 translate-middle'></i>
-                    </div>
-
-                    <div className='w-50'>
-                        <Label>Pedido para:</Label>
-                        <Input
-                            type="text"
-                            id="orderDestinyInput"
-                            name="orderDestiny"
-                            value={orderDestiny || ''}
-                            disabled
-                        />
-                        <Input type="hidden" name="orderDestiny" value={formik.values.orderDestiny} />
-                        {formik.touched.orderDestiny && formik.errors.orderDestiny && (
-                            <FormFeedback>{formik.errors.orderDestiny}</FormFeedback>
-                        )}
+                    <h5 className="me-auto">Detalles del Pedido</h5>
+                    <div className="border"></div>
+                    <div className='mt-3 w-100 h-100 rounded border bg-secondary-subtle pt-3 pb-2 ps-3'>
+                        {orderDisplay && <ObjectDetailsHorizontal attributes={orderAttributes} object={orderDisplay} />}
                     </div>
                 </div>
 
 
                 {/* Productos */}
-                <div className="d-flex mt-5">
+                <div className="d-flex mt-4">
                     <h5 className="me-auto">Productos solicitados</h5>
                 </div>
                 <div className="border"></div>
 
-                <div className="mt-3 border border-0">
-                    <OrderTable data={products} onProductSelect={(selectedProducts: any) => handleProductSelect(selectedProducts)} fixedColumnNames={true}/>
+                <div className="mt-4">
+                    <h5>Productos solicitados</h5>
+                    <OrderTable
+                        data={products}
+                        productsDelivered={formik.values.productsDelivered}
+                        onProductEdit={(updatedProducts) => formik.setFieldValue("productsDelivered", updatedProducts)}
+                    />
+
                 </div>
 
                 <div className='d-flex justify-content-end mt-5 gap-2'>

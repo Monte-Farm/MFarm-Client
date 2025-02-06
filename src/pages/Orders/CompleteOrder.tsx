@@ -41,7 +41,6 @@ const CompleteOrder = () => {
 
     const handleCompleteOrder = async (data: OrderData) => {
         if (!configContext) return;
-
         try {
             data.status = 'completed';
             await configContext.axiosHelper.put(`${configContext.apiUrl}/orders/update_order/${data.id}`, data);
