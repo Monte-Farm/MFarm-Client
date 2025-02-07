@@ -48,6 +48,7 @@ import ViewUsers from "pages/Users/ViewUsers";
 import SendOrders from "pages/Orders/SendOrders";
 import OrderDetails from "pages/Orders/OrderDetails";
 import CompleteOrder from "pages/Orders/CompleteOrder";
+import CompletedOrders from "pages/Orders/CompletedOrders";
 
 
 
@@ -90,6 +91,7 @@ const authProtectedRoutes = [
   { path: '/orders/send_orders', component: <SendOrders /> },
   { path: '/orders/order_details/:id_order', component: <OrderDetails /> },
   { path: '/orders/complete_order/:id_order', component: <CompleteOrder /> },
+  { path: '/orders/completed_orders', component: <CompletedOrders /> },
 
 
   //Users

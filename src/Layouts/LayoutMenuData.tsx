@@ -246,7 +246,7 @@ const Navdata = () => {
                 {
                     id: "pendingOrders",
                     label: 'Pedidos Completados',
-                    link: "#",
+                    link: "/orders/completed_orders",
                     roles: ['Encargado de almacen'],
                     parentId: "orders",
 

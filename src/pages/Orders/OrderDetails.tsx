@@ -18,10 +18,18 @@ const orderAttributes = [
 const productsColumns = [
     { header: 'Codigo', accessor: 'id', isFilterable: true },
     { header: 'Nombre', accessor: 'name', isFilterable: true },
-    { header: 'Cantidad', accessor: 'quantity', isFilterable: true },
+    { header: 'Cantidad Solicitada', accessor: 'quantity', isFilterable: true },
     { header: 'Unidad de medida', accessor: 'unit_measurement', isFilterable: true },
     { header: 'Categoria', accessor: 'category', isFilterable: true },
-    { header: 'Description', accessor: 'description', isFilterable: true },
+]
+
+const productsCompletedColumns = [
+    { header: 'Codigo', accessor: 'id', isFilterable: true },
+    { header: 'Nombre', accessor: 'name', isFilterable: true },
+    { header: 'Cantidad Solicitada', accessor: 'quantity', isFilterable: true },
+    { header: 'Cantidad Entregada', accessor: 'quantityDelivered', isFilterable: true },
+    { header: 'Unidad de medida', accessor: 'unit_measurement', isFilterable: true },
+    { header: 'Categoria', accessor: 'category', isFilterable: true },
 ]
 
 const OrderDetails = () => {
@@ -54,7 +62,18 @@ const OrderDetails = () => {
                 orderDestiny: destinyResponse.data.data.name,
             });
 
-            setProducts(productsResponse.data.data);
+            let products = productsResponse.data.data;
+
+            if (orderData.status === 'completed' && orderData.productsDelivered) {
+                const deliveredMap = new Map(orderData.productsDelivered.map(p => [p.id, p.quantity]));
+    
+                products = products.map((product: any) => ({
+                    ...product,
+                    quantityDelivered: deliveredMap.get(product.id) || 0, // Agrega quantityDelivered o 0 si no existe
+                }));
+            }
+
+            setProducts(products);
         } catch (error) {
             console.error('Error al obtener los datos del pedido', error);
         } finally {
@@ -63,10 +82,10 @@ const OrderDetails = () => {
     };
 
 
-
     useEffect(() => {
         fetchOrderDetails();
     }, []);
+
 
     return (
         <div className="page-content">
@@ -98,7 +117,7 @@ const OrderDetails = () => {
                                 <h4>Productos</h4>
                             </CardHeader>
                             <CardBody>
-                                <CustomTable columns={productsColumns} data={products} rowClickable={false} />
+                                <CustomTable columns={orderDetails?.status === 'completed' ? productsCompletedColumns : productsColumns} data={products} rowClickable={false} />
                             </CardBody>
                         </Card>
                     </div>
