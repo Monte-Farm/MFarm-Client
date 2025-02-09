@@ -20,11 +20,20 @@ const Navdata = () => {
     const [isOutcomes, setIsOutcomes] = useState<boolean>(false)
     const [isInventory, setIsInventory] = useState<boolean>(false)
     const [isProducts, setIsProducts] = useState<boolean>(false)
+    const [isWarehouseConfiguration, setIsWarehouseConfiguration] = useState<boolean>(false)
+
+    // Subwarehouese
+    const [isViewSubwarehouses, setIsViewSubwarehouses] = useState<boolean>(false)
+    const [isSubwarehouseInventory, setIsSubwarehouseInventory] = useState<boolean>(false)
+    const [isSubwarehouseIncomes, setIsSubwarehouseIncomes] = useState<boolean>(false);
+    const [isSubwarehouseOutcomes, setIsSubwarehouseOutcomes] = useState<boolean>(false);
 
     //Orders
     const [isCreateOrder, setIsCreateOrder] = useState<boolean>(false)
     const [isPendingOrders, setIsPendingOrders] = useState<boolean>(false)
     const [isCompletedOrders, setIsCompletedOrders] = useState<boolean>(false)
+
+    //Users
 
     const [iscurrentState, setIscurrentState] = useState('Home');
 
@@ -87,7 +96,7 @@ const Navdata = () => {
             label: "Almacén",
             icon: "ri-community-line",
             link: "/#",
-            roles: ["Superadmin" , 'Encargado de almacen'],
+            roles: ["Superadmin", 'Encargado de almacen'],
             click: function (e: any) {
                 e.preventDefault();
                 setIsWarehouse(!isWarehouse);
@@ -100,7 +109,7 @@ const Navdata = () => {
                     id: "inventory",
                     label: "Inventario",
                     link: "/warehouse/inventory/view_inventory",
-                    roles: ["Superadmin" , 'Encargado de almacen'],
+                    roles: ["Superadmin", 'Encargado de almacen'],
                     parentId: "warehouse",
                     click: function (e: any) {
                         e.preventDefault();
@@ -189,6 +198,17 @@ const Navdata = () => {
                         setIsIncomes(!isProducts);
                     },
                 },
+                {
+                    id: "configurations",
+                    label: "Configuracion",
+                    link: "/warehouse/configuration",
+                    roles: ["Superadmin"],
+                    parentId: "warehouse",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsWarehouseConfiguration(!isWarehouseConfiguration);
+                    },
+                },
             ],
         },
         {
@@ -203,6 +223,73 @@ const Navdata = () => {
                 setIscurrentState('Subwarehouse');
                 updateIconSidebar(e);
             },
+            subItems: [
+                {
+                    id: 'viewSubwarehouses',
+                    label: 'Ver Subalmacenes',
+                    link: '/subwarehouse/view_subwarehouse',
+                    roles: ['Superadmin'],
+                    parentId: 'subwarehouse',
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsViewSubwarehouses(!isViewSubwarehouses)
+                    },
+                    stateVariables: isViewSubwarehouses
+                },
+                {
+                    id: 'subwarehouseInventory',
+                    label: 'Inventario',
+                    link: '/subwarehouse/subwarehouse_inventory',
+                    roles: ['Encargado de subalmacen'],
+                    parentId: 'subwarehouse',
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsSubwarehouseInventory(!isSubwarehouseInventory)
+                    },
+                    stateVariables: isSubwarehouseInventory
+                },
+                {
+                    id: 'subwarehouseIncomes',
+                    label: 'Entradas',
+                    link: '/subwarehouse/subwarehouse_incomes',
+                    roles: ['Encargado de subalmacen'],
+                    parentId: 'subwarehouse',
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsSubwarehouseIncomes(!isSubwarehouseIncomes)
+                    },
+                    stateVariables: isSubwarehouseIncomes
+                },
+                {
+                    id: 'subwarehouseOutcomes',
+                    label: 'Salidas',
+                    link: '#',
+                    roles: ['Encargado de subalmacen'],
+                    parentId: 'subwarehouse',
+                    isChildItem: true,
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsSubwarehouseOutcomes(!isSubwarehouseOutcomes)
+                    },
+                    stateVariables: isSubwarehouseOutcomes,
+                    childItems: [
+                        {
+                            id: 1,
+                            label: "Nueva Salida",
+                            link: "/subwarehouse/create_subwarehouse_outcome",
+                            roles: ['Encargado de subalmacen'],
+                            parentId: "subwarehouseOutcomes"
+                        },
+                        {
+                            id: 2,
+                            label: "Ver Salidas",
+                            link: "/subwarehouse/subwarehouse_outcomes",
+                            roles: ['Encargado de subalmacen'],
+                            parentId: "subwarehouseOutcomes"
+                        },
+                    ]
+                }
+            ]
         },
         {
             id: 'orders',
@@ -223,7 +310,6 @@ const Navdata = () => {
                     link: "/orders/create_order",
                     roles: ['Encargado de subalmacen'],
                     parentId: "orders",
-
                     click: function (e: any) {
                         e.preventDefault();
                         setIsCreateOrder(!isCreateOrder)

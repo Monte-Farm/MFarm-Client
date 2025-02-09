@@ -49,6 +49,11 @@ import SendOrders from "pages/Orders/SendOrders";
 import OrderDetails from "pages/Orders/OrderDetails";
 import CompleteOrder from "pages/Orders/CompleteOrder";
 import CompletedOrders from "pages/Orders/CompletedOrders";
+import SubwarehouseInventory from "pages/Subwarehouse/SubwarehouseInventory";
+import SubwarehouseIncomes from "pages/Subwarehouse/SubwarehouseIncomes";
+import SubwarehouseOutcomes from "pages/Subwarehouse/SubwarehouseOutcomes";
+import CreateSubwarehouseOutcome from "pages/Subwarehouse/CreateSubwarehouseOutcome";
+import WarehouseConfiguration from "pages/Configuration/WarehouseConfiguration";
 
 
 
@@ -58,6 +63,8 @@ const authProtectedRoutes = [
   { path: "/home", component: <Home /> },
 
   //Warehouse
+  { path: '/warehouse/configuration', component: <WarehouseConfiguration /> },
+
 
   //Warehouse - Inventory
   { path: '/warehouse/inventory/create_product', component: <CreateProduct /> },
@@ -85,6 +92,10 @@ const authProtectedRoutes = [
   //Subwarehouse
   { path: '/subwarehouse/view_subwarehouse', component: <ViewSubwarehouse /> },
   { path: '/subwarehouse/subwarehouse_details/:id_subwarehouse', component: <SubwarehouseDetails /> },
+  { path: '/subwarehouse/subwarehouse_inventory', component: <SubwarehouseInventory /> },
+  { path: '/subwarehouse/subwarehouse_incomes', component: <SubwarehouseIncomes /> },
+  { path: '/subwarehouse/subwarehouse_outcomes', component: <SubwarehouseOutcomes /> },
+  { path: '/subwarehouse/create_subwarehouse_outcome', component: <CreateSubwarehouseOutcome /> },
 
   //Orders
   { path: '/orders/create_order', component: <CreateOrder /> },

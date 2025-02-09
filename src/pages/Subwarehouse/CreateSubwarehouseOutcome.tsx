@@ -1,15 +1,16 @@
 import { ConfigContext } from "App";
+import { OutcomeData } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/BreadCrumb";
 import OutcomeForm from "Components/Common/OutcomeForm";
+import SubwarehouseOutcomeForm from "Components/Common/SubwarehouseOutcomeForm";
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Alert, Card, CardBody, Container } from "reactstrap";
+import { Container, Card, CardBody, Alert } from "reactstrap";
 
-const CreateOutcome = () => {
-    document.title = 'Nueva Salida';
+const CreateSubwarehouseOutcome = () => {
+    document.title = 'Nueva Salida | Subalmacén';
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
-
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' });
 
     const handleError = (error: any, message: string) => {
@@ -27,24 +28,22 @@ const CreateOutcome = () => {
         }, 5000);
     }
 
-
-    const handleCreateOutcome = async (outcomeData: any) => {
-        if (!configContext) return;
+    const handleCreateSubwarehouseOutcome = async (data: OutcomeData) => {
+        if (!configContext || !configContext.userLogged) return;
 
         try {
-            await configContext.axiosHelper.create(`${configContext.apiUrl}/outcomes/create_outcome/${true}/${outcomeData.outcomeType}`,outcomeData);
-            showAlert('success', 'La salida se ha creado con éxito');
+            await configContext.axiosHelper.create(`${configContext.apiUrl}/outcomes/create_outcome/${false}/${data.outcomeType}`, data);
+            showAlert('success', 'La salida se ha creado exitosamente')
             setTimeout(() => {
-                handleCancel();
-            }, 2500);
+                handleCancel()
+            }, 5000);
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al crear la salida, intentelo más tarde');
+            handleError(error, 'Ha ocurrido un error al crear la salida, intentelo más tarde')
         }
-    };
-
+    }
 
     const handleCancel = () => {
-        history('/warehouse/outcomes/view_outcomes')
+        history('/subwarehouse/subwarehouse_outcomes')
     }
 
     return (
@@ -54,7 +53,7 @@ const CreateOutcome = () => {
 
                 <Card>
                     <CardBody>
-                        <OutcomeForm onSubmit={handleCreateOutcome} onCancel={handleCancel}></OutcomeForm>
+                        <SubwarehouseOutcomeForm onSubmit={(data: OutcomeData) => handleCreateSubwarehouseOutcome(data)} onCancel={handleCancel} />
                     </CardBody>
                 </Card>
 
@@ -71,4 +70,4 @@ const CreateOutcome = () => {
     )
 }
 
-export default CreateOutcome;
+export default CreateSubwarehouseOutcome

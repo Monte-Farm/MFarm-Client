@@ -3,13 +3,13 @@ import { SupplierData } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/BreadCrumb";
 import CustomTable from "Components/Common/CustomTable";
 import ObjectDetails from "Components/Common/ObjectDetails";
+import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal";
 import SupplierForm from "Components/Common/SupplierForm";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Alert, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalFooter, ModalHeader, Row, Spinner } from "reactstrap";
 
 const supplierAttributes = [
-    { key: 'id', label: 'Identificador' },
     { key: 'name', label: 'Nombre' },
     { key: 'phone_number', label: 'Teléfono' },
     { key: 'email', label: 'Correo' },
@@ -161,33 +161,31 @@ const SupplierDetails = () => {
                     </Button>
                 </div>
 
-                <Row className="d-flex" style={{ alignItems: 'stretch', height: '75vh' }}>
-                    <Col lg={3}>
-                        <Card className="rounded h-100">
-                            <CardHeader><h4>Información del proveedor</h4></CardHeader>
-                            <CardBody>
-                                {supplierDetails && !loading ? (
-                                    <ObjectDetails attributes={supplierAttributes} object={supplierDetails} showImage={false} />
-                                ) : (
-                                    <div className="position-relative top-50 start-50">
-                                        <Spinner color="primary"></Spinner>
-                                    </div>
-                                )}
-                            </CardBody>
-                        </Card>
-                    </Col>
-                    <Col lg={9}>
-                        <Card className="h-100 w-100">
-                            <CardHeader><h4>Historial de Altas | Compras</h4></CardHeader>
-                            <CardBody>
-                                {supplierIncomes && (
-                                    <CustomTable columns={incomesColumns} data={supplierIncomes} showSearchAndFilter={true} rowClickable={false} rowsPerPage={15} />
-                                )}
-                            </CardBody>
-                        </Card>
-                    </Col>
-                </Row>
+                <div className="d-flex-column gap-3">
 
+                    <Card className="rounded h-100">
+                        <CardHeader><h4>Información del proveedor</h4></CardHeader>
+                        <CardBody>
+                            {supplierDetails && !loading ? (
+                                <ObjectDetailsHorizontal attributes={supplierAttributes} object={supplierDetails}/>
+                            ) : (
+                                <div className="position-relative top-50 start-50">
+                                    <Spinner color="primary"></Spinner>
+                                </div>
+                            )}
+                        </CardBody>
+                    </Card>
+
+
+                    <Card className="h-100 w-100">
+                        <CardHeader><h4>Historial de Altas | Compras</h4></CardHeader>
+                        <CardBody>
+                            {supplierIncomes && (
+                                <CustomTable columns={incomesColumns} data={supplierIncomes} showSearchAndFilter={true} rowClickable={false} rowsPerPage={15} />
+                            )}
+                        </CardBody>
+                    </Card>
+                </div>
                 {/* Modales */}
                 <Modal size="lg" isOpen={modals.update} toggle={() => toggleModal("update")} backdrop='static' keyboard={false} centered>
                     <ModalHeader toggle={() => toggleModal("update")}>Modificar Proveedor</ModalHeader>
