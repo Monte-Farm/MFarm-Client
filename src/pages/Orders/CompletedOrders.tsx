@@ -4,6 +4,8 @@ import CustomTable from "Components/Common/CustomTable";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container } from "reactstrap";
+import LoadingGif from '../../assets/images/loading-gif.gif'
+
 
 const CompletedOrders = () => {
     document.title = 'Pedidos Completados | Pedidos'
@@ -12,6 +14,7 @@ const CompletedOrders = () => {
 
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [orders, setOrders] = useState([])
+    const [loading, setLoading] = useState<boolean>(true)
 
     const columns = [
         { header: 'No. de Pedido', accessor: 'id', isFilterable: true },
@@ -56,6 +59,8 @@ const CompletedOrders = () => {
             setOrders(filteredOrders);
         } catch (error) {
             handleError(error, 'Ha ocurrido un error al recuperar los pedidos, intentelo más tarde');
+        } finally {
+            setLoading(false)
         }
     };
 
@@ -63,6 +68,15 @@ const CompletedOrders = () => {
     useEffect(() => {
         fetchOrders();
     }, [])
+
+    
+    if (loading) {
+        return (
+            <div className="d-flex justify-content-center align-items-center vh-100">
+                <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
+            </div>
+        );
+    }
 
     return (
         <div className="page-content">

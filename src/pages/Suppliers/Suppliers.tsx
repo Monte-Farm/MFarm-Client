@@ -6,6 +6,7 @@ import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, Mod
 import SupplierForm from "Components/Common/SupplierForm";
 import { SupplierData } from "common/data_interfaces";
 import { ConfigContext } from "App";
+import LoadingGif from '../../assets/images/loading-gif.gif'
 
 const Suppliers = () => {
     document.title = 'Ver Proveedores | Almacén'
@@ -16,6 +17,7 @@ const Suppliers = () => {
     const [selectedSupplier, setSelectedSupplier] = useState<SupplierData | undefined>(undefined);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ create: false, update: false, delete: false });
+    const [loading, setLoading] = useState<boolean>(false)
 
     const handleError = (error: any, message: string) => {
         console.error(message, error);
@@ -70,13 +72,17 @@ const Suppliers = () => {
 
 
     const fetchSuppliersData = async () => {
-        if (!configContext) return;
+        setLoading(true)
 
         try {
+            if (!configContext) return;
+
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/supplier`);
             setSuppliersData(response.data.data);
         } catch (error) {
             handleError(error, 'El servicio no esta disponible, intentelo más tarde');
+        } finally {
+            setLoading(false)
         }
     };
 
@@ -144,6 +150,15 @@ const Suppliers = () => {
     useEffect(() => {
         fetchSuppliersData();
     }, [])
+
+
+    if (loading) {
+        return (
+            <div className="d-flex justify-content-center align-items-center vh-100">
+                <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
+            </div>
+        );
+    }
 
     return (
         <div className="page-content">

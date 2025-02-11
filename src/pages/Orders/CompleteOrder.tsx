@@ -5,6 +5,7 @@ import CompleteOrderForm from "Components/Common/CompleteOrderForm";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Alert, Card, CardBody, Container } from "reactstrap";
+import LoadingGif from '../../assets/images/loading-gif.gif'
 
 const CompleteOrder = () => {
     const history = useNavigate();
@@ -12,6 +13,7 @@ const CompleteOrder = () => {
     const configContext = useContext(ConfigContext)
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const [ordersDetails, setOrderDetails] = useState<OrderData>()
+    const [loading, setLoading] = useState<boolean>(true)
 
     const handleError = (error: any, message: string) => {
         console.error(error, message)
@@ -36,6 +38,8 @@ const CompleteOrder = () => {
             setOrderDetails(response.data.data);
         } catch (error) {
             handleError(error, 'Ha ocurrido un error al obtener la información del pedido');
+        } finally {
+            setLoading(false)
         }
     };
 
@@ -88,6 +92,16 @@ const CompleteOrder = () => {
     useEffect(() => {
         fetchOrderDetails();
     }, [])
+
+
+    if (loading) {
+        return (
+            <div className="d-flex justify-content-center align-items-center vh-100">
+                <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
+            </div>
+        );
+    }
+
 
     return (
         <div className="page-content">

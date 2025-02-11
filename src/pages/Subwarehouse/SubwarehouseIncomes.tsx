@@ -4,6 +4,7 @@ import CustomTable from "Components/Common/CustomTable";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Container, Card, CardHeader, CardBody, Row, Col } from "reactstrap";
+import LoadingGif from '../../assets/images/loading-gif.gif'
 
 const SubwarehouseIncomes = () => {
     document.title = "Entradas de Subalmacén | Subalmacén"
@@ -11,6 +12,7 @@ const SubwarehouseIncomes = () => {
     const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [subwarehouseIncomes, setSubwarehouseIncomes] = useState([])
+    const [loading, setLoading] = useState<boolean>(true)
 
     const incomesColumns = [
         { header: 'Identificador', accessor: 'id', isFilterable: true },
@@ -48,6 +50,8 @@ const SubwarehouseIncomes = () => {
             setSubwarehouseIncomes(response.data.data);
         } catch (error) {
             handleError(error, 'Ha ocurrido un error al obtener las entradas, intentelo más tarde');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -60,6 +64,16 @@ const SubwarehouseIncomes = () => {
 
         handleFetchWarehouseIncomes();
     }, [configContext])
+
+
+    if (loading) {
+        return (
+            <div className="d-flex justify-content-center align-items-center vh-100">
+                <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
+            </div>
+        );
+    }
+
 
     return (
         <div className="page-content">

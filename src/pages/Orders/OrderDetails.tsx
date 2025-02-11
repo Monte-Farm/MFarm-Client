@@ -6,6 +6,7 @@ import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal"
 import { useContext, useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { Button, Card, CardBody, CardHeader, Col, Container, Row, Spinner } from "reactstrap"
+import LoadingGif from '../../assets/images/loading-gif.gif'
 
 const orderAttributes = [
     { key: 'id', label: 'No. de Pedido' },
@@ -86,6 +87,16 @@ const OrderDetails = () => {
         fetchOrderDetails();
     }, []);
 
+
+
+    if (loading) {
+        return (
+            <div className="d-flex justify-content-center align-items-center vh-100">
+                <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
+            </div>
+        );
+    }
+    
 
     return (
         <div className="page-content">

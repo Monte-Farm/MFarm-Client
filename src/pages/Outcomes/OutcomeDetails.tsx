@@ -7,6 +7,8 @@ import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal"
 import { useContext, useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { Alert, Button, Card, CardBody, CardHeader, Col, Container, Row } from "reactstrap"
+import LoadingGif from '../../assets/images/loading-gif.gif'
+
 
 const outcomeAttributes = [
     { key: 'id', label: 'Identificador' },
@@ -25,6 +27,7 @@ const OutcomeDetails = () => {
     const [warehouseDestiny, setWarehouseDestiny] = useState<SubwarehouseData>();
     const [productsOutcome, setProductsOutcome] = useState([]);
     const [outcomeDisplay, setOutcomeDisplay] = useState({});
+    const [loading, setLoading] = useState<boolean>(true)
 
     const productColumns = [
         { header: 'Código', accessor: 'id' },
@@ -94,13 +97,30 @@ const OutcomeDetails = () => {
     }, [])
 
     useEffect(() => {
-        if (outcome) {
-            handleFetchWarehouseDestiny();
-            handleFetchOutcomeProducts();
-
-            setOutcomeDisplay({...outcome, warehouseDestiny: warehouseDestiny?.name})
+        const fetchData = async () => {
+            if (outcome) {
+                await Promise.all([
+                    handleFetchWarehouseDestiny(),
+                    handleFetchOutcomeProducts()
+                ])
+                setOutcomeDisplay({ ...outcome, warehouseDestiny: warehouseDestiny?.name })
+                setLoading(false)
+            }
         }
+
+        fetchData();
+
     }, [outcome])
+
+
+    if (loading) {
+        return (
+            <div className="d-flex justify-content-center align-items-center vh-100">
+                <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
+            </div>
+        );
+    }
+
 
     return (
         <div className="page-content">

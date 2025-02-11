@@ -7,6 +7,7 @@ import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, Mod
 import noImageUrl from '../../assets/images/no-image.png'
 import { ProductData } from "common/data_interfaces";
 import { ConfigContext } from "App";
+import LoadingGif from '../../assets/images/loading-gif.gif'
 
 
 const productAttributes = [
@@ -26,9 +27,10 @@ const ViewProducts = () => {
     const [products, setProducts] = useState([])
     const [selectedProduct, setSelectedProduct] = useState<ProductData>()
     const [urlImageProduct, setUrlImageProduct] = useState<string>('')
-
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ create: false, details: false, update: false, delete: false });
+    const [loading, setLoading] = useState<boolean>(false);
+
     const columns = [
         { header: 'Código', accessor: 'id', isFilterable: true },
         { header: 'Nombre', accessor: 'name', isFilterable: true },
@@ -94,13 +96,16 @@ const ViewProducts = () => {
     }
 
     const handleFetchProducts = async () => {
-        if (!configContext) return;
+        setLoading(true)
 
         try {
+            if (!configContext) return;
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/product`);
             setProducts(response.data.data);
         } catch (error) {
             handleError(error, 'Ha ocurrido un error al recuperar los productos, intentelo más tarde');
+        } finally {
+            setLoading(false)
         }
     };
 
@@ -176,6 +181,15 @@ const ViewProducts = () => {
     }, [selectedProduct]);
 
 
+
+    if (loading) {
+        return (
+            <div className="d-flex justify-content-center align-items-center vh-100">
+                <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
+            </div>
+        );
+    }
+
     return (
         <div className="page-content">
             <Container fluid>
@@ -191,7 +205,7 @@ const ViewProducts = () => {
                         </div>
                     </CardHeader>
                     <CardBody>
-                        <CustomTable columns={columns} data={products}></CustomTable>
+                        <CustomTable columns={columns} data={products} rowsPerPage={7}></CustomTable>
                     </CardBody>
                 </Card>
             </Container>

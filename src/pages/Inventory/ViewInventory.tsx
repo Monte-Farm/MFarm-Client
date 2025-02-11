@@ -5,23 +5,24 @@ import CustomTable from "Components/Common/CustomTable";
 import { useNavigate } from "react-router-dom";
 import { ProductData } from "common/data_interfaces";
 import { ConfigContext } from "App";
+import LoadingGif from '../../assets/images/loading-gif.gif'
 
 const ViewInventory = () => {
   document.title = "Inventario | Almacén General";
-  const warehouseId = 'AG001'
+  const warehouseId = 'AG001';
   const history = useNavigate();
 
   const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-  const [modals, setModals] = useState({ update: false, delete: false });
   const [productsData, setProductsData] = useState([]);
+  const [loading, setLoading] = useState(true); // Estado de carga
   const configContext = useContext(ConfigContext);
 
   const columnsTable = [
     { header: "Código", accessor: "id", isFilterable: true },
     { header: "Producto", accessor: "name", isFilterable: true },
     { header: 'Existencias', accessor: 'quantity', isFilterable: true },
-    { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true, },
-    { header: 'Categoría', accessor: 'category', isFilterable: true, },
+    { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true },
+    { header: 'Categoría', accessor: 'category', isFilterable: true },
     {
       header: "Acciones",
       accessor: "action",
@@ -35,51 +36,46 @@ const ViewInventory = () => {
     },
   ];
 
-
   const handleError = (error: any, message: string) => {
     console.error(message, error);
     setAlertConfig({ visible: true, color: "danger", message });
     setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
   };
 
-
-  const showAlert = (color: string, message: string) => {
-    setAlertConfig({ visible: true, color: color, message: message })
-    setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-  }
-
-
-  const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
-    setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
-  };
-
-
   const fetchProductsData = async () => {
+    setLoading(true);
     try {
       if (!configContext) return;
-  
+
       const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/get_inventory/${warehouseId}`);
-  
+
       setProductsData(response.data.data);
     } catch (error) {
       handleError(error, "El servicio no está disponible, inténtelo más tarde");
+    } finally {
+      setLoading(false);
     }
   };
-  
 
   const handleAddProduct = () => {
     history('/warehouse/incomes/create_income');
   };
 
-
   const handleProductDetails = (product: ProductData) => {
     history(`/warehouse/inventory/product_details?warehouse=${warehouseId}&product=${product.id}`)
-  }
+  };
 
   useEffect(() => {
     fetchProductsData();
   }, []);
 
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
+      </div>
+    );
+  }
 
   return (
     <div className="page-content">
@@ -100,7 +96,6 @@ const ViewInventory = () => {
             <CustomTable columns={columnsTable} data={productsData} showSearchAndFilter={true} rowClickable={false} />
           </CardBody>
         </Card>
-
       </Container>
 
       {alertConfig.visible && (
@@ -109,7 +104,6 @@ const ViewInventory = () => {
         </Alert>
       )}
     </div>
-
   );
 };
 

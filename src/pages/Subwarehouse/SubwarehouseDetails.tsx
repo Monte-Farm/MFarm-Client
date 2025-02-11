@@ -7,6 +7,7 @@ import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button, Card, CardBody, CardHeader, Col, Container, Row } from "reactstrap";
+import LoadingGif from '../../assets/images/loading-gif.gif'
 
 const subwarehouseAttributes = [
     { key: 'id', label: 'Identificador' },
@@ -20,6 +21,14 @@ const SubwarehouseDetails = () => {
     document.title = "Detalles de Subalmacén"
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
+    const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
+    const { id_subwarehouse } = useParams();
+    const [subwarehouseDetails, setSubwarehouseDetails] = useState<SubwarehouseData>();
+    const [subwarehouseInventory, setSubwarehouseInventory] = useState([])
+    const [subwarehouseIncomes, setSubwarehouseIncomes] = useState([])
+    const [subwarehouseOutcomes, setSubwarehouseOutcomes] = useState([])
+    const [loading, setLoading] = useState<boolean>(true);
+
 
     const inventoryColumns = [
         { header: 'Código', accessor: 'id', isFilterable: true },
@@ -65,7 +74,7 @@ const SubwarehouseDetails = () => {
             accessor: 'action',
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="btn-secondary btn-icon">
+                    <Button className="btn-secondary btn-icon" onClick={() => handleClicOutcomeDetails(row)}>
                         <i className="ri-eye-fill align-middle" />
                     </Button>
                 </div>
@@ -73,12 +82,6 @@ const SubwarehouseDetails = () => {
         }
     ]
 
-    const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const { id_subwarehouse } = useParams();
-    const [subwarehouseDetails, setSubwarehouseDetails] = useState<SubwarehouseData>();
-    const [subwarehouseInventory, setSubwarehouseInventory] = useState([])
-    const [subwarehouseIncomes, setSubwarehouseIncomes] = useState([])
-    const [subwarehouseOutcomes, setSubwarehouseOutcomes] = useState([])
 
     const handleError = (error: any, message: string) => {
         console.error(message, error);
@@ -147,6 +150,10 @@ const SubwarehouseDetails = () => {
         history(`/warehouse/incomes/income_details/${row.id}`)
     }
 
+    const handleClicOutcomeDetails = (row: any) => {
+        history(`/warehouse/outcomes/outcome_details/${row.id}`)
+    }
+
     const handleReturn = () => {
         if (window.history.length > 1) {
             history(-1);
@@ -156,11 +163,28 @@ const SubwarehouseDetails = () => {
     }
 
     useEffect(() => {
-        handleFetchSubwarehouseDetails();
-        handleFetchWarehouseInventory();
-        handleFetchWarehouseIncomes();
-        handleFetchWarehouseOutcomes();
+        const fetchData = async () => {
+            await Promise.all([
+                handleFetchSubwarehouseDetails(),
+                handleFetchWarehouseInventory(),
+                handleFetchWarehouseIncomes(),
+                handleFetchWarehouseOutcomes(),
+            ])
+
+            setLoading(false);
+        }
+
+        fetchData();
     }, [])
+
+
+    if (loading) {
+        return (
+            <div className="d-flex justify-content-center align-items-center vh-100">
+                <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
+            </div>
+        );
+    }
 
     return (
         <div className="page-content">

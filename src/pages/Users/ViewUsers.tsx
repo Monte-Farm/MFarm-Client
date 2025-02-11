@@ -7,6 +7,7 @@ import UserForm from "Components/Common/UserForm"
 import { getLoggedinUser } from "helpers/api_helper"
 import { useContext, useEffect, useState } from "react"
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap"
+import LoadingGif from '../../assets/images/loading-gif.gif'
 
 const userAttributes = [
     { key: 'username', label: 'Usuario' },
@@ -26,6 +27,7 @@ const ViewUsers = () => {
     const [selectedUser, setSelecteduser] = useState<any>()
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ details: false, create: false, update: false, delete: false });
+    const [loading, setLoading] = useState<boolean>(true)
 
     const columns = [
         { header: 'Usuario', accessor: 'username', isFilterable: true },
@@ -100,6 +102,8 @@ const ViewUsers = () => {
             );
         } catch (error) {
             handleError(error, 'Ha ocurrido un error al obtener a los usuarios');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -151,6 +155,16 @@ const ViewUsers = () => {
     useEffect(() => {
         handleFetchUsers();
     }, [])
+
+
+    if (loading) {
+        return (
+            <div className="d-flex justify-content-center align-items-center vh-100">
+                <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
+            </div>
+        );
+    }
+    
 
     return (
         <div className="page-content">

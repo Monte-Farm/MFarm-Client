@@ -82,7 +82,7 @@ const Navdata = () => {
 
         {
             id: "home",
-            label: "Home",
+            label: "Inicio",
             icon: "ri-home-2-line",
             link: "/home",
             roles: ["Superadmin", 'Encargado de subalmacen', 'Encargado de almacen'],

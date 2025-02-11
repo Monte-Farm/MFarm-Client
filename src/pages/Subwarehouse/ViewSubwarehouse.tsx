@@ -6,6 +6,7 @@ import SubwarehouseForm from "Components/Common/SubwarehouseForm";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
+import LoadingGif from '../../assets/images/loading-gif.gif'
 
 
 const ViewSubwarehouse = () => {
@@ -13,6 +14,13 @@ const ViewSubwarehouse = () => {
     const history = useNavigate();
     const warehouseId = 'AG001'
     const configContext = useContext(ConfigContext)
+
+    const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
+    const [modals, setModals] = useState({ create: false, details: false, update: false, delete: false });
+    const [warehouses, setWarehouses] = useState([])
+    const [selectedSubwarehouse, setSelectedSubwarehouse] = useState<SubwarehouseData>()
+    const [loading, setLoading] = useState<boolean>(false);
+
 
     const columns = [
         { header: 'Código', accessor: 'id', isFilterable: true },
@@ -54,11 +62,6 @@ const ViewSubwarehouse = () => {
         }
     ]
 
-    const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ create: false, details: false, update: false, delete: false });
-    const [warehouses, setWarehouses] = useState([])
-    const [selectedSubwarehouse, setSelectedSubwarehouse] = useState<SubwarehouseData>()
-
     const handleError = (error: any, message: string) => {
         console.error(message, error);
         setAlertConfig({ visible: true, color: "danger", message });
@@ -90,9 +93,11 @@ const ViewSubwarehouse = () => {
 
 
     const handleFetchSubwarehouses = async () => {
-        if (!configContext) return;
+        setLoading(true)
 
         try {
+            if (!configContext) return;
+
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/`);
             const warehouses = response.data.data;
             setWarehouses(warehouses.filter(function (obj: any) {
@@ -100,6 +105,8 @@ const ViewSubwarehouse = () => {
             }));
         } catch (error) {
             handleError(error, 'El servicio no esta disponible, intentelo más tarde');
+        } finally {
+            setLoading(false)
         }
     };
 
@@ -157,6 +164,15 @@ const ViewSubwarehouse = () => {
             handleFetchSubwarehouses();
         }
     }, [configContext?.userLogged]);
+
+    
+    if (loading) {
+        return (
+            <div className="d-flex justify-content-center align-items-center vh-100">
+                <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
+            </div>
+        );
+    }
 
     return (
         <div className="page-content">

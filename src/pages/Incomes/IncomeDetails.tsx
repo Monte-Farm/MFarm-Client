@@ -1,13 +1,12 @@
-import { ConfigContext } from "App"
-import { IncomeData } from "common/data_interfaces"
-import BreadCrumb from "Components/Common/BreadCrumb"
-import CustomTable from "Components/Common/CustomTable"
-import ObjectDetails from "Components/Common/ObjectDetails"
-import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal"
-import { APIClient } from "helpers/api_helper"
-import { useContext, useEffect, useState } from "react"
-import { useNavigate, useParams } from "react-router-dom"
-import { Alert, Button, Card, CardBody, CardHeader, Col, Container, Row } from "reactstrap"
+import { ConfigContext } from "App";
+import { IncomeData } from "common/data_interfaces";
+import BreadCrumb from "Components/Common/BreadCrumb";
+import CustomTable from "Components/Common/CustomTable";
+import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal";
+import { useContext, useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Alert, Button, Card, CardBody, CardHeader, Container } from "reactstrap";
+import LoadingGif from '../../assets/images/loading-gif.gif'
 
 const incomeAttributes = [
     { key: 'id', label: 'Identificador' },
@@ -17,27 +16,28 @@ const incomeAttributes = [
     { key: 'origin.id', label: '' },
     { key: 'totalPrice', label: 'Precio Total' },
     { key: 'incomeType', label: 'Tipo de alta' }
-]
+];
 
 const IncomeDetails = () => {
-    document.title = 'Detalles de entrada | Almacén'
+    document.title = 'Detalles de entrada | Almacén';
     const history = useNavigate();
     const { id_income } = useParams();
     const configContext = useContext(ConfigContext);
 
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ update: false, delete: false });
-    const [incomeDetails, setIncomeDetails] = useState<IncomeData>()
-    const [incomeDisplay, setIncomeDisplay] = useState({})
-    const [productsIncome, setProductsIncome] = useState([])
+    const [incomeDetails, setIncomeDetails] = useState<IncomeData>();
+    const [incomeDisplay, setIncomeDisplay] = useState({});
+    const [productsIncome, setProductsIncome] = useState([]);
+    const [loading, setLoading] = useState<boolean>(true); // Estado de carga
 
     const productColumns = [
         { header: 'Código', accessor: 'id', isFilterable: true },
         { header: 'Producto', accessor: 'name', isFilterable: true },
         { header: 'Cantidad', accessor: 'quantity', isFilterable: true },
-        { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true, },
+        { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true },
         { header: 'Precio Unitario', accessor: 'price' },
-        { header: 'Categoría', accessor: 'category', isFilterable: true, },
+        { header: 'Categoría', accessor: 'category', isFilterable: true },
         {
             header: "Acciones",
             accessor: "action",
@@ -49,7 +49,7 @@ const IncomeDetails = () => {
                 </div>
             ),
         },
-    ]
+    ];
 
     const handleError = (error: any, message: string) => {
         console.error(message, error);
@@ -73,7 +73,6 @@ const IncomeDetails = () => {
         }
     };
 
-
     const handleFetchIncomeDisplay = async () => {
         if (!configContext) return;
 
@@ -93,7 +92,6 @@ const IncomeDetails = () => {
         }
     };
 
-
     const handleFetchIncomeProducts = async () => {
         if (!configContext || !incomeDetails) return;
 
@@ -105,29 +103,44 @@ const IncomeDetails = () => {
         }
     };
 
-
     const handleClicProductDetails = (row: any) => {
-        history(`/warehouse/inventory/product_details?warehouse=${incomeDetails?.warehouse}&product=${row.id}`)
-    }
+        history(`/warehouse/inventory/product_details?warehouse=${incomeDetails?.warehouse}&product=${row.id}`);
+    };
 
     const handleBack = () => {
         if (window.history.length > 1) {
-            history(-1)
+            history(-1);
         } else {
-            history('/#')
+            history('/#');
         }
+    };
+
+    useEffect(() => {
+        const fetchData = async () => {
+            await Promise.all([
+                handleFetchIncome(),
+                handleFetchIncomeDisplay()
+            ]);
+            setLoading(false);
+        };
+
+        fetchData();
+    }, []);
+
+    useEffect(() => {
+        if (incomeDetails) {
+            handleFetchIncomeProducts();
+        }
+    }, [incomeDetails]);
+
+
+    if (loading) {
+        return (
+            <div className="d-flex justify-content-center align-items-center vh-100">
+                <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
+            </div>
+        );
     }
-
-    useEffect(() => {
-        handleFetchIncome();
-        handleFetchIncomeDisplay();
-    }, [])
-
-    useEffect(() => {
-        handleFetchIncomeProducts();
-    }, [incomeDetails])
-
-
 
     return (
         <div className="page-content min-vh-100">
@@ -157,7 +170,7 @@ const IncomeDetails = () => {
                             <h4>Productos</h4>
                         </CardHeader>
                         <CardBody>
-                            <CustomTable columns={productColumns} data={productsIncome} rowClickable={false}/>
+                            <CustomTable columns={productColumns} data={productsIncome} rowClickable={false} />
                         </CardBody>
                     </Card>
 
@@ -182,8 +195,7 @@ const IncomeDetails = () => {
                 )}
             </Container>
         </div>
-    )
+    );
+};
 
-}
-
-export default IncomeDetails
+export default IncomeDetails;

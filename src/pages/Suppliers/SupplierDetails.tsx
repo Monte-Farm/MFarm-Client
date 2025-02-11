@@ -2,12 +2,12 @@ import { ConfigContext } from "App";
 import { SupplierData } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/BreadCrumb";
 import CustomTable from "Components/Common/CustomTable";
-import ObjectDetails from "Components/Common/ObjectDetails";
 import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal";
 import SupplierForm from "Components/Common/SupplierForm";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Alert, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalFooter, ModalHeader, Row, Spinner } from "reactstrap";
+import { Alert, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from "reactstrap";
+import LoadingGif from '../../assets/images/loading-gif.gif'
 
 const supplierAttributes = [
     { key: 'name', label: 'Nombre' },
@@ -75,8 +75,6 @@ const SupplierDetails = () => {
             setSupplierDetails(response.data.data);
         } catch (error) {
             handleError(error, "Error al obtener detalles del proveedor.");
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -137,14 +135,32 @@ const SupplierDetails = () => {
     }
 
     useEffect(() => {
-        handleGetSupplierDetails();
-        handleGetIncomes();
+        const fetchData = async () => {
+            await Promise.all([
+                handleGetSupplierDetails(),
+                handleGetIncomes(),
+            ])
+
+            setLoading(false);
+        }
+
+        fetchData();
     }, []);
+
+
+    if (loading) {
+        return (
+            <div className="d-flex justify-content-center align-items-center vh-100">
+                <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
+            </div>
+        );
+    }
+
 
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Supplier"} pageTitle={"Supplier Details"} />
+                <BreadCrumb title={"Detalles de Proveedor"} pageTitle={"Proveedor"} />
 
                 <div className="d-flex gap-2 mb-3 mt-3">
                     <Button className="me-auto" color="secondary" onClick={handleBack}>
@@ -166,13 +182,7 @@ const SupplierDetails = () => {
                     <Card className="rounded h-100">
                         <CardHeader><h4>Información del proveedor</h4></CardHeader>
                         <CardBody>
-                            {supplierDetails && !loading ? (
-                                <ObjectDetailsHorizontal attributes={supplierAttributes} object={supplierDetails}/>
-                            ) : (
-                                <div className="position-relative top-50 start-50">
-                                    <Spinner color="primary"></Spinner>
-                                </div>
-                            )}
+                                <ObjectDetailsHorizontal attributes={supplierAttributes} object={supplierDetails || {}} />
                         </CardBody>
                     </Card>
 
@@ -181,7 +191,7 @@ const SupplierDetails = () => {
                         <CardHeader><h4>Historial de Altas | Compras</h4></CardHeader>
                         <CardBody>
                             {supplierIncomes && (
-                                <CustomTable columns={incomesColumns} data={supplierIncomes} showSearchAndFilter={true} rowClickable={false} rowsPerPage={15} />
+                                <CustomTable columns={incomesColumns} data={supplierIncomes} showSearchAndFilter={true} rowClickable={false} rowsPerPage={7} />
                             )}
                         </CardBody>
                     </Card>

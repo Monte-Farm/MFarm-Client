@@ -4,6 +4,8 @@ import CustomTable from "Components/Common/CustomTable";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Card, CardBody, CardHeader, Container } from "reactstrap";
+import LoadingGif from '../../assets/images/loading-gif.gif'
+
 
 const ViewOutcomes = () => {
     document.title = 'Ver Salidas'
@@ -11,6 +13,7 @@ const ViewOutcomes = () => {
     const configContext = useContext(ConfigContext);
     const warehouseId = 'AG001'
     const [outcomes, setOutcomes] = useState([])
+    const [loading, setLoading] = useState<boolean>(false)
 
     const columns = [
         { header: 'Identificador', accessor: 'id', isFilterable: true },
@@ -30,13 +33,17 @@ const ViewOutcomes = () => {
     ]
 
     const handleFetchOutcomes = async () => {
-        if (!configContext) return;
+        setLoading(true)
 
         try {
+            if (!configContext) return;
+
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/outcomes/find_warehouse_outcomes/${warehouseId}`);
             setOutcomes(response.data.data);
         } catch (error) {
             history('/auth-500');
+        } finally {
+            setLoading(false)
         }
     };
 
@@ -52,6 +59,14 @@ const ViewOutcomes = () => {
     useEffect(() => {
         handleFetchOutcomes();
     }, [])
+
+    if (loading) {
+        return (
+            <div className="d-flex justify-content-center align-items-center vh-100">
+                <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
+            </div>
+        );
+    }
 
     return (
         <div className="page-content">

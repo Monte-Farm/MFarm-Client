@@ -9,6 +9,7 @@ import ProductForm from "Components/Common/ProductForm";
 import noImageUrl from '../../assets/images/no-image.png'
 import { ProductData } from "common/data_interfaces";
 import { ConfigContext } from "App";
+import LoadingGif from '../../assets/images/loading-gif.gif'
 
 
 const displayAttributes = [
@@ -39,10 +40,10 @@ const ProductDetails = () => {
     const [averagePrice, setAveragePrice] = useState<string>('');
     const [productExistences, setProductExistences] = useState<string>('')
     const [productImageUrl, setProductImageUrl] = useState<string>('')
-
     const [loading, setLoading] = useState<boolean>(true)
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ update: false, delete: false });
+
     const incomesColumns = [
         { header: 'Identificador', accessor: 'id' },
         { header: 'Fecha de entrada', accessor: 'date' },
@@ -95,7 +96,6 @@ const ProductDetails = () => {
         try {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/product/find_product_id/${productId}`);
             setProductDetails(response.data.data);
-            setLoading(false);
         } catch (error) {
             handleError(error, 'El servicio no esta disponible, intentelo más tarde');
         }
@@ -268,18 +268,33 @@ const ProductDetails = () => {
     }
 
     useEffect(() => {
-        handleFetchProductDetails();
-        handleFetchProductIncomes();
-        handleHistoryProducts();
-        handleHistoryPrices();
-        handleAveragePrice();
-        handleProductExistences();
-        handleFetchProductOutcomes();
+        const fetchData = async () => {
+            await Promise.all([
+                handleFetchProductDetails(),
+                handleFetchProductIncomes(),
+                handleHistoryProducts(),
+                handleHistoryPrices(),
+                handleAveragePrice(),
+                handleProductExistences(),
+                handleFetchProductOutcomes()
+            ]);
+            setLoading(false); // Al finalizar todas las solicitudes, cambia el estado a false
+        };
+
+        fetchData();
     }, []);
 
     useEffect(() => {
         handleFetchProductImage();
     }, [productDetails])
+
+    if (loading) {
+        return (
+            <div className="d-flex justify-content-center align-items-center vh-100">
+                <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
+            </div>
+        );
+    }
 
     return (
         <div className="page-content">

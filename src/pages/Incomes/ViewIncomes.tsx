@@ -4,6 +4,7 @@ import CustomTable from "Components/Common/CustomTable"
 import { useContext, useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Alert, Button, Card, CardBody, CardHeader, Container } from "reactstrap"
+import LoadingGif from '../../assets/images/loading-gif.gif'
 
 
 const ViewIncomes = () => {
@@ -13,6 +14,7 @@ const ViewIncomes = () => {
     const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [incomes, setIncomes] = useState([])
+    const [loading, setLoading] = useState<boolean>(false)
 
     const columns = [
         { header: 'Identificador', accessor: 'id', isFilterable: true },
@@ -40,14 +42,18 @@ const ViewIncomes = () => {
     };
 
     const handleFetchIncomes = async () => {
-        if (!configContext) return;
-
+        setLoading(true)
         try {
+            if (!configContext) return;
+
+
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/incomes/find_warehouse_incomes/${idWarehouse}`);
             const incomesData = response.data.data;
             setIncomes(incomesData);
         } catch (error) {
             handleError(error, 'Ha ocurrido un error al obtener los datos, intentelo más tarde');
+        } finally {
+            setLoading(false)
         }
     };
 
@@ -64,6 +70,15 @@ const ViewIncomes = () => {
     useEffect(() => {
         handleFetchIncomes();
     }, [])
+
+
+    if (loading) {
+        return (
+          <div className="d-flex justify-content-center align-items-center vh-100">
+            <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
+          </div>
+        );
+      }
 
     return (
         <div className="page-content">
