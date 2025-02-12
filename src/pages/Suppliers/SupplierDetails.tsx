@@ -41,7 +41,7 @@ const SupplierDetails = () => {
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="btn-secondary btn-icon" onClick={() => handleIncomeDetails(row)}>
+                    <Button className="farm-primary-button btn-icon" onClick={() => handleIncomeDetails(row)}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
                 </div>
@@ -150,7 +150,7 @@ const SupplierDetails = () => {
 
     if (loading) {
         return (
-            <div className="d-flex justify-content-center align-items-center vh-100">
+            <div className="d-flex justify-content-center align-items-center vh-100 page-content">
                 <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
             </div>
         );
@@ -163,16 +163,16 @@ const SupplierDetails = () => {
                 <BreadCrumb title={"Detalles de Proveedor"} pageTitle={"Proveedor"} />
 
                 <div className="d-flex gap-2 mb-3 mt-3">
-                    <Button className="me-auto" color="secondary" onClick={handleBack}>
+                    <Button className="me-auto farm-primary-button" onClick={handleBack}>
                         <i className="ri-arrow-left-line me-3"></i>Regresar
                     </Button>
-                    <Button color="danger" onClick={() => toggleModal("delete")} disabled={!supplierDetails?.status}>
+                    <Button className="farm-secondary-button" onClick={() => toggleModal("delete")} disabled={!supplierDetails?.status}>
                         <i className="ri-delete-bin-line me-3"></i>Desactivar Proveedor
                     </Button>
-                    <Button color="success" onClick={() => toggleModal("update")}>
+                    <Button className="farm-primary-button" onClick={() => toggleModal("update")}>
                         <i className="ri-pencil-line me-3"></i>Modificar Proveedor
                     </Button>
-                    <Button color="secondary">
+                    <Button className="farm-primary-button">
                         <i className="ri-mail-line me-3"></i>Enviar Email
                     </Button>
                 </div>

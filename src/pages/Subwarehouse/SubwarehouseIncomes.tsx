@@ -23,7 +23,7 @@ const SubwarehouseIncomes = () => {
             accessor: 'action',
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="btn-secondary btn-icon" onClick={() => handleClicIncomeDetails(row)}>
+                    <Button className="farm-primary-button btn-icon" onClick={() => handleClicIncomeDetails(row)}>
                         <i className="ri-eye-fill align-middle" />
                     </Button>
                 </div>
@@ -68,7 +68,7 @@ const SubwarehouseIncomes = () => {
 
     if (loading) {
         return (
-            <div className="d-flex justify-content-center align-items-center vh-100">
+            <div className="d-flex justify-content-center align-items-center vh-100 page-content">
                 <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
             </div>
         );

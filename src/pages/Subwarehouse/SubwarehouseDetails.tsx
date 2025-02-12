@@ -40,7 +40,7 @@ const SubwarehouseDetails = () => {
             accessor: 'action',
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="btn-secondary btn-icon" onClick={() => handleClicProductDetails(row)}>
+                    <Button className="farm-primary-button btn-icon" onClick={() => handleClicProductDetails(row)}>
                         <i className="ri-eye-fill align-middle" />
                     </Button>
                 </div>
@@ -57,7 +57,7 @@ const SubwarehouseDetails = () => {
             accessor: 'action',
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="btn-secondary btn-icon" onClick={() => handleClicIncomeDetails(row)}>
+                    <Button className="farm-primary-button btn-icon" onClick={() => handleClicIncomeDetails(row)}>
                         <i className="ri-eye-fill align-middle" />
                     </Button>
                 </div>
@@ -74,7 +74,7 @@ const SubwarehouseDetails = () => {
             accessor: 'action',
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="btn-secondary btn-icon" onClick={() => handleClicOutcomeDetails(row)}>
+                    <Button className="farm-primary-button btn-icon" onClick={() => handleClicOutcomeDetails(row)}>
                         <i className="ri-eye-fill align-middle" />
                     </Button>
                 </div>
@@ -180,7 +180,7 @@ const SubwarehouseDetails = () => {
 
     if (loading) {
         return (
-            <div className="d-flex justify-content-center align-items-center vh-100">
+            <div className="d-flex justify-content-center align-items-center vh-100 page-content">
                 <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
             </div>
         );
@@ -193,7 +193,7 @@ const SubwarehouseDetails = () => {
 
                 <div className="d-flex gap-2">
                     <div className="flex-grow-1">
-                        <Button color="secondary" onClick={handleReturn}>
+                        <Button className="farm-secondary-button" onClick={handleReturn}>
                             <i className=" ri-arrow-left-line me-3"></i>
                             Regresar
                         </Button>

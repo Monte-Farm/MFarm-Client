@@ -28,7 +28,7 @@ const ViewInventory = () => {
       accessor: "action",
       render: (value: any, row: any) => (
         <div className="d-flex gap-1">
-          <Button className="btn-secondary btn-icon" onClick={() => handleProductDetails(row)}>
+          <Button className="farm-primary-button btn-icon" onClick={() => handleProductDetails(row)}>
             <i className="ri-eye-fill align-middle"></i>
           </Button>
         </div>
@@ -71,7 +71,7 @@ const ViewInventory = () => {
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center vh-100">
+      <div className="d-flex justify-content-center align-items-center vh-100 page-content">
         <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
       </div>
     );
@@ -86,7 +86,7 @@ const ViewInventory = () => {
           <CardHeader>
             <div className="d-flex justify-content-between">
               <h4 className="m-2">Productos</h4>
-              <Button className="h-50" color="success" onClick={handleAddProduct}>
+              <Button className="h-50 farm-primary-button" onClick={handleAddProduct}>
                 <i className="ri-add-line pe-2" />
                 Ingresar Productos
               </Button>

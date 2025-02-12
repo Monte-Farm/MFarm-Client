@@ -46,15 +46,15 @@ const ViewSubwarehouse = () => {
             accessor: 'action',
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="btn-secondary btn-icon" onClick={() => toggleModalDetails(row)}>
+                    <Button className="farm-primary-button btn-icon" onClick={() => toggleModalDetails(row)}>
                         <i className="ri-eye-fill align-middle" />
                     </Button>
 
-                    <Button className="btn-secondary btn-icon" disabled={!row.status} onClick={() => toggleModalUpdate(row)}>
+                    <Button className="farm-primary-button btn-icon" disabled={!row.status} onClick={() => toggleModalUpdate(row)}>
                         <i className="ri-pencil-fill align-middle" />
                     </Button>
 
-                    <Button className="btn-danger btn-icon" disabled={!row.status} onClick={() => toggleModalDelete(row)}>
+                    <Button className="farm-secondary-button btn-icon" disabled={!row.status} onClick={() => toggleModalDelete(row)}>
                         <i className="ri-delete-bin-fill align-middle" />
                     </Button>
                 </div>
@@ -168,7 +168,7 @@ const ViewSubwarehouse = () => {
     
     if (loading) {
         return (
-            <div className="d-flex justify-content-center align-items-center vh-100">
+            <div className="d-flex justify-content-center align-items-center vh-100 page-content">
                 <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
             </div>
         );
@@ -183,7 +183,7 @@ const ViewSubwarehouse = () => {
                 <Card style={{ height: '75vh' }}>
                     <CardHeader>
                         <div className="d-flex">
-                            <Button className="ms-auto" color="success" onClick={() => toggleModal('create')}>
+                            <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>
                                 <i className="ri-add-line me-2" />
                                 Agregar Subalmacén
                             </Button>
@@ -215,8 +215,8 @@ const ViewSubwarehouse = () => {
                     <ModalHeader toggle={() => toggleModal("delete")}>Desactivar Proveedor</ModalHeader>
                     <ModalBody>¿Desea desactivar el subalmacén {selectedSubwarehouse?.id}?</ModalBody>
                     <ModalFooter>
-                        <Button color="danger" onClick={() => toggleModal("delete", false)}>Cancelar</Button>
-                        <Button color="success" onClick={() => {
+                        <Button className="farm-secondary-button" onClick={() => toggleModal("delete", false)}>Cancelar</Button>
+                        <Button className="farm-primary-button" onClick={() => {
                             if (selectedSubwarehouse) {
                                 handleDeleteSubwarehouse(selectedSubwarehouse.id)
                             }

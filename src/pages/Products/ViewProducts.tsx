@@ -49,15 +49,15 @@ const ViewProducts = () => {
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="btn-secondary btn-icon" onClick={() => handleClicModal('details', row)}>
+                    <Button className="farm-primary-button btn-icon" onClick={() => handleClicModal('details', row)}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
 
-                    <Button className="btn-secondary btn-icon" disabled={row.status !== true} onClick={() => handleClicModal('update', row)}>
+                    <Button className="farm-primary-button btn-icon" disabled={row.status !== true} onClick={() => handleClicModal('update', row)}>
                         <i className="ri-pencil-fill align-middle"></i>
                     </Button>
 
-                    <Button className="btn-danger btn-icon" disabled={row.status !== true} onClick={() => handleClicModal('delete', row)}>
+                    <Button className="farm-secondary-button btn-icon" disabled={row.status !== true} onClick={() => handleClicModal('delete', row)}>
                         <i className="ri-delete-bin-fill align-middle"></i>
                     </Button>
 
@@ -184,7 +184,7 @@ const ViewProducts = () => {
 
     if (loading) {
         return (
-            <div className="d-flex justify-content-center align-items-center vh-100">
+            <div className="d-flex justify-content-center align-items-center vh-100 page-content">
                 <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
             </div>
         );
@@ -198,7 +198,7 @@ const ViewProducts = () => {
                 <Card>
                     <CardHeader>
                         <div className="d-flex">
-                            <Button color="success" className="ms-auto" onClick={() => toggleModal('create')}>
+                            <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>
                                 <i className="ri-add-line me-2  " />
                                 Agregar Producto
                             </Button>
@@ -241,8 +241,8 @@ const ViewProducts = () => {
                 <ModalHeader toggle={() => toggleModal("delete")}>Desactivar Producto</ModalHeader>
                 <ModalBody>¿Desea desactivar el producto {selectedProduct?.name}?</ModalBody>
                 <ModalFooter>
-                    <Button color="danger" onClick={() => toggleModal("delete", false)}>Cancelar</Button>
-                    <Button color="success" onClick={() => {
+                    <Button className="farm-secondary-button" onClick={() => toggleModal("delete", false)}>Cancelar</Button>
+                    <Button className="farm-primary-button" onClick={() => {
                         if (selectedProduct) {
                             handleDeleteProduct(selectedProduct.id)
                         }

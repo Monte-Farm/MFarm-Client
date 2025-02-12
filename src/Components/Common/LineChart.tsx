@@ -3,7 +3,6 @@ import ReactApexChart from "react-apexcharts";
 import getChartColorsArray from "./ChartsDynamicColor";
 
 interface LineChartProps {
-  dataColors: string;
   series: Array<{ name: string; data: number[] }>;
   categories: string[];
   title: string;
@@ -12,14 +11,11 @@ interface LineChartProps {
 }
 
 const LineChart: React.FC<LineChartProps> = ({
-  dataColors,
   series,
   categories,
   title,
   zoomEnabled = true,
 }) => {
-  const lineChartColors = getChartColorsArray(dataColors);
-
   const options = {
     chart: {
       type: 'line',
@@ -34,12 +30,12 @@ const LineChart: React.FC<LineChartProps> = ({
       size: 4,
     },
     dataLabels: {
-      enabled: false,
+      enabled: true,
     },
     stroke: {
       curve: 'straight',
     },
-    colors: lineChartColors,
+    colors: ['#8B4513'],
     title: {
       text: title,
       align: 'left',
@@ -49,6 +45,9 @@ const LineChart: React.FC<LineChartProps> = ({
     },
     xaxis: {
       categories: categories,
+    },
+    tooltip: {
+      enabled: false
     }
   };
 

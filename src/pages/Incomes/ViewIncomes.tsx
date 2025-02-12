@@ -27,7 +27,7 @@ const ViewIncomes = () => {
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="btn-secondary btn-icon" onClick={() => handleProductDetails(row)}>
+                    <Button className="farm-primary-button btn-icon" onClick={() => handleProductDetails(row)}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
                 </div>
@@ -74,7 +74,7 @@ const ViewIncomes = () => {
 
     if (loading) {
         return (
-          <div className="d-flex justify-content-center align-items-center vh-100">
+          <div className="d-flex justify-content-center align-items-center vh-100 page-content">
             <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
           </div>
         );
@@ -89,7 +89,7 @@ const ViewIncomes = () => {
                     <CardHeader>
                         <div className="d-flex gap-2">
                             <h4 className="me-auto">Entradas</h4>
-                            <Button color="success" onClick={handleAddIncome}>
+                            <Button className="farm-primary-button" onClick={handleAddIncome}>
                                 <i className="ri-add-line me-3" />
                                 Nueva Entrada
                             </Button>

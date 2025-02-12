@@ -159,10 +159,10 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
                             </div>
 
                             {/* Dark/Light Mode set */}
-                            <LightDark
+                            {/* <LightDark
                                 layoutMode={layoutModeType}
                                 onChangeLayoutMode={onChangeLayoutMode}
-                            />
+                            /> */}
 
                             {userLogged?.role === "Superadmin" && <Configuration />}
 

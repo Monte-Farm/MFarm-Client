@@ -54,7 +54,7 @@ const ProductDetails = () => {
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="btn-secondary btn-icon" onClick={() => handleRowClicIncomeDetails(row)}>
+                    <Button className="farm-primary-button btn-icon" onClick={() => handleRowClicIncomeDetails(row)}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
                 </div>
@@ -72,7 +72,7 @@ const ProductDetails = () => {
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="btn-secondary btn-icon" onClick={() => handleRowClicOutcomeDetails(row)}>
+                    <Button className="farm-primary-button btn-icon" onClick={() => handleRowClicOutcomeDetails(row)}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
                 </div>
@@ -278,7 +278,7 @@ const ProductDetails = () => {
                 handleProductExistences(),
                 handleFetchProductOutcomes()
             ]);
-            setLoading(false); // Al finalizar todas las solicitudes, cambia el estado a false
+            setLoading(false);
         };
 
         fetchData();
@@ -290,7 +290,7 @@ const ProductDetails = () => {
 
     if (loading) {
         return (
-            <div className="d-flex justify-content-center align-items-center vh-100">
+            <div className="d-flex justify-content-center align-items-center vh-100 page-content">
                 <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
             </div>
         );
@@ -303,7 +303,7 @@ const ProductDetails = () => {
 
                 <div className="d-flex gap-2">
                     <div className="flex-grow-1">
-                        <Button color="secondary" onClick={handleBack}>
+                        <Button className="farm-secondary-button" onClick={handleBack}>
                             <i className=" ri-arrow-left-line me-3"></i>
                             Regresar
                         </Button>
@@ -381,7 +381,7 @@ const ProductDetails = () => {
                                 <h4>Existencias Historicas</h4>
                             </CardHeader>
                             {seriesIncomes && categoriesIncomes && seriesIncomes.length > 0 && categoriesIncomes.length > 0 ? (
-                                <LineChart dataColors='["--vz-primary"]' series={seriesIncomes} categories={categoriesIncomes} title={""} />
+                                <LineChart series={seriesIncomes} categories={categoriesIncomes} title={""} />
                             ) : (
                                 <div className="pt-4 pb-4" style={{ textAlign: "center" }}><h4>No hay datos disponibles para mostrar</h4> </div>
                             )}
@@ -394,7 +394,7 @@ const ProductDetails = () => {
                                 <h4>Precios Historicos</h4>
                             </CardHeader>
                             {seriesPrices && categoriesPrices && seriesPrices.length > 0 && categoriesPrices.length > 0 ? (
-                                <LineChart dataColors='["--vz-primary"]' series={seriesPrices} categories={categoriesPrices} title={""} />
+                                <LineChart series={seriesPrices} categories={categoriesPrices} title={""} />
                             ) : (
                                 <div className="pt-4 pb-4" style={{ textAlign: "center" }}><h4>No hay datos disponibles para mostrar</h4> </div>
                             )}

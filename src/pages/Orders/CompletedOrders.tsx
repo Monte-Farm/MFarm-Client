@@ -32,7 +32,7 @@ const CompletedOrders = () => {
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="btn-secondary btn-icon" onClick={() => history(`/orders/order_details/${row.id}`)}>
+                    <Button className="farm-primary-button btn-icon" onClick={() => history(`/orders/order_details/${row.id}`)}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
                 </div>
@@ -72,7 +72,7 @@ const CompletedOrders = () => {
     
     if (loading) {
         return (
-            <div className="d-flex justify-content-center align-items-center vh-100">
+            <div className="d-flex justify-content-center align-items-center vh-100 page-content">
                 <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
             </div>
         );

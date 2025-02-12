@@ -5,3 +5,103 @@ Website: https://themesbrand.com/
 Contact: support@themesbrand.com
 File: Custom Css File
 */
+
+
+//Nav-bar and page css
+#page-topbar {
+    background-color: #2F4F4F !important;
+    border-bottom: 1px solid #2F4F4F !important;
+}
+
+.navbar-menu {
+    background-color: #2F4F4F !important; // Para la barra lateral (si aplica)
+}
+
+.page-content {
+    background-color: #F5F5DC;
+}
+
+
+
+.farm-primary-button {
+    background-color:#A3C293;
+    color: #FDFDFD;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    outline: none;
+
+    &:hover {
+        background-color: darken(#A3C293, 10%);
+    }
+
+    &:active, &.active  {
+        background: darken(#A3C293, 15%);
+        transform: scale(0.98);
+    }
+
+    &:focus, &.focus {
+        outline: none;
+        box-shadow: none !important;
+        background-color: darken(#A3C293, 30%) !important;
+    }
+
+    &:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+}
+
+.farm-secondary-button {
+    background-color:#8b4513;
+    color: #FDFDFD;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    outline: none;
+
+    &:hover {
+        background-color: darken(#8b4513, 10%);
+    }
+
+    &:active, &.active {
+        background: darken(#8b4513, 15%) !important;
+        transform: scale(0.98);
+    }
+
+    &:focus, &.focus {
+        outline: none;
+        box-shadow: none !important;
+        background-color: darken(#8b4513, 15%) !important;
+    }
+
+    &:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+}
+
+.page-link {
+    &:hover{
+        color: #FDFDFD;
+    }
+}
+
+
+i {
+    color: #FDFDFD;
+}
+
+html {
+    background-color: #F5F5DC;
+}
+
+span {
+    color: #FDFDFD;
+}

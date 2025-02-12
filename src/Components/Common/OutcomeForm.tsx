@@ -235,7 +235,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSubmit, onCanc
                 {/* Datos del subalmacen */}
                 <div className="d-flex mt-4">
                     <h5 className="me-auto">Datos del Subalmacén</h5>
-                    <Button color="secondary" className="h-50 mb-2" onClick={() => toggleModal('createWarehouse')}>
+                    <Button className="h-50 mb-2 farm-primary-button" onClick={() => toggleModal('createWarehouse')}>
                         <i className="ri-add-line me-2"></i>
                         Nuevo Subalmacén
                     </Button>
@@ -288,11 +288,11 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSubmit, onCanc
                 </div>
 
                 <div className='d-flex justify-content-end mt-4 gap-2'>
-                    <Button color='danger' disabled={formik.isSubmitting} onClick={() => toggleModal('cancel')}>
+                    <Button className='farm-secondary-button' disabled={formik.isSubmitting} onClick={() => toggleModal('cancel')}>
                         Cancelar
                     </Button>
 
-                    <Button color='success' type='submit' disabled={formik.isSubmitting}>
+                    <Button className='farm-primary-button' type='submit' disabled={formik.isSubmitting}>
                         {formik.isSubmitting ? <Spinner /> : "Guardar"}
                     </Button>
                 </div>

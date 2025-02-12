@@ -115,7 +115,7 @@ const OutcomeDetails = () => {
 
     if (loading) {
         return (
-            <div className="d-flex justify-content-center align-items-center vh-100">
+            <div className="d-flex justify-content-center align-items-center vh-100 page-content">
                 <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
             </div>
         );
@@ -128,7 +128,7 @@ const OutcomeDetails = () => {
                 <BreadCrumb title={"Detalles de Salida"} pageTitle={"Salidas"} />
 
                 <div className="d-flex mt-1">
-                    <Button className="me-auto" color="secondary" onClick={handleBack}>
+                    <Button className="me-auto farm-secondary-button" onClick={handleBack}>
                         <i className="ri-arrow-left-line me-3" />
                         Regresar
                     </Button>

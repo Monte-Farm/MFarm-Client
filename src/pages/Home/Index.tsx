@@ -12,7 +12,7 @@ const Home = () => {
     <React.Fragment>
       <div className="page-content">
         <Container fluid>
-          <BreadCrumb title={"Home"} pageTitle={""} />
+          <BreadCrumb title={"Inicio"} pageTitle={""} />
           
         </Container>
       </div>

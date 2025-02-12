@@ -330,7 +330,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                 {/* Datos del proveedor */}
                 <div className="d-flex mt-4">
                     <h5 className="me-auto">Datos del Proveedor</h5>
-                    <Button color="secondary" className="h-50 mb-2" onClick={() => toggleModal('createSupplier')}>
+                    <Button className="h-50 mb-2 farm-primary-button" onClick={() => toggleModal('createSupplier')}>
                         <i className="ri-add-line me-2"></i>
                         Nuevo Proveedor
                     </Button>
@@ -391,7 +391,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                 {/* Productos */}
                 <div className="d-flex mt-5">
                     <h5 className="me-auto">Productos</h5>
-                    <Button color="secondary" className="h-50 mb-2" onClick={() => { toggleModal('createProduct') }}>
+                    <Button className="h-50 mb-2 farm-primary-button" onClick={() => { toggleModal('createProduct') }}>
                         <i className="ri-add-line me-2"></i>
                         Nuevo Producto
                     </Button>
@@ -435,10 +435,10 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
 
                 {/* Botones */}
                 <div className="d-flex justify-content-end mt-4 gap-2">
-                    <Button color="danger" onClick={() => setCancelModalOpen(true)} disabled={formik.isSubmitting}>
+                    <Button className="farm-secondary-button" onClick={() => setCancelModalOpen(true)} disabled={formik.isSubmitting}>
                         Cancelar
                     </Button>
-                    <Button color="success" type="submit" disabled={formik.isSubmitting}>
+                    <Button className="farm-primary-button" type="submit" disabled={formik.isSubmitting}>
                         {formik.isSubmitting ? "Guardando..." : initialData ? "Actualizar Transacción" : "Registrar Transacción"}
                     </Button>
                 </div>

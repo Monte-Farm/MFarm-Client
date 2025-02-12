@@ -91,7 +91,7 @@ const OrderDetails = () => {
 
     if (loading) {
         return (
-            <div className="d-flex justify-content-center align-items-center vh-100">
+            <div className="d-flex justify-content-center align-items-center vh-100 page-content">
                 <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
             </div>
         );
@@ -103,7 +103,7 @@ const OrderDetails = () => {
             <Container fluid>
                 <BreadCrumb title={"Detalles de pedido"} pageTitle={"Pedidos"} />
 
-                <Button className="me-auto" color="secondary" onClick={() => history(-1)}>
+                <Button className="me-auto farm-secondary-button" onClick={() => history(-1)}>
                     <i className="ri-arrow-left-line me-3"></i>Regresar
                 </Button>
 

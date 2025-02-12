@@ -50,15 +50,15 @@ const ViewUsers = () => {
             accessor: 'action',
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="btn-secondary btn-icon" onClick={() => handleClicModal('details', row)}>
+                    <Button className="farm-primary-button btn-icon" onClick={() => handleClicModal('details', row)}>
                         <i className="ri-eye-fill align-middle" />
                     </Button>
 
-                    <Button className="btn-secondary btn-icon" disabled={!row.status} onClick={() => handleClicModal('update', row)}>
+                    <Button className="farm-primary-button btn-icon" disabled={!row.status} onClick={() => handleClicModal('update', row)}>
                         <i className="ri-pencil-fill align-middle" />
                     </Button>
 
-                    <Button className="btn-danger btn-icon" disabled={!row.status} onClick={() => handleClicModal('delete', row)}>
+                    <Button className="farm-secondary-button btn-icon" disabled={!row.status} onClick={() => handleClicModal('delete', row)}>
                         <i className="ri-delete-bin-fill align-middle" />
                     </Button>
                 </div>
@@ -159,7 +159,7 @@ const ViewUsers = () => {
 
     if (loading) {
         return (
-            <div className="d-flex justify-content-center align-items-center vh-100">
+            <div className="d-flex justify-content-center align-items-center vh-100 page-content">
                 <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
             </div>
         );
@@ -174,7 +174,7 @@ const ViewUsers = () => {
                 <Card className="mt-4">
                     <CardHeader>
                         <div className="d-flex">
-                            <Button color="success" className="ms-auto" onClick={() => toggleModal('create')}>
+                            <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>
                                 <i className="ri-add-line me-3" />
                                 Agregar Usuario
                             </Button>
@@ -215,11 +215,11 @@ const ViewUsers = () => {
                 <Modal isOpen={modals.delete} toggle={() => toggleModal('delete')} size="md" keyboard={false} backdrop="static" centered>
                     <ModalHeader toggle={() => toggleModal('delete')}>Confirmación de Eliminación</ModalHeader>
                     <ModalBody>
-                        {`¿Estás seguro de que deseas desactivar al usuario ""?`}
+                        {`¿Estás seguro de que deseas desactivar al usuario ${selectedUser.username}?`}
                     </ModalBody>
                     <ModalFooter>
-                        <Button color="danger" onClick={() => toggleModal('delete', false)}>Cancelar</Button>
-                        <Button color="success" onClick={() => {
+                        <Button className="farm-secondary-button" onClick={() => toggleModal('delete', false)}>Cancelar</Button>
+                        <Button className="farm-primary-button" onClick={() => {
                             if (selectedUser) {
                                 handleDeleteUser();
                             }

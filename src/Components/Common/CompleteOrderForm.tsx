@@ -151,11 +151,11 @@ const CompleteOrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, on
                 </div>
 
                 <div className='d-flex justify-content-end mt-5 gap-2'>
-                    <Button color='danger' disabled={formik.isSubmitting} onClick={() => toggleModal('cancel')}>
+                    <Button className='farm-secondary-button' disabled={formik.isSubmitting} onClick={() => toggleModal('cancel')}>
                         Cancelar
                     </Button>
 
-                    <Button color='success' type='submit' disabled={formik.isSubmitting}>
+                    <Button className='farm-primary-button' type='submit' disabled={formik.isSubmitting}>
                         {formik.isSubmitting ? <Spinner /> : "Guardar"}
                     </Button>
                 </div>
@@ -166,8 +166,8 @@ const CompleteOrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, on
                 <ModalHeader>Confirmación</ModalHeader>
                 <ModalBody>¿Estás seguro de que deseas cancelar? Los datos no se guardarán.</ModalBody>
                 <ModalFooter>
-                    <Button color="danger" onClick={onCancel}>Sí, cancelar</Button>
-                    <Button color="success" onClick={() => toggleModal('cancel', false)}>No, continuar</Button>
+                    <Button className='farm-secondary-button' onClick={onCancel}>Sí, cancelar</Button>
+                    <Button className='farm-primary-button' onClick={() => toggleModal('cancel', false)}>No, continuar</Button>
                 </ModalFooter>
             </Modal>
 

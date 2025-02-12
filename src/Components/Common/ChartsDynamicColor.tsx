@@ -1,5 +1,4 @@
 const getChartColorsArray = (colors: string): string[] => {
-    console.log("colors", colors)
     const parsedColors: string[] = JSON.parse(colors);
     return parsedColors.map(function (value: string) {
         var newValue = value.replace(" ", "");

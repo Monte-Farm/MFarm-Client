@@ -260,10 +260,10 @@ const UserForm: React.FC<UserFormProps> = ({ initialData, onSubmit, onCancel, is
 
                 {/* Botones */}
                 <div className="d-flex justify-content-end mt-4 gap-2">
-                    <Button color="danger" onClick={() => setCancelModalOpen(true)} disabled={formik.isSubmitting}>
+                    <Button className="farm-secondary-button" onClick={() => setCancelModalOpen(true)} disabled={formik.isSubmitting}>
                         Cancelar
                     </Button>
-                    <Button color="success" type="submit" disabled={formik.isSubmitting}>
+                    <Button className="farm-primary-button" type="submit" disabled={formik.isSubmitting}>
                         {formik.isSubmitting ? "Guardando..." : initialData ? "Actualizar Usuario" : "Registrar Usuario"}
                     </Button>
                 </div>

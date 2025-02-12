@@ -33,8 +33,8 @@ const Logout = () => {
                     {`¿Estás seguro de que desea cerrar sesión?`}
                 </ModalBody>
                 <ModalFooter>
-                    <Button color="danger" onClick={() => toggleModal('logout', false)}>Cancelar</Button>
-                    <Button color="success" onClick={clicLogout}>
+                    <Button className="farm-secondary-button" onClick={() => toggleModal('logout', false)}>Cancelar</Button>
+                    <Button className="farm-primary-button" onClick={clicLogout}>
                         Cerrar Sesión
                     </Button>
                 </ModalFooter>

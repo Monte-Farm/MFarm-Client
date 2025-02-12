@@ -30,7 +30,7 @@ const SendOrders = () => {
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="btn-secondary btn-icon" onClick={() => clicOrder(row)}>
+                    <Button className="farm-primary-button btn-icon" onClick={() => clicOrder(row)}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
                 </div>
@@ -87,7 +87,7 @@ const SendOrders = () => {
 
     if (loading) {
         return (
-            <div className="d-flex justify-content-center align-items-center vh-100">
+            <div className="d-flex justify-content-center align-items-center vh-100 page-content">
                 <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
             </div>
         );
@@ -102,7 +102,7 @@ const SendOrders = () => {
                 <Card style={{ height: '70vh' }}>
                     <CardHeader>
                         <div className="d-flex">
-                            <Button className="ms-auto" color="secondary" onClick={() => history('/orders/create_order')}>
+                            <Button className="ms-auto farm-primary-button" onClick={() => history('/orders/create_order')}>
                                 <i className="ri-add-line me-2" />
                                 Nuevo Pedido
                             </Button>

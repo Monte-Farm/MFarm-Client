@@ -54,15 +54,15 @@ const Suppliers = () => {
             accessor: 'action',
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="btn-secondary btn-icon" onClick={() => handleSupplierDetails(row)}>
+                    <Button className="farm-primary-button btn-icon" onClick={() => handleSupplierDetails(row)}>
                         <i className="ri-eye-fill align-middle" />
                     </Button>
 
-                    <Button className="btn-secondary btn-icon" disabled={!row.status} onClick={() => handleModalUpdateSupplier(row)}>
+                    <Button className="farm-primary-button btn-icon" disabled={!row.status} onClick={() => handleModalUpdateSupplier(row)}>
                         <i className="ri-pencil-fill align-middle" />
                     </Button>
 
-                    <Button className="btn-danger btn-icon" disabled={!row.status} onClick={() => handleModalDeactivateSupplier(row)}>
+                    <Button className="farm-secondary-button btn-icon" disabled={!row.status} onClick={() => handleModalDeactivateSupplier(row)}>
                         <i className="ri-delete-bin-fill align-middle" />
                     </Button>
                 </div>
@@ -154,7 +154,7 @@ const Suppliers = () => {
 
     if (loading) {
         return (
-            <div className="d-flex justify-content-center align-items-center vh-100">
+            <div className="d-flex justify-content-center align-items-center vh-100 page-content">
                 <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
             </div>
         );
@@ -170,7 +170,7 @@ const Suppliers = () => {
                         <div className="d-flex gap-2">
                             <h4 className="me-auto">Proveedores</h4>
 
-                            <Button color="success" onClick={() => toggleModal('create')}>
+                            <Button className="farm-primary-button" onClick={() => toggleModal('create')}>
                                 <i className="ri-add-line me-3" />
                                 Agregar Proveedor
                             </Button>
@@ -205,8 +205,8 @@ const Suppliers = () => {
                         {`¿Estás seguro de que deseas desactivar al proveedor "${selectedSupplier?.name}"?`}
                     </ModalBody>
                     <ModalFooter>
-                        <Button color="danger" onClick={() => toggleModal('delete', false)}>Cancelar</Button>
-                        <Button color="success" onClick={() => {
+                        <Button className="farm-secondary-button" onClick={() => toggleModal('delete', false)}>Cancelar</Button>
+                        <Button className="farm-primary-button" onClick={() => {
                             if (selectedSupplier) {
                                 handleDeactivateSupplier(selectedSupplier.id);
                             }

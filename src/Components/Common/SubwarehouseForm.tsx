@@ -181,10 +181,10 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ initialData, onSubm
                 </div>
 
                 <div className="d-flex justify-content-end mt-4 gap-2">
-                    <Button color="danger" onClick={() => setCancelModalOpen(true)} disabled={formik.isSubmitting}>
+                    <Button className="farm-secondary-button"onClick={() => setCancelModalOpen(true)} disabled={formik.isSubmitting}>
                         Cancelar
                     </Button>
-                    <Button color="success" type="submit" disabled={formik.isSubmitting}>
+                    <Button className='farm-primary-button' type="submit" disabled={formik.isSubmitting}>
                         {formik.isSubmitting ? <Spinner></Spinner> : initialData ? "Actualizar Subalmacén" : "Registrar Subalmacén"}
                     </Button>
                 </div>
@@ -210,10 +210,10 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ initialData, onSubm
                     ¿Estás seguro de que deseas cancelar? Los datos no se guardarán.
                 </ModalBody>
                 <ModalFooter>
-                    <Button color="danger" onClick={onCancel}>
+                    <Button className='farm-secondary-button' onClick={onCancel}>
                         Sí, cancelar
                     </Button>
-                    <Button color="success" onClick={() => setCancelModalOpen(false)}>
+                    <Button className='farm-primary-button' onClick={() => setCancelModalOpen(false)}>
                         No, continuar
                     </Button>
                 </ModalFooter>
