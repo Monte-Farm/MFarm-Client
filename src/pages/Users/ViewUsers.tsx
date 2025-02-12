@@ -215,7 +215,7 @@ const ViewUsers = () => {
                 <Modal isOpen={modals.delete} toggle={() => toggleModal('delete')} size="md" keyboard={false} backdrop="static" centered>
                     <ModalHeader toggle={() => toggleModal('delete')}>Confirmación de Eliminación</ModalHeader>
                     <ModalBody>
-                        {`¿Estás seguro de que deseas desactivar al usuario ${selectedUser.username}?`}
+                        {`¿Estás seguro de que deseas desactivar al usuario ${selectedUser?.username}?`}
                     </ModalBody>
                     <ModalFooter>
                         <Button className="farm-secondary-button" onClick={() => toggleModal('delete', false)}>Cancelar</Button>
