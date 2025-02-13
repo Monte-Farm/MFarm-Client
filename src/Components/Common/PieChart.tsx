@@ -11,7 +11,7 @@ const PieChart: React.FC<PieChartProps> = ({ series, labels, title }) => {
   const options = {
     chart: { type: "pie" },
     labels,
-    colors: ["#FF4560", "#00E396", "#FEB019", "#008FFB"],
+    colors: ["#2F4F4F", "#F5F5DC", "#8B4513", "#6B8E23"],
     title: {
       text: title,
       align: "left",

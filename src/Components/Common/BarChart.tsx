@@ -21,7 +21,7 @@ const BarChart: React.FC<BarChartProps> = ({ series, categories, title }) => {
         endingShape: "rounded",
       },
     },
-    colors: ["#008FFB"],
+    colors: ["#6B8E23"],
     dataLabels: { enabled: false },
     stroke: { show: true, width: 2, colors: ["transparent"] },
     title: {

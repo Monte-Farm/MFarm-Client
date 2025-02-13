@@ -13,7 +13,7 @@ const AreaChart: React.FC<AreaChartProps> = ({ series, categories, title }) => {
     chart: { type: "area", toolbar: { show: false } },
     dataLabels: { enabled: false },
     stroke: { curve: "smooth" },
-    colors: ["#775DD0"],
+    colors: ["#6B8E23"],
     title: {
       text: title,
       align: "left",
