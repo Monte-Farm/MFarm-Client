@@ -39,15 +39,10 @@ const OrderTable: React.FC<OrderProductsTableProps> = ({ data, productsDelivered
     onProductEdit(updatedProducts as Array<{ id: string; quantity: number }>);
   };
 
-
-
-
   const getInputValue = (id: string) => {
     if (editingValues[id] !== undefined) return editingValues[id];
     return productsDelivered.find((p) => p.id === id)?.quantity.toString() || "0";
   };
-
-
 
   const filteredData = data.filter((product) => {
     const filter = filterText.toLowerCase();

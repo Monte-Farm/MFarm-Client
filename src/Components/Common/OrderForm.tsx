@@ -261,7 +261,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
                 <div className="border"></div>
 
                 <div className="mt-3 border border-0">
-                    <SelectTable data={products} onProductSelect={handleProductSelect} showStock={true}></SelectTable>
+                    <SelectTable data={products} onProductSelect={handleProductSelect} showStock={true} showPagination={false}></SelectTable>
                 </div>
 
                 <div className='d-flex justify-content-end mt-4 gap-2'>
