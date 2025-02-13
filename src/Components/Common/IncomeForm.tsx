@@ -400,7 +400,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
 
                 {/* Tabla de productos */}
                 <div className="mt-3 border border-0">
-                    <SelectTable data={products} onProductSelect={handleProductSelect}></SelectTable>
+                    <SelectTable data={products} onProductSelect={handleProductSelect} showPagination={false}></SelectTable>
                 </div>
 
                 {/* Precio Total  */}
