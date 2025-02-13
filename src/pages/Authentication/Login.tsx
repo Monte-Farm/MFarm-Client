@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { Card, Col, Container, Row } from "reactstrap";
-import loginImage from "../../assets/images/login_image.jpg";
+import loginImage from "../../assets/images/portada.webp";
 import LoginForm from "../../Components/Common/Login";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { getLoggedinUser } from "helpers/api_helper";
@@ -61,7 +61,7 @@ const CoverSignIn = () => {
                                                 <div className="d-flex justify-content-center pb-5 pt-3">
                                                     <img
                                                         src={configContext?.logoUrl}
-                                                        style={{ maxWidth: '200px', maxHeight: '100px', width: 'auto', height: 'auto' }}
+                                                        style={{ maxWidth: '250px', maxHeight: '150px', width: 'auto', height: 'auto' }}
                                                         alt="Logo"
                                                     />
                                                 </div>
