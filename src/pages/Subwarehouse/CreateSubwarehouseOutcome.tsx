@@ -1,8 +1,10 @@
 import { ConfigContext } from "App";
 import { OutcomeData } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/BreadCrumb";
+import ErrorModal from "Components/Common/ErrorModal";
 import OutcomeForm from "Components/Common/OutcomeForm";
 import SubwarehouseOutcomeForm from "Components/Common/SubwarehouseOutcomeForm";
+import SuccessModal from "Components/Common/SuccessModal";
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Container, Card, CardBody, Alert } from "reactstrap";
@@ -11,34 +13,22 @@ const CreateSubwarehouseOutcome = () => {
     document.title = 'Nueva Salida | Subalmacén';
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
-    const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' });
+    const [modals, setModals] = useState({ success: false, error: false });
 
-    const handleError = (error: any, message: string) => {
-        console.error(message, error)
-        setAlertConfig({ visible: true, color: 'danger', message })
-        setTimeout(() => {
-            setAlertConfig({ ...alertConfig, visible: false })
-        }, 5000);
-    }
-
-    const showAlert = (color: string, message: string) => {
-        setAlertConfig({ visible: true, color: color, message: message })
-        setTimeout(() => {
-            setAlertConfig({ ...alertConfig, visible: false })
-        }, 5000);
-    }
+    const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
+        setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
+    };
+ 
 
     const handleCreateSubwarehouseOutcome = async (data: OutcomeData) => {
         if (!configContext || !configContext.userLogged) return;
 
         try {
             await configContext.axiosHelper.create(`${configContext.apiUrl}/outcomes/create_outcome/${false}/${data.outcomeType}`, data);
-            showAlert('success', 'La salida se ha creado exitosamente')
-            setTimeout(() => {
-                handleCancel()
-            }, 5000);
+            toggleModal('success')
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al crear la salida, intentelo más tarde')
+            console.error(error, 'Ha ocurrido un error creando la salida')
+            toggleModal('error')
         }
     }
 
@@ -59,12 +49,9 @@ const CreateSubwarehouseOutcome = () => {
 
             </Container>
 
-            {/* Alerta */}
-            {alertConfig.visible && (
-                <Alert color={alertConfig.color} className="position-fixed bottom-0 start-50 translate-middle-x p-3">
-                    {alertConfig.message}
-                </Alert>
-            )}
+
+            <SuccessModal isOpen={modals.success} onClose={handleCancel} message={"Salida creada exitosamente"}></SuccessModal>
+            <ErrorModal isOpen={modals.error} onClose={handleCancel} message="Ha ocurrido un error creando la salida, intentelo mas tarde"></ErrorModal>
 
         </div>
     )

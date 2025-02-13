@@ -1,6 +1,8 @@
 import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/BreadCrumb";
+import ErrorModal from "Components/Common/ErrorModal";
 import OutcomeForm from "Components/Common/OutcomeForm";
+import SuccessModal from "Components/Common/SuccessModal";
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Alert, Card, CardBody, Container } from "reactstrap";
@@ -10,35 +12,21 @@ const CreateOutcome = () => {
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
 
-    const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' });
+    const [modals, setModals] = useState({ success: false, error: false });
 
-    const handleError = (error: any, message: string) => {
-        console.error(message, error)
-        setAlertConfig({ visible: true, color: 'danger', message })
-        setTimeout(() => {
-            setAlertConfig({ ...alertConfig, visible: false })
-        }, 5000);
-    }
-
-    const showAlert = (color: string, message: string) => {
-        setAlertConfig({ visible: true, color: color, message: message })
-        setTimeout(() => {
-            setAlertConfig({ ...alertConfig, visible: false })
-        }, 5000);
-    }
-
+    const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
+        setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
+    };
 
     const handleCreateOutcome = async (outcomeData: any) => {
         if (!configContext) return;
 
         try {
             await configContext.axiosHelper.create(`${configContext.apiUrl}/outcomes/create_outcome/${true}/${outcomeData.outcomeType}`,outcomeData);
-            showAlert('success', 'La salida se ha creado con éxito');
-            setTimeout(() => {
-                handleCancel();
-            }, 2500);
+            toggleModal('success')
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al crear la salida, intentelo más tarde');
+            console.error(error, 'Ha ocurrido un error al guardar los datos')
+            toggleModal('error')
         }
     };
 
@@ -59,13 +47,9 @@ const CreateOutcome = () => {
                 </Card>
 
             </Container>
-
-            {/* Alerta */}
-            {alertConfig.visible && (
-                <Alert color={alertConfig.color} className="position-fixed bottom-0 start-50 translate-middle-x p-3">
-                    {alertConfig.message}
-                </Alert>
-            )}
+            
+            <SuccessModal isOpen={modals.success} onClose={handleCancel} message={"Salida creada exitosamente"}></SuccessModal>
+            <ErrorModal isOpen={modals.error} onClose={handleCancel} message="Ha ocurrido un error registrando la salida, intentelo mas tarde"></ErrorModal>
 
         </div>
     )

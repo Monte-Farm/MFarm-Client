@@ -74,7 +74,7 @@ const SubwarehouseOutcomes = () => {
             </div>
         );
     }
-    
+
 
     return (
         <div className="page-content">
@@ -83,7 +83,14 @@ const SubwarehouseOutcomes = () => {
 
                 <Card className="h-100">
                     <CardHeader>
-                        <h4>Salidas</h4>
+                        <div className="d-flex">
+                            <h4>Salidas</h4>
+                            <Button className="ms-auto farm-primary-button" onClick={() => history('/subwarehouse/create_subwarehouse_outcome')}>
+                                <i className="ri-add-line me-3" />
+                                Nueva Salida
+                            </Button>
+                        </div>
+
                     </CardHeader>
                     <CardBody>
                         <CustomTable columns={outcomesColumns} data={subwarehouseOutcomes} rowsPerPage={10} />

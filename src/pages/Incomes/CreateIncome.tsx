@@ -1,10 +1,13 @@
 import { ConfigContext } from "App"
 import BreadCrumb from "Components/Common/BreadCrumb"
+import ErrorModal from "Components/Common/ErrorModal"
 import IncomeForm from "Components/Common/IncomeForm"
+import SuccessModal from "Components/Common/SuccessModal"
 import { APIClient } from "helpers/api_helper"
 import { useContext, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Alert, Card, CardBody, Container } from "reactstrap"
+import { boolean } from "yup"
 
 
 
@@ -13,30 +16,21 @@ const CreatIncome = () => {
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
 
-    const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
+    const [modals, setModals] = useState({ success: false, error: false });
 
-    const handleError = (error: any, message: string) => {
-        console.error(message, error);
-        setAlertConfig({ visible: true, color: "danger", message });
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
+    const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
+        setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
-
-    const showAlert = (color: string, message: string) => {
-        setAlertConfig({ visible: true, color: color, message: message })
-        setTimeout(() => {
-            setAlertConfig({ ...alertConfig, visible: false })
-        }, 5000);
-    }
 
     const handleCreateIncome = async (data: any) => {
         if (!configContext) return;
 
         try {
             const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/incomes/create_income`, data);
-            showAlert('success', 'Entrada creada con éxito');
-            setTimeout(() => history('/warehouse/incomes/view_incomes'), 2500);
+            toggleModal('success')
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error guardando la información, intentelo más tarde');
+            console.error(error, 'Ha ocurrido un error al guardar los datos')
+            toggleModal('error')
         }
     };
 
@@ -61,14 +55,8 @@ const CreatIncome = () => {
 
             </Container>
 
-            {/* Alerta */}
-            {alertConfig.visible && (
-                <Alert color={alertConfig.color} className="position-fixed bottom-0 start-50 translate-middle-x p-3">
-                    {alertConfig.message}
-                </Alert>
-            )}
-
-
+            <SuccessModal isOpen={modals.success} onClose={handleCancel} message={"Productos ingresados exitosamente"}></SuccessModal>
+            <ErrorModal isOpen={modals.error} onClose={handleCancel} message="Ha ocurrido un error ingresando los productos, intentelo mas tarde"></ErrorModal>
 
         </div>
     )

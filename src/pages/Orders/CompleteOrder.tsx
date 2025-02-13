@@ -6,29 +6,21 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Alert, Card, CardBody, Container } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
+import ErrorModal from "Components/Common/ErrorModal";
+import SuccessModal from "Components/Common/SuccessModal";
 
 const CompleteOrder = () => {
     const history = useNavigate();
     const { id_order } = useParams();
     const configContext = useContext(ConfigContext)
-    const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const [ordersDetails, setOrderDetails] = useState<OrderData>()
     const [loading, setLoading] = useState<boolean>(true)
+    const [modals, setModals] = useState({ success: false, error: false });
 
-    const handleError = (error: any, message: string) => {
-        console.error(error, message)
-        setAlertConfig({ visible: true, color: 'danger', message: message });
-        setTimeout(() => {
-            setAlertConfig({ ...alertConfig, visible: false })
-        }, 5000);
-    }
+    const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
+        setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
+    };
 
-    const showAlert = (color: string, message: string) => {
-        setAlertConfig({ visible: true, color: color, message: message });
-        setTimeout(() => {
-            setAlertConfig({ ...alertConfig, visible: false })
-        }, 5000);
-    }
 
     const fetchOrderDetails = async () => {
         if (!configContext) return;
@@ -37,7 +29,8 @@ const CompleteOrder = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/orders/find_id/${id_order}`);
             setOrderDetails(response.data.data);
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al obtener la información del pedido');
+            console.error(error, 'Ha ocurrido un error obteniendo la información del pedido')
+            toggleModal('error')
         } finally {
             setLoading(false)
         }
@@ -49,14 +42,9 @@ const CompleteOrder = () => {
             data.status = 'completed';
             await configContext.axiosHelper.put(`${configContext.apiUrl}/orders/update_order/${data.id}`, data);
 
-            showAlert('success', 'Se ha completado el pedido con éxito');
             await createOutcome(data);
-
-            setTimeout(() => {
-                history('/orders/send_orders');
-            }, 5000);
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al completar el pedido, intentelo más tarde');
+            toggleModal('error')
         }
     };
 
@@ -81,12 +69,16 @@ const CompleteOrder = () => {
             };
 
             await configContext.axiosHelper.create(`${configContext.apiUrl}/outcomes/create_outcome/true/order`, outcomeData);
-            showAlert('success', 'Se ha completado el pedido con éxito');
+            toggleModal('success')
 
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al completar el pedido, intentelo más tarde');
+            throw error
         }
     };
+
+    const handleCancel = () => {
+        history('/orders/send_orders')
+    }
 
 
     useEffect(() => {
@@ -110,18 +102,17 @@ const CompleteOrder = () => {
 
                 <Card>
                     <CardBody>
-                        <CompleteOrderForm initialData={ordersDetails} onSubmit={(data: OrderData) => handleCompleteOrder(data)} onCancel={() => history('/orders/send_orders')}></CompleteOrderForm>
+                        <CompleteOrderForm initialData={ordersDetails} onSubmit={(data: OrderData) => handleCompleteOrder(data)} onCancel={handleCancel}></CompleteOrderForm>
                     </CardBody>
                 </Card>
 
             </Container>
 
-            {/* Alerta */}
-            {alertConfig.visible && (
-                <Alert color={alertConfig.color} className="position-fixed bottom-0 start-50 translate-middle-x p-3">
-                    {alertConfig.message}
-                </Alert>
-            )}
+
+            <SuccessModal isOpen={modals.success} onClose={handleCancel} message={"El pedido se ha completado exitosamente"}></SuccessModal>
+            <ErrorModal isOpen={modals.error} onClose={handleCancel} message="Ha ocurrido un error al completar el pedido, intentelo mas tarde"></ErrorModal>
+
+
         </div>
     )
 }

@@ -1,7 +1,9 @@
 import { ConfigContext } from "App"
 import { OrderData } from "common/data_interfaces"
 import BreadCrumb from "Components/Common/BreadCrumb"
+import ErrorModal from "Components/Common/ErrorModal"
 import OrderForm from "Components/Common/OrderForm"
+import SuccessModal from "Components/Common/SuccessModal"
 import { useContext, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Alert, Card, CardBody, Container } from "reactstrap"
@@ -10,38 +12,28 @@ const CreateOrder = () => {
     document.title = 'Crear Pedido'
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
+    const [modals, setModals] = useState({ success: false, error: false });
 
-    const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
+    const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
+        setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
+    };
 
-    const handleError = (error: any, message: string) => {
-        console.error(error, message)
-        setAlertConfig({ visible: true, color: 'danger', message: message })
-        setTimeout(() => {
-            setAlertConfig({ ...alertConfig, visible: false })
-        }, 5000);
-    }
-
-    const showAlert = (message: string) => {
-        setAlertConfig({ visible: true, color: 'success', message: message })
-        setTimeout(() => {
-            setAlertConfig({ ...alertConfig, visible: false })
-        }, 5000);
-    }
 
     const handleCreateOrder = async (data: OrderData) => {
         if (!configContext) return;
 
         try {
             await configContext.axiosHelper.create(`${configContext.apiUrl}/orders/create_order`, data);
-            showAlert(`El pedido ${data.id} se ha generado con éxito`);
-
-            setTimeout(() => {
-                history('/orders/send_orders');
-            }, 5000);
+            toggleModal('success')
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al generar el pedido, intentelo más tarde');
+            console.error(error, 'Ha ocurrido un error al crear el pedido')
+            toggleModal('error')
         }
     };
+
+    const handleCancel = () => {
+        history('/orders/send_orders');
+    }
 
 
     return (
@@ -51,16 +43,14 @@ const CreateOrder = () => {
 
                 <Card>
                     <CardBody>
-                        <OrderForm onSubmit={(data: OrderData) => handleCreateOrder(data)} onCancel={() => history(-1)}></OrderForm>
+                        <OrderForm onSubmit={(data: OrderData) => handleCreateOrder(data)} onCancel={handleCancel}></OrderForm>
                     </CardBody>
                 </Card>
             </Container>
 
-            {alertConfig.visible && (
-                <Alert color={alertConfig.color} className="position-fixed bottom-0 start-50 translate-middle-x p-3">
-                    {alertConfig.message}
-                </Alert>
-            )}
+            <SuccessModal isOpen={modals.success} onClose={handleCancel} message={"Pedido creado exitosamente"}></SuccessModal>
+            <ErrorModal isOpen={modals.error} onClose={handleCancel} message="Ha ocurrido un error al crear el pedido, intentelo mas tarde"></ErrorModal>
+
         </div>
     )
 }

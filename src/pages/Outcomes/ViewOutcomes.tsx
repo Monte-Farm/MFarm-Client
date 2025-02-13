@@ -24,7 +24,7 @@ const ViewOutcomes = () => {
             header: 'Acciones', accessor: 'actions',
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button color="secondary" className="btn-icon" onClick={() => handleClicOutcomeDetails(row)}>
+                    <Button className="btn-icon farm-primary-button" onClick={() => handleClicOutcomeDetails(row)}>
                         <i className="ri-eye-fill align-middle" />
                     </Button>
                 </div>
@@ -78,7 +78,7 @@ const ViewOutcomes = () => {
                         <div className="d-flex ">
                             <h4>Salidas</h4>
 
-                            <Button className="ms-auto" color="secondary" onClick={handleClicAddOutcome}>
+                            <Button className="ms-auto farm-primary-button" onClick={handleClicAddOutcome}>
                                 <i className="ri-add-line me-2" />
                                 Nueva Salida
                             </Button>
