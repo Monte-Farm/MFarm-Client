@@ -50,8 +50,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
                 }}
             >
                 <div className="mb-3">
-                    <Label htmlFor="username" className="form-label">
-                        Número de usuario
+                    <Label htmlFor="username" className="form-label fs-5">
+                        Nombre de usuario
                     </Label>
                     <Input
                         type="text"
@@ -74,7 +74,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
                 </div>
 
                 <div className="mb-3">
-                    <Label className="form-label" htmlFor="password-input">
+                    <Label className="form-label fs-5" htmlFor="password-input">
                         Contraseña
                     </Label>
                     <div className="position-relative auth-pass-inputgroup mb-3">
