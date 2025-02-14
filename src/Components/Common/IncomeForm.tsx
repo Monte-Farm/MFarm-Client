@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Button, Col, Row, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback, Alert } from "reactstrap";
+import { Button, Col, Row, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback, Alert, Nav, NavItem, NavLink, TabContent, TabPane, Card, CardBody } from "reactstrap";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import SupplierForm from "./SupplierForm";
@@ -9,6 +9,9 @@ import SelectTable from "./SelectTable";
 import FileUploader from "./FileUploader";
 import { IncomeData, ProductData, SupplierData } from "common/data_interfaces";
 import { ConfigContext } from "App";
+import classnames from "classnames";
+import ObjectDetailsHorizontal from "./ObjectDetailsHorizontal";
+import CustomTable from "./CustomTable";
 
 interface IncomeFormProps {
     initialData?: IncomeData;
@@ -16,6 +19,24 @@ interface IncomeFormProps {
     onCancel: () => void;
 }
 const arrayFolders: string[] = []
+
+const incomeAttributes = [
+    { key: 'id', label: 'Identificador' },
+    { key: 'date', label: 'Fecha de registro' },
+    { key: 'emissionDate', label: 'Fecha de emisión' },
+    { key: 'totalPrice', label: 'Precio Total' },
+    { key: 'incomeType', label: 'Tipo de entrada' }
+];
+
+const productColumns = [
+    { header: 'Código', accessor: 'id', isFilterable: true },
+    { header: 'Producto', accessor: 'name', isFilterable: true },
+    { header: 'Cantidad', accessor: 'quantity', isFilterable: true },
+    { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true },
+    { header: 'Precio Unitario', accessor: 'price' },
+    { header: 'Categoría', accessor: 'category', isFilterable: true },
+];
+
 
 const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel }) => {
 
@@ -26,7 +47,22 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
     const [products, setProducts] = useState([])
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [fileToUpload, setFileToUpload] = useState<File | null>(null)
+    const [selectedProducts, setSelectedProducts] = useState([])
     const configContext = useContext(ConfigContext)
+
+    const [activeStep, setActiveStep] = useState<number>(1);
+    const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
+
+    function toggleArrowTab(tab: any) {
+        if (activeStep !== tab) {
+            var modifiedSteps = [...passedarrowSteps, tab];
+
+            if (tab >= 1 && tab <= 3) {
+                setActiveStep(tab);
+                setPassedarrowSteps(modifiedSteps);
+            }
+        }
+    }
 
     const validationSchema = Yup.object({
         id: Yup.string()
@@ -205,9 +241,21 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
         }
     };
 
-    const handleProductSelect = (selectedProducts: Array<{ id: string; quantity: number; price: number }>) => {
-        formik.setFieldValue("products", selectedProducts);
+    const handleProductSelect = (selectedProductsData: Array<{ id: string; quantity: number; price: number }>) => {
+        formik.setFieldValue("products", selectedProductsData);
+        // Combinar los datos seleccionados con los datos originales de products
+        const updatedSelectedProducts: any = selectedProductsData.map((selectedProduct) => {
+            const productData = products.find((p: any) => p.id === selectedProduct.id) as ProductData | undefined;
+
+            return productData
+                ? { ...productData, ...selectedProduct } // Mezcla los datos originales con los nuevos
+                : selectedProduct; // Si no encuentra el producto original, usa el seleccionado
+        });
+
+        setSelectedProducts(updatedSelectedProducts);
+        console.log(updatedSelectedProducts)
     };
+
 
     useEffect(() => {
         fetchProducts();
@@ -238,210 +286,337 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                     e.preventDefault();
                     formik.handleSubmit();
                 }}
+                className="form-steps"
             >
-                <Row>
-                    <Col lg={4}>
-                        <div className="">
-                            <Label htmlFor="idInput" className="form-label">Identificador</Label>
-                            <Input
-                                type="text"
-                                id="idInput"
-                                name="id"
-                                value={formik.values.id}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                invalid={formik.touched.id && !!formik.errors.id}
-                            />
-                            {formik.touched.id && formik.errors.id && <FormFeedback>{formik.errors.id}</FormFeedback>}
+                <div className="step-arrow-nav mb-4">
+                    <Nav className="nav-pills custom-nav nav-justified">
+                        <NavItem>
+                            <NavLink
+                                href="#"
+                                id="step-incomeData-tab"
+                                className={classnames({
+                                    active: activeStep === 1,
+                                    done: activeStep > 1,
+                                })}
+                                onClick={() => toggleArrowTab(1)}
+                                aria-selected={activeStep === 1}
+                                aria-controls="step-incomeData-tab"
+                            >
+                                Información de entrada
+                            </NavLink>
+                        </NavItem>
+
+                        <NavItem>
+                            <NavLink
+                                href="#"
+                                id="step-products-tab"
+                                className={classnames({
+                                    active: activeStep === 2,
+                                    done: activeStep > 2,
+                                })}
+                                onClick={() => toggleArrowTab(2)}
+                                aria-selected={activeStep === 2}
+                                aria-controls="step-products-tab"
+                            >
+                                Selección de productos
+                            </NavLink>
+                        </NavItem>
+
+                        <NavItem>
+                            <NavLink
+                                href="#"
+                                id="step-summary-tab"
+                                className={classnames({
+                                    active: activeStep === 3,
+                                })}
+                                onClick={() => toggleArrowTab(3)}
+                                aria-selected={activeStep === 3}
+                                aria-controls="step-summary-tab"
+                            >
+                                Resumen
+                            </NavLink>
+                        </NavItem>
+                    </Nav>
+                </div>
+
+                <TabContent activeTab={activeStep}>
+                    <TabPane id="step-incomeData-tab" tabId={1}>
+                        <div>
+                            <Row>
+                                <Col lg={4}>
+                                    <div className="">
+                                        <Label htmlFor="idInput" className="form-label">Identificador</Label>
+                                        <Input
+                                            type="text"
+                                            id="idInput"
+                                            name="id"
+                                            value={formik.values.id}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            invalid={formik.touched.id && !!formik.errors.id}
+                                        />
+                                        {formik.touched.id && formik.errors.id && <FormFeedback>{formik.errors.id}</FormFeedback>}
+                                    </div>
+                                </Col>
+
+                                {/* Fecha de registro */}
+                                <Col lg={4}>
+                                    <div className="">
+                                        <Label htmlFor="dateInput" className="form-label">Fecha de registro</Label>
+
+                                        <Flatpickr
+                                            id="dateInput"
+                                            className="form-control"
+                                            value={formik.values.date}
+                                            options={{
+                                                dateFormat: "d-m-Y",
+                                                defaultDate: formik.values.date,
+                                            }}
+                                            onChange={(date) => {
+                                                const formattedDate = date[0].toLocaleDateString("es-ES");
+                                                formik.setFieldValue("date", formattedDate);
+                                            }}
+                                        />
+                                        {formik.touched.date && formik.errors.date && <FormFeedback className="d-block">{formik.errors.date}</FormFeedback>}
+
+                                    </div>
+                                </Col>
+
+                                {/* Fecha de emision*/}
+                                <Col lg={4}>
+                                    <div className="">
+                                        <Label htmlFor="emissionDateInput" className="form-label">Fecha de emisión</Label>
+
+                                        <Flatpickr
+                                            id="emissionDateInput"
+                                            className="form-control"
+                                            value={formik.values.emissionDate}
+                                            options={{
+                                                dateFormat: "d-m-Y",
+                                                defaultDate: formik.values.emissionDate,
+                                            }}
+                                            onChange={(date) => {
+                                                const formattedDate = date[0].toLocaleDateString("es-ES");
+                                                formik.setFieldValue("emissionDate", formattedDate);
+                                            }}
+                                        />
+                                        {formik.touched.emissionDate && formik.errors.emissionDate && <FormFeedback className="d-block">{formik.errors.emissionDate}</FormFeedback>}
+
+                                    </div>
+                                </Col>
+                            </Row>
+
+                            {/* Agregar campo de compra de contado o a meses cuando el tipo de ingreso sea compra */}
+
+                            {/* Tipo de Ingreso */}
+                            <div className="mt-4">
+                                <Label htmlFor="incomeTypeInput" className="form-label">Tipo de Ingreso</Label>
+                                <Input
+                                    type="select"
+                                    id="incomeTypeInput"
+                                    name="incomeType"
+                                    value={formik.values.incomeType}
+                                    onChange={formik.handleChange}
+                                    onBlur={formik.handleBlur}
+                                    invalid={formik.touched.incomeType && !!formik.errors.incomeType}
+                                >
+                                    <option value="">Seleccione un tipo</option>
+                                    {configContext?.configurationData?.incomeTypes.map((type) => (
+                                        <option key={type} value={type}>
+                                            {type}
+                                        </option>
+                                    ))}
+                                </Input>
+                                {formik.touched.incomeType && formik.errors.incomeType && <FormFeedback>{formik.errors.incomeType}</FormFeedback>}
+                            </div>
+
+                            {/* Datos del proveedor */}
+                            <div className="d-flex mt-4">
+                                <h5 className="me-auto">Datos del Proveedor</h5>
+                                <Button className="h-50 mb-2 farm-primary-button" onClick={() => toggleModal('createSupplier')}>
+                                    <i className="ri-add-line me-2"></i>
+                                    Nuevo Proveedor
+                                </Button>
+                            </div>
+
+                            <div className="border"></div>
+
+                            {/* Proveedor */}
+                            <div className="mt-3">
+                                <Label htmlFor="supplierInput" className="form-label">Proveedor</Label>
+                                <Input
+                                    type="select"
+                                    id="supplierInput"
+                                    name="origin.id"
+                                    value={formik.values.origin.id} // Valor controlado por formik
+                                    onChange={(e) => handleSupplierChange(e.target.value)} // Sincroniza el cambio
+                                    onBlur={formik.handleBlur}
+                                    invalid={formik.touched.origin?.id && !!formik.errors.origin?.id}
+                                >
+                                    <option value=''>Seleccione un proveedor</option>
+                                    {suppliers.map((supplier) => (
+                                        <option key={supplier.id} value={supplier.id}>
+                                            {supplier.name}
+                                        </option>
+                                    ))}
+                                </Input>
+
+                                {formik.touched.origin?.id && formik.errors.origin?.id && <FormFeedback>{formik.errors.origin?.id}</FormFeedback>}
+                            </div>
+
+                            <Row className="mt-4">
+                                <Col lg={6}>
+                                    <Label htmlFor="supplierAddress" className="form-label">Dirección</Label>
+                                    <Input type="text" className="form-control" id="supplierAddress" value={selectedSupplier?.address} disabled></Input>
+                                </Col>
+
+                                <Col lg={6}>
+                                    <Label htmlFor="supplierEmail" className="form-label">Correo Electrónico</Label>
+                                    <Input type="text" className="form-control" id="supplierEmail" value={selectedSupplier?.email} disabled></Input>
+                                </Col>
+                            </Row>
+
+                            <Row className="mt-4">
+                                <Col lg={4}>
+                                    <Label htmlFor="supplierRNC" className="form-label">RNC</Label>
+                                    <Input type="text" className="form-control" id="supplierRNC" value={selectedSupplier?.rnc} disabled></Input>
+                                </Col>
+                                <Col lg={4}>
+                                    <Label htmlFor="supplierPhoneNumber" className="form-label">Número Telefonico</Label>
+                                    <Input type="text" className="form-control" id="supplierPhoneNumber" value={selectedSupplier?.phone_number} disabled></Input>
+                                </Col>
+                                <Col lg={4}>
+                                    <Label htmlFor="supplierType" className="form-label">Tipo de Proveedor</Label>
+                                    <Input type="text" className="form-control" id="supplierType" value={selectedSupplier?.supplier_type} disabled></Input>
+                                </Col>
+                            </Row>
+
+                            <div className="d-flex mt-4">
+                                <Button
+                                    className="btn btn-success btn-label right ms-auto nexttab nexttab ms-auto farm-secondary-button"
+                                    onClick={() => {
+                                        toggleArrowTab(activeStep + 1);
+                                    }}
+                                >
+                                    <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
+                                    Siguiente
+                                </Button>
+                            </div>
+
                         </div>
-                    </Col>
+                    </TabPane>
 
-                    {/* Fecha de registro */}
-                    <Col lg={4}>
-                        <div className="">
-                            <Label htmlFor="dateInput" className="form-label">Fecha de registro</Label>
+                    <TabPane id="step-products-tab" tabId={2}>
+                        <div>
+                            {/* Productos */}
+                            <Row className="mb-3">
+                                <Col lg={4}>
+                                    <div className="">
+                                        <Label htmlFor="totalPriceInput" className="form-label">Precio Total</Label>
+                                        <div className="form-icon">
+                                            <Input
+                                                className="form-control form-control-icon"
+                                                type="number"
+                                                id="totalPriceInput"
+                                                name="totalPrice"
+                                                value={formik.values.totalPrice}
+                                                onChange={formik.handleChange}
+                                                onBlur={formik.handleBlur}
+                                                invalid={formik.touched.totalPrice && !!formik.errors.totalPrice}
+                                                disabled={true}
+                                            />
+                                            <i>$</i>
+                                        </div>
+                                        {formik.touched.totalPrice && formik.errors.totalPrice && <FormFeedback>{formik.errors.totalPrice}</FormFeedback>}
+                                    </div>
+                                </Col>
 
-                            <Flatpickr
-                                id="dateInput"
-                                className="form-control"
-                                value={formik.values.date}
-                                options={{
-                                    dateFormat: "d-m-Y",
-                                    defaultDate: formik.values.date,
-                                }}
-                                onChange={(date) => {
-                                    const formattedDate = date[0].toLocaleDateString("es-ES");
-                                    formik.setFieldValue("date", formattedDate);
-                                }}
-                            />
-                            {formik.touched.date && formik.errors.date && <FormFeedback className="d-block">{formik.errors.date}</FormFeedback>}
+                                <Col lg={4}>
+                                    {/* Documentos */}
+                                    <div className="">
+                                        <Label htmlFor="documentsInput" className="form-label">Documentos</Label>
+                                        <Input
+                                            type="file"
+                                            id="documentsInput"
+                                            accept="image/*, application/pdf"
+                                            onChange={(e) => {
+                                                if (e.target.files && e.target.files.length > 0) {
+                                                    setFileToUpload(e.target.files[0]); // Guarda el archivo seleccionado
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                </Col>
 
+                                <Col lg={4} className=" d-flex justify-content-end">
+                                    <Button className="mb-2 farm-primary-button" onClick={() => { toggleModal('createProduct') }}>
+                                        <i className="ri-add-line me-2"></i>
+                                        Nuevo Producto
+                                    </Button>
+                                </Col>
+                            </Row>
+
+
+                            {/* Tabla de productos */}
+                            <div className="border border-0">
+                                <SelectTable data={products} onProductSelect={handleProductSelect} showPagination={false}></SelectTable>
+                            </div>
+
+                            <div className="d-flex mt-4">
+                                <Button
+                                    className="btn btn-light btn-label previestab farm-secondary-button"
+                                    onClick={() => {
+                                        toggleArrowTab(activeStep - 1);
+                                    }}
+                                >
+                                    <i className="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i>{" "}
+                                    Atras
+                                </Button>
+
+                                <Button
+                                    className="btn btn-success btn-label right ms-auto nexttab nexttab ms-auto farm-secondary-button"
+                                    onClick={() => {
+                                        toggleArrowTab(activeStep + 1);
+                                    }}
+                                >
+                                    <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
+                                    Siguiente
+                                </Button>
+                            </div>
                         </div>
-                    </Col>
+                    </TabPane>
 
-                    {/* Fecha de emision*/}
-                    <Col lg={4}>
-                        <div className="">
-                            <Label htmlFor="emissionDateInput" className="form-label">Fecha de emisión</Label>
+                    <TabPane id="step-summary-tab" tabId={3}>
+                        <Card style={{ backgroundColor: '#A3C293' }}>
+                            <CardBody className="pt-4">
+                                <ObjectDetailsHorizontal attributes={incomeAttributes} object={formik.values} />
+                            </CardBody>
+                        </Card>
 
-                            <Flatpickr
-                                id="emissionDateInput"
-                                className="form-control"
-                                value={formik.values.emissionDate}
-                                options={{
-                                    dateFormat: "d-m-Y",
-                                    defaultDate: formik.values.emissionDate,
+                        <Card>
+                            <CardBody>
+                                <CustomTable columns={productColumns} data={selectedProducts} showSearchAndFilter={false} showPagination={false} />
+                            </CardBody>
+                        </Card>
+
+                        {/* Botones */}
+                        <div className="d-flex mt-4 gap-2">
+                            <Button
+                                className="btn btn-light btn-label previestab farm-secondary-button"
+                                onClick={() => {
+                                    toggleArrowTab(activeStep - 1);
                                 }}
-                                onChange={(date) => {
-                                    const formattedDate = date[0].toLocaleDateString("es-ES");
-                                    formik.setFieldValue("emissionDate", formattedDate);
-                                }}
-                            />
-                            {formik.touched.emissionDate && formik.errors.emissionDate && <FormFeedback className="d-block">{formik.errors.emissionDate}</FormFeedback>}
+                            >
+                                <i className="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i>{" "}
+                                Atras
+                            </Button>
 
+                            <Button className="farm-primary-button ms-auto" type="submit" disabled={formik.isSubmitting}>
+                                {formik.isSubmitting ? "Guardando..." : initialData ? "Actualizar Transacción" : "Registrar Transacción"}
+                            </Button>
                         </div>
-                    </Col>
-                </Row>
-
-                {/* Agregar campo de compra de contado o a meses cuando el tipo de ingreso sea compra */}
-
-                {/* Tipo de Ingreso */}
-                <div className="mt-4">
-                    <Label htmlFor="incomeTypeInput" className="form-label">Tipo de Ingreso</Label>
-                    <Input
-                        type="select"
-                        id="incomeTypeInput"
-                        name="incomeType"
-                        value={formik.values.incomeType}
-                        onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
-                        invalid={formik.touched.incomeType && !!formik.errors.incomeType}
-                    >
-                        <option value="">Seleccione un tipo</option>
-                        {configContext?.configurationData?.incomeTypes.map((type) => (
-                            <option key={type} value={type}>
-                                {type}
-                            </option>
-                        ))}
-                    </Input>
-                    {formik.touched.incomeType && formik.errors.incomeType && <FormFeedback>{formik.errors.incomeType}</FormFeedback>}
-                </div>
-
-                {/* Datos del proveedor */}
-                <div className="d-flex mt-4">
-                    <h5 className="me-auto">Datos del Proveedor</h5>
-                    <Button className="h-50 mb-2 farm-primary-button" onClick={() => toggleModal('createSupplier')}>
-                        <i className="ri-add-line me-2"></i>
-                        Nuevo Proveedor
-                    </Button>
-                </div>
-
-                <div className="border"></div>
-
-                {/* Proveedor */}
-                <div className="mt-3">
-                    <Label htmlFor="supplierInput" className="form-label">Proveedor</Label>
-                    <Input
-                        type="select"
-                        id="supplierInput"
-                        name="origin.id"
-                        value={formik.values.origin.id} // Valor controlado por formik
-                        onChange={(e) => handleSupplierChange(e.target.value)} // Sincroniza el cambio
-                        onBlur={formik.handleBlur}
-                        invalid={formik.touched.origin?.id && !!formik.errors.origin?.id}
-                    >
-                        <option value=''>Seleccione un proveedor</option>
-                        {suppliers.map((supplier) => (
-                            <option key={supplier.id} value={supplier.id}>
-                                {supplier.name}
-                            </option>
-                        ))}
-                    </Input>
-
-                    {formik.touched.origin?.id && formik.errors.origin?.id && <FormFeedback>{formik.errors.origin?.id}</FormFeedback>}
-                </div>
-
-                <Row className="mt-4">
-                    <Col lg={6}>
-                        <Label htmlFor="supplierAddress" className="form-label">Dirección</Label>
-                        <Input type="text" className="form-control" id="supplierAddress" value={selectedSupplier?.address} disabled></Input>
-                    </Col>
-
-                    <Col lg={6}>
-                        <Label htmlFor="supplierEmail" className="form-label">Correo Electrónico</Label>
-                        <Input type="text" className="form-control" id="supplierEmail" value={selectedSupplier?.email} disabled></Input>
-                    </Col>
-                </Row>
-
-                <Row className="mt-4">
-                    <Col lg={4}>
-                        <Label htmlFor="supplierRNC" className="form-label">RNC</Label>
-                        <Input type="text" className="form-control" id="supplierRNC" value={selectedSupplier?.rnc} disabled></Input>
-                    </Col>
-                    <Col lg={4}>
-                        <Label htmlFor="supplierPhoneNumber" className="form-label">Número Telefonico</Label>
-                        <Input type="text" className="form-control" id="supplierPhoneNumber" value={selectedSupplier?.phone_number} disabled></Input>
-                    </Col>
-                    <Col lg={4}>
-                        <Label htmlFor="supplierType" className="form-label">Tipo de Proveedor</Label>
-                        <Input type="text" className="form-control" id="supplierType" value={selectedSupplier?.supplier_type} disabled></Input>
-                    </Col>
-                </Row>
-
-                {/* Productos */}
-                <div className="d-flex mt-5">
-                    <h5 className="me-auto">Productos</h5>
-                    <Button className="h-50 mb-2 farm-primary-button" onClick={() => { toggleModal('createProduct') }}>
-                        <i className="ri-add-line me-2"></i>
-                        Nuevo Producto
-                    </Button>
-                </div>
-                <div className="border"></div>
-
-                {/* Tabla de productos */}
-                <div className="mt-3 border border-0">
-                    <SelectTable data={products} onProductSelect={handleProductSelect} showPagination={false}></SelectTable>
-                </div>
-
-                {/* Precio Total  */}
-                <div className="mt-4">
-                    <Label htmlFor="totalPriceInput" className="form-label">Precio Total</Label>
-                    <div className="form-icon">
-                        <Input
-                            className="form-control form-control-icon"
-                            type="number"
-                            id="totalPriceInput"
-                            name="totalPrice"
-                            value={formik.values.totalPrice}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            invalid={formik.touched.totalPrice && !!formik.errors.totalPrice}
-                            disabled={true}
-                        />
-                        <i>$</i>
-                    </div>
-                    {formik.touched.totalPrice && formik.errors.totalPrice && <FormFeedback>{formik.errors.totalPrice}</FormFeedback>}
-                </div>
-
-                <Label className="mt-1">ITBIS: 18%</Label>
-
-
-                {/* Documentos */}
-                <div className="mt-4">
-                    <Label htmlFor="documentsInput" className="form-label">Documentos</Label>
-                    <FileUploader acceptedFileTypes={['image/*', 'application/pdf']} onFileUpload={(file) => setFileToUpload(file)} maxFiles={1} />
-
-                </div>
-
-                {/* Botones */}
-                <div className="d-flex justify-content-end mt-4 gap-2">
-                    <Button className="farm-secondary-button" onClick={() => setCancelModalOpen(true)} disabled={formik.isSubmitting}>
-                        Cancelar
-                    </Button>
-                    <Button className="farm-primary-button" type="submit" disabled={formik.isSubmitting}>
-                        {formik.isSubmitting ? "Guardando..." : initialData ? "Actualizar Transacción" : "Registrar Transacción"}
-                    </Button>
-                </div>
+                    </TabPane>
+                </TabContent>
             </form>
 
             {/* Modal de Confirmación */}
