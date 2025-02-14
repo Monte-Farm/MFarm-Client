@@ -80,10 +80,14 @@ const SendOrders = () => {
 
     useEffect(() => {
         if (!configContext?.userLogged) return;
-
+        document.body.style.overflow = 'hidden';
         fetchOrders();
+
+        return () => {
+            document.body.style.overflow = '';
+        };
     }, [configContext?.userLogged]);
-    
+
 
     if (loading) {
         return (
@@ -92,14 +96,14 @@ const SendOrders = () => {
             </div>
         );
     }
-    
+
 
     return (
         <div className="page-content">
             <Container fluid>
                 {configContext?.userLogged && <BreadCrumb title={configContext?.userLogged.role === 'Encargado de almacen' ? 'Pedidos recibidos' : "Pedidos enviados"} pageTitle={"Pedidos"} />}
 
-                <Card style={{ height: '70vh' }}>
+                <Card style={{ height: '80vh' }}>
                     <CardHeader>
                         <div className="d-flex">
                             <Button className="ms-auto farm-primary-button" onClick={() => history('/orders/create_order')}>
@@ -108,8 +112,8 @@ const SendOrders = () => {
                             </Button>
                         </div>
                     </CardHeader>
-                    <CardBody>
-                        {orders && <CustomTable columns={columns} data={orders} />}
+                    <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
+                        {orders && <CustomTable columns={columns} data={orders} showPagination={false}/>}
                     </CardBody>
                 </Card>
             </Container>

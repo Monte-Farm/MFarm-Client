@@ -56,16 +56,16 @@ const CoverSignIn = () => {
                                         <Col lg={6}>
                                             <img src={loginImage} className="img-fluid h-100" alt="Login Cover" />
                                         </Col>
-                                        <Col lg={6}>
+                                        <Col lg={6} style={{backgroundColor: '#F5F5DC'}}>
                                             <div className="p-lg-5">
                                                 <div className="d-flex justify-content-center pb-5 pt-3">
                                                     <img
                                                         src={configContext?.logoUrl}
-                                                        style={{ maxWidth: '250px', maxHeight: '150px', width: 'auto', height: 'auto' }}
+                                                        style={{ maxWidth: '250px', maxHeight: '150px', width: '150px', height: '150px' }}
                                                         alt="Logo"
                                                     />
                                                 </div>
-                                                <h4 className="text-primary">Bienvenido!</h4>
+                                                <h4 className="" style={{color: '#2F4F4F'}}>Bienvenido!</h4>
                                                 <p className="text-muted fs-5">Inicie Sesión para continuar.</p>
 
                                                 <div className="mt-4">

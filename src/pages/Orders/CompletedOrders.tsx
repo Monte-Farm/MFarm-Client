@@ -66,10 +66,15 @@ const CompletedOrders = () => {
 
 
     useEffect(() => {
+        document.body.style.overflow = 'hidden';
         fetchOrders();
+
+        return () => {
+            document.body.style.overflow = '';
+        };
     }, [])
 
-    
+
     if (loading) {
         return (
             <div className="d-flex justify-content-center align-items-center vh-100 page-content">
@@ -83,9 +88,9 @@ const CompletedOrders = () => {
             <Container fluid>
                 <BreadCrumb title={'Pedidos completados'} pageTitle={"Pedidos"} />
 
-                <Card style={{ height: '70vh' }}>
-                    <CardBody>
-                        {orders && <CustomTable columns={columns} data={orders} />}
+                <Card style={{ height: '80vh' }}>
+                    <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
+                        {orders && <CustomTable columns={columns} data={orders} showPagination={false}/>}
                     </CardBody>
                 </Card>
             </Container>

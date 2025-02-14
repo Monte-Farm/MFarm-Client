@@ -61,8 +61,12 @@ const SubwarehouseIncomes = () => {
 
     useEffect(() => {
         if (!configContext || !configContext.userLogged) return;
-
+        document.body.style.overflow = 'hidden';
         handleFetchWarehouseIncomes();
+
+        return () => {
+            document.body.style.overflow = '';
+        };
     }, [configContext])
 
 
@@ -82,12 +86,12 @@ const SubwarehouseIncomes = () => {
 
 
                 <div className=" mt-4">
-                    <Card className="h-100">
+                    <Card className="rounded" style={{height:'80vh'}}>
                         <CardHeader>
                             <h4>Entradas</h4>
                         </CardHeader>
-                        <CardBody>
-                            <CustomTable columns={incomesColumns} data={subwarehouseIncomes} rowsPerPage={10} />
+                        <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
+                            <CustomTable columns={incomesColumns} data={subwarehouseIncomes} rowsPerPage={10} showPagination={false} />
                         </CardBody>
                     </Card>
                 </div>

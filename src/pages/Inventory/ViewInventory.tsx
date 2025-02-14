@@ -66,7 +66,12 @@ const ViewInventory = () => {
   };
 
   useEffect(() => {
+    document.body.style.overflow = 'hidden';
     fetchProductsData();
+
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, []);
 
   if (loading) {
@@ -82,7 +87,7 @@ const ViewInventory = () => {
       <Container fluid>
         <BreadCrumb title="Inventario" pageTitle="Almacén General" />
 
-        <Card className="rounded" style={{ minHeight: '75vh' }}>
+        <Card className="rounded" style={{ height: '80vh' }}>
           <CardHeader>
             <div className="d-flex justify-content-between">
               <h4 className="m-2">Productos</h4>
@@ -92,9 +97,10 @@ const ViewInventory = () => {
               </Button>
             </div>
           </CardHeader>
-          <CardBody>
-            <CustomTable columns={columnsTable} data={productsData} showSearchAndFilter={true} rowClickable={false} />
+          <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
+            <CustomTable columns={columnsTable} data={productsData} showSearchAndFilter={true} rowClickable={false} showPagination={false} />
           </CardBody>
+
         </Card>
       </Container>
 

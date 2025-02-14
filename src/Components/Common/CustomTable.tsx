@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Table, Input } from "reactstrap";
 import Pagination from "./Pagination";
+import SimpleBar from "simplebar-react";
+import "simplebar-react/dist/simplebar.min.css";
 
 type Column<T> = {
   header: string;
@@ -17,6 +19,7 @@ type CustomTableProps<T> = {
   rowClickable?: boolean;
   onRowClick?: (row: T) => void;
   rowsPerPage?: number;
+  showPagination?: boolean;
 };
 
 const CustomTable = <T,>({
@@ -27,16 +30,15 @@ const CustomTable = <T,>({
   rowClickable = false,
   onRowClick,
   rowsPerPage = 10,
+  showPagination = true,
 }: CustomTableProps<T>) => {
   const [filterText, setFilterText] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [filteredData, setFilteredData] = useState<T[]>(data);
 
-
   useEffect(() => {
     const result = data.filter((row) => {
       if (!filterText) return true;
-
 
       return columns.some((col) => {
         if (col.isFilterable) {
@@ -51,11 +53,10 @@ const CustomTable = <T,>({
     setCurrentPage(1);
   }, [filterText, columns, data]);
 
-  // Datos paginados según la página actual
-  const paginatedData = filteredData.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
-  );
+  // Datos paginados o sin paginar según `showPagination`
+  const paginatedData = showPagination
+    ? filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage)
+    : filteredData;
 
   return (
     <>
@@ -72,55 +73,90 @@ const CustomTable = <T,>({
       )}
 
       {/* Tabla */}
-      <div className="table-responsive mt-3">
-        <Table className={`table-hover align-middle table-nowrap mb-0 ${className} fs-5`}>
-          <thead className="table-light">
-            <tr>
-              {columns.map((col, index) => (
-                <th key={index} scope="col">
-                  {col.header}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedData.length > 0 ? (
-              paginatedData.map((row, rowIndex) => (
-                <tr
-                  key={rowIndex}
-                  className={rowClickable ? "table-row-clickable" : ""}
-                  onClick={() => rowClickable && onRowClick && onRowClick(row)}
-                  style={{ cursor: rowClickable ? "pointer" : "default" }}
-                >
-                  {columns.map((col, colIndex) => (
-                    <td key={colIndex}>
-                      {col.render
-                        ? col.render(row[col.accessor], row)
-                        : row[col.accessor]?.toString()}
-                    </td>
-                  ))}
-                </tr>
-              ))
-            ) : (
+      {showPagination ? (
+        <div className="table-responsive mt-3">
+          <Table className={`table-hover align-middle table-nowrap mb-0 ${className} fs-5`}>
+            <thead className="table-light">
               <tr>
-                <td colSpan={columns.length} className="text-center">
-                  No se encontraron datos
-                </td>
+                {columns.map((col, index) => (
+                  <th key={index} scope="col">
+                    {col.header}
+                  </th>
+                ))}
               </tr>
-            )}
-          </tbody>
-        </Table>
-      </div>
+            </thead>
+            <tbody>
+              {paginatedData.length > 0 ? (
+                paginatedData.map((row, rowIndex) => (
+                  <tr
+                    key={rowIndex}
+                    className={rowClickable ? "table-row-clickable" : ""}
+                    onClick={() => rowClickable && onRowClick && onRowClick(row)}
+                    style={{ cursor: rowClickable ? "pointer" : "default" }}
+                  >
+                    {columns.map((col, colIndex) => (
+                      <td key={colIndex}>
+                        {col.render ? col.render(row[col.accessor], row) : row[col.accessor]?.toString()}
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={columns.length} className="text-center">
+                    No se encontraron datos
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </Table>
+        </div>
+      ) : (
+        <SimpleBar style={{height: '100%', overflowY: 'auto'}}>
+          <Table className={`table-hover align-middle table-nowrap mb-0 ${className} fs-5`}>
+            <thead className="table-light sticky-top">
+              <tr>
+                {columns.map((col, index) => (
+                  <th key={index} scope="col">
+                    {col.header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedData.length > 0 ? (
+                paginatedData.map((row, rowIndex) => (
+                  <tr
+                    key={rowIndex}
+                    className={rowClickable ? "table-row-clickable" : ""}
+                    onClick={() => rowClickable && onRowClick && onRowClick(row)}
+                    style={{ cursor: rowClickable ? "pointer" : "default" }}
+                  >
+                    {columns.map((col, colIndex) => (
+                      <td key={colIndex}>
+                        {col.render ? col.render(row[col.accessor], row) : row[col.accessor]?.toString()}
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={columns.length} className="text-center">
+                    No se encontraron datos
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </Table>
+        </SimpleBar>
+      )}
 
       {/* Paginación */}
-      <div className="mt-4">
-        <Pagination
-          data={filteredData}
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
-          perPageData={rowsPerPage}
-        />
-      </div>
+      {showPagination && (
+        <div className="mt-4">
+          <Pagination data={filteredData} currentPage={currentPage} setCurrentPage={setCurrentPage} perPageData={rowsPerPage} />
+        </div>
+      )}
     </>
   );
 };

@@ -171,7 +171,12 @@ const ViewProducts = () => {
 
 
     useEffect(() => {
+        document.body.style.overflow = 'hidden';
         handleFetchProducts();
+
+        return () => {
+            document.body.style.overflow = '';
+        };
     }, [])
 
     useEffect(() => {
@@ -195,7 +200,7 @@ const ViewProducts = () => {
             <Container fluid>
                 <BreadCrumb title={"Catálogo de Productos"} pageTitle={"Almacén General"}></BreadCrumb>
 
-                <Card>
+                <Card className="rounded" style={{ height: '80vh' }}>
                     <CardHeader>
                         <div className="d-flex">
                             <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>
@@ -204,8 +209,8 @@ const ViewProducts = () => {
                             </Button>
                         </div>
                     </CardHeader>
-                    <CardBody>
-                        <CustomTable columns={columns} data={products} rowsPerPage={7}></CustomTable>
+                    <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
+                        <CustomTable columns={columns} data={products} showPagination={false}/>
                     </CardBody>
                 </Card>
             </Container>

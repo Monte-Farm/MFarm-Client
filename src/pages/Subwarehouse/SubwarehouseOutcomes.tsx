@@ -63,7 +63,12 @@ const SubwarehouseOutcomes = () => {
     }
 
     useEffect(() => {
+        document.body.style.overflow = 'hidden';
         handleFetchWarehouseOutcomes();
+
+        return () => {
+            document.body.style.overflow = '';
+        };
     }, [configContext])
 
 
@@ -81,7 +86,7 @@ const SubwarehouseOutcomes = () => {
             <Container fluid>
                 <BreadCrumb title={"Salidas"} pageTitle={"Subalmacén"} />
 
-                <Card className="h-100">
+                <Card className="rounded" style={{ height: '80vh' }}>
                     <CardHeader>
                         <div className="d-flex">
                             <h4>Salidas</h4>
@@ -92,8 +97,8 @@ const SubwarehouseOutcomes = () => {
                         </div>
 
                     </CardHeader>
-                    <CardBody>
-                        <CustomTable columns={outcomesColumns} data={subwarehouseOutcomes} rowsPerPage={10} />
+                    <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
+                        <CustomTable columns={outcomesColumns} data={subwarehouseOutcomes} rowsPerPage={10} showPagination={false} />
                     </CardBody>
                 </Card>
 

@@ -85,7 +85,7 @@ const ViewIncomes = () => {
             <Container fluid>
                 <BreadCrumb title={"Ver Entradas"} pageTitle={"Entradas"} />
 
-                <Card style={{ height: '90vh' }}>
+                <Card style={{ height: '80vh' }}>
                     <CardHeader>
                         <div className="d-flex gap-2">
                             <h4 className="me-auto">Entradas</h4>
@@ -94,10 +94,10 @@ const ViewIncomes = () => {
                                 Nueva Entrada
                             </Button>
                         </div>
-
                     </CardHeader>
-                    <CardBody>
-                        <CustomTable columns={columns} data={incomes}></CustomTable>
+
+                     <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
+                        <CustomTable columns={columns} data={incomes} showPagination={false}/>
                     </CardBody>
                 </Card>
 

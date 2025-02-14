@@ -111,8 +111,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
 
                 <div className="mt-4">
                     <Button
-                        color="success"
-                        className="w-100"
+                        className="w-100 farm-secondary-button"
                         type="submit"
                         disabled={validation.isSubmitting}
                     >

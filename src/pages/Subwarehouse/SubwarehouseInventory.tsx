@@ -65,8 +65,13 @@ const SubwarehouseInventory = () => {
     }
 
     useEffect(() => {
-        if(!configContext || !configContext.userLogged) return;
+        if (!configContext || !configContext.userLogged) return;
+        document.body.style.overflow = 'hidden';
         handleFetchWarehouseInventory();
+
+        return () => {
+            document.body.style.overflow = '';
+        };
     }, [configContext])
 
 
@@ -86,12 +91,12 @@ const SubwarehouseInventory = () => {
 
 
                 <div className="d-flex-column gap-3 mt-4">
-                    <Card className="h-100">
+                    <Card className="rounded" style={{ height: '80vh' }}>
                         <CardHeader>
                             <h4>Inventario</h4>
                         </CardHeader>
-                        <CardBody>
-                            <CustomTable columns={inventoryColumns} data={subwarehouseInventory} rowsPerPage={10}/>
+                        <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
+                            <CustomTable columns={inventoryColumns} data={subwarehouseInventory} rowsPerPage={10} showPagination={false}/>
                         </CardBody>
                     </Card>
                 </div>

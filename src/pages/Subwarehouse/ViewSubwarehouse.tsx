@@ -157,15 +157,20 @@ const ViewSubwarehouse = () => {
 
     useEffect(() => {
         if (!configContext?.userLogged) return;
+        document.body.style.overflow = 'hidden';
 
         if (configContext.userLogged.role === 'Encargado de subalmacen') {
             history(`/subwarehouse/subwarehouse_details/${configContext.userLogged.assigment}`);
         } else {
             handleFetchSubwarehouses();
         }
+
+        return () => {
+            document.body.style.overflow = '';
+        };
     }, [configContext?.userLogged]);
 
-    
+
     if (loading) {
         return (
             <div className="d-flex justify-content-center align-items-center vh-100 page-content">
@@ -180,7 +185,7 @@ const ViewSubwarehouse = () => {
                 <BreadCrumb title={"Subalmacénes"} pageTitle={"Ver Subalmacénes"}></BreadCrumb>
 
 
-                <Card style={{ height: '75vh' }}>
+                <Card style={{ height: '80vh' }}>
                     <CardHeader>
                         <div className="d-flex">
                             <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>
@@ -189,8 +194,8 @@ const ViewSubwarehouse = () => {
                             </Button>
                         </div>
                     </CardHeader>
-                    <CardBody>
-                        <CustomTable columns={columns} data={warehouses}></CustomTable>
+                    <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
+                        <CustomTable columns={columns} data={warehouses} showPagination={false}/>
                     </CardBody>
                 </Card>
 

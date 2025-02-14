@@ -57,7 +57,12 @@ const ViewOutcomes = () => {
     }
 
     useEffect(() => {
+        document.body.style.overflow = 'hidden';
         handleFetchOutcomes();
+
+        return () => {
+            document.body.style.overflow = '';
+          };
     }, [])
 
     if (loading) {
@@ -83,10 +88,10 @@ const ViewOutcomes = () => {
                                 Nueva Salida
                             </Button>
                         </div>
-
                     </CardHeader>
-                    <CardBody>
-                        <CustomTable columns={columns} data={outcomes} showSearchAndFilter={true} />
+
+                    <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
+                        <CustomTable columns={columns} data={outcomes} showSearchAndFilter={true} showPagination={false} />
                     </CardBody>
                 </Card>
             </Container>

@@ -153,7 +153,12 @@ const ViewUsers = () => {
 
 
     useEffect(() => {
+        document.body.style.overflow = 'hidden';
         handleFetchUsers();
+
+        return () => {
+            document.body.style.overflow = '';
+        };
     }, [])
 
 
@@ -164,14 +169,14 @@ const ViewUsers = () => {
             </div>
         );
     }
-    
+
 
     return (
         <div className="page-content">
             <Container fluid>
                 <BreadCrumb title={"Usuarios"} pageTitle={"Ver Usuarios"} />
 
-                <Card className="mt-4">
+                <Card className="mt-4" style={{ height: '80vh' }}>
                     <CardHeader>
                         <div className="d-flex">
                             <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>
@@ -180,8 +185,8 @@ const ViewUsers = () => {
                             </Button>
                         </div>
                     </CardHeader>
-                    <CardBody>
-                        <CustomTable columns={columns} data={users} />
+                    <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
+                        <CustomTable columns={columns} data={users} showPagination={false}/>
                     </CardBody>
                 </Card>
 

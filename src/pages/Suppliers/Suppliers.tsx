@@ -148,7 +148,12 @@ const Suppliers = () => {
     };
 
     useEffect(() => {
+        document.body.style.overflow = 'hidden';
         fetchSuppliersData();
+
+        return () => {
+            document.body.style.overflow = '';
+        };
     }, [])
 
 
@@ -175,10 +180,10 @@ const Suppliers = () => {
                                 Agregar Proveedor
                             </Button>
                         </div>
-
                     </CardHeader>
-                    <CardBody>
-                        <CustomTable columns={supplierColumn} data={suppliersData} showSearchAndFilter={true} />
+
+                    <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
+                        <CustomTable columns={supplierColumn} data={suppliersData} showSearchAndFilter={true} showPagination={false} />
                     </CardBody>
                 </Card>
 
