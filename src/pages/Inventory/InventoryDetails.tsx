@@ -22,7 +22,7 @@ const displayAttributes = [
 ]
 
 const ProductDetails = () => {
-    document.title = 'Product details | Warehouse'
+    document.title = 'Detalles de Producto | Almacén'
     const [searchParams] = useSearchParams();
     const productId = searchParams.get('product');
     const warehouseId = searchParams.get('warehouse')

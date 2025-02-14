@@ -18,7 +18,7 @@ const outcomeAttributes = [
 ]
 
 const OutcomeDetails = () => {
-    document.title = 'Detalles de salida'
+    document.title = 'Detalles de salida | Salidas'
     const history = useNavigate();
     const { id_outcome } = useParams();
     const configContext = useContext(ConfigContext);

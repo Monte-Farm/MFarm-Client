@@ -10,7 +10,7 @@ import LoadingGif from '../../assets/images/loading-gif.gif'
 
 
 const ViewSubwarehouse = () => {
-    document.title = "Ver Subalmacénes"
+    document.title = "Ver Subalmacénes | Subalmacén"
     const history = useNavigate();
     const warehouseId = 'AG001'
     const configContext = useContext(ConfigContext)

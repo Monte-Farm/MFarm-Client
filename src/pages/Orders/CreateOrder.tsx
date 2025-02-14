@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom"
 import { Alert, Card, CardBody, Container } from "reactstrap"
 
 const CreateOrder = () => {
-    document.title = 'Crear Pedido'
+    document.title = 'Crear Pedido | Pedidos'
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
     const [modals, setModals] = useState({ success: false, error: false });

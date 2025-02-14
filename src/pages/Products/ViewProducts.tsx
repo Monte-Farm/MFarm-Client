@@ -21,7 +21,7 @@ const productAttributes = [
 const foldersArray = ['Products', 'Images']
 
 const ViewProducts = () => {
-    document.title = "Catálogo de Productos"
+    document.title = "Catálogo de Productos | Almacén"
     const configContext = useContext(ConfigContext);
 
     const [products, setProducts] = useState([])

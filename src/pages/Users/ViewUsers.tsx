@@ -20,7 +20,7 @@ const userAttributes = [
 ]
 
 const ViewUsers = () => {
-    document.title = 'Ver Usuarios'
+    document.title = 'Ver Usuarios | Usuarios'
     const configContext = useContext(ConfigContext)
 
     const [users, setUsers] = useState([]);

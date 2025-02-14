@@ -10,7 +10,7 @@ import { useDebugValue, useEffect, useState } from "react";
 import SystemConfiguration from "Components/Common/SystemConfiguration";
 
 const ConfigurationPage = () => {
-    document.title = 'Configuración';
+    document.title = 'Configuración | Pig System';
 
     const [activeListItem, setActiveListItem] = useState<number | null>(null);
     const [selectedComponent, setSelectedComponent] = useState<React.ReactElement | null>(null);

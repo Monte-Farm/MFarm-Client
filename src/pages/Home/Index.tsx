@@ -8,7 +8,7 @@ import React, { useContext } from "react";
 import { Button, Card, CardBody, CardTitle, Container } from "reactstrap";
 
 const Home = () => {
-  document.title = "Home | Mfarm";
+  document.title = "Inicio | Pig System";
 
   const data = useContext(ConfigContext)
 

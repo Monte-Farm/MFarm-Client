@@ -20,7 +20,7 @@ const supplierAttributes = [
 ];
 
 const SupplierDetails = () => {
-    document.title = 'Supplier details | Suppliers';
+    document.title = 'Detalles de Proveedor | Proveedores';
     const { id_supplier } = useParams();
     const history = useNavigate();
     const configContext = useContext(ConfigContext)

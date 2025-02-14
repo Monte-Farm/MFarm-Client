@@ -8,7 +8,7 @@ import LoadingGif from '../../assets/images/loading-gif.gif'
 
 
 const SubwarehouseOutcomes = () => {
-    document.title = "Detalles de Subalmacén"
+    document.title = "Detalles de Subalmacén | Subalmacén"
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
 

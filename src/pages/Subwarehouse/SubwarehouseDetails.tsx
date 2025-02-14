@@ -18,7 +18,7 @@ const subwarehouseAttributes = [
 ]
 
 const SubwarehouseDetails = () => {
-    document.title = "Detalles de Subalmacén"
+    document.title = "Detalles de Subalmacén | Subalmacén"
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });

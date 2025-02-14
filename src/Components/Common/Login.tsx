@@ -67,6 +67,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
                                 ? true
                                 : false
                         }
+                        disabled={validation.isSubmitting}
                     />
                     {validation.touched.username && validation.errors.username && (
                         <FormFeedback type="invalid">{validation.errors.username}</FormFeedback>
@@ -92,6 +93,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
                                     ? true
                                     : false
                             }
+                            disabled={validation.isSubmitting}
                         />
                         {validation.touched.password && validation.errors.password && (
                             <FormFeedback type="invalid">{validation.errors.password}</FormFeedback>

@@ -82,7 +82,7 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
             <header id="page-topbar" className={headerClass}>
                 <div className="layout-width">
                     <div className="navbar-header">
-                        <div className="d-flex">
+                        <div className="d-flex align-items-center">
 
                             <div className="navbar-brand-box horizontal-logo">
                                 <Link to="/" className="logo logo-dark">
@@ -102,6 +102,10 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
                                         <img src={configContext?.logoUrl} alt="" height="60" />
                                     </span>
                                 </Link>
+                            </div>
+
+                            <div className=' d-flex flex-column me-3'>
+                                <h4 className='farm-text'>Pig System</h4>
                             </div>
 
                             <button

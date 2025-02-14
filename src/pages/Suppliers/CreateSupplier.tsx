@@ -7,7 +7,7 @@ import { Alert, Card, CardBody, CardHeader, Container } from "reactstrap"
 
 
 const CreateSupplier = () => {
-    document.title = 'New Supplier | Warehouse'
+    document.title = 'Nuevo Proveedor | Proveedores'
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
 

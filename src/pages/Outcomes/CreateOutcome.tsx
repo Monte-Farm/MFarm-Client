@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { Alert, Card, CardBody, Container } from "reactstrap";
 
 const CreateOutcome = () => {
-    document.title = 'Nueva Salida';
+    document.title = 'Nueva Salida | Salidas';
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
 

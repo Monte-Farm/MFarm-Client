@@ -8,7 +8,7 @@ import LoadingGif from '../../assets/images/loading-gif.gif'
 
 
 const ViewIncomes = () => {
-    document.title = 'View Incomes | Warehouse'
+    document.title = 'Ver Entradas | Almacén'
     const history = useNavigate()
     const idWarehouse = 'AG001'
     const configContext = useContext(ConfigContext);

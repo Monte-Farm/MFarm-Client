@@ -8,7 +8,7 @@ import LoadingGif from '../../assets/images/loading-gif.gif'
 
 
 const ViewOutcomes = () => {
-    document.title = 'Ver Salidas'
+    document.title = 'Ver Salidas | Salidas'
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
     const warehouseId = 'AG001'

@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { Card, Col, Container, Row } from "reactstrap";
-import loginImage from "../../assets/images/portada.webp";
+import loginImage from "../../assets/images/portada.png";
 import LoginForm from "../../Components/Common/Login";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { getLoggedinUser } from "helpers/api_helper";
