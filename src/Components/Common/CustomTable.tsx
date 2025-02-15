@@ -76,7 +76,7 @@ const CustomTable = <T,>({
       {showPagination ? (
         <div className="table-responsive mt-3">
           <Table className={`table-hover align-middle table-nowrap mb-0 ${className} fs-5`}>
-            <thead className="table-light">
+            <thead className="table-light sticky-top">
               <tr>
                 {columns.map((col, index) => (
                   <th key={index} scope="col">
@@ -112,7 +112,7 @@ const CustomTable = <T,>({
           </Table>
         </div>
       ) : (
-        <SimpleBar style={{height: '100%', overflowY: 'auto'}}>
+        <SimpleBar  style={{height: '100%', overflowY: 'auto'}}>
           <Table className={`table-hover align-middle table-nowrap mb-0 ${className} fs-5`}>
             <thead className="table-light sticky-top">
               <tr>

@@ -87,13 +87,13 @@ const ViewInventory = () => {
       <Container fluid>
         <BreadCrumb title="Inventario" pageTitle="Almacén General" />
 
-        <Card className="rounded" style={{ height: '80vh' }}>
+        <Card className="rounded" style={{ height: '75vh' }}>
           <CardHeader>
             <div className="d-flex justify-content-between">
               <h4 className="m-2">Productos</h4>
               <Button className="h-50 farm-primary-button" onClick={handleAddProduct}>
                 <i className="ri-add-line pe-2" />
-                Ingresar Productos
+                Dar Entrada
               </Button>
             </div>
           </CardHeader>

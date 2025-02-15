@@ -103,19 +103,22 @@ const SendOrders = () => {
             <Container fluid>
                 {configContext?.userLogged && <BreadCrumb title={configContext?.userLogged.role === 'Encargado de almacen' ? 'Pedidos recibidos' : "Pedidos enviados"} pageTitle={"Pedidos"} />}
 
-                <Card style={{ height: '80vh' }}>
-                    <CardHeader>
-                        <div className="d-flex">
-                            <Button className="ms-auto farm-primary-button" onClick={() => history('/orders/create_order')}>
-                                <i className="ri-add-line me-2" />
-                                Nuevo Pedido
-                            </Button>
-                        </div>
-                    </CardHeader>
+                <Card style={{ height: '75vh' }}>
+                    {configContext?.userLogged?.role === 'Encargado de subalmacen' && (
+                        <CardHeader>
+                            <div className="d-flex">
+                                <Button className="ms-auto farm-primary-button" onClick={() => history('/orders/create_order')}>
+                                    <i className="ri-add-line me-2" />
+                                    Nuevo Pedido
+                                </Button>
+                            </div>
+                        </CardHeader>
+                    )}
                     <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
-                        {orders && <CustomTable columns={columns} data={orders} showPagination={false}/>}
+                        {orders && <CustomTable columns={columns} data={orders} showPagination={false} />}
                     </CardBody>
                 </Card>
+
             </Container>
 
             {alertConfig.visible && (

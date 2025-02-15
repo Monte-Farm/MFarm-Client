@@ -88,7 +88,7 @@ const CompletedOrders = () => {
             <Container fluid>
                 <BreadCrumb title={'Pedidos completados'} pageTitle={"Pedidos"} />
 
-                <Card style={{ height: '80vh' }}>
+                <Card style={{ height: '75vh' }}>
                     <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
                         {orders && <CustomTable columns={columns} data={orders} showPagination={false}/>}
                     </CardBody>

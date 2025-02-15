@@ -162,7 +162,7 @@ const SupplierDetails = () => {
             <Container fluid>
                 <BreadCrumb title={"Detalles de Proveedor"} pageTitle={"Proveedor"} />
 
-                <div className="d-flex gap-2 mb-3 mt-3">
+                <div className="d-flex gap-2 mb-3">
                     <Button className="me-auto farm-primary-button" onClick={handleBack}>
                         <i className="ri-arrow-left-line me-3"></i>Regresar
                     </Button>
@@ -191,7 +191,7 @@ const SupplierDetails = () => {
                         <CardHeader><h4>Historial de Altas | Compras</h4></CardHeader>
                         <CardBody>
                             {supplierIncomes && (
-                                <CustomTable columns={incomesColumns} data={supplierIncomes} showSearchAndFilter={true} rowClickable={false} rowsPerPage={7} />
+                                <CustomTable columns={incomesColumns} data={supplierIncomes} showSearchAndFilter={true} rowClickable={false} rowsPerPage={7} showPagination={false} />
                             )}
                         </CardBody>
                     </Card>

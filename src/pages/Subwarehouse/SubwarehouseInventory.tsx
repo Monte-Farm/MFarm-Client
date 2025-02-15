@@ -91,7 +91,7 @@ const SubwarehouseInventory = () => {
 
 
                 <div className="d-flex-column gap-3 mt-4">
-                    <Card className="rounded" style={{ height: '80vh' }}>
+                    <Card className="rounded" style={{ height: '75vh' }}>
                         <CardHeader>
                             <h4>Inventario</h4>
                         </CardHeader>

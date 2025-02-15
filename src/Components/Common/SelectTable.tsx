@@ -108,7 +108,7 @@ const SelectTable: React.FC<SelectTableProps> = ({
           />
         </Table>
       ) : (
-        <SimpleBar style={{ height: "500px" }}>
+        <SimpleBar style={{ height: "44vh" }}>
           <Table className="table-hover align-middle table-nowrap mb-0" striped>
             <TableHeader showStock={showStock} />
             <TableBody 

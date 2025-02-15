@@ -185,7 +185,7 @@ const ViewSubwarehouse = () => {
                 <BreadCrumb title={"Subalmacénes"} pageTitle={"Ver Subalmacénes"}></BreadCrumb>
 
 
-                <Card style={{ height: '80vh' }}>
+                <Card style={{ height: '75vh' }}>
                     <CardHeader>
                         <div className="d-flex">
                             <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>

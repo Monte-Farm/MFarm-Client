@@ -40,7 +40,7 @@ const CreateOutcome = () => {
             <Container fluid>
                 <BreadCrumb title={"Nueva Salida"} pageTitle={"Salidas"} />
 
-                <Card>
+                <Card style={{maxHeight: "75vh"}}>
                     <CardBody>
                         <OutcomeForm onSubmit={handleCreateOutcome} onCancel={handleCancel}></OutcomeForm>
                     </CardBody>

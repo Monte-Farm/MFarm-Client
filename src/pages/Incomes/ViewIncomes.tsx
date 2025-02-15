@@ -85,7 +85,7 @@ const ViewIncomes = () => {
             <Container fluid>
                 <BreadCrumb title={"Ver Entradas"} pageTitle={"Entradas"} />
 
-                <Card style={{ height: '80vh' }}>
+                <Card style={{ height: '75vh' }}>
                     <CardHeader>
                         <div className="d-flex gap-2">
                             <h4 className="me-auto">Entradas</h4>

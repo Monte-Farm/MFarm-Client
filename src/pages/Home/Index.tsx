@@ -92,18 +92,7 @@ const Home = () => {
 
             </div>
 
-            <div className="d-flex gap-3">
-              <Card className="h-100 w-100">
-                <CardBody>
-                  <CardTitle tag="h5">Ventas Semanales (Barras)</CardTitle>
-                  <BarChart
-                    series={[{ name: 'Ventas', data: [20, 35, 40, 55, 60] }]}
-                    categories={['Lun', 'Mar', 'Mié', 'Jue', 'Vie']}
-                    title="Ventas Semanales"
-                  />
-                </CardBody>
-              </Card>
-            </div>
+            
 
           </div>
         </Container>

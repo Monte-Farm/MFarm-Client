@@ -86,7 +86,7 @@ const SubwarehouseIncomes = () => {
 
 
                 <div className=" mt-4">
-                    <Card className="rounded" style={{height:'80vh'}}>
+                    <Card className="rounded" style={{height:'75vh'}}>
                         <CardHeader>
                             <h4>Entradas</h4>
                         </CardHeader>

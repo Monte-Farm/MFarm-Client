@@ -243,13 +243,13 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
 
     const handleProductSelect = (selectedProductsData: Array<{ id: string; quantity: number; price: number }>) => {
         formik.setFieldValue("products", selectedProductsData);
-        // Combinar los datos seleccionados con los datos originales de products
+
         const updatedSelectedProducts: any = selectedProductsData.map((selectedProduct) => {
             const productData = products.find((p: any) => p.id === selectedProduct.id) as ProductData | undefined;
 
             return productData
-                ? { ...productData, ...selectedProduct } // Mezcla los datos originales con los nuevos
-                : selectedProduct; // Si no encuentra el producto original, usa el seleccionado
+                ? { ...productData, ...selectedProduct }
+                : selectedProduct; 
         });
 
         setSelectedProducts(updatedSelectedProducts);
@@ -558,7 +558,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
 
 
                             {/* Tabla de productos */}
-                            <div className="border border-0">
+                            <div className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(61vh - 100px)', overflowY: 'hidden' }}>
                                 <SelectTable data={products} onProductSelect={handleProductSelect} showPagination={false}></SelectTable>
                             </div>
 
@@ -593,8 +593,8 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                             </CardBody>
                         </Card>
 
-                        <Card>
-                            <CardBody>
+                        <Card style={{height: '49vh'}}>
+                            <CardBody className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(64vh - 100px)', overflowY: 'auto' }}>
                                 <CustomTable columns={productColumns} data={selectedProducts} showSearchAndFilter={false} showPagination={false} />
                             </CardBody>
                         </Card>
@@ -612,7 +612,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                             </Button>
 
                             <Button className="farm-primary-button ms-auto" type="submit" disabled={formik.isSubmitting}>
-                                {formik.isSubmitting ? "Guardando..." : initialData ? "Actualizar Transacción" : "Registrar Transacción"}
+                                {formik.isSubmitting ? "Guardando..." : initialData ? "Actualizar Transacción" : "Registrar Entrada"}
                             </Button>
                         </div>
                     </TabPane>

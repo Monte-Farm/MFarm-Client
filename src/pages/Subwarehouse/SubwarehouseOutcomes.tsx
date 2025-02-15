@@ -86,7 +86,7 @@ const SubwarehouseOutcomes = () => {
             <Container fluid>
                 <BreadCrumb title={"Salidas"} pageTitle={"Subalmacén"} />
 
-                <Card className="rounded" style={{ height: '80vh' }}>
+                <Card className="rounded" style={{ height: '75vh' }}>
                     <CardHeader>
                         <div className="d-flex">
                             <h4>Salidas</h4>

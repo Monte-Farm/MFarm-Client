@@ -176,7 +176,7 @@ const ViewUsers = () => {
             <Container fluid>
                 <BreadCrumb title={"Usuarios"} pageTitle={"Ver Usuarios"} />
 
-                <Card className="mt-4" style={{ height: '80vh' }}>
+                <Card className="mt-4" style={{ height: '75vh' }}>
                     <CardHeader>
                         <div className="d-flex">
                             <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>

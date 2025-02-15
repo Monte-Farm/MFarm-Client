@@ -41,7 +41,7 @@ const CreateOrder = () => {
             <Container fluid>
                 <BreadCrumb title={"Crear Pedido"} pageTitle={"Pedidos"}></BreadCrumb>
 
-                <Card>
+                <Card style={{maxHeight: "75vh"}}>
                     <CardBody>
                         <OrderForm onSubmit={(data: OrderData) => handleCreateOrder(data)} onCancel={handleCancel}></OrderForm>
                     </CardBody>

@@ -1,13 +1,16 @@
 import { useContext, useEffect, useState } from 'react';
-import { Alert, Button, Col, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Row, Spinner } from 'reactstrap';
+import { Alert, Button, Card, CardBody, Col, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Nav, NavItem, NavLink, Row, Spinner, TabContent, TabPane } from 'reactstrap';
 import * as Yup from 'yup'
 import Flatpickr from 'react-flatpickr';
 import { useFormik } from 'formik';
 import SubwarehouseForm from './SubwarehouseForm';
 import { useNavigate } from 'react-router-dom';
 import SelectTable from './SelectTable';
-import { OutcomeData, SubwarehouseData } from 'common/data_interfaces';
+import { OutcomeData, ProductData, SubwarehouseData } from 'common/data_interfaces';
 import { ConfigContext } from 'App';
+import classnames from "classnames";
+import ObjectDetailsHorizontal from './ObjectDetailsHorizontal';
+import CustomTable from './CustomTable';
 
 interface OutcomeFormProps {
     initialData?: OutcomeData;
@@ -15,12 +18,45 @@ interface OutcomeFormProps {
     onCancel: () => void;
 }
 
+const outcomeAttributes = [
+    { key: 'id', label: 'Identificador' },
+    { key: 'date', label: 'Fecha' },
+    { key: 'warehouseDestiny', label: 'Almacén de destino' },
+    { key: 'outcomeType', label: 'Motivo de salida' },
+]
+
+const productColumns = [
+    { header: 'Código', accessor: 'id', isFilterable: true },
+    { header: 'Producto', accessor: 'name', isFilterable: true },
+    { header: 'Cantidad', accessor: 'quantity', isFilterable: true },
+    { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true },
+    { header: 'Precio Unitario', accessor: 'price' },
+    { header: 'Categoría', accessor: 'category', isFilterable: true },
+];
+
+
 const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSubmit, onCancel }) => {
     const history = useNavigate()
     const [modals, setModals] = useState({ createWarehouse: false, cancel: false });
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const configContext = useContext(ConfigContext);
     const [products, setProducts] = useState([])
+    const [selectedProducts, setSelectedProducts] = useState([])
+
+    const [activeStep, setActiveStep] = useState<number>(1);
+    const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
+
+    function toggleArrowTab(tab: any) {
+        if (activeStep !== tab) {
+            var modifiedSteps = [...passedarrowSteps, tab];
+
+            if (tab >= 1 && tab <= 3) {
+                setActiveStep(tab);
+                setPassedarrowSteps(modifiedSteps);
+            }
+        }
+    }
+
 
     const validationSchema = Yup.object({
         id: Yup.string()
@@ -80,8 +116,19 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSu
         },
     });
 
-    const handleProductSelect = (selectedProducts: Array<{ id: string; quantity: number; price: number }>) => {
-        formik.setFieldValue("products", selectedProducts);
+    const handleProductSelect = (selectedProductsData: Array<{ id: string; quantity: number; price: number }>) => {
+        formik.setFieldValue("products", selectedProductsData);
+
+        const updatedSelectedProducts: any = selectedProductsData.map((selectedProduct) => {
+            const productData = products.find((p: any) => p.id === selectedProduct.id) as ProductData | undefined;
+
+            return productData
+                ? { ...productData, ...selectedProduct }
+                : selectedProduct;
+        });
+
+        setSelectedProducts(updatedSelectedProducts);
+        console.log(updatedSelectedProducts)
     };
 
     const fetchNextId = async () => {
@@ -121,84 +168,202 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSu
 
     return (
         <>
-            <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }}>
-                <div className='d-flex gap-3'>
-                    <div className="w-50">
-                        <Label htmlFor="idInput" className="form-label">Identificador</Label>
-                        <Input
-                            type="text"
-                            id="idInput"
-                            name="id"
-                            value={formik.values.id}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            invalid={formik.touched.id && !!formik.errors.id}
-                        />
-                        {formik.touched.id && formik.errors.id && <FormFeedback>{formik.errors.id}</FormFeedback>}
-                    </div>
+            <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }} className='form-steps'>
 
-                    <div className="w-50">
-                        <Label htmlFor="dateInput" className="form-label">Fecha</Label>
+                <div className="step-arrow-nav mb-4">
+                    <Nav className="nav-pills custom-nav nav-justified">
+                        <NavItem>
+                            <NavLink
+                                href="#"
+                                id="step-outcomeData-tab"
+                                className={classnames({
+                                    active: activeStep === 1,
+                                    done: activeStep > 1,
+                                })}
+                                onClick={() => toggleArrowTab(1)}
+                                aria-selected={activeStep === 1}
+                                aria-controls="step-outcomeData-tab"
+                            >
+                                Información de salida
+                            </NavLink>
+                        </NavItem>
 
-                        <Flatpickr
-                            id="dateInput"
-                            className="form-control"
-                            value={formik.values.date}
-                            options={{
-                                dateFormat: "d-m-Y",
-                                defaultDate: formik.values.date,
-                            }}
-                            onChange={(date) => {
-                                const formattedDate = date[0].toLocaleDateString("es-ES");
-                                formik.setFieldValue("date", formattedDate);
-                            }}
-                        />
-                        {formik.touched.date && formik.errors.date && <FormFeedback className="d-block">{formik.errors.date}</FormFeedback>}
+                        <NavItem>
+                            <NavLink
+                                href="#"
+                                id="step-products-tab"
+                                className={classnames({
+                                    active: activeStep === 2,
+                                    done: activeStep > 2,
+                                })}
+                                onClick={() => toggleArrowTab(2)}
+                                aria-selected={activeStep === 2}
+                                aria-controls="step-products-tab"
+                            >
+                                Selección de productos
+                            </NavLink>
+                        </NavItem>
 
-                    </div>
+                        <NavItem>
+                            <NavLink
+                                href="#"
+                                id="step-summary-tab"
+                                className={classnames({
+                                    active: activeStep === 3,
+                                })}
+                                onClick={() => toggleArrowTab(3)}
+                                aria-selected={activeStep === 3}
+                                aria-controls="step-summary-tab"
+                            >
+                                Resumen
+                            </NavLink>
+                        </NavItem>
+                    </Nav>
                 </div>
 
-                {/* Tipo de salida */}
-                <div className='mt-4'>
-                    <Label htmlFor='outcomeTypeInput' className='form-label'>Motivo de Salida</Label>
-                    <Input
-                        type='select'
-                        id='outcomeTypeInput'
-                        name='outcomeType'
-                        value={formik.values.outcomeType}
-                        onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
-                        invalid={formik.touched.outcomeType && !!formik.errors.outcomeType}
-                    >
-                        <option value=''>Seleccione un motivo</option>
-                        {configContext?.configurationData?.outcomeTypes.map((value) => (
-                            <option key={value} value={value}>
-                                {value}
-                            </option>
-                        ))}
-                    </Input>
-                    {formik.touched.outcomeType && formik.errors.outcomeType && <FormFeedback>{formik.errors.outcomeType}</FormFeedback>}
-                </div>
+                <TabContent activeTab={activeStep}>
+                    <TabPane id='step-outcomeData-tab' tabId={1}>
+                        <div className='d-flex gap-3'>
+                            <div className="w-50">
+                                <Label htmlFor="idInput" className="form-label">Identificador</Label>
+                                <Input
+                                    type="text"
+                                    id="idInput"
+                                    name="id"
+                                    value={formik.values.id}
+                                    onChange={formik.handleChange}
+                                    onBlur={formik.handleBlur}
+                                    invalid={formik.touched.id && !!formik.errors.id}
+                                />
+                                {formik.touched.id && formik.errors.id && <FormFeedback>{formik.errors.id}</FormFeedback>}
+                            </div>
 
-                {/* Productos */}
-                <div className="d-flex mt-5">
-                    <h5 className="me-auto">Productos</h5>
-                </div>
-                <div className="border"></div>
+                            <div className="w-50">
+                                <Label htmlFor="dateInput" className="form-label">Fecha</Label>
 
-                <div className="mt-3 border border-0">
-                    <SelectTable data={products} onProductSelect={handleProductSelect} showStock={true}></SelectTable>
-                </div>
+                                <Flatpickr
+                                    id="dateInput"
+                                    className="form-control"
+                                    value={formik.values.date}
+                                    options={{
+                                        dateFormat: "d-m-Y",
+                                        defaultDate: formik.values.date,
+                                    }}
+                                    onChange={(date) => {
+                                        const formattedDate = date[0].toLocaleDateString("es-ES");
+                                        formik.setFieldValue("date", formattedDate);
+                                    }}
+                                />
+                                {formik.touched.date && formik.errors.date && <FormFeedback className="d-block">{formik.errors.date}</FormFeedback>}
 
-                <div className='d-flex justify-content-end mt-4 gap-2'>
-                    <Button className='farm-secondary-button' disabled={formik.isSubmitting} onClick={() => toggleModal('cancel')}>
-                        Cancelar
-                    </Button>
+                            </div>
+                        </div>
 
-                    <Button className='farm-primary-button' type='submit' disabled={formik.isSubmitting}>
-                        {formik.isSubmitting ? <Spinner /> : "Guardar"}
-                    </Button>
-                </div>
+                        {/* Tipo de salida */}
+                        <div className='mt-4'>
+                            <Label htmlFor='outcomeTypeInput' className='form-label'>Motivo de Salida</Label>
+                            <Input
+                                type='select'
+                                id='outcomeTypeInput'
+                                name='outcomeType'
+                                value={formik.values.outcomeType}
+                                onChange={formik.handleChange}
+                                onBlur={formik.handleBlur}
+                                invalid={formik.touched.outcomeType && !!formik.errors.outcomeType}
+                            >
+                                <option value=''>Seleccione un motivo</option>
+                                {configContext?.configurationData?.outcomeTypes.map((value) => (
+                                    <option key={value} value={value}>
+                                        {value}
+                                    </option>
+                                ))}
+                            </Input>
+                            {formik.touched.outcomeType && formik.errors.outcomeType && <FormFeedback>{formik.errors.outcomeType}</FormFeedback>}
+                        </div>
+
+                        <div className="d-flex mt-4">
+                            <Button
+                                className="btn btn-success btn-label right ms-auto nexttab nexttab ms-auto farm-secondary-button"
+                                onClick={() => {
+                                    toggleArrowTab(activeStep + 1);
+                                }}
+                            >
+                                <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
+                                Siguiente
+                            </Button>
+                        </div>
+                    </TabPane>
+
+                    <TabPane id='step-products-tab' tabId={2}>
+                        {/* Productos */}
+                        <div className="d-flex mt-5">
+                            <h5 className="me-auto">Productos</h5>
+                        </div>
+                        <div className="border"></div>
+
+                        <div className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(65vh - 100px)', overflowY: 'hidden' }}>
+                            <SelectTable data={products} onProductSelect={handleProductSelect} showStock={true} showPagination={false} />
+                        </div>
+
+                        <div className="d-flex mt-4">
+                            <Button
+                                className="btn btn-light btn-label previestab farm-secondary-button"
+                                onClick={() => {
+                                    toggleArrowTab(activeStep - 1);
+                                }}
+                            >
+                                <i className="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i>{" "}
+                                Atras
+                            </Button>
+
+                            <Button
+                                className="btn btn-success btn-label right ms-auto nexttab nexttab ms-auto farm-secondary-button"
+                                onClick={() => {
+                                    toggleArrowTab(activeStep + 1);
+                                }}
+                            >
+                                <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
+                                Siguiente
+                            </Button>
+                        </div>
+                    </TabPane>
+
+                    <TabPane id='step-summary-tab' tabId={3}>
+                        <Card style={{ backgroundColor: '#A3C293' }}>
+                            <CardBody className="pt-4">
+                                <ObjectDetailsHorizontal attributes={outcomeAttributes} object={formik.values} />
+                            </CardBody>
+                        </Card>
+
+                        <Card style={{ height: '49vh' }}>
+                            <CardBody className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(64vh - 100px)', overflowY: 'auto' }}>
+                                <CustomTable columns={productColumns} data={selectedProducts} showSearchAndFilter={false} showPagination={false} />
+                            </CardBody>
+                        </Card>
+
+                        <div className='d-flex mt-4 gap-2'>
+                            <Button
+                                className="btn btn-light btn-label previestab farm-secondary-button"
+                                onClick={() => {
+                                    toggleArrowTab(activeStep - 1);
+                                }}
+                            >
+                                <i className="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i>{" "}
+                                Atras
+                            </Button>
+
+                            <Button className='farm-primary-button ms-auto' type='submit' disabled={formik.isSubmitting}>
+                                {formik.isSubmitting ? <Spinner /> : "Guardar"}
+                            </Button>
+                        </div>
+                    </TabPane>
+                </TabContent>
+
+
+
+
+
+
             </form>
 
             {/* Modal de Cancelar */}

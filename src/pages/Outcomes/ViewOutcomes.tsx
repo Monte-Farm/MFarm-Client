@@ -78,7 +78,7 @@ const ViewOutcomes = () => {
             <Container fluid>
                 <BreadCrumb title={"Ver Salidas"} pageTitle={"Salidas"} />
 
-                <Card style={{ height: '80vh' }}>
+                <Card style={{ height: '75vh' }}>
                     <CardHeader>
                         <div className="d-flex ">
                             <h4>Salidas</h4>
@@ -90,7 +90,7 @@ const ViewOutcomes = () => {
                         </div>
                     </CardHeader>
 
-                    <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
+                    <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(75vh - 100px)', overflowY: 'auto' }}>
                         <CustomTable columns={columns} data={outcomes} showSearchAndFilter={true} showPagination={false} />
                     </CardBody>
                 </Card>

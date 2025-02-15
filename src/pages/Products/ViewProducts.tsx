@@ -35,7 +35,6 @@ const ViewProducts = () => {
         { header: 'Código', accessor: 'id', isFilterable: true },
         { header: 'Nombre', accessor: 'name', isFilterable: true },
         { header: 'Categoría', accessor: 'category', isFilterable: true, },
-        { header: 'Descripción', accessor: 'description', isFilterable: true },
         { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true, },
         {
             header: 'Estado', accessor: 'status', isFilterable: true, render: (value: boolean) => (
@@ -200,7 +199,7 @@ const ViewProducts = () => {
             <Container fluid>
                 <BreadCrumb title={"Catálogo de Productos"} pageTitle={"Almacén General"}></BreadCrumb>
 
-                <Card className="rounded" style={{ height: '80vh' }}>
+                <Card className="rounded" style={{ height: '75vh' }}>
                     <CardHeader>
                         <div className="d-flex">
                             <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>
@@ -209,7 +208,7 @@ const ViewProducts = () => {
                             </Button>
                         </div>
                     </CardHeader>
-                    <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
+                    <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(75vh - 100px)', overflowY: 'auto' }}>
                         <CustomTable columns={columns} data={products} showPagination={false}/>
                     </CardBody>
                 </Card>
