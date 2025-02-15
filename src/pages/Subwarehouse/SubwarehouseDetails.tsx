@@ -6,15 +6,14 @@ import ObjectDetails from "Components/Common/ObjectDetails";
 import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Button, Card, CardBody, CardHeader, Col, Container, Row } from "reactstrap";
+import { Button, Card, CardBody, CardHeader, Col, Container, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
+import classnames from "classnames";
 
 const subwarehouseAttributes = [
-    { key: 'id', label: 'Identificador' },
     { key: 'name', label: 'Nombre' },
     { key: 'manager', label: 'Responsable' },
     { key: 'location', label: 'Ubicación' },
-    { key: 'status', label: 'Estado' }
 ]
 
 const SubwarehouseDetails = () => {
@@ -28,6 +27,21 @@ const SubwarehouseDetails = () => {
     const [subwarehouseIncomes, setSubwarehouseIncomes] = useState([])
     const [subwarehouseOutcomes, setSubwarehouseOutcomes] = useState([])
     const [loading, setLoading] = useState<boolean>(true);
+    const [subwarehouseDisplay, setSubwarehouseDisplay] = useState<SubwarehouseData>();
+
+    const [activeStep, setActiveStep] = useState<number>(1);
+    const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
+
+    function toggleArrowTab(tab: any) {
+        if (activeStep !== tab) {
+            var modifiedSteps = [...passedarrowSteps, tab];
+
+            if (tab >= 1 && tab <= 3) {
+                setActiveStep(tab);
+                setPassedarrowSteps(modifiedSteps);
+            }
+        }
+    }
 
 
     const inventoryColumns = [
@@ -69,6 +83,7 @@ const SubwarehouseDetails = () => {
         { header: 'Identificador', accessor: 'id', isFilterable: true },
         { header: 'Fecha de Salida', accessor: 'date', isFilterable: true },
         { header: 'Destino', accessor: 'warehouseDestiny', isFilterable: true },
+        { header: 'Tipo de Salida', accessor: 'outcomeType', isFilterable: true },
         {
             header: 'Acciones',
             accessor: 'action',
@@ -104,6 +119,21 @@ const SubwarehouseDetails = () => {
             handleError(error, 'Ha ocurrido un error al obtener la información del subalmacén, intentelo más tarde');
         }
     };
+
+    const handleFetchSubwarehouseDisplay = async () => {
+        if (!configContext || !subwarehouseDetails) return;
+
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/user/find_by_id/${subwarehouseDetails?.manager}`);
+            const manager = response.data.data
+            if (subwarehouseDetails) {
+                setSubwarehouseDisplay({ ...subwarehouseDetails, manager: manager.name });
+            }
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al obtener la información del subalmacén, intentelo más tarde');
+        }
+    };
+
 
 
     const handleFetchWarehouseInventory = async () => {
@@ -169,6 +199,7 @@ const SubwarehouseDetails = () => {
                 handleFetchWarehouseInventory(),
                 handleFetchWarehouseIncomes(),
                 handleFetchWarehouseOutcomes(),
+               
             ])
 
             setLoading(false);
@@ -176,6 +207,10 @@ const SubwarehouseDetails = () => {
 
         fetchData();
     }, [])
+
+    useEffect(() => {
+        handleFetchSubwarehouseDisplay()
+    }, [subwarehouseDetails])
 
 
     if (loading) {
@@ -189,7 +224,7 @@ const SubwarehouseDetails = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Detalles de Subalmacén"} pageTitle={"Subalmacénes"} />
+                <BreadCrumb title={`Detalles de ${subwarehouseDetails?.name}`} pageTitle={"Subalmacénes"} />
 
                 <div className="d-flex gap-2">
                     <div className="flex-grow-1">
@@ -200,42 +235,96 @@ const SubwarehouseDetails = () => {
                     </div>
                 </div>
 
-                <div className="d-flex-column gap-3 mt-4">
-                    <Card style={{ height: '40vh' }}>
-                        <CardHeader>
-                            <h4>Inventario</h4>
-                        </CardHeader>
-                        <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
-                            <CustomTable columns={inventoryColumns} data={subwarehouseInventory} showPagination={false} />
-                        </CardBody>
-                    </Card>
-                </div>
+                <Card className="mt-3 pt-2" style={{ backgroundColor: '#A3C293' }}>
+                    <CardBody>
+                        <ObjectDetailsHorizontal attributes={subwarehouseAttributes} object={subwarehouseDisplay || {}} />
+                    </CardBody>
+                </Card>
 
-                <div className=" mt-4">
-                    <Row>
-                        <Col lg={6}>
-                            <Card style={{ height: '35vh' }}>
-                                <CardHeader>
-                                    <h4>Entradas</h4>
-                                </CardHeader>
+                <Card>
+
+
+                    <div className="step-arrow-nav mb-4">
+                        <Nav className="nav-pills custom-nav nav-justified fs-4">
+                            <NavItem>
+                                <NavLink
+                                    href="#"
+                                    id="step-inventory-tab"
+                                    className={classnames({
+                                        active: activeStep === 1,
+                                        done: activeStep > 1,
+                                    })}
+                                    onClick={() => toggleArrowTab(1)}
+                                    aria-selected={activeStep === 1}
+                                    aria-controls="step-inventory-tab"
+                                >
+                                    Inventario
+                                </NavLink>
+                            </NavItem>
+
+                            <NavItem>
+                                <NavLink
+                                    href="#"
+                                    id="step-incomes-tab"
+                                    className={classnames({
+                                        active: activeStep === 2,
+                                        done: activeStep > 2,
+                                    })}
+                                    onClick={() => toggleArrowTab(2)}
+                                    aria-selected={activeStep === 2}
+                                    aria-controls="step-incomes-tab"
+                                >
+                                    Entradas
+                                </NavLink>
+                            </NavItem>
+
+                            <NavItem>
+                                <NavLink
+                                    href="#"
+                                    id="step-outcomes-tab"
+                                    className={classnames({
+                                        active: activeStep === 3,
+                                    })}
+                                    onClick={() => toggleArrowTab(3)}
+                                    aria-selected={activeStep === 3}
+                                    aria-controls="step-outcomes-tab"
+                                >
+                                    Salidas
+                                </NavLink>
+                            </NavItem>
+                        </Nav>
+                    </div>
+
+                    <TabContent activeTab={activeStep}>
+                        <TabPane id="step-inventory-tab" tabId={1}>
+                            <div className="d-flex-column gap-3">
+                                <Card style={{ height: '50vh' }}>
+                                    <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
+                                        <CustomTable columns={inventoryColumns} data={subwarehouseInventory} showPagination={false} />
+                                    </CardBody>
+                                </Card>
+                            </div>
+                        </TabPane>
+
+                        <TabPane id="step-incomes-tab" tabId={2}>
+                            <Card style={{ height: '50vh' }}>
                                 <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
                                     <CustomTable columns={incomesColumns} data={subwarehouseIncomes} rowsPerPage={5} showPagination={false} />
                                 </CardBody>
                             </Card>
-                        </Col>
+                        </TabPane>
 
-                        <Col lg={6}>
-                        <Card style={{ height: '35vh' }}>
-                                <CardHeader>
-                                    <h4>Salidas</h4>
-                                </CardHeader>
+                        <TabPane id="step-outcomes-tab" tabId={3}>
+                            <Card style={{ height: '50vh' }}>
                                 <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
                                     <CustomTable columns={outcomesColumns} data={subwarehouseOutcomes} rowsPerPage={5} showPagination={false} />
                                 </CardBody>
                             </Card>
-                        </Col>
-                    </Row>
-                </div>
+                        </TabPane>
+
+                    </TabContent>
+
+                </Card>
 
             </Container>
         </div>

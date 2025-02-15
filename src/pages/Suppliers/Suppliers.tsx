@@ -64,7 +64,7 @@ const Suppliers = () => {
 
                     {row.status === true ? (
                         <Button className="farm-secondary-button btn-icon" disabled={!row.status} onClick={() => handleModalDeactivateSupplier(row)}>
-                            <i className="ri-delete-bin-fill align-middle" />
+                            <i className="ri-forbid-line align-middle" />
                         </Button>
                     ) : (
                         <Button className="farm-secondary-button btn-icon" onClick={() => handleModalActivateSupplier(row)}>

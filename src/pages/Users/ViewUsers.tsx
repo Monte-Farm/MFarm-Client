@@ -59,7 +59,7 @@ const ViewUsers = () => {
                     </Button>
 
                     <Button className="farm-secondary-button btn-icon" disabled={!row.status} onClick={() => handleClicModal('delete', row)}>
-                        <i className="ri-delete-bin-fill align-middle" />
+                        <i className="ri-forbid-line align-middle" />
                     </Button>
                 </div>
             )

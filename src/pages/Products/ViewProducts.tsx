@@ -58,7 +58,7 @@ const ViewProducts = () => {
 
                     {row.status === true ? (
                         <Button className="farm-secondary-button btn-icon" onClick={() => handleClicModal('delete', row)}>
-                            <i className="ri-delete-bin-fill align-middle"></i>
+                            <i className="ri-forbid-line align-middle"></i>
                         </Button>
                     ) : (
                         <Button className="farm-secondary-button btn-icon" onClick={() => handleClicModal('activate', row)}>

@@ -54,9 +54,9 @@ const ViewSubwarehouse = () => {
                         <i className="ri-pencil-fill align-middle" />
                     </Button>
 
-                    <Button className="farm-secondary-button btn-icon" disabled={!row.status} onClick={() => toggleModalDelete(row)}>
+                    {/* <Button className="farm-secondary-button btn-icon" disabled={!row.status} onClick={() => toggleModalDelete(row)}>
                         <i className="ri-delete-bin-fill align-middle" />
-                    </Button>
+                    </Button> */}
                 </div>
             )
         }
