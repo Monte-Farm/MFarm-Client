@@ -201,12 +201,12 @@ const SubwarehouseDetails = () => {
                 </div>
 
                 <div className="d-flex-column gap-3 mt-4">
-                    <Card className="h-100">
+                    <Card style={{ height: '40vh' }}>
                         <CardHeader>
                             <h4>Inventario</h4>
                         </CardHeader>
-                        <CardBody>
-                            <CustomTable columns={inventoryColumns} data={subwarehouseInventory} />
+                        <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
+                            <CustomTable columns={inventoryColumns} data={subwarehouseInventory} showPagination={false} />
                         </CardBody>
                     </Card>
                 </div>
@@ -214,23 +214,23 @@ const SubwarehouseDetails = () => {
                 <div className=" mt-4">
                     <Row>
                         <Col lg={6}>
-                            <Card className="h-100">
+                            <Card style={{ height: '35vh' }}>
                                 <CardHeader>
                                     <h4>Entradas</h4>
                                 </CardHeader>
-                                <CardBody>
-                                    <CustomTable columns={incomesColumns} data={subwarehouseIncomes} rowsPerPage={5} />
+                                <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
+                                    <CustomTable columns={incomesColumns} data={subwarehouseIncomes} rowsPerPage={5} showPagination={false} />
                                 </CardBody>
                             </Card>
                         </Col>
 
                         <Col lg={6}>
-                            <Card className="h-100">
+                        <Card style={{ height: '35vh' }}>
                                 <CardHeader>
                                     <h4>Salidas</h4>
                                 </CardHeader>
-                                <CardBody>
-                                    <CustomTable columns={outcomesColumns} data={subwarehouseOutcomes} rowsPerPage={5} />
+                                <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
+                                    <CustomTable columns={outcomesColumns} data={subwarehouseOutcomes} rowsPerPage={5} showPagination={false} />
                                 </CardBody>
                             </Card>
                         </Col>

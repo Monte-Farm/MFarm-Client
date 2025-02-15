@@ -94,7 +94,7 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSu
     const formik = useFormik({
         initialValues: initialData || {
             id: "",
-            date: "",
+            date: new Date().toLocaleDateString().split("T")[0],
             products: [],
             totalPrice: 0,
             outcomeType: "",
@@ -183,6 +183,7 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSu
                                 onClick={() => toggleArrowTab(1)}
                                 aria-selected={activeStep === 1}
                                 aria-controls="step-outcomeData-tab"
+                                disabled
                             >
                                 Información de salida
                             </NavLink>
@@ -199,6 +200,7 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSu
                                 onClick={() => toggleArrowTab(2)}
                                 aria-selected={activeStep === 2}
                                 aria-controls="step-products-tab"
+                                disabled
                             >
                                 Selección de productos
                             </NavLink>
@@ -214,6 +216,7 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSu
                                 onClick={() => toggleArrowTab(3)}
                                 aria-selected={activeStep === 3}
                                 aria-controls="step-summary-tab"
+                                disabled
                             >
                                 Resumen
                             </NavLink>
@@ -287,6 +290,11 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSu
                                 onClick={() => {
                                     toggleArrowTab(activeStep + 1);
                                 }}
+                                disabled={
+                                    !formik.values.id ||
+                                    !formik.values.date ||
+                                    !formik.values.outcomeType
+                                }
                             >
                                 <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
                                 Siguiente
@@ -318,9 +326,11 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSu
 
                             <Button
                                 className="btn btn-success btn-label right ms-auto nexttab nexttab ms-auto farm-secondary-button"
-                                onClick={() => {
-                                    toggleArrowTab(activeStep + 1);
-                                }}
+                                onClick={() => toggleArrowTab(activeStep + 1)}
+                                disabled={
+                                    formik.values.products.length === 0 ||
+                                    formik.values.products.some(product => !product.quantity || product.quantity <= 0 || !product.price || product.price <= 0)
+                                }
                             >
                                 <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
                                 Siguiente

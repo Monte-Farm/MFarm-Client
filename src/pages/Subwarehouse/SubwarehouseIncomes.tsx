@@ -85,7 +85,7 @@ const SubwarehouseIncomes = () => {
                 <BreadCrumb title={"Entradas"} pageTitle={"Subalmacén"} />
 
 
-                <div className=" mt-4">
+                <div className="">
                     <Card className="rounded" style={{height:'75vh'}}>
                         <CardHeader>
                             <h4>Entradas</h4>

@@ -90,12 +90,12 @@ const SubwarehouseInventory = () => {
                 <BreadCrumb title={"Inventario"} pageTitle={"Subalmacén"} />
 
 
-                <div className="d-flex-column gap-3 mt-4">
+                <div className="d-flex-column gap-3">
                     <Card className="rounded" style={{ height: '75vh' }}>
                         <CardHeader>
                             <h4>Inventario</h4>
                         </CardHeader>
-                        <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
+                        <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(75vh - 100px)', overflowY: 'auto' }}>
                             <CustomTable columns={inventoryColumns} data={subwarehouseInventory} rowsPerPage={10} showPagination={false}/>
                         </CardBody>
                     </Card>

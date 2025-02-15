@@ -96,7 +96,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSubmit, onCanc
     const formik = useFormik({
         initialValues: initialData || {
             id: "",
-            date: "",
+            date: new Date().toLocaleDateString().split("T")[0],
             products: [],
             totalPrice: 0,
             outcomeType: "",
@@ -232,6 +232,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSubmit, onCanc
                                 onClick={() => toggleArrowTab(1)}
                                 aria-selected={activeStep === 1}
                                 aria-controls="step-outcomeData-tab"
+                                disabled
                             >
                                 Información de salida
                             </NavLink>
@@ -248,6 +249,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSubmit, onCanc
                                 onClick={() => toggleArrowTab(2)}
                                 aria-selected={activeStep === 2}
                                 aria-controls="step-products-tab"
+                                disabled
                             >
                                 Selección de productos
                             </NavLink>
@@ -263,6 +265,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSubmit, onCanc
                                 onClick={() => toggleArrowTab(3)}
                                 aria-selected={activeStep === 3}
                                 aria-controls="step-summary-tab"
+                                disabled
                             >
                                 Resumen
                             </NavLink>
@@ -382,6 +385,12 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSubmit, onCanc
                                     onClick={() => {
                                         toggleArrowTab(activeStep + 1);
                                     }}
+                                    disabled={
+                                        !formik.values.id ||
+                                        !formik.values.date ||
+                                        !formik.values.outcomeType ||
+                                        !formik.values.warehouseDestiny
+                                    }
                                 >
                                     <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
                                     Siguiente
@@ -410,9 +419,11 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSubmit, onCanc
 
                                 <Button
                                     className="btn btn-success btn-label right ms-auto nexttab nexttab ms-auto farm-secondary-button"
-                                    onClick={() => {
-                                        toggleArrowTab(activeStep + 1);
-                                    }}
+                                    onClick={() => toggleArrowTab(activeStep + 1)}
+                                    disabled={
+                                        formik.values.products.length === 0 ||
+                                        formik.values.products.some(product => !product.quantity || product.quantity <= 0 || !product.price || product.price <= 0)
+                                    }
                                 >
                                     <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
                                     Siguiente
@@ -429,7 +440,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSubmit, onCanc
                                 </CardBody>
                             </Card>
 
-                            <Card style={{height: '49vh'}}>
+                            <Card style={{ height: '49vh' }}>
                                 <CardBody className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(64vh - 100px)', overflowY: 'auto' }}>
                                     <CustomTable columns={productColumns} data={selectedProducts} showSearchAndFilter={false} showPagination={false} />
                                 </CardBody>

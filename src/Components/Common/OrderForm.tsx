@@ -224,6 +224,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
                                 onClick={() => toggleArrowTab(1)}
                                 aria-selected={activeStep === 1}
                                 aria-controls="step-orderData-tab"
+                                disabled
                             >
                                 Información de pedido
                             </NavLink>
@@ -240,6 +241,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
                                 onClick={() => toggleArrowTab(2)}
                                 aria-selected={activeStep === 2}
                                 aria-controls="step-products-tab"
+                                disabled
                             >
                                 Selección de productos
                             </NavLink>
@@ -255,6 +257,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
                                 onClick={() => toggleArrowTab(3)}
                                 aria-selected={activeStep === 3}
                                 aria-controls="step-summary-tab"
+                                disabled
                             >
                                 Resumen
                             </NavLink>
@@ -357,6 +360,10 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
                                 onClick={() => {
                                     toggleArrowTab(activeStep + 1);
                                 }}
+                                disabled={
+                                    !formik.values.id ||
+                                    !formik.values.date
+                                }
                             >
                                 <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
                                 Siguiente
@@ -383,9 +390,11 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
 
                             <Button
                                 className="btn btn-success btn-label right ms-auto nexttab nexttab ms-auto farm-secondary-button"
-                                onClick={() => {
-                                    toggleArrowTab(activeStep + 1);
-                                }}
+                                onClick={() => toggleArrowTab(activeStep + 1)}
+                                disabled={
+                                    formik.values.productsRequested.length === 0 ||
+                                    formik.values.productsRequested.some(product => !product.quantity || product.quantity <= 0)
+                                }
                             >
                                 <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
                                 Siguiente

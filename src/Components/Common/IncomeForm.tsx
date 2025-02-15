@@ -145,7 +145,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
         initialValues: initialData || {
             id: "",
             warehouse: 'AG001',
-            date: "",
+            date: new Date().toLocaleDateString().split("T")[0],
             emissionDate: "",
             products: [],
             totalPrice: 0,
@@ -249,7 +249,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
 
             return productData
                 ? { ...productData, ...selectedProduct }
-                : selectedProduct; 
+                : selectedProduct;
         });
 
         setSelectedProducts(updatedSelectedProducts);
@@ -277,6 +277,10 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
         formik.setFieldValue("totalPrice", parseFloat(totalWithTax.toFixed(2)));
     }, [formik.values.products]);
 
+    useEffect(() => {
+        formik.validateForm();
+    }, [formik.values]);
+
 
 
     return (
@@ -301,6 +305,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                                 onClick={() => toggleArrowTab(1)}
                                 aria-selected={activeStep === 1}
                                 aria-controls="step-incomeData-tab"
+                                disabled
                             >
                                 Información de entrada
                             </NavLink>
@@ -317,6 +322,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                                 onClick={() => toggleArrowTab(2)}
                                 aria-selected={activeStep === 2}
                                 aria-controls="step-products-tab"
+                                disabled
                             >
                                 Selección de productos
                             </NavLink>
@@ -332,6 +338,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                                 onClick={() => toggleArrowTab(3)}
                                 aria-selected={activeStep === 3}
                                 aria-controls="step-summary-tab"
+                                disabled
                             >
                                 Resumen
                             </NavLink>
@@ -494,9 +501,15 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                             <div className="d-flex mt-4">
                                 <Button
                                     className="btn btn-success btn-label right ms-auto nexttab nexttab ms-auto farm-secondary-button"
-                                    onClick={() => {
-                                        toggleArrowTab(activeStep + 1);
-                                    }}
+                                    onClick={() => toggleArrowTab(activeStep + 1)}
+                                    disabled={
+                                        !formik.values.id ||
+                                        !formik.values.date ||
+                                        !formik.values.emissionDate ||
+                                        !formik.values.incomeType ||
+                                        !formik.values.origin.id ||
+                                        Object.keys(formik.errors).length > 0
+                                    }
                                 >
                                     <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
                                     Siguiente
@@ -575,13 +588,16 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
 
                                 <Button
                                     className="btn btn-success btn-label right ms-auto nexttab nexttab ms-auto farm-secondary-button"
-                                    onClick={() => {
-                                        toggleArrowTab(activeStep + 1);
-                                    }}
+                                    onClick={() => toggleArrowTab(activeStep + 1)}
+                                    disabled={
+                                        formik.values.products.length === 0 ||
+                                        formik.values.products.some(product => !product.quantity || product.quantity <= 0 || !product.price || product.price <= 0)
+                                    }
                                 >
                                     <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
                                     Siguiente
                                 </Button>
+
                             </div>
                         </div>
                     </TabPane>
@@ -593,7 +609,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                             </CardBody>
                         </Card>
 
-                        <Card style={{height: '49vh'}}>
+                        <Card style={{ height: '49vh' }}>
                             <CardBody className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(64vh - 100px)', overflowY: 'auto' }}>
                                 <CustomTable columns={productColumns} data={selectedProducts} showSearchAndFilter={false} showPagination={false} />
                             </CardBody>

@@ -147,7 +147,7 @@ const IncomeDetails = () => {
             <Container fluid>
                 <BreadCrumb title={"Detalles de entrada"} pageTitle={"Entradas"} />
 
-                <div className="d-flex gap-2 mb-3 mt-3">
+                <div className="d-flex gap-2 mb-3">
                     <Button className="me-auto farm-secondary-button" onClick={handleBack}>
                         <i className="ri-arrow-left-line me-3"></i>
                         Regresar
@@ -155,10 +155,7 @@ const IncomeDetails = () => {
                 </div>
 
                 <div className="d-flex-column gap-3">
-                    <Card className="w-100 h-100">
-                        <CardHeader>
-                            <h4>Detalles</h4>
-                        </CardHeader>
+                    <Card className="w-100 h-100 pt-2" style={{ backgroundColor: '#A3C293' }}>
                         <CardBody>
                             {incomeDetails && (
                                 <ObjectDetailsHorizontal attributes={incomeAttributes} object={incomeDisplay} />
@@ -166,25 +163,20 @@ const IncomeDetails = () => {
                         </CardBody>
                     </Card>
 
-                    <Card className="w-100 h-100">
+                    <Card className="w-100" style={{height: '55vh'}}>
                         <CardHeader>
-                            <h4>Productos</h4>
-                        </CardHeader>
-                        <CardBody>
-                            <CustomTable columns={productColumns} data={productsIncome} rowClickable={false} />
-                        </CardBody>
-                    </Card>
+                            <div className="d-flex gap-2">
+                                <h4>Productos</h4>
 
-                    <Card className="mt-4">
-                        <CardHeader className="d-flex">
-                            <h4>Archivos Adjuntos</h4>
-                            <Button className="ms-auto farm-primary-button">
-                                <i className="ri-download-line me-2"></i>
-                                Descargar Archivos
-                            </Button>
+                                <Button className="ms-auto farm-primary-button">
+                                    <i className="ri-download-line me-2"></i>
+                                    Descargar Archivos
+                                </Button>
+                            </div>
+
                         </CardHeader>
-                        <CardBody>
-                            No hay archivos adjuntos
+                        <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
+                            <CustomTable columns={productColumns} data={productsIncome} rowClickable={false} showPagination={false} />
                         </CardBody>
                     </Card>
                 </div>

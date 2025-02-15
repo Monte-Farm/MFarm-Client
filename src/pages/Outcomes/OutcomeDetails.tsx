@@ -135,21 +135,18 @@ const OutcomeDetails = () => {
                 </div>
 
                 <div className="d-flex-column gap-3 mt-4">
-                    <Card className="">
-                        <CardHeader>
-                            <h4>Detalles de Salida</h4>
-                        </CardHeader>
+                    <Card className="pt-2" style={{backgroundColor: '#A3C293'}}>
                         <CardBody>
                             <ObjectDetailsHorizontal attributes={outcomeAttributes} object={outcomeDisplay || {}} />
                         </CardBody>
                     </Card>
 
-                    <Card className="h-100">
+                    <Card className="w-100" style={{height: '55vh'}}>
                         <CardHeader>
                             <h4>Productos</h4>
                         </CardHeader>
-                        <CardBody>
-                            <CustomTable columns={productColumns} data={productsOutcome} />
+                        <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
+                            <CustomTable columns={productColumns} data={productsOutcome} showPagination={false} />
                         </CardBody>
                     </Card>
                 </div>

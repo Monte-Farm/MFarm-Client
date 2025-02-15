@@ -10,13 +10,13 @@ import noImageUrl from '../../assets/images/no-image.png'
 import { ProductData } from "common/data_interfaces";
 import { ConfigContext } from "App";
 import LoadingGif from '../../assets/images/loading-gif.gif'
+import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal";
 
 
 const displayAttributes = [
     { key: 'id', label: 'Código' },
     { key: 'name', label: 'Producto' },
     { key: 'category', label: 'Categoría' },
-    { key: 'description', label: 'Descripcion' },
     { key: 'unit_measurement', label: 'Unidad de medida' },
     { key: 'status', label: 'Estado' },
 ]
@@ -310,67 +310,67 @@ const ProductDetails = () => {
                     </div>
                 </div>
 
-                <Row className="mt-4">
+                <div>
+                    <Card className="h-100 mt-3 pt-2" style={{backgroundColor: '#A3C293'}}>
+                        <CardBody>
+                            {productDetails && loading === false ? (
+                                <ObjectDetailsHorizontal attributes={displayAttributes} object={productDetails} />
+                            ) : null
+                            }
+                        </CardBody>
+                    </Card>
+                </div>
+
+                <Row>
                     <Col lg={4}>
-                        <Card className="h-100">
+                        <Card className="m-0 h-100 w-100">
+                            <CardHeader>
+                                <h4>Existencias</h4>
+                            </CardHeader>
                             <CardBody>
-                                {productDetails && loading === false ? (
-                                    <ObjectDetails attributes={displayAttributes} object={productDetails} showImage={true} imageSrc={productImageUrl} />
-                                ) : null
-                                }
+                                <h3 className="pt-3">{productExistences}</h3>
                             </CardBody>
                         </Card>
                     </Col>
 
                     <Col lg={4}>
-                        <div className="d-flex flex-column gap-3 h-100">
-                            <div className="d-flex gap-3 h-25">
-                                <Card className="m-0 h-100 w-50">
-                                    <CardHeader>
-                                        <h4>Existencias</h4>
-                                    </CardHeader>
-                                    <CardBody>
-                                        <h3 className="pt-3">{productExistences}</h3>
-                                    </CardBody>
-                                </Card>
-
-                                <Card className="m-0 h-100 w-50">
-                                    <CardHeader>
-                                        <h4>Último precio</h4>
-                                    </CardHeader>
-                                    <CardBody>
-                                        <h3 className="pt-3">RD$ {lastPrice}</h3>
-                                    </CardBody>
-                                </Card>
-                            </div>
-
-
-                            <Card className='m-0 h-75'>
-                                <CardHeader> <h4>Entradas</h4></CardHeader>
-                                <CardBody>
-                                    <CustomTable columns={incomesColumns} data={productIncomes} showSearchAndFilter={false} rowClickable={false} rowsPerPage={4} />
-                                </CardBody>
-                            </Card>
-                        </div>
+                        <Card className="m-0 h-100">
+                            <CardHeader>
+                                <h4>Último precio</h4>
+                            </CardHeader>
+                            <CardBody>
+                                <h3 className="pt-3">RD$ {lastPrice}</h3>
+                            </CardBody>
+                        </Card>
                     </Col>
 
                     <Col lg={4}>
-                        <div className="d-flex flex-column gap-3 h-100">
-                            <Card className="m-0 h-25">
-                                <CardHeader><h4>Precio Promedio</h4></CardHeader>
-                                <CardBody>
-                                    <h3 className="pt-3">RD$ {averagePrice}</h3>
-                                </CardBody>
-                            </Card>
+                        <Card className="m-0">
+                            <CardHeader><h4>Precio Promedio</h4></CardHeader>
+                            <CardBody>
+                                <h3 className="pt-3">RD$ {averagePrice}</h3>
+                            </CardBody>
+                        </Card>
+                    </Col>
+                </Row>
 
-                            <Card className="m-0 h-75">
-                                <CardHeader> <h4>Salidas</h4></CardHeader>
-                                <CardBody>
-                                    <CustomTable columns={outcomesColumns} data={productOutcomes} showSearchAndFilter={false} rowsPerPage={4} />
-                                </CardBody>
-                            </Card>
-                        </div>
+                <Row className="mt-4">
+                    <Col lg={6}>
+                    <Card className='m-0' style={{height: '25vh'}}>
+                            <CardHeader> <h4>Entradas</h4></CardHeader>
+                            <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(27vh - 100px)', overflowY: 'auto' }}>
+                                <CustomTable columns={incomesColumns} data={productIncomes} showSearchAndFilter={false} rowClickable={false} rowsPerPage={4} showPagination={false} />
+                            </CardBody>
+                        </Card>
+                    </Col>
 
+                    <Col lg={6}>
+                        <Card className='m-0' style={{height: '25vh'}}>
+                            <CardHeader> <h4>Salidas</h4></CardHeader>
+                            <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(27vh - 100px)', overflowY: 'auto' }}>
+                                <CustomTable columns={outcomesColumns} data={productOutcomes} showSearchAndFilter={false} rowsPerPage={4} showPagination={false} />
+                            </CardBody>
+                        </Card>
                     </Col>
                 </Row>
 
