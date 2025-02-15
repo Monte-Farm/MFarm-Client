@@ -15,6 +15,7 @@ const outcomeAttributes = [
     { key: 'date', label: 'Fecha' },
     { key: 'warehouseDestiny', label: 'Almacén de destino' },
     { key: 'outcomeType', label: 'Motivo de salida' },
+    { key: 'description', label: 'Descripción' },
 ]
 
 const OutcomeDetails = () => {
@@ -66,7 +67,7 @@ const OutcomeDetails = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_id/${outcome?.warehouseDestiny}`);
             setWarehouseDestiny(response.data.data);
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al obtener los datos del almacén de destino, intentelo más tarde');
+            console.log(error, 'Ha ocurrido un error al obtener los datos del almacén de destino, intentelo más tarde');
         }
     };
 

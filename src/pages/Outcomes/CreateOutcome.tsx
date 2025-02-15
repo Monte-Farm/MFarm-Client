@@ -21,8 +21,11 @@ const CreateOutcome = () => {
     const handleCreateOutcome = async (outcomeData: any) => {
         if (!configContext) return;
 
+        let createIncome: boolean = true
+        if(outcomeData.outcomeType.toLowerCase() === 'merma') createIncome = false
+
         try {
-            await configContext.axiosHelper.create(`${configContext.apiUrl}/outcomes/create_outcome/${true}/${outcomeData.outcomeType}`,outcomeData);
+            await configContext.axiosHelper.create(`${configContext.apiUrl}/outcomes/create_outcome/${createIncome}/${outcomeData.outcomeType}`,outcomeData);
             toggleModal('success')
         } catch (error) {
             console.error(error, 'Ha ocurrido un error al guardar los datos')

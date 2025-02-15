@@ -11,6 +11,7 @@ import { ConfigContext } from 'App';
 import classnames from "classnames";
 import ObjectDetailsHorizontal from './ObjectDetailsHorizontal';
 import CustomTable from './CustomTable';
+import CreateOrderTable from './CreateOrderTable';
 
 
 interface OrderFormProps {
@@ -30,6 +31,7 @@ const productsColumns = [
     { header: 'Cantidad Solicitada', accessor: 'quantity', isFilterable: true },
     { header: 'Unidad de medida', accessor: 'unit_measurement', isFilterable: true },
     { header: 'Categoria', accessor: 'category', isFilterable: true },
+    { header: 'Observaciones', accessor: 'observations', isFilterable: true },
 ]
 
 
@@ -130,7 +132,6 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
         });
 
         setSelectedProducts(updatedSelectedProducts);
-        console.log(updatedSelectedProducts)
     };
 
 
@@ -295,10 +296,10 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
                                     }}
                                     onChange={(date) => {
                                         const formattedDate = date[0].toLocaleDateString("es-ES");
-                                        formik.setFieldValue("date", formattedDate);
+                                        formik.setFieldValue("date", date);
                                     }}
                                 />
-                                {formik.touched.date && formik.errors.date && <FormFeedback className="d-block">{formik.errors.date}</FormFeedback>}
+                                {formik.touched.date && formik.errors.date && <FormFeedback className="d-block">{formik.errors.date as string}</FormFeedback>}
 
                             </div>
                         </div>
@@ -374,7 +375,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
                     <TabPane id='step-products-tab' tabId={2}>
                         {/* Productos */}
                         <div className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(65vh - 100px)', overflowY: 'hidden' }}>
-                            <SelectTable data={products} onProductSelect={handleProductSelect} showStock={true} showPagination={false}></SelectTable>
+                            <CreateOrderTable data={products} onProductSelect={handleProductSelect} showStock={true} showPagination={false}/>
                         </div>
 
                         <div className="d-flex mt-4">

@@ -75,6 +75,7 @@ const OrderTable: React.FC<OrderProductsTableProps> = ({ data, productsDelivered
               <th>Cantidad Solicitada</th>
               <th>Cantidad Entregada</th>
               <th>Unidad de Medida</th>
+              <th>Observaciones</th>
             </tr>
           </thead>
           <tbody>
@@ -97,6 +98,7 @@ const OrderTable: React.FC<OrderProductsTableProps> = ({ data, productsDelivered
                       />
                     </td>
                     <td>{product.unit_measurement}</td>
+                    <td>{product.observations}</td>
                   </tr>
                 );
               })

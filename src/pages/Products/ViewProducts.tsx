@@ -28,7 +28,7 @@ const ViewProducts = () => {
     const [selectedProduct, setSelectedProduct] = useState<ProductData>()
     const [urlImageProduct, setUrlImageProduct] = useState<string>('')
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ create: false, details: false, update: false, delete: false });
+    const [modals, setModals] = useState({ create: false, details: false, update: false, delete: false, activate: false });
     const [loading, setLoading] = useState<boolean>(false);
 
     const columns = [
@@ -56,11 +56,17 @@ const ViewProducts = () => {
                         <i className="ri-pencil-fill align-middle"></i>
                     </Button>
 
-                    <Button className="farm-secondary-button btn-icon" disabled={row.status !== true} onClick={() => handleClicModal('delete', row)}>
-                        <i className="ri-delete-bin-fill align-middle"></i>
-                    </Button>
-
+                    {row.status === true ? (
+                        <Button className="farm-secondary-button btn-icon" onClick={() => handleClicModal('delete', row)}>
+                            <i className="ri-delete-bin-fill align-middle"></i>
+                        </Button>
+                    ) : (
+                        <Button className="farm-secondary-button btn-icon" onClick={() => handleClicModal('activate', row)}>
+                            <i className="ri-check-fill align-middle"></i>
+                        </Button>
+                    )}
                 </div>
+
             ),
         },
 
@@ -155,6 +161,21 @@ const ViewProducts = () => {
         }
     };
 
+    const handleActivateProduct = async (product_id: string) => {
+        if (!configContext) return;
+
+        try {
+            await configContext.axiosHelper.put(`${configContext.apiUrl}/product/activate_product/${product_id}`, {});
+            showAlert('success', 'Producto activado con éxito');
+            handleFetchProducts();
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al activar el producto, intentelo más tarde');
+        } finally {
+            toggleModal('activate');
+            setSelectedProduct(undefined);
+        }
+    };
+
 
     const fetchImageById = async (imageId: string) => {
         if (!configContext) return;
@@ -209,7 +230,7 @@ const ViewProducts = () => {
                         </div>
                     </CardHeader>
                     <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(75vh - 100px)', overflowY: 'auto' }}>
-                        <CustomTable columns={columns} data={products} showPagination={false}/>
+                        <CustomTable columns={columns} data={products} showPagination={false} />
                     </CardBody>
                 </Card>
             </Container>
@@ -249,6 +270,20 @@ const ViewProducts = () => {
                     <Button className="farm-primary-button" onClick={() => {
                         if (selectedProduct) {
                             handleDeleteProduct(selectedProduct.id)
+                        }
+                    }}>Confirmar</Button>
+                </ModalFooter>
+            </Modal>
+
+            {/* Modal Activate */}
+            <Modal isOpen={modals.activate} toggle={() => toggleModal("activate")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("activate")}>Activar Producto</ModalHeader>
+                <ModalBody>¿Desea activar el producto {selectedProduct?.name}?</ModalBody>
+                <ModalFooter>
+                    <Button className="farm-secondary-button" onClick={() => toggleModal("activate", false)}>Cancelar</Button>
+                    <Button className="farm-primary-button" onClick={() => {
+                        if (selectedProduct) {
+                            handleActivateProduct(selectedProduct.id)
                         }
                     }}>Confirmar</Button>
                 </ModalFooter>

@@ -65,7 +65,8 @@ const CompleteOrder = () => {
                 status: true,
                 warehouseDestiny: data.orderDestiny,
                 warehouseOrigin: data.orderOrigin,
-                totalPrice: 0
+                totalPrice: 0,
+                description: 'N/A'
             };
 
             await configContext.axiosHelper.create(`${configContext.apiUrl}/outcomes/create_outcome/true/order`, outcomeData);

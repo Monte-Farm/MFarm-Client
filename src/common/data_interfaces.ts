@@ -68,6 +68,7 @@ export interface OutcomeData {
     warehouseDestiny: string;
     warehouseOrigin: string;
     totalPrice: number;
+    description: string;
 }
 
 export interface ProductData {

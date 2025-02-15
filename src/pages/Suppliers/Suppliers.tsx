@@ -16,7 +16,7 @@ const Suppliers = () => {
     const [suppliersData, setSuppliersData] = useState([]);
     const [selectedSupplier, setSelectedSupplier] = useState<SupplierData | undefined>(undefined);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ create: false, update: false, delete: false });
+    const [modals, setModals] = useState({ create: false, update: false, delete: false, activate: false });
     const [loading, setLoading] = useState<boolean>(false)
 
     const handleError = (error: any, message: string) => {
@@ -62,9 +62,16 @@ const Suppliers = () => {
                         <i className="ri-pencil-fill align-middle" />
                     </Button>
 
-                    <Button className="farm-secondary-button btn-icon" disabled={!row.status} onClick={() => handleModalDeactivateSupplier(row)}>
-                        <i className="ri-delete-bin-fill align-middle" />
-                    </Button>
+                    {row.status === true ? (
+                        <Button className="farm-secondary-button btn-icon" disabled={!row.status} onClick={() => handleModalDeactivateSupplier(row)}>
+                            <i className="ri-delete-bin-fill align-middle" />
+                        </Button>
+                    ) : (
+                        <Button className="farm-secondary-button btn-icon" onClick={() => handleModalActivateSupplier(row)}>
+                            <i className="ri-check-fill align-middle"></i>
+                        </Button>
+                    )}
+
                 </div>
             )
         }
@@ -103,6 +110,11 @@ const Suppliers = () => {
     const handleModalDeactivateSupplier = (supplier: SupplierData) => {
         setSelectedSupplier(supplier)
         toggleModal('delete')
+    }
+
+    const handleModalActivateSupplier = (supplier: SupplierData) => {
+        setSelectedSupplier(supplier)
+        toggleModal('activate')
     }
 
     const handleCreateSupplier = async (data: SupplierData) => {
@@ -144,6 +156,21 @@ const Suppliers = () => {
             handleError(error, 'Ha ocurrido un error al desactivar al proveedor, intentelo más tarde');
         } finally {
             toggleModal('delete', false);
+        }
+    };
+
+
+    const handleActivateSupplier = async (supplierId: string) => {
+        if (!configContext) return;
+
+        try {
+            await configContext.axiosHelper.put(`${configContext.apiUrl}/supplier/activate_supplier/${supplierId}`, {});
+            fetchSuppliersData();
+            showAlert('success', 'El proveedor se ha desactivado con éxito');
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al desactivar al proveedor, intentelo más tarde');
+        } finally {
+            toggleModal('activate', false);
         }
     };
 
@@ -219,6 +246,20 @@ const Suppliers = () => {
                         >
                             Eliminar
                         </Button>
+                    </ModalFooter>
+                </Modal>
+
+                {/* Modal Activate */}
+                <Modal isOpen={modals.activate} toggle={() => toggleModal("activate")} backdrop='static' keyboard={false} centered>
+                    <ModalHeader toggle={() => toggleModal("activate")}>Activar Producto</ModalHeader>
+                    <ModalBody>¿Desea activar el producto {selectedSupplier?.name}?</ModalBody>
+                    <ModalFooter>
+                        <Button className="farm-secondary-button" onClick={() => toggleModal("activate", false)}>Cancelar</Button>
+                        <Button className="farm-primary-button" onClick={() => {
+                            if (selectedSupplier) {
+                                handleActivateSupplier(selectedSupplier.id)
+                            }
+                        }}>Confirmar</Button>
                     </ModalFooter>
                 </Modal>
 

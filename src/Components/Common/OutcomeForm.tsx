@@ -23,6 +23,7 @@ const outcomeAttributes = [
     { key: 'date', label: 'Fecha' },
     { key: 'warehouseDestiny', label: 'Almacén de destino' },
     { key: 'outcomeType', label: 'Motivo de salida' },
+    { key: 'description', label: 'Descripción' },
 ]
 
 const productColumns = [
@@ -74,7 +75,6 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSubmit, onCanc
             }),
         date: Yup.string().required('Por favor, ingrese la fecha'),
         outcomeType: Yup.string().required('Por favor, seleccione el tipo de salida'),
-        warehouseDestiny: Yup.string().required('Por favor, seleccione un subalmacén')
     })
 
     const showAlert = (color: string, message: string) => {
@@ -102,7 +102,8 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSubmit, onCanc
             outcomeType: "",
             status: true,
             warehouseDestiny: "",
-            warehouseOrigin: warehouseId
+            warehouseOrigin: warehouseId,
+            description: "",
         },
         enableReinitialize: true,
         validationSchema,
@@ -334,50 +335,68 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSubmit, onCanc
                                 {formik.touched.outcomeType && formik.errors.outcomeType && <FormFeedback>{formik.errors.outcomeType}</FormFeedback>}
                             </div>
 
-                            {/* Datos del subalmacen */}
-                            <div className="d-flex mt-4">
-                                <h5 className="me-auto">Datos del Subalmacén</h5>
-                                <Button className="h-50 mb-2 farm-primary-button" onClick={() => toggleModal('createWarehouse')}>
-                                    <i className="ri-add-line me-2"></i>
-                                    Nuevo Subalmacén
-                                </Button>
-                            </div>
-
-                            <div className="border"></div>
-
-                            <div className="mt-3">
-                                <Label htmlFor="warehouseDestinyInput" className="form-label">Subalmacén</Label>
+                            <div className="mt-4">
+                                <Label htmlFor="descriptionInput" className="form-label">Descripción</Label>
                                 <Input
-                                    type="select"
-                                    id="warehouseDestinyInput"
-                                    name="warehouseDestiny"
-                                    value={formik.values.warehouseDestiny} // Valor controlado por formik
-                                    onChange={(e) => handleSubwarehouseChange(e.target.value)}
+                                    type="text"
+                                    id="descriptionInput"
+                                    name="description"
+                                    value={formik.values.description}
+                                    onChange={formik.handleChange}
                                     onBlur={formik.handleBlur}
-                                    invalid={formik.touched.warehouseDestiny && !!formik.errors.warehouseDestiny}
-                                >
-                                    <option value=''>Seleccione un subalmacén</option>
-                                    {subwarehouses.map((subwarehouse) => (
-                                        <option key={subwarehouse.id} value={subwarehouse.id}>
-                                            {subwarehouse.name}
-                                        </option>
-                                    ))}
-                                </Input>
-
-                                {formik.touched.warehouseDestiny && formik.errors.warehouseDestiny && <FormFeedback>{formik.errors.warehouseDestiny}</FormFeedback>}
+                                    invalid={formik.touched.description && !!formik.errors.description}
+                                />
+                                {formik.touched.description && formik.errors.description && <FormFeedback>{formik.errors.description}</FormFeedback>}
                             </div>
 
-                            <Row className="mt-4">
-                                <Col lg={6}>
-                                    <Label htmlFor="warehouseManager" className="form-label">Responsable</Label>
-                                    <Input type="text" className="form-control" id="warehouseManager" value={selectedSubwarehouse?.manager} disabled></Input>
-                                </Col>
+                            {(formik.values.outcomeType !== "Merma" && formik.values.outcomeType !== 'merma') && (
+                                <div>
+                                    {/* Datos del subalmacen */}
+                                    <div className="d-flex mt-4">
+                                        <h5 className="me-auto">Datos del Subalmacén</h5>
+                                        <Button className="h-50 mb-2 farm-primary-button" onClick={() => toggleModal('createWarehouse')}>
+                                            <i className="ri-add-line me-2"></i>
+                                            Nuevo Subalmacén
+                                        </Button>
+                                    </div>
 
-                                <Col lg={6}>
-                                    <Label htmlFor="warehouseLocation" className="form-label">Ubicación</Label>
-                                    <Input type="text" className="form-control" id="warehouseLocation" value={selectedSubwarehouse?.location} disabled></Input>
-                                </Col>
-                            </Row>
+                                    <div className="border"></div>
+
+                                    <div className="mt-3">
+                                        <Label htmlFor="warehouseDestinyInput" className="form-label">Subalmacén</Label>
+                                        <Input
+                                            type="select"
+                                            id="warehouseDestinyInput"
+                                            name="warehouseDestiny"
+                                            value={formik.values.warehouseDestiny} // Valor controlado por formik
+                                            onChange={(e) => handleSubwarehouseChange(e.target.value)}
+                                            onBlur={formik.handleBlur}
+                                            invalid={formik.touched.warehouseDestiny && !!formik.errors.warehouseDestiny}
+                                        >
+                                            <option value=''>Seleccione un subalmacén</option>
+                                            {subwarehouses.map((subwarehouse) => (
+                                                <option key={subwarehouse.id} value={subwarehouse.id}>
+                                                    {subwarehouse.name}
+                                                </option>
+                                            ))}
+                                        </Input>
+
+                                        {formik.touched.warehouseDestiny && formik.errors.warehouseDestiny && <FormFeedback>{formik.errors.warehouseDestiny}</FormFeedback>}
+                                    </div>
+
+                                    <Row className="mt-4">
+                                        <Col lg={6}>
+                                            <Label htmlFor="warehouseManager" className="form-label">Responsable</Label>
+                                            <Input type="text" className="form-control" id="warehouseManager" value={selectedSubwarehouse?.manager} disabled></Input>
+                                        </Col>
+
+                                        <Col lg={6}>
+                                            <Label htmlFor="warehouseLocation" className="form-label">Ubicación</Label>
+                                            <Input type="text" className="form-control" id="warehouseLocation" value={selectedSubwarehouse?.location} disabled></Input>
+                                        </Col>
+                                    </Row>
+                                </div>
+                            )}
 
                             <div className="d-flex mt-4">
                                 <Button
@@ -389,7 +408,8 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSubmit, onCanc
                                         !formik.values.id ||
                                         !formik.values.date ||
                                         !formik.values.outcomeType ||
-                                        !formik.values.warehouseDestiny
+                                        (formik.values.outcomeType !== "Merma" && !formik.values.warehouseDestiny) ||
+                                        !formik.values.description
                                     }
                                 >
                                     <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>

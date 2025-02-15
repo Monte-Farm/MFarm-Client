@@ -23,6 +23,7 @@ const outcomeAttributes = [
     { key: 'date', label: 'Fecha' },
     { key: 'warehouseDestiny', label: 'Almacén de destino' },
     { key: 'outcomeType', label: 'Motivo de salida' },
+    { key: 'description', label: 'Descripción' },
 ]
 
 const productColumns = [
@@ -73,6 +74,7 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSu
             }),
         date: Yup.string().required('Por favor, ingrese la fecha'),
         outcomeType: Yup.string().required('Por favor, seleccione el tipo de salida'),
+        description: Yup.string().required('Por favor, ingrese la descripción de la salida')
     })
 
     const showAlert = (color: string, message: string) => {
@@ -100,7 +102,8 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSu
             outcomeType: "",
             status: true,
             warehouseDestiny: "",
-            warehouseOrigin: configContext?.userLogged?.assigment
+            warehouseOrigin: configContext?.userLogged?.assigment,
+            description: ""
         },
         enableReinitialize: true,
         validationSchema,
@@ -284,6 +287,20 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSu
                             {formik.touched.outcomeType && formik.errors.outcomeType && <FormFeedback>{formik.errors.outcomeType}</FormFeedback>}
                         </div>
 
+                        <div className="mt-4">
+                            <Label htmlFor="descriptionInput" className="form-label">Descripción</Label>
+                            <Input
+                                type="text"
+                                id="descriptionInput"
+                                name="description"
+                                value={formik.values.description}
+                                onChange={formik.handleChange}
+                                onBlur={formik.handleBlur}
+                                invalid={formik.touched.description && !!formik.errors.description}
+                            />
+                            {formik.touched.description && formik.errors.description && <FormFeedback>{formik.errors.description}</FormFeedback>}
+                        </div>
+
                         <div className="d-flex mt-4">
                             <Button
                                 className="btn btn-success btn-label right ms-auto nexttab nexttab ms-auto farm-secondary-button"
@@ -293,7 +310,8 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSu
                                 disabled={
                                     !formik.values.id ||
                                     !formik.values.date ||
-                                    !formik.values.outcomeType
+                                    !formik.values.outcomeType ||
+                                    !formik.values.description
                                 }
                             >
                                 <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
@@ -304,7 +322,7 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSu
 
                     <TabPane id='step-products-tab' tabId={2}>
                         {/* Productos */}
-                        <div className="d-flex mt-5">
+                        <div className="d-flex">
                             <h5 className="me-auto">Productos</h5>
                         </div>
                         <div className="border"></div>

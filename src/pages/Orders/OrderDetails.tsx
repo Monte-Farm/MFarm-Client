@@ -22,6 +22,7 @@ const productsColumns = [
     { header: 'Cantidad Solicitada', accessor: 'quantity', isFilterable: true },
     { header: 'Unidad de medida', accessor: 'unit_measurement', isFilterable: true },
     { header: 'Categoria', accessor: 'category', isFilterable: true },
+    { header: 'Observaciones', accessor: 'observations', isFilterable: true },
 ]
 
 const productsCompletedColumns = [
@@ -31,6 +32,7 @@ const productsCompletedColumns = [
     { header: 'Cantidad Entregada', accessor: 'quantityDelivered', isFilterable: true },
     { header: 'Unidad de medida', accessor: 'unit_measurement', isFilterable: true },
     { header: 'Categoria', accessor: 'category', isFilterable: true },
+    { header: 'Observaciones', accessor: 'observations', isFilterable: true },
 ]
 
 const OrderDetails = () => {
@@ -114,21 +116,18 @@ const OrderDetails = () => {
                 ) : (
 
                     <div className="d-flex-column gap-2 mt-3">
-                        <Card className="w-100 h-100">
-                            <CardHeader>
-                                <h4>Detalles del Pedido</h4>
-                            </CardHeader>
+                        <Card className="w-100 h-100 pt-2">
                             <CardBody>
                                 {orderDisplay && <ObjectDetailsHorizontal attributes={orderAttributes} object={orderDisplay} />}
                             </CardBody>
                         </Card>
 
-                        <Card className="w-100 h-100">
+                        <Card className="rounded" style={{ height: '55vh' }}>
                             <CardHeader>
                                 <h4>Productos</h4>
                             </CardHeader>
-                            <CardBody>
-                                <CustomTable columns={orderDetails?.status === 'completed' ? productsCompletedColumns : productsColumns} data={products} rowClickable={false} />
+                            <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
+                                <CustomTable columns={orderDetails?.status === 'completed' ? productsCompletedColumns : productsColumns} data={products} rowClickable={false} showPagination={false}/>
                             </CardBody>
                         </Card>
                     </div>
