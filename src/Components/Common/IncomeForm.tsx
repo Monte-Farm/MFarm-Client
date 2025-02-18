@@ -571,7 +571,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
 
 
                             {/* Tabla de productos */}
-                            <div className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(61vh - 100px)', overflowY: 'hidden' }}>
+                            <div className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(60vh - 100px)', overflowY: 'hidden' }}>
                                 <SelectTable data={products} onProductSelect={handleProductSelect} showPagination={false}></SelectTable>
                             </div>
 
@@ -610,7 +610,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                         </Card>
 
                         <Card style={{ height: '49vh' }}>
-                            <CardBody className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(64vh - 100px)', overflowY: 'auto' }}>
+                            <CardBody className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(62vh - 100px)', overflowY: 'auto' }}>
                                 <CustomTable columns={productColumns} data={selectedProducts} showSearchAndFilter={false} showPagination={false} />
                             </CardBody>
                         </Card>

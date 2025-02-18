@@ -42,7 +42,8 @@ import OutcomeDetails from "pages/Outcomes/OutcomeDetails";
 
 //Configuration
 import ConfigurationPage from "pages/Configuration/ConfigurationPage";
-import path from "path";
+
+//
 import CreateOrder from "pages/Orders/CreateOrder";
 import ViewUsers from "pages/Users/ViewUsers";
 import SendOrders from "pages/Orders/SendOrders";
@@ -54,6 +55,11 @@ import SubwarehouseIncomes from "pages/Subwarehouse/SubwarehouseIncomes";
 import SubwarehouseOutcomes from "pages/Subwarehouse/SubwarehouseOutcomes";
 import CreateSubwarehouseOutcome from "pages/Subwarehouse/CreateSubwarehouseOutcome";
 import WarehouseConfiguration from "pages/Configuration/WarehouseConfiguration";
+import IncomesConfiguration from "pages/Incomes/IncomesConfiguration";
+import OutcomesConfiguration from "pages/Outcomes/OutcomesConfiguration";
+import SupplierConfiguration from "pages/Suppliers/SupplierConfiguration";
+import ProductConfiguration from "pages/Products/ProductsConfiguration";
+import UserConfiguration from "pages/Users/UserConfiguration";
 
 
 
@@ -75,19 +81,23 @@ const authProtectedRoutes = [
   { path: '/warehouse/suppliers/view_suppliers', component: <Suppliers /> },
   { path: '/warehouse/suppliers/create_supplier', component: <CreateSupplier /> },
   { path: '/warehouse/suppliers/supplier_details/:id_supplier', component: <SupplierDetails /> },
+  { path: '/warehouse/suppliers/configuration', component: <SupplierConfiguration /> },
 
   //Warehouse - Incomes
   { path: '/warehouse/incomes/create_income', component: <CreateIncome /> },
   { path: '/warehouse/incomes/view_incomes', component: <ViewIncome /> },
   { path: '/warehouse/incomes/income_details/:id_income', component: <IncomeDetails /> },
+  { path: '/warehouse/incomes/configuration', component: <IncomesConfiguration /> },
 
   //Warehouse - Outcomes
   { path: '/warehouse/outcomes/create_outcome', component: <CreateOutcome /> },
   { path: '/warehouse/outcomes/view_outcomes', component: <ViewOutcomes /> },
   { path: '/warehouse/outcomes/outcome_details/:id_outcome', component: <OutcomeDetails /> },
+  { path: '/warehouse/outcomes/configuration', component: <OutcomesConfiguration /> },
 
   //Warehouse - Product Catalog
   { path: '/warehouse/products/product_catalog', component: <ViewProducts /> },
+  { path: '/warehouse/products/configuration', component: <ProductConfiguration /> },
 
   //Subwarehouse
   { path: '/subwarehouse/view_subwarehouse', component: <ViewSubwarehouse /> },
@@ -107,6 +117,7 @@ const authProtectedRoutes = [
 
   //Users
   { path: 'users/view_users', component: <ViewUsers /> },
+  { path: 'users/configuration', component: <UserConfiguration /> },
 
   //User Profile
   { path: "/profile", component: <UserProfile /> },

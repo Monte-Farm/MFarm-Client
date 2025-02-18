@@ -8,6 +8,7 @@ import CustomTable from "Components/Common/CustomTable";
 import { useFormik } from "formik";
 import { useDebugValue, useEffect, useState } from "react";
 import SystemConfiguration from "Components/Common/SystemConfiguration";
+import IncomesConfiguration from "pages/Incomes/IncomesConfiguration";
 
 const ConfigurationPage = () => {
     document.title = 'Configuración | Pig System';
@@ -18,7 +19,6 @@ const ConfigurationPage = () => {
 
     const listItems = [
         { id: 1, name: 'Sistema', component: <SystemConfiguration /> },
-        { id: 2, name: 'Usuario', component: <div>Configuracion del usuario</div> },
     ]
 
     const handleItemClick = (item: any) => {

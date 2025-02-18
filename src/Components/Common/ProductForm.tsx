@@ -196,7 +196,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                         invalid={formik.touched.category && !!formik.errors.category}
                     >
                         <option value="">Seleccione una categoría</option>
-                        {configContext?.configurationData?.categories.map((category) => (
+                        {configContext?.configurationData?.productCategories.map((category) => (
                             <option key={category} value={category}>
                                 {category}
                             </option>

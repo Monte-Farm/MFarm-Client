@@ -105,7 +105,7 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
                             </div>
 
                             <div className=' d-flex flex-column me-3'>
-                                <h4 className='farm-text'>Pig System</h4>
+                                <h4 className='farm-text'>{configContext?.configurationData?.farmName}</h4>
                             </div>
 
                             <button

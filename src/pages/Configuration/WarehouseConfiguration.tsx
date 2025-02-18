@@ -43,30 +43,6 @@ const WarehouseConfiguration = () => {
 
                 <Card className="border">
                     <CardHeader>
-                        <h5>Categorias de productos</h5>
-                    </CardHeader>
-                    <CardBody>
-                        <StringTable name="categories" values={configuration?.categories || []} onChange={function (name: string, newValues: string[]): void {
-                            throw new Error("Function not implemented.");
-                        }}
-                        />
-                    </CardBody>
-                </Card>
-
-                <Card className="border">
-                    <CardHeader>
-                        <h5>Categorias de proveedores</h5>
-                    </CardHeader>
-                    <CardBody>
-                        <StringTable name="categories" values={configuration?.categories || []} onChange={function (name: string, newValues: string[]): void {
-                            throw new Error("Function not implemented.");
-                        }}
-                        />
-                    </CardBody>
-                </Card>
-
-                <Card className="border">
-                    <CardHeader>
                         <h5>Tipos de entradas</h5>
                     </CardHeader>
                     <CardBody>

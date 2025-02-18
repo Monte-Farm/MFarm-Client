@@ -18,7 +18,6 @@ const Navdata = () => {
     const [isSubwarehouseOutcomes, setIsSubwarehouseOutcomes] = useState<boolean>(false);
 
     //Warehouse
-    const [isSuppliers, setIsSupplier] = useState<boolean>(false)
     const [isIncomes, setIsIncomes] = useState<boolean>(false)
     const [isOutcomes, setIsOutcomes] = useState<boolean>(false)
     const [isInventory, setIsInventory] = useState<boolean>(false)
@@ -30,12 +29,19 @@ const Navdata = () => {
     const [isCreateSubwarehouseOutcome, setIsCreateSubwarehouseOutcome] = useState<boolean>(false)
     const [isViewSubwarehouseOutcomes, setIsViewSubwarehouseOutcomes] = useState<boolean>(false)
 
+    //Suppliers
+    const [isSuppliers, setIsSupplier] = useState<boolean>(false)
+    const [isViewSuppliers, setIsViewSuppliers] = useState<boolean>(false)
+    const [isSuppliersConfiguration, setIsSuppliersConfiguration] = useState<boolean>(false)
+
     //Orders
     const [isCreateOrder, setIsCreateOrder] = useState<boolean>(false)
     const [isPendingOrders, setIsPendingOrders] = useState<boolean>(false)
     const [isCompletedOrders, setIsCompletedOrders] = useState<boolean>(false)
 
     //Users
+    const [isViewUsers, setIsViewUsers] = useState<boolean>(false)
+    const [isUserConfiguration, setIsUserConfiguration] = useState<boolean>(false)
 
     const [iscurrentState, setIscurrentState] = useState('Home');
 
@@ -80,6 +86,9 @@ const Navdata = () => {
         if (iscurrentState !== 'SubwarehouseOutcomes') {
             setIsSubwarehouseOutcomes(false)
         }
+        if (iscurrentState !== 'Suppliers') {
+            setIsSupplier(false)
+        }
     }, [
         history,
         iscurrentState,
@@ -89,7 +98,8 @@ const Navdata = () => {
         isUsers,
         isSubwarehouseInventory,
         isSubwarehouseIncomes,
-        isSubwarehouseOutcomes
+        isSubwarehouseOutcomes,
+        isSuppliers
     ]);
 
     const menuItems: any = [
@@ -158,6 +168,13 @@ const Navdata = () => {
                             roles: ["Superadmin", 'Encargado de almacen'],
                             parentId: "incomes"
                         },
+                        {
+                            id: 3,
+                            label: "Configuración",
+                            link: "/warehouse/incomes/configuration",
+                            roles: ['Superadmin'],
+                            parentId: "incomes"
+                        }
                     ]
                 },
                 {
@@ -187,30 +204,72 @@ const Navdata = () => {
                             roles: ["Superadmin", 'Encargado de almacen'],
                             parentId: "outcomes"
                         },
+                        {
+                            id: 3,
+                            label: "Configuración",
+                            link: "/warehouse/outcomes/configuration",
+                            roles: ["Superadmin"],
+                            parentId: "outcomes"
+                        },
                     ]
                 },
                 {
                     id: "suppliers",
                     label: "Proveedores",
-                    link: "/warehouse/suppliers/view_suppliers",
+                    link: "#",
                     roles: ["Superadmin", 'Encargado de almacen'],
                     parentId: "warehouse",
+                    isChildItem: true,
                     click: function (e: any) {
                         e.preventDefault();
                         setIsSupplier(!isSuppliers);
                     },
                     stateVariables: isSuppliers,
+                    childItems: [
+                        {
+                            id: 1,
+                            label: 'Ver Proveedores',
+                            link: '/warehouse/suppliers/view_suppliers',
+                            roles: ['Superadmin', 'Encargado de almacen'],
+                            parentId: 'suppliers'
+                        },
+                        {
+                            id: 2,
+                            label: 'Configuración',
+                            link: '/warehouse/suppliers/configuration',
+                            roles: ['Superadmin'],
+                            parentId: 'suppliers'
+                        },
+                    ]
                 },
                 {
                     id: "products",
                     label: "Catálogo de Productos",
-                    link: "/warehouse/products/product_catalog",
+                    link: "#",
                     roles: ["Superadmin"],
                     parentId: "warehouse",
+                    isChildItem: true,
                     click: function (e: any) {
                         e.preventDefault();
                         setIsProducts(!isProducts);
                     },
+                    stateVariables: isProducts,
+                    childItems: [
+                        {
+                            id: 1,
+                            label: 'Ver Productos',
+                            link: '/warehouse/products/product_catalog',
+                            roles: ['Superadmin'],
+                            parentId: 'products'
+                        },
+                        {
+                            id: 2,
+                            label: 'Configuración',
+                            link: '/warehouse/products/configuration',
+                            roles: ['Superadmin'],
+                            parentId: 'products'
+                        },
+                    ]
                 },
             ],
         },
@@ -265,7 +324,7 @@ const Navdata = () => {
         },
         {
             id: 'subwarehouseOutcomes',
-            icon:  "ri-inbox-unarchive-line",
+            icon: "ri-inbox-unarchive-line",
             label: 'Salidas',
             link: '#',
             roles: ['Encargado de subalmacen'],
@@ -282,7 +341,7 @@ const Navdata = () => {
                     link: "/subwarehouse/create_subwarehouse_outcome",
                     roles: ['Encargado de subalmacen'],
                     parentId: "subwarehouseOutcomes",
-                    click: function(e: any){
+                    click: function (e: any) {
                         e.preventDefault();
                         setIsCreateSubwarehouseOutcome(!isCreateSubwarehouseOutcome)
                     },
@@ -294,7 +353,7 @@ const Navdata = () => {
                     link: "/subwarehouse/subwarehouse_outcomes",
                     roles: ['Encargado de subalmacen'],
                     parentId: "subwarehouseOutcomes",
-                    click: function(e: any){
+                    click: function (e: any) {
                         e.preventDefault();
                         setIsViewSubwarehouseOutcomes(!isViewSubwarehouseOutcomes)
                     },
@@ -359,7 +418,7 @@ const Navdata = () => {
             id: 'users',
             label: 'Usuarios',
             icon: ' ri-user-line',
-            link: '/users/view_users',
+            link: '#',
             roles: ["Superadmin"],
             click: function (e: any) {
                 e.preventDefault();
@@ -367,6 +426,32 @@ const Navdata = () => {
                 setIscurrentState('Users');
                 updateIconSidebar(e);
             },
+            subItems: [
+                {
+                    id: "viewusers",
+                    label: "Ver Usuarios",
+                    link: "/users/view_users",
+                    roles: ['Superadmin'],
+                    parentId: "users",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsViewUsers(!isViewUsers)
+                    },
+                    stateVariables: isViewUsers,
+                },
+                {
+                    id: "userConfiguration",
+                    label: "Configuración",
+                    link: "/users/configuration",
+                    roles: ['Superadmin'],
+                    parentId: "users",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsUserConfiguration(!isUserConfiguration)
+                    },
+                    stateVariables: isUserConfiguration,
+                },
+            ]
         },
     ];
     return <React.Fragment>{menuItems}</React.Fragment>;

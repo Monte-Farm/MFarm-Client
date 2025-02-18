@@ -114,11 +114,12 @@ export interface ConfigurationData {
     farmLogo: string;
     farmIcon: string;
     unitMeasurements: string[];
-    categories: string[];
+    productCategories: string[];
     incomeTypes: string[];
     outcomeTypes: string[];
     userRoles: string[];
     taxes: Tax[];
+    supplierCategories: string[];
 }
 
 

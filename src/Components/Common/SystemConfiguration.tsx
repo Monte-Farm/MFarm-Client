@@ -21,11 +21,12 @@ const SystemConfiguration = () => {
             farmLogo: "",
             farmIcon: "",
             unitMeasurements: [],
-            categories: [],
+            productCategories: [],
             incomeTypes: [],
             outcomeTypes: [],
             userRoles: [],
             taxes: [],
+            supplierCategories: []
         },
         enableReinitialize: true,
         onSubmit: async (values, { setSubmitting }) => {
@@ -187,48 +188,6 @@ const SystemConfiguration = () => {
                 />
             </div>
 
-
-            <Card className="border">
-                <CardHeader>
-                    <h5>Categorias</h5>
-                </CardHeader>
-                <CardBody>
-                    <StringTable
-                        name="categories"
-                        values={formik.values.categories}
-                        onChange={handleFormChange}
-                    />
-                </CardBody>
-            </Card>
-
-            <Card className="border">
-                <CardHeader>
-                    <h5>Roles de usuario</h5>
-                </CardHeader>
-                <CardBody>
-                    <StringTable
-                        name="userRoles"
-                        values={formik.values.userRoles}
-                        onChange={handleFormChange}
-                    />
-                </CardBody>
-            </Card>
-
-
-
-            <Card className="border">
-                <CardHeader>
-                    <h5>Unidades de medida</h5>
-                </CardHeader>
-                <CardBody>
-                    <StringTable
-                        name="unitMeasurements"
-                        values={formik.values.unitMeasurements}
-                        onChange={handleFormChange}
-                    />
-                </CardBody>
-            </Card>
-
             <Card className="border">
                 <CardHeader>
                     <h5>Impuestos</h5>
@@ -237,35 +196,6 @@ const SystemConfiguration = () => {
                     <TaxesTable name="taxes" taxes={formik.values.taxes} onChange={handleFormTaxChange}></TaxesTable>
                 </CardBody>
             </Card>
-
-
-            <Card className="border">
-                <CardHeader>
-                    <h5>Tipo de entrada</h5>
-                </CardHeader>
-                <CardBody>
-                    <StringTable
-                        name="incomeTypes"
-                        values={formik.values.incomeTypes}
-                        onChange={handleFormChange}
-                    />
-                </CardBody>
-            </Card>
-
-            <Card className="border">
-                <CardHeader>
-                    <h5>Tipos de salida</h5>
-                </CardHeader>
-                <CardBody>
-                    <StringTable
-                        name="outcomeTypes"
-                        values={formik.values.outcomeTypes}
-                        onChange={handleFormChange}
-                    />
-                </CardBody>
-            </Card>
-
-
 
             <div className="d-flex">
                 <Button type="submit" color="success" className="mt-4 ms-auto" disabled={formik.isSubmitting}>

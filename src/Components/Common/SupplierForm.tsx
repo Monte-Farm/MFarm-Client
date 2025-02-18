@@ -191,7 +191,7 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCa
               invalid={formik.touched.supplier_type && !!formik.errors.supplier_type}
             >
               <option value="">Seleccione un tipo</option>
-              {configContext?.configurationData?.categories.map((value) => (
+              {configContext?.configurationData?.supplierCategories.map((value) => (
                 <option key={value} value={value}>
                   {value}
                 </option>
