@@ -34,6 +34,11 @@ const Navdata = () => {
     const [isViewSuppliers, setIsViewSuppliers] = useState<boolean>(false)
     const [isSuppliersConfiguration, setIsSuppliersConfiguration] = useState<boolean>(false)
 
+    //Purchase Orders
+    const [isPurchaseOrders, setIsPurchaseOrders] = useState<boolean>(false)
+    const [isViewPurchaseOrders, setIsViewPurchaseOrders] = useState<boolean>(false)
+    const [isCreatePurchaseOrders, setIsCreatePurchaseOrders] = useState<boolean>(false)
+
     //Orders
     const [isCreateOrder, setIsCreateOrder] = useState<boolean>(false)
     const [isPendingOrders, setIsPendingOrders] = useState<boolean>(false)
@@ -88,6 +93,9 @@ const Navdata = () => {
         }
         if (iscurrentState !== 'Suppliers') {
             setIsSupplier(false)
+        }
+        if (iscurrentState !== 'PurchaseOrders') {
+            setIsPurchaseOrders(false)
         }
     }, [
         history,
@@ -411,6 +419,45 @@ const Navdata = () => {
                         setIsCompletedOrders(!isCompletedOrders)
                     },
                     stateVariables: isCompletedOrders,
+                },
+            ]
+        },
+        {
+            id: 'purchaseOrders',
+            label: 'Ordenes de Compra',
+            icon: 'ri-currency-line',
+            link: '#',
+            roles: ['Superadmin', 'Encargado de almacen'],
+            click: function (e: any) {
+                e.preventDefault();
+                setIsPurchaseOrders(!isPurchaseOrders);
+                setIscurrentState('PurchaseOrders');
+                updateIconSidebar(e)
+            },
+            subItems: [
+                {
+                    id: 'createPurchaseOrders',
+                    label: 'Crear Orden de Compra',
+                    link: '/purchase_orders/create_purchase_order',
+                    roles: ['Superadmin', 'Encargado de almacen'],
+                    parentId: 'purchaseOrders',
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsCreatePurchaseOrders(!isCreatePurchaseOrders)
+                    },
+                    stateVariables: isCreatePurchaseOrders
+                },
+                {
+                    id: 'viewPurchaseOrders',
+                    label: 'Ver Ordenes de Compra',
+                    link: '/purchase_orders/view_purchase_orders',
+                    roles: ['Superadmin', 'Encargado de almacen'],
+                    parentId: 'purchaseOrders',
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsViewPurchaseOrders(!isViewPurchaseOrders)
+                    },
+                    stateVariables: isViewPurchaseOrders
                 },
             ]
         },

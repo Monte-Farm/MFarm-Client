@@ -60,6 +60,8 @@ import OutcomesConfiguration from "pages/Outcomes/OutcomesConfiguration";
 import SupplierConfiguration from "pages/Suppliers/SupplierConfiguration";
 import ProductConfiguration from "pages/Products/ProductsConfiguration";
 import UserConfiguration from "pages/Users/UserConfiguration";
+import ViewPurchaseOrders from "pages/PurchaseOrders/ViewPurchaseOrders";
+import CreatePurchaseOrder from "pages/PurchaseOrders/CreatePurchaseOrder";
 
 
 
@@ -113,6 +115,10 @@ const authProtectedRoutes = [
   { path: '/orders/order_details/:id_order', component: <OrderDetails /> },
   { path: '/orders/complete_order/:id_order', component: <CompleteOrder /> },
   { path: '/orders/completed_orders', component: <CompletedOrders /> },
+
+  //Purchase orders
+  { path: '/purchase_orders/view_purchase_orders', component: <ViewPurchaseOrders /> },
+  { path: '/purchase_orders/create_purchase_order', component: <CreatePurchaseOrder/> },
 
 
   //Users

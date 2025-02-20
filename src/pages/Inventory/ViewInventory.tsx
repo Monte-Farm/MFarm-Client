@@ -14,13 +14,14 @@ const ViewInventory = () => {
 
   const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
   const [productsData, setProductsData] = useState([]);
-  const [loading, setLoading] = useState(true); // Estado de carga
+  const [loading, setLoading] = useState(true);
   const configContext = useContext(ConfigContext);
 
   const columnsTable = [
     { header: "Código", accessor: "id", isFilterable: true },
     { header: "Producto", accessor: "name", isFilterable: true },
     { header: 'Existencias', accessor: 'quantity', isFilterable: true },
+    { header: 'Precio Promedio', accessor: 'averagePrice', isFilterable: true },
     { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true },
     { header: 'Categoría', accessor: 'category', isFilterable: true },
     {

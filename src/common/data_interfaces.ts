@@ -134,3 +134,17 @@ export interface UserData {
     assigment?: string | null
     status: boolean;
 }
+
+
+export interface PurchaseOrderData {
+    id: string;
+    date: string;
+    products: Array<Product>;
+    subtotal: number;
+    tax: number;
+    discount: number;
+    totalPrice: number;
+    supplier: string;
+    status: boolean;
+    warehouse: string;
+}

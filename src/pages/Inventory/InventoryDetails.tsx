@@ -38,6 +38,7 @@ const ProductDetails = () => {
     const [seriesPrices, setSeriesPrices] = useState<{ name: string, data: number[] }[]>([]);
     const [lastPrice, setLastPrice] = useState<number>(0);
     const [averagePrice, setAveragePrice] = useState<string>('');
+    const [totalPrice, setTotalPrice] = useState<string>('');
     const [productExistences, setProductExistences] = useState<string>('')
     const [productImageUrl, setProductImageUrl] = useState<string>('')
     const [loading, setLoading] = useState<boolean>(true)
@@ -217,6 +218,25 @@ const ProductDetails = () => {
     };
 
 
+    const handleTotalPrice = async () => {
+        if (!configContext) return;
+
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/product/total_price/${productId}/${warehouseId}`);
+
+            if (response.data.data !== null) {
+                const price: number = response.data.data;
+                setTotalPrice(price.toFixed(2));
+            } else {
+                setTotalPrice('0');
+            }
+        } catch (error) {
+            handleError(error, 'El servicio no esta disponible, intentelo más tarde');
+        }
+    };
+
+
+
     const handleUpdateProduct = async (data: ProductData) => {
         if (!configContext) return;
 
@@ -276,7 +296,8 @@ const ProductDetails = () => {
                 handleHistoryPrices(),
                 handleAveragePrice(),
                 handleProductExistences(),
-                handleFetchProductOutcomes()
+                handleFetchProductOutcomes(),
+                handleTotalPrice(),
             ]);
             setLoading(false);
         };
@@ -322,7 +343,7 @@ const ProductDetails = () => {
                 </div>
 
                 <Row>
-                    <Col lg={4}>
+                    <Col lg={3}>
                         <Card className="m-0 h-100 w-100">
                             <CardHeader>
                                 <h4>Existencias</h4>
@@ -333,7 +354,18 @@ const ProductDetails = () => {
                         </Card>
                     </Col>
 
-                    <Col lg={4}>
+                    <Col lg={3}>
+                        <Card className="m-0 h-100 w-100">
+                            <CardHeader>
+                                <h4>Total Inventario</h4>
+                            </CardHeader>
+                            <CardBody>
+                                <h3 className="pt-3">{totalPrice}</h3>
+                            </CardBody>
+                        </Card>
+                    </Col>
+
+                    <Col lg={3}>
                         <Card className="m-0 h-100">
                             <CardHeader>
                                 <h4>Último precio</h4>
@@ -344,7 +376,7 @@ const ProductDetails = () => {
                         </Card>
                     </Col>
 
-                    <Col lg={4}>
+                    <Col lg={3}>
                         <Card className="m-0">
                             <CardHeader><h4>Precio Promedio</h4></CardHeader>
                             <CardBody>
