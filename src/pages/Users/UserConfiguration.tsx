@@ -31,7 +31,7 @@ const UserConfiguration = () => {
             <Container fluid>
                 <BreadCrumb title={"Configuración de usuarios"} pageTitle={"Usuarios"} />
                 <div style={{ height: '75vh' }}>
-                    <ConfigurationsList items={items} groupName="userRoles" />
+                    <ConfigurationsList items={items} groupName="userRoles" cardTitle="Roles de Usuario"/>
                 </div>
             </Container>
         </div>

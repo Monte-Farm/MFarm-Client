@@ -6,10 +6,11 @@ import ErrorModal from "./ErrorModal";
 
 interface ConfigurationsListProps {
     items: string[];
-    groupName: string
+    groupName: string;
+    cardTitle: string;
 }
 
-const ConfigurationsList: React.FC<ConfigurationsListProps> = ({ items, groupName }) => {
+const ConfigurationsList: React.FC<ConfigurationsListProps> = ({ items, groupName, cardTitle }) => {
     const configContext = useContext(ConfigContext);
     const [localItems, setLocalItems] = useState<string[]>(items);
     const [modalOpen, setModalOpen] = useState(false);
@@ -71,7 +72,7 @@ const ConfigurationsList: React.FC<ConfigurationsListProps> = ({ items, groupNam
             <Card>
                 <CardHeader>
                     <div className="d-flex">
-                        <h5 className="flex-grow-1">Tipo de entradas</h5>
+                        <h5 className="flex-grow-1">{cardTitle}</h5>
                         <Button className="farm-primary-button me-2" onClick={toggleModal}>
                             <i className="ri-add-line me-3" />
                             Agregar Elemento

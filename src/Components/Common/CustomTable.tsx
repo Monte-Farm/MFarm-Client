@@ -35,6 +35,7 @@ const CustomTable = <T,>({
   const [filterText, setFilterText] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [filteredData, setFilteredData] = useState<T[]>(data);
+  const [sortConfig, setSortConfig] = useState<{ key: keyof T; direction: 'ascending' | 'descending' } | null>(null);
 
   useEffect(() => {
     const result = data.filter((row) => {
@@ -53,10 +54,34 @@ const CustomTable = <T,>({
     setCurrentPage(1);
   }, [filterText, columns, data]);
 
+  const sortedData = React.useMemo(() => {
+    let sortableData = [...filteredData];
+    if (sortConfig !== null) {
+      sortableData.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableData;
+  }, [filteredData, sortConfig]);
+
+  const requestSort = (key: keyof T) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
   // Datos paginados o sin paginar según `showPagination`
   const paginatedData = showPagination
-    ? filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage)
-    : filteredData;
+    ? sortedData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage)
+    : sortedData;
 
   return (
     <>
@@ -79,8 +104,11 @@ const CustomTable = <T,>({
             <thead className="table-light sticky-top">
               <tr>
                 {columns.map((col, index) => (
-                  <th key={index} scope="col">
+                  <th key={index} scope="col" onClick={() => requestSort(col.accessor)} style={{ cursor: 'pointer' }}>
                     {col.header}
+                    {sortConfig && sortConfig.key === col.accessor && (
+                      sortConfig.direction === 'ascending' ? '    ▲' : '    ▼'
+                    )}
                   </th>
                 ))}
               </tr>
@@ -112,13 +140,16 @@ const CustomTable = <T,>({
           </Table>
         </div>
       ) : (
-        <SimpleBar  style={{height: '100%', overflowY: 'auto'}}>
+        <SimpleBar style={{ height: '100%', overflowY: 'auto' }}>
           <Table className={`table-hover align-middle table-nowrap mb-0 ${className} fs-5`}>
             <thead className="table-light sticky-top">
               <tr>
                 {columns.map((col, index) => (
-                  <th key={index} scope="col">
+                  <th key={index} scope="col" onClick={() => requestSort(col.accessor)} style={{ cursor: 'pointer' }}>
                     {col.header}
+                    {sortConfig && sortConfig.key === col.accessor && (
+                      sortConfig.direction === 'ascending' ? '    ▲' : '    ▼'
+                    )}
                   </th>
                 ))}
               </tr>

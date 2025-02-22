@@ -43,6 +43,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSu
     const [selectedProducts, setSelectedProducts] = useState([])
     const configContext = useContext(ConfigContext)
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
+    const [displayInfo, setDisplayInfo] = useState({})
 
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
@@ -190,6 +191,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSu
 
     useEffect(() => {
         formik.validateForm();
+        setDisplayInfo({...formik.values, supplier: selectedSupplier?.name})
     }, [formik.values]);
 
 
@@ -201,7 +203,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSu
         formik.setFieldValue("totalPrice", totalPrice);
     }, [formik.values.products, formik.values.tax, formik.values.discount]);
 
-
+    
     return (
         <>
             <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }} className="form-steps">
@@ -480,7 +482,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSu
                     <TabPane id="step-summary-tab" tabId={3}>
                         <Card style={{ backgroundColor: '#A3C293' }}>
                             <CardBody className="pt-4">
-                                <ObjectDetailsHorizontal attributes={purchaseOrderAttributes} object={formik.values} />
+                                <ObjectDetailsHorizontal attributes={purchaseOrderAttributes} object={displayInfo} />
                             </CardBody>
                         </Card>
 

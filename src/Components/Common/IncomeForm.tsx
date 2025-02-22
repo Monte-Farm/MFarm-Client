@@ -7,11 +7,12 @@ import ProductForm from "./ProductForm";
 import Flatpickr from 'react-flatpickr';
 import SelectTable from "./SelectTable";
 import FileUploader from "./FileUploader";
-import { IncomeData, ProductData, SupplierData } from "common/data_interfaces";
+import { IncomeData, ProductData, PurchaseOrderData, SupplierData } from "common/data_interfaces";
 import { ConfigContext } from "App";
 import classnames from "classnames";
 import ObjectDetailsHorizontal from "./ObjectDetailsHorizontal";
 import CustomTable from "./CustomTable";
+import PurchaseOrderProductsTable from "./PurchaseOrderProductsTable";
 
 interface IncomeFormProps {
     initialData?: IncomeData;
@@ -28,6 +29,15 @@ const incomeAttributes = [
     { key: 'incomeType', label: 'Tipo de entrada' }
 ];
 
+const purchaseOrderAttributes = [
+    { key: 'id', label: 'No. de Orden' },
+    { key: 'date', label: 'Fecha' },
+    { key: 'tax', label: 'Impuesto (%)' },
+    { key: 'discount', label: 'Descuento (%)' },
+    { key: 'subtotal', label: 'Subtotal' },
+    { key: 'totalPrice', label: 'Total' },
+];
+
 const productColumns = [
     { header: 'Código', accessor: 'id', isFilterable: true },
     { header: 'Producto', accessor: 'name', isFilterable: true },
@@ -37,19 +47,28 @@ const productColumns = [
     { header: 'Categoría', accessor: 'category', isFilterable: true },
 ];
 
+const purchaseOrdersColumns = [
+    { header: 'Código', accessor: 'id', isFilterable: true },
+    { header: 'Fecha', accessor: 'date', isFilterable: true },
+    { header: 'Proveedor', accessor: 'supplier', isFilterable: true },
+    { header: 'Total', accessor: 'totalPrice', isFilterable: true },
+]
 
 const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel }) => {
 
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
     const [suppliers, setSuppliers] = useState<SupplierData[]>([]);
     const [selectedSupplier, setSelectedSupplier] = useState<SupplierData | null>(null);
-    const [modals, setModals] = useState({ createSupplier: false, createProduct: false });
+    const [modals, setModals] = useState({ createSupplier: false, createProduct: false, selectPurchaseOrder: false });
     const [products, setProducts] = useState([])
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [fileToUpload, setFileToUpload] = useState<File | null>(null)
     const [selectedProducts, setSelectedProducts] = useState([])
     const configContext = useContext(ConfigContext)
-
+    const [purchaseOrders, setPurchaseOrders] = useState([])
+    const [selectedPurchaseOrder, setSelectedPurchaseOrder] = useState<PurchaseOrderData | null>(null)
+    const [selectedOrderProducts, setSelectecOrderProducts] = useState([])
+    const [hasSelectedPurchaseOrder, setHasSelectedPurchaseOrder] = useState<boolean>(false);
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
 
@@ -141,6 +160,18 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
     };
 
 
+    const fetchPurchaseOrders = async () => {
+        try {
+            if (!initialData && configContext) {
+                const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/purchase_orders/find_purchase_order_warehouse/AG001`)
+                setPurchaseOrders(response.data.data)
+            }
+        } catch (error) {
+            console.error(error, 'Error obtaining the purchase orders')
+        }
+    }
+
+
     const formik = useFormik({
         initialValues: initialData || {
             id: "",
@@ -225,7 +256,6 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
         }
     };
 
-
     const handleCreateProduct = async (productData: ProductData) => {
         try {
             if (!configContext) return;
@@ -242,7 +272,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
     };
 
     const handleProductSelect = (selectedProductsData: Array<{ id: string; quantity: number; price: number }>) => {
-        formik.setFieldValue("products", selectedProductsData);
+        formik.setFieldValue("products", selectedProductsData); // Actualiza el formulario
 
         const updatedSelectedProducts: any = selectedProductsData.map((selectedProduct) => {
             const productData = products.find((p: any) => p.id === selectedProduct.id) as ProductData | undefined;
@@ -252,15 +282,34 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                 : selectedProduct;
         });
 
-        setSelectedProducts(updatedSelectedProducts);
-        console.log(updatedSelectedProducts)
+        setSelectedProducts(updatedSelectedProducts); // Actualiza el estado en IncomeForm
     };
 
+    const handleSupplierChangeByName = (supplierName: string) => {
+        const supplier = suppliers.find((s) => s.name === supplierName) || null;
+        setSelectedSupplier(supplier);
+        formik.setFieldValue("origin.id", supplier?.id);
+    };
+
+    const clicPurchaseOrder = (row: any) => {
+        setSelectedPurchaseOrder(row);
+        formik.setFieldValue('emissionDate', row.date);
+        handleSupplierChangeByName(row.supplier);
+
+
+        setSelectecOrderProducts(row.products);
+        formik.setFieldValue("products", row.products);
+        handleProductSelect(row.products)
+
+        setHasSelectedPurchaseOrder(true);
+        toggleModal('selectPurchaseOrder', false);
+    };
 
     useEffect(() => {
         fetchProducts();
         fetchSuppliers();
         fetchNextId();
+        fetchPurchaseOrders()
     }, [])
 
     useEffect(() => {
@@ -273,7 +322,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
             (sum, product) => sum + (product.quantity * (product.price ?? 0)),
             0
         );
-        const totalWithTax = subtotal * 1.18;
+        const totalWithTax = subtotal * 1;
         formik.setFieldValue("totalPrice", parseFloat(totalWithTax.toFixed(2)));
     }, [formik.values.products]);
 
@@ -348,6 +397,9 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
 
                 <TabContent activeTab={activeStep}>
                     <TabPane id="step-incomeData-tab" tabId={1}>
+                        <div className="d-flex">
+                            <Button className="farm-primary-button ms-auto mb-2" onClick={() => toggleModal('selectPurchaseOrder')}>Seleccionar Orden de Compra</Button>
+                        </div>
                         <div>
                             <Row>
                                 <Col lg={4}>
@@ -572,7 +624,21 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
 
                             {/* Tabla de productos */}
                             <div className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(60vh - 100px)', overflowY: 'hidden' }}>
-                                <SelectTable data={products} onProductSelect={handleProductSelect} showPagination={false}></SelectTable>
+                                {hasSelectedPurchaseOrder ? (
+                                    // Si se ha seleccionado una orden de compra, muestra PurchaseOrderProductsTable
+                                    <PurchaseOrderProductsTable
+                                        data={products} // Lista de productos disponibles
+                                        productsDelivered={selectedOrderProducts} // Productos seleccionados
+                                        onProductEdit={handleProductSelect} // Función para actualizar productos seleccionados
+                                    />
+                                ) : (
+                                    // Si no se ha seleccionado una orden de compra, muestra SelectTable
+                                    <SelectTable
+                                        data={products}
+                                        onProductSelect={handleProductSelect}
+                                        showPagination={false}
+                                    />
+                                )}
                             </div>
 
                             <div className="d-flex mt-4">
@@ -606,6 +672,9 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                         <Card style={{ backgroundColor: '#A3C293' }}>
                             <CardBody className="pt-4">
                                 <ObjectDetailsHorizontal attributes={incomeAttributes} object={formik.values} />
+                                {selectedPurchaseOrder && (
+                                    <ObjectDetailsHorizontal attributes={purchaseOrderAttributes} object={selectedPurchaseOrder} />
+                                )}
                             </CardBody>
                         </Card>
 
@@ -656,6 +725,14 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                 <ModalHeader toggle={() => toggleModal("createProduct")}>Nuevo Producto</ModalHeader>
                 <ModalBody>
                     <ProductForm onCancel={() => toggleModal("createProduct", false)} onSubmit={handleCreateProduct} />
+                </ModalBody>
+            </Modal>
+
+
+            <Modal size="xl" isOpen={modals.selectPurchaseOrder} toggle={() => toggleModal("selectPurchaseOrder")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("selectPurchaseOrder")}>Seleccionar Orden de Compra</ModalHeader>
+                <ModalBody>
+                    <CustomTable columns={purchaseOrdersColumns} data={purchaseOrders} onRowClick={(row: any) => clicPurchaseOrder(row)} rowClickable={true} showPagination={false} />
                 </ModalBody>
             </Modal>
 

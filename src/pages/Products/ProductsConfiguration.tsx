@@ -31,16 +31,16 @@ const ProductConfiguration = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Configuración de prodoctos"} pageTitle={"Productos"} />
+                <BreadCrumb title={"Configuración de productos"} pageTitle={"Productos"} />
                 <div className="d-flex gap-2" style={{ height: '75vh' }}>
                     <div className="w-50 h-100">
-                        <ConfigurationsList items={categoriesItems} groupName="productCategories" />
+                        <ConfigurationsList items={categoriesItems} groupName="productCategories" cardTitle="Categorias de productos"/>
                     </div>
                     <div className="w-50">
-                        <ConfigurationsList items={unitsItems} groupName="unitMeasurements" />
+                        <ConfigurationsList items={unitsItems} groupName="unitMeasurements" cardTitle="Unidades de Medida"/>
                     </div>
                 </div>
-            </Container>
+            </Container>    
         </div>
     )
 }

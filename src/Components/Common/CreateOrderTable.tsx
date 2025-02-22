@@ -18,17 +18,19 @@ interface CreateOrderTableProps {
   showPagination?: boolean;
 }
 
-const CreateOrderTable: React.FC<CreateOrderTableProps> = ({ 
-  data, 
-  onProductSelect, 
-  showStock = false, 
-  showPagination = true 
+const CreateOrderTable: React.FC<CreateOrderTableProps> = ({
+  data,
+  onProductSelect,
+  showStock = false,
+  showPagination = true,
 }) => {
-  const [selectedProducts, setSelectedProducts] = useState<OrderItem[]>([]); 
+  const [selectedProducts, setSelectedProducts] = useState<OrderItem[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [filterText, setFilterText] = useState<string>("");
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
   const rowsPerPage = 5;
 
+  // Función para manejar el cambio en los inputs
   const handleInputChange = useCallback(
     (id: string, field: "quantity" | "price" | "observations", value: number | string) => {
       const product = data.find((p) => p.id === id);
@@ -37,12 +39,12 @@ const CreateOrderTable: React.FC<CreateOrderTableProps> = ({
       const updatedProducts = selectedProducts.map((p) =>
         p.id === id
           ? {
-              ...p,
-              [field]:
-                field === "quantity" && showStock
-                  ? Math.min(isNaN(value as number) ? 0 : (value as number), maxQuantity)
-                  : value,
-            }
+            ...p,
+            [field]:
+              field === "quantity" && showStock
+                ? Math.min(isNaN(value as number) ? 0 : (value as number), maxQuantity)
+                : value,
+          }
           : p
       );
       setSelectedProducts(updatedProducts);
@@ -51,24 +53,53 @@ const CreateOrderTable: React.FC<CreateOrderTableProps> = ({
     [selectedProducts, onProductSelect, data, showStock]
   );
 
+  // Función para manejar el cambio en los checkboxes
   const handleCheckboxChange = useCallback((id: string, checked: boolean) => {
     if (checked) {
       const product = data.find((p) => p.id === id);
       setSelectedProducts((prev) => [
-        ...prev, 
-        { id, quantity: 0, price: showStock ? parseFloat(product.averagePrice.toFixed(2)) : 0, observations: "" }
+        ...prev,
+        { id, quantity: 0, price: showStock ? parseFloat(product.averagePrice.toFixed(2)) : 0, observations: "" },
       ]);
     } else {
       setSelectedProducts((prev) => prev.filter((product) => product.id !== id));
     }
   }, [data, showStock]);
 
+  // Función para manejar el clic en una fila
   const handleRowClick = useCallback((id: string) => {
     const isSelected = selectedProducts.some((product) => product.id === id);
     handleCheckboxChange(id, !isSelected);
   }, [selectedProducts, handleCheckboxChange]);
 
-  const filteredData = data.filter((product) => {
+  // Función para ordenar los datos
+  const sortedData = React.useMemo(() => {
+    let sortableData = [...data];
+    if (sortConfig !== null) {
+      sortableData.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === "asc" ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === "asc" ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableData;
+  }, [data, sortConfig]);
+
+  // Función para manejar el clic en los encabezados de la tabla
+  const requestSort = (key: string) => {
+    let direction: "asc" | "desc" = "asc";
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  // Filtrar los datos basados en el texto de búsqueda
+  const filteredData = sortedData.filter((product) => {
     const filter = filterText.toLowerCase();
     return (
       product.id.toLowerCase().includes(filter) ||
@@ -78,10 +109,12 @@ const CreateOrderTable: React.FC<CreateOrderTableProps> = ({
     );
   });
 
+  // Datos paginados
   const paginatedData = showPagination
     ? filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage)
     : filteredData;
 
+  // Reiniciar la página actual cuando cambia el filtro
   useEffect(() => {
     setCurrentPage(1);
   }, [filterText]);
@@ -100,27 +133,27 @@ const CreateOrderTable: React.FC<CreateOrderTableProps> = ({
 
       {showPagination ? (
         <Table className="table-hover align-middle table-nowrap mb-0" striped>
-          <TableHeader showStock={showStock} />
-          <TableBody 
-            data={paginatedData} 
-            selectedProducts={selectedProducts} 
-            handleRowClick={handleRowClick} 
-            handleCheckboxChange={handleCheckboxChange} 
-            handleInputChange={handleInputChange} 
-            showStock={showStock} 
+          <TableHeader showStock={showStock} requestSort={requestSort} sortConfig={sortConfig} />
+          <TableBody
+            data={paginatedData}
+            selectedProducts={selectedProducts}
+            handleRowClick={handleRowClick}
+            handleCheckboxChange={handleCheckboxChange}
+            handleInputChange={handleInputChange}
+            showStock={showStock}
           />
         </Table>
       ) : (
         <SimpleBar style={{ height: "44vh" }}>
           <Table className="table-hover align-middle table-nowrap mb-0" striped>
-            <TableHeader showStock={showStock} />
-            <TableBody 
-              data={paginatedData} 
-              selectedProducts={selectedProducts} 
-              handleRowClick={handleRowClick} 
-              handleCheckboxChange={handleCheckboxChange} 
-              handleInputChange={handleInputChange} 
-              showStock={showStock} 
+            <TableHeader showStock={showStock} requestSort={requestSort} sortConfig={sortConfig} />
+            <TableBody
+              data={paginatedData}
+              selectedProducts={selectedProducts}
+              handleRowClick={handleRowClick}
+              handleCheckboxChange={handleCheckboxChange}
+              handleInputChange={handleInputChange}
+              showStock={showStock}
             />
           </Table>
         </SimpleBar>
@@ -140,22 +173,53 @@ const CreateOrderTable: React.FC<CreateOrderTableProps> = ({
   );
 };
 
-const TableHeader: React.FC<{ showStock: boolean }> = ({ showStock }) => (
-  <thead className="table-light sticky-top">
-    <tr>
-      <th>Seleccionar</th>
-      <th>Código</th>
-      <th>Producto</th>
-      <th>Categoría</th>
-      {showStock && <th>Existencias</th>}
-      <th>Cantidad</th>
-      <th>Unidad de medida</th>
-      {showStock ? <th>Precio Promedio</th> : <th>Precio Unitario</th>}
-      <th>Observaciones</th>
-    </tr>
-  </thead>
-);
+// Componente TableHeader con soporte para ordenamiento
+const TableHeader: React.FC<{
+  showStock: boolean;
+  requestSort: (key: string) => void;
+  sortConfig: { key: string; direction: "asc" | "desc" } | null;
+}> = ({ showStock, requestSort, sortConfig }) => {
+  const getSortIndicator = (key: string) => {
+    if (sortConfig && sortConfig.key === key) {
+      return sortConfig.direction === "asc" ? " ▲" : " ▼";
+    }
+    return null;
+  };
 
+  return (
+    <thead className="table-light sticky-top">
+      <tr>
+        <th>Seleccionar</th>
+        <th onClick={() => requestSort("id")} style={{ cursor: "pointer" }}>
+          Código {getSortIndicator("id")}
+        </th>
+        <th onClick={() => requestSort("name")} style={{ cursor: "pointer" }}>
+          Producto {getSortIndicator("name")}
+        </th>
+        <th onClick={() => requestSort("category")} style={{ cursor: "pointer" }}>
+          Categoría {getSortIndicator("category")}
+        </th>
+        {showStock && <th onClick={() => requestSort("quantity")} style={{ cursor: "pointer" }}>
+          Existencias {getSortIndicator("quantity")}
+        </th>}
+        <th>Cantidad</th>
+        <th onClick={() => requestSort("unit_measurement")} style={{ cursor: "pointer" }}>
+          Unidad de medida {getSortIndicator("unit_measurement")}
+        </th>
+        {showStock ? (
+          <th onClick={() => requestSort("averagePrice")} style={{ cursor: "pointer" }}>
+            Precio Promedio {getSortIndicator("averagePrice")}
+          </th>
+        ) : (
+          <th>Precio Unitario</th>
+        )}
+        <th>Observaciones</th>
+      </tr>
+    </thead>
+  );
+};
+
+// Componente TableBody sin cambios
 const TableBody: React.FC<{
   data: any[];
   selectedProducts: OrderItem[];

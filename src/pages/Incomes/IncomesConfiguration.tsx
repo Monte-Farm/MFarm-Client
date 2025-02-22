@@ -31,7 +31,7 @@ const IncomesConfiguration = () => {
             <Container fluid>
                 <BreadCrumb title={"Configuración de entradas"} pageTitle={"Entrada"} />
                 <div style={{ height: '75vh' }}>
-                    <ConfigurationsList items={incomeTypes} groupName="incomeTypes" />
+                    <ConfigurationsList items={incomeTypes} groupName="incomeTypes" cardTitle="Tipos de Entrada"/>
                 </div>
             </Container>
         </div>

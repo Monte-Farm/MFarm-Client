@@ -7,6 +7,7 @@ import { getLoggedinUser } from "helpers/api_helper";
 import { useNavigate } from "react-router-dom";
 import { ConfigContext } from "App";
 import Aurora from "Components/Common/Aurora";
+import LogoSystem from '../../assets/images/logo.png'
 
 const CoverSignIn = () => {
     document.title = "Inicio de sesión | MFarm";
@@ -60,7 +61,7 @@ const CoverSignIn = () => {
                                             <div className="p-lg-5">
                                                 <div className="d-flex justify-content-center pb-5 pt-3">
                                                     <img
-                                                        src={configContext?.logoUrl}
+                                                        src={LogoSystem}
                                                         style={{ maxWidth: '250px', maxHeight: '150px', width: '150px', height: '150px' }}
                                                         alt="Logo"
                                                     />

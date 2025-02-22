@@ -24,6 +24,7 @@ import Configuration from 'Components/Common/Configuration';
 import { ConfigContext } from 'App';
 import Logout from 'Components/Common/Logout';
 import { getLoggedinUser } from 'helpers/api_helper';
+import LogoSystem from '../assets/images/logo.png'
 
 const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
     const dispatch: any = useDispatch();
@@ -87,19 +88,19 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
                             <div className="navbar-brand-box horizontal-logo">
                                 <Link to="/" className="logo logo-dark">
                                     <span className="logo-sm">
-                                        <img src={configContext?.logoUrl} alt="" height="60" />
+                                        <img src={LogoSystem} alt="" height="60" />
                                     </span>
                                     <span className="logo-lg">
-                                        <img src={configContext?.logoUrl} alt="" height="60" />
+                                        <img src={LogoSystem} alt="" height="60" />
                                     </span>
                                 </Link>
 
                                 <Link to="/" className="logo logo-light">
                                     <span className="logo-sm">
-                                        <img src={configContext?.logoUrl} alt="" height="60" />
+                                        <img src={LogoSystem} alt="" height="60" />
                                     </span>
                                     <span className="logo-lg">
-                                        <img src={configContext?.logoUrl} alt="" height="60" />
+                                        <img src={LogoSystem} alt="" height="60" />
                                     </span>
                                 </Link>
                             </div>

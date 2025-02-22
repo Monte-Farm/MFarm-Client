@@ -10,8 +10,8 @@ interface OrderProductsTableProps {
 
 const OrderTable: React.FC<OrderProductsTableProps> = ({ data, productsDelivered, onProductEdit }) => {
   const [filterText, setFilterText] = useState<string>("");
-
   const [editingValues, setEditingValues] = useState<Record<string, string>>({});
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
 
   const handleInputChange = (id: string, value: string) => {
     let cleanedValue = value.replace(/^0+/, ""); // Elimina ceros iniciales
@@ -24,15 +24,12 @@ const OrderTable: React.FC<OrderProductsTableProps> = ({ data, productsDelivered
     const product = data.find((p) => p.id === id);
     const maxQuantity = product?.quantity || 0;
 
-    // Limitar el valor en tiempo real
     if (parsedValue > maxQuantity) {
       parsedValue = maxQuantity;
     }
 
-    // Actualiza el estado del input
     setEditingValues((prev) => ({ ...prev, [id]: parsedValue.toString() }));
 
-    // Actualiza la lista de productos entregados
     const updatedProducts = productsDelivered.map((p) =>
       p.id === id ? { ...p, quantity: parsedValue } : p
     );
@@ -44,7 +41,41 @@ const OrderTable: React.FC<OrderProductsTableProps> = ({ data, productsDelivered
     return productsDelivered.find((p) => p.id === id)?.quantity.toString() || "0";
   };
 
-  const filteredData = data.filter((product) => {
+  // Función para ordenar los datos mejorada
+  const sortedData = React.useMemo(() => {
+    let sortableData = [...data];
+
+    if (sortConfig !== null) {
+      sortableData.sort((a, b) => {
+        const valueA = a[sortConfig.key] ?? "";
+        const valueB = b[sortConfig.key] ?? "";
+
+        const numA = Number(valueA);
+        const numB = Number(valueB);
+
+        // Si ambos valores son números, ordenar como números
+        if (!isNaN(numA) && !isNaN(numB)) {
+          return sortConfig.direction === "asc" ? numA - numB : numB - numA;
+        }
+
+        // Si no son números, ordenar como strings
+        return sortConfig.direction === "asc"
+          ? valueA.toString().localeCompare(valueB.toString())
+          : valueB.toString().localeCompare(valueA.toString());
+      });
+    }
+    return sortableData;
+  }, [data, sortConfig]);
+
+  const requestSort = (key: string) => {
+    let direction: "asc" | "desc" = "asc";
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const filteredData = sortedData.filter((product) => {
     const filter = filterText.toLowerCase();
     return (
       product.id.toLowerCase().includes(filter) ||
@@ -69,19 +100,28 @@ const OrderTable: React.FC<OrderProductsTableProps> = ({ data, productsDelivered
         <Table className="table-hover align-middle table-nowrap mb-0" striped>
           <thead className="table-light sticky-top">
             <tr>
-              <th>Código</th>
-              <th>Producto</th>
-              <th>Categoría</th>
-              <th>Cantidad Solicitada</th>
+              <th onClick={() => requestSort("id")} style={{ cursor: "pointer" }}>
+                Código {sortConfig?.key === "id" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+              </th>
+              <th onClick={() => requestSort("name")} style={{ cursor: "pointer" }}>
+                Producto {sortConfig?.key === "name" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+              </th>
+              <th onClick={() => requestSort("category")} style={{ cursor: "pointer" }}>
+                Categoría {sortConfig?.key === "category" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+              </th>
+              <th onClick={() => requestSort("quantity")} style={{ cursor: "pointer" }}>
+                Cantidad Solicitada {sortConfig?.key === "quantity" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+              </th>
               <th>Cantidad Entregada</th>
-              <th>Unidad de Medida</th>
+              <th onClick={() => requestSort("unit_measurement")} style={{ cursor: "pointer" }}>
+                Unidad de Medida {sortConfig?.key === "unit_measurement" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+              </th>
               <th>Observaciones</th>
             </tr>
           </thead>
           <tbody>
             {filteredData.length > 0 ? (
               filteredData.map((product) => {
-                const deliveredProduct = productsDelivered.find((p) => p.id === product.id);
                 return (
                   <tr key={product.id}>
                     <td>{product.id}</td>
@@ -91,7 +131,7 @@ const OrderTable: React.FC<OrderProductsTableProps> = ({ data, productsDelivered
                     <td>
                       <Input
                         type="number"
-                        value={editingValues[product.id] ?? productsDelivered.find((p) => p.id === product.id)?.quantity.toString() ?? "0"}
+                        value={getInputValue(product.id)}
                         onChange={(e) => handleInputChange(product.id, e.target.value)}
                         min={0}
                         max={product.quantity}
@@ -104,7 +144,7 @@ const OrderTable: React.FC<OrderProductsTableProps> = ({ data, productsDelivered
               })
             ) : (
               <tr>
-                <td colSpan={6} className="text-center">
+                <td colSpan={7} className="text-center">
                   No hay productos disponibles.
                 </td>
               </tr>
