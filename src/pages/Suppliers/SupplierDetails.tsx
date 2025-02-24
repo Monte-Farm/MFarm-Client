@@ -172,9 +172,10 @@ const SupplierDetails = () => {
                     <Button className="farm-primary-button" onClick={() => toggleModal("update")}>
                         <i className="ri-pencil-line me-3"></i>Modificar Proveedor
                     </Button>
-                    <Button className="farm-primary-button">
+                    <Button className="farm-primary-button" onClick={() => window.open('https://workspace.google.com/intl/es-419_mx/gmail/', '_blank', 'noopener,noreferrer')}>
                         <i className="ri-mail-line me-3"></i>Enviar Email
                     </Button>
+
                 </div>
 
                 <div className="d-flex-column gap-3">
@@ -182,7 +183,7 @@ const SupplierDetails = () => {
                     <Card className="rounded h-100">
                         <CardHeader><h4>Información del proveedor</h4></CardHeader>
                         <CardBody>
-                                <ObjectDetailsHorizontal attributes={supplierAttributes} object={supplierDetails || {}} />
+                            <ObjectDetailsHorizontal attributes={supplierAttributes} object={supplierDetails || {}} />
                         </CardBody>
                     </Card>
 

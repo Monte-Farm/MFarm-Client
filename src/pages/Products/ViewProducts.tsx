@@ -29,18 +29,21 @@ const ViewProducts = () => {
     const [urlImageProduct, setUrlImageProduct] = useState<string>('')
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ create: false, details: false, update: false, delete: false, activate: false });
-    const [loading, setLoading] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(true);
 
     const columns = [
+        {
+            header: 'Imagen', accessor: 'image', render: (value: string) => (
+                <img src={value || noImageUrl} alt="Imagen del Producto" style={{height: "100px" }} />
+            ),
+        },
         { header: 'Código', accessor: 'id', isFilterable: true },
         { header: 'Nombre', accessor: 'name', isFilterable: true },
-        { header: 'Categoría', accessor: 'category', isFilterable: true, },
-        { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true, },
+        { header: 'Categoría', accessor: 'category', isFilterable: true },
+        { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true },
         {
             header: 'Estado', accessor: 'status', isFilterable: true, render: (value: boolean) => (
-                <Badge color={value === true ? "success" : "danger"}>
-                    {value === true ? "Activo" : "Inactivo"}
-                </Badge>
+                <Badge color={value ? "success" : "danger"}>{value ? "Activo" : "Inactivo"}</Badge>
             ),
         },
         {
@@ -51,11 +54,9 @@ const ViewProducts = () => {
                     <Button className="farm-primary-button btn-icon" onClick={() => handleClicModal('details', row)}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
-
                     <Button className="farm-primary-button btn-icon" disabled={row.status !== true} onClick={() => handleClicModal('update', row)}>
                         <i className="ri-pencil-fill align-middle"></i>
                     </Button>
-
                     {row.status === true ? (
                         <Button className="farm-secondary-button btn-icon" onClick={() => handleClicModal('delete', row)}>
                             <i className="ri-forbid-line align-middle"></i>
@@ -66,11 +67,9 @@ const ViewProducts = () => {
                         </Button>
                     )}
                 </div>
-
             ),
         },
-
-    ]
+    ];
 
     const handleError = (error: any, message: string) => {
         console.error(message, error);
@@ -90,27 +89,31 @@ const ViewProducts = () => {
     const handleClicModal = async (modal: any, data: ProductData) => {
         setSelectedProduct(data);
         toggleModal(modal)
-
-        if (modal === 'details' || modal === 'update') {
-            if (data.image) {
-                await fetchImageById(data.image)
-            } else {
-                setUrlImageProduct(noImageUrl)
-            }
-        }
     }
 
     const handleFetchProducts = async () => {
-        setLoading(true)
-
+        setLoading(true);
         try {
             if (!configContext) return;
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/product`);
-            setProducts(response.data.data);
+            if (response?.data?.data) {
+                const updatedProducts: any = await Promise.all(response.data.data.map(async (product: any) => {
+                    if (product.image) {
+                        const imageUrl = await fetchImageById(product.image);
+                        return { ...product, image: imageUrl };
+                    } else {
+                        return { ...product, image: noImageUrl };
+                    }
+                    return product;
+                }));
+                setProducts(updatedProducts);
+            } else {
+                handleError(new Error('No se encontraron productos'), 'No se encontraron productos');
+            }
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al recuperar los productos, intentelo más tarde');
+            handleError(error, 'Ha ocurrido un error al recuperar los productos');
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
     };
 
@@ -183,7 +186,7 @@ const ViewProducts = () => {
         try {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/google_drive/download_file/${imageId}`, { responseType: 'blob' });
             const imageUrl = URL.createObjectURL(response.data);
-            setUrlImageProduct(imageUrl);
+            return imageUrl
         } catch (error) {
             console.error('Error al recuperar la imagen: ', error);
         }
@@ -240,7 +243,7 @@ const ViewProducts = () => {
                 <ModalHeader toggle={() => toggleModal("details")}><h4>Detalles de Producto</h4></ModalHeader>
                 <ModalBody>
                     {selectedProduct && (
-                        <ObjectDetails attributes={productAttributes} object={selectedProduct} showImage={true} imageSrc={urlImageProduct}></ObjectDetails>
+                        <ObjectDetails attributes={productAttributes} object={selectedProduct} showImage={true} imageSrc={selectedProduct.image}></ObjectDetails>
                     )}
                 </ModalBody>
             </Modal>

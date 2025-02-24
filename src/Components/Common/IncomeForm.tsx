@@ -7,7 +7,7 @@ import ProductForm from "./ProductForm";
 import Flatpickr from 'react-flatpickr';
 import SelectTable from "./SelectTable";
 import FileUploader from "./FileUploader";
-import { IncomeData, ProductData, PurchaseOrderData, SupplierData } from "common/data_interfaces";
+import { Attribute, IncomeData, ProductData, PurchaseOrderData, SupplierData } from "common/data_interfaces";
 import { ConfigContext } from "App";
 import classnames from "classnames";
 import ObjectDetailsHorizontal from "./ObjectDetailsHorizontal";
@@ -21,11 +21,11 @@ interface IncomeFormProps {
 }
 const arrayFolders: string[] = []
 
-const incomeAttributes = [
+const incomeAttributes: Attribute[] = [
     { key: 'id', label: 'Identificador' },
     { key: 'date', label: 'Fecha de registro' },
     { key: 'emissionDate', label: 'Fecha de emisión' },
-    { key: 'totalPrice', label: 'Precio Total' },
+    { key: 'totalPrice', label: 'Precio Total', type: 'currency' },
     { key: 'incomeType', label: 'Tipo de entrada' }
 ];
 

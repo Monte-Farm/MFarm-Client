@@ -1,7 +1,7 @@
-import { ProductData, PurchaseOrderData, SupplierData } from "common/data_interfaces";
+import { Attribute, ProductData, PurchaseOrderData, SupplierData } from "common/data_interfaces";
 import classnames from "classnames";
 import { useContext, useEffect, useState } from "react";
-import { Alert, Button, Card, CardBody, Col, FormFeedback, Input, Label, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
+import { Alert, Button, Card, CardBody, Col, FormFeedback, Input, Label, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
 import { ConfigContext } from "App";
 import * as Yup from "yup";
 import { useFormik } from "formik";
@@ -9,6 +9,7 @@ import Flatpickr from 'react-flatpickr';
 import SelectTable from "./SelectTable";
 import CustomTable from "./CustomTable";
 import ObjectDetailsHorizontal from "./ObjectDetailsHorizontal";
+import SupplierForm from "./SupplierForm";
 
 interface PurchaseOrderFormProps {
     initialData?: PurchaseOrderData;
@@ -16,12 +17,12 @@ interface PurchaseOrderFormProps {
     onCancel: () => void;
 }
 
-const purchaseOrderAttributes = [
+const purchaseOrderAttributes: Attribute[] = [
     { key: 'id', label: 'Identificador' },
     { key: 'date', label: 'Fecha de registro' },
     { key: 'supplier', label: 'Proveedor' },
-    { key: 'subtotal', label: 'Subtotal' },
-    { key: 'totalPrice', label: 'Total' },
+    { key: 'subtotal', label: 'Subtotal', type: 'currency' },
+    { key: 'totalPrice', label: 'Total', type: 'currency' },
 
 ];
 
@@ -79,6 +80,23 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSu
         totalPrice: Yup.number().min(0, "El precio total debe ser positivo").required("Por favor, ingrese el precio total"),
     });
 
+    const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
+        setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
+    };
+
+    const handleError = (error: any, message: string) => {
+        console.error(message, error);
+        setAlertConfig({ visible: true, color: "danger", message });
+        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
+    };
+
+    const showAlert = (color: string, message: string) => {
+        setAlertConfig({ visible: true, color: color, message: message })
+        setTimeout(() => {
+            setAlertConfig({ ...alertConfig, visible: false })
+        }, 5000);
+    }
+
     const fetchSuppliers = async () => {
         try {
             if (!configContext) return;
@@ -110,6 +128,26 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSu
             }
         } catch (error) {
             console.error("Ha ocurrido un error obteniendo el id");
+        }
+    };
+
+
+    const handleCreateSupplier = async (supplierData: SupplierData) => {
+        try {
+            if (!configContext) return;
+
+            const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/supplier/create_supplier`, supplierData);
+            const newSupplier = response.data.data;
+
+            await fetchSuppliers();
+            setSelectedSupplier(newSupplier);
+            formik.setFieldValue("supplier", newSupplier.id);
+
+            showAlert('success', 'El proveedor ha sido creado con éxito')
+        } catch (error) {
+            handleError(error, "Ha ocurrido un error al crear al proveedor, inténtelo más tarde");
+        } finally {
+            toggleModal('createSupplier')
         }
     };
 
@@ -191,7 +229,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSu
 
     useEffect(() => {
         formik.validateForm();
-        setDisplayInfo({...formik.values, supplier: selectedSupplier?.name})
+        setDisplayInfo({ ...formik.values, supplier: selectedSupplier?.name })
     }, [formik.values]);
 
 
@@ -203,7 +241,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSu
         formik.setFieldValue("totalPrice", totalPrice);
     }, [formik.values.products, formik.values.tax, formik.values.discount]);
 
-    
+
     return (
         <>
             <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }} className="form-steps">
@@ -299,7 +337,14 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSu
                             </div>
                         </div>
 
-                        <div className="mt-3">
+                        <div className="d-flex mt-3">
+                            <Button className="h-50 farm-primary-button ms-auto" onClick={() => toggleModal('createSupplier')}>
+                                <i className="ri-add-line me-2"></i>
+                                Nuevo Proveedor
+                            </Button>
+                        </div>
+
+                        <div className="">
                             <Label htmlFor="supplierInput" className="form-label">Proveedor</Label>
                             <Input
                                 type="select"
@@ -511,6 +556,13 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSu
                     </TabPane>
                 </TabContent>
             </form>
+
+            <Modal size="lg" isOpen={modals.createSupplier} toggle={() => toggleModal("createSupplier")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("createSupplier")}>Nuevo Proveedor</ModalHeader>
+                <ModalBody>
+                    <SupplierForm onSubmit={handleCreateSupplier} onCancel={() => toggleModal("createSupplier", false)} />
+                </ModalBody>
+            </Modal>
 
             {/* Alerta */}
             {alertConfig.visible && (

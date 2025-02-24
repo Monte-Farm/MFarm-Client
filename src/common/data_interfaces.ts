@@ -148,3 +148,10 @@ export interface PurchaseOrderData {
     status: boolean;
     warehouse: string;
 }
+
+type AttributeType = "text" | "currency" | "percentage" | "status" | "date" | "datetime" | "boolean" | "uppercase" | "lowercase" | "phone";
+export interface Attribute {
+    key: string;
+    label: string;
+    type?: AttributeType;
+}

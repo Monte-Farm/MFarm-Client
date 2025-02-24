@@ -1,6 +1,9 @@
 import { ConfigContext } from "App";
-import { useContext, useEffect, useState } from "react";
-import { Card, CardHeader, CardBody, Button, ListGroup, ListGroupItem, Modal, ModalHeader, ModalBody, ModalFooter, Input } from "reactstrap";
+import { useContext, useState } from "react";
+import {
+    Card, CardHeader, CardBody, Button, ListGroup, ListGroupItem,
+    Modal, ModalHeader, ModalBody, ModalFooter, Input
+} from "reactstrap";
 import SuccessModal from "./SuccessModal";
 import ErrorModal from "./ErrorModal";
 
@@ -32,13 +35,20 @@ const ConfigurationsList: React.FC<ConfigurationsListProps> = ({ items, groupNam
         if (currentItem.trim() === "") return;
 
         let updatedItems = [...localItems];
+
         if (editIndex !== null) {
+            // Si el valor no cambió, no hacer actualización innecesaria
+            if (localItems[editIndex] === currentItem) {
+                toggleModal();
+                return;
+            }
             updatedItems[editIndex] = currentItem;
         } else {
             updatedItems.push(currentItem);
         }
 
         setLocalItems(updatedItems);
+        updateConfiguration(updatedItems);
         toggleModal();
     };
 
@@ -51,19 +61,23 @@ const ConfigurationsList: React.FC<ConfigurationsListProps> = ({ items, groupNam
     const handleDelete = (index: number) => {
         const updatedItems = localItems.filter((_, i) => i !== index);
         setLocalItems(updatedItems);
+        updateConfiguration(updatedItems);
     };
 
-    const updateConfiguration = async () => {
+    const updateConfiguration = async (itemsToUpdate = localItems) => {
         if (!configContext) return;
 
         try {
-            const response = await configContext.axiosHelper.put(`${configContext.apiUrl}/configurations/update_configuration/${groupName}`, localItems);
+            const response = await configContext.axiosHelper.put(
+                `${configContext.apiUrl}/configurations/update_configuration/${groupName}`,
+                itemsToUpdate
+            );
             const updatedConfiguration = response.data.data;
             configContext.setConfigurationData(updatedConfiguration);
-            toggleMessageModal('success');
+            toggleMessageModal("success");
         } catch (error) {
-            console.error(error, 'Error in ConfigurationList - updateConfiguration');
-            toggleMessageModal('error');
+            console.error(error, "Error in ConfigurationList - updateConfiguration");
+            toggleMessageModal("error");
         }
     };
 
@@ -76,9 +90,6 @@ const ConfigurationsList: React.FC<ConfigurationsListProps> = ({ items, groupNam
                         <Button className="farm-primary-button me-2" onClick={toggleModal}>
                             <i className="ri-add-line me-3" />
                             Agregar Elemento
-                        </Button>
-                        <Button className="farm-secondary-button" onClick={updateConfiguration}>
-                            Guardar Configuración
                         </Button>
                     </div>
                 </CardHeader>
@@ -93,7 +104,7 @@ const ConfigurationsList: React.FC<ConfigurationsListProps> = ({ items, groupNam
                                 <ListGroupItem key={index} className="d-flex justify-content-between">
                                     {item}
                                     <div>
-                                        <Button className="me-2 farm-primary-button" size="sm" onClick={() => handleEdit(index)} >Editar</Button>
+                                        <Button className="me-2 farm-primary-button" size="sm" onClick={() => handleEdit(index)}>Editar</Button>
                                         <Button className="farm-secondary-button" size="sm" onClick={() => handleDelete(index)}>Eliminar</Button>
                                     </div>
                                 </ListGroupItem>
@@ -114,8 +125,17 @@ const ConfigurationsList: React.FC<ConfigurationsListProps> = ({ items, groupNam
                 </Modal>
             </Card>
 
-            <SuccessModal isOpen={modals.success} onClose={() => toggleMessageModal('success', false)} message={"Configuracion guardada exitosamente"}></SuccessModal>
-            <ErrorModal isOpen={modals.error} onClose={() => toggleMessageModal('success', false)} message="Ha ocurrido un error al guardar la configuración, intentelo mas tarde"></ErrorModal>
+            <SuccessModal
+                isOpen={modals.success}
+                onClose={() => toggleMessageModal('success', false)}
+                message="Configuración guardada exitosamente"
+            />
+
+            <ErrorModal
+                isOpen={modals.error}
+                onClose={() => toggleMessageModal('error', false)}
+                message="Ha ocurrido un error al guardar la configuración, intentelo más tarde"
+            />
         </div>
     );
 };

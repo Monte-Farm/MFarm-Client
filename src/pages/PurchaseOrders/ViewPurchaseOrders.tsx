@@ -25,7 +25,7 @@ const ViewPurchaseOrders = () => {
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="farm-primary-button btn-icon">
+                    <Button className="farm-primary-button btn-icon" onClick={() => history(`/purchase_orders/purchase_order_details/${row.id}`)}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
                 </div>
