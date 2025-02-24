@@ -1,5 +1,5 @@
 import { ConfigContext } from "App"
-import { UserData } from "common/data_interfaces"
+import { Attribute, UserData } from "common/data_interfaces"
 import BreadCrumb from "Components/Common/BreadCrumb"
 import CustomTable from "Components/Common/CustomTable"
 import ObjectDetails from "Components/Common/ObjectDetails"
@@ -9,14 +9,14 @@ import { useContext, useEffect, useState } from "react"
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap"
 import LoadingGif from '../../assets/images/loading-gif.gif'
 
-const userAttributes = [
+const userAttributes: Attribute[] = [
     { key: 'username', label: 'Usuario' },
     { key: 'name', label: 'Nombre' },
     { key: 'lastname', label: 'Apellido' },
     { key: 'email', label: 'Correo Electronico' },
     { key: 'phone_number', label: 'Número de Telefono' },
     { key: 'role', label: 'Rol' },
-    { key: 'status', label: 'Estado' },
+    { key: 'status', label: 'Estado', type: 'status' },
 ]
 
 const ViewUsers = () => {

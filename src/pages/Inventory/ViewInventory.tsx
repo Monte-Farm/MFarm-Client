@@ -58,6 +58,30 @@ const ViewInventory = () => {
     }
   };
 
+  const handlePrintInventory = async () => {
+    if (!configContext) return;
+
+    try {
+
+      const response = await configContext.axiosHelper.get(
+        `${configContext.apiUrl}/reports/generate_inventory_report/AG001`,
+        { responseType: 'blob' }
+      );
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'inventario.pdf');
+      document.body.appendChild(link);
+      link.click();
+
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      handleError(error, 'Ha ocurrido un error al generar el reporte, inténtelo más tarde.');
+    }
+  };
+
   const handleAddProduct = () => {
     history('/warehouse/incomes/create_income');
   };
@@ -90,8 +114,12 @@ const ViewInventory = () => {
 
         <Card className="rounded" style={{ height: '75vh' }}>
           <CardHeader>
-            <div className="d-flex justify-content-between">
+            <div className="d-flex gap-2">
               <h4 className="m-2">Productos</h4>
+              <Button className="h-50 farm-primary-button ms-auto" onClick={handlePrintInventory}>
+                Imprimir Inventario
+              </Button>
+
               <Button className="h-50 farm-primary-button" onClick={handleAddProduct}>
                 <i className="ri-add-line pe-2" />
                 Dar Entrada

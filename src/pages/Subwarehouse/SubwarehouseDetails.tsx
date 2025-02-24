@@ -171,6 +171,30 @@ const SubwarehouseDetails = () => {
         }
     };
 
+    const handlePrintInventory = async () => {
+        if (!configContext) return;
+
+        try {
+
+            const response = await configContext.axiosHelper.get(
+                `${configContext.apiUrl}/reports/generate_inventory_report/${id_subwarehouse}`,
+                { responseType: 'blob' }
+            );
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'inventario.pdf');
+            document.body.appendChild(link);
+            link.click();
+
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al generar el reporte, inténtelo más tarde.');
+        }
+    };
+
 
     const handleClicProductDetails = (row: any) => {
         history(`/warehouse/inventory/product_details?warehouse=${id_subwarehouse}&product=${row.id}`)
@@ -199,7 +223,7 @@ const SubwarehouseDetails = () => {
                 handleFetchWarehouseInventory(),
                 handleFetchWarehouseIncomes(),
                 handleFetchWarehouseOutcomes(),
-               
+
             ])
 
             setLoading(false);
@@ -297,6 +321,11 @@ const SubwarehouseDetails = () => {
 
                     <TabContent activeTab={activeStep}>
                         <TabPane id="step-inventory-tab" tabId={1}>
+                            <div className="d-flex gap-2 me-3">
+                                <Button className="farm-primary-button ms-auto" onClick={handlePrintInventory}>
+                                    Imprimir Inventario
+                                </Button>
+                            </div>
                             <div className="d-flex-column gap-3">
                                 <Card style={{ height: '50vh' }}>
                                     <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>

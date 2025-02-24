@@ -7,18 +7,18 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 import { Alert, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalFooter, ModalHeader, Row } from "reactstrap"
 import ProductForm from "Components/Common/ProductForm";
 import noImageUrl from '../../assets/images/no-image.png'
-import { ProductData } from "common/data_interfaces";
+import { Attribute, ProductData } from "common/data_interfaces";
 import { ConfigContext } from "App";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal";
 
 
-const displayAttributes = [
+const displayAttributes: Attribute[] = [
     { key: 'id', label: 'Código' },
     { key: 'name', label: 'Producto' },
     { key: 'category', label: 'Categoría' },
     { key: 'unit_measurement', label: 'Unidad de medida' },
-    { key: 'status', label: 'Estado' },
+    { key: 'status', label: 'Estado', type: 'status' },
 ]
 
 const ProductDetails = () => {

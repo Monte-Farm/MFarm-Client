@@ -1,5 +1,5 @@
 import { ConfigContext } from "App"
-import { OrderData } from "common/data_interfaces"
+import { Attribute, OrderData } from "common/data_interfaces"
 import BreadCrumb from "Components/Common/BreadCrumb"
 import CustomTable from "Components/Common/CustomTable"
 import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal"
@@ -8,12 +8,12 @@ import { useNavigate, useParams } from "react-router-dom"
 import { Button, Card, CardBody, CardHeader, Col, Container, Row, Spinner } from "reactstrap"
 import LoadingGif from '../../assets/images/loading-gif.gif'
 
-const orderAttributes = [
+const orderAttributes: Attribute[] = [
     { key: 'id', label: 'No. de Pedido' },
     { key: 'date', label: 'Fecha de pedido' },
     { key: 'user', label: 'Usuario' },
     { key: 'orderDestiny', label: 'Almacén de destino' },
-    { key: 'status', label: 'Estado' }
+    { key: 'status', label: 'Estado', type: 'status' }
 ]
 
 const productsColumns = [

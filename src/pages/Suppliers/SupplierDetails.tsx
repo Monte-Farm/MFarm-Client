@@ -1,5 +1,5 @@
 import { ConfigContext } from "App";
-import { SupplierData } from "common/data_interfaces";
+import { Attribute, SupplierData } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/BreadCrumb";
 import CustomTable from "Components/Common/CustomTable";
 import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal";
@@ -9,14 +9,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Alert, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 
-const supplierAttributes = [
+const supplierAttributes: Attribute[] = [
     { key: 'name', label: 'Nombre' },
     { key: 'phone_number', label: 'Teléfono' },
     { key: 'email', label: 'Correo' },
     { key: 'address', label: 'Dirección' },
     { key: 'supplier_type', label: 'Categoría' },
     { key: 'rnc', label: 'RNC' },
-    // { key: 'status', label: 'Estado' }
+    { key: 'status', label: 'Estado', type: 'status' }
 ];
 
 const SupplierDetails = () => {

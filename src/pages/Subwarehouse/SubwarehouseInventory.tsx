@@ -59,6 +59,32 @@ const SubwarehouseInventory = () => {
     };
 
 
+    const handlePrintInventory = async () => {
+        if (!configContext || !configContext.userLogged) return;
+
+        try {
+
+            const response = await configContext.axiosHelper.get(
+                `${configContext.apiUrl}/reports/generate_inventory_report/${configContext.userLogged.assigment}`,
+                { responseType: 'blob' }
+            );
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'inventario.pdf');
+            document.body.appendChild(link);
+            link.click();
+
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al generar el reporte, inténtelo más tarde.');
+        }
+    };
+
+
+
     const handleClicProductDetails = (row: any) => {
         if (!configContext || !configContext.userLogged) return;
         history(`/warehouse/inventory/product_details?warehouse=${configContext?.userLogged.assigment}&product=${row.id}`)
@@ -93,10 +119,16 @@ const SubwarehouseInventory = () => {
                 <div className="d-flex-column gap-3">
                     <Card className="rounded" style={{ height: '75vh' }}>
                         <CardHeader>
-                            <h4>Inventario</h4>
+                            <div className="d-flex gap-2">
+                                <h4>Inventario</h4>
+
+                                <Button className="farm-primary-button ms-auto" onClick={handlePrintInventory}>
+                                    Imprimir Inventario
+                                </Button>
+                            </div>
                         </CardHeader>
                         <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(75vh - 100px)', overflowY: 'auto' }}>
-                            <CustomTable columns={inventoryColumns} data={subwarehouseInventory} rowsPerPage={10} showPagination={false}/>
+                            <CustomTable columns={inventoryColumns} data={subwarehouseInventory} rowsPerPage={10} showPagination={false} />
                         </CardBody>
                     </Card>
                 </div>
