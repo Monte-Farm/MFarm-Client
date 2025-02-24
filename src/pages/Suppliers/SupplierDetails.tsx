@@ -16,7 +16,7 @@ const supplierAttributes = [
     { key: 'address', label: 'Dirección' },
     { key: 'supplier_type', label: 'Categoría' },
     { key: 'rnc', label: 'RNC' },
-    { key: 'status', label: 'Estado' }
+    // { key: 'status', label: 'Estado' }
 ];
 
 const SupplierDetails = () => {

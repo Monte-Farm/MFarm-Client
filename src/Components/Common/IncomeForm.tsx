@@ -623,7 +623,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
 
 
                             {/* Tabla de productos */}
-                            <div className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(60vh - 100px)', overflowY: 'hidden' }}>
+                            <div className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(61vh - 100px)', overflowY: 'hidden' }}>
                                 {hasSelectedPurchaseOrder ? (
                                     // Si se ha seleccionado una orden de compra, muestra PurchaseOrderProductsTable
                                     <PurchaseOrderProductsTable
