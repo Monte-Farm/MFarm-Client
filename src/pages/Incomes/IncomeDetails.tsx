@@ -5,8 +5,9 @@ import CustomTable from "Components/Common/CustomTable";
 import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Alert, Button, Card, CardBody, CardHeader, Container } from "reactstrap";
+import { Alert, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
+import PDFViewer from "Components/Common/PDFViewer";
 
 const incomeAttributes = [
     { key: 'id', label: 'Identificador' },
@@ -25,11 +26,13 @@ const IncomeDetails = () => {
     const configContext = useContext(ConfigContext);
 
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ update: false, delete: false });
+    const [modals, setModals] = useState({ update: false, delete: false, viewPDF: false });
     const [incomeDetails, setIncomeDetails] = useState<IncomeData>();
     const [incomeDisplay, setIncomeDisplay] = useState({});
     const [productsIncome, setProductsIncome] = useState([]);
-    const [loading, setLoading] = useState<boolean>(true); // Estado de carga
+    const [loading, setLoading] = useState<boolean>(true);
+    const [fileURL, setFileURL] = useState<string>('')
+
 
     const productColumns = [
         { header: 'Código', accessor: 'id', isFilterable: true },
@@ -107,21 +110,14 @@ const IncomeDetails = () => {
         if (!configContext) return;
 
         try {
-
             const response = await configContext.axiosHelper.get(
                 `${configContext.apiUrl}/reports/generate_income_report/${id_income}`,
                 { responseType: 'blob' }
             );
 
             const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', 'reporte_entrada.pdf');
-            document.body.appendChild(link);
-            link.click();
-
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
+            setFileURL(url)
+            toggleModal('viewPDF')
         } catch (error) {
             handleError(error, 'Ha ocurrido un error al generar el reporte, inténtelo más tarde.');
         }
@@ -187,7 +183,7 @@ const IncomeDetails = () => {
                         </CardBody>
                     </Card>
 
-                    <Card className="w-100" style={{height: '55vh'}}>
+                    <Card className="w-100" style={{ height: '55vh' }}>
                         <CardHeader>
                             <div className="d-flex gap-2">
                                 <h4>Productos</h4>
@@ -204,6 +200,15 @@ const IncomeDetails = () => {
                         </CardBody>
                     </Card>
                 </div>
+
+
+                <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered>
+                    <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Entrada </ModalHeader>
+                    <ModalBody>
+                        {fileURL && <PDFViewer fileUrl={fileURL} />}
+                    </ModalBody>
+                </Modal>
+
 
                 {alertConfig.visible && (
                     <Alert color={alertConfig.color} className="position-fixed bottom-0 start-50 translate-middle-x p-3">

@@ -6,9 +6,9 @@ import ObjectDetails from "Components/Common/ObjectDetails"
 import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal"
 import { useContext, useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import { Alert, Button, Card, CardBody, CardHeader, Col, Container, Row } from "reactstrap"
+import { Alert, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalHeader, Row } from "reactstrap"
 import LoadingGif from '../../assets/images/loading-gif.gif'
-
+import PDFViewer from "Components/Common/PDFViewer"
 
 const outcomeAttributes = [
     { key: 'id', label: 'Identificador' },
@@ -29,6 +29,8 @@ const OutcomeDetails = () => {
     const [productsOutcome, setProductsOutcome] = useState([]);
     const [outcomeDisplay, setOutcomeDisplay] = useState({});
     const [loading, setLoading] = useState<boolean>(true)
+    const [modals, setModals] = useState({ viewPDF: false });
+    const [fileURL, setFileURL] = useState<string>('')
 
     const productColumns = [
         { header: 'Código', accessor: 'id' },
@@ -39,7 +41,6 @@ const OutcomeDetails = () => {
         { header: 'Categoría', accessor: 'category' },
     ]
 
-
     const handleError = (error: any, message: string) => {
         console.error(message, error)
         setAlertConfig({ visible: true, color: 'danger', message: message })
@@ -47,6 +48,11 @@ const OutcomeDetails = () => {
             setAlertConfig({ ...alertConfig, visible: false })
         }, 5000);
     }
+
+    const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
+        setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
+    };
+
 
     const handleFetchOutcome = async () => {
         if (!configContext) return;
@@ -95,14 +101,8 @@ const OutcomeDetails = () => {
             );
 
             const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', 'reporte_salida.pdf');
-            document.body.appendChild(link);
-            link.click();
-
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
+            setFileURL(url);
+            toggleModal('viewPDF')
         } catch (error) {
             handleError(error, 'Ha ocurrido un error al generar el reporte, inténtelo más tarde.');
         }
@@ -184,6 +184,15 @@ const OutcomeDetails = () => {
                         </CardBody>
                     </Card>
                 </div>
+
+
+                <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered>
+                    <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Salida </ModalHeader>
+                    <ModalBody>
+                        {fileURL && <PDFViewer fileUrl={fileURL} />}
+                    </ModalBody>
+                </Modal>
+
 
                 {alertConfig.visible && (
                     <Alert color={alertConfig.color} className="position-fixed bottom-0 start-50 translate-middle-x p-3">

@@ -126,9 +126,7 @@ const CompleteOrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, on
             <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }}>
                 <div className=''>
 
-                    <h5 className="me-auto">Detalles del Pedido</h5>
-                    <div className="border"></div>
-                    <div className='mt-3 w-100 h-100 rounded border bg-secondary-subtle pt-3 pb-2 ps-3'>
+                    <div className='mt1 w-100 h-100 rounded border bg-secondary-subtle pt-3 pb-2 ps-3'>
                         {orderDisplay && <ObjectDetailsHorizontal attributes={orderAttributes} object={orderDisplay} />}
                     </div>
                 </div>

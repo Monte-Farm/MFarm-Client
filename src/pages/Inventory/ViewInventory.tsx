@@ -1,11 +1,13 @@
 import { useContext, useEffect, useState } from "react";
-import { Button, Container, Alert, Card, CardHeader, CardBody } from "reactstrap";
+import { Button, Container, Alert, Card, CardHeader, CardBody, Modal, ModalBody, ModalHeader } from "reactstrap";
 import BreadCrumb from "Components/Common/BreadCrumb";
 import CustomTable from "Components/Common/CustomTable";
 import { useNavigate } from "react-router-dom";
 import { ProductData } from "common/data_interfaces";
 import { ConfigContext } from "App";
 import LoadingGif from '../../assets/images/loading-gif.gif'
+import ProductForm from "Components/Common/ProductForm";
+import PDFViewer from "Components/Common/PDFViewer";
 
 const ViewInventory = () => {
   document.title = "Inventario | Almacén General";
@@ -16,6 +18,12 @@ const ViewInventory = () => {
   const [productsData, setProductsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const configContext = useContext(ConfigContext);
+  const [modals, setModals] = useState({ viewPDF: false });
+  const [fileURL, setFileURL] = useState<string>('')
+
+  const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
+    setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
+  };
 
   const columnsTable = [
     { header: "Código", accessor: "id", isFilterable: true },
@@ -58,29 +66,25 @@ const ViewInventory = () => {
     }
   };
 
+
   const handlePrintInventory = async () => {
     if (!configContext) return;
 
     try {
-
       const response = await configContext.axiosHelper.get(
         `${configContext.apiUrl}/reports/generate_inventory_report/AG001`,
         { responseType: 'blob' }
       );
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'inventario.pdf');
-      document.body.appendChild(link);
-      link.click();
+      setFileURL(url); 
 
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      toggleModal('viewPDF');
     } catch (error) {
       handleError(error, 'Ha ocurrido un error al generar el reporte, inténtelo más tarde.');
     }
   };
+
 
   const handleAddProduct = () => {
     history('/warehouse/incomes/create_income');
@@ -116,7 +120,7 @@ const ViewInventory = () => {
           <CardHeader>
             <div className="d-flex gap-2">
               <h4 className="m-2">Productos</h4>
-              <Button className="h-50 farm-primary-button ms-auto" onClick={handlePrintInventory}>
+              <Button className="h-50 farm-primary-button ms-auto" onClick={(handlePrintInventory)}>
                 Imprimir Inventario
               </Button>
 
@@ -132,6 +136,13 @@ const ViewInventory = () => {
 
         </Card>
       </Container>
+
+      <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered>
+        <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Inventario </ModalHeader>
+        <ModalBody>
+          {fileURL && <PDFViewer fileUrl={fileURL} />}
+        </ModalBody>
+      </Modal>
 
       {alertConfig.visible && (
         <Alert color={alertConfig.color} className="position-fixed bottom-0 start-50 translate-middle-x p-3">

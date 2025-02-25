@@ -3,10 +3,11 @@ import { Attribute, PurchaseOrderData } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Alert, Button, Card, CardBody, CardHeader, Container } from "reactstrap";
+import { Alert, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import CustomTable from "Components/Common/CustomTable";
 import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal";
+import PDFViewer from "Components/Common/PDFViewer";
 
 
 const purchaseOrderAttributes: Attribute[] = [
@@ -18,7 +19,6 @@ const purchaseOrderAttributes: Attribute[] = [
     { key: 'subtotal', label: 'Subtotal', type: "currency" },
     { key: 'totalPrice', label: 'Total', type: "currency" },
 ];
-
 
 const productColumns = [
     { header: 'Código', accessor: 'id', isFilterable: true },
@@ -40,12 +40,19 @@ const PurchaseOrderDetails = () => {
     const [purchaseOrderDisplay, setPurchaseOrderDisplay] = useState({});
     const [products, setProducts] = useState([])
     const [loading, setLoading] = useState<boolean>(true);
+    const [fileURL, setFileURL] = useState<string>('')
+    const [modals, setModals] = useState({ viewPDF: false });
 
     const handleError = (error: any, message: string) => {
         console.error(message, error);
         setAlertConfig({ visible: true, color: "danger", message });
         setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
     };
+
+    const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
+        setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
+    };
+
 
     const fetchPurchaseOrder = async () => {
         if (!configContext) return;
@@ -65,7 +72,7 @@ const PurchaseOrderDetails = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/supplier/find_supplier_id/${purchaseOrderDetails.supplier}`);
             const supplier = response.data.data;
 
-            setPurchaseOrderDisplay({...purchaseOrderDetails, supplier: supplier.name})
+            setPurchaseOrderDisplay({ ...purchaseOrderDetails, supplier: supplier.name })
         } catch (error) {
             handleError(error, 'Ha ocurrido un error al obtener los datos de la entrada, intentelo más tarde');
         }
@@ -82,6 +89,23 @@ const PurchaseOrderDetails = () => {
         }
     };
 
+    const handlePrintPurchaseOrder = async () => {
+        if (!configContext) return;
+
+        try {
+
+            const response = await configContext.axiosHelper.get(
+                `${configContext.apiUrl}/reports/generate_purchase_order_report/${id_order}`,
+                { responseType: 'blob' }
+            );
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            setFileURL(url);
+            toggleModal('viewPDF')
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al generar el reporte, inténtelo más tarde.');
+        }
+    };
 
     const handleBack = () => {
         if (window.history.length > 1) {
@@ -133,7 +157,7 @@ const PurchaseOrderDetails = () => {
                     <Card className="w-100 h-100 pt-2" style={{ backgroundColor: '#A3C293' }}>
                         <CardBody>
                             {purchaseOrderDetails && (
-                                <ObjectDetailsHorizontal attributes={purchaseOrderAttributes} object={purchaseOrderDisplay} />
+                                <ObjectDetailsHorizontal attributes={purchaseOrderAttributes} object={purchaseOrderDetails} />
                             )}
                         </CardBody>
                     </Card>
@@ -143,9 +167,9 @@ const PurchaseOrderDetails = () => {
                             <div className="d-flex gap-2">
                                 <h4>Productos</h4>
 
-                                <Button className="ms-auto farm-primary-button">
+                                <Button className="ms-auto farm-primary-button" onClick={handlePrintPurchaseOrder}>
                                     <i className="ri-download-line me-2"></i>
-                                    Descargar Orden de Compra
+                                    Descargar Reporte
                                 </Button>
                             </div>
 
@@ -155,6 +179,16 @@ const PurchaseOrderDetails = () => {
                         </CardBody>
                     </Card>
                 </div>
+
+
+                <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered>
+                    <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Orden de Compra </ModalHeader>
+                    <ModalBody>
+                        {fileURL && <PDFViewer fileUrl={fileURL} />}
+                    </ModalBody>
+                </Modal>
+
+
 
                 {alertConfig.visible && (
                     <Alert color={alertConfig.color} className="position-fixed bottom-0 start-50 translate-middle-x p-3">
