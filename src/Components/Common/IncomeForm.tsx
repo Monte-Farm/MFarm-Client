@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Button, Col, Row, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback, Alert, Nav, NavItem, NavLink, TabContent, TabPane, Card, CardBody } from "reactstrap";
+import { Button, Col, Row, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback, Alert, Nav, NavItem, NavLink, TabContent, TabPane, Card, CardBody, CardHeader } from "reactstrap";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import SupplierForm from "./SupplierForm";
@@ -13,6 +13,7 @@ import classnames from "classnames";
 import ObjectDetailsHorizontal from "./ObjectDetailsHorizontal";
 import CustomTable from "./CustomTable";
 import PurchaseOrderProductsTable from "./PurchaseOrderProductsTable";
+import { useNavigate } from "react-router-dom";
 
 interface IncomeFormProps {
     initialData?: IncomeData;
@@ -55,7 +56,7 @@ const purchaseOrdersColumns = [
 ]
 
 const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel }) => {
-
+    const history = useNavigate();
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
     const [suppliers, setSuppliers] = useState<SupplierData[]>([]);
     const [selectedSupplier, setSelectedSupplier] = useState<SupplierData | null>(null);
@@ -76,12 +77,30 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
         if (activeStep !== tab) {
             var modifiedSteps = [...passedarrowSteps, tab];
 
-            if (tab >= 1 && tab <= 3) {
+            if (tab >= 1 && tab <= 4) {
                 setActiveStep(tab);
                 setPassedarrowSteps(modifiedSteps);
             }
         }
     }
+
+    const purchaseOrdersColumns = [
+        { header: 'Código', accessor: 'id', isFilterable: true },
+        { header: 'Fecha', accessor: 'date', isFilterable: true },
+        { header: 'Proveedor', accessor: 'supplier', isFilterable: true },
+        { header: 'Total', accessor: 'totalPrice', isFilterable: true },
+        {
+            header: 'Acciones',
+            accessor: 'action',
+            render: (value: any, row: any) => (
+                <div className="d-flex gap-1">
+                    <Button className="farm-primary-button btn-icon" onClick={() => clicPurchaseOrder(row)}>
+                        <i className="ri-eye-fill align-middle" />
+                    </Button>
+                </div>
+            )
+        }
+    ]
 
     const validationSchema = Yup.object({
         id: Yup.string()
@@ -187,6 +206,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
             },
             documents: [],
             status: true,
+            purchaseOrder: "",
         },
         enableReinitialize: true,
         validationSchema,
@@ -295,14 +315,14 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
         setSelectedPurchaseOrder(row);
         formik.setFieldValue('emissionDate', row.date);
         handleSupplierChangeByName(row.supplier);
-
+        formik.setFieldValue('purchaseOrder', row.id)
 
         setSelectecOrderProducts(row.products);
         formik.setFieldValue("products", row.products);
         handleProductSelect(row.products)
 
         setHasSelectedPurchaseOrder(true);
-        toggleModal('selectPurchaseOrder', false);
+        toggleArrowTab(2)
     };
 
     useEffect(() => {
@@ -346,13 +366,29 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                         <NavItem>
                             <NavLink
                                 href="#"
-                                id="step-incomeData-tab"
+                                id="step-selectPurchaseOrder-tab"
                                 className={classnames({
                                     active: activeStep === 1,
                                     done: activeStep > 1,
                                 })}
                                 onClick={() => toggleArrowTab(1)}
                                 aria-selected={activeStep === 1}
+                                aria-controls="step-selectPurchaseOrder-tab"
+                                disabled
+                            >
+                                Información de entrada
+                            </NavLink>
+                        </NavItem>
+                        <NavItem>
+                            <NavLink
+                                href="#"
+                                id="step-incomeData-tab"
+                                className={classnames({
+                                    active: activeStep === 2,
+                                    done: activeStep > 2,
+                                })}
+                                onClick={() => toggleArrowTab(2)}
+                                aria-selected={activeStep === 2}
                                 aria-controls="step-incomeData-tab"
                                 disabled
                             >
@@ -365,11 +401,11 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                                 href="#"
                                 id="step-products-tab"
                                 className={classnames({
-                                    active: activeStep === 2,
-                                    done: activeStep > 2,
+                                    active: activeStep === 3,
+                                    done: activeStep > 3,
                                 })}
-                                onClick={() => toggleArrowTab(2)}
-                                aria-selected={activeStep === 2}
+                                onClick={() => toggleArrowTab(3)}
+                                aria-selected={activeStep === 3}
                                 aria-controls="step-products-tab"
                                 disabled
                             >
@@ -382,10 +418,10 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                                 href="#"
                                 id="step-summary-tab"
                                 className={classnames({
-                                    active: activeStep === 3,
+                                    active: activeStep === 4,
                                 })}
-                                onClick={() => toggleArrowTab(3)}
-                                aria-selected={activeStep === 3}
+                                onClick={() => toggleArrowTab(4)}
+                                aria-selected={activeStep === 4}
                                 aria-controls="step-summary-tab"
                                 disabled
                             >
@@ -396,11 +432,36 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                 </div>
 
                 <TabContent activeTab={activeStep}>
-                    <TabPane id="step-incomeData-tab" tabId={1}>
-                        <div className="d-flex">
-                            <Button className="farm-primary-button ms-auto mb-2" onClick={() => toggleModal('selectPurchaseOrder')}>Seleccionar Orden de Compra</Button>
-                        </div>
+                    <TabPane id="step-selectPurchaseOrder-tab" tabId={1}>
+
+                        <Card className="" style={{ height: '60vh' }}>
+                            <CardHeader>
+                                <div className="d-flex gap-2">
+                                    <h4>Ordenes de Compra</h4>
+
+                                    <Button className="farm-primary-button ms-auto" onClick={() => history('/purchase_orders/create_purchase_order')}>
+                                        <i className="ri-add-line me-3" />
+                                        Crear Orden de Compra
+                                    </Button>
+                                </div>
+                            </CardHeader>
+                            <CardBody className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(62vh - 100px)', overflowY: 'auto' }}>
+                                <CustomTable columns={purchaseOrdersColumns} data={purchaseOrders} onRowClick={(row: any) => clicPurchaseOrder(row)} rowClickable={true} showPagination={false} />
+                            </CardBody>
+                        </Card>
+                    </TabPane>
+
+                    <TabPane id="step-incomeData-tab" tabId={2}>
+
                         <div>
+                            <Card style={{ backgroundColor: '#A3C293' }}>
+                                <CardBody>
+                                    <h5 className="mb-4">Orden de Compra</h5>
+                                    {selectedPurchaseOrder && (
+                                        <ObjectDetailsHorizontal attributes={purchaseOrderAttributes} object={selectedPurchaseOrder} />
+                                    )}
+                                </CardBody>
+                            </Card>
                             <Row>
                                 <Col lg={4}>
                                     <div className="">
@@ -413,6 +474,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                                             onChange={formik.handleChange}
                                             onBlur={formik.handleBlur}
                                             invalid={formik.touched.id && !!formik.errors.id}
+                                            disabled
                                         />
                                         {formik.touched.id && formik.errors.id && <FormFeedback>{formik.errors.id}</FormFeedback>}
                                     </div>
@@ -435,6 +497,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                                                 const formattedDate = date[0].toLocaleDateString("es-ES");
                                                 formik.setFieldValue("date", formattedDate);
                                             }}
+                                            disabled
                                         />
                                         {formik.touched.date && formik.errors.date && <FormFeedback className="d-block">{formik.errors.date}</FormFeedback>}
 
@@ -492,7 +555,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                             {/* Datos del proveedor */}
                             <div className="d-flex mt-4">
                                 <h5 className="me-auto">Datos del Proveedor</h5>
-                                <Button className="h-50 mb-2 farm-primary-button" onClick={() => toggleModal('createSupplier')}>
+                                <Button className="h-50 mb-2 farm-primary-button" onClick={() => toggleModal('createSupplier')} disabled>
                                     <i className="ri-add-line me-2"></i>
                                     Nuevo Proveedor
                                 </Button>
@@ -511,6 +574,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                                     onChange={(e) => handleSupplierChange(e.target.value)} // Sincroniza el cambio
                                     onBlur={formik.handleBlur}
                                     invalid={formik.touched.origin?.id && !!formik.errors.origin?.id}
+                                    disabled
                                 >
                                     <option value=''>Seleccione un proveedor</option>
                                     {suppliers.map((supplier) => (
@@ -552,6 +616,16 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
 
                             <div className="d-flex mt-4">
                                 <Button
+                                    className="btn btn-light btn-label previestab farm-secondary-button"
+                                    onClick={() => {
+                                        toggleArrowTab(activeStep - 1);
+                                    }}
+                                >
+                                    <i className="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i>{" "}
+                                    Atras
+                                </Button>
+
+                                <Button
                                     className="btn btn-success btn-label right ms-auto nexttab nexttab ms-auto farm-secondary-button"
                                     onClick={() => toggleArrowTab(activeStep + 1)}
                                     disabled={
@@ -571,7 +645,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                         </div>
                     </TabPane>
 
-                    <TabPane id="step-products-tab" tabId={2}>
+                    <TabPane id="step-products-tab" tabId={3}>
                         <div>
                             {/* Productos */}
                             <Row className="mb-3">
@@ -626,6 +700,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                             <div className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(61vh - 100px)', overflowY: 'hidden' }}>
                                 {hasSelectedPurchaseOrder ? (
                                     // Si se ha seleccionado una orden de compra, muestra PurchaseOrderProductsTable
+
                                     <PurchaseOrderProductsTable
                                         data={products} // Lista de productos disponibles
                                         productsDelivered={selectedOrderProducts} // Productos seleccionados
@@ -668,17 +743,26 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                         </div>
                     </TabPane>
 
-                    <TabPane id="step-summary-tab" tabId={3}>
+                    <TabPane id="step-summary-tab" tabId={4}>
                         <Card style={{ backgroundColor: '#A3C293' }}>
                             <CardBody className="pt-4">
-                                <ObjectDetailsHorizontal attributes={incomeAttributes} object={formik.values} />
+                                <h5>
+                                    Informacion de Orden de Compra
+                                </h5>
                                 {selectedPurchaseOrder && (
                                     <ObjectDetailsHorizontal attributes={purchaseOrderAttributes} object={selectedPurchaseOrder} />
                                 )}
                             </CardBody>
                         </Card>
+                        <Card style={{ backgroundColor: '#A3C293' }}>
+                            <CardBody className="pt-4">
+                                <h5>Información de Entrada</h5>
+                                <ObjectDetailsHorizontal attributes={incomeAttributes} object={formik.values} />
+                            </CardBody>
+                        </Card>
 
-                        <Card style={{ height: '49vh' }}>
+
+                        <Card style={{ height: '43vh' }}>
                             <CardBody className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(62vh - 100px)', overflowY: 'auto' }}>
                                 <CustomTable columns={productColumns} data={selectedProducts} showSearchAndFilter={false} showPagination={false} />
                             </CardBody>
@@ -725,14 +809,6 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                 <ModalHeader toggle={() => toggleModal("createProduct")}>Nuevo Producto</ModalHeader>
                 <ModalBody>
                     <ProductForm onCancel={() => toggleModal("createProduct", false)} onSubmit={handleCreateProduct} />
-                </ModalBody>
-            </Modal>
-
-
-            <Modal size="xl" isOpen={modals.selectPurchaseOrder} toggle={() => toggleModal("selectPurchaseOrder")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("selectPurchaseOrder")}>Seleccionar Orden de Compra</ModalHeader>
-                <ModalBody>
-                    <CustomTable columns={purchaseOrdersColumns} data={purchaseOrders} onRowClick={(row: any) => clicPurchaseOrder(row)} rowClickable={true} showPagination={false} />
                 </ModalBody>
             </Modal>
 

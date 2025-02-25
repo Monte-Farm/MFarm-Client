@@ -30,6 +30,7 @@ export interface IncomeData {
     origin: Origin;
     documents: Array<string>;
     status: boolean;
+    purchaseOrder: string
 }
 
 export interface SupplierData {

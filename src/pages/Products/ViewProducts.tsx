@@ -34,7 +34,7 @@ const ViewProducts = () => {
     const columns = [
         {
             header: 'Imagen', accessor: 'image', render: (value: string) => (
-                <img src={value || noImageUrl} alt="Imagen del Producto" style={{height: "100px" }} />
+                <img src={value || noImageUrl} alt="Imagen del Producto" style={{height: "70px" }} />
             ),
         },
         { header: 'Código', accessor: 'id', isFilterable: true },

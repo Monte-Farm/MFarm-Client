@@ -158,7 +158,6 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSu
         }, 0);
     };
 
-    // Función para calcular el total con impuesto y descuento como porcentajes
     const calculateTotal = (subtotal: number, tax: number, discount: number) => {
         const totalAfterDiscount = subtotal - (subtotal * (discount / 100));
         return totalAfterDiscount + (totalAfterDiscount * (tax / 100));

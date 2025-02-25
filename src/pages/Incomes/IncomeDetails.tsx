@@ -103,6 +103,30 @@ const IncomeDetails = () => {
         }
     };
 
+    const handlePrintIncome = async () => {
+        if (!configContext) return;
+
+        try {
+
+            const response = await configContext.axiosHelper.get(
+                `${configContext.apiUrl}/reports/generate_income_report/${id_income}`,
+                { responseType: 'blob' }
+            );
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'reporte_entrada.pdf');
+            document.body.appendChild(link);
+            link.click();
+
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al generar el reporte, inténtelo más tarde.');
+        }
+    };
+
     const handleClicProductDetails = (row: any) => {
         history(`/warehouse/inventory/product_details?warehouse=${incomeDetails?.warehouse}&product=${row.id}`);
     };
@@ -168,9 +192,9 @@ const IncomeDetails = () => {
                             <div className="d-flex gap-2">
                                 <h4>Productos</h4>
 
-                                <Button className="ms-auto farm-primary-button">
+                                <Button className="ms-auto farm-primary-button" onClick={handlePrintIncome}>
                                     <i className="ri-download-line me-2"></i>
-                                    Descargar Archivos
+                                    Descargar Reporte
                                 </Button>
                             </div>
 
