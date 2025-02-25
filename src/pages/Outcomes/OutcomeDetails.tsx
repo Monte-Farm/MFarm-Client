@@ -84,6 +84,31 @@ const OutcomeDetails = () => {
     };
 
 
+    const handlePrintOutcome = async () => {
+        if (!configContext) return;
+
+        try {
+
+            const response = await configContext.axiosHelper.get(
+                `${configContext.apiUrl}/reports/generate_outcome_report/${id_outcome}`,
+                { responseType: 'blob' }
+            );
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'reporte_salida.pdf');
+            document.body.appendChild(link);
+            link.click();
+
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al generar el reporte, inténtelo más tarde.');
+        }
+    };
+
+
 
     const handleBack = () => {
         if (window.history.length > 1) {
@@ -136,15 +161,23 @@ const OutcomeDetails = () => {
                 </div>
 
                 <div className="d-flex-column gap-3 mt-4">
-                    <Card className="pt-2" style={{backgroundColor: '#A3C293'}}>
+                    <Card className="pt-2" style={{ backgroundColor: '#A3C293' }}>
                         <CardBody>
                             <ObjectDetailsHorizontal attributes={outcomeAttributes} object={outcomeDisplay || {}} />
                         </CardBody>
                     </Card>
 
-                    <Card className="w-100" style={{height: '55vh'}}>
+                    <Card className="w-100" style={{ height: '55vh' }}>
                         <CardHeader>
-                            <h4>Productos</h4>
+                            <div className="d-flex gap-2">
+                                <h4>Productos</h4>
+
+                                <Button className="ms-auto farm-primary-button" onClick={handlePrintOutcome}>
+                                    <i className="ri-download-line me-2"></i>
+                                    Descargar Reporte
+                                </Button>
+                            </div>
+
                         </CardHeader>
                         <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
                             <CustomTable columns={productColumns} data={productsOutcome} showPagination={false} />
