@@ -75,7 +75,7 @@ const CreatIncome = () => {
             <Container fluid>
                 <BreadCrumb title={"Nueva Entrada"} pageTitle={"Entradas"} />
 
-                <Card className="rounded" style={{ maxHeight: '75vh' }}>
+                <Card className="rounded" style={{ maxHeight: '80vh' }}>
                     <CardBody>
                         <IncomeForm onSubmit={handleCreateIncome} onCancel={handleCancel}></IncomeForm>
                     </CardBody>

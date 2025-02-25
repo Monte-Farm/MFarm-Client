@@ -14,6 +14,7 @@ import ObjectDetailsHorizontal from "./ObjectDetailsHorizontal";
 import CustomTable from "./CustomTable";
 import PurchaseOrderProductsTable from "./PurchaseOrderProductsTable";
 import { useNavigate } from "react-router-dom";
+import OrderTable from "./OrderTable";
 
 interface IncomeFormProps {
     initialData?: IncomeData;
@@ -23,7 +24,7 @@ interface IncomeFormProps {
 const arrayFolders: string[] = []
 
 const incomeAttributes: Attribute[] = [
-    { key: 'id', label: 'Identificador' },
+    { key: 'id', label: 'Identificador de entrada' },
     { key: 'date', label: 'Fecha de registro' },
     { key: 'emissionDate', label: 'Fecha de emisión' },
     { key: 'totalPrice', label: 'Precio Total', type: 'currency' },
@@ -31,7 +32,7 @@ const incomeAttributes: Attribute[] = [
 ];
 
 const purchaseOrderAttributes = [
-    { key: 'id', label: 'No. de Orden' },
+    { key: 'id', label: 'No. de Orden de Compra' },
     { key: 'date', label: 'Fecha' },
     { key: 'tax', label: 'Impuesto (%)' },
     { key: 'discount', label: 'Descuento (%)' },
@@ -94,8 +95,9 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
             accessor: 'action',
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="farm-primary-button btn-icon" onClick={() => clicPurchaseOrder(row)}>
-                        <i className="ri-eye-fill align-middle" />
+                    <Button className="farm-primary-button" onClick={() => clicPurchaseOrder(row)}>
+                        {/* <i className="ri-eye-fill align-middle" /> */}
+                        Seleccionar
                     </Button>
                 </div>
             )
@@ -376,7 +378,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                                 aria-controls="step-selectPurchaseOrder-tab"
                                 disabled
                             >
-                                Información de entrada
+                                Seleccionar orden de compra
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -455,8 +457,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
 
                         <div>
                             <Card style={{ backgroundColor: '#A3C293' }}>
-                                <CardBody>
-                                    <h5 className="mb-4">Orden de Compra</h5>
+                                <CardBody className="pt-4">
                                     {selectedPurchaseOrder && (
                                         <ObjectDetailsHorizontal attributes={purchaseOrderAttributes} object={selectedPurchaseOrder} />
                                     )}
@@ -699,7 +700,6 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                             {/* Tabla de productos */}
                             <div className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(61vh - 100px)', overflowY: 'hidden' }}>
                                 {hasSelectedPurchaseOrder ? (
-                                    // Si se ha seleccionado una orden de compra, muestra PurchaseOrderProductsTable
 
                                     <PurchaseOrderProductsTable
                                         data={products} // Lista de productos disponibles
@@ -746,9 +746,6 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                     <TabPane id="step-summary-tab" tabId={4}>
                         <Card style={{ backgroundColor: '#A3C293' }}>
                             <CardBody className="pt-4">
-                                <h5>
-                                    Informacion de Orden de Compra
-                                </h5>
                                 {selectedPurchaseOrder && (
                                     <ObjectDetailsHorizontal attributes={purchaseOrderAttributes} object={selectedPurchaseOrder} />
                                 )}
@@ -756,7 +753,6 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                         </Card>
                         <Card style={{ backgroundColor: '#A3C293' }}>
                             <CardBody className="pt-4">
-                                <h5>Información de Entrada</h5>
                                 <ObjectDetailsHorizontal attributes={incomeAttributes} object={formik.values} />
                             </CardBody>
                         </Card>

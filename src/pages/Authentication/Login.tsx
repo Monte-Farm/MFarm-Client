@@ -66,8 +66,8 @@ const CoverSignIn = () => {
                                                         alt="Logo"
                                                     />
                                                 </div>
-                                                <h4 className="" style={{color: '#2F4F4F'}}>Bienvenido!</h4>
-                                                <p className="text-muted fs-5">Inicie Sesión para continuar.</p>
+                                                <h4 className="text-center" style={{color: '#2F4F4F'}}>Bienvenido!</h4>
+                                                <p className="text-muted text-center fs-5">Inicie Sesión para continuar.</p>
 
                                                 <div className="mt-4">
                                                     <LoginForm onSubmit={handleLogin} />

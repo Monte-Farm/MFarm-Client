@@ -141,7 +141,6 @@ const CompleteOrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, on
                 <div className="border"></div>
 
                 <div className="mt-4">
-                    <h5>Productos solicitados</h5>
                     <OrderTable
                         data={products}
                         productsDelivered={formik.values.productsDelivered}
