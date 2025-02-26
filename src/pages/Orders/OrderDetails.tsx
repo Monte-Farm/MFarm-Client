@@ -8,32 +8,33 @@ import { useNavigate, useParams } from "react-router-dom"
 import { Alert, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalHeader, Row, Spinner } from "reactstrap"
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import PDFViewer from "Components/Common/PDFViewer"
+import { Column } from "common/data/data_types"
 
 const orderAttributes: Attribute[] = [
-    { key: 'id', label: 'No. de Pedido' },
-    { key: 'date', label: 'Fecha de pedido' },
-    { key: 'user', label: 'Usuario' },
-    { key: 'orderDestiny', label: 'Almacén de destino' },
+    { key: 'id', label: 'No. de Pedido', type: 'text' },
+    { key: 'date', label: 'Fecha de pedido', type: 'text' },
+    { key: 'user', label: 'Usuario', type: 'text' },
+    { key: 'orderDestiny', label: 'Almacén de destino', type: 'text' },
     { key: 'status', label: 'Estado', type: 'status' }
 ]
 
-const productsColumns = [
-    { header: 'Codigo', accessor: 'id', isFilterable: true },
-    { header: 'Nombre', accessor: 'name', isFilterable: true },
-    { header: 'Cantidad Solicitada', accessor: 'quantity', isFilterable: true },
-    { header: 'Unidad de medida', accessor: 'unit_measurement', isFilterable: true },
-    { header: 'Categoria', accessor: 'category', isFilterable: true },
-    { header: 'Observaciones', accessor: 'observations', isFilterable: true },
+const productsColumns: Column<any>[] = [
+    { header: 'Codigo', accessor: 'id', isFilterable: true, type: 'text' },
+    { header: 'Nombre', accessor: 'name', isFilterable: true, type: 'text' },
+    { header: 'Cantidad Solicitada', accessor: 'quantity', isFilterable: true, type: 'number' },
+    { header: 'Unidad de medida', accessor: 'unit_measurement', isFilterable: true, type: 'text' },
+    { header: 'Categoria', accessor: 'category', isFilterable: true, type: 'text' },
+    { header: 'Observaciones', accessor: 'observations', isFilterable: true, type: 'text' },
 ]
 
-const productsCompletedColumns = [
-    { header: 'Codigo', accessor: 'id', isFilterable: true },
-    { header: 'Nombre', accessor: 'name', isFilterable: true },
-    { header: 'Cantidad Solicitada', accessor: 'quantity', isFilterable: true },
-    { header: 'Cantidad Entregada', accessor: 'quantityDelivered', isFilterable: true },
-    { header: 'Unidad de medida', accessor: 'unit_measurement', isFilterable: true },
-    { header: 'Categoria', accessor: 'category', isFilterable: true },
-    { header: 'Observaciones', accessor: 'observations', isFilterable: true },
+const productsCompletedColumns: Column<any>[] = [
+    { header: 'Codigo', accessor: 'id', isFilterable: true, type: 'text' },
+    { header: 'Nombre', accessor: 'name', isFilterable: true, type: 'text' },
+    { header: 'Cantidad Solicitada', accessor: 'quantity', isFilterable: true, type: 'number' },
+    { header: 'Cantidad Entregada', accessor: 'quantityDelivered', isFilterable: true, type: 'number' },
+    { header: 'Unidad de medida', accessor: 'unit_measurement', isFilterable: true, type: 'text' },
+    { header: 'Categoria', accessor: 'category', isFilterable: true, type: 'text' },
+    { header: 'Observaciones', accessor: 'observations', isFilterable: true, type: 'text' },
 ]
 
 const OrderDetails = () => {
@@ -101,8 +102,6 @@ const OrderDetails = () => {
         }
     };
 
-
-
     const handlePrintOrder = async () => {
         if (!configContext) return;
 
@@ -121,13 +120,9 @@ const OrderDetails = () => {
         }
     };
 
-
-
     useEffect(() => {
         fetchOrderDetails();
     }, []);
-
-
 
     if (loading) {
         return (
@@ -136,7 +131,6 @@ const OrderDetails = () => {
             </div>
         );
     }
-
 
     return (
         <div className="page-content">

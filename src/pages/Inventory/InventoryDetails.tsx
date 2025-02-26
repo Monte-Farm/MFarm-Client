@@ -11,13 +11,14 @@ import { Attribute, ProductData } from "common/data_interfaces";
 import { ConfigContext } from "App";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal";
+import { Column } from "common/data/data_types";
 
 
 const displayAttributes: Attribute[] = [
-    { key: 'id', label: 'Código' },
-    { key: 'name', label: 'Producto' },
-    { key: 'category', label: 'Categoría' },
-    { key: 'unit_measurement', label: 'Unidad de medida' },
+    { key: 'id', label: 'Código', type: 'text' },
+    { key: 'name', label: 'Producto', type: 'text' },
+    { key: 'category', label: 'Categoría', type: 'text' },
+    { key: 'unit_measurement', label: 'Unidad de medida', type: 'text' },
     { key: 'status', label: 'Estado', type: 'status' },
 ]
 
@@ -45,11 +46,11 @@ const ProductDetails = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ update: false, delete: false });
 
-    const incomesColumns = [
-        { header: 'Identificador', accessor: 'id' },
-        { header: 'Fecha de entrada', accessor: 'date' },
-        { header: 'Proveedor', accessor: 'originName' },
-        { header: 'Tipo de entrada', accessor: 'incomeType' },
+    const incomesColumns: Column<any>[] = [
+        { header: 'Identificador', accessor: 'id', type: 'text' },
+        { header: 'Fecha de entrada', accessor: 'date', type: 'text' },
+        { header: 'Proveedor', accessor: 'originName', type: 'text' },
+        { header: 'Tipo de entrada', accessor: 'incomeType', type: 'text' },
         {
             header: "Acciones",
             accessor: "action",
@@ -63,11 +64,11 @@ const ProductDetails = () => {
         },
     ]
 
-    const outcomesColumns = [
-        { header: 'Identificador', accessor: 'id' },
-        { header: 'Fecha de salida', accessor: 'date' },
-        { header: 'Subalmacén destino', accessor: 'warehouseDestiny' },
-        { header: 'Tipo de salida', accessor: 'outcomeType' },
+    const outcomesColumns: Column<any>[] = [
+        { header: 'Identificador', accessor: 'id', type: 'text' },
+        { header: 'Fecha de salida', accessor: 'date', type: 'text' },
+        { header: 'Subalmacén destino', accessor: 'warehouseDestiny', type: 'text' },
+        { header: 'Tipo de salida', accessor: 'outcomeType', type: 'text' },
         {
             header: "Acciones",
             accessor: "action",
@@ -332,7 +333,7 @@ const ProductDetails = () => {
                 </div>
 
                 <div>
-                    <Card className="h-100 mt-3 pt-2" style={{backgroundColor: '#A3C293'}}>
+                    <Card className="h-100 mt-3 pt-2" style={{ backgroundColor: '#A3C293' }}>
                         <CardBody>
                             {productDetails && loading === false ? (
                                 <ObjectDetailsHorizontal attributes={displayAttributes} object={productDetails} />
@@ -388,7 +389,7 @@ const ProductDetails = () => {
 
                 <Row className="mt-4">
                     <Col lg={6}>
-                    <Card className='m-0' style={{height: '25vh'}}>
+                        <Card className='m-0' style={{ height: '25vh' }}>
                             <CardHeader> <h4>Entradas</h4></CardHeader>
                             <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(27vh - 100px)', overflowY: 'auto' }}>
                                 <CustomTable columns={incomesColumns} data={productIncomes} showSearchAndFilter={false} rowClickable={false} rowsPerPage={4} showPagination={false} />
@@ -397,7 +398,7 @@ const ProductDetails = () => {
                     </Col>
 
                     <Col lg={6}>
-                        <Card className='m-0' style={{height: '25vh'}}>
+                        <Card className='m-0' style={{ height: '25vh' }}>
                             <CardHeader> <h4>Salidas</h4></CardHeader>
                             <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(27vh - 100px)', overflowY: 'auto' }}>
                                 <CustomTable columns={outcomesColumns} data={productOutcomes} showSearchAndFilter={false} rowsPerPage={4} showPagination={false} />

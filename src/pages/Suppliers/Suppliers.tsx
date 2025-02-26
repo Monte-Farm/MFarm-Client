@@ -7,6 +7,7 @@ import SupplierForm from "Components/Common/SupplierForm";
 import { SupplierData } from "common/data_interfaces";
 import { ConfigContext } from "App";
 import LoadingGif from '../../assets/images/loading-gif.gif'
+import { Column } from "common/data/data_types";
 
 const Suppliers = () => {
     document.title = 'Ver Proveedores | Almacén'
@@ -34,12 +35,12 @@ const Suppliers = () => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
 
-    const supplierColumn = [
-        { header: 'Código', accessor: 'id', isFilterable: true },
-        { header: 'Proveedor', accessor: 'name', isFilterable: true },
-        { header: 'Categoría', accessor: 'supplier_type', isFilterable: true, },
-        { header: 'Telefono', accessor: 'phone_number' },
-        { header: 'Dirección', accessor: 'address' },
+    const supplierColumn: Column<any>[] = [
+        { header: 'Código', accessor: 'id', isFilterable: true, type: 'text' },
+        { header: 'Proveedor', accessor: 'name', isFilterable: true, type: 'text' },
+        { header: 'Categoría', accessor: 'supplier_type', isFilterable: true, type: 'text' },
+        { header: 'Telefono', accessor: 'phone_number', type: 'text' },
+        { header: 'Dirección', accessor: 'address', type: 'text' },
         {
             header: "Estado", accessor: "status",
             render: (value: boolean) => (

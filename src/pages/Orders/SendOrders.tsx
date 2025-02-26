@@ -5,6 +5,7 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
+import { Column } from "common/data/data_types";
 
 //Page for warehouse managers
 const SendOrders = () => {
@@ -15,9 +16,9 @@ const SendOrders = () => {
     const [orders, setOrders] = useState([])
     const [loading, setLoading] = useState<boolean>(true)
 
-    const columns = [
-        { header: 'No. de Pedido', accessor: 'id', isFilterable: true },
-        { header: 'Fecha de Pedido', accessor: 'date', isFilterable: true },
+    const columns: Column<any>[] = [
+        { header: 'No. de Pedido', accessor: 'id', isFilterable: true, type: 'text' },
+        { header: 'Fecha de Pedido', accessor: 'date', isFilterable: true, type: 'text' },
         {
             header: 'Estado', accessor: 'status', isFilterable: true, render: (value: string) => (
                 <Badge color={value === 'completed' ? "success" : "warning"}>

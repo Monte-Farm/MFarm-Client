@@ -15,6 +15,9 @@ import CustomTable from "./CustomTable";
 import PurchaseOrderProductsTable from "./PurchaseOrderProductsTable";
 import { useNavigate } from "react-router-dom";
 import OrderTable from "./OrderTable";
+import { currencies } from "common/data/currencies";
+import Select from "react-select";
+import { Column } from "common/data/data_types";
 
 interface IncomeFormProps {
     initialData?: IncomeData;
@@ -31,30 +34,23 @@ const incomeAttributes: Attribute[] = [
     { key: 'incomeType', label: 'Tipo de entrada' }
 ];
 
-const purchaseOrderAttributes = [
+const purchaseOrderAttributes: Attribute[] = [
     { key: 'id', label: 'No. de Orden de Compra' },
     { key: 'date', label: 'Fecha' },
-    { key: 'tax', label: 'Impuesto (%)' },
-    { key: 'discount', label: 'Descuento (%)' },
-    { key: 'subtotal', label: 'Subtotal' },
-    { key: 'totalPrice', label: 'Total' },
+    { key: 'tax', label: 'Impuesto (%)', type: 'percentage' },
+    { key: 'discount', label: 'Descuento (%)', type: 'percentage' },
+    { key: 'subtotal', label: 'Subtotal', type: 'currency' },
+    { key: 'totalPrice', label: 'Total', type: 'currency' },
 ];
 
-const productColumns = [
-    { header: 'Código', accessor: 'id', isFilterable: true },
-    { header: 'Producto', accessor: 'name', isFilterable: true },
-    { header: 'Cantidad', accessor: 'quantity', isFilterable: true },
-    { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true },
-    { header: 'Precio Unitario', accessor: 'price' },
-    { header: 'Categoría', accessor: 'category', isFilterable: true },
+const productColumns: Column<any>[] = [
+    { header: 'Código', accessor: 'id', isFilterable: true, type: "text" },
+    { header: 'Producto', accessor: 'name', isFilterable: true, type: "text" },
+    { header: 'Cantidad', accessor: 'quantity', isFilterable: true, type: "number" },
+    { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true, type: "text" },
+    { header: 'Precio Unitario', accessor: 'price', type: "currency" },
+    { header: 'Categoría', accessor: 'category', isFilterable: true, type: "text" },
 ];
-
-const purchaseOrdersColumns = [
-    { header: 'Código', accessor: 'id', isFilterable: true },
-    { header: 'Fecha', accessor: 'date', isFilterable: true },
-    { header: 'Proveedor', accessor: 'supplier', isFilterable: true },
-    { header: 'Total', accessor: 'totalPrice', isFilterable: true },
-]
 
 const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel }) => {
     const history = useNavigate();
@@ -73,6 +69,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
     const [hasSelectedPurchaseOrder, setHasSelectedPurchaseOrder] = useState<boolean>(false);
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
+    const [selectedCurrency, setSelectecCurrency] = useState()
 
     function toggleArrowTab(tab: any) {
         if (activeStep !== tab) {
@@ -85,11 +82,11 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
         }
     }
 
-    const purchaseOrdersColumns = [
-        { header: 'Código', accessor: 'id', isFilterable: true },
-        { header: 'Fecha', accessor: 'date', isFilterable: true },
-        { header: 'Proveedor', accessor: 'supplier', isFilterable: true },
-        { header: 'Total', accessor: 'totalPrice', isFilterable: true },
+    const purchaseOrdersColumns: Column<any>[] = [
+        { header: 'Código', accessor: 'id', isFilterable: true, type: "text" },
+        { header: 'Fecha', accessor: 'date', isFilterable: true, type: "text" },
+        { header: 'Proveedor', accessor: 'supplier', isFilterable: true, type: "text" },
+        { header: 'Total', accessor: 'totalPrice', isFilterable: true, type: "currency" },
         {
             header: 'Acciones',
             accessor: 'action',
@@ -125,6 +122,9 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
             id: Yup.string().required("Por favor, seleccione un proveedor"),
         }),
         documents: Yup.array().of(Yup.string()).required("Por favor, agregue al menos un documento"),
+        invoiceNumber: Yup.string().required("Por favor, ingrese el número de factura"),
+        fiscalRecord: Yup.string().required('Por favor, ingrese el registro fiscal'),
+        currency: Yup.string().required('Por favor, seleccione la moneda')
     });
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
@@ -209,6 +209,9 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
             documents: [],
             status: true,
             purchaseOrder: "",
+            invoiceNumber: "",
+            fiscalRecord: "",
+            currency: "",
         },
         enableReinitialize: true,
         validationSchema,
@@ -228,6 +231,12 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
             }
         },
     });
+
+    function handleSelectSingle(selectedSingle: any) {
+        setSelectecCurrency(selectedSingle)
+        formik.setFieldValue('currency', selectedSingle.value);
+    }
+
 
 
     const uploadFile = async (file: File) => {
@@ -315,7 +324,6 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
 
     const clicPurchaseOrder = (row: any) => {
         setSelectedPurchaseOrder(row);
-        formik.setFieldValue('emissionDate', row.date);
         handleSupplierChangeByName(row.supplier);
         formik.setFieldValue('purchaseOrder', row.id)
 
@@ -464,7 +472,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                                 </CardBody>
                             </Card>
                             <Row>
-                                <Col lg={4}>
+                                <Col lg={6}>
                                     <div className="">
                                         <Label htmlFor="idInput" className="form-label">Identificador</Label>
                                         <Input
@@ -482,7 +490,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                                 </Col>
 
                                 {/* Fecha de registro */}
-                                <Col lg={4}>
+                                <Col lg={6}>
                                     <div className="">
                                         <Label htmlFor="dateInput" className="form-label">Fecha de registro</Label>
 
@@ -504,32 +512,94 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
 
                                     </div>
                                 </Col>
-
-                                {/* Fecha de emision*/}
-                                <Col lg={4}>
-                                    <div className="">
-                                        <Label htmlFor="emissionDateInput" className="form-label">Fecha de emisión</Label>
-
-                                        <Flatpickr
-                                            id="emissionDateInput"
-                                            className="form-control"
-                                            value={formik.values.emissionDate}
-                                            options={{
-                                                dateFormat: "d-m-Y",
-                                                defaultDate: formik.values.emissionDate,
-                                            }}
-                                            onChange={(date) => {
-                                                const formattedDate = date[0].toLocaleDateString("es-ES");
-                                                formik.setFieldValue("emissionDate", formattedDate);
-                                            }}
-                                        />
-                                        {formik.touched.emissionDate && formik.errors.emissionDate && <FormFeedback className="d-block">{formik.errors.emissionDate}</FormFeedback>}
-
-                                    </div>
-                                </Col>
                             </Row>
 
-                            {/* Agregar campo de compra de contado o a meses cuando el tipo de ingreso sea compra */}
+                            <div className="d-flex gap-3 mt-4">
+                                <div className="w-25">
+                                    <Label htmlFor="invoiceNumberInput" className="form-label">No.de Factura</Label>
+                                    <Input
+                                        type="text"
+                                        id="invoiceNumberInput"
+                                        name="invoiceNumber"
+                                        value={formik.values.invoiceNumber}
+                                        onChange={formik.handleChange}
+                                        onBlur={formik.handleBlur}
+                                        invalid={formik.touched.invoiceNumber && !!formik.errors.invoiceNumber}
+                                    />
+                                    {formik.touched.invoiceNumber && formik.errors.invoiceNumber && <FormFeedback>{formik.errors.invoiceNumber}</FormFeedback>}
+                                </div>
+
+                                <div className="w-25">
+                                    <Label htmlFor="emissionDateInput" className="form-label">Fecha de emisión de factura</Label>
+                                    <Flatpickr
+                                        id="emissionDateInput"
+                                        className="form-control"
+                                        value={formik.values.emissionDate}
+                                        options={{
+                                            dateFormat: "d-m-Y",
+                                            defaultDate: formik.values.emissionDate,
+                                        }}
+                                        onChange={(date) => {
+                                            const formattedDate = date[0].toLocaleDateString("es-ES");
+                                            formik.setFieldValue("emissionDate", formattedDate);
+                                        }}
+                                    />
+                                    {formik.touched.emissionDate && formik.errors.emissionDate && <FormFeedback className="d-block">{formik.errors.emissionDate}</FormFeedback>}
+                                </div>
+
+                                <div className="w-25">
+                                    <Label htmlFor="fiscalRecordInput" className="form-label">Registro Fiscal</Label>
+                                    <Input
+                                        type="text"
+                                        id="fiscalRecordInput"
+                                        name="fiscalRecord"
+                                        value={formik.values.fiscalRecord}
+                                        onChange={formik.handleChange}
+                                        onBlur={formik.handleBlur}
+                                        invalid={formik.touched.fiscalRecord && !!formik.errors.fiscalRecord}
+                                    />
+                                    {formik.touched.fiscalRecord && formik.errors.fiscalRecord && <FormFeedback>{formik.errors.fiscalRecord}</FormFeedback>}
+                                </div>
+
+                                <div className="w-25">
+                                    <Label htmlFor="choices-single-default" className="form-label">Moneda</Label>
+                                    <Select
+                                        value={selectedCurrency}
+                                        onChange={(selectedSingle: any) => {
+                                            handleSelectSingle(selectedSingle);
+                                        }}
+                                        options={currencies}
+                                        onBlur={formik.handleBlur}
+                                        invalid={formik.touched.currency && !!formik.errors.currency}
+                                        placeholder={'Seleccione una moneda'}
+                                    />
+                                    {formik.touched.currency && formik.errors.currency && <FormFeedback>{formik.errors.currency}</FormFeedback>}
+                                </div>
+
+                                {/* <div className="w-25">
+                                    <Label htmlFor="currencyInput" className="form-label">Moneda</Label>
+                                    <Input
+                                        type="select" // Cambia a tipo "select"
+                                        id="currencyInput"
+                                        name="currency"
+                                        value={formik.values.currency}
+                                        onChange={formik.handleChange}
+                                        onBlur={formik.handleBlur}
+                                        invalid={formik.touched.currency && !!formik.errors.currency}
+                                    >
+                                        <option value="">Selecciona una moneda</option>
+                                        {currencies.map((currency) => (
+                                            <option key={currency.code} value={currency.code}>
+                                                {currency.code} - {currency.name}
+                                            </option>
+                                        ))}
+                                    </Input>
+                                    {formik.touched.currency && formik.errors.currency && (
+                                        <FormFeedback>{formik.errors.currency}</FormFeedback>
+                                    )}
+                                </div> */}
+                            </div>
+
 
                             {/* Tipo de Ingreso */}
                             <div className="mt-4">
@@ -588,32 +658,29 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                                 {formik.touched.origin?.id && formik.errors.origin?.id && <FormFeedback>{formik.errors.origin?.id}</FormFeedback>}
                             </div>
 
-                            <Row className="mt-4">
-                                <Col lg={6}>
-                                    <Label htmlFor="supplierAddress" className="form-label">Dirección</Label>
-                                    <Input type="text" className="form-control" id="supplierAddress" value={selectedSupplier?.address} disabled></Input>
-                                </Col>
-
-                                <Col lg={6}>
-                                    <Label htmlFor="supplierEmail" className="form-label">Correo Electrónico</Label>
-                                    <Input type="text" className="form-control" id="supplierEmail" value={selectedSupplier?.email} disabled></Input>
-                                </Col>
-                            </Row>
-
-                            <Row className="mt-4">
-                                <Col lg={4}>
+                            <div className="d-flex gap-3 mt-4">
+                                <div className="w-25">
                                     <Label htmlFor="supplierRNC" className="form-label">RNC</Label>
                                     <Input type="text" className="form-control" id="supplierRNC" value={selectedSupplier?.rnc} disabled></Input>
-                                </Col>
-                                <Col lg={4}>
+                                </div>
+
+                                <div className="w-25">
+                                    <Label htmlFor="supplierAddress" className="form-label">Dirección</Label>
+                                    <Input type="text" className="form-control" id="supplierAddress" value={selectedSupplier?.address} disabled></Input>
+                                </div>
+
+                                <div className="w-25">
                                     <Label htmlFor="supplierPhoneNumber" className="form-label">Número Telefonico</Label>
                                     <Input type="text" className="form-control" id="supplierPhoneNumber" value={selectedSupplier?.phone_number} disabled></Input>
-                                </Col>
-                                <Col lg={4}>
+                                </div>
+
+                                <div className="w-25">
                                     <Label htmlFor="supplierType" className="form-label">Tipo de Proveedor</Label>
                                     <Input type="text" className="form-control" id="supplierType" value={selectedSupplier?.supplier_type} disabled></Input>
-                                </Col>
-                            </Row>
+                                </div>
+
+                            </div>
+
 
                             <div className="d-flex mt-4">
                                 <Button
@@ -635,6 +702,9 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                                         !formik.values.emissionDate ||
                                         !formik.values.incomeType ||
                                         !formik.values.origin.id ||
+                                        !formik.values.fiscalRecord ||
+                                        !formik.values.currency ||
+                                        !formik.values.invoiceNumber ||
                                         Object.keys(formik.errors).length > 0
                                     }
                                 >
@@ -700,11 +770,10 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                             {/* Tabla de productos */}
                             <div className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(61vh - 100px)', overflowY: 'hidden' }}>
                                 {hasSelectedPurchaseOrder ? (
-
                                     <PurchaseOrderProductsTable
-                                        data={products} // Lista de productos disponibles
-                                        productsDelivered={selectedOrderProducts} // Productos seleccionados
-                                        onProductEdit={handleProductSelect} // Función para actualizar productos seleccionados
+                                        data={products}
+                                        productsDelivered={selectedOrderProducts}
+                                        onProductEdit={handleProductSelect}
                                     />
                                 ) : (
                                     // Si no se ha seleccionado una orden de compra, muestra SelectTable

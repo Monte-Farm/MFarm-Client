@@ -5,6 +5,7 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Container, Card, CardHeader, CardBody, Row, Col } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
+import { Column } from "common/data/data_types";
 
 const SubwarehouseIncomes = () => {
     document.title = "Entradas de Subalmacén | Subalmacén"
@@ -14,10 +15,10 @@ const SubwarehouseIncomes = () => {
     const [subwarehouseIncomes, setSubwarehouseIncomes] = useState([])
     const [loading, setLoading] = useState<boolean>(true)
 
-    const incomesColumns = [
-        { header: 'Identificador', accessor: 'id', isFilterable: true },
-        { header: 'Fecha de entrada', accessor: 'date', isFilterable: true },
-        { header: 'Origen', accessor: 'originName', isFilterable: true },
+    const incomesColumns: Column<any>[] = [
+        { header: 'Identificador', accessor: 'id', isFilterable: true, type: 'text' },
+        { header: 'Fecha de entrada', accessor: 'date', isFilterable: true, type: 'text' },
+        { header: 'Origen', accessor: 'originName', isFilterable: true, type: 'text' },
         {
             header: 'Acciones',
             accessor: 'action',
@@ -86,7 +87,7 @@ const SubwarehouseIncomes = () => {
 
 
                 <div className="">
-                    <Card className="rounded" style={{height:'75vh'}}>
+                    <Card className="rounded" style={{ height: '75vh' }}>
                         <CardHeader>
                             <h4>Entradas</h4>
                         </CardHeader>

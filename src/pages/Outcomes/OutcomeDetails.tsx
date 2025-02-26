@@ -1,5 +1,5 @@
 import { ConfigContext } from "App"
-import { OutcomeData, SubwarehouseData } from "common/data_interfaces"
+import { Attribute, OutcomeData, SubwarehouseData } from "common/data_interfaces"
 import BreadCrumb from "Components/Common/BreadCrumb"
 import CustomTable from "Components/Common/CustomTable"
 import ObjectDetails from "Components/Common/ObjectDetails"
@@ -9,13 +9,14 @@ import { useNavigate, useParams } from "react-router-dom"
 import { Alert, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalHeader, Row } from "reactstrap"
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import PDFViewer from "Components/Common/PDFViewer"
+import { Column } from "common/data/data_types"
 
-const outcomeAttributes = [
-    { key: 'id', label: 'Identificador' },
-    { key: 'date', label: 'Fecha' },
-    { key: 'warehouseDestiny', label: 'Almacén de destino' },
-    { key: 'outcomeType', label: 'Motivo de salida' },
-    { key: 'description', label: 'Descripción' },
+const outcomeAttributes: Attribute[] = [
+    { key: 'id', label: 'Identificador', type: 'text' },
+    { key: 'date', label: 'Fecha', type: 'text' },
+    { key: 'warehouseDestiny', label: 'Almacén de destino', type: 'text' },
+    { key: 'outcomeType', label: 'Motivo de salida', type: 'text' },
+    { key: 'description', label: 'Descripción', type: 'text' },
 ]
 
 const OutcomeDetails = () => {
@@ -32,13 +33,13 @@ const OutcomeDetails = () => {
     const [modals, setModals] = useState({ viewPDF: false });
     const [fileURL, setFileURL] = useState<string>('')
 
-    const productColumns = [
-        { header: 'Código', accessor: 'id' },
-        { header: 'Producto', accessor: 'name' },
-        { header: 'Cantidad', accessor: 'quantity' },
-        { header: 'Unidad de Medida', accessor: 'unit_measurement' },
-        { header: 'Precio Promedio (Unidad)', accessor: 'price' },
-        { header: 'Categoría', accessor: 'category' },
+    const productColumns: Column<any>[] = [
+        { header: 'Código', accessor: 'id', type: 'text' },
+        { header: 'Producto', accessor: 'name', type: 'text' },
+        { header: 'Cantidad', accessor: 'quantity', type: 'number' },
+        { header: 'Unidad de Medida', accessor: 'unit_measurement', type: 'text' },
+        { header: 'Precio Promedio (Unidad)', accessor: 'price', type: 'currency' },
+        { header: 'Categoría', accessor: 'category', type: 'text' },
     ]
 
     const handleError = (error: any, message: string) => {

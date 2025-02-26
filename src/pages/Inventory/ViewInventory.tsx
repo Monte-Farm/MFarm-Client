@@ -6,8 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { ProductData } from "common/data_interfaces";
 import { ConfigContext } from "App";
 import LoadingGif from '../../assets/images/loading-gif.gif'
-import ProductForm from "Components/Common/ProductForm";
 import PDFViewer from "Components/Common/PDFViewer";
+import { Column } from "common/data/data_types";
 
 const ViewInventory = () => {
   document.title = "Inventario | Almacén General";
@@ -25,13 +25,13 @@ const ViewInventory = () => {
     setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
   };
 
-  const columnsTable = [
-    { header: "Código", accessor: "id", isFilterable: true },
-    { header: "Producto", accessor: "name", isFilterable: true },
-    { header: 'Existencias', accessor: 'quantity', isFilterable: true },
-    { header: 'Precio Promedio', accessor: 'averagePrice', isFilterable: true },
-    { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true },
-    { header: 'Categoría', accessor: 'category', isFilterable: true },
+  const columnsTable: Column<any>[] = [
+    { header: "Código", accessor: "id", isFilterable: true, type: 'text'},
+    { header: "Producto", accessor: "name", isFilterable: true, type: 'text' },
+    { header: 'Existencias', accessor: 'quantity', isFilterable: true, type: 'number' },
+    { header: 'Precio Promedio', accessor: 'averagePrice', isFilterable: true, type: 'currency' },
+    { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true, type: 'text' },
+    { header: 'Categoría', accessor: 'category', isFilterable: true, type: "text" },
     {
       header: "Acciones",
       accessor: "action",

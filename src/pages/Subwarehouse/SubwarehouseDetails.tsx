@@ -1,5 +1,5 @@
 import { ConfigContext } from "App";
-import { SubwarehouseData } from "common/data_interfaces";
+import { Attribute, SubwarehouseData } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/BreadCrumb";
 import CustomTable from "Components/Common/CustomTable";
 import ObjectDetails from "Components/Common/ObjectDetails";
@@ -9,11 +9,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Button, Card, CardBody, CardHeader, Col, Container, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import classnames from "classnames";
+import { Column } from "common/data/data_types";
 
-const subwarehouseAttributes = [
-    { key: 'name', label: 'Nombre' },
-    { key: 'manager', label: 'Responsable' },
-    { key: 'location', label: 'Ubicación' },
+const subwarehouseAttributes: Attribute[] = [
+    { key: 'name', label: 'Nombre', type: 'text' },
+    { key: 'manager', label: 'Responsable', type: 'text' },
+    { key: 'location', label: 'Ubicación', type: 'text' },
 ]
 
 const SubwarehouseDetails = () => {
@@ -44,11 +45,11 @@ const SubwarehouseDetails = () => {
     }
 
 
-    const inventoryColumns = [
-        { header: 'Código', accessor: 'id', isFilterable: true },
-        { header: 'Nombre', accessor: 'name', isFilterable: true },
-        { header: 'Existencias', accessor: 'quantity', isFilterable: true },
-        { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true },
+    const inventoryColumns: Column<any>[] = [
+        { header: 'Código', accessor: 'id', isFilterable: true, type: 'text' },
+        { header: 'Nombre', accessor: 'name', isFilterable: true, type: 'text' },
+        { header: 'Existencias', accessor: 'quantity', isFilterable: true, type: 'number' },
+        { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true, type: 'text' },
         {
             header: 'Acciones',
             accessor: 'action',
@@ -62,10 +63,10 @@ const SubwarehouseDetails = () => {
         }
     ]
 
-    const incomesColumns = [
-        { header: 'Identificador', accessor: 'id', isFilterable: true },
-        { header: 'Fecha de entrada', accessor: 'date', isFilterable: true },
-        { header: 'Origen', accessor: 'originName', isFilterable: true },
+    const incomesColumns: Column<any>[] = [
+        { header: 'Identificador', accessor: 'id', isFilterable: true, type: 'text' },
+        { header: 'Fecha de entrada', accessor: 'date', isFilterable: true, type: 'text' },
+        { header: 'Origen', accessor: 'originName', isFilterable: true, type: 'text' },
         {
             header: 'Acciones',
             accessor: 'action',
@@ -79,11 +80,11 @@ const SubwarehouseDetails = () => {
         }
     ]
 
-    const outcomesColumns = [
-        { header: 'Identificador', accessor: 'id', isFilterable: true },
-        { header: 'Fecha de Salida', accessor: 'date', isFilterable: true },
-        { header: 'Destino', accessor: 'warehouseDestiny', isFilterable: true },
-        { header: 'Tipo de Salida', accessor: 'outcomeType', isFilterable: true },
+    const outcomesColumns: Column<any>[] = [
+        { header: 'Identificador', accessor: 'id', isFilterable: true, type: 'text' },
+        { header: 'Fecha de Salida', accessor: 'date', isFilterable: true, type: 'text' },
+        { header: 'Destino', accessor: 'warehouseDestiny', isFilterable: true, type: 'text' },
+        { header: 'Tipo de Salida', accessor: 'outcomeType', isFilterable: true, type: 'text' },
         {
             header: 'Acciones',
             accessor: 'action',

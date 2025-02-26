@@ -5,6 +5,7 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Card, CardBody, CardHeader, Container } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
+import { Column } from "common/data/data_types";
 
 
 const ViewOutcomes = () => {
@@ -15,11 +16,11 @@ const ViewOutcomes = () => {
     const [outcomes, setOutcomes] = useState([])
     const [loading, setLoading] = useState<boolean>(false)
 
-    const columns = [
-        { header: 'Identificador', accessor: 'id', isFilterable: true },
-        { header: 'Fecha de Salida', accessor: 'date', isFilterable: true },
-        { header: 'Tipo de Salida', accessor: 'outcomeType', isFilterable: true },
-        { header: 'Subalmacén de destino', accessor: 'warehouseDestiny', isFilterable: true },
+    const columns: Column<any>[] = [
+        { header: 'Identificador', accessor: 'id', isFilterable: true, type: 'text' },
+        { header: 'Fecha de Salida', accessor: 'date', isFilterable: true, type: 'text' },
+        { header: 'Tipo de Salida', accessor: 'outcomeType', isFilterable: true, type: 'text' },
+        { header: 'Subalmacén de destino', accessor: 'warehouseDestiny', isFilterable: true, type: 'text' },
         {
             header: 'Acciones', accessor: 'actions',
             render: (value: any, row: any) => (
@@ -62,7 +63,7 @@ const ViewOutcomes = () => {
 
         return () => {
             document.body.style.overflow = '';
-          };
+        };
     }, [])
 
     if (loading) {

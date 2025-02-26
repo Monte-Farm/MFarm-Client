@@ -12,6 +12,7 @@ import classnames from "classnames";
 import ObjectDetailsHorizontal from './ObjectDetailsHorizontal';
 import CustomTable from './CustomTable';
 import CreateOrderTable from './CreateOrderTable';
+import { Column } from 'common/data/data_types';
 
 
 interface OrderFormProps {
@@ -25,13 +26,13 @@ const orderAttributes = [
     { key: 'date', label: 'Fecha de pedido' },
 ]
 
-const productsColumns = [
-    { header: 'Codigo', accessor: 'id', isFilterable: true },
-    { header: 'Nombre', accessor: 'name', isFilterable: true },
-    { header: 'Cantidad Solicitada', accessor: 'quantity', isFilterable: true },
-    { header: 'Unidad de medida', accessor: 'unit_measurement', isFilterable: true },
-    { header: 'Categoria', accessor: 'category', isFilterable: true },
-    { header: 'Observaciones', accessor: 'observations', isFilterable: true },
+const productsColumns: Column<any>[] = [
+    { header: 'Codigo', accessor: 'id', isFilterable: true, type: 'text' },
+    { header: 'Nombre', accessor: 'name', isFilterable: true, type: 'text' },
+    { header: 'Cantidad Solicitada', accessor: 'quantity', isFilterable: true, type: 'number' },
+    { header: 'Unidad de medida', accessor: 'unit_measurement', isFilterable: true, type: 'text' },
+    { header: 'Categoria', accessor: 'category', isFilterable: true, type: 'text' },
+    { header: 'Observaciones', accessor: 'observations', isFilterable: true, type: 'text' },
 ]
 
 
@@ -168,7 +169,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
 
     const fetchOrderDestiny = async () => {
         try {
-            if (!configContext) return;
+            if (!configContext || !configContext.userLogged) return;
 
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_id/${configContext.userLogged.assigment}`);
             const orderDestiny = response.data.data;
@@ -194,6 +195,8 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
     };
 
     useEffect(() => {
+        if(!configContext) return; 
+
         handleFetchWarehouseProducts();
         fetchOrderOrigin();
         fetchOrderDestiny();
@@ -205,7 +208,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
         if (configContext?.userLogged) {
             formik.setFieldValue('user', configContext.userLogged.username)
         }
-    }, [])
+    }, [configContext])
 
 
     return (
@@ -375,7 +378,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
                     <TabPane id='step-products-tab' tabId={2}>
                         {/* Productos */}
                         <div className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(65vh - 100px)', overflowY: 'hidden' }}>
-                            <CreateOrderTable data={products} onProductSelect={handleProductSelect} showStock={true} showPagination={false}/>
+                            <CreateOrderTable data={products} onProductSelect={handleProductSelect} showStock={true} showPagination={false} />
                         </div>
 
                         <div className="d-flex mt-4">

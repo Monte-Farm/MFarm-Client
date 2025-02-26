@@ -5,6 +5,7 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Card, CardBody, CardHeader, Col, Container, Row } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
+import { Column } from "common/data/data_types";
 
 
 const SubwarehouseOutcomes = () => {
@@ -16,10 +17,10 @@ const SubwarehouseOutcomes = () => {
     const [subwarehouseOutcomes, setSubwarehouseOutcomes] = useState([])
     const [loading, setLoading] = useState<boolean>(true)
 
-    const outcomesColumns = [
-        { header: 'Identificador', accessor: 'id', isFilterable: true },
-        { header: 'Fecha de Salida', accessor: 'date', isFilterable: true },
-        { header: 'Motivo de Salida', accessor: 'outcomeType', isFilterable: true },
+    const outcomesColumns: Column<any>[] = [
+        { header: 'Identificador', accessor: 'id', isFilterable: true, type: 'text' },
+        { header: 'Fecha de Salida', accessor: 'date', isFilterable: true, type: 'text' },
+        { header: 'Motivo de Salida', accessor: 'outcomeType', isFilterable: true, type: 'text' },
         {
             header: 'Acciones',
             accessor: 'action',

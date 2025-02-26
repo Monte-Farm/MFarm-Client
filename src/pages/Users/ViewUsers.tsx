@@ -8,14 +8,15 @@ import { getLoggedinUser } from "helpers/api_helper"
 import { useContext, useEffect, useState } from "react"
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap"
 import LoadingGif from '../../assets/images/loading-gif.gif'
+import { Column } from "common/data/data_types"
 
 const userAttributes: Attribute[] = [
-    { key: 'username', label: 'Usuario' },
-    { key: 'name', label: 'Nombre' },
-    { key: 'lastname', label: 'Apellido' },
-    { key: 'email', label: 'Correo Electronico' },
-    { key: 'phone_number', label: 'Número de Telefono' },
-    { key: 'role', label: 'Rol' },
+    { key: 'username', label: 'Usuario', type: 'text' },
+    { key: 'name', label: 'Nombre', type: 'text' },
+    { key: 'lastname', label: 'Apellido', type: 'text' },
+    { key: 'email', label: 'Correo Electronico', type: 'text' },
+    { key: 'phoneNumber', label: 'Número de Telefono', type: 'text' },
+    { key: 'role', label: 'Rol', type: 'text' },
     { key: 'status', label: 'Estado', type: 'status' },
 ]
 
@@ -29,12 +30,12 @@ const ViewUsers = () => {
     const [modals, setModals] = useState({ details: false, create: false, update: false, delete: false });
     const [loading, setLoading] = useState<boolean>(true)
 
-    const columns = [
-        { header: 'Usuario', accessor: 'username', isFilterable: true },
-        { header: 'Nombre', accessor: 'name', isFilterable: true },
-        { header: 'Apellido', accessor: 'lastname', isFilterable: true },
-        { header: 'Correo electronico', accessor: 'email', isFilterable: true },
-        { header: 'Rol', accessor: 'role', isFilterable: true },
+    const columns: Column<any>[] = [
+        { header: 'Usuario', accessor: 'username', isFilterable: true, type: 'text' },
+        { header: 'Nombre', accessor: 'name', isFilterable: true, type: 'text' },
+        { header: 'Apellido', accessor: 'lastname', isFilterable: true, type: 'text' },
+        { header: 'Correo electronico', accessor: 'email', isFilterable: true, type: 'text' },
+        { header: 'Rol', accessor: 'role', isFilterable: true, type: 'text' },
         {
             header: "Estado",
             accessor: "status",
@@ -186,7 +187,7 @@ const ViewUsers = () => {
                         </div>
                     </CardHeader>
                     <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
-                        <CustomTable columns={columns} data={users} showPagination={false}/>
+                        <CustomTable columns={columns} data={users} showPagination={false} />
                     </CardBody>
                 </Card>
 

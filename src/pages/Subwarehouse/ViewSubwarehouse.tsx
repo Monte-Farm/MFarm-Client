@@ -7,6 +7,7 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
+import { Column } from "common/data/data_types";
 
 
 const ViewSubwarehouse = () => {
@@ -22,11 +23,11 @@ const ViewSubwarehouse = () => {
     const [loading, setLoading] = useState<boolean>(false);
 
 
-    const columns = [
-        { header: 'Código', accessor: 'id', isFilterable: true },
-        { header: 'Nombre', accessor: 'name', isFilterable: true },
-        { header: 'Responsable', accessor: 'manager', isFilterable: true },
-        { header: 'Ubicación', accessor: 'location', isFilterable: true },
+    const columns: Column<any>[] = [
+        { header: 'Código', accessor: 'id', isFilterable: true, type: 'text' },
+        { header: 'Nombre', accessor: 'name', isFilterable: true, type: 'text' },
+        { header: 'Responsable', accessor: 'manager', isFilterable: true, type: 'text' },
+        { header: 'Ubicación', accessor: 'location', isFilterable: true, type: 'text' },
         {
             header: "Estado",
             accessor: "status",
@@ -36,10 +37,6 @@ const ViewSubwarehouse = () => {
                 </Badge>
             ),
             isFilterable: true,
-            options: [
-                { label: 'Activo', value: 'true' },
-                { label: 'Inactivo', value: 'false' }
-            ]
         },
         {
             header: 'Acciones',
@@ -195,7 +192,7 @@ const ViewSubwarehouse = () => {
                         </div>
                     </CardHeader>
                     <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
-                        <CustomTable columns={columns} data={warehouses} showPagination={false}/>
+                        <CustomTable columns={columns} data={warehouses} showPagination={false} />
                     </CardBody>
                 </Card>
 

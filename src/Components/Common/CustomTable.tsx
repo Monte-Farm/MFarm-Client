@@ -3,13 +3,8 @@ import { Table, Input } from "reactstrap";
 import Pagination from "./Pagination";
 import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
+import { Column, ColumnType } from "common/data/data_types";
 
-type Column<T> = {
-  header: string;
-  accessor: keyof T;
-  render?: (value: any, row: T) => React.ReactNode;
-  isFilterable?: boolean;
-};
 
 type CustomTableProps<T> = {
   columns: Column<T>[];
@@ -20,6 +15,25 @@ type CustomTableProps<T> = {
   onRowClick?: (row: T) => void;
   rowsPerPage?: number;
   showPagination?: boolean;
+};
+
+// Función para formatear valores según el tipo
+const formatValue = (value: any, type?: ColumnType) => {
+  if (value == null) return "";
+
+  switch (type) {
+    case "number":
+      return new Intl.NumberFormat().format(value);
+    case "date":
+      return new Date(value).toLocaleDateString();
+    case "currency":
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+      }).format(value);
+    default:
+      return value.toString();
+  }
 };
 
 const CustomTable = <T,>({
@@ -78,7 +92,6 @@ const CustomTable = <T,>({
     setSortConfig({ key, direction });
   };
 
-  // Datos paginados o sin paginar según `showPagination`
   const paginatedData = showPagination
     ? sortedData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage)
     : sortedData;
@@ -124,7 +137,10 @@ const CustomTable = <T,>({
                   >
                     {columns.map((col, colIndex) => (
                       <td key={colIndex}>
-                        {col.render ? col.render(row[col.accessor], row) : row[col.accessor]?.toString()}
+                        {col.render
+                          ? col.render(row[col.accessor], row)
+                          : formatValue(row[col.accessor], col.type) // Formatear el valor según el tipo
+                        }
                       </td>
                     ))}
                   </tr>
@@ -165,7 +181,10 @@ const CustomTable = <T,>({
                   >
                     {columns.map((col, colIndex) => (
                       <td key={colIndex}>
-                        {col.render ? col.render(row[col.accessor], row) : row[col.accessor]?.toString()}
+                        {col.render
+                          ? col.render(row[col.accessor], row)
+                          : formatValue(row[col.accessor], col.type) // Formatear el valor según el tipo
+                        }
                       </td>
                     ))}
                   </tr>

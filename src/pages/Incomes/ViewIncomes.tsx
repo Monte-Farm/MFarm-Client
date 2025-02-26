@@ -5,6 +5,7 @@ import { useContext, useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Alert, Button, Card, CardBody, CardHeader, Container } from "reactstrap"
 import LoadingGif from '../../assets/images/loading-gif.gif'
+import { Column } from "common/data/data_types"
 
 
 const ViewIncomes = () => {
@@ -16,12 +17,12 @@ const ViewIncomes = () => {
     const [incomes, setIncomes] = useState([])
     const [loading, setLoading] = useState<boolean>(false)
 
-    const columns = [
-        { header: 'Identificador', accessor: 'id', isFilterable: true },
-        { header: 'Proveedor', accessor: 'originName', isFilterable: true },
-        { header: 'Fecha de entrada', accessor: 'date', isFilterable: true },
-        { header: 'Tipo de entrada', accessor: 'incomeType', isFilterable: true, },
-        { header: 'Precio Total', accessor: 'totalPrice' },
+    const columns: Column<any>[] = [
+        { header: 'Identificador', accessor: 'id', isFilterable: true, type: 'text' },
+        { header: 'Proveedor', accessor: 'originName', isFilterable: true, type: 'text' },
+        { header: 'Fecha de entrada', accessor: 'date', isFilterable: true, type: 'text' },
+        { header: 'Tipo de entrada', accessor: 'incomeType', isFilterable: true, type: 'text' },
+        { header: 'Precio Total', accessor: 'totalPrice', type: 'currency' },
         {
             header: "Acciones",
             accessor: "action",
@@ -74,11 +75,11 @@ const ViewIncomes = () => {
 
     if (loading) {
         return (
-          <div className="d-flex justify-content-center align-items-center vh-100 page-content">
-            <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
-          </div>
+            <div className="d-flex justify-content-center align-items-center vh-100 page-content">
+                <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
+            </div>
         );
-      }
+    }
 
     return (
         <div className="page-content">
@@ -96,8 +97,8 @@ const ViewIncomes = () => {
                         </div>
                     </CardHeader>
 
-                     <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
-                        <CustomTable columns={columns} data={incomes} showPagination={false}/>
+                    <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
+                        <CustomTable columns={columns} data={incomes} showPagination={false} />
                     </CardBody>
                 </Card>
 

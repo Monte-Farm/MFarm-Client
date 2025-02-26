@@ -5,6 +5,7 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
+import { Column } from "common/data/data_types";
 
 
 const CompletedOrders = () => {
@@ -16,10 +17,10 @@ const CompletedOrders = () => {
     const [orders, setOrders] = useState([])
     const [loading, setLoading] = useState<boolean>(true)
 
-    const columns = [
-        { header: 'No. de Pedido', accessor: 'id', isFilterable: true },
-        { header: 'Fecha de Pedido', accessor: 'date', isFilterable: true },
-        { header: 'Almacén', accessor: 'orderDestiny', isFilterable: true },
+    const columns: Column<any>[] = [
+        { header: 'No. de Pedido', accessor: 'id', isFilterable: true, type: 'text' },
+        { header: 'Fecha de Pedido', accessor: 'date', isFilterable: true, type: 'text' },
+        { header: 'Almacén', accessor: 'orderDestiny', isFilterable: true, type: 'text' },
         {
             header: 'Estado', accessor: 'status', isFilterable: true, render: (value: string) => (
                 <Badge color={value === 'completed' ? "success" : "warning"}>
@@ -90,7 +91,7 @@ const CompletedOrders = () => {
 
                 <Card style={{ height: '75vh' }}>
                     <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
-                        {orders && <CustomTable columns={columns} data={orders} showPagination={false}/>}
+                        {orders && <CustomTable columns={columns} data={orders} showPagination={false} />}
                     </CardBody>
                 </Card>
             </Container>

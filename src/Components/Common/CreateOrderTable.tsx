@@ -59,7 +59,7 @@ const CreateOrderTable: React.FC<CreateOrderTableProps> = ({
       const product = data.find((p) => p.id === id);
       setSelectedProducts((prev) => [
         ...prev,
-        { id, quantity: 0, price: showStock ? parseFloat(product.averagePrice.toFixed(2)) : 0, observations: "" },
+        { id, quantity: 0, price: showStock ? parseFloat(product.averagePrice) : 0, observations: "" },
       ]);
     } else {
       setSelectedProducts((prev) => prev.filter((product) => product.id !== id));
@@ -260,7 +260,7 @@ const TableBody: React.FC<{
             </td>
             <td>{product.unit_measurement}</td>
             {showStock ? (
-              <td>${product.averagePrice.toFixed(2)}</td>
+              <td>${product.averagePrice}</td>
             ) : (
               <td>
                 <Input

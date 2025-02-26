@@ -1,14 +1,7 @@
 import BreadCrumb from "Components/Common/BreadCrumb";
-import { APIClient } from "helpers/api_helper"
-import { useNavigate } from "react-router-dom";
-import { Alert, Button, Card, CardBody, CardHeader, Col, Container, FormFeedback, Input, Label, ListGroup, ListGroupItem, Modal, ModalBody, ModalHeader, Row, Spinner } from "reactstrap"
-import systemIcon from '../../assets/images/logo-sm.png'
-import systemLogo from '../../assets/images/logo-light.png'
-import CustomTable from "Components/Common/CustomTable";
-import { useFormik } from "formik";
-import { useDebugValue, useEffect, useState } from "react";
+import { Card, CardBody, Col, Container, ListGroup, ListGroupItem, Row, Spinner } from "reactstrap"
+import { useEffect, useState } from "react";
 import SystemConfiguration from "Components/Common/SystemConfiguration";
-import IncomesConfiguration from "pages/Incomes/IncomesConfiguration";
 
 const ConfigurationPage = () => {
     document.title = 'Configuración | Pig System';

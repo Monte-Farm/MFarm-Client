@@ -5,6 +5,7 @@ import { useContext, useEffect, useState } from "react";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Button, Card, CardBody, CardHeader, Container } from "reactstrap";
 import { useNavigate } from "react-router-dom";
+import { Column } from "common/data/data_types";
 
 const ViewPurchaseOrders = () => {
     document.title = 'Ver Ordenes de compra | Ordenes de compra';
@@ -15,11 +16,11 @@ const ViewPurchaseOrders = () => {
     const configContext = useContext(ConfigContext)
     const warehouseId = 'AG001';
 
-    const columnsTable = [
-        { header: "No. de Orden", accessor: "id", isFilterable: true },
-        { header: "Fecha", accessor: "date", isFilterable: true },
-        { header: 'Total de Orden', accessor: 'totalPrice', isFilterable: true },
-        { header: 'Proveedor', accessor: 'supplier', isFilterable: true },
+    const columnsTable: Column<any>[] = [
+        { header: "No. de Orden", accessor: "id", isFilterable: true, type: 'text'  },
+        { header: "Fecha", accessor: "date", isFilterable: true, type: 'text'  },
+        { header: 'Total de Orden', accessor: 'totalPrice', isFilterable: true, type: 'currency'  },
+        { header: 'Proveedor', accessor: 'supplier', isFilterable: true, type: 'text'  },
         {
             header: "Acciones",
             accessor: "action",

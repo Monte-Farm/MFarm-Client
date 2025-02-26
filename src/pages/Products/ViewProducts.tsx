@@ -5,17 +5,18 @@ import ProductForm from "Components/Common/ProductForm";
 import { useContext, useEffect, useState } from "react";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
 import noImageUrl from '../../assets/images/no-image.png'
-import { ProductData } from "common/data_interfaces";
+import { Attribute, ProductData } from "common/data_interfaces";
 import { ConfigContext } from "App";
 import LoadingGif from '../../assets/images/loading-gif.gif'
+import { Column } from "common/data/data_types";
 
 
-const productAttributes = [
-    { key: 'id', label: 'Código' },
-    { key: 'name', label: 'Nombre' },
-    { key: 'category', label: 'Categoría' },
-    { key: 'unit_measurement', label: 'Unidad de Medida' },
-    { key: 'description', label: 'Descripción' },
+const productAttributes: Attribute[] = [
+    { key: 'id', label: 'Código', type: 'text' },
+    { key: 'name', label: 'Nombre', type: 'text' },
+    { key: 'category', label: 'Categoría', type: 'text' },
+    { key: 'unit_measurement', label: 'Unidad de Medida', type: 'text' },
+    { key: 'description', label: 'Descripción', type: 'text' },
 ]
 
 const foldersArray = ['Products', 'Images']
@@ -31,16 +32,16 @@ const ViewProducts = () => {
     const [modals, setModals] = useState({ create: false, details: false, update: false, delete: false, activate: false });
     const [loading, setLoading] = useState<boolean>(true);
 
-    const columns = [
+    const columns: Column<any>[] = [
         {
             header: 'Imagen', accessor: 'image', render: (value: string) => (
-                <img src={value || noImageUrl} alt="Imagen del Producto" style={{height: "70px" }} />
+                <img src={value || noImageUrl} alt="Imagen del Producto" style={{ height: "70px" }} />
             ),
         },
-        { header: 'Código', accessor: 'id', isFilterable: true },
-        { header: 'Nombre', accessor: 'name', isFilterable: true },
-        { header: 'Categoría', accessor: 'category', isFilterable: true },
-        { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true },
+        { header: 'Código', accessor: 'id', isFilterable: true, type: 'text' },
+        { header: 'Nombre', accessor: 'name', isFilterable: true, type: 'text' },
+        { header: 'Categoría', accessor: 'category', isFilterable: true, type: 'text' },
+        { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true, type: 'text' },
         {
             header: 'Estado', accessor: 'status', isFilterable: true, render: (value: boolean) => (
                 <Badge color={value ? "success" : "danger"}>{value ? "Activo" : "Inactivo"}</Badge>

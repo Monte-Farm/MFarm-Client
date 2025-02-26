@@ -20,7 +20,7 @@ const PurchaseOrderProductsTable: React.FC<PurchaseOrderProductsTableProps> = ({
         setEditingValues(initialValues);
     }, [productsDelivered]);
 
-    const handleInputChange = (id: string, field: "quantity" | "price", value: string) => {
+    const handleInputChange = (id: string, field: "quantity", value: string) => {
         const cleanedValue = value.replace(/^0+/, "") || "0";
         const parsedValue = Math.max(parseFloat(cleanedValue) || 0, 0);
 
@@ -90,10 +90,18 @@ const PurchaseOrderProductsTable: React.FC<PurchaseOrderProductsTableProps> = ({
                                         <td>{unit_measurement}</td>
                                         <td>{productDelivered?.quantity || "0"}</td> {/* Cantidad solicitada */}
                                         <td>
-                                            <Input type="number" value={editingValues[id]?.quantity || "0"} onChange={e => handleInputChange(id, "quantity", e.target.value)} min={0} />
+                                            <Input
+                                                type="number"
+                                                value={editingValues[id]?.quantity || "0"}
+                                                onChange={e => handleInputChange(id, "quantity", e.target.value)}
+                                                min={0}
+                                            />
                                         </td>
                                         <td>
-                                            <Input type="number" value={editingValues[id]?.price || "0"} onChange={e => handleInputChange(id, "price", e.target.value)} min={0} />
+                                            {productDelivered?.price.toLocaleString("es-MX", {
+                                                style: "currency",
+                                                currency: "MXN", // Cambia a la moneda que necesites
+                                            })}
                                         </td>
                                     </tr>
                                 );

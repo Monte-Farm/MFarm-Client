@@ -8,14 +8,15 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Alert, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
+import { Column } from "common/data/data_types";
 
 const supplierAttributes: Attribute[] = [
-    { key: 'name', label: 'Nombre' },
-    { key: 'phone_number', label: 'Teléfono' },
-    { key: 'email', label: 'Correo' },
-    { key: 'address', label: 'Dirección' },
-    { key: 'supplier_type', label: 'Categoría' },
-    { key: 'rnc', label: 'RNC' },
+    { key: 'name', label: 'Nombre', type: 'text' },
+    { key: 'phone_number', label: 'Teléfono', type: 'text' },
+    { key: 'email', label: 'Correo', type: 'text' },
+    { key: 'address', label: 'Dirección', type: 'text' },
+    { key: 'supplier_type', label: 'Categoría', type: 'text' },
+    { key: 'rnc', label: 'RNC', type: 'text' },
     { key: 'status', label: 'Estado', type: 'status' }
 ];
 
@@ -31,11 +32,11 @@ const SupplierDetails = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [modals, setModals] = useState({ update: false, delete: false });
 
-    const incomesColumns = [
-        { header: 'Identificador', accessor: 'id', isFilterable: true },
-        { header: 'Fecha de entrada', accessor: 'date', isFilterable: true },
-        { header: 'Precio Total', accessor: 'totalPrice' },
-        { header: 'Tipo de entrada', accessor: 'incomeType', isFilterable: true, options: [{ label: 'Compra', value: 'Compra' }] },
+    const incomesColumns: Column<any>[] = [
+        { header: 'Identificador', accessor: 'id', isFilterable: true, type: 'text' },
+        { header: 'Fecha de entrada', accessor: 'date', isFilterable: true, type: 'text' },
+        { header: 'Precio Total', accessor: 'totalPrice', type: 'currency' },
+        { header: 'Tipo de entrada', accessor: 'incomeType', isFilterable: true, type: 'text' },
         {
             header: "Acciones",
             accessor: "action",

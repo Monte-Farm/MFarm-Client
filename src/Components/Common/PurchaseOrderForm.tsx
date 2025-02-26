@@ -10,6 +10,7 @@ import SelectTable from "./SelectTable";
 import CustomTable from "./CustomTable";
 import ObjectDetailsHorizontal from "./ObjectDetailsHorizontal";
 import SupplierForm from "./SupplierForm";
+import { Column } from "common/data/data_types";
 
 interface PurchaseOrderFormProps {
     initialData?: PurchaseOrderData;
@@ -26,13 +27,13 @@ const purchaseOrderAttributes: Attribute[] = [
 
 ];
 
-const productColumns = [
-    { header: 'Código', accessor: 'id', isFilterable: true },
-    { header: 'Producto', accessor: 'name', isFilterable: true },
-    { header: 'Cantidad', accessor: 'quantity', isFilterable: true },
-    { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true },
-    { header: 'Precio Unitario', accessor: 'price' },
-    { header: 'Categoría', accessor: 'category', isFilterable: true },
+const productColumns: Column<any>[]= [
+    { header: 'Código', accessor: 'id', isFilterable: true, type: 'text'  },
+    { header: 'Producto', accessor: 'name', isFilterable: true, type: 'text'  },
+    { header: 'Cantidad', accessor: 'quantity', isFilterable: true, type: 'number'  },
+    { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true, type: 'text'  },
+    { header: 'Precio Unitario', accessor: 'price', type: 'currency'  },
+    { header: 'Categoría', accessor: 'category', isFilterable: true, type: 'text'  },
 ];
 
 const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSubmit, onCancel }) => {
