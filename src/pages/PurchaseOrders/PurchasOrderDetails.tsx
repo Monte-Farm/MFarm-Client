@@ -56,7 +56,7 @@ const PurchaseOrderDetails = () => {
 
 
     const fetchPurchaseOrder = async () => {
-        if (!configContext) return;
+        if (!configContext || purchaseOrderDetails) return;
         try {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/purchase_orders/find_purchase_order_id/${id_order}`)
             const purchaseOrderFound = response.data.data;
@@ -126,7 +126,7 @@ const PurchaseOrderDetails = () => {
         };
 
         fetchData();
-    }, []);
+    }, [purchaseOrderDetails]);
 
     useEffect(() => {
         if (purchaseOrderDetails) {
@@ -158,7 +158,7 @@ const PurchaseOrderDetails = () => {
                     <Card className="w-100 h-100 pt-2" style={{ backgroundColor: '#A3C293' }}>
                         <CardBody>
                             {purchaseOrderDetails && (
-                                <ObjectDetailsHorizontal attributes={purchaseOrderAttributes} object={purchaseOrderDetails} />
+                                <ObjectDetailsHorizontal attributes={purchaseOrderAttributes} object={purchaseOrderDisplay} />
                             )}
                         </CardBody>
                     </Card>

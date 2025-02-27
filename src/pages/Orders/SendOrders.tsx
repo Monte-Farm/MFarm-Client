@@ -15,6 +15,7 @@ const SendOrders = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [orders, setOrders] = useState([])
     const [loading, setLoading] = useState<boolean>(true)
+    const [buttonContent, setButtonContent] = useState<React.ReactElement | undefined>()
 
     const columns: Column<any>[] = [
         { header: 'No. de Pedido', accessor: 'id', isFilterable: true, type: 'text' },
@@ -32,7 +33,7 @@ const SendOrders = () => {
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
                     <Button className="farm-primary-button btn-icon" onClick={() => clicOrder(row)}>
-                        <i className="ri-eye-fill align-middle"></i>
+                        {buttonContent}
                     </Button>
                 </div>
             ),
@@ -54,8 +55,10 @@ const SendOrders = () => {
         let query = '';
         if (configContext.userLogged.role === 'Encargado de almacen') {
             query = `${configContext.apiUrl}/orders/find/orderOrigin/AG001`;
+            setButtonContent(<i className=" ri-arrow-right-line align-middle"></i>)
         } else {
             query = `${configContext.apiUrl}/orders/find/orderDestiny/${configContext.userLogged.assigment}`;
+            setButtonContent(<i className="ri-eye-fill align-middle"></i>)
         }
 
         try {

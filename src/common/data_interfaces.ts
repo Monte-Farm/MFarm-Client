@@ -113,12 +113,17 @@ export interface Tax {
     percentage: number;
 }
 
+export interface ProductCategory {
+    prefix: string;
+    value: string;
+}
+
 export interface ConfigurationData {
     farmName: string;
     farmLogo: string;
     farmIcon: string;
     unitMeasurements: string[];
-    productCategories: string[];
+    productCategories: ProductCategory[];
     incomeTypes: string[];
     outcomeTypes: string[];
     userRoles: string[];

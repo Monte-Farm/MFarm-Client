@@ -50,7 +50,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
         maxFiles={maxFiles}
         name="files"
         acceptedFileTypes={acceptedFileTypes}
-        labelIdle='Arrastra tus archivos o <span class="filepond--label-action">explora</span>'
+        labelIdle='Arrastra tus archivos o haz clic aqui'
       >
       </FilePond>
     </div>

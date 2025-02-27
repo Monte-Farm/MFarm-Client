@@ -7,23 +7,32 @@ import {
 import SuccessModal from "./SuccessModal";
 import ErrorModal from "./ErrorModal";
 
+// Definir tipos
+type ItemType = string | { prefix: string; value: string };
+
 interface ConfigurationsListProps {
-    items: string[];
+    items: ItemType[];
     groupName: string;
     cardTitle: string;
+    isObjectArray?: boolean; // Indicar si los elementos son objetos
 }
 
-const ConfigurationsList: React.FC<ConfigurationsListProps> = ({ items, groupName, cardTitle }) => {
+const ConfigurationsList: React.FC<ConfigurationsListProps> = ({
+    items,
+    groupName,
+    cardTitle,
+    isObjectArray = false, // Por defecto, asumimos que es un arreglo de strings
+}) => {
     const configContext = useContext(ConfigContext);
-    const [localItems, setLocalItems] = useState<string[]>(items);
+    const [localItems, setLocalItems] = useState<ItemType[]>(items);
     const [modalOpen, setModalOpen] = useState(false);
-    const [currentItem, setCurrentItem] = useState("");
+    const [currentItem, setCurrentItem] = useState<ItemType>("");
     const [editIndex, setEditIndex] = useState<number | null>(null);
     const [modals, setModals] = useState({ success: false, error: false });
 
     const toggleModal = () => {
         setModalOpen(!modalOpen);
-        setCurrentItem("");
+        setCurrentItem(isObjectArray ? { prefix: "", value: "" } : "");
         setEditIndex(null);
     };
 
@@ -32,13 +41,18 @@ const ConfigurationsList: React.FC<ConfigurationsListProps> = ({ items, groupNam
     };
 
     const handleSave = () => {
-        if (currentItem.trim() === "") return;
+        if (isObjectArray) {
+            const item = currentItem as { prefix: string; value: string };
+            if (item.prefix.trim() === "" || item.value.trim() === "") return;
+        } else {
+            if ((currentItem as string).trim() === "") return;
+        }
 
         let updatedItems = [...localItems];
 
         if (editIndex !== null) {
             // Si el valor no cambió, no hacer actualización innecesaria
-            if (localItems[editIndex] === currentItem) {
+            if (JSON.stringify(localItems[editIndex]) === JSON.stringify(currentItem)) {
                 toggleModal();
                 return;
             }
@@ -102,7 +116,14 @@ const ConfigurationsList: React.FC<ConfigurationsListProps> = ({ items, groupNam
                         ) : (
                             localItems.map((item, index) => (
                                 <ListGroupItem key={index} className="d-flex justify-content-between">
-                                    {item}
+                                    {isObjectArray ? (
+                                        <div>
+                                            <strong>{(item as { prefix: string }).prefix} - </strong>{" "}
+                                            {(item as { value: string }).value}
+                                        </div>
+                                    ) : (
+                                        item as string
+                                    )}
                                     <div>
                                         <Button className="me-2 farm-primary-button" size="sm" onClick={() => handleEdit(index)}>Editar</Button>
                                         <Button className="farm-secondary-button" size="sm" onClick={() => handleDelete(index)}>Eliminar</Button>
@@ -114,13 +135,66 @@ const ConfigurationsList: React.FC<ConfigurationsListProps> = ({ items, groupNam
                 </CardBody>
 
                 <Modal isOpen={modalOpen} toggle={toggleModal} centered>
-                    <ModalHeader toggle={toggleModal}>{editIndex !== null ? "Editar" : "Agregar"} Elemento</ModalHeader>
+                    <ModalHeader toggle={toggleModal}>
+                        {editIndex !== null ? "Editar" : "Agregar"} Elemento
+                    </ModalHeader>
                     <ModalBody>
-                        <Input value={currentItem} onChange={(e) => setCurrentItem(e.target.value)} placeholder="Nombre del elemento" />
+                        {isObjectArray ? (
+                            <>
+                                <div className="mb-3">
+                                    <label htmlFor="prefixInput" className="form-label">
+                                        Prefijo
+                                    </label>
+                                    <Input
+                                        id="prefixInput"
+                                        value={(currentItem as { prefix: string }).prefix}
+                                        onChange={(e) =>
+                                            setCurrentItem({
+                                                ...(currentItem as { prefix: string; value: string }),
+                                                prefix: e.target.value,
+                                            })
+                                        }
+                                        placeholder="Ingrese el prefijo"
+                                    />
+                                </div>
+                                <div className="mb-3">
+                                    <label htmlFor="valueInput" className="form-label">
+                                        Valor
+                                    </label>
+                                    <Input
+                                        id="valueInput"
+                                        value={(currentItem as { value: string }).value}
+                                        onChange={(e) =>
+                                            setCurrentItem({
+                                                ...(currentItem as { prefix: string; value: string }),
+                                                value: e.target.value,
+                                            })
+                                        }
+                                        placeholder="Ingrese el valor"
+                                    />
+                                </div>
+                            </>
+                        ) : (
+                            <div className="mb-3">
+                                <label htmlFor="itemInput" className="form-label">
+                                    Nombre del elemento
+                                </label>
+                                <Input
+                                    id="itemInput"
+                                    value={currentItem as string}
+                                    onChange={(e) => setCurrentItem(e.target.value)}
+                                    placeholder="Ingrese el nombre del elemento"
+                                />
+                            </div>
+                        )}
                     </ModalBody>
                     <ModalFooter>
-                        <Button className="farm-secondary-button" onClick={toggleModal}>Cancelar</Button>
-                        <Button className="farm-primary-button" onClick={handleSave}>Guardar</Button>
+                        <Button className="farm-secondary-button" onClick={toggleModal}>
+                            Cancelar
+                        </Button>
+                        <Button className="farm-primary-button" onClick={handleSave}>
+                            Guardar
+                        </Button>
                     </ModalFooter>
                 </Modal>
             </Card>

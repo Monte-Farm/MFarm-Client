@@ -4,10 +4,11 @@ import ConfigurationsList from "Components/Common/ConfigurationList"
 import { useContext, useState, useEffect } from "react"
 import { Container, Spinner } from "reactstrap"
 import LoadingGif from '../../assets/images/loading-gif.gif'
+import { ProductCategory } from "common/data_interfaces"
 
 const ProductConfiguration = () => {
     const configContext = useContext(ConfigContext)
-    const [categoriesItems, setCategoriesItems] = useState<string[]>([]);
+    const [categoriesItems, setCategoriesItems] = useState<ProductCategory[]>([]);
     const [unitsItems, setUnitsItems] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -34,10 +35,10 @@ const ProductConfiguration = () => {
                 <BreadCrumb title={"Configuración de productos"} pageTitle={"Productos"} />
                 <div className="d-flex gap-2" style={{ height: '75vh' }}>
                     <div className="w-50 h-100">
-                        <ConfigurationsList items={categoriesItems} groupName="productCategories" cardTitle="Categorias de productos"/>
+                        <ConfigurationsList items={categoriesItems} groupName="productCategories" cardTitle="Categorias de productos" isObjectArray={true}/>
                     </div>
                     <div className="w-50">
-                        <ConfigurationsList items={unitsItems} groupName="unitMeasurements" cardTitle="Unidades de Medida"/>
+                        <ConfigurationsList items={unitsItems} groupName="unitMeasurements" cardTitle="Unidades de Medida" isObjectArray={false}/>
                     </div>
                 </div>
             </Container>    
