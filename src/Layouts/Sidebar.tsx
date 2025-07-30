@@ -37,7 +37,7 @@ const Sidebar = ({ layoutType } : any) => {
   return (
     <React.Fragment>
       <div className="app-menu navbar-menu">
-        <div className="navbar-brand-box">
+        <div className="navbar-brand-box mt-5 mb-3">
           <Link to="/" className="logo logo-dark">
             <span className="logo-sm">
               <img src={logoSm} alt="" height="22" />

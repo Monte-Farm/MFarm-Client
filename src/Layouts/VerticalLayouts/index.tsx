@@ -2,23 +2,42 @@ import React, { useEffect, useCallback } from 'react';
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { Collapse } from 'reactstrap';
-// Import Data
 import navdata from "../LayoutMenuData";
-//i18n
 import { withTranslation } from "react-i18next";
 import withRouter from "../../Components/Common/withRouter";
 import { useSelector } from "react-redux";
 import { createSelector } from 'reselect';
+import { getLoggedinUser } from 'helpers/api_helper';
 
-const VerticalLayout = (props : any) => {
+const VerticalLayout = (props: any) => {
     const navData = navdata().props.children;
     const path = props.router.location.pathname;
+    const userLogged = getLoggedinUser();
+
+    const filterMenuItems = (items: any[]) => {
+        return items.filter((item: any) => {
+
+            if (!item.roles || item.roles.includes(userLogged.role)) {
+                if (item.subItems) {
+
+                    item.subItems = filterMenuItems(item.subItems);
+                }
+                if (item.childItems) {
+
+                    item.childItems = filterMenuItems(item.childItems);
+                }
+                return true;
+            }
+            return false;
+        });
+    };
+
+    const visibleMenuItems = filterMenuItems(navData);
 
     /*
- layout settings
- */
-
-    const selectLayoutState = (state : any) => state.Layout;
+    layout settings
+    */
+    const selectLayoutState = (state: any) => state.Layout;
     const selectLayoutProperties = createSelector(
         selectLayoutState,
         (layout) => ({
@@ -27,7 +46,7 @@ const VerticalLayout = (props : any) => {
             layoutType: layout.layoutType
         })
     );
-    // Inside your component
+
     const {
         leftsidbarSizeType, sidebarVisibilitytype, layoutType
     } = useSelector(selectLayoutProperties);
@@ -37,6 +56,7 @@ const VerticalLayout = (props : any) => {
         var windowSize = document.documentElement.clientWidth;
         const humberIcon = document.querySelector(".hamburger-icon") as HTMLElement;
         var hamburgerIcon = document.querySelector(".hamburger-icon");
+
         if (windowSize >= 1025) {
             if (document.documentElement.getAttribute("data-layout") === "vertical") {
                 document.documentElement.setAttribute("data-sidebar-size", leftsidbarSizeType);
@@ -49,12 +69,10 @@ const VerticalLayout = (props : any) => {
                     hamburgerIcon.classList.remove("open");
                 }
             } else {
-                // var hamburgerIcon = document.querySelector(".hamburger-icon");
                 if (hamburgerIcon !== null) {
                     hamburgerIcon.classList.add("open");
                 }
             }
-
         } else if (windowSize < 1025 && windowSize > 767) {
             document.body.classList.remove("twocolumn-panel");
             if (document.documentElement.getAttribute("data-layout") === "vertical") {
@@ -86,7 +104,7 @@ const VerticalLayout = (props : any) => {
         const initMenu = () => {
             const pathName = process.env.PUBLIC_URL + path;
             const ul = document.getElementById("navbar-nav") as HTMLElement;
-            const items : any = ul.getElementsByTagName("a");
+            const items: any = ul.getElementsByTagName("a");
             let itemsArray = [...items]; // converts NodeList to Array
             removeActivation(itemsArray);
             let matchingMenuItem = itemsArray.find((x) => {
@@ -101,12 +119,11 @@ const VerticalLayout = (props : any) => {
         }
     }, [path, props.layoutType]);
 
-    function activateParentDropdown(item : any) {
+    function activateParentDropdown(item: any) {
         item.classList.add("active");
         let parentCollapseDiv = item.closest(".collapse.menu-dropdown");
 
         if (parentCollapseDiv) {
-            // to set aria expand true remaining
             parentCollapseDiv.classList.add("show");
             parentCollapseDiv.parentElement.children[0].classList.add("active");
             parentCollapseDiv.parentElement.children[0].setAttribute("aria-expanded", "true");
@@ -124,10 +141,10 @@ const VerticalLayout = (props : any) => {
         return false;
     }
 
-    const removeActivation = (items :any) => {
-        let actiItems = items.filter((x : any) => x.classList.contains("active"));
+    const removeActivation = (items: any) => {
+        let actiItems = items.filter((x: any) => x.classList.contains("active"));
 
-        actiItems.forEach((item : any) => {
+        actiItems.forEach((item: any) => {
             if (item.classList.contains("menu-link")) {
                 if (!item.classList.contains("active")) {
                     item.setAttribute("aria-expanded", false);
@@ -149,7 +166,8 @@ const VerticalLayout = (props : any) => {
     return (
         <React.Fragment>
             {/* menu Items */}
-            {(navData || []).map((item : any, key : number) => {
+
+            {(visibleMenuItems || []).map((item: any, key: number) => {
                 return (
                     <React.Fragment key={key}>
                         {/* Main Header */}
@@ -176,7 +194,7 @@ const VerticalLayout = (props : any) => {
                                             id="sidebarApps">
                                             <ul className="nav nav-sm flex-column test">
                                                 {/* subItms  */}
-                                                {item.subItems && ((item.subItems || []).map((subItem : any, key : number) => (
+                                                {item.subItems && ((item.subItems || []).map((subItem: any, key: number) => (
                                                     <React.Fragment key={key}>
                                                         {!subItem.isChildItem ? (
                                                             <li className="nav-item">
@@ -207,7 +225,7 @@ const VerticalLayout = (props : any) => {
                                                                     <ul className="nav nav-sm flex-column">
                                                                         {/* child subItms  */}
                                                                         {subItem.childItems && (
-                                                                            (subItem.childItems || []).map((childItem : any, key : number) => (
+                                                                            (subItem.childItems || []).map((childItem: any, key: number) => (
                                                                                 <React.Fragment key={key}>
                                                                                     {!childItem.childItems ?
                                                                                         <li className="nav-item">
@@ -223,7 +241,7 @@ const VerticalLayout = (props : any) => {
                                                                                             </Link>
                                                                                             <Collapse className="menu-dropdown" isOpen={childItem.stateVariables} id="sidebaremailTemplates">
                                                                                                 <ul className="nav nav-sm flex-column">
-                                                                                                    {childItem.childItems.map((subChildItem : any, key : number) => (
+                                                                                                    {childItem.childItems.map((subChildItem: any, key: number) => (
                                                                                                         <li className="nav-item" key={key}>
                                                                                                             <Link to={subChildItem.link} className="nav-link" data-key="t-basic-action">{props.t(subChildItem.label)} </Link>
                                                                                                         </li>
@@ -243,7 +261,6 @@ const VerticalLayout = (props : any) => {
                                                 ))
                                                 )}
                                             </ul>
-
                                         </Collapse>
                                     </li>
                                 ) : (

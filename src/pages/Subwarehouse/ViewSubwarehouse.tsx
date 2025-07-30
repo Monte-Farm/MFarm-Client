@@ -182,7 +182,7 @@ const ViewSubwarehouse = () => {
                 <BreadCrumb title={"Subalmacénes"} pageTitle={"Ver Subalmacénes"}></BreadCrumb>
 
 
-                <Card style={{ height: '75vh' }}>
+                <Card style={{ minHeight: "calc(100vh - 220px)" }}>
                     <CardHeader>
                         <div className="d-flex">
                             <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>
@@ -191,7 +191,7 @@ const ViewSubwarehouse = () => {
                             </Button>
                         </div>
                     </CardHeader>
-                    <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
+                    <CardBody className="d-flex flex-column flex-grow-1">
                         <CustomTable columns={columns} data={warehouses} showPagination={false} />
                     </CardBody>
                 </Card>

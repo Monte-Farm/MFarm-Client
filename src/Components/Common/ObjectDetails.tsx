@@ -4,65 +4,72 @@ import { Badge } from "reactstrap";
 interface Attribute {
     key: string;
     label: string;
+    type?: string; // text, date, status, etc.
 }
 
 interface ProductDetailsProps {
-    attributes: Attribute[]; // Array de atributos a mostrar
-    object: Record<string, any>; // Objeto con los datos del producto
-    showImage?: boolean; // Propiedad para decidir si se muestra la imagen
-    imageSrc?: string; // URL o ruta de la imagen a mostrar
+    attributes: Attribute[];
+    object: Record<string, any>;
+    showImage?: boolean;
+    imageSrc?: string;
 }
 
-// Función para obtener valores anidados a partir de un path
 const getNestedValue = (obj: Record<string, any>, path: string): any => {
-    return path.split('.').reduce((acc, key) => acc?.[key], obj);
+    return path.split(".").reduce((acc, key) => acc?.[key], obj);
 };
 
-const ObjectDetails: React.FC<ProductDetailsProps> = ({ attributes, object, showImage = true, imageSrc }) => {
+const ObjectDetails: React.FC<ProductDetailsProps> = ({
+    attributes,
+    object,
+    showImage = true,
+    imageSrc,
+}) => {
     return (
-        <React.Fragment>
-            <div className="table-card table-responsive">
-                {showImage && imageSrc && (
-                    <div className="mb-3 text-center">
-                        <img
-                            src={imageSrc}
-                            alt="Detalle del objeto"
-                            className="rounded-top"
-                            style={{ maxHeight: "250px" }}
-                        />
-                    </div>
-                )}
+        <div className="table-card table-responsive">
+            {showImage && imageSrc && (
+                <div className="mb-3 text-center">
+                    <img
+                        src={imageSrc}
+                        alt="Detalle del objeto"
+                        className="rounded-top"
+                        style={{ maxHeight: "250px", maxWidth: "100%", objectFit: "contain" }}
+                    />
+                </div>
+            )}
 
-                <table className="table">
-                    <tbody>
-                        {attributes.map(({ key, label }) => (
+            <table className="table">
+                <tbody>
+                    {attributes.map(({ key, label, type }) => {
+                        const value = getNestedValue(object, key);
+
+                        return (
                             <tr key={key}>
                                 <td className="fw-medium fs-5">{label}</td>
                                 <td className="fs-5">
-                                    {key === "status" ? (
-                                        typeof object[key] === "boolean" ? (
-                                            object[key] ? (
-                                                <Badge color="success">Activo</Badge>
-                                            ) : (
-                                                <Badge color="danger">Inactivo</Badge>
-                                            )
-                                        ) : object[key] === "pending" ? (
-                                            <Badge color="warning">Pendiente</Badge>
-                                        ) : object[key] === "completed" ? (
-                                            <Badge color="primary">Completado</Badge>
+                                    {type === "status" ? (
+                                        value === true || value === "activo" || value === "vivo" ? (
+                                            <Badge color="success">Activo</Badge>
+                                        ) : value === false || value === "inactivo" || value === "muerto" ? (
+                                            <Badge color="danger">Inactivo</Badge>
                                         ) : (
-                                            "No disponible"
+                                            <Badge color="secondary">{value ?? "No disponible"}</Badge>
                                         )
+                                    ) : type === "date" && value ? (
+                                        new Date(value).toLocaleDateString("es-MX", {
+                                            day: "2-digit",
+                                            month: "2-digit",
+                                            year: "numeric",
+                                        })
                                     ) : (
-                                        getNestedValue(object, key) || "No disponible"
+                                        value ?? "No disponible"
                                     )}
                                 </td>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        </React.Fragment>
+                        );
+                    })}
+                </tbody>
+            </table>
+        </div>
     );
 };
 

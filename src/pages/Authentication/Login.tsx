@@ -15,21 +15,19 @@ const CoverSignIn = () => {
     const configContext = useContext(ConfigContext);
 
     const handleLogin = async (values: { username: string; password: string }) => {
-        await axios.post(`${configContext?.apiUrl}/user/login`, values)
-            .then(function (response: AxiosResponse) {
-                sessionStorage.setItem('authUser', JSON.stringify(response.data.data));
-                configContext?.setUserLogged(getLoggedinUser());
-                history('/home');
-            })
-            .catch(function (error: AxiosError) {
-                console.error(error.response);
-                throw error;
-            });
+        try {
+            const response = await axios.post(`${configContext?.apiUrl}/user/login`, values);
+            sessionStorage.setItem('authUser', JSON.stringify(response.data.data));
+            configContext?.setUserLogged(getLoggedinUser());
+            history('/home');
+        } catch (error: any) {
+            console.error(error.response);
+            throw error;
+        }
     };
 
     return (
         <React.Fragment>
-            {/* Asegura que el body y html no tengan scroll */}
             <style>
                 {`
                     html, body {
@@ -52,12 +50,12 @@ const CoverSignIn = () => {
                     <Container>
                         <Row>
                             <Col lg={12}>
-                                <Card className="overflow-hidden" style={{borderRadius: '10px'}}>
+                                <Card className="overflow-hidden" style={{ borderRadius: '10px' }}>
                                     <Row className="g-0">
                                         <Col lg={6}>
                                             <img src={loginImage} className="img-fluid h-100" alt="Login Cover" />
                                         </Col>
-                                        <Col lg={6} style={{backgroundColor: '#F5F5DC'}}>
+                                        <Col lg={6} style={{ backgroundColor: '#F5F5DC' }}>
                                             <div className="p-lg-5">
                                                 <div className="d-flex justify-content-center pb-5 pt-3">
                                                     <img
@@ -66,7 +64,7 @@ const CoverSignIn = () => {
                                                         alt="Logo"
                                                     />
                                                 </div>
-                                                <h4 className="text-center" style={{color: '#2F4F4F'}}>Bienvenido!</h4>
+                                                <h4 className="text-center" style={{ color: '#2F4F4F' }}>Bienvenido!</h4>
                                                 <p className="text-muted text-center fs-5">Inicie Sesión para continuar.</p>
 
                                                 <div className="mt-4">

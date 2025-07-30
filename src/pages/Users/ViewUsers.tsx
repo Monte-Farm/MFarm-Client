@@ -5,10 +5,12 @@ import CustomTable from "Components/Common/CustomTable"
 import ObjectDetails from "Components/Common/ObjectDetails"
 import UserForm from "Components/Common/UserForm"
 import { getLoggedinUser } from "helpers/api_helper"
-import { useContext, useEffect, useState } from "react"
-import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap"
+import { useContext, useEffect, useMemo, useState } from "react"
+import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Input, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap"
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Column } from "common/data/data_types"
+import UserCards from "Components/Common/UserCards"
+import { roleLabels } from "common/role_labels"
 
 const userAttributes: Attribute[] = [
     { key: 'username', label: 'Usuario', type: 'text' },
@@ -23,50 +25,36 @@ const userAttributes: Attribute[] = [
 const ViewUsers = () => {
     document.title = 'Ver Usuarios | Usuarios'
     const configContext = useContext(ConfigContext)
+    const userLogged = getLoggedinUser();
 
     const [users, setUsers] = useState([]);
     const [selectedUser, setSelecteduser] = useState<any>()
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ details: false, create: false, update: false, delete: false });
     const [loading, setLoading] = useState<boolean>(true)
+    const [searchTerm, setSearchTerm] = useState('');
 
     const columns: Column<any>[] = [
         { header: 'Usuario', accessor: 'username', isFilterable: true, type: 'text' },
         { header: 'Nombre', accessor: 'name', isFilterable: true, type: 'text' },
         { header: 'Apellido', accessor: 'lastname', isFilterable: true, type: 'text' },
-        { header: 'Correo electronico', accessor: 'email', isFilterable: true, type: 'text' },
-        { header: 'Rol', accessor: 'role', isFilterable: true, type: 'text' },
         {
-            header: "Estado",
-            accessor: "status",
-            render: (value: boolean) => (
-                <Badge color={value === true ? "success" : "danger"}>
-                    {value === true ? "Activo" : "Inactivo"}
-                </Badge>
-            ),
+            header: 'Rol',
+            accessor: 'role',
             isFilterable: true,
+            render: (value: string) => roleLabels[value] || value,
         },
         {
-            header: 'Acciones',
-            accessor: 'action',
-            render: (value: any, row: any) => (
-                <div className="d-flex gap-1">
-                    <Button className="farm-primary-button btn-icon" onClick={() => handleClicModal('details', row)}>
-                        <i className="ri-eye-fill align-middle" />
-                    </Button>
-
-                    <Button className="farm-primary-button btn-icon" disabled={!row.status} onClick={() => handleClicModal('update', row)}>
-                        <i className="ri-pencil-fill align-middle" />
-                    </Button>
-
-                    <Button className="farm-secondary-button btn-icon" disabled={!row.status} onClick={() => handleClicModal('delete', row)}>
-                        <i className="ri-forbid-line align-middle" />
-                    </Button>
-                </div>
-            )
-        }
-    ]
-
+            header: 'Estado',
+            accessor: 'status',
+            isFilterable: true,
+            render: (value: boolean) => (
+                <Badge color={value ? 'success' : 'danger'}>
+                    {value ? 'Activo' : 'Inactivo'}
+                </Badge>
+            ),
+        },
+    ];
 
 
     const handleError = (error: any, message: string) => {
@@ -90,17 +78,29 @@ const ViewUsers = () => {
     }
 
     const handleFetchUsers = async () => {
-        if (!configContext) return;
+        if (!configContext || !userLogged) return;
 
         try {
-            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/user`);
-            const users = response.data.data;
-            const userLogged = getLoggedinUser();
-            setUsers(
-                users.filter(function (obj: any) {
-                    return obj.username !== userLogged.username;
-                })
-            );
+            let response = null;
+            let users = [];
+            if (userLogged.role === 'Superadmin') {
+                response = await configContext.axiosHelper.get(`${configContext.apiUrl}/user/find_by_role/farm_manager`)
+                users = response.data.data;
+                setUsers(
+                    users.filter(function (obj: any) {
+                        return obj.username !== userLogged.username;
+                    })
+                );
+            } else {
+                response = await configContext.axiosHelper.get(`${configContext.apiUrl}/user`)
+                users = response.data.data;
+                setUsers(
+                    users.filter(function (obj: any) {
+                        return obj.username !== userLogged.username && obj.role !== 'Superadmin';
+                    })
+                );
+            }
+
         } catch (error) {
             handleError(error, 'Ha ocurrido un error al obtener a los usuarios');
         } finally {
@@ -152,14 +152,21 @@ const ViewUsers = () => {
         }
     };
 
+    const filteredUsers = useMemo(() => {
+        if (!searchTerm) return users;
+        const lowerSearch = searchTerm.toLowerCase();
+        return users.filter(user =>
+            columns.some(col => {
+                const value = (user as any)[col.accessor];
+                if (value === undefined || value === null) return false;
+                return value.toString().toLowerCase().includes(lowerSearch);
+            })
+        );
+    }, [searchTerm, users, columns]);
+
 
     useEffect(() => {
-        document.body.style.overflow = 'hidden';
         handleFetchUsers();
-
-        return () => {
-            document.body.style.overflow = '';
-        };
     }, [])
 
 
@@ -175,19 +182,33 @@ const ViewUsers = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Usuarios"} pageTitle={"Ver Usuarios"} />
+                <BreadCrumb title={"Usuarios Registrados"} pageTitle={"Usuarios"} />
 
-                <Card className="mt-4" style={{ height: '75vh' }}>
+                <Card style={{ minHeight: "calc(100vh - 220px)" }}>
                     <CardHeader>
-                        <div className="d-flex">
-                            <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>
+                        <div className="d-flex gap-3">
+                            <Input
+                                placeholder="Buscar usuario..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="fs-5"
+                            />
+
+                            <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')} style={{ width: '200px' }}>
                                 <i className="ri-add-line me-3" />
                                 Agregar Usuario
                             </Button>
                         </div>
                     </CardHeader>
                     <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
-                        <CustomTable columns={columns} data={users} showPagination={false} />
+                        <UserCards
+                            columns={columns}
+                            data={filteredUsers}
+                            onDetailsClick={(user) => handleClicModal('details', user)}
+                            onEditClick={(user) => handleClicModal('update', user)}
+                            onDeleteClick={(user) => handleClicModal('delete', user)}
+                            imageAccessor="profileImage"
+                        />
                     </CardBody>
                 </Card>
 
@@ -205,7 +226,7 @@ const ViewUsers = () => {
                 <Modal isOpen={modals.create} toggle={() => toggleModal('create')} size="xl" keyboard={false} backdrop='static' centered>
                     <ModalHeader toggle={() => toggleModal('create')}>Nuevo Usuario</ModalHeader>
                     <ModalBody>
-                        <UserForm onSubmit={(data: UserData) => handleCreateUser(data)} onCancel={() => toggleModal('create', false)} />
+                        <UserForm onSubmit={(data: UserData) => handleCreateUser(data)} onCancel={() => toggleModal('create', false)} defaultRole={userLogged.role === 'Superadmin' ? 'farm_manager' : ''} currentUserRole={userLogged.role} />
                     </ModalBody>
                 </Modal>
 
@@ -213,7 +234,7 @@ const ViewUsers = () => {
                 <Modal isOpen={modals.update} toggle={() => toggleModal('update')} size="xl" keyboard={false} backdrop='static' centered>
                     <ModalHeader toggle={() => toggleModal('update')}>Actualizar Usuario</ModalHeader>
                     <ModalBody>
-                        <UserForm initialData={selectedUser} isUsernameDisable={true} onSubmit={(data: UserData) => handleUpdateUser(data)} onCancel={() => toggleModal('update', false)}></UserForm>
+                        <UserForm initialData={selectedUser} isUsernameDisable={true} onSubmit={(data: UserData) => handleUpdateUser(data)} onCancel={() => toggleModal('update', false)} currentUserRole={userLogged.role} />
                     </ModalBody>
                 </Modal>
 

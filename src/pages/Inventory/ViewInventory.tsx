@@ -26,7 +26,7 @@ const ViewInventory = () => {
   };
 
   const columnsTable: Column<any>[] = [
-    { header: "Código", accessor: "id", isFilterable: true, type: 'text'},
+    { header: "Código", accessor: "id", isFilterable: true, type: 'text' },
     { header: "Producto", accessor: "name", isFilterable: true, type: 'text' },
     { header: 'Existencias', accessor: 'quantity', isFilterable: true, type: 'number' },
     { header: 'Precio Promedio', accessor: 'averagePrice', isFilterable: true, type: 'currency' },
@@ -71,15 +71,11 @@ const ViewInventory = () => {
     if (!configContext) return;
 
     try {
-      const response = await configContext.axiosHelper.get(
-        `${configContext.apiUrl}/reports/generate_inventory_report/AG001`,
-        { responseType: 'blob' }
-      );
+      const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/reports/generate_inventory_report/AG001`, { responseType: 'blob' });
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
-      setFileURL(url); 
-
-      toggleModal('viewPDF');
+      setFileURL(url);
+      toggleModal('viewPDF')
     } catch (error) {
       handleError(error, 'Ha ocurrido un error al generar el reporte, inténtelo más tarde.');
     }

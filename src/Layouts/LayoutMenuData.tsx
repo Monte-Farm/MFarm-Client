@@ -1,5 +1,6 @@
 import { getLoggedinUser } from "helpers/api_helper";
 import CreateOrder from "pages/Orders/CreateOrder";
+import ViewPigs from "pages/Pigs/ViewPigs";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -17,6 +18,9 @@ const Navdata = () => {
     const [isSubwarehouseIncomes, setIsSubwarehouseIncomes] = useState<boolean>(false);
     const [isSubwarehouseOutcomes, setIsSubwarehouseOutcomes] = useState<boolean>(false);
 
+    //Farm
+    const [isFarms, setIsFarms] = useState<boolean>(false);
+
     //Warehouse
     const [isIncomes, setIsIncomes] = useState<boolean>(false)
     const [isOutcomes, setIsOutcomes] = useState<boolean>(false)
@@ -30,7 +34,7 @@ const Navdata = () => {
     const [isViewSubwarehouseOutcomes, setIsViewSubwarehouseOutcomes] = useState<boolean>(false)
 
     //Suppliers
-    const [isSuppliers, setIsSupplier] = useState<boolean>(false)
+    const [isSuppliers, setIsSuppliers] = useState<boolean>(false)
     const [isViewSuppliers, setIsViewSuppliers] = useState<boolean>(false)
     const [isSuppliersConfiguration, setIsSuppliersConfiguration] = useState<boolean>(false)
 
@@ -47,6 +51,9 @@ const Navdata = () => {
     //Users
     const [isViewUsers, setIsViewUsers] = useState<boolean>(false)
     const [isUserConfiguration, setIsUserConfiguration] = useState<boolean>(false)
+
+    //Pigs
+    const [isViewPigs, setIsViewPigs] = useState<boolean>(false)
 
     const [iscurrentState, setIscurrentState] = useState('Home');
 
@@ -70,6 +77,9 @@ const Navdata = () => {
         if (iscurrentState !== 'Home') {
             setIsHome(false);
         }
+        if (iscurrentState !== 'Farms') {
+            setIsFarms(false);
+        }
         if (iscurrentState !== 'Warehouse') {
             setIsWarehouse(false)
         }
@@ -91,15 +101,17 @@ const Navdata = () => {
         if (iscurrentState !== 'SubwarehouseOutcomes') {
             setIsSubwarehouseOutcomes(false)
         }
-        if (iscurrentState !== 'Suppliers') {
-            setIsSupplier(false)
-        }
+
         if (iscurrentState !== 'PurchaseOrders') {
             setIsPurchaseOrders(false)
+        }
+        if (iscurrentState !== 'Pigs') {
+            setIsViewPigs(false)
         }
     }, [
         history,
         iscurrentState,
+        isFarms,
         isHome,
         isWarehouse,
         isOrders,
@@ -107,7 +119,8 @@ const Navdata = () => {
         isSubwarehouseInventory,
         isSubwarehouseIncomes,
         isSubwarehouseOutcomes,
-        isSuppliers
+
+        isViewPigs
     ]);
 
     const menuItems: any = [
@@ -117,10 +130,21 @@ const Navdata = () => {
             label: "Inicio",
             icon: "ri-home-2-line",
             link: "/home",
-            roles: ["Superadmin", 'Encargado de subalmacen', 'Encargado de almacen'],
+            roles: ["Superadmin", 'farm_manager', 'warehouse_manager', 'warehouse_manager'],
             click: function (e: any) {
                 e.preventDefault();
                 setIscurrentState('Home');
+            }
+        },
+        {
+            id: "farms",
+            label: "Granjas",
+            icon: "las la-warehouse",
+            link: "/farms/view_farms",
+            roles: ["Superadmin"],
+            click: function (e: any) {
+                e.preventDefault();
+                setIscurrentState('Farms');
             }
         },
         {
@@ -128,7 +152,7 @@ const Navdata = () => {
             label: "Almacén",
             icon: "ri-community-line",
             link: "/#",
-            roles: ["Superadmin", 'Encargado de almacen'],
+            roles: ['farm_manager', 'warehouse_manager'],
             click: function (e: any) {
                 e.preventDefault();
                 setIsWarehouse(!isWarehouse);
@@ -141,7 +165,7 @@ const Navdata = () => {
                     id: "inventory",
                     label: "Inventario",
                     link: "/warehouse/inventory/view_inventory",
-                    roles: ["Superadmin", 'Encargado de almacen'],
+                    roles: ['farm_manager', 'warehouse_manager'],
                     parentId: "warehouse",
                     click: function (e: any) {
                         e.preventDefault();
@@ -153,8 +177,8 @@ const Navdata = () => {
                     id: 'purchaseOrders',
                     label: 'Ordenes de Compra',
                     icon: 'ri-currency-line',
-                    link: '#',
-                    roles: ['Superadmin', 'Encargado de almacen'],
+                    link: '/#',
+                    roles: ['farm_manager', 'warehouse_manager'],
                     isChildItem: true,
                     click: function (e: any) {
                         e.preventDefault();
@@ -166,14 +190,14 @@ const Navdata = () => {
                             id: 1,
                             label: 'Crear Orden de Compra',
                             link: '/purchase_orders/create_purchase_order',
-                            roles: ['Superadmin', 'Encargado de almacen'],
+                            roles: ['warehouse_manager'],
                             parentId: 'purchaseOrders',
                         },
                         {
                             id: 2,
                             label: 'Ver Ordenes de Compra',
                             link: '/purchase_orders/view_purchase_orders',
-                            roles: ['Superadmin', 'Encargado de almacen'],
+                            roles: ['farm_manager', 'warehouse_manager'],
                             parentId: 'purchaseOrders',
                         },
                     ]
@@ -182,7 +206,7 @@ const Navdata = () => {
                     id: "incomes",
                     label: "Entradas",
                     link: "/#",
-                    roles: ["Superadmin", 'Encargado de almacen'],
+                    roles: ['farm_manager', 'warehouse_manager'],
                     parentId: "warehouse",
                     isChildItem: true,
                     click: function (e: any) {
@@ -195,21 +219,21 @@ const Navdata = () => {
                             id: 1,
                             label: "Nueva Entrada",
                             link: "/warehouse/incomes/create_income",
-                            roles: ["Superadmin", 'Encargado de almacen'],
+                            roles: ['warehouse_manager'],
                             parentId: "incomes"
                         },
                         {
                             id: 2,
                             label: "Ver Entradas",
                             link: "/warehouse/incomes/view_incomes",
-                            roles: ["Superadmin", 'Encargado de almacen'],
+                            roles: ['farm_manager', 'warehouse_manager'],
                             parentId: "incomes"
                         },
                         {
                             id: 3,
                             label: "Configuración",
                             link: "/warehouse/incomes/configuration",
-                            roles: ['Superadmin'],
+                            roles: ['farm_manager', 'warehouse_manager'],
                             parentId: "incomes"
                         }
                     ]
@@ -218,12 +242,12 @@ const Navdata = () => {
                     id: "outcomes",
                     label: "Salidas",
                     link: "/#",
-                    roles: ["Superadmin", 'Encargado de almacen'],
+                    roles: ['farm_manager', 'warehouse_manager'],
                     parentId: "warehouse",
                     isChildItem: true,
                     click: function (e: any) {
                         e.preventDefault();
-                        setIsIncomes(!isOutcomes);
+                        setIsOutcomes(!isOutcomes);
                     },
                     stateVariables: isOutcomes,
                     childItems: [
@@ -231,35 +255,35 @@ const Navdata = () => {
                             id: 1,
                             label: "Nueva Salida",
                             link: "/warehouse/outcomes/create_outcome",
-                            roles: ["Superadmin", 'Encargado de almacen'],
+                            roles: ['farm_manager', 'warehouse_manager'],
                             parentId: "outcomes"
                         },
                         {
                             id: 2,
                             label: "Ver Salidas",
                             link: "/warehouse/outcomes/view_outcomes",
-                            roles: ["Superadmin", 'Encargado de almacen'],
+                            roles: ['farm_manager', 'warehouse_manager'],
                             parentId: "outcomes"
                         },
                         {
                             id: 3,
                             label: "Configuración",
                             link: "/warehouse/outcomes/configuration",
-                            roles: ["Superadmin"],
+                            roles: ['farm_manager', 'warehouse_manager'],
                             parentId: "outcomes"
                         },
                     ]
                 },
                 {
-                    id: "suppliers",
-                    label: "Proveedores",
-                    link: "#",
-                    roles: ["Superadmin", 'Encargado de almacen'],
+                    id: 'suppliers',
+                    label: 'Proveedores',
+                    link: '/#',
+                    roles: ['farm_manager', 'warehouse_manager'],
                     parentId: "warehouse",
                     isChildItem: true,
                     click: function (e: any) {
                         e.preventDefault();
-                        setIsSupplier(!isSuppliers);
+                        setIsSuppliers(!isSuppliers);
                     },
                     stateVariables: isSuppliers,
                     childItems: [
@@ -267,15 +291,15 @@ const Navdata = () => {
                             id: 1,
                             label: 'Ver Proveedores',
                             link: '/warehouse/suppliers/view_suppliers',
-                            roles: ['Superadmin', 'Encargado de almacen'],
-                            parentId: 'suppliers'
+                            roles: ['farm_manager', 'warehouse_manager'],
+                            parentId: 'suppliers',
                         },
                         {
                             id: 2,
                             label: 'Configuración',
                             link: '/warehouse/suppliers/configuration',
-                            roles: ['Superadmin'],
-                            parentId: 'suppliers'
+                            roles: ['farm_manager', 'warehouse_manager'],
+                            parentId: 'suppliers',
                         },
                     ]
                 },
@@ -283,7 +307,7 @@ const Navdata = () => {
                     id: "products",
                     label: "Catálogo de Productos",
                     link: "#",
-                    roles: ["Superadmin"],
+                    roles: ['farm_manager'],
                     parentId: "warehouse",
                     isChildItem: true,
                     click: function (e: any) {
@@ -296,14 +320,14 @@ const Navdata = () => {
                             id: 1,
                             label: 'Ver Productos',
                             link: '/warehouse/products/product_catalog',
-                            roles: ['Superadmin'],
+                            roles: ['farm_manager', 'warehouse_manager'],
                             parentId: 'products'
                         },
                         {
                             id: 2,
                             label: 'Configuración',
                             link: '/warehouse/products/configuration',
-                            roles: ['Superadmin'],
+                            roles: ['farm_manager', 'warehouse_manager'],
                             parentId: 'products'
                         },
                     ]
@@ -315,7 +339,8 @@ const Navdata = () => {
             label: 'Subalmacén',
             icon: 'ri-building-3-line',
             link: '/subwarehouse/view_subwarehouse',
-            roles: ["Superadmin"],
+            roles: ['farm_manager', 'warehouse_manager'],
+            stateVariables: isSubwarehouse,
             click: function (e: any) {
                 e.preventDefault();
                 setIsSubwarehouse(!isSubwarehouse);
@@ -327,7 +352,7 @@ const Navdata = () => {
                     id: 'viewSubwarehouses',
                     label: 'Ver Subalmacenes',
                     link: '/subwarehouse/view_subwarehouse',
-                    roles: ['Superadmin'],
+                    roles: ['farm_manager', 'warehouse_manager'],
                     parentId: 'subwarehouse',
                     click: function (e: any) {
                         e.preventDefault();
@@ -342,7 +367,7 @@ const Navdata = () => {
             label: "Inventario",
             icon: "ri-community-line",
             link: "/subwarehouse/subwarehouse_inventory",
-            roles: ['Encargado de subalmacen'],
+            roles: ['subwarehouse_manager'],
             click: function (e: any) {
                 e.preventDefault();
                 setIscurrentState('SubwarehouseInventory');
@@ -353,7 +378,7 @@ const Navdata = () => {
             icon: "ri-inbox-archive-line",
             label: 'Entradas',
             link: '/subwarehouse/subwarehouse_incomes',
-            roles: ['Encargado de subalmacen'],
+            roles: ['subwarehouse_manager'],
             click: function (e: any) {
                 e.preventDefault();
                 setIscurrentState('SubwarehouseIncomes')
@@ -364,7 +389,7 @@ const Navdata = () => {
             icon: "ri-inbox-unarchive-line",
             label: 'Salidas',
             link: '#',
-            roles: ['Encargado de subalmacen'],
+            roles: ['subwarehouse_manager'],
             click: function (e: any) {
                 e.preventDefault();
                 setIsSubwarehouseOutcomes(!isSubwarehouseOutcomes)
@@ -376,7 +401,7 @@ const Navdata = () => {
                     id: 'createSubwarehouseOutcome',
                     label: "Nueva Salida",
                     link: "/subwarehouse/create_subwarehouse_outcome",
-                    roles: ['Encargado de subalmacen'],
+                    roles: ['subwarehouse_manager'],
                     parentId: "subwarehouseOutcomes",
                     click: function (e: any) {
                         e.preventDefault();
@@ -388,7 +413,7 @@ const Navdata = () => {
                     id: 'viewSubwarehouseOutcomes',
                     label: "Ver Salidas",
                     link: "/subwarehouse/subwarehouse_outcomes",
-                    roles: ['Encargado de subalmacen'],
+                    roles: ['subwarehouse_manager'],
                     parentId: "subwarehouseOutcomes",
                     click: function (e: any) {
                         e.preventDefault();
@@ -403,7 +428,8 @@ const Navdata = () => {
             label: 'Pedidos',
             icon: 'ri-shopping-bag-line',
             link: '/#',
-            roles: ['Encargado de subalmacen', 'Encargado de almacen'],
+            roles: ['warehouse_manager', 'subwarehouse_manager'],
+
             click: function (e: any) {
                 e.preventDefault();
                 setIsOrders(!isOrders)
@@ -415,7 +441,7 @@ const Navdata = () => {
                     id: "createOrder",
                     label: "Crear Pedido",
                     link: "/orders/create_order",
-                    roles: ['Encargado de subalmacen'],
+                    roles: ['subwarehouse_manager'],
                     parentId: "orders",
                     click: function (e: any) {
                         e.preventDefault();
@@ -427,7 +453,7 @@ const Navdata = () => {
                     id: "pendingOrders",
                     label: userLogged.role === 'Encargado de almacen' ? "Pedidos Recibidos" : "Pedidos Enviados",
                     link: "/orders/send_orders",
-                    roles: ["Encargado de subalmacen", 'Encargado de almacen'],
+                    roles: ['warehouse_manager', 'subwarehouse_manager'],
                     parentId: "orders",
 
                     click: function (e: any) {
@@ -440,7 +466,7 @@ const Navdata = () => {
                     id: "completedOrders",
                     label: 'Pedidos Completados',
                     link: "/orders/completed_orders",
-                    roles: ['Encargado de almacen'],
+                    roles: ['warehouse_manager'],
                     parentId: "orders",
 
                     click: function (e: any) {
@@ -455,8 +481,9 @@ const Navdata = () => {
             id: 'users',
             label: 'Usuarios',
             icon: ' ri-user-line',
-            link: '#',
-            roles: ["Superadmin"],
+            link: '/#',
+            roles: ["Superadmin", 'farm_manager'],
+            stateVariables: isUsers,
             click: function (e: any) {
                 e.preventDefault();
                 setIsUsers(!isUsers)
@@ -468,7 +495,7 @@ const Navdata = () => {
                     id: "viewusers",
                     label: "Ver Usuarios",
                     link: "/users/view_users",
-                    roles: ['Superadmin'],
+                    roles: ['Superadmin', 'farm_manager'],
                     parentId: "users",
                     click: function (e: any) {
                         e.preventDefault();
@@ -490,6 +517,19 @@ const Navdata = () => {
                 },
             ]
         },
+        {
+            id: 'pigs',
+            label: 'Cerdos',
+            icon: 'bx bxs-dog',
+            link: '/pigs/view_pigs',
+            roles: ['farm_manager', 'warehouse_manager',],
+            click: function (e: any) {
+                e.preventDefault();
+                setIsViewPigs(!ViewPigs)
+                setIscurrentState('Pigs')
+                updateIconSidebar(e);
+            }
+        }
     ];
     return <React.Fragment>{menuItems}</React.Fragment>;
 };

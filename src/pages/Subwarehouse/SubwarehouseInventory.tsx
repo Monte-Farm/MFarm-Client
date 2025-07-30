@@ -3,9 +3,10 @@ import BreadCrumb from "Components/Common/BreadCrumb";
 import CustomTable from "Components/Common/CustomTable";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container, Button, Card, CardHeader, CardBody, Row, Col } from "reactstrap";
+import { Container, Button, Card, CardHeader, CardBody, Row, Col, Modal, ModalBody, ModalHeader, Spinner } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Column } from "common/data/data_types";
+import PDFViewer from "Components/Common/PDFViewer";
 
 
 const SubwarehouseInventory = () => {
@@ -15,6 +16,10 @@ const SubwarehouseInventory = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [loading, setLoading] = useState<boolean>(true)
     const [subwarehouseInventory, setSubwarehouseInventory] = useState([])
+    const [loadingPDF, setLoadingPDF] = useState<boolean>(false);
+    const [pdfUrl, setPdfUrl] = useState<string>('')
+    const [modals, setModals] = useState({ viewPDF: false });
+
 
     const inventoryColumns: Column<any>[] = [
         { header: 'Código', accessor: 'id', isFilterable: true, type: 'text' },
@@ -33,6 +38,10 @@ const SubwarehouseInventory = () => {
             )
         }
     ]
+
+    const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
+        setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
+    };
 
 
     const handleError = (error: any, message: string) => {
@@ -64,23 +73,19 @@ const SubwarehouseInventory = () => {
         if (!configContext || !configContext.userLogged) return;
 
         try {
-
+            setLoadingPDF(true)
             const response = await configContext.axiosHelper.get(
                 `${configContext.apiUrl}/reports/generate_inventory_report/${configContext.userLogged.assigment}`,
                 { responseType: 'blob' }
             );
 
             const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', 'inventario.pdf');
-            document.body.appendChild(link);
-            link.click();
-
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
+            setPdfUrl(url)
+            toggleModal('viewPDF')
         } catch (error) {
             handleError(error, 'Ha ocurrido un error al generar el reporte, inténtelo más tarde.');
+        } finally {
+            setLoadingPDF(false)
         }
     };
 
@@ -123,8 +128,17 @@ const SubwarehouseInventory = () => {
                             <div className="d-flex gap-2">
                                 <h4>Inventario</h4>
 
-                                <Button className="farm-primary-button ms-auto" onClick={handlePrintInventory}>
-                                    Imprimir Inventario
+                                <Button className="farm-primary-button ms-auto" onClick={handlePrintInventory} disabled={loadingPDF}>
+                                    {loadingPDF ? (
+                                        <>
+                                            <Spinner size='sm' /> Generando
+                                        </>
+                                    ) : (
+                                        <>
+                                            <i className="ri-download-line me-2"></i>
+                                            Imprimir reporte
+                                        </>
+                                    )}
                                 </Button>
                             </div>
                         </CardHeader>
@@ -135,6 +149,13 @@ const SubwarehouseInventory = () => {
                 </div>
 
             </Container>
+
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Inventario </ModalHeader>
+                <ModalBody>
+                    {pdfUrl && <PDFViewer fileUrl={pdfUrl} />}
+                </ModalBody>
+            </Modal>
         </div>
     )
 }

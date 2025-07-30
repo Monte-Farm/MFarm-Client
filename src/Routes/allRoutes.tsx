@@ -63,6 +63,10 @@ import UserConfiguration from "pages/Users/UserConfiguration";
 import ViewPurchaseOrders from "pages/PurchaseOrders/ViewPurchaseOrders";
 import CreatePurchaseOrder from "pages/PurchaseOrders/CreatePurchaseOrder";
 import PurchaseOrderDetails from "pages/PurchaseOrders/PurchasOrderDetails";
+import ViewPigs from "pages/Pigs/ViewPigs";
+import ViewFarms from "pages/Farms/ViewFarms";
+import PigDetails from "pages/Pigs/PigDetails";
+import RegisterPig from "pages/Pigs/RegisterPig";
 
 
 
@@ -70,6 +74,10 @@ const authProtectedRoutes = [
 
   // home
   { path: "/home", component: <Home /> },
+
+  //Farms
+  { path: '/farms/view_farms', component: <ViewFarms /> },
+
 
   //Warehouse
   { path: '/warehouse/configuration', component: <WarehouseConfiguration /> },
@@ -119,9 +127,13 @@ const authProtectedRoutes = [
 
   //Purchase orders
   { path: '/purchase_orders/view_purchase_orders', component: <ViewPurchaseOrders /> },
-  { path: '/purchase_orders/create_purchase_order', component: <CreatePurchaseOrder/> },
-  { path: '/purchase_orders/purchase_order_details/:id_order', component: <PurchaseOrderDetails/> },
+  { path: '/purchase_orders/create_purchase_order', component: <CreatePurchaseOrder /> },
+  { path: '/purchase_orders/purchase_order_details/:id_order', component: <PurchaseOrderDetails /> },
 
+  //Pigs
+  { path: '/pigs/view_pigs', component: <ViewPigs /> },
+  { path: '/pigs/pig_details/:pig_id', component: <PigDetails /> },
+  { path: '/pigs/register_pig/', component: <RegisterPig /> },
 
   //Users
   { path: 'users/view_users', component: <ViewUsers /> },

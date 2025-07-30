@@ -133,15 +133,23 @@ export interface ConfigurationData {
 
 
 export interface UserData {
+    _id?: string
+    profile_image?: string
     username: string;
     password: string;
     name: string;
     lastname: string;
-    phoneNumber: string;
+    farm_assigned: string | null;
     email: string;
     role: string;
     assigment?: string | null
     status: boolean;
+    history: {
+        date: Date;
+        event: string;
+    }[];
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 
@@ -163,4 +171,54 @@ export interface Attribute {
     key: string;
     label: string;
     type?: AttributeType;
+}
+
+
+export interface PigData {
+    _id: string;
+    code: string;
+    farmId: string;
+    birthdate: Date | null;
+    breed: string;
+    origin: 'nacido' | 'comprado' | 'donado' | 'otro';
+    originDetail?: string;
+    sourceFarm?: string;
+    arrivalDate?: Date | null;
+    status: 'vivo' | 'vendido' | 'sacrificado' | 'muerto' | 'descartado';
+    currentStage: 'lechón' | 'destete' | 'engorda' | 'reproductor';
+    sex: 'macho' | 'hembra';
+    weight: number;
+    observations?: string;
+    historyChanges: PigHistoryChanges[];
+    discarded: boolean;
+    discardReason?: string | null;
+    discardDestination?: string | null;
+    discardDeathCause?: string;
+    discardResponsible?: string;
+}
+
+export interface PigHistoryChanges {
+    date: Date;
+    userId: {
+        _id: string;
+        name: string;
+        lastname: string;
+        email: string
+    };
+    action: string;
+    changes: {
+        field: string;
+        oldValue: any | null;
+        newValue: any;
+    }[];
+}
+
+export interface FarmData {
+    name: string,
+    code: string,
+    location: string,
+    status: boolean,
+    manager: string,
+    createdAt: Date,
+    updatedAt: Date,
 }

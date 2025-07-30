@@ -55,6 +55,10 @@ class APIClient {
     return axios.post(url, data);
   };
 
+  postBlob = (url: string, data: any, config?: AxiosRequestConfig): Promise<AxiosResponse> => {
+    return axios.post(url, data, config);
+};
+
    /**
    * Uploads an image
    */

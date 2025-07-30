@@ -85,7 +85,7 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ initialData, onSubm
         if (!configContext) return;
 
         try {
-            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/user/find_by_role/Encargado de subalmacen`);
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/user/find_by_role/subwarehouse_manager`);
             setUsers(response.data.data);
         } catch (error) {
             console.error('Ha ocurrido un error al obtener los usuarios');
@@ -153,7 +153,7 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ initialData, onSubm
                         <option value="">Selecciona un responsable</option>
                         {users.map((user) => (
                             <option key={user.username} value={user.username}>
-                                {user.name} {user.lastname} {/* Mostrar nombre completo */}
+                               {user.username} - {user.name} {user.lastname}
                             </option>
                         ))}
                     </Input>
@@ -181,7 +181,7 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ initialData, onSubm
                 </div>
 
                 <div className="d-flex justify-content-end mt-4 gap-2">
-                    <Button className="farm-secondary-button"onClick={() => setCancelModalOpen(true)} disabled={formik.isSubmitting}>
+                    <Button className="farm-secondary-button" onClick={() => setCancelModalOpen(true)} disabled={formik.isSubmitting}>
                         Cancelar
                     </Button>
                     <Button className='farm-primary-button' type="submit" disabled={formik.isSubmitting}>

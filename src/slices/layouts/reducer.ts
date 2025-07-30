@@ -26,11 +26,11 @@ export interface LayoutState {
   leftSidebarViewType: LEFT_SIDEBAR_VIEW_TYPES.DEFAULT | LEFT_SIDEBAR_VIEW_TYPES.DETACHED;
   leftSidebarImageType: LEFT_SIDEBAR_IMAGE_TYPES.NONE | LEFT_SIDEBAR_IMAGE_TYPES.IMG1 | LEFT_SIDEBAR_IMAGE_TYPES.IMG2 | LEFT_SIDEBAR_IMAGE_TYPES.IMG3 | LEFT_SIDEBAR_IMAGE_TYPES.IMG4;
   preloader: PERLOADER_TYPES.ENABLE | PERLOADER_TYPES.DISABLE;
-  sidebarVisibilitytype:  SIDEBAR_VISIBILITY_TYPES.SHOW | SIDEBAR_VISIBILITY_TYPES.HIDDEN;
+  sidebarVisibilitytype: SIDEBAR_VISIBILITY_TYPES.SHOW | SIDEBAR_VISIBILITY_TYPES.HIDDEN;
 }
 
 export const initialState: LayoutState = {
-  layoutType: LAYOUT_TYPES.HORIZONTAL,
+  layoutType: LAYOUT_TYPES.VERTICAL,
   layoutModeType: LAYOUT_MODE_TYPES.LIGHTMODE,
   leftSidebarType: LAYOUT_SIDEBAR_TYPES.DARK,
   layoutWidthType: LAYOUT_WIDTH_TYPES.FLUID,
@@ -47,7 +47,7 @@ const LayoutSlice = createSlice({
   name: 'LayoutSlice',
   initialState,
   reducers: {
-    changeLayoutAction(state: any, action : any) {
+    changeLayoutAction(state: any, action: any) {
       state.layoutType = action.payload;
     },
     changeLayoutModeAction(state: any, action: any) {

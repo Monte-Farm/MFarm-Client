@@ -4,44 +4,65 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { SubwarehouseData, UserData } from "common/data_interfaces";
 import { ConfigContext } from "App";
-import { APIClient } from "helpers/api_helper";
+import { getLoggedinUser } from "helpers/api_helper";
 
 interface UserFormProps {
     initialData?: UserData;
     onSubmit: (data: UserData) => Promise<void>;
     onCancel: () => void;
-    isUsernameDisable?: boolean
+    isUsernameDisable?: boolean;
+    defaultRole?: string;
+    currentUserRole: string;
 }
 
-const UserForm: React.FC<UserFormProps> = ({ initialData, onSubmit, onCancel, isUsernameDisable }) => {
+const UserForm: React.FC<UserFormProps> = ({ initialData, onSubmit, onCancel, isUsernameDisable, defaultRole, currentUserRole }) => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
     const [selectedRole, setSelectedRole] = useState<string | null>(initialData?.role || null);
     const [subwarehouses, setSubwarehouses] = useState<SubwarehouseData[] | null>(null)
     const configContext = useContext(ConfigContext);
+    const userLogged = getLoggedinUser();
+
+    const defaultRoles = [
+        { value: "Superadmin", label: "Superadmin" },
+        { value: "farm_manager", label: "Gerente de granja" },
+        { value: "warehouse_manager", label: "Encargado de almacen" },
+        { value: "subwarehouse_manager", label: "Encargado de subalmacen" },
+    ];
+
+    const filteredRoles = defaultRoles.filter((role) => {
+        if (currentUserRole === "Superadmin") {
+            return true;
+        }
+        if (currentUserRole === "farm_manager") {
+            return role.value !== "Superadmin" && role.value !== "farm_manager";
+        }
+        return role.value !== "Superadmin" && role.value !== "farm_manager";
+    });
 
     const validationSchema = Yup.object({
         username: Yup.string().required("Por favor, ingrese el número de usuario"),
         password: Yup.string().required("Por favor, ingrese la contraseña"),
         name: Yup.string().required("Por favor, ingrese el nombre"),
         lastname: Yup.string().required("Por favor, ingrese el apellido"),
-        phoneNumber: Yup.string().required("Por favor, ingrese el número de teléfono"),
-        email: Yup.string().email("Por favor, ingrese un correo electrónico válido").required("Por favor, ingrese el correo electrónico"),
+        email: Yup.string()
+            .email("Por favor, ingrese un correo electrónico válido")
+            .required("Por favor, ingrese el correo electrónico"),
         role: Yup.string().required("Por favor, seleccione un rol"),
-        assigment: selectedRole === "Encargado de subalmacen" ? Yup.string().required("Por favor, seleccione un subalmacen") : Yup.string().nullable(),
     });
 
     const formik = useFormik({
-        initialValues: initialData || {
-            username: "",
-            password: "",
-            name: "",
-            lastname: "",
-            phoneNumber: "",
-            email: "",
-            role: "",
-            assigment: null,
-            status: true,
+        initialValues: {
+            username: initialData?.username || "",
+            password: initialData?.password || "",
+            name: initialData?.name || "",
+            lastname: initialData?.lastname || "",
+            farm_assigned: initialData?.farm_assigned || null,
+            email: initialData?.email || "",
+            role: initialData?.role || defaultRole || "",
+            assigment: initialData?.assigment || null,
+            status: initialData?.status ?? true,
+            history: initialData?.history || [],
         },
         enableReinitialize: true,
         validationSchema,
@@ -50,6 +71,9 @@ const UserForm: React.FC<UserFormProps> = ({ initialData, onSubmit, onCancel, is
         onSubmit: async (values, { setSubmitting }) => {
             try {
                 setSubmitting(true);
+                if (!initialData) {
+                    values.farm_assigned = userLogged?.farm_assigned || null;
+                }
                 await onSubmit(values);
             } catch (error) {
                 console.error("Error al enviar el formulario:", error);
@@ -69,17 +93,16 @@ const UserForm: React.FC<UserFormProps> = ({ initialData, onSubmit, onCancel, is
 
     const fetchSubwarehouses = async () => {
         if (!configContext) return;
-      
+
         try {
-          const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse`);
-          const subwarehouses = response.data.data;
-          setSubwarehouses(subwarehouses.filter((obj: any) => obj.id !== 'AG001'));
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse`);
+            const subwarehouses = response.data.data;
+            setSubwarehouses(subwarehouses.filter((obj: any) => obj.id !== 'AG001'));
         } catch (error) {
-          handleError(error, 'Ha ocurrido un error al obtener los subalmacenes');
+            handleError(error, 'Ha ocurrido un error al obtener los subalmacenes');
         }
-      };
-      
-      
+    };
+
     useEffect(() => {
         fetchSubwarehouses();
     }, [])
@@ -168,24 +191,6 @@ const UserForm: React.FC<UserFormProps> = ({ initialData, onSubmit, onCancel, is
                     </div>
                 </div>
 
-                {/* Campo Número de Teléfono */}
-                <div className="mt-4">
-                    <Label htmlFor="phoneNumberInput" className="form-label">Número de Teléfono</Label>
-                    <Input
-                        type="text"
-                        id="phoneNumberInput"
-                        className="form-control"
-                        name="phoneNumber"
-                        value={formik.values.phoneNumber}
-                        onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
-                        invalid={formik.touched.phoneNumber && !!formik.errors.phoneNumber}
-                    />
-                    {formik.touched.phoneNumber && formik.errors.phoneNumber && (
-                        <FormFeedback>{formik.errors.phoneNumber}</FormFeedback>
-                    )}
-                </div>
-
                 {/* Campo Correo Electrónico */}
                 <div className="mt-4">
                     <Label htmlFor="emailInput" className="form-label">Correo Electrónico</Label>
@@ -218,11 +223,12 @@ const UserForm: React.FC<UserFormProps> = ({ initialData, onSubmit, onCancel, is
                         }}
                         onBlur={formik.handleBlur}
                         invalid={formik.touched.role && !!formik.errors.role}
+                        disabled={!!defaultRole}
                     >
                         <option value="">Seleccione un rol</option>
-                        {configContext?.configurationData?.userRoles.map((role) => (
-                            <option key={role} value={role}>
-                                {role}
+                        {filteredRoles.map((role) => (
+                            <option key={role.value} value={role.value}>
+                                {role.label}
                             </option>
                         ))}
                     </Input>
@@ -230,33 +236,6 @@ const UserForm: React.FC<UserFormProps> = ({ initialData, onSubmit, onCancel, is
                         <FormFeedback>{formik.errors.role}</FormFeedback>
                     )}
                 </div>
-
-                {/* Campo Asignación, solo si el rol es "Encargado de subalmacen" */}
-                {selectedRole === "Encargado de subalmacen" && (
-                    <div className="mt-4">
-                        <Label htmlFor="assigmentInput" className="form-label">Subalmacen Asignado</Label>
-                        <Input
-                            type="select"
-                            id="assigmentInput"
-                            name="assigment"
-                            value={formik.values.assigment || ""}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            invalid={formik.touched.assigment && !!formik.errors.assigment}
-                        >
-                            <option value="">Seleccione un subalmacen</option>
-                            {subwarehouses?.map((subwarehouse) => (
-                                <option key={subwarehouse.id} value={subwarehouse.id}>
-                                    {subwarehouse.name}
-                                </option>
-                            ))}
-                        </Input>
-                        {formik.touched.assigment && formik.errors.assigment && (
-                            <FormFeedback>{formik.errors.assigment}</FormFeedback>
-                        )}
-                    </div>
-                )}
-
 
                 {/* Botones */}
                 <div className="d-flex justify-content-end mt-4 gap-2">

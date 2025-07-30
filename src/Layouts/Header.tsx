@@ -2,21 +2,6 @@ import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Dropdown, DropdownMenu, DropdownToggle, Form } from 'reactstrap';
 
-//import images
-import logoSm from "../assets/images/logo-sm.png";
-import logoDark from "../assets/images/logo-dark.png";
-import logoLight from "../assets/images/logo-light.png";
-
-//import Components
-import SearchOption from '../Components/Common/SearchOption';
-import LanguageDropdown from '../Components/Common/LanguageDropdown';
-import WebAppsDropdown from '../Components/Common/WebAppsDropdown';
-import MyCartDropdown from '../Components/Common/MyCartDropdown';
-import FullScreenDropdown from '../Components/Common/FullScreenDropdown';
-import NotificationDropdown from '../Components/Common/NotificationDropdown';
-import ProfileDropdown from '../Components/Common/ProfileDropdown';
-import LightDark from '../Components/Common/LightDark';
-
 import { changeSidebarVisibility } from '../slices/thunks';
 import { useSelector, useDispatch } from "react-redux";
 import { createSelector } from 'reselect';
@@ -25,11 +10,13 @@ import { ConfigContext } from 'App';
 import Logout from 'Components/Common/Logout';
 import { getLoggedinUser } from 'helpers/api_helper';
 import LogoSystem from '../assets/images/logo.png'
+import { SubwarehouseData } from 'common/data_interfaces';
 
 const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
     const dispatch: any = useDispatch();
     const configContext = useContext(ConfigContext)
     const userLogged = getLoggedinUser();
+    const [assigment, setAssigment] = useState<SubwarehouseData | null>(null)
 
     const selectDashboardData = createSelector(
         (state) => state.Layout,
@@ -43,6 +30,7 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
     const toogleSearch = () => {
         setSearch(!search);
     };
+
 
     const toogleMenuBtn = () => {
         var windowSize = document.documentElement.clientWidth;
@@ -86,7 +74,7 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
                         <div className="d-flex align-items-center">
 
                             <div className="navbar-brand-box horizontal-logo">
-                                <Link to="/" className="logo logo-dark">
+                                <Link to="/home" className="logo logo-dark">
                                     <span className="logo-sm">
                                         <img src={LogoSystem} alt="" height="60" />
                                     </span>
@@ -95,7 +83,7 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
                                     </span>
                                 </Link>
 
-                                <Link to="/" className="logo logo-light">
+                                <Link to="/home" className="logo logo-light">
                                     <span className="logo-sm">
                                         <img src={LogoSystem} alt="" height="60" />
                                     </span>
@@ -105,11 +93,7 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
                                 </Link>
                             </div>
 
-                            <div className=' d-flex flex-column me-3'>
-                                <h4 className='farm-text'>{configContext?.configurationData?.farmName}</h4>
-                            </div>
-
-                            <button
+                            <button hidden
                                 onClick={toogleMenuBtn}
                                 type="button"
                                 className="btn btn-sm px-3 fs-16 header-item vertical-menu-btn topnav-hamburger"
@@ -158,10 +142,7 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
                             {/* <FullScreenDropdown /> */}
 
                             
-                            <div className='d-flex flex-column me-3'>
-                                <span className='fst-italic'>Usuario: {userLogged.name}</span>
-                                <span className='fst-italic'>Rol: {userLogged.role}</span>
-                            </div>
+                            
 
                             {/* Dark/Light Mode set */}
                             {/* <LightDark
