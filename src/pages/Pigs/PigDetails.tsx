@@ -25,8 +25,7 @@ const pigDetailsAttributes: Attribute[] = [
     { key: 'birthdate', label: 'Nacimiento', type: 'date' },
     { key: 'status', label: 'Estado', type: 'text' },
     { key: 'currentStage', label: 'Etapa', type: 'text' },
-    { key: 'sex', label: 'Sexo', type: 'text' },
-    { key: 'observations', label: 'Observaciones', type: 'text' },
+    { key: 'observations', label: 'Car. Fisicas', type: 'text' },
 ]
 
 const farmDetailsAttributes: Attribute[] = [
@@ -251,7 +250,32 @@ const PigDetails = () => {
                             </Card>
 
                             <div className="w-75">
-                                <div className="d-flex justify-content-evenly gap-2">
+                                <div>
+                                    {pigInfo?.discarded && (
+                                        <>
+                                            <Card className="mt-1">
+                                                <CardHeader>
+                                                    <h5 className="mb-0 text-danger">Información del Descarte</h5>
+                                                </CardHeader>
+                                                <CardBody className="d-flex">
+                                                    <KPIBox label="Motivo del descarte" value={pigInfo.discardReason || 'No especificado'} />
+                                                    <KPIBox label="Destino del animal" value={pigInfo.discardDestination || 'No especificado'} />
+                                                    {pigInfo.discardReason === 'muerto' && (
+                                                        <>
+                                                            <KPIBox label="Causa probable de muerte" value={pigInfo.discardDeathCause || 'No especificada'} />
+                                                            <KPIBox label="Responsable del reporte" value={`${userResponsible?.name} ${userResponsible?.lastname}` || 'No especificado'} />
+                                                        </>
+                                                    )}
+                                                </CardBody>
+
+                                            </Card>
+
+                                        </>
+
+                                    )}
+                                </div>
+
+                                <div className="d-flex justify-content-evenly gap-2 mb-3">
                                     <KPIBox label={"Raza"} value={pigInfo?.breed || 'No especificado'} />
                                     <KPIBox label={"Origen"} value={getOriginLabel(pigInfo)} />
 
@@ -274,29 +298,7 @@ const PigDetails = () => {
                                     <KPIBox label={"Sexo"} value={pigInfo?.sex === 'macho' ? 'Macho' : 'Hembra'} />
                                 </div>
 
-                                <div>
-                                    {pigInfo?.discarded && (
-                                        <>
-                                            <Card className="mt-3">
-                                                <CardHeader>
-                                                    <h5 className="mb-0 text-danger">Información del Descarte</h5>
-                                                </CardHeader>
-                                            </Card>
-                                            <div className="d-flex gap-2">
-                                                <KPIBox label="Motivo del descarte" value={pigInfo.discardReason || 'No especificado'} />
-                                                <KPIBox label="Destino del animal" value={pigInfo.discardDestination || 'No especificado'} />
 
-                                                {pigInfo.discardReason === 'muerto' && (
-                                                    <>
-                                                        <KPIBox label="Causa probable de muerte" value={pigInfo.discardDeathCause || 'No especificada'} />
-                                                        <KPIBox label="Responsable del reporte" value={`${userResponsible?.name} ${userResponsible?.lastname}` || 'No especificado'} />
-                                                    </>
-                                                )}
-                                            </div>
-                                        </>
-
-                                    )}
-                                </div>
 
                                 <div className="d-flex flex-wrap gap-2 flex-grow-1" style={{ flex: "1 1 0", minWidth: "300px" }}>
                                     <div style={{ flex: "1 1 350px", minWidth: "280px" }}>

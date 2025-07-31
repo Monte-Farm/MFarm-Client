@@ -102,6 +102,13 @@ const PigCards: React.FC<PigCardsProps> = ({
                                         <Badge className="fs-6" color={stageColors[pig.currentStage] || "info"}>
                                             {pig.currentStage}
                                         </Badge>
+
+                                        {pig.discarded && (
+                                            <Badge className="fs-6" color={"danger"}>
+                                                descartado
+                                            </Badge>
+                                        )}
+
                                     </div>
 
                                 </CardText>

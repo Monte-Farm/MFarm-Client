@@ -199,7 +199,9 @@ const ViewPigs = () => {
         { value: "vivo", label: "Vivo" },
         { value: "vendido", label: "Vendido" },
         { value: "sacrificado", label: "Sacrificado" },
-        { value: "muerto", label: "Muerto" }
+        { value: "muerto", label: "Muerto" },
+        { value: "discarded", label: "Descartado" },
+        
     ]
 
     const stageOptions = [

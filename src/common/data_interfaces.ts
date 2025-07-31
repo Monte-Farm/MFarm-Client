@@ -174,6 +174,24 @@ export interface Attribute {
 }
 
 
+export interface PigFeedingEntry {
+    category: 'alimento' | 'suplemento' | 'vitamina' | 'otro';
+    name: string;
+    dailyAmount: number;
+    unit: string;
+    observations?: string;
+}
+
+export interface PigMedicationEntry {
+    type: string;
+    name: string;
+    dose: number | '';
+    unit: string;
+    route: 'oral' | 'intramuscular' | 'subcutánea' | 'tópica' | 'intravenosa' | '';
+    applicationDate: Date | null;
+    observations?: string;
+}
+
 export interface PigData {
     _id: string;
     code: string;
@@ -195,6 +213,8 @@ export interface PigData {
     discardDestination?: string | null;
     discardDeathCause?: string;
     discardResponsible?: string;
+    initialFeedings: PigFeedingEntry[];
+    initialMedications: PigMedicationEntry[];
 }
 
 export interface PigHistoryChanges {
