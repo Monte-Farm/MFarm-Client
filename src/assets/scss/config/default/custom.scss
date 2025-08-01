@@ -123,6 +123,7 @@ span {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     overflow: hidden;
+    cursor: pointer;
 }
 
 .user-card:hover {
@@ -630,4 +631,312 @@ span {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* Variables para el tema morado */
+:root {
+    --feeding-color: #8a63f0;
+    /* Morado coqueto similar al de medicamentos */
+    --feeding-dark: #7a52e0;
+    --feeding-light: rgba(138, 99, 240, 0.1);
+}
+
+/* Estilo del item */
+.feeding-entry-item {
+    border-left: 4px solid var(--feeding-color);
+    background: linear-gradient(to right, #f8f9fa 0%, #ffffff 100%);
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.feeding-entry-item:hover {
+    background: linear-gradient(to right, #f1f3f5 0%, #ffffff 100%);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.feeding-entry-item.expanded {
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Pointer morado */
+.entry-pointer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding-left: 12px;
+}
+
+.entry-pointer i {
+    font-size: 1.4rem;
+    color: var(--feeding-color);
+    transition: transform 0.3s ease;
+}
+
+.feeding-entry-item.expanded .entry-pointer i {
+    transform: rotate(180deg);
+    color: var(--feeding-dark);
+}
+
+/* Contenido */
+.entry-content {
+    margin-left: 28px;
+}
+
+/* Header con acento morado */
+.entry-header {
+    display: flex;
+    align-items: center;
+    color: #2d3748;
+}
+
+.entry-category {
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--feeding-color);
+    letter-spacing: 0.5px;
+    background-color: var(--feeding-light);
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-right: 12px;
+}
+
+.entry-name {
+    font-size: 1.1rem;
+    color: #1a202c;
+    font-weight: 600;
+}
+
+/* Detalles */
+.entry-details {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed #e2e8f0;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.detail-item {
+    display: flex;
+    margin-bottom: 12px;
+    align-items: baseline;
+}
+
+.detail-field {
+    font-weight: 600;
+    min-width: 140px;
+    color: #4a5568;
+    position: relative;
+    padding-left: 12px;
+}
+
+.detail-field:before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    background-color: var(--feeding-color);
+    border-radius: 50%;
+}
+
+.detail-value {
+    color: #2d3748;
+    font-weight: 500;
+}
+
+/* Animación */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Efecto para pantallas pequeñas */
+@media (max-width: 768px) {
+    .detail-item {
+        flex-direction: column;
+    }
+
+    .detail-field {
+        margin-bottom: 4px;
+        padding-left: 0;
+    }
+
+    .detail-field:before {
+        display: none;
+    }
+}
+
+.medication-item {
+    border-left: 4px solid var(--medication-color, #6c5ce7);
+    background: linear-gradient(to right, #f8f9fa 0%, #ffffff 100%);
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.medication-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(to right, #f1f3f5 0%, #ffffff 100%);
+}
+
+.medication-item.expanded {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    background: #ffffff;
+}
+
+.medication-pointer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding-left: 12px;
+    transition: all 0.3s ease;
+}
+
+.medication-pointer i {
+    font-size: 1.4rem;
+    color: var(--medication-color, #6c5ce7);
+    transition: transform 0.3s ease;
+}
+
+.medication-item.expanded .medication-pointer i {
+    transform: rotate(180deg);
+    color: var(--medication-dark, #5649c0);
+}
+
+.medication-content {
+    margin-left: 28px;
+}
+
+.medication-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #2d3748;
+    gap: 15px;
+}
+
+.medication-type {
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--medication-color, #6c5ce7);
+    letter-spacing: 0.5px;
+    background-color: rgba(108, 92, 231, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.medication-name {
+    font-size: 1.1rem;
+    flex-grow: 1;
+    color: #1a202c;
+    font-weight: 600;
+}
+
+.medication-route {
+    font-size: 0.9rem;
+    color: #4a5568;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.medication-details {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed #e2e8f0;
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Animación y responsive (igual que el anterior) */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .medication-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .detail-item {
+        flex-direction: column;
+    }
+
+    .detail-field {
+        margin-bottom: 4px;
+        padding-left: 0;
+    }
+}
+
+.user-greeting-simple {
+    padding: 12px 0;
+    margin-top: 60px;
+    margin-bottom: 30px;
+}
+
+.profile-img-simple {
+    border-radius: 50%;
+    border: 2px solid #f0f0f0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.greeting-text-simple {
+    font-size: 1rem;
+    color: #555;
+    font-weight: 400;
+    margin: 0;
+}
+
+.user-name-simple {
+    font-weight: 500;
+    color: #222;
+}
+
+.user-role-simple {
+    font-size: 0.8rem;
+    color: #888;
+    text-transform: capitalize;
+    display: inline-block;
+    padding: 2px 8px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
 }

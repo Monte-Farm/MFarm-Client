@@ -1,9 +1,17 @@
 import React from "react";
-import { Badge, Button, Card, CardBody, CardImg, CardTitle, CardSubtitle, CardText } from "reactstrap";
+import {
+    Badge,
+    Button,
+    Card,
+    CardBody,
+    CardImg,
+    CardSubtitle,
+    CardText,
+} from "reactstrap";
 import { Column, ColumnType } from "common/data/data_types";
 import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
-import defaultProfile from '../../assets/images/default-profile-mage.jpg'
+import defaultProfile from '../../assets/images/default-profile-mage.jpg';
 
 interface UserCardProps<T> {
     columns: Column<T>[];
@@ -11,6 +19,7 @@ interface UserCardProps<T> {
     onDetailsClick?: (row: T) => void;
     onEditClick?: (row: T) => void;
     onDeleteClick?: (row: T) => void;
+    onCardClick?: (row: T) => void;
     imageAccessor?: keyof T;
     className?: string;
 }
@@ -21,10 +30,11 @@ const UserCards = <T extends Record<string, any>>({
     onDetailsClick,
     onEditClick,
     onDeleteClick,
+    onCardClick,
     imageAccessor,
     className = "",
 }: UserCardProps<T>) => {
-   
+
     const mainColumns = columns.filter(col => col.accessor !== 'action');
     const titleColumn = mainColumns[0] || { accessor: '', header: '' };
     const subtitleColumns = mainColumns.slice(1, 3);
@@ -35,8 +45,11 @@ const UserCards = <T extends Record<string, any>>({
             <div className="d-flex flex-wrap gap-4 p-3">
                 {data.length > 0 ? (
                     data.map((item, index) => (
-                        <Card key={index} className="user-card">
-                            {/* Imagen y botones de acción */}
+                        <Card
+                            key={index}
+                            className="user-card"
+                            onClick={() => onCardClick?.(item)}
+                        >
                             <div className="user-card-header">
                                 {imageAccessor && item[imageAccessor] ? (
                                     <CardImg
@@ -65,7 +78,10 @@ const UserCards = <T extends Record<string, any>>({
                                         <Button
                                             color="primary"
                                             size="md"
-                                            onClick={() => onDetailsClick(item)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onDetailsClick(item);
+                                            }}
                                             className="action-btn"
                                         >
                                             <i className="ri-eye-fill" />
@@ -76,7 +92,10 @@ const UserCards = <T extends Record<string, any>>({
                                         <Button
                                             color="secondary"
                                             size="md"
-                                            onClick={() => onEditClick(item)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onEditClick(item);
+                                            }}
                                             className="action-btn"
                                             disabled={item.status === false}
                                         >
@@ -88,7 +107,10 @@ const UserCards = <T extends Record<string, any>>({
                                         <Button
                                             color="danger"
                                             size="md"
-                                            onClick={() => onDeleteClick(item)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onDeleteClick(item);
+                                            }}
                                             className="action-btn"
                                             disabled={item.status === false}
                                         >
@@ -99,12 +121,10 @@ const UserCards = <T extends Record<string, any>>({
                             </div>
 
                             <CardBody>
-                                {/* Título */}
                                 <CardText className="text-truncate fs-5 fw-bold">
                                     {item[titleColumn.accessor]}
                                 </CardText>
 
-                                {/* Subtítulo */}
                                 {subtitleColumns.length > 0 && (
                                     <CardSubtitle className="mb-2 mt-2 fs-5">
                                         {subtitleColumns.map((col, i) => (
@@ -119,7 +139,6 @@ const UserCards = <T extends Record<string, any>>({
                                     </CardSubtitle>
                                 )}
 
-                                {/* Cuerpo */}
                                 {bodyColumns.length > 0 && (
                                     <CardText>
                                         {bodyColumns.map((col, i) => (

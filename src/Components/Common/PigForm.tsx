@@ -1478,7 +1478,6 @@ const PigForm: React.FC<PigFormProps> = ({ initialData, onSave, onCancel }) => {
                             </div>
                         </div>
                     </TabPane>
-
                 </TabContent>
             </form>
 

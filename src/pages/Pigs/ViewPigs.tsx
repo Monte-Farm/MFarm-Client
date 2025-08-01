@@ -200,7 +200,7 @@ const ViewPigs = () => {
         { value: "vendido", label: "Vendido" },
         { value: "sacrificado", label: "Sacrificado" },
         { value: "muerto", label: "Muerto" },
-        { value: "discarded", label: "Descartado" },
+        { value: "descartado", label: "Descartado" },
         
     ]
 

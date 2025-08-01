@@ -11,6 +11,7 @@ import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Column } from "common/data/data_types"
 import UserCards from "Components/Common/UserCards"
 import { roleLabels } from "common/role_labels"
+import { useNavigate } from "react-router-dom"
 
 const userAttributes: Attribute[] = [
     { key: 'username', label: 'Usuario', type: 'text' },
@@ -33,6 +34,7 @@ const ViewUsers = () => {
     const [modals, setModals] = useState({ details: false, create: false, update: false, delete: false });
     const [loading, setLoading] = useState<boolean>(true)
     const [searchTerm, setSearchTerm] = useState('');
+    const navigate = useNavigate();
 
     const columns: Column<any>[] = [
         { header: 'Usuario', accessor: 'username', isFilterable: true, type: 'text' },
@@ -95,9 +97,10 @@ const ViewUsers = () => {
                 response = await configContext.axiosHelper.get(`${configContext.apiUrl}/user`)
                 users = response.data.data;
                 setUsers(
-                    users.filter(function (obj: any) {
-                        return obj.username !== userLogged.username && obj.role !== 'Superadmin';
-                    })
+                    users
+                    // users.filter(function (obj: any) {
+                    //     return obj.username !== userLogged.username && obj.role !== 'Superadmin';
+                    // })
                 );
             }
 
@@ -196,7 +199,7 @@ const ViewUsers = () => {
 
                             <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')} style={{ width: '200px' }}>
                                 <i className="ri-add-line me-3" />
-                                Agregar Usuario
+                                Registrar Usuario
                             </Button>
                         </div>
                     </CardHeader>
@@ -204,10 +207,12 @@ const ViewUsers = () => {
                         <UserCards
                             columns={columns}
                             data={filteredUsers}
-                            onDetailsClick={(user) => handleClicModal('details', user)}
+                            onDetailsClick={(user) => navigate(`/users/user_details/${user._id}`)}
+                            onCardClick={(user) => navigate(`/users/user_details/${user._id}`)}
                             onEditClick={(user) => handleClicModal('update', user)}
                             onDeleteClick={(user) => handleClicModal('delete', user)}
                             imageAccessor="profileImage"
+
                         />
                     </CardBody>
                 </Card>

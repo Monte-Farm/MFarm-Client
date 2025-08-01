@@ -67,6 +67,7 @@ import ViewPigs from "pages/Pigs/ViewPigs";
 import ViewFarms from "pages/Farms/ViewFarms";
 import PigDetails from "pages/Pigs/PigDetails";
 import RegisterPig from "pages/Pigs/RegisterPig";
+import UserDetails from "pages/Users/UserDetails";
 
 
 
@@ -138,6 +139,7 @@ const authProtectedRoutes = [
   //Users
   { path: 'users/view_users', component: <ViewUsers /> },
   { path: 'users/configuration', component: <UserConfiguration /> },
+  { path: 'users/user_details/:id_user', component: <UserDetails /> },
 
   //User Profile
   { path: "/profile", component: <UserProfile /> },

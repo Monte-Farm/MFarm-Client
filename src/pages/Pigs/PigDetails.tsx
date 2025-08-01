@@ -19,6 +19,8 @@ import PigEditForm from "Components/Common/PigEditForm";
 import HistoryFlagItem from "Components/Common/HistoryFlagItem";
 import SimpleBar from "simplebar-react";
 import PDFViewer from "Components/Common/PDFViewer";
+import FeedingEntryItem from "Components/Common/FeedingEntryItem";
+import InitialMedicationsItem from "Components/Common/InitialMedicationsItem";
 
 const pigDetailsAttributes: Attribute[] = [
     { key: 'code', label: 'Codigo', type: 'text' },
@@ -42,7 +44,6 @@ const PigDetails = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [pigInfo, setPigInfo] = useState<PigData | null>(null)
     const [pigHistory, setPigHistory] = useState<PigHistoryChanges[]>([])
-    const [farmInfo, setFarmInfo] = useState<FarmData | null>(null)
     const [activeTab, setActiveTab] = useState<string>('1');
     const [modals, setModals] = useState({ update: false, viewPDF: false });
     const [fileURL, setFileURL] = useState<string>('')
@@ -82,7 +83,6 @@ const PigDetails = () => {
 
             const pig = detailsRes.data.data;
             setPigInfo(pig);
-            setFarmInfo(pig.farmId);
             setPigHistory(historyRes.data.data);
 
             if (pig.discarded && pig.discardReason === 'muerto') {
@@ -276,6 +276,17 @@ const PigDetails = () => {
                                 </div>
 
                                 <div className="d-flex justify-content-evenly gap-2 mb-3">
+                                    <KPIBox
+                                        label="Edad (días)"
+                                        value={
+                                            pigInfo?.birthdate
+                                                ? (() => {
+                                                    const days = Math.floor((Date.now() - new Date(pigInfo.birthdate).getTime()) / (1000 * 60 * 60 * 24));
+                                                    return days === 0 ? 'Nacido hoy' : `${days}`;
+                                                })()
+                                                : 'N/D'
+                                        }
+                                    />
                                     <KPIBox label={"Raza"} value={pigInfo?.breed || 'No especificado'} />
                                     <KPIBox label={"Origen"} value={getOriginLabel(pigInfo)} />
 
@@ -305,7 +316,16 @@ const PigDetails = () => {
                                         <Card style={{ minHeight: '300px' }}>
                                             <CardHeader><h4>Peso</h4></CardHeader>
                                             <CardBody>
-                                                <LineChart series={[]} categories={[]} title={""} />
+                                                <LineChart
+                                                    title="Progreso de peso"
+                                                    categories={['Actual']}
+                                                    series={[
+                                                        {
+                                                            name: 'Peso (kg)',
+                                                            data: [typeof pigInfo?.weight === 'number' ? pigInfo.weight : 0],
+                                                        },
+                                                    ]}
+                                                />
                                             </CardBody>
                                         </Card>
                                     </div>
@@ -334,11 +354,98 @@ const PigDetails = () => {
                     </TabPane>
 
                     <TabPane tabId="2" id="feeding-info-tab">
-                        <p>Contenido de la pestaña 2</p>
+                        <div className="mt-3">
+                            <div className="row">
+                                <div className="col-md-4">
+                                    <Card style={{ minHeight: "calc(100vh - 320px)" }} className="feeding-card">
+                                        <CardHeader className="feeding-header">
+                                            <h5 className="mb-0">
+                                                <i className="ri-restaurant-line me-2"></i>Alimentación Inicial
+                                            </h5>
+                                        </CardHeader>
+                                        <CardBody>
+                                            {pigInfo?.initialFeedings?.length ? (
+                                                pigInfo.initialFeedings.map((entry, idx) => (
+                                                    <FeedingEntryItem key={`feed-${idx}`} entry={entry} />
+                                                ))
+                                            ) : (
+                                                <div className="text-center feeding-placeholder">
+                                                    <i className="ri-fridge-line fs-1"></i>
+                                                    <p className="text-muted mt-2">Sin registros de alimentación inicial</p>
+                                                </div>
+                                            )}
+                                        </CardBody>
+                                    </Card>
+                                </div>
+
+                                <div className="col-md-8">
+                                    <Card style={{ minHeight: "calc(100vh - 320px)" }} className="feeding-history-card">
+                                        <CardHeader className="d-flex justify-content-between align-items-center feeding-header">
+                                            <h5 className="mb-0">
+                                                <i className="ri-history-line me-2"></i>Historial de Alimentación
+                                            </h5>
+                                            <Button color="feeding" size="sm" className="feeding-btn">
+                                                <i className="ri-add-line me-1"></i> Nueva Alimentación
+                                            </Button>
+                                        </CardHeader>
+                                        <CardBody className="d-flex align-items-center justify-content-center">
+                                            <div className="text-center feeding-placeholder">
+                                                <i className="ri-calendar-todo-line fs-1"></i>
+                                                <p className="text-muted mt-3">Registra el primer consumo diario</p>
+                                                <Button color="outline-feeding" size="sm" className="mt-3">
+                                                    <i className="ri-pencil-line me-1"></i> Comenzar registro
+                                                </Button>
+                                            </div>
+                                        </CardBody>
+                                    </Card>
+                                </div>
+                            </div>
+                        </div>
                     </TabPane>
 
                     <TabPane tabId="3" id="medical-info-tab">
-                        <p>Contenido de la pestaña 3</p>
+                        <div className="mt-3">
+                            <div className="row">
+                                <div className="col-md-4">
+                                    <Card style={{ minHeight: "calc(100vh - 320px)" }}>
+                                        <CardHeader>
+                                            <h5 className="mb-0">Medicamentos Iniciales</h5>
+                                        </CardHeader>
+                                        <CardBody>
+                                            {pigInfo?.initialMedications?.length ? (
+                                                pigInfo.initialMedications.map((medication, idx) => (
+                                                    <InitialMedicationsItem key={`med-${idx}`} medication={medication} />
+                                                ))
+                                            ) : (
+                                                <div className="text-muted text-center">Sin registros de medicamentos iniciales.</div>
+                                            )}
+                                        </CardBody>
+                                    </Card>
+                                </div>
+
+                                <div className="col-md-8">
+                                    <Card style={{ minHeight: "calc(100vh - 320px)" }}>
+                                        <CardHeader>
+                                            <div className="d-flex justify-content-between align-items-center">
+                                                <h5 className="mb-0">Historial Médico</h5>
+                                                <Button color="primary" size="sm">
+                                                    <i className="ri-add-line me-1"></i> Nuevo Registro
+                                                </Button>
+                                            </div>
+                                        </CardHeader>
+                                        <CardBody className="text-muted d-flex align-items-center justify-content-center">
+                                            <div className="text-center">
+                                                <i className="ri-hospital-line fs-1 text-muted mb-3"></i>
+                                                <p className="mb-0">Módulo de historial médico aún no implementado.</p>
+                                                <Button color="outline-primary" size="sm" className="mt-3">
+                                                    Agregar primer registro
+                                                </Button>
+                                            </div>
+                                        </CardBody>
+                                    </Card>
+                                </div>
+                            </div>
+                        </div>
                     </TabPane>
 
                     <TabPane tabId="4" id="reproduction-info-tab">

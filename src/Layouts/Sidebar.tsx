@@ -2,17 +2,26 @@ import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import SimpleBar from "simplebar-react";
 //import logo
-import logoSm from "../assets/images/logo-sm.png";
-import logoDark from "../assets/images/logo-dark.png";
-import logoLight from "../assets/images/logo-light.png";
+import defaultProfileImage from '../assets/images/default-profile-mage.jpg'
 
 //Import Components
 import VerticalLayout from "./VerticalLayouts";
 import TwoColumnLayout from "./TwoColumnLayout";
 import { Container } from "reactstrap";
 import HorizontalLayout from "./HorizontalLayout";
+import { getLoggedinUser } from "helpers/api_helper";
 
-const Sidebar = ({ layoutType } : any) => {
+const Sidebar = ({ layoutType }: any) => {
+  const userLogged = getLoggedinUser();
+
+  const roleLabels: Record<string, string> = {
+    'superadmin': 'Superadministrador',
+    'farm_manager': 'Gerente de granja',
+    'warehouse_manager': 'Encargado de almacén',
+    'subwarehouse_manager': 'Encargado de subalmacén',
+  };
+
+  const displayRole = roleLabels[userLogged.role] || userLogged.role;
 
   useEffect(() => {
     var verticalOverlay = document.getElementsByClassName("vertical-overlay");
@@ -38,23 +47,25 @@ const Sidebar = ({ layoutType } : any) => {
     <React.Fragment>
       <div className="app-menu navbar-menu">
         <div className="navbar-brand-box mt-5 mb-3">
-          <Link to="/" className="logo logo-dark">
-            <span className="logo-sm">
-              <img src={logoSm} alt="" height="22" />
-            </span>
-            <span className="logo-lg">
-              <img src={logoDark} alt="" height="17" />
-            </span>
-          </Link>
 
-          <Link to="/" className="logo logo-light">
-            <span className="logo-sm">
-              <img src={logoSm} alt="" height="22" />
-            </span>
-            <span className="logo-lg">
-              <img src={logoLight} alt="" height="17" />
-            </span>
-          </Link>
+          <div className="user-greeting-simple">
+            <div className="d-flex align-items-center gap-3">
+              <img
+                src={defaultProfileImage}
+                alt="Foto de perfil"
+                className="profile-img-simple"
+                width="52"
+                height="52"
+              />
+              <div>
+                <p className="greeting-text-simple mb-1">
+                  Hola, <span className="user-name-simple">{userLogged.name}</span>
+                </p>
+                <span className="user-role-simple">{displayRole}</span>
+              </div>
+            </div>
+          </div>
+
           <button
             onClick={addEventListenerOnSmHoverMenu}
             type="button"
