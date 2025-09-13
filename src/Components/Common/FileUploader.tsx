@@ -11,15 +11,17 @@ registerPlugin(FilePondPluginImagePreview, FilePondPluginFileValidateType);
 interface FileUploaderProps {
   acceptedFileTypes?: string[];
   onFileUpload?: (file: File) => void;
-  maxFiles?: number
-  imageSrc?: string
+  maxFiles?: number;
+  imageSrc?: string;
+  onUpdateFiles?: (files: File[]) => void;  // <-- nuevo prop
 }
 
 const FileUploader: React.FC<FileUploaderProps> = ({
   acceptedFileTypes = ['image/*'],
   onFileUpload,
   maxFiles,
-  imageSrc
+  imageSrc,
+  onUpdateFiles,  // <-- nuevo prop
 }) => {
   const [files, setFiles] = useState<File[]>([]);
 
@@ -28,7 +30,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
       await onFileUpload(file);
     }
   };
-  
+
   return (
     <div className="file-uploader">
       <FilePond
@@ -36,13 +38,13 @@ const FileUploader: React.FC<FileUploaderProps> = ({
         onupdatefiles={(fileItems) => {
           const updatedFiles = fileItems.map((fileItem) => fileItem.file as File);
           setFiles(updatedFiles);
+          if (onUpdateFiles) onUpdateFiles(updatedFiles);  // dispara callback externo
         }}
         onaddfile={(error, fileItem) => {
           if (error) {
             console.error('Error al agregar archivo:', error);
             return;
           }
-
           const file = fileItem.file as File;
           handleFileUpload(file);
         }}
@@ -51,9 +53,9 @@ const FileUploader: React.FC<FileUploaderProps> = ({
         name="files"
         acceptedFileTypes={acceptedFileTypes}
         labelIdle='Arrastra tus archivos o haz clic aqui'
-      >
-      </FilePond>
+      />
     </div>
   );
-};  
+};
+
 export default FileUploader;

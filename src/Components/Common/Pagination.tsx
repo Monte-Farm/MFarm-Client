@@ -48,6 +48,7 @@ const Pagination: React.FC<PaginationProps> = ({
           {/* Botón "Previous" */}
           <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
             <button
+              type="button"
               className="page-link farm-primary-button"
               onClick={handlePrevPage}
               disabled={currentPage === 1}
@@ -60,6 +61,7 @@ const Pagination: React.FC<PaginationProps> = ({
           {pageNumbers.map((num) => (
             <li key={num} className={`page-item ${currentPage === num ? "active" : ""}`}>
               <button
+                type="button"
                 className="page-link farm-secondary-button"
                 onClick={() => setCurrentPage(num)}
               >
@@ -71,6 +73,7 @@ const Pagination: React.FC<PaginationProps> = ({
           {/* Botón "Next" */}
           <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
             <button
+              type="button"
               className="page-link farm-primary-button"
               onClick={handleNextPage}
               disabled={currentPage === totalPages}

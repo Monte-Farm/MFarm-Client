@@ -11,9 +11,8 @@ interface AreaChartProps {
 const AreaChart: React.FC<AreaChartProps> = ({ series, categories, title }) => {
   const options = {
     chart: { type: "area", toolbar: { show: false } },
-    dataLabels: { enabled: false },
+    dataLabels: { enabled: true },
     stroke: { curve: "smooth" },
-    colors: ["#6B8E23"],
     title: {
       text: title,
       align: "left",

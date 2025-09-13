@@ -1,4 +1,5 @@
 import { getLoggedinUser } from "helpers/api_helper";
+import ViewGroups from "pages/Groups/ViewGroups";
 import CreateOrder from "pages/Orders/CreateOrder";
 import ViewPigs from "pages/Pigs/ViewPigs";
 import React, { useEffect, useState } from "react";
@@ -53,7 +54,17 @@ const Navdata = () => {
     const [isUserConfiguration, setIsUserConfiguration] = useState<boolean>(false)
 
     //Pigs
+    const [isPigs, setIsPigs] = useState<boolean>(false)
     const [isViewPigs, setIsViewPigs] = useState<boolean>(false)
+
+    //Groups
+    const [isViewGroups, setIsViewGroups] = useState<boolean>(false)
+
+    //Reproduction
+    const [isReproduction, setIsReproduction] = useState<boolean>(false)
+    const [isLaboratory, setIsLaboratory] = useState<boolean>(false)
+    const [isExtraction, setIsExtraction] = useState<boolean>(false)
+    const [isGestation, setIsGestation] = useState<boolean>(false)
 
     const [iscurrentState, setIscurrentState] = useState('Home');
 
@@ -106,7 +117,10 @@ const Navdata = () => {
             setIsPurchaseOrders(false)
         }
         if (iscurrentState !== 'Pigs') {
-            setIsViewPigs(false)
+            setIsPigs(false)
+        }
+        if (iscurrentState !== 'Reproduction') {
+            setIsReproduction(false)
         }
     }, [
         history,
@@ -119,8 +133,8 @@ const Navdata = () => {
         isSubwarehouseInventory,
         isSubwarehouseIncomes,
         isSubwarehouseOutcomes,
-
-        isViewPigs
+        isPigs,
+        isReproduction,
     ]);
 
     const menuItems: any = [
@@ -481,7 +495,7 @@ const Navdata = () => {
             id: 'users',
             label: 'Usuarios',
             icon: ' ri-user-line',
-            link: '/#',
+            link: "/users/view_users",
             roles: ["Superadmin", 'farm_manager'],
             stateVariables: isUsers,
             click: function (e: any) {
@@ -490,45 +504,120 @@ const Navdata = () => {
                 setIscurrentState('Users');
                 updateIconSidebar(e);
             },
-            subItems: [
-                {
-                    id: "viewusers",
-                    label: "Ver Usuarios",
-                    link: "/users/view_users",
-                    roles: ['Superadmin', 'farm_manager'],
-                    parentId: "users",
-                    click: function (e: any) {
-                        e.preventDefault();
-                        setIsViewUsers(!isViewUsers)
-                    },
-                    stateVariables: isViewUsers,
-                },
-                {
-                    id: "userConfiguration",
-                    label: "Configuración",
-                    link: "/users/configuration",
-                    roles: ['Superadmin'],
-                    parentId: "users",
-                    click: function (e: any) {
-                        e.preventDefault();
-                        setIsUserConfiguration(!isUserConfiguration)
-                    },
-                    stateVariables: isUserConfiguration,
-                },
-            ]
         },
         {
             id: 'pigs',
             label: 'Cerdos',
             icon: 'bx bxs-dog',
-            link: '/pigs/view_pigs',
+            link: '/#',
             roles: ['farm_manager', 'warehouse_manager',],
             click: function (e: any) {
                 e.preventDefault();
-                setIsViewPigs(!ViewPigs)
                 setIscurrentState('Pigs')
+                setIsPigs(!isPigs)
                 updateIconSidebar(e);
-            }
+            },
+            stateVariables: isPigs,
+            subItems: [
+                {
+                    id: "viewPigs",
+                    label: "Cerdos",
+                    link: "/pigs/view_pigs",
+                    roles: ['farm_manager', 'warehouse_manager',],
+                    parentId: "pigs",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsViewPigs(!isViewPigs)
+                    },
+                    stateVariables: isViewPigs,
+                },
+                {
+                    id: "viewGroups",
+                    label: "Grupos",
+                    link: "/groups/view_groups",
+                    roles: ['farm_manager', 'warehouse_manager',],
+                    parentId: "pigs",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsViewGroups(!isViewGroups)
+                    },
+                    stateVariables: isViewGroups,
+                }
+            ]
+        },
+        {
+            id: 'reproduction',
+            label: 'Reproducción',
+            icon: 'bx bx-heart',
+            link: '/#',
+            roles: ['farm_manager', 'warehouse_manager',],
+            click: function (e: any) {
+                e.preventDefault();
+                setIscurrentState('Reproduction')
+                setIsReproduction(!isReproduction)
+                updateIconSidebar(e);
+            },
+            stateVariables: isReproduction,
+            subItems: [
+                {
+                    id: "laboratory",
+                    label: "Laboratorio",
+                    link: "/#",
+                    roles: ['farm_manager', 'warehouse_manager',],
+                    parentId: "reproduction",
+                    isChildItem: true,
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsLaboratory(!isLaboratory)
+                    },
+                    stateVariables: isLaboratory,
+                    childItems: [
+                        {
+                            id: 1,
+                            label: "Extracciones",
+                            link: "/laboratory/extractions/view_extractions",
+                            roles: ['farm_manager'],
+                            parentId: "laboratory"
+                        },
+                        {
+                            id: 2,
+                            label: "Genética líquida",
+                            link: "/laboratory/samples/view_samples",
+                            roles: ['farm_manager'],
+                            parentId: "laboratory"
+                        },
+                    ]
+                },
+                {
+                    id: "gestation",
+                    label: "Gestación",
+                    link: "/#",
+                    roles: ['farm_manager',],
+                    parentId: "reproduction",
+                    isChildItem: true,
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsGestation(!isGestation)
+                    },
+                    stateVariables: isGestation,
+                    childItems: [
+                        {
+                            id: 1,
+                            label: "Inseminaciones",
+                            link: "/gestation/view_inseminations",
+                            roles: ['farm_manager'],
+                            parentId: "laboratory"
+                        },
+                        {
+                            id: 2,
+                            label: "Embarazos",
+                            link: "/gestation/view_pregnancies",
+                            roles: ['farm_manager'],
+                            parentId: "laboratory"
+                        },
+                    ]
+                },
+            ]
         }
     ];
     return <React.Fragment>{menuItems}</React.Fragment>;

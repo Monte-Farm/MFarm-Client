@@ -9,16 +9,32 @@ File: Custom Css File
 
 //Nav-bar and page css
 #page-topbar {
-    background-color: #2F4F4F !important;
-    border-bottom: 1px solid #2F4F4F !important;
+    // background-color: #2F4F4F !important;
+    // border-bottom: 1px solid #2F4F4F !important;
 }
 
 .navbar-menu {
-    background-color: #6B8E23 !important; // Para la barra lateral (si aplica)
+    background-color: #6B8E23 !important; 
 }
 
 .page-content {
-    background-color: #F5F5DC;
+    // background-color: #F5F5DC;
+}
+
+i {
+    color: #FDFDFD;
+}
+
+html {
+    // background-color: #F5F5DC;
+}
+
+span {
+    color: #FDFDFD;
+}
+
+.farm-text {
+    color: #FDFDFD;
 }
 
 
@@ -98,21 +114,7 @@ File: Custom Css File
 }
 
 
-i {
-    color: #FDFDFD;
-}
 
-html {
-    background-color: #F5F5DC;
-}
-
-span {
-    color: #FDFDFD;
-}
-
-.farm-text {
-    color: #FDFDFD;
-}
 
 
 /* UserCards.css */
@@ -234,7 +236,7 @@ span {
 
 .farm-card-header {
     position: relative;
-    height: 100px;
+    height: 150px;
     background-color: #A3C293;
     /* color temático */
     display: flex;
@@ -242,6 +244,12 @@ span {
     justify-content: center;
     color: #FDFDFD;
     font-weight: 600;
+    font-size: 1.2rem;
+}
+
+.farm-card-title {
+    /* color temático */
+    font-weight: 100;
     font-size: 1.2rem;
 }
 

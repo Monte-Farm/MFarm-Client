@@ -7,16 +7,18 @@ import { useContext, useEffect, useState, useMemo } from "react";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Input, Modal, ModalBody, ModalHeader } from "reactstrap";
 import FarmCards from "Components/Common/FarmCards";
 import LoadingGif from '../../assets/images/loading-gif.gif'
+import { useNavigate } from "react-router-dom";
 
 const ViewFarms = () => {
     document.title = 'Granjas | System Pig'
     const configContext = useContext(ConfigContext);
-    const [loading, setLoading] = useState<boolean>(true)
-
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState<boolean>(true);
     const [farms, setFarms] = useState<FarmData[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [modals, setModals] = useState({ details: false, create: false, update: false, delete: false });
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
+    const [selectedFarm, setSelectedFarm] = useState<FarmData | null>(null);
 
     const farmColumns: Column<FarmData>[] = [
         { accessor: "name", header: "Nombre" },
@@ -101,7 +103,11 @@ const ViewFarms = () => {
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="fs-5"
                             />
-                            <Button className="ms-auto farm-primary-button fs-5" onClick={() => toggleModal('create')} style={{width: '200px'}}>
+                            <Button
+                                className="ms-auto farm-primary-button fs-5"
+                                onClick={() => toggleModal('create')}
+                                style={{ width: '200px' }}
+                            >
                                 <i className="ri-add-line me-3" />
                                 Nueva granja
                             </Button>
@@ -112,16 +118,21 @@ const ViewFarms = () => {
                         <FarmCards
                             columns={farmColumns}
                             data={filteredFarms}
-                            onDetailsClick={(farm) => console.log("Detalles:", farm)}
-                            onEditClick={(farm) => console.log("Editar:", farm)}
-                            onDeleteClick={(farm) => console.log("Eliminar:", farm)}
+                            onDetailsClick={(farm) => navigate(`/farms/farm_details/${farm._id}`)}
+                            onEditClick={(farm) => {
+                                setSelectedFarm(farm);
+                                toggleModal('update', true);
+                            }}
+                            onCardClick={(farm) => navigate(`/farms/farm_details/${farm._id}`)}
+                            imageAccessor="image"
                         />
                     </CardBody>
                 </Card>
             </Container>
 
+            {/* Modal Crear */}
             <Modal isOpen={modals.create} toggle={() => toggleModal('create')} size="xl" keyboard={false} backdrop='static' centered>
-                <ModalHeader toggle={() => toggleModal('create')}>Nuevo Granja</ModalHeader>
+                <ModalHeader toggle={() => toggleModal('create')}>Nueva Granja</ModalHeader>
                 <ModalBody>
                     <FarmForm
                         onSave={() => {
@@ -129,9 +140,27 @@ const ViewFarms = () => {
                             fetchFarms();
                             showAlert('success', 'Granja creada correctamente');
                         }}
-                        onCancel={() =>
-                            toggleModal('create')
-                        }
+                        onCancel={() => toggleModal('create')}
+                    />
+                </ModalBody>
+            </Modal>
+
+            {/* Modal Editar */}
+            <Modal isOpen={modals.update} toggle={() => toggleModal('update')} size="xl" keyboard={false} backdrop='static' centered>
+                <ModalHeader toggle={() => toggleModal('update')}>Editar Granja</ModalHeader>
+                <ModalBody>
+                    <FarmForm
+                        data={selectedFarm || undefined}
+                        onSave={() => {
+                            toggleModal('update');
+                            fetchFarms();
+                            showAlert('success', 'Granja actualizada correctamente');
+                            setSelectedFarm(null);
+                        }}
+                        onCancel={() => {
+                            toggleModal('update');
+                            setSelectedFarm(null);
+                        }}
                     />
                 </ModalBody>
             </Modal>
@@ -142,7 +171,7 @@ const ViewFarms = () => {
                 </Alert>
             )}
         </div>
-    )
+    );
 }
 
 export default ViewFarms;

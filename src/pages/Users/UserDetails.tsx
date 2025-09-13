@@ -114,10 +114,10 @@ const UserDetails = () => {
                     </Button>
 
                     <Button className="farm-secondary-button ms-auto" onClick={() => toggleModal("delete")} disabled={!userDetails?.status}>
-                        <i className="ri-delete-bin-line me-3"></i>Desactivar Proveedor
+                        <i className="ri-delete-bin-line me-3"></i>Desactivar usuario
                     </Button>
                     <Button className="farm-primary-button" onClick={() => toggleModal("update")}>
-                        <i className="ri-pencil-line me-3"></i>Modificar Proveedor
+                        <i className="ri-pencil-line me-3"></i>Modificar usuario
                     </Button>
                 </div>
 
@@ -128,7 +128,7 @@ const UserDetails = () => {
                                 <h4>Información del usuario</h4>
                             </CardHeader>
                             <CardBody>
-                                <ObjectDetails attributes={userAttributes} object={userDetails || {}} showImage={true} imageSrc={defaultImageProfila}></ObjectDetails>
+                                <ObjectDetails attributes={userAttributes} object={userDetails || {}} showImage={true} imageSrc={userDetails?.profile_image ||defaultImageProfila}></ObjectDetails>
                             </CardBody>
                         </Card>
                     </Col>

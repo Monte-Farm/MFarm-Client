@@ -1,116 +1,102 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'reactstrap';
-import { createSelector } from 'reselect';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
 import { useSelector } from 'react-redux';
+import defaultProfileImage from '../../assets/images/default-profile-mage.jpg';
+import { getLoggedinUser } from 'helpers/api_helper';
 
-//import images
-import avatar1 from "../../assets/images/users/avatar-1.jpg";
+const roleMap: Record<string, string> = {
+    farm_manager: 'Gerente de Granja',
+    // Puedes agregar más roles aquí en el futuro
+};
 
 const ProfileDropdown = () => {
-
-    const profiledropdownData = createSelector(
-        (state: any) => state.Profile,
-        (user) => user.user
-    );
-    // Inside your component
-    const user = useSelector(profiledropdownData);
-
-    const [userName, setUserName] = useState("Admin");
-
-    useEffect(() => {
-        const authUser = sessionStorage.getItem("authUser");
-        if (authUser) {
-            const obj = JSON.parse(authUser);
-            setUserName(
-                process.env.REACT_APP_DEFAULTAUTH === "fake"
-                    ? obj.username === undefined
-                        ? user.first_name || obj.data.first_name
-                        : "Admin"
-                    : process.env.REACT_APP_DEFAULTAUTH === "firebase"
-                        ? obj.email || "Admin"
-                        : "Admin"
-            );
-        }
-    }, [userName, user]);
-
-    //Dropdown Toggle
+    const navigate = useNavigate();
+    const userLogged = getLoggedinUser();
     const [isProfileDropdown, setIsProfileDropdown] = useState(false);
-    const toggleProfileDropdown = () => {
-        setIsProfileDropdown(!isProfileDropdown);
+    const toggleProfileDropdown = () => setIsProfileDropdown(!isProfileDropdown);
+    const friendlyRole = roleMap[userLogged.role] || userLogged.role;
+    const [modals, setModals] = useState({ logout: false });
+
+    const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
+        setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
+
+
+    const clicLogout = () => {
+        navigate('/login')
+        sessionStorage.removeItem('authUser')
+    }
+
     return (
-        <React.Fragment>
+        <>
+
             <Dropdown isOpen={isProfileDropdown} toggle={toggleProfileDropdown} className="ms-sm-3 header-item topbar-user">
                 <DropdownToggle tag="button" type="button" className="btn">
                     <span className="d-flex align-items-center">
-                        <img className="rounded-circle header-profile-user" src={avatar1}
-                            alt="Header Avatar" />
+                        <img className="rounded-circle header-profile-user" src={userLogged.profile_image || defaultProfileImage} alt="Header Avatar" />
                         <span className="text-start ms-xl-2">
-                            <span className="d-none d-xl-inline-block ms-1 fw-medium user-name-text"> {userName || "Admin"}</span>
-                            <span className="d-none d-xl-block ms-1 fs-12 text-muted user-name-sub-text">Founder</span>
+                            <span className="d-none d-xl-inline-block ms-1 fw-medium user-name-text">
+                                {userLogged.name} {userLogged.lastname}
+                            </span>
+                            <span className="d-none d-xl-block ms-1 fs-12 text-muted user-name-sub-text">
+                                {friendlyRole}
+                            </span>
                         </span>
                     </span>
                 </DropdownToggle>
+
                 <DropdownMenu className="dropdown-menu-end">
-                    <h6 className="dropdown-header">Welcome {userName}!</h6>
                     <DropdownItem className='p-0'>
                         <Link to="/profile" className="dropdown-item">
                             <i className="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i>
-                            <span className="align-middle">Profile</span>
+                            <span className="align-middle text-black">Perfil</span>
                         </Link>
                     </DropdownItem>
-                    <DropdownItem className='p-0'>
-                        <Link to="/apps-chat" className="dropdown-item">
-                            <i className="mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i> <span
-                                className="align-middle">Messages</span>
-                        </Link>
-                    </DropdownItem>
-                    <DropdownItem className='p-0'>
-                        <Link to={"#"} className="dropdown-item">
-                            <i className="mdi mdi-calendar-check-outline text-muted fs-16 align-middle me-1"></i> <span
-                                className="align-middle">Taskboard</span>
-                        </Link>
-                    </DropdownItem>
-                    <DropdownItem className='p-0'>
-                        <Link to="/pages-faqs" className="dropdown-item">
-                            <i
-                                className="mdi mdi-lifebuoy text-muted fs-16 align-middle me-1"></i> <span
-                                    className="align-middle">Help</span>
-                        </Link>
-                    </DropdownItem>
+
                     <div className="dropdown-divider"></div>
+
+                    {userLogged.role === 'Superadmin' && (
+                        <DropdownItem className='p-0'>
+                            <Link to="/pages-profile-settings" className="dropdown-item">
+                                <i className="mdi mdi-cog-outline text-muted fs-16 align-middle me-1"></i>
+                                <span className="align-middle text-black">Ajustes generales</span>
+                            </Link>
+                        </DropdownItem>
+                    )}
+
+                    {userLogged.role === 'farm_manager' && (
+                        <DropdownItem className='p-0'>
+                            <Link to="/pages-profile-settings" className="dropdown-item">
+                                <i className="mdi mdi-cog-outline text-muted fs-16 align-middle me-1"></i>
+                                <span className="align-middle text-black">Ajustes de granja</span>
+                            </Link>
+                        </DropdownItem>
+                    )}
+
+
                     <DropdownItem className='p-0'>
-                        <Link to="/pages-profile" className="dropdown-item">
-                            <i
-                                className="mdi mdi-wallet text-muted fs-16 align-middle me-1"></i> <span
-                                    className="align-middle">Balance : <b>$5971.67</b></span>
-                        </Link>
-                    </DropdownItem >
-                    <DropdownItem className='p-0'>
-                        <Link to="/pages-profile-settings" className="dropdown-item">
-                            <span
-                                className="badge bg-success-subtle text-success mt-1 float-end">New</span><i
-                                    className="mdi mdi-cog-outline text-muted fs-16 align-middle me-1"></i> <span
-                                        className="align-middle">Settings</span>
-                        </Link>
-                    </DropdownItem>
-                    <DropdownItem className='p-0'>
-                        <Link to="/auth-lockscreen-basic" className="dropdown-item">
-                            <i
-                                className="mdi mdi-lock text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Lock screen</span>
-                        </Link>
-                    </DropdownItem>
-                    <DropdownItem className='p-0'>
-                        <Link to="/logout" className="dropdown-item">
-                            <i
-                                className="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> <span
-                                    className="align-middle" data-key="t-logout">Logout</span>
+                        <Link onClick={() => toggleModal('logout')} className="dropdown-item" to={''}>
+                            <i className="mdi mdi-logout text-muted fs-16 align-middle me-1"></i>
+                            <span className="align-middle text-black">Cerrar Sesión</span>
                         </Link>
                     </DropdownItem>
                 </DropdownMenu>
             </Dropdown>
-        </React.Fragment>
+
+            <Modal isOpen={modals.logout} toggle={() => toggleModal('logout')} size="md" keyboard={false} backdrop="static" centered>
+                <ModalHeader toggle={() => toggleModal('logout')}>Cerrar Sesión</ModalHeader>
+                <ModalBody>
+                    {`¿Estás seguro de que desea cerrar sesión?`}
+                </ModalBody>
+                <ModalFooter>
+                    <Button className="farm-secondary-button" onClick={() => toggleModal('logout', false)}>Cancelar</Button>
+                    <Button className="farm-primary-button" onClick={clicLogout}>
+                        Cerrar Sesión
+                    </Button>
+                </ModalFooter>
+            </Modal>
+        </>
     );
 };
 

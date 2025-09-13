@@ -21,6 +21,8 @@ import SimpleBar from "simplebar-react";
 import PDFViewer from "Components/Common/PDFViewer";
 import FeedingEntryItem from "Components/Common/FeedingEntryItem";
 import InitialMedicationsItem from "Components/Common/InitialMedicationsItem";
+import HistoryList from "Components/Common/HistoryList";
+import ReproductionFilters from "Components/Common/HistoryListFilter";
 
 const pigDetailsAttributes: Attribute[] = [
     { key: 'code', label: 'Codigo', type: 'text' },
@@ -44,12 +46,14 @@ const PigDetails = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [pigInfo, setPigInfo] = useState<PigData | null>(null)
     const [pigHistory, setPigHistory] = useState<PigHistoryChanges[]>([])
+    const [pigReproductionHistory, setPigReproductionHistory] = useState<any[]>([])
     const [activeTab, setActiveTab] = useState<string>('1');
     const [modals, setModals] = useState({ update: false, viewPDF: false });
     const [fileURL, setFileURL] = useState<string>('')
     const navigate = useNavigate()
     const [generatingReport, setGeneratingReport] = useState(false);
     const [userResponsible, setUserResponsible] = useState<{ _id: string, name: string, lastname: string, email: string }>()
+    const [filteredHistory, setFilteredHistory] = useState(pigReproductionHistory);
 
 
     const toggleTab = (tab: any) => {
@@ -76,14 +80,17 @@ const PigDetails = () => {
 
         setLoading(true);
         try {
-            const [detailsRes, historyRes] = await Promise.all([
+            const [detailsRes, historyRes, reproductionHistory] = await Promise.all([
                 configContext.axiosHelper.get(`${configContext.apiUrl}/pig/find_by_id/${pig_id}`),
-                configContext.axiosHelper.get(`${configContext.apiUrl}/pig/history/${pig_id}`)
+                configContext.axiosHelper.get(`${configContext.apiUrl}/pig/history/${pig_id}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/pig/reproduction_history/${pig_id}`),
+
             ]);
 
             const pig = detailsRes.data.data;
             setPigInfo(pig);
             setPigHistory(historyRes.data.data);
+            setPigReproductionHistory(reproductionHistory.data.data)
 
             if (pig.discarded && pig.discardReason === 'muerto') {
                 const userRes = await configContext.axiosHelper.get(`${configContext.apiUrl}/user/find_discard_responsible/${pig?.discardResponsible}`);
@@ -364,8 +371,8 @@ const PigDetails = () => {
                                             </h5>
                                         </CardHeader>
                                         <CardBody>
-                                            {pigInfo?.initialFeedings?.length ? (
-                                                pigInfo.initialFeedings.map((entry, idx) => (
+                                            {pigInfo?.feedings?.length ? (
+                                                pigInfo.feedings.map((entry, idx) => (
                                                     <FeedingEntryItem key={`feed-${idx}`} entry={entry} />
                                                 ))
                                             ) : (
@@ -412,8 +419,8 @@ const PigDetails = () => {
                                             <h5 className="mb-0">Medicamentos Iniciales</h5>
                                         </CardHeader>
                                         <CardBody>
-                                            {pigInfo?.initialMedications?.length ? (
-                                                pigInfo.initialMedications.map((medication, idx) => (
+                                            {pigInfo?.medications?.length ? (
+                                                pigInfo.medications.map((medication, idx) => (
                                                     <InitialMedicationsItem key={`med-${idx}`} medication={medication} />
                                                 ))
                                             ) : (
@@ -449,7 +456,32 @@ const PigDetails = () => {
                     </TabPane>
 
                     <TabPane tabId="4" id="reproduction-info-tab">
-                        <p>Contenido de la pestaña 4</p>
+                        <Card style={{ minHeight: "calc(100vh - 435px)" }}>
+                            <CardHeader><h4>Historial de Reproducción</h4></CardHeader>
+                            <CardBody className="p-0">
+                                {pigReproductionHistory.length === 0 ? (
+                                    <div className="p-4 text-center text-muted fs-5">
+                                        No hay registros de reproducción
+                                    </div>
+                                ) : (
+                                    <>
+                                        <ReproductionFilters
+                                            history={pigReproductionHistory}
+                                            setFilteredHistory={setFilteredHistory}
+                                        />
+
+                                        <HistoryList
+                                            data={filteredHistory}
+                                            typeKey="type"
+                                            dateKey="date"
+                                            descriptionKey="description"
+                                            responsibleKey="responsible"
+                                        />
+                                    </>
+
+                                )}
+                            </CardBody>
+                        </Card>
                     </TabPane>
 
                     <TabPane tabId="5" id="history-info-tab">

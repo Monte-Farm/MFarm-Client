@@ -19,12 +19,12 @@ const Logout = () => {
     return (
         <>
             <div className="ms-1 header-item d-none d-sm-flex">
-                <button
+                <Button
                     onClick={() => toggleModal('logout')}
                     type="button"
-                    className="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle light-dark-mode">
+                    className="btn btn-icon btn-topbar btn-ghost-primary rounded-circle light-dark-mode">
                     <i className="ri-logout-box-line fs-22"></i>
-                </button>
+                </Button>
             </div>
 
             <Modal isOpen={modals.logout} toggle={() => toggleModal('logout')} size="md" keyboard={false} backdrop="static" centered>

@@ -1,5 +1,5 @@
-import React, { useContext } from "react";
-import { Card, Col, Container, Row } from "reactstrap";
+import React, { useContext, useState } from "react";
+import { Alert, Card, Col, Container, Row } from "reactstrap";
 import loginImage from "../../assets/images/portada.png";
 import LoginForm from "../../Components/Common/Login";
 import axios, { AxiosError, AxiosResponse } from "axios";
@@ -8,16 +8,27 @@ import { useNavigate } from "react-router-dom";
 import { ConfigContext } from "App";
 import Aurora from "Components/Common/Aurora";
 import LogoSystem from '../../assets/images/logo.png'
+import systemLogo from '../../assets/images/system-logo.png'
+import loginBanner from '../../assets/images/login_banner.png'
 
 const CoverSignIn = () => {
     document.title = "Inicio de sesión | MFarm";
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
+    const [showDisabledAlert, setShowDisabledAlert] = useState<boolean>(false);
 
     const handleLogin = async (values: { username: string; password: string }) => {
         try {
+            setShowDisabledAlert(false)
+
             const response = await axios.post(`${configContext?.apiUrl}/user/login`, values);
-            sessionStorage.setItem('authUser', JSON.stringify(response.data.data));
+            const user = response.data.data
+            if (!user.status) {
+                setShowDisabledAlert(true)
+                return
+            }
+
+            sessionStorage.setItem('authUser', JSON.stringify(user));
             configContext?.setUserLogged(getLoggedinUser());
             history('/home');
         } catch (error: any) {
@@ -52,25 +63,31 @@ const CoverSignIn = () => {
                             <Col lg={12}>
                                 <Card className="overflow-hidden" style={{ borderRadius: '10px' }}>
                                     <Row className="g-0">
-                                        <Col lg={6}>
-                                            <img src={loginImage} className="img-fluid h-100" alt="Login Cover" />
+                                        <Col lg={8}>
+                                            <img src={loginBanner} className="img-fluid h-100" alt="Login Cover" />
                                         </Col>
-                                        <Col lg={6} style={{ backgroundColor: '#F5F5DC' }}>
+                                        <Col lg={4} style={{ backgroundColor: '#F5F5DC' }}>
                                             <div className="p-lg-5">
-                                                <div className="d-flex justify-content-center pb-5 pt-3">
+                                                <div className="d-flex justify-content-center pb-0 mt-0">
                                                     <img
-                                                        src={LogoSystem}
-                                                        style={{ maxWidth: '250px', maxHeight: '150px', width: '150px', height: '150px' }}
+                                                        src={systemLogo}
+                                                        style={{ maxWidth: '300px', maxHeight: '300px', width: '220px', height: '200px' }}
                                                         alt="Logo"
                                                     />
                                                 </div>
                                                 <h4 className="text-center" style={{ color: '#2F4F4F' }}>Bienvenido!</h4>
                                                 <p className="text-muted text-center fs-5">Inicie Sesión para continuar.</p>
 
-                                                <div className="mt-4">
+                                                <div className="mt-5">
                                                     <LoginForm onSubmit={handleLogin} />
                                                 </div>
                                             </div>
+
+                                            {showDisabledAlert && (
+                                                <Alert color="danger" className="text-center mx-3 rounded">
+                                                    Este usuario ha sido desactivado, pongase en contacto con el administrador
+                                                </Alert>
+                                            )}
                                         </Col>
                                     </Row>
                                 </Card>

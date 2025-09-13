@@ -13,16 +13,18 @@ import LoadingGif from '../../assets/images/loading-gif.gif'
 import { getLoggedinUser } from "helpers/api_helper"
 import PigCards from "Components/Common/PigCards"
 import Select from "react-select"
-import { FiFilter, FiX, FiSearch } from "react-icons/fi"
+import { FiFilter, FiX, FiSearch, FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo } from "react-icons/fi"
 import Slider from 'rc-slider'
 import 'rc-slider/assets/index.css'
 import { useNavigate } from "react-router-dom"
 import PDFViewer from "Components/Common/PDFViewer"
 import SimpleBar from 'simplebar-react';
 import 'simplebar-react/dist/simplebar.min.css';
+import CustomTable from "Components/Common/CustomTable"
+import { Column } from "common/data/data_types"
 
 const ViewPigs = () => {
-    const [modals, setModals] = useState({ create: false, viewPDF: false });
+    const [modals, setModals] = useState({ create: false, update: false, viewPDF: false });
     const configContext = useContext(ConfigContext);
     const userLogged = getLoggedinUser();
     const [loading, setLoading] = useState<boolean>(true)
@@ -43,7 +45,63 @@ const ViewPigs = () => {
     const [popoverOpen, setPopoverOpen] = useState(false)
     const filterBtnRef = useRef(null)
     const navigate = useNavigate();
+    const [selectedPig, setSelectedPig] = useState<PigData | null>(null)
 
+    const pigColumns: Column<any>[] = [
+        { header: 'Codigo', accessor: 'code', type: 'text' },
+        { header: 'Raza', accessor: 'breed', type: 'text' },
+        { header: 'Fecha de N.', accessor: 'birthdate', type: 'date' },
+        {
+            header: 'Sexo',
+            accessor: 'sex',
+            render: (value: string) => (
+                <Badge color={value === 'macho' ? "info" : "danger"}>
+                    {value === 'macho' ? "♂ Macho" : "♀ Hembra"}
+                </Badge>
+            ),
+        },
+        { header: 'Peso actual', accessor: 'weight', type: 'number' },
+        {
+            header: 'Estado',
+            accessor: 'status',
+            isFilterable: true,
+            render: (value: string) => {
+                let color = 'secondary';
+                let label = value;
+
+                switch (value) {
+                    case 'vivo':
+                        color = 'success';
+                        label = 'Vivo';
+                        break;
+                    case 'descartado':
+                        color = 'warning';
+                        label = 'Descartado';
+                        break;
+                    case 'muerto':
+                        color = 'danger';
+                        label = 'Muerto';
+                        break;
+                }
+
+                return <Badge color={color}>{label}</Badge>;
+            },
+        },
+        {
+            header: "Acciones",
+            accessor: "action",
+            render: (value: any, row: any) => (
+                <div className="d-flex gap-1">
+                    <Button className="farm-secondary-button btn-icon" onClick={() => handleUpdatePigSelection(row)} disabled={row.status === 'vivo' ? false : true}>
+                        <i className="ri-pencil-fill align-middle"></i>
+                    </Button>
+                    <Button className="farm-primary-button btn-icon" onClick={() => handlePigSelection(row._id)}>
+                        <i className="ri-eye-fill align-middle"></i>
+                    </Button>
+                </div>
+            ),
+        },
+    ]
 
     const predefinedBreeds = [
         "Yorkshire",
@@ -115,6 +173,24 @@ const ViewPigs = () => {
     const handlePigSelection = (pigId: string) => {
         navigate(`/pigs/pig_details/${pigId}`);
     };
+
+    const handleUpdatePigSelection = (pig: PigData) => {
+        setSelectedPig(pig)
+        toggleModal('update')
+    }
+
+    const onSavePig = () => {
+        toggleModal('create')
+        showAlert('success', 'Cerdo registrado con éxito')
+        fetchPigs();
+    }
+
+    const onUpdatePig = () => {
+        toggleModal('update')
+        showAlert('success', 'Datos actualizados con éxito')
+        fetchPigs();
+    }
+
 
     useEffect(() => {
         fetchPigs()
@@ -201,7 +277,7 @@ const ViewPigs = () => {
         { value: "sacrificado", label: "Sacrificado" },
         { value: "muerto", label: "Muerto" },
         { value: "descartado", label: "Descartado" },
-        
+
     ]
 
     const stageOptions = [
@@ -259,7 +335,6 @@ const ViewPigs = () => {
                                 />
                             </div>
 
-                            {/* Botón de filtros con badge */}
                             <Button
                                 innerRef={filterBtnRef}
                                 color="light"
@@ -409,7 +484,7 @@ const ViewPigs = () => {
 
                             <Button
                                 className="farm-primary-button fs-5"
-                                onClick={() => navigate('/pigs/register_pig')}
+                                onClick={() => toggleModal('create')}
                             >
                                 <i className="ri-add-line me-2" />
                                 Registrar cerdo
@@ -417,32 +492,27 @@ const ViewPigs = () => {
                         </div>
                     </CardHeader>
 
-                    <CardBody style={{ padding: 0 }}>
-                        <SimpleBar style={{ maxHeight: 'calc(100vh - 360px)', padding: '1rem' }}>
-                            {filteredPigs.length > 0 ? (
-                                <>
-                                    <div className="mb-3 text-muted">
-                                        Mostrando {filteredPigs.length} de {pigs.length} cerdos
-                                    </div>
-                                    <PigCards pigs={filteredPigs} onPigSelect={handlePigSelection} showDetailsButton={true} onDetailsClick={(pig: PigData) => handlePigSelection(pig._id)} />
-                                </>
-                            ) : (
-                                <div className="text-center py-5">
-                                    <i className="ri-search-line display-5 text-muted mb-3" />
-                                    <h5>No se encontraron cerdos con los filtros aplicados</h5>
-                                    <Button color="link" onClick={clearFilters}>
-                                        Limpiar filtros
-                                    </Button>
-                                </div>
-                            )}
-                        </SimpleBar>
+                    <CardBody>
+                        <CustomTable columns={pigColumns} data={filteredPigs} showSearchAndFilter={false} showPagination={false} />
                     </CardBody>
                 </Card>
             </Container>
 
+
             {alertConfig.visible && (
-                <Alert color={alertConfig.color} className="position-fixed bottom-0 start-50 translate-middle-x p-3">
-                    {alertConfig.message}
+                <Alert
+                    color={alertConfig.color}
+                    className="position-fixed bottom-0 start-50 translate-middle-x d-flex align-items-center gap-2 shadow rounded-3 p-3"
+                    style={{ minWidth: "350px", maxWidth: "90%", zIndex: 1050 }}
+                >
+                    {alertConfig.color === "success" && <FiCheckCircle size={22} />}
+                    {alertConfig.color === "danger" && <FiXCircle size={22} />}
+                    {alertConfig.color === "warning" && <FiAlertCircle size={22} />}
+                    {alertConfig.color === "info" && <FiInfo size={22} />}
+
+                    <span className="flex-grow-1 text-black">{alertConfig.message}</span>
+
+                    <Button close onClick={() => setAlertConfig({ ...alertConfig, visible: false })} />
                 </Alert>
             )}
 
@@ -450,6 +520,20 @@ const ViewPigs = () => {
                 <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Inventario </ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
+                </ModalBody>
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("create")}>Registro de cerdo</ModalHeader>
+                <ModalBody>
+                    <PigForm onSave={onSavePig} onCancel={() => toggleModal('create')} />
+                </ModalBody>
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.update} toggle={() => toggleModal("update")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("update")}>Edición de cerdo</ModalHeader>
+                <ModalBody>
+                    <PigForm initialData={selectedPig || undefined} onSave={onUpdatePig} onCancel={() => toggleModal('update')} />
                 </ModalBody>
             </Modal>
         </div>

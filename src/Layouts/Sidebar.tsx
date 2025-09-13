@@ -1,15 +1,12 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import SimpleBar from "simplebar-react";
-//import logo
-import defaultProfileImage from '../assets/images/default-profile-mage.jpg'
-
-//Import Components
 import VerticalLayout from "./VerticalLayouts";
 import TwoColumnLayout from "./TwoColumnLayout";
 import { Container } from "reactstrap";
 import HorizontalLayout from "./HorizontalLayout";
 import { getLoggedinUser } from "helpers/api_helper";
+import systemLogo from '../assets/images/system-logo.png'
 
 const Sidebar = ({ layoutType }: any) => {
   const userLogged = getLoggedinUser();
@@ -46,25 +43,9 @@ const Sidebar = ({ layoutType }: any) => {
   return (
     <React.Fragment>
       <div className="app-menu navbar-menu">
-        <div className="navbar-brand-box mt-5 mb-3">
+        <div className="navbar-brand-box mt-2 mb-3">
 
-          <div className="user-greeting-simple">
-            <div className="d-flex align-items-center gap-3">
-              <img
-                src={defaultProfileImage}
-                alt="Foto de perfil"
-                className="profile-img-simple"
-                width="52"
-                height="52"
-              />
-              <div>
-                <p className="greeting-text-simple mb-1">
-                  Hola, <span className="user-name-simple">{userLogged.name}</span>
-                </p>
-                <span className="user-role-simple">{displayRole}</span>
-              </div>
-            </div>
-          </div>
+          <img src={systemLogo} height={150} width={150} alt="Logo del sistema"/>
 
           <button
             onClick={addEventListenerOnSmHoverMenu}

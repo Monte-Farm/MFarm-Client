@@ -18,7 +18,6 @@ const userAttributes: Attribute[] = [
     { key: 'name', label: 'Nombre', type: 'text' },
     { key: 'lastname', label: 'Apellido', type: 'text' },
     { key: 'email', label: 'Correo Electronico', type: 'text' },
-    { key: 'phoneNumber', label: 'Número de Telefono', type: 'text' },
     { key: 'role', label: 'Rol', type: 'text' },
     { key: 'status', label: 'Estado', type: 'status' },
 ]
@@ -97,10 +96,9 @@ const ViewUsers = () => {
                 response = await configContext.axiosHelper.get(`${configContext.apiUrl}/user`)
                 users = response.data.data;
                 setUsers(
-                    users
-                    // users.filter(function (obj: any) {
-                    //     return obj.username !== userLogged.username && obj.role !== 'Superadmin';
-                    // })
+                    users.filter(function (obj: any) {
+                        return obj.username !== userLogged.username && obj.role !== 'Superadmin' && obj.role !== 'farm_manager';
+                    })
                 );
             }
 
@@ -211,7 +209,7 @@ const ViewUsers = () => {
                             onCardClick={(user) => navigate(`/users/user_details/${user._id}`)}
                             onEditClick={(user) => handleClicModal('update', user)}
                             onDeleteClick={(user) => handleClicModal('delete', user)}
-                            imageAccessor="profileImage"
+                            imageAccessor="profile_image"
 
                         />
                     </CardBody>

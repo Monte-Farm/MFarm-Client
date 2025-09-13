@@ -1,6 +1,6 @@
 
 
-export type ColumnType = "text" | "number" | "date" | "currency";
+export type ColumnType = "text" | "number" | "date" | "currency" | 'action';
 export type Column<T> = {
   header: string;
   accessor: keyof T;

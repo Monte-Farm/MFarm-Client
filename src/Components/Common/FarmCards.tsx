@@ -1,8 +1,9 @@
 import React from "react";
-import { Badge, Button, Card, CardBody, CardText } from "reactstrap";
+import { Badge, Button, Card, CardBody, CardImg, CardText } from "reactstrap";
 import { Column, ColumnType } from "common/data/data_types";
 import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
+import defaultFarmImage from '../../assets/images/establo-cerdo.jpg'
 
 interface FarmCardsProps<T> {
     columns: Column<T>[];
@@ -10,6 +11,8 @@ interface FarmCardsProps<T> {
     onDetailsClick?: (row: T) => void;
     onEditClick?: (row: T) => void;
     onDeleteClick?: (row: T) => void;
+    onCardClick?: (row: T) => void;
+    imageAccessor?: keyof T;
     className?: string;
 }
 
@@ -19,6 +22,8 @@ const FarmCards = <T extends Record<string, any>>({
     onDetailsClick,
     onEditClick,
     onDeleteClick,
+    onCardClick,
+    imageAccessor,
     className = "",
 }: FarmCardsProps<T>) => {
 
@@ -32,10 +37,29 @@ const FarmCards = <T extends Record<string, any>>({
             <div className="d-flex flex-wrap gap-4 p-3">
                 {data.length > 0 ? (
                     data.map((item, index) => (
-                        <Card key={index} className="farm-card">
-                            {/* Header */}
+                        <Card key={index} className="farm-card" onClick={() => onCardClick?.(item)} style={{cursor: 'pointer'}}>
                             <div className="farm-card-header">
-                                {item[titleColumn.accessor]}
+                                {imageAccessor && item[imageAccessor] ? (
+                                    <CardImg
+                                        top
+                                        src={item[imageAccessor] || defaultFarmImage}
+                                        alt="User image"
+                                        className="user-card-img"
+                                        onError={(e) => {
+                                            (e.target as HTMLImageElement).src = defaultFarmImage;
+                                        }}
+                                    />
+                                ) : (
+                                    <CardImg
+                                        top
+                                        src={defaultFarmImage}
+                                        alt="User image"
+                                        className="user-card-img"
+                                        onError={(e) => {
+                                            (e.target as HTMLImageElement).src = defaultFarmImage;
+                                        }}
+                                    />
+                                )}
                                 <div className="farm-card-actions">
                                     {onDetailsClick && (
                                         <Button
@@ -73,6 +97,7 @@ const FarmCards = <T extends Record<string, any>>({
                             </div>
 
                             <CardBody className="farm-card-body">
+                                <strong className="farm-card-title">{item[titleColumn.accessor]}</strong>
                                 {/* Subtítulos */}
                                 {subtitleColumns.length > 0 && (
                                     <div className="farm-card-subtitle mb-2">

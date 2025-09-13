@@ -8,6 +8,7 @@ import { useFormik } from 'formik';
 import defaultProfile from '../../assets/images/default-profile-mage.jpg';
 import UserForm from './UserForm';
 import { getLoggedinUser } from 'helpers/api_helper';
+import FileUploader from './FileUploader';
 
 interface FarmFormProps {
     data?: Partial<FarmData> & { _id?: string };
@@ -21,7 +22,8 @@ const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
     const [managers, setManagers] = useState<UserData[]>([]);
     const [modals, setModals] = useState({ details: false, create: false, update: false, delete: false });
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-
+    const [fileToUpload, setFileToUpload] = useState<File | null>(null)
+    const [hasNewImage, setHasNewImage] = useState(false);
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -60,11 +62,12 @@ const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
 
     const formik = useFormik({
         initialValues: {
+            image: data?.image || null,
             name: data?.name || '',
             code: data?.code || '',
             location: data?.location || '',
             status: data?.status ?? true,
-            manager: data?.manager || '',
+            manager: (typeof data?.manager === 'object' && data?.manager !== null) ? (data.manager as UserData)._id : (data?.manager || ''),
         },
         enableReinitialize: true,
         validationSchema,
@@ -80,6 +83,9 @@ const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
             }
 
             try {
+                if (fileToUpload) {
+                    await fileUpload(fileToUpload);
+                }
                 if (data && data._id) {
                     await configContext.axiosHelper.update(`${configContext.apiUrl}/farm/update/${data?._id}`, values);
                 } else {
@@ -101,10 +107,34 @@ const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
 
         try {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/user/find_by_role/farm_manager`);
-            const filteredManagers = response.data.data.filter((manager: UserData) => manager.status === true && manager.farm_assigned === null);
-            setManagers(filteredManagers);
+            const allManagers: UserData[] = response.data.data;
+
+            let filtered = allManagers.filter(
+                (manager) => manager.status === true && manager.farm_assigned === null
+            );
+
+            if (data?.manager) {
+                const currentManagerId = typeof data.manager === 'object' ? (data.manager as UserData)._id : data.manager;
+                const currentManager = allManagers.find((m) => m._id === currentManagerId);
+                if (currentManager && !filtered.find((m) => m._id === currentManager._id)) {
+                    filtered.push(currentManager);
+                }
+            }
+
+            setManagers(filtered);
         } catch (error) {
             console.error('Error fetching manager users:', error);
+        }
+    };
+
+    const fileUpload = async (file: File) => {
+        if (!configContext) return;
+
+        try {
+            const uploadResponse = await configContext.axiosHelper.uploadImage(`${configContext.apiUrl}/upload/upload_file/`, file);
+            formik.values.image = uploadResponse.data.data;
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al subir el archivo, por favor intentelo más tarde');
         }
     };
 
@@ -134,6 +164,36 @@ const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
                 <Col lg={6}>
                     <div className='d-flex justify-content-between align-items-center mb-3'>
                         <h5>Información de la granja</h5>
+                    </div>
+
+                    <div className="mt-4">
+                        <Label htmlFor="imageInput" className="form-label">Imagen de la granja</Label>
+
+                        {formik.values.image && !hasNewImage && (
+                            <div className="mb-2">
+                                <img
+                                    src={formik.values.image}
+                                    alt="Imagen actual"
+                                    style={{ width: '100%', borderRadius: 8 }}
+                                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                />
+                            </div>
+                        )}
+
+                        <FileUploader
+                            acceptedFileTypes={['image/*']}
+                            maxFiles={1}
+                            onFileUpload={(file) => {
+                                setFileToUpload(file);
+                                setHasNewImage(true);
+                            }}
+                            onUpdateFiles={(files) => {
+                                if (files.length === 0) {
+                                    setHasNewImage(false);
+                                    setFileToUpload(null);
+                                }
+                            }}
+                        />
                     </div>
 
                     <FormGroup className="">

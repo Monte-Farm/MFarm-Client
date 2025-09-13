@@ -5,6 +5,7 @@ import * as Yup from "yup";
 import { SubwarehouseData, UserData } from "common/data_interfaces";
 import { ConfigContext } from "App";
 import { getLoggedinUser } from "helpers/api_helper";
+import FileUploader from "./FileUploader";
 
 interface UserFormProps {
     initialData?: UserData;
@@ -18,6 +19,7 @@ interface UserFormProps {
 const UserForm: React.FC<UserFormProps> = ({ initialData, onSubmit, onCancel, isUsernameDisable, defaultRole, currentUserRole }) => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
+    const [fileToUpload, setFileToUpload] = useState<File | null>(null)
     const [selectedRole, setSelectedRole] = useState<string | null>(initialData?.role || null);
     const [subwarehouses, setSubwarehouses] = useState<SubwarehouseData[] | null>(null)
     const configContext = useContext(ConfigContext);
@@ -41,8 +43,6 @@ const UserForm: React.FC<UserFormProps> = ({ initialData, onSubmit, onCancel, is
     });
 
     const validationSchema = Yup.object({
-        username: Yup.string().required("Por favor, ingrese el número de usuario"),
-        password: Yup.string().required("Por favor, ingrese la contraseña"),
         name: Yup.string().required("Por favor, ingrese el nombre"),
         lastname: Yup.string().required("Por favor, ingrese el apellido"),
         email: Yup.string()
@@ -53,8 +53,7 @@ const UserForm: React.FC<UserFormProps> = ({ initialData, onSubmit, onCancel, is
 
     const formik = useFormik({
         initialValues: {
-            username: initialData?.username || "",
-            password: initialData?.password || "",
+            profile_image: initialData?.profile_image || "",
             name: initialData?.name || "",
             lastname: initialData?.lastname || "",
             farm_assigned: initialData?.farm_assigned || null,
@@ -74,6 +73,11 @@ const UserForm: React.FC<UserFormProps> = ({ initialData, onSubmit, onCancel, is
                 if (!initialData) {
                     values.farm_assigned = userLogged?.farm_assigned || null;
                 }
+
+                if (fileToUpload) {
+                    await fileUpload(fileToUpload);
+                }
+
                 await onSubmit(values);
             } catch (error) {
                 console.error("Error al enviar el formulario:", error);
@@ -82,6 +86,17 @@ const UserForm: React.FC<UserFormProps> = ({ initialData, onSubmit, onCancel, is
             }
         },
     });
+
+    const fileUpload = async (file: File) => {
+        if (!configContext) return;
+
+        try {
+            const uploadResponse = await configContext.axiosHelper.uploadImage(`${configContext.apiUrl}/upload/upload_file/`, file);
+            formik.values.profile_image = uploadResponse.data.data;
+        } catch (error) {
+            handleError(error, 'Ha ocurrido un error al subir el archivo, por favor intentelo más tarde');
+        }
+    };
 
     const handleError = (error: any, message: string) => {
         console.error(`${message}: ${error}`)
@@ -114,42 +129,9 @@ const UserForm: React.FC<UserFormProps> = ({ initialData, onSubmit, onCancel, is
                 formik.handleSubmit();
             }}>
 
-                {/* Campo Número de Usuario */}
                 <div className="mt-4">
-                    <Label htmlFor="usernameInput" className="form-label">Número de Usuario</Label>
-                    <Input
-                        type="text"
-                        id="usernameInput"
-                        className="form-control"
-                        name="username"
-                        value={formik.values.username}
-                        onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
-                        invalid={formik.touched.username && !!formik.errors.username}
-                        disabled={isUsernameDisable}
-                    />
-                    {formik.touched.username && formik.errors.username && (
-                        <FormFeedback>{formik.errors.username}</FormFeedback>
-                    )}
-                </div>
-
-                {/* Campo Contrasena */}
-                <div className="mt-4">
-                    <Label htmlFor="pwdInput" className="form-label">Contraseña</Label>
-                    <Input
-                        type="password"
-                        id="pwdInput"
-                        className="form-control"
-                        name="password"
-                        value={formik.values.password}
-                        onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
-                        invalid={formik.touched.password && !!formik.errors.password}
-                        disabled={isUsernameDisable}
-                    />
-                    {formik.touched.password && formik.errors.password && (
-                        <FormFeedback>{formik.errors.password}</FormFeedback>
-                    )}
+                    <Label htmlFor="imageInput" className="form-label">Imagen del producto</Label>
+                    <FileUploader acceptedFileTypes={['image/*']} maxFiles={1} onFileUpload={(file) => setFileToUpload(file)} />
                 </div>
 
                 <div className="d-flex gap-3">

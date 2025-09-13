@@ -68,6 +68,15 @@ import ViewFarms from "pages/Farms/ViewFarms";
 import PigDetails from "pages/Pigs/PigDetails";
 import RegisterPig from "pages/Pigs/RegisterPig";
 import UserDetails from "pages/Users/UserDetails";
+import FarmDetails from "pages/Farms/FarmDetails";
+import ViewGroups from "pages/Groups/ViewGroups";
+import CreateGroup from "pages/Groups/CreateGroup";
+import ViewLaboratory from "pages/Laboratory/ViewLaboratory";
+import ViewExtractions from "pages/Laboratory/ViewExtractions";
+import ViewSamples from "pages/Laboratory/ViewSamples";
+import ViewGestations from "pages/Gestation/ViewInseminations";
+import ViewPregnancies from "pages/Gestation/ViewPregnancies";
+import ViewInseminations from "pages/Gestation/ViewInseminations";
 
 
 
@@ -78,7 +87,7 @@ const authProtectedRoutes = [
 
   //Farms
   { path: '/farms/view_farms', component: <ViewFarms /> },
-
+  { path: '/farms/farm_details/:farm_id', component: <FarmDetails /> },
 
   //Warehouse
   { path: '/warehouse/configuration', component: <WarehouseConfiguration /> },
@@ -143,6 +152,20 @@ const authProtectedRoutes = [
 
   //User Profile
   { path: "/profile", component: <UserProfile /> },
+
+  //Groups
+  { path: "/groups/view_groups", component: <ViewGroups /> },
+  { path: "/groups/create_group", component: <CreateGroup /> },
+
+  //Laboratory
+  { path: "/laboratory/view_laboratory", component: <ViewLaboratory /> },
+  { path: "/laboratory/extractions/view_extractions", component: <ViewExtractions /> },
+  { path: "/laboratory/samples/view_samples", component: <ViewSamples /> },
+
+  //Gestation
+  { path: "/gestation/view_inseminations", component: <ViewInseminations /> },
+  { path: "/gestation/view_pregnancies", component: <ViewPregnancies /> },
+
 
   //Configuration
   { path: '/configuration', component: <ConfigurationPage /> },

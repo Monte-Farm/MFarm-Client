@@ -11,6 +11,7 @@ import Logout from 'Components/Common/Logout';
 import { getLoggedinUser } from 'helpers/api_helper';
 import LogoSystem from '../assets/images/logo.png'
 import { SubwarehouseData } from 'common/data_interfaces';
+import ProfileDropdown from 'Components/Common/ProfileDropdown';
 
 const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
     const dispatch: any = useDispatch();
@@ -152,13 +153,11 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
 
                             {userLogged?.role === "Superadmin" && <Configuration />}
 
-                            <Logout />
-
                             {/* NotificationDropdown */}
                             {/* <NotificationDropdown /> */}
 
                             {/* ProfileDropdown */}
-                            {/*<ProfileDropdown /> */}
+                            <ProfileDropdown />
 
                         </div>
                     </div>

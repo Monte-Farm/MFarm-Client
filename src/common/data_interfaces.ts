@@ -135,8 +135,7 @@ export interface ConfigurationData {
 export interface UserData {
     _id?: string
     profile_image?: string
-    username: string;
-    password: string;
+    username?: string;
     name: string;
     lastname: string;
     farm_assigned: string | null;
@@ -192,6 +191,15 @@ export interface PigMedicationEntry {
     observations?: string;
 }
 
+export interface PigReproductionEntry {
+    date: Date;
+    type: 'extraccion' | 'inseminacion' | 'parto' | 'monta' | 'aborto' | 'otro';
+    responsible?: string;
+    description: string;
+    eventRef?: string;
+    eventModel: 'Extraction' | 'Insemination' | 'Parto';
+}
+
 export interface PigData {
     _id: string;
     code: string;
@@ -213,8 +221,9 @@ export interface PigData {
     discardDestination?: string | null;
     discardDeathCause?: string;
     discardResponsible?: string;
-    initialFeedings: PigFeedingEntry[];
-    initialMedications: PigMedicationEntry[];
+    feedings: PigFeedingEntry[];
+    medications: PigMedicationEntry[];
+    reproduction: PigReproductionEntry[];
 }
 
 export interface PigHistoryChanges {
@@ -234,11 +243,129 @@ export interface PigHistoryChanges {
 }
 
 export interface FarmData {
-    name: string,
-    code: string,
-    location: string,
-    status: boolean,
-    manager: string,
-    createdAt: Date,
-    updatedAt: Date,
+    _id?: string;
+    image: string | null;
+    name: string;
+    code: string;
+    location: string;
+    status: boolean;
+    manager: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export interface GroupData {
+    code: string;
+    name: string;
+    area: string;
+    group_mother?: string;
+    observations?: string;
+    observations_history?: {
+        date: Date;
+        userId: string;
+        observation: string;
+    }[];
+    userId: string;
+    farm: string;
+    group_history?: {
+        date: Date;
+        userId: string;
+        action: string;
+        description: string;
+    }[];
+    pigCount: number;
+    pigsInGroup?: string[];
+    feeding_history?: {
+        date: Date;
+        userId: string;
+        feedType: string;
+        amount: number;
+        unit_measurement: string;
+        average_p_pig: number;
+        notes?: string;
+        periodicity: string;
+        name: string;
+    }[];
+    medical_treatments?: {
+        applicationDate: Date;
+        userId: string;
+        treatmentType: string;
+        medication: string;
+        dosage: number;
+        average_p_pig?: number;
+        notes?: string;
+        periodicity: string;
+        unit_measurement: string;
+        application_method: string;
+    }[];
+
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface ExtractionData {
+    _id?: string;
+    date: Date | null;
+    technician: string;
+    farm: string;
+    boar: string;
+    extraction_location: string;
+    batch: string;
+    notes?: string;
+    is_sample_registered: boolean
+    volume: number;
+    unit_measurement: string;
+    appearance: string;
+}
+
+export interface SemenSample {
+    extraction_id: string
+    concentration_million: number;
+    motility_percent: number;
+    vitality_percent: number;
+    abnormal_percent: number;
+    pH: number;
+    temperature: number;
+    diluent: {
+        type: string;
+        lot: string;
+        volume: number;
+        unit_measurement: string;
+    };
+    conservation_method: string;
+    expiration_date: Date | null;
+    post_dilution_motility?: number;
+    technician: string;
+    doses: {
+        code: string;
+        total_volume: number;
+        semen_volume: number;
+        diluent_volume: number;
+        unit_measurement: string;
+        status: "available" | "used" | "discarded" | "expired";
+    }[];
+}
+
+export interface InseminationData {
+    sow: string;
+    date: Date | null;
+    responsible: string
+    status: 'active' | 'completed';
+    result?: 'pregnant' | 'empty' | 'doubtful' | 'resorption' | 'abortion';
+    diagnosis_date?: Date;
+    estimated_farrowing_date?: Date;
+    notes?: string;
+    attachments?: string[];
+    doses: {
+        order: number;
+        time: Date;
+        dose: string
+        notes?: string;
+    }[];
+    heats: {
+        date: Date | null;
+        heat_detected: boolean;
+        notes?: string;
+        responsible: string;
+    }[];
 }
