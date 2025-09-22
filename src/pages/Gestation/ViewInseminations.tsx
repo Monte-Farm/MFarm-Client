@@ -11,6 +11,7 @@ import { Column } from "common/data/data_types";
 import DiagnosisForm from "Components/Common/DiagnoseForm";
 import HeatForm from "Components/Common/HeatForm";
 import InseminationFilters from "Components/Common/InseminationFilters";
+import PigDetailsModal from "Components/Common/DetailsPigModal";
 
 const ViewInseminations = () => {
     document.title = "Ver inseminaciones | Management System"
@@ -19,21 +20,32 @@ const ViewInseminations = () => {
 
     const [loading, setLoading] = useState<boolean>(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ create: false, update: false, viewPDF: false, diagnosis: false, heat: false });
+    const [modals, setModals] = useState({ create: false, update: false, viewPDF: false, diagnosis: false, heat: false, pigDetails: false });
     const [inseminations, setInseminations] = useState<any[]>([])
     const [possiblesPregnancies, setPossiblesPregnancies] = useState<any[]>([])
     const [possiblesPregnanciesCount, setPossiblesPregnanciesCount] = useState<number>(0)
     const [selectedInsemination, setSelectedInsemination] = useState({})
     const [filteredInseminations, setFilteredInseminations] = useState<any[]>([]);
     const [activeKpi, setActiveKpi] = useState<string | null>(null);
+    const [selectedPigId, setSelectedPigId] = useState<string>('')
 
     const inseminationsColumns: Column<any>[] = [
         {
             header: "Cerda",
             accessor: "sow",
             type: "text",
-            isFilterable: true,
-            render: (_, row) => row.sow.code || "Sin código",
+            render: (_, row) => (
+                <Button
+                    className="text-underline fs-5"
+                    color="link"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        openPigDetailsModal(row)
+                    }}
+                >
+                    {row.sow?.code} ↗
+                </Button>
+            )
         },
         {
             header: "Dosis admin.",
@@ -115,6 +127,11 @@ const ViewInseminations = () => {
             ),
         },
     ];
+
+    const openPigDetailsModal = (data: any) => {
+        setSelectedPigId(data.sow?._id);
+        toggleModal('pigDetails')
+    }
 
     const openDiagnoseModal = (row: any) => {
         setSelectedInsemination(row);
@@ -245,7 +262,7 @@ const ViewInseminations = () => {
                     </Card>
                 </div>
 
-                <Card style={{height: '71vh'}}>
+                <Card style={{ height: '71vh' }}>
                     <CardHeader className="d-flex">
                         <h4>Inseminaciones</h4>
                         <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>
@@ -265,7 +282,7 @@ const ViewInseminations = () => {
             </Container>
 
             <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("create")}>Nueva muestra</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("create")}>Nueva inseminación</ModalHeader>
                 <ModalBody>
                     <InseminationForm onSave={onSaveInsemination} onCancel={() => toggleModal('create')} />
                 </ModalBody>
@@ -282,6 +299,13 @@ const ViewInseminations = () => {
                 <ModalHeader toggle={() => toggleModal("heat")}>Registrar celo</ModalHeader>
                 <ModalBody>
                     {selectedInsemination && <HeatForm insemination={selectedInsemination} onSave={onSaveHeat} onCancel={() => toggleModal('heat')} />}
+                </ModalBody>
+            </Modal>
+
+             <Modal size="lg" isOpen={modals.pigDetails} toggle={() => toggleModal("pigDetails")} centered>
+                <ModalHeader toggle={() => toggleModal("pigDetails")}>Detalles del verraco</ModalHeader>
+                <ModalBody>
+                    <PigDetailsModal pigId={selectedPigId} showAllDetailsButton={true} />
                 </ModalBody>
             </Modal>
 

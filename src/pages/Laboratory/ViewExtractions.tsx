@@ -2,14 +2,18 @@ import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/BreadCrumb"
 import { getLoggedinUser } from "helpers/api_helper"
 import { useContext, useEffect, useState } from "react";
-import { Alert, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader } from "reactstrap"
-import LoadingGif from '../../assets/images/loading-gif.gif'
+import { Alert, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, UncontrolledTooltip } from "reactstrap"
 import { FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo } from "react-icons/fi";
 import CustomTable from "Components/Common/CustomTable";
 import { ExtractionData } from "common/data_interfaces";
 import ExtractionForm from "Components/Common/ExtractionForm";
 import { Column } from "common/data/data_types";
 import AreaChart from "Components/Common/AreaChart";
+import PigDetailsModal from "Components/Common/DetailsPigModal";
+import { useNavigate } from "react-router-dom";
+import LoadingAnimation from "Components/Common/LoadingAnimation";
+import ExtractionDetails from "Components/Common/ExtractionDetails";
+import AlertMessage from "Components/Common/AlertMesagge";
 
 const ViewExtractions = () => {
     document.title = 'Ver extracciones | Management System'
@@ -18,8 +22,10 @@ const ViewExtractions = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [extractions, setExtractions] = useState<ExtractionData[] | null>(null)
-    const [modals, setModals] = useState({ create: false, update: false, viewPDF: false });
+    const [modals, setModals] = useState({ create: false, update: false, viewPDF: false, pigDetails: false, extractionDetails: false });
     const [stats, setStats] = useState<any>({})
+    const [selectedExtraction, setSelectedExtraction] = useState<any>({})
+    const navigate = useNavigate();
 
     const extractionsColumns: Column<any>[] = [
         { header: 'Lote', accessor: 'batch', type: 'text', isFilterable: true },
@@ -27,9 +33,18 @@ const ViewExtractions = () => {
         {
             header: 'Verraco',
             accessor: 'boar',
-            type: 'text',
-            isFilterable: true,
-            render: (_, row) => row.boar?.code || "Sin código"
+            render: (_, row) => (
+                <Button
+                    className="text-underline fs-5"
+                    color="link"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        openPigDetailsModal(row)
+                    }}
+                >
+                    {row.boar?.code} ↗
+                </Button>
+            )
         },
         {
             header: 'Responsable',
@@ -44,20 +59,14 @@ const ViewExtractions = () => {
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="farm-primary-button btn-icon">
+                    <Button id={`details-button-${row._id}`} className="farm-primary-button btn-icon" onClick={(e) => { e.stopPropagation(); setSelectedExtraction(row); toggleModal('extractionDetails') }} >
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
+                    <UncontrolledTooltip target={`details-button-${row._id}`}>
+                        Ver detalles
+                    </UncontrolledTooltip>
                 </div>
             ),
-        },
-    ];
-
-    const categories = stats.monthlyAvg ? stats.monthlyAvg.map((m: any) => `${m.month}/${m.year}`) : [];
-
-    const series = [
-        {
-            name: "Promedio Volumen",
-            data: stats.monthlyAvg ? stats.monthlyAvg.map((m: any) => m.avgVolume) : [],
         },
     ];
 
@@ -100,6 +109,11 @@ const ViewExtractions = () => {
         }
     }
 
+    const openPigDetailsModal = (extraction: any) => {
+        setSelectedExtraction(extraction);
+        toggleModal('pigDetails')
+    }
+
 
     const onSaveExtraction = () => {
         toggleModal('create')
@@ -115,9 +129,7 @@ const ViewExtractions = () => {
 
     if (loading) {
         return (
-            <div className="d-flex justify-content-center align-items-center vh-100 page-content">
-                <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
-            </div>
+            <LoadingAnimation />
         );
     }
 
@@ -205,21 +217,23 @@ const ViewExtractions = () => {
                 </ModalBody>
             </Modal>
 
+            <Modal size="lg" isOpen={modals.pigDetails} toggle={() => toggleModal("pigDetails")} centered>
+                <ModalHeader toggle={() => toggleModal("pigDetails")}>Detalles del verraco</ModalHeader>
+                <ModalBody>
+                    <PigDetailsModal pigId={selectedExtraction.boar?._id} showAllDetailsButton={true} />
+                </ModalBody>
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.extractionDetails} toggle={() => toggleModal("extractionDetails")} centered>
+                <ModalHeader toggle={() => toggleModal("extractionDetails")}>Detalles de la extracción</ModalHeader>
+                <ModalBody>
+                    <ExtractionDetails extractionId={selectedExtraction?._id} />
+                </ModalBody>
+            </Modal>
+
+
             {alertConfig.visible && (
-                <Alert
-                    color={alertConfig.color}
-                    className="position-fixed bottom-0 start-50 translate-middle-x d-flex align-items-center gap-2 shadow rounded-3 p-3"
-                    style={{ minWidth: "350px", maxWidth: "90%", zIndex: 1050 }}
-                >
-                    {alertConfig.color === "success" && <FiCheckCircle size={22} />}
-                    {alertConfig.color === "danger" && <FiXCircle size={22} />}
-                    {alertConfig.color === "warning" && <FiAlertCircle size={22} />}
-                    {alertConfig.color === "info" && <FiInfo size={22} />}
-
-                    <span className="flex-grow-1 text-black">{alertConfig.message}</span>
-
-                    <Button close onClick={() => setAlertConfig({ ...alertConfig, visible: false })} />
-                </Alert>
+                <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
             )}
         </div>
     )

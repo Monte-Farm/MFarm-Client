@@ -131,7 +131,7 @@ const CustomTable = <T,>({
                 paginatedData.map((row, rowIndex) => (
                   <tr
                     key={rowIndex}
-                    className={rowClickable ? "table-row-clickable" : ""}
+                    className={rowClickable ? "table-row-clickable" : "" }
                     onClick={() => rowClickable && onRowClick && onRowClick(row)}
                     style={{ cursor: rowClickable ? "pointer" : "default" }}
                   >

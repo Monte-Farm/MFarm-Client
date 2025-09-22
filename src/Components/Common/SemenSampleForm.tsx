@@ -3,7 +3,7 @@ import { ExtractionData, SemenSample } from "common/data_interfaces";
 import { useFormik } from "formik";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
-import { Alert, Button, FormFeedback, Input, Label, Nav, NavItem, NavLink, Spinner, TabContent, Table, TabPane } from "reactstrap";
+import { Alert, Button, FormFeedback, Input, Label, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, Table, TabPane } from "reactstrap";
 import * as Yup from 'yup';
 import classnames from "classnames";
 import SelectableTable from "./SelectableTable";
@@ -13,6 +13,7 @@ import SuccessModal from "./SuccessModal";
 import { HttpStatusCode } from "axios";
 import DatePicker from "react-flatpickr";
 import SimpleBar from "simplebar-react";
+import PigDetailsModal from "./DetailsPigModal";
 
 interface SemenSampleFormProps {
     initialData?: SemenSample;
@@ -20,32 +21,7 @@ interface SemenSampleFormProps {
     onCancel: () => void;
 }
 
-const extractionsColumns: Column<any>[] = [
-    { header: 'Lote', accessor: 'batch', type: 'text', isFilterable: true },
-    { header: 'Fecha de extracción', accessor: 'date', type: 'date', isFilterable: false },
-    {
-        header: 'Verraco',
-        accessor: 'boar',
-        type: 'text',
-        isFilterable: true,
-        render: (_, row) => row.boar?.code || "Sin código"
-    },
-    {
-        header: 'Volumen',
-        accessor: 'volume',
-        type: 'text',
-        isFilterable: true,
-        render: (_, row) => row ? `${row.volume} ${row.unit_measurement}` : "Sin volumen"
-    },
-    {
-        header: 'Responsable',
-        accessor: 'technician',
-        type: 'text',
-        isFilterable: true,
-        render: (_, row) => row.technician ? `${row.technician.name} ${row.technician.lastname}` : "Sin responsable"
-    },
-    { header: 'Ubicacion de la extracción', accessor: 'extraction_location', type: 'text', isFilterable: true },
-]
+
 
 const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, onCancel }) => {
     const configContext = useContext(ConfigContext);
@@ -59,6 +35,48 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
     const [alertExtractionEmpty, setAlertExtractionEmpty] = useState<boolean>(false)
     const [dosesCount, setDosesCount] = useState<number>(0);
     const [selectedExtraction, setSelectedExtraction] = useState<ExtractionData | null>(null)
+    const [idSelectedPig, setIdSelectedPig] = useState<string>("");
+    const [modalOpen, setModalOpen] = useState(false);
+
+    const extractionsColumns: Column<any>[] = [
+        { header: 'Lote', accessor: 'batch', type: 'text', isFilterable: true },
+        {
+            header: 'Verraco',
+            accessor: 'boar',
+            render: (_, row) => (
+                <Button
+                    className="text-underline"
+                    color="link"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setIdSelectedPig(row.boar?._id);
+                        toggleModal();
+                    }}
+                >
+                    {row.boar?.code} ↗
+                </Button>
+            )
+        },
+        { header: 'Fecha de extracción', accessor: 'date', type: 'date', isFilterable: false },
+        {
+            header: 'Volumen',
+            accessor: 'volume',
+            type: 'text',
+            isFilterable: true,
+            render: (_, row) => row ? `${row.volume} ${row.unit_measurement}` : "Sin volumen"
+        },
+        {
+            header: 'Responsable',
+            accessor: 'technician',
+            type: 'text',
+            isFilterable: true,
+            render: (_, row) => row.technician ? `${row.technician.name} ${row.technician.lastname}` : "Sin responsable"
+        },
+        { header: 'Ubicacion de la extracción', accessor: 'extraction_location', type: 'text', isFilterable: true },
+    ]
+
+    const toggleModal = () => setModalOpen(!modalOpen);
+
 
     function toggleArrowTab(tab: any) {
         if (activeStep !== tab) {
@@ -94,9 +112,11 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
             .required("Por favor, ingrese un número"),
         vitality_percent: Yup.number()
             .min(0, "El número no puede ser menor a 0")
+            .max(100, 'El número no puede ser mayor a 100')
             .required("Por favor, ingrese un número"),
         abnormal_percent: Yup.number()
             .min(0, "El número no puede ser menor a 0")
+            .max(100, 'El número no puede ser mayor a 100')
             .required("Por favor, ingrese un número"),
         pH: Yup.number()
             .min(0, "El número no puede ser menor a 0")
@@ -118,6 +138,9 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
         post_dilution_motility: Yup.number()
             .min(0, "El número no puede ser menor a 0")
             .notRequired(),
+        alert_days_before_expiration: Yup.number()
+            .min(0, "El número no puede ser menor a 0")
+            .required("Por favor, ingrese un numero"),
     });
 
     const formik = useFormik<SemenSample>({
@@ -139,7 +162,11 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
             expiration_date: null,
             post_dilution_motility: undefined,
             doses: [],
-            technician: userLogged._id || ''
+            technician: userLogged._id || '',
+            total_doses: 0,
+            available_doses: 0,
+            lot_status: 'available',
+            alert_days_before_expiration: 3,
         },
         enableReinitialize: true,
         validationSchema,
@@ -192,6 +219,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
             },
             conservation_method: true,
             expiration_date: true,
+            alert_days_before_expiration: true
         });
 
         try {
@@ -244,6 +272,8 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
         }));
 
         formik.setFieldValue('doses', dosesArray);
+        formik.setFieldValue('total_doses', dosesArray.length);
+        formik.setFieldValue('available_doses', dosesArray.length);
     }, [dosesCount, formik.values.extraction_id, extractions, formik.values.diluent.volume]);
 
     return (
@@ -376,6 +406,28 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
                                     min={1}
                                 />
                             </div>
+
+                            <div className="mt-4 w-50">
+                                <Label htmlFor="alert_days_before_expiration" className="form-label">Alerta de expiración</Label>
+                                <div className="input-group">
+                                    <Input
+                                        className="form-control"
+                                        type="number"
+                                        id="alert_days_before_expiration"
+                                        name="alert_days_before_expiration"
+                                        value={formik.values.alert_days_before_expiration}
+                                        onChange={formik.handleChange}
+                                        onBlur={formik.handleBlur}
+                                        invalid={formik.touched.alert_days_before_expiration && !!formik.errors.alert_days_before_expiration}
+                                        min={0}
+                                    />
+                                    <span className="input-group-text">dias antes</span>
+                                    {formik.touched.alert_days_before_expiration && formik.errors.alert_days_before_expiration && (
+                                        <FormFeedback>{formik.errors.alert_days_before_expiration}</FormFeedback>
+                                    )}
+                                </div>
+                            </div>
+
                         </div>
 
                         <div className="d-flex gap-2">
@@ -835,6 +887,15 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
                     <Button close onClick={() => setAlertConfig({ ...alertConfig, visible: false })} />
                 </Alert>
             )}
+
+            <Modal isOpen={modalOpen} toggle={toggleModal} size="lg" centered className="border-0">
+                <ModalHeader toggle={toggleModal} className="border-0 pb-0">
+                    <h4 className="modal-title text-primary fw-bold">Detalles de la extracción</h4>
+                </ModalHeader>
+                <ModalBody className="p-4">
+                    <PigDetailsModal pigId={idSelectedPig} showAllDetailsButton={false} />
+                </ModalBody>
+            </Modal>
 
             <SuccessModal isOpen={successModalOpen} onClose={onSave} message={"Muestra registrada con éxito"} />
         </>

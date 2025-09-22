@@ -14,6 +14,7 @@ import { DragDropContext, Draggable, Droppable, DropResult } from "react-beautif
 import SimpleBar from "simplebar-react";
 import SuccessModal from "./SuccessModal";
 import { HttpStatusCode } from "axios";
+import PigDetailsModal from "./DetailsPigModal";
 
 
 interface InseminationFormProps {
@@ -21,14 +22,6 @@ interface InseminationFormProps {
     onSave: () => void;
     onCancel: () => void;
 }
-
-const sowsColumns: Column<any>[] = [
-    { header: 'Codigo', accessor: 'code', type: 'text', isFilterable: true },
-    { header: 'Raza', accessor: 'breed', type: 'text', isFilterable: true },
-    { header: 'Peso actual', accessor: 'weight', type: 'number', isFilterable: true },
-    { header: 'Etapa actual', accessor: 'currentStage', type: 'text', isFilterable: true },
-    { header: 'Fecha de N.', accessor: 'birthdate', type: 'date' },
-]
 
 const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave, onCancel }) => {
     const configContext = useContext(ConfigContext);
@@ -46,6 +39,32 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
     const [extractionData, setExtractionData] = useState<any>(null);
     const [selectedDoses, setSelectedDoses] = useState<any[]>([]);
     const [alertDosesIncomplete, setAlertDosesIncomplete] = useState(false);
+    const [pigDetailsmodalOpen, setPigDetailsModalOpen] = useState(false);
+    const [idSelectedPig, setIdSelectedPig] = useState<string>("");
+
+    const sowsColumns: Column<any>[] = [
+        {
+            header: 'Codigo',
+            accessor: 'code',
+            render: (_, row) => (
+                <Button
+                    className="text-underline"
+                    color="link"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setIdSelectedPig(row._id);
+                        togglePigDetailsModal();
+                    }}
+                >
+                    {row.code} ↗
+                </Button>
+            )
+        },
+        { header: 'Raza', accessor: 'breed', type: 'text', isFilterable: true },
+        { header: 'Peso actual', accessor: 'weight', type: 'number', isFilterable: true },
+        { header: 'Etapa actual', accessor: 'currentStage', type: 'text', isFilterable: true },
+        { header: 'Fecha de N.', accessor: 'birthdate', type: 'date' },
+    ]
 
     const dosesColumns: Column<any>[] = [
         { header: 'Codigo', accessor: 'code', type: 'text', isFilterable: true },
@@ -91,6 +110,8 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
 
 
     const toggleModal = () => setModalOpen(!modalOpen);
+    const togglePigDetailsModal = () => setPigDetailsModalOpen(!pigDetailsmodalOpen);
+
 
     function toggleArrowTab(tab: any) {
         if (activeStep !== tab) {
@@ -455,7 +476,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                                                                 <CardBody className="d-flex flex-column gap-3">
                                                                     <div className="d-flex gap-2">
                                                                         <div className="w-50">
-                                                                            <Label>Fecha y hora</Label>
+                                                                            <Label>Fecha y hora de aplicación</Label>
                                                                             <DatePicker
                                                                                 className="form-control"
                                                                                 value={dose.time ?? undefined}
@@ -732,6 +753,15 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                             <p className="text-muted mb-0">Cargando información...</p>
                         </div>
                     )}
+                </ModalBody>
+            </Modal>
+
+            <Modal isOpen={pigDetailsmodalOpen} toggle={togglePigDetailsModal} size="lg" centered className="border-0">
+                <ModalHeader toggle={togglePigDetailsModal} className="border-0 pb-0">
+                    <h4 className="modal-title text-primary fw-bold">Detalles de la cerda</h4>
+                </ModalHeader>
+                <ModalBody className="p-4">
+                    <PigDetailsModal pigId={idSelectedPig} showAllDetailsButton={false} />
                 </ModalBody>
             </Modal>
 

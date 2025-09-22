@@ -15,6 +15,7 @@ import { handleSearchData } from "./SorttingData";
 import { error } from "console";
 import { HttpStatusCode } from "axios";
 import SuccessModal from "./SuccessModal";
+import PigDetailsModal from "./DetailsPigModal";
 
 
 interface ExtractionFormProps {
@@ -22,14 +23,6 @@ interface ExtractionFormProps {
     onSave: () => void;
     onCancel: () => void;
 }
-
-const boarsColumns: Column<any>[] = [
-    { header: 'Codigo', accessor: 'code', type: 'text', isFilterable: true },
-    { header: 'Raza', accessor: 'breed', type: 'text', isFilterable: true },
-    { header: 'Peso actual', accessor: 'weight', type: 'number', isFilterable: true },
-    { header: 'Etapa actual', accessor: 'currentStage', type: 'text', isFilterable: true },
-    { header: 'Fecha de N.', accessor: 'birthdate', type: 'date' },
-]
 
 const ExtractionForm: React.FC<ExtractionFormProps> = ({ initialData, onSave, onCancel }) => {
     const configContext = useContext(ConfigContext);
@@ -43,6 +36,34 @@ const ExtractionForm: React.FC<ExtractionFormProps> = ({ initialData, onSave, on
     const [alertBoarEmpty, setAlertBoarEmpty] = useState<boolean>(false)
     const [alertExtractionDataEmpty, setAlertExtractionDataEmpty] = useState<boolean>(false)
     const [successModalOpen, setSuccessModalOpen] = useState<boolean>(false)
+    const [modalOpen, setModalOpen] = useState(false);
+    const [idSelectedPig, setIdSelectedPig] = useState<string>("");
+
+    const boarsColumns: Column<any>[] = [
+        {
+            header: 'Codigo',
+            accessor: 'code',
+            render: (_, row) => (
+                <Button
+                    className="text-underline"
+                    color="link"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setIdSelectedPig(row._id);
+                        toggleModal();
+                    }}
+                >
+                    {row.code} ↗
+                </Button>
+            )
+        },
+        { header: 'Raza', accessor: 'breed', type: 'text', isFilterable: true },
+        { header: 'Peso actual', accessor: 'weight', type: 'number', isFilterable: true },
+        { header: 'Etapa actual', accessor: 'currentStage', type: 'text', isFilterable: true },
+        { header: 'Fecha de N.', accessor: 'birthdate', type: 'date' },
+    ]
+
+    const toggleModal = () => setModalOpen(!modalOpen);
 
     function toggleArrowTab(tab: any) {
         if (activeStep !== tab) {
@@ -568,6 +589,15 @@ const ExtractionForm: React.FC<ExtractionFormProps> = ({ initialData, onSave, on
                     </TabPane>
                 </TabContent>
             </form>
+
+            <Modal isOpen={modalOpen} toggle={toggleModal} size="lg" centered className="border-0">
+                <ModalHeader toggle={toggleModal} className="border-0 pb-0">
+                    <h4 className="modal-title text-primary fw-bold">Detalles de la extracción</h4>
+                </ModalHeader>
+                <ModalBody className="p-4">
+                    <PigDetailsModal pigId={idSelectedPig} showAllDetailsButton={false} />
+                </ModalBody>
+            </Modal>
 
             {alertConfig.visible && (
                 <Alert color={alertConfig.color} className="d-flex align-items-center gap-2 shadow rounded-3 p-3 mt-4">

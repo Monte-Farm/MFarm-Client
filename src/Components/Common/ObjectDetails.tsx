@@ -4,7 +4,7 @@ import { Badge } from "reactstrap";
 interface Attribute {
     key: string;
     label: string;
-    type?: string; // text, date, status, etc.
+    type?: string;
 }
 
 interface ProductDetailsProps {
@@ -40,7 +40,12 @@ const ObjectDetails: React.FC<ProductDetailsProps> = ({
             <table className="table">
                 <tbody>
                     {attributes.map(({ key, label, type }) => {
-                        const value = getNestedValue(object, key);
+                        let value = getNestedValue(object, key);
+
+                        // Si es string vacío => "-"
+                        if (typeof value === "string" && value.trim() === "") {
+                            value = "-";
+                        }
 
                         return (
                             <tr key={key}>
@@ -54,14 +59,14 @@ const ObjectDetails: React.FC<ProductDetailsProps> = ({
                                         ) : (
                                             <Badge color="secondary">{value ?? "No disponible"}</Badge>
                                         )
-                                    ) : type === "date" && value ? (
+                                    ) : type === "date" && value && value !== "-" ? (
                                         new Date(value).toLocaleDateString("es-MX", {
                                             day: "2-digit",
                                             month: "2-digit",
                                             year: "numeric",
                                         })
                                     ) : (
-                                        value ?? "No disponible"
+                                        value ?? "-"
                                     )}
                                 </td>
                             </tr>

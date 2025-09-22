@@ -71,7 +71,6 @@ import UserDetails from "pages/Users/UserDetails";
 import FarmDetails from "pages/Farms/FarmDetails";
 import ViewGroups from "pages/Groups/ViewGroups";
 import CreateGroup from "pages/Groups/CreateGroup";
-import ViewLaboratory from "pages/Laboratory/ViewLaboratory";
 import ViewExtractions from "pages/Laboratory/ViewExtractions";
 import ViewSamples from "pages/Laboratory/ViewSamples";
 import ViewGestations from "pages/Gestation/ViewInseminations";
@@ -158,7 +157,6 @@ const authProtectedRoutes = [
   { path: "/groups/create_group", component: <CreateGroup /> },
 
   //Laboratory
-  { path: "/laboratory/view_laboratory", component: <ViewLaboratory /> },
   { path: "/laboratory/extractions/view_extractions", component: <ViewExtractions /> },
   { path: "/laboratory/samples/view_samples", component: <ViewSamples /> },
 

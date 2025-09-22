@@ -344,6 +344,14 @@ export interface SemenSample {
         unit_measurement: string;
         status: "available" | "used" | "discarded" | "expired";
     }[];
+    total_doses: number;
+    available_doses: number;
+
+    lot_status: "available" | "near_expiration" | "expired" | "out_of_stock" | "discarded";
+    discard_reason?: string;
+    discarded_by?: string;
+
+    alert_days_before_expiration: number;
 }
 
 export interface InseminationData {

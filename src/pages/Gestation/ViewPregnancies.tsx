@@ -8,6 +8,7 @@ import LoadingGif from '../../assets/images/loading-gif.gif'
 import InseminationFilters from "Components/Common/InseminationFilters";
 import CustomTable from "Components/Common/CustomTable";
 import AbortionForm from "Components/Common/AbortionForm";
+import PigDetailsModal from "Components/Common/DetailsPigModal";
 
 
 const ViewPregnancies = () => {
@@ -16,17 +17,28 @@ const ViewPregnancies = () => {
     const configContext = useContext(ConfigContext);
     const [loading, setLoading] = useState<boolean>(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ create: false, update: false, viewPDF: false, abortion: false });
+    const [modals, setModals] = useState({ create: false, update: false, viewPDF: false, abortion: false, pigDetails: false });
     const [pregnancies, setPregnancies] = useState<any[]>([])
     const [selectedPregnancie, setSelectedPregnancie] = useState({})
+    const [selectedPigId, setSelectedPigId] = useState<any>({})
 
     const inseminationsColumns: Column<any>[] = [
         {
             header: "Cerda",
             accessor: "sow",
             type: "text",
-            isFilterable: true,
-            render: (_, row) => row.sow.code || "Sin código",
+            render: (_, row) => (
+                <Button
+                    className="text-underline fs-5"
+                    color="link"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        openPigDetailsModal(row)
+                    }}
+                >
+                    {row.sow?.code} ↗
+                </Button>
+            )
         },
         { header: "Fecha de inseminación", accessor: "date", type: "date", isFilterable: false },
         {
@@ -78,6 +90,11 @@ const ViewPregnancies = () => {
             ),
         },
     ];
+
+    const openPigDetailsModal = (data: any) => {
+        setSelectedPigId(data.sow?._id);
+        toggleModal('pigDetails')
+    }
 
     const openAbortionModal = (row: any) => {
         setSelectedPregnancie(row);
@@ -173,13 +190,9 @@ const ViewPregnancies = () => {
                     </Card>
                 </div>
 
-                <Card style={{height: '71vh'}}>
+                <Card style={{ height: '71vh' }}>
                     <CardHeader className="d-flex">
                         <h4>Embarazos</h4>
-                        <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>
-                            <i className="ri-add-line me-2" />
-                            Registrar inseminación
-                        </Button>
                     </CardHeader>
 
                     <CardBody>
@@ -188,6 +201,13 @@ const ViewPregnancies = () => {
                     </CardBody>
                 </Card>
             </Container>
+
+            <Modal size="lg" isOpen={modals.pigDetails} toggle={() => toggleModal("pigDetails")} centered>
+                <ModalHeader toggle={() => toggleModal("pigDetails")}>Detalles del verraco</ModalHeader>
+                <ModalBody>
+                    <PigDetailsModal pigId={selectedPigId} showAllDetailsButton={true} />
+                </ModalBody>
+            </Modal>
 
             <Modal size="lg" isOpen={modals.abortion} toggle={() => toggleModal("abortion")} backdrop="static" keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("abortion")}>Registrar perdida</ModalHeader>
