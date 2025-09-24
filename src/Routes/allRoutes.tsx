@@ -76,6 +76,8 @@ import ViewSamples from "pages/Laboratory/ViewSamples";
 import ViewGestations from "pages/Gestation/ViewInseminations";
 import ViewPregnancies from "pages/Gestation/ViewPregnancies";
 import ViewInseminations from "pages/Gestation/ViewInseminations";
+import SampleDetails from "pages/Laboratory/SampleDetails";
+import InseminationDetails from "pages/Gestation/InseminationDetails";
 
 
 
@@ -159,9 +161,11 @@ const authProtectedRoutes = [
   //Laboratory
   { path: "/laboratory/extractions/view_extractions", component: <ViewExtractions /> },
   { path: "/laboratory/samples/view_samples", component: <ViewSamples /> },
+  { path: "/laboratory/samples/sample_details/:sample_id", component: <SampleDetails /> },
 
   //Gestation
   { path: "/gestation/view_inseminations", component: <ViewInseminations /> },
+  { path: "/gestation/insemination_details/:insemination_id", component: <InseminationDetails /> },
   { path: "/gestation/view_pregnancies", component: <ViewPregnancies /> },
 
 

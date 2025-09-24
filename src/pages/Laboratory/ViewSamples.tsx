@@ -12,6 +12,7 @@ import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Column } from "common/data/data_types";
 import DiscardSampleForm from "Components/Common/DiscardSampleForm";
 import PigDetailsModal from "Components/Common/DetailsPigModal";
+import { useNavigate } from "react-router-dom";
 
 const ViewSamples = () => {
     document.title = 'Ver muestras de semen | Management System'
@@ -25,6 +26,7 @@ const ViewSamples = () => {
     const [filteredSamples, setFilteredSamples] = useState<SemenSample[]>([]);
     const [activeKpi, setActiveKpi] = useState<string | null>(null);
     const [selectedPig, setSelectedPig] = useState<any>({})
+    const navigate = useNavigate();
 
     const samplesColumns: Column<any>[] = [
         {
@@ -118,14 +120,14 @@ const ViewSamples = () => {
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button id={`discard-button-${row._id}`} className="farm-secondary-button btn-icon" onClick={() => openDiscardModal(row)}>
+                    <Button id={`discard-button-${row._id}`} className="farm-secondary-button btn-icon" onClick={() => openDiscardModal(row)} disabled={row.lot_status === 'discarded' || row.lot_status === 'expired' || row.lot_status === 'out_of_stock'}>
                         <i className="ri-forbid-line align-middle"></i>
                     </Button>
                     <UncontrolledTooltip target={`discard-button-${row._id}`}>
                         Descartar lote
                     </UncontrolledTooltip>
 
-                    <Button id={`details-button-${row._id}`} className="farm-primary-button btn-icon">
+                    <Button id={`details-button-${row._id}`} className="farm-primary-button btn-icon" onClick={() => navigate(`/laboratory/samples/sample_details/${row._id}`)}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
                     <UncontrolledTooltip target={`details-button-${row._id}`}>

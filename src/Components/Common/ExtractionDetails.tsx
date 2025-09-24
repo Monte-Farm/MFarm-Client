@@ -48,15 +48,11 @@ const ExtractionDetails: React.FC<ExtractionDetailsProps> = ({ extractionId }) =
             try {
                 setLoading(true);
 
-                const extractionResponse = await configContext.axiosHelper.get(
-                    `${configContext.apiUrl}/extraction/find_by_id/${extractionId}`
-                );
+                const extractionResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/extraction/find_by_id/${extractionId}`);
                 const extraction = extractionResponse.data.data;
                 setExtractionDetails(extraction);
 
-                const boarResponse = await configContext.axiosHelper.get(
-                    `${configContext.apiUrl}/pig/find_by_id/${extraction.boar._id}`
-                );
+                const boarResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/pig/find_by_id/${extraction.boar._id}`);
                 setBoarDetails(boarResponse.data.data);
             } catch (error) {
                 console.error("Error cargando datos", error);
@@ -118,7 +114,7 @@ const ExtractionDetails: React.FC<ExtractionDetailsProps> = ({ extractionId }) =
                         <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
                             Información del verraco
 
-                            <Button className="fs-6" color="link" onClick={() => navigate(`/pigs/pig_details/${boarDetails._id}`)}>
+                            <Button className="fs-6 p-0" color="link" onClick={() => navigate(`/pigs/pig_details/${boarDetails._id}`)}>
                                 Todos los detalles ↗
                             </Button>
                         </CardHeader>

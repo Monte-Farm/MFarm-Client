@@ -170,6 +170,7 @@ export interface Attribute {
     key: string;
     label: string;
     type?: AttributeType;
+    render?: (value: any, object: Record<string, any>) => React.ReactNode;
 }
 
 

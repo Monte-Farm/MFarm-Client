@@ -5,9 +5,10 @@ interface Attribute {
     key: string;
     label: string;
     type?: string;
+    render?: (value: any, object: Record<string, any>) => React.ReactNode; // 👈 agregado
 }
 
-interface ProductDetailsProps {
+interface ObjectDetailsProps {
     attributes: Attribute[];
     object: Record<string, any>;
     showImage?: boolean;
@@ -18,7 +19,7 @@ const getNestedValue = (obj: Record<string, any>, path: string): any => {
     return path.split(".").reduce((acc, key) => acc?.[key], obj);
 };
 
-const ObjectDetails: React.FC<ProductDetailsProps> = ({
+const ObjectDetails: React.FC<ObjectDetailsProps> = ({
     attributes,
     object,
     showImage = true,
@@ -32,17 +33,20 @@ const ObjectDetails: React.FC<ProductDetailsProps> = ({
                         src={imageSrc}
                         alt="Detalle del objeto"
                         className="rounded-top"
-                        style={{ maxHeight: "250px", maxWidth: "100%", objectFit: "contain" }}
+                        style={{
+                            maxHeight: "250px",
+                            maxWidth: "100%",
+                            objectFit: "contain",
+                        }}
                     />
                 </div>
             )}
 
             <table className="table">
                 <tbody>
-                    {attributes.map(({ key, label, type }) => {
+                    {attributes.map(({ key, label, type, render }) => {
                         let value = getNestedValue(object, key);
 
-                        // Si es string vacío => "-"
                         if (typeof value === "string" && value.trim() === "") {
                             value = "-";
                         }
@@ -51,13 +55,22 @@ const ObjectDetails: React.FC<ProductDetailsProps> = ({
                             <tr key={key}>
                                 <td className="fw-medium fs-5">{label}</td>
                                 <td className="fs-5">
-                                    {type === "status" ? (
-                                        value === true || value === "activo" || value === "vivo" ? (
+                                    {render ? (
+                                        // 👈 Si viene `render`, lo usamos
+                                        render(value, object)
+                                    ) : type === "status" ? (
+                                        value === true ||
+                                            value === "activo" ||
+                                            value === "vivo" ? (
                                             <Badge color="success">Activo</Badge>
-                                        ) : value === false || value === "inactivo" || value === "muerto" ? (
+                                        ) : value === false ||
+                                            value === "inactivo" ||
+                                            value === "muerto" ? (
                                             <Badge color="danger">Inactivo</Badge>
                                         ) : (
-                                            <Badge color="secondary">{value ?? "No disponible"}</Badge>
+                                            <Badge color="secondary">
+                                                {value ?? "No disponible"}
+                                            </Badge>
                                         )
                                     ) : type === "date" && value && value !== "-" ? (
                                         new Date(value).toLocaleDateString("es-MX", {
