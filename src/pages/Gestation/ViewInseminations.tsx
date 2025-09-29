@@ -12,12 +12,13 @@ import DiagnosisForm from "Components/Common/DiagnoseForm";
 import HeatForm from "Components/Common/HeatForm";
 import InseminationFilters from "Components/Common/InseminationFilters";
 import PigDetailsModal from "Components/Common/DetailsPigModal";
+import { useNavigate } from "react-router-dom";
 
 const ViewInseminations = () => {
     document.title = "Ver inseminaciones | Management System"
     const userLoggged = getLoggedinUser();
     const configContext = useContext(ConfigContext);
-
+    const navigate = useNavigate();
     const [loading, setLoading] = useState<boolean>(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ create: false, update: false, viewPDF: false, diagnosis: false, heat: false, pigDetails: false });
@@ -117,10 +118,10 @@ const ViewInseminations = () => {
                         Registrar diagnóstico
                     </UncontrolledTooltip>
 
-                    <Button id={`view-button-${row._id}`} className="farm-primary-button btn-icon">
+                    <Button id={`view-button-${row._id}`} className="farm-primary-button btn-icon" onClick={() => navigate(`/gestation/insemination_details/${row._id}`)}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
-                    <UncontrolledTooltip target={`view-button-${row._id}`}>
+                    <UncontrolledTooltip target={`view-button-${row._id}`} >
                         Ver detalles
                     </UncontrolledTooltip>
                 </div>
@@ -302,7 +303,7 @@ const ViewInseminations = () => {
                 </ModalBody>
             </Modal>
 
-             <Modal size="lg" isOpen={modals.pigDetails} toggle={() => toggleModal("pigDetails")} centered>
+            <Modal size="lg" isOpen={modals.pigDetails} toggle={() => toggleModal("pigDetails")} centered>
                 <ModalHeader toggle={() => toggleModal("pigDetails")}>Detalles del verraco</ModalHeader>
                 <ModalBody>
                     <PigDetailsModal pigId={selectedPigId} showAllDetailsButton={true} />
