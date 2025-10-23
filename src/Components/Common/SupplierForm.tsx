@@ -191,13 +191,15 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCa
               invalid={formik.touched.supplier_type && !!formik.errors.supplier_type}
             >
               <option value="">Seleccione un tipo</option>
-              {configContext?.configurationData?.supplierCategories.map((value) => (
-                <option key={value} value={value}>
-                  {value}
-                </option>
-              ))}
+              <option value="Productos de limpieza">Productos de limpieza</option>
+              <option value="Alimentos y piensos">Alimentos y piensos</option>
+              <option value="Medicamentos y veterinaria">Medicamentos y veterinaria</option>
+              <option value="Equipamiento y herramientas">Equipamiento y herramientas</option>
+              <option value="Servicios">Servicios</option>
             </Input>
-            {formik.touched.supplier_type && formik.errors.supplier_type && <FormFeedback>{formik.errors.supplier_type}</FormFeedback>}
+            {formik.touched.supplier_type && formik.errors.supplier_type && (
+              <FormFeedback>{formik.errors.supplier_type}</FormFeedback>
+            )}
           </Col>
         </Row>
 

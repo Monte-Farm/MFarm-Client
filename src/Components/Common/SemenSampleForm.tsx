@@ -33,7 +33,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
     const [alertExtractionEmpty, setAlertExtractionEmpty] = useState<boolean>(false)
-    const [dosesCount, setDosesCount] = useState<number>(0);
+    const [doseSize, setDoseSize] = useState<number>(0);
     const [selectedExtraction, setSelectedExtraction] = useState<ExtractionData | null>(null)
     const [idSelectedPig, setIdSelectedPig] = useState<string>("");
     const [modalOpen, setModalOpen] = useState(false);
@@ -138,7 +138,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
         post_dilution_motility: Yup.number()
             .min(0, "El número no puede ser menor a 0")
             .notRequired(),
-        alert_days_before_expiration: Yup.number()
+        alert_hours_before_expiration: Yup.number()
             .min(0, "El número no puede ser menor a 0")
             .required("Por favor, ingrese un numero"),
     });
@@ -166,7 +166,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
             total_doses: 0,
             available_doses: 0,
             lot_status: 'available',
-            alert_days_before_expiration: 3,
+            alert_hours_before_expiration: 12
         },
         enableReinitialize: true,
         validationSchema,
@@ -219,7 +219,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
             },
             conservation_method: true,
             expiration_date: true,
-            alert_days_before_expiration: true
+            alert_hours_before_expiration: true
         });
 
         try {
@@ -246,35 +246,62 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
     }, [])
 
     useEffect(() => {
-        setSelectedExtraction(extractions.find(e => e._id === formik.values.extraction_id));
-        if (selectedExtraction) {
-            formik.setFieldValue('diluent.unit_measurement', selectedExtraction.unit_measurement)
-        }
-
-        if (!selectedExtraction || dosesCount < 1) {
+        const selected = extractions.find(e => e._id === formik.values.extraction_id);
+        if (!selected) {
             formik.setFieldValue('doses', []);
             return;
         }
 
-        const unit = selectedExtraction.unit_measurement;
-        const totalVolume = selectedExtraction.volume;
-        const batchCode = selectedExtraction.batch;
-        const semen_volume = Number((totalVolume / dosesCount).toFixed(2))
-        const diluent_volume = Number((formik.values.diluent.volume / dosesCount).toFixed(2))
+        formik.setFieldValue('diluent.unit_measurement', selected.unit_measurement);
 
-        const dosesArray = Array.from({ length: dosesCount }, (_, i) => ({
-            code: `${batchCode}-${(i + 1).toString().padStart(4, '0')}`,
-            semen_volume: semen_volume,
-            diluent_volume: diluent_volume,
-            total_volume: semen_volume + diluent_volume,
-            unit_measurement: unit,
-            status: 'available' as const
-        }));
+        const semenTotal = selected.volume;
+        const diluentTotal = Number(formik.values.diluent.volume || 0);
+        const totalVolume = semenTotal + diluentTotal;
+
+        if (doseSize <= 0) {
+            formik.setFieldValue('doses', []);
+            return;
+        }
+
+        const dosesCount = Math.floor(totalVolume / doseSize);
+        const remainder = totalVolume % doseSize;
+
+        const semenRatio = semenTotal / totalVolume;
+        const diluentRatio = diluentTotal / totalVolume;
+
+        const unit = selected.unit_measurement;
+        const batchCode = selected.batch;
+
+        const dosesArray = Array.from({ length: dosesCount }, (_, i) => {
+            const semen_volume = Number((doseSize * semenRatio).toFixed(2));
+            const diluent_volume = Number((doseSize * diluentRatio).toFixed(2));
+            return {
+                code: `${batchCode}-${(i + 1).toString().padStart(4, '0')}`,
+                semen_volume,
+                diluent_volume,
+                total_volume: doseSize,
+                unit_measurement: unit,
+                status: 'available' as const,
+            };
+        });
+
+        if (remainder > 0) {
+            const semen_volume = Number((remainder * semenRatio).toFixed(2));
+            const diluent_volume = Number((remainder * diluentRatio).toFixed(2));
+            dosesArray.push({
+                code: `${batchCode}-${(dosesArray.length + 1).toString().padStart(4, '0')}`,
+                semen_volume,
+                diluent_volume,
+                total_volume: remainder,
+                unit_measurement: unit,
+                status: 'available' as const,
+            });
+        }
 
         formik.setFieldValue('doses', dosesArray);
         formik.setFieldValue('total_doses', dosesArray.length);
         formik.setFieldValue('available_doses', dosesArray.length);
-    }, [dosesCount, formik.values.extraction_id, extractions, formik.values.diluent.volume]);
+    }, [formik.values.extraction_id, formik.values.diluent.volume, extractions, doseSize]);
 
     return (
         <>
@@ -358,7 +385,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
 
 
                 <TabContent activeTab={activeStep}>
-                    <TabPane id="step-boarselect-tab" tabId={1}>
+                    <TabPane id="step-extractionselect-tab" tabId={1}>
                         <SelectableTable data={extractions} columns={extractionsColumns} selectionMode="single" showPagination={true} rowsPerPage={15} onSelect={(rows) => formik.setFieldValue('extraction_id', rows[0]._id)} />
                         <div className="mt-4 d-flex">
                             <Button className="ms-auto" onClick={() => checkExtractionSelected()}>
@@ -395,13 +422,13 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
                             </div>
 
                             <div className="mt-4 w-50">
-                                <Label htmlFor="doses_count" className="form-label">Número de dosis</Label>
+                                <Label htmlFor="dose_size" className="form-label">Tamaño de dosis</Label>
                                 <Input
                                     type="number"
-                                    id="doses_count"
-                                    name="doses_count"
-                                    value={dosesCount}
-                                    onChange={(e) => setDosesCount(Number(e.target.value))}
+                                    id="dose_size"
+                                    name="dose_size"
+                                    value={doseSize}
+                                    onChange={(e) => setDoseSize(Number(e.target.value))}
                                     placeholder="Ej: 10"
                                     min={1}
                                 />
@@ -415,15 +442,15 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
                                         type="number"
                                         id="alert_days_before_expiration"
                                         name="alert_days_before_expiration"
-                                        value={formik.values.alert_days_before_expiration}
+                                        value={formik.values.alert_hours_before_expiration}
                                         onChange={formik.handleChange}
                                         onBlur={formik.handleBlur}
-                                        invalid={formik.touched.alert_days_before_expiration && !!formik.errors.alert_days_before_expiration}
+                                        invalid={formik.touched.alert_hours_before_expiration && !!formik.errors.alert_hours_before_expiration}
                                         min={0}
                                     />
-                                    <span className="input-group-text">dias antes</span>
-                                    {formik.touched.alert_days_before_expiration && formik.errors.alert_days_before_expiration && (
-                                        <FormFeedback>{formik.errors.alert_days_before_expiration}</FormFeedback>
+                                    <span className="input-group-text">horas antes</span>
+                                    {formik.touched.alert_hours_before_expiration && formik.errors.alert_hours_before_expiration && (
+                                        <FormFeedback>{formik.errors.alert_hours_before_expiration}</FormFeedback>
                                     )}
                                 </div>
                             </div>

@@ -119,7 +119,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
             periodicity: feedingForm.periodicity
         };
 
-        formik.setFieldValue('feeding_history', [...(formik.values.feeding_history ?? []), newEntry]);
+        formik.setFieldValue('feeding_history', [...(formik.values.feedings ?? []), newEntry]);
         setFeedingForm({
             date: null,
             userId: userLogged._id || '',
@@ -135,7 +135,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
     };
 
     const handleRemoveFeedingEntry = (index: number) => {
-        const updated = [...(formik.values.feeding_history ?? [])];
+        const updated = [...(formik.values.feedings ?? [])];
         updated.splice(index, 1);
         formik.setFieldValue('feeding_history', updated);
     };
@@ -213,13 +213,14 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
             area: '',
             group_mother: '',
             observations: '',
+            creation_date: null,
             observations_history: [],
-            userId: userLogged._id || '',
+            responsible: userLogged._id || '',
             farm: userLogged.farm_assigned || '',
             group_history: [],
             pigCount: 0,
             pigsInGroup: [],
-            feeding_history: [],
+            feedings: [],
             medical_treatments: [],
         },
         enableReinitialize: true,
@@ -247,7 +248,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
             !!values.code &&
             !!values.name &&
             !!values.area &&
-            !!values.userId
+            !!values.responsible
         );
     };
 
@@ -834,7 +835,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
                         <div className="mt-4">
                             <h5 className="mb-3 text-primary">Registro de Alimentación</h5>
 
-                            {formik.values.feeding_history && formik.values.feeding_history.length > 0 ? (
+                            {formik.values.feedings && formik.values.feedings.length > 0 ? (
                                 <div className="table-responsive">
                                     <table className="table table-bordered table-nowrap align-middle mb-0 fs-5">
                                         <thead>
@@ -849,7 +850,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {formik.values.feeding_history.map((feed, index) => (
+                                            {formik.values.feedings.map((feed, index) => (
                                                 <tr key={index}>
                                                     <td>
                                                         <span className={`badge ${feed.feedType === 'alimento' ? 'bg-success' :

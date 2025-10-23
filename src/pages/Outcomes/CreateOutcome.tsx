@@ -78,7 +78,7 @@ const CreateOutcome = () => {
 
                 <Card style={{ maxHeight: "75vh" }}>
                     <CardBody>
-                        <OutcomeForm onSubmit={handleCreateOutcome} onCancel={handleCancel}></OutcomeForm>
+                       
                     </CardBody>
                 </Card>
 

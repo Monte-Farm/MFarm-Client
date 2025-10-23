@@ -1,42 +1,43 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Button, Col, Row, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback, Alert, Nav, NavItem, NavLink, TabContent, TabPane, Card, CardBody, CardHeader } from "reactstrap";
+import { Button, Col, Row, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback, Alert, Nav, NavItem, NavLink, TabContent, TabPane, Card, CardBody, CardHeader, Spinner } from "reactstrap";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import SupplierForm from "./SupplierForm";
 import ProductForm from "./ProductForm";
-import Flatpickr from 'react-flatpickr';
+import DatePicker from "react-flatpickr";
 import SelectTable from "./SelectTable";
-import FileUploader from "./FileUploader";
 import { Attribute, IncomeData, ProductData, PurchaseOrderData, SupplierData } from "common/data_interfaces";
 import { ConfigContext } from "App";
 import classnames from "classnames";
 import ObjectDetailsHorizontal from "./ObjectDetailsHorizontal";
 import CustomTable from "./CustomTable";
 import PurchaseOrderProductsTable from "./PurchaseOrderProductsTable";
-import { useNavigate } from "react-router-dom";
-import OrderTable from "./OrderTable";
 import { currencies } from "common/data/currencies";
 import Select from "react-select";
 import { Column } from "common/data/data_types";
+import AlertMessage from "./AlertMesagge";
+import SelectableCustomTable from "./SelectableTable";
+import PurchaseOrderForm from "./PurchaseOrderForm";
+import SuccessModal from "./SuccessModal";
+import { getLoggedinUser } from "helpers/api_helper";
 
 interface IncomeFormProps {
     initialData?: IncomeData;
-    onSubmit: (data: IncomeData) => Promise<void>;
+    onSave: () => void;
     onCancel: () => void;
 }
-const arrayFolders: string[] = []
 
 const incomeAttributes: Attribute[] = [
     { key: 'id', label: 'Identificador de entrada' },
-    { key: 'date', label: 'Fecha de registro' },
-    { key: 'emissionDate', label: 'Fecha de emisión' },
+    { key: 'date', label: 'Fecha de registro', type: 'date' },
+    { key: 'emissionDate', label: 'Fecha de emisión', type: 'date' },
     { key: 'totalPrice', label: 'Precio Total', type: 'currency' },
     { key: 'incomeType', label: 'Tipo de entrada' }
 ];
 
 const purchaseOrderAttributes: Attribute[] = [
-    { key: 'id', label: 'No. de Orden de Compra' },
-    { key: 'date', label: 'Fecha' },
+    { key: 'code', label: 'No. de Orden de Compra' },
+    { key: 'date', label: 'Fecha', type: 'date' },
     { key: 'tax', label: 'Impuesto (%)', type: 'percentage' },
     { key: 'discount', label: 'Descuento (%)', type: 'percentage' },
     { key: 'subtotal', label: 'Subtotal', type: 'currency' },
@@ -52,12 +53,12 @@ const productColumns: Column<any>[] = [
     { header: 'Categoría', accessor: 'category', isFilterable: true, type: "text" },
 ];
 
-const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel }) => {
-    const history = useNavigate();
+const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }) => {
+    const userLogged = getLoggedinUser();
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
-    const [suppliers, setSuppliers] = useState<SupplierData[]>([]);
+    const [suppliers, setSuppliers] = useState<any[]>([]);
     const [selectedSupplier, setSelectedSupplier] = useState<SupplierData | null>(null);
-    const [modals, setModals] = useState({ createSupplier: false, createProduct: false, selectPurchaseOrder: false });
+    const [modals, setModals] = useState({ success: false, createSupplier: false, createProduct: false, selectPurchaseOrder: false, createPurchaseOrder: false });
     const [products, setProducts] = useState([])
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [fileToUpload, setFileToUpload] = useState<File | null>(null)
@@ -70,6 +71,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
     const [selectedCurrency, setSelectecCurrency] = useState()
+    const [mainWarehouseId, setMainWarehouseId] = useState<string>('')
 
     function toggleArrowTab(tab: any) {
         if (activeStep !== tab) {
@@ -83,22 +85,16 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
     }
 
     const purchaseOrdersColumns: Column<any>[] = [
-        { header: 'Código', accessor: 'id', isFilterable: true, type: "text" },
-        { header: 'Fecha', accessor: 'date', isFilterable: true, type: "text" },
-        { header: 'Proveedor', accessor: 'supplier', isFilterable: true, type: "text" },
-        { header: 'Total', accessor: 'totalPrice', isFilterable: true, type: "currency" },
+        { header: 'Código', accessor: 'code', isFilterable: true, type: "text" },
+        { header: 'Fecha', accessor: 'date', isFilterable: true, type: "date" },
         {
-            header: 'Acciones',
-            accessor: 'action',
-            render: (value: any, row: any) => (
-                <div className="d-flex gap-1">
-                    <Button className="farm-primary-button" onClick={() => clicPurchaseOrder(row)}>
-                        {/* <i className="ri-eye-fill align-middle" /> */}
-                        Seleccionar
-                    </Button>
-                </div>
-            )
-        }
+            header: 'Proveedor',
+            accessor: 'supplier.name',
+            isFilterable: true,
+            type: "text",
+            render: (_, row) => <span className="text-black">{row.supplier.name}</span>
+        },
+        { header: 'Total', accessor: 'totalPrice', isFilterable: true, type: "currency" },
     ]
 
     const validationSchema = Yup.object({
@@ -131,17 +127,16 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
 
-    const handleError = (error: any, message: string) => {
-        console.error(message, error);
-        setAlertConfig({ visible: true, color: "danger", message });
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-    };
-
-    const showAlert = (color: string, message: string) => {
-        setAlertConfig({ visible: true, color: color, message: message })
-        setTimeout(() => {
-            setAlertConfig({ ...alertConfig, visible: false })
-        }, 5000);
+    const fetchWarehouseId = async () => {
+        if (!configContext || !userLogged) return;
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/farm/get_main_warehouse/${userLogged.farm_assigned}`);
+            const warehouseId = response.data.data;
+            setMainWarehouseId(warehouseId)
+            formik.setFieldValue('warehouse', warehouseId);
+        } catch (error) {
+            console.error('Error fetching main warehouse ID:', error);
+        }
     }
 
     const fetchSuppliers = async () => {
@@ -151,7 +146,8 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/supplier/find_supplier_status/${true}`);
             setSuppliers(response.data.data);
         } catch (error) {
-            handleError(error, "Ha ocurrido un error al obtener a los proveedores, inténtelo más tarde");
+            console.error('Error fetching data:', { error })
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
         }
     };
 
@@ -163,7 +159,8 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/product`);
             setProducts(response.data.data);
         } catch (error) {
-            handleError(error, "Ha ocurrido un error al obtener los productos, inténtelo más tarde");
+            console.error('Error fetching data:', { error })
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
         }
     };
 
@@ -182,28 +179,27 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
 
 
     const fetchPurchaseOrders = async () => {
+        if (!configContext || !mainWarehouseId) return;
         try {
-            if (!initialData && configContext) {
-                const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/purchase_orders/find_purchase_order_warehouse/AG001`)
-                setPurchaseOrders(response.data.data)
-            }
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/purchase_orders/find_not_purchased/${mainWarehouseId}`)
+            setPurchaseOrders(response.data.data)
         } catch (error) {
             console.error(error, 'Error obtaining the purchase orders')
         }
     }
 
 
-    const formik = useFormik({
+    const formik = useFormik<IncomeData>({
         initialValues: initialData || {
             id: "",
-            warehouse: 'AG001',
-            date: new Date().toLocaleDateString().split("T")[0],
-            emissionDate: "",
+            warehouse: '',
+            date: null,
+            emissionDate: null,
             products: [],
             totalPrice: 0,
             incomeType: "",
             origin: {
-                originType: 'supplier',
+                originType: 'Supplier',
                 id: ""
             },
             documents: [],
@@ -215,15 +211,18 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
         },
         enableReinitialize: true,
         validationSchema,
-        validateOnChange: false,
+        validateOnChange: true,
         validateOnBlur: true,
         onSubmit: async (values, { setSubmitting, resetForm }) => {
+            if (!configContext) return;
             try {
                 setSubmitting(true);
                 if (fileToUpload) {
                     await uploadFile(fileToUpload)
                 }
-                await onSubmit(values);
+
+                const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/incomes/create_income`, values);
+                toggleModal('success');
             } catch (error) {
                 console.error("Error al enviar el formulario:", error);
             } finally {
@@ -237,35 +236,26 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
         formik.setFieldValue('currency', selectedSingle.value);
     }
 
-
-
     const uploadFile = async (file: File) => {
-        arrayFolders.push(`${formik.values.warehouse}`)
-        arrayFolders.push('Incomes')
-        arrayFolders.push(`${formik.values.id}`)
-
         try {
             if (!configContext) return;
 
-            const createFolderResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/google_drive/create_folders`, arrayFolders);
-            const folderId = createFolderResponse.data.data;
-
             try {
-                const uploadResponse = await configContext.axiosHelper.uploadImage(`${configContext.apiUrl}/google_drive/upload_file/${folderId}`, file);
-                const imageId = uploadResponse.data.data;
-                formik.values.documents.push(imageId);
+                const uploadResponse = await configContext.axiosHelper.uploadImage(`${configContext.apiUrl}/upload/upload_file/`, file);
+                formik.setFieldValue('documents', [...formik.values.documents, uploadResponse.data.data]);
             } catch (error) {
                 throw error;
             }
         } catch (error) {
-            handleError(error, "Ha ocurrido un error al guardar el archivo, inténtelo más tarde");
+            console.error('Error fetching data:', { error })
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al guardar el archivo, intentelo mas tarde' })
         }
     }
 
     const handleSupplierChange = (supplierId: string) => {
         const supplier = suppliers.find((s) => s.id === supplierId) || null;
         setSelectedSupplier(supplier);
-        formik.setFieldValue("origin.id", supplierId);
+        formik.setFieldValue("origin.id", supplier._id);
     };
 
     const handleCreateSupplier = async (supplierData: SupplierData) => {
@@ -277,11 +267,12 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
 
             await fetchSuppliers();
             setSelectedSupplier(newSupplier);
-            formik.setFieldValue("origin.id", newSupplier.id);
+            formik.setFieldValue("origin.id", newSupplier._id);
 
-            showAlert('success', 'El proveedor ha sido creado con éxito')
+            setAlertConfig({ visible: true, color: 'success', message: 'Proveedor guardado con exito' })
         } catch (error) {
-            handleError(error, "Ha ocurrido un error al crear al proveedor, inténtelo más tarde");
+            console.error('Error fetching data:', { error })
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al guardar el proveedor, intentelo mas tarde' })
         } finally {
             toggleModal('createSupplier')
         }
@@ -294,16 +285,17 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
             const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/product/create_product`, productData);
 
             await fetchProducts();
-            showAlert('success', 'El producto ha sido creado con éxito')
+            setAlertConfig({ visible: true, color: 'success', message: 'Producto guardado con exito' })
         } catch (error) {
-            handleError(error, "Ha ocurrido un error al crear el producto, inténtelo más tarde");
+            console.error('Error fetching data:', { error })
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al guardar el producto, intentelo mas tarde' })
         } finally {
             toggleModal('createProduct')
         }
     };
 
     const handleProductSelect = (selectedProductsData: Array<{ id: string; quantity: number; price: number }>) => {
-        formik.setFieldValue("products", selectedProductsData); // Actualiza el formulario
+        formik.setFieldValue("products", selectedProductsData);
 
         const updatedSelectedProducts: any = selectedProductsData.map((selectedProduct) => {
             const productData = products.find((p: any) => p.id === selectedProduct.id) as ProductData | undefined;
@@ -313,19 +305,19 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                 : selectedProduct;
         });
 
-        setSelectedProducts(updatedSelectedProducts); // Actualiza el estado en IncomeForm
+        setSelectedProducts(updatedSelectedProducts);
     };
 
     const handleSupplierChangeByName = (supplierName: string) => {
         const supplier = suppliers.find((s) => s.name === supplierName) || null;
         setSelectedSupplier(supplier);
-        formik.setFieldValue("origin.id", supplier?.id);
+        formik.setFieldValue("origin.id", supplier?._id);
     };
 
     const clicPurchaseOrder = (row: any) => {
         setSelectedPurchaseOrder(row);
-        handleSupplierChangeByName(row.supplier);
-        formik.setFieldValue('purchaseOrder', row.id)
+        handleSupplierChangeByName(row.supplier.name);
+        formik.setFieldValue('purchaseOrder', row._id)
 
         setSelectecOrderProducts(row.products);
         formik.setFieldValue("products", row.products);
@@ -336,22 +328,23 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
     };
 
     useEffect(() => {
+        fetchWarehouseId();
         fetchProducts();
         fetchSuppliers();
         fetchNextId();
-        fetchPurchaseOrders()
     }, [])
 
     useEffect(() => {
-        const supplier = suppliers.find((s) => s.id === formik.values.origin.id) || null;
+        fetchPurchaseOrders();
+    }, [mainWarehouseId])
+
+    useEffect(() => {
+        const supplier = suppliers.find((s) => s._id === formik.values.origin.id) || null;
         setSelectedSupplier(supplier);
     }, [formik.values.origin.id, suppliers]);
 
     useEffect(() => {
-        const subtotal = formik.values.products.reduce(
-            (sum, product) => sum + (product.quantity * (product.price ?? 0)),
-            0
-        );
+        const subtotal = formik.values.products.reduce((sum, product) => sum + (product.quantity * (product.price ?? 0)), 0);
         const totalWithTax = subtotal * 1;
         formik.setFieldValue("totalPrice", parseFloat(totalWithTax.toFixed(2)));
     }, [formik.values.products]);
@@ -359,8 +352,6 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
     useEffect(() => {
         formik.validateForm();
     }, [formik.values]);
-
-
 
     return (
         <>
@@ -443,22 +434,15 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
 
                 <TabContent activeTab={activeStep}>
                     <TabPane id="step-selectPurchaseOrder-tab" tabId={1}>
+                        <div className="d-flex gap-2 mb-4">
+                            <h4>Ordenes de Compra</h4>
 
-                        <Card className="" style={{ height: '60vh' }}>
-                            <CardHeader>
-                                <div className="d-flex gap-2">
-                                    <h4>Ordenes de Compra</h4>
-
-                                    <Button className="farm-primary-button ms-auto" onClick={() => history('/purchase_orders/create_purchase_order')}>
-                                        <i className="ri-add-line me-3" />
-                                        Crear Orden de Compra
-                                    </Button>
-                                </div>
-                            </CardHeader>
-                            <CardBody className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(62vh - 100px)', overflowY: 'auto' }}>
-                                <CustomTable columns={purchaseOrdersColumns} data={purchaseOrders} onRowClick={(row: any) => clicPurchaseOrder(row)} rowClickable={true} showPagination={false} />
-                            </CardBody>
-                        </Card>
+                            <Button className="farm-primary-button ms-auto" onClick={() => toggleModal('createPurchaseOrder')}>
+                                <i className="ri-add-line me-3" />
+                                Crear Orden de Compra
+                            </Button>
+                        </div>
+                        <SelectableCustomTable columns={purchaseOrdersColumns} data={purchaseOrders} onSelect={(row: any) => clicPurchaseOrder(row[0])} selectionMode="single" />
                     </TabPane>
 
                     <TabPane id="step-incomeData-tab" tabId={2}>
@@ -492,24 +476,19 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                                 {/* Fecha de registro */}
                                 <Col lg={6}>
                                     <div className="">
-                                        <Label htmlFor="dateInput" className="form-label">Fecha de registro</Label>
-
-                                        <Flatpickr
-                                            id="dateInput"
-                                            className="form-control"
-                                            value={formik.values.date}
-                                            options={{
-                                                dateFormat: "d-m-Y",
-                                                defaultDate: formik.values.date,
+                                        <Label htmlFor="date" className="form-label">Fecha de entrada</Label>
+                                        <DatePicker
+                                            id="date"
+                                            className={`form-control ${formik.touched.date && formik.errors.date ? 'is-invalid' : ''}`}
+                                            value={formik.values.date ?? undefined}
+                                            onChange={(date: Date[]) => {
+                                                if (date[0]) formik.setFieldValue('date', date[0]);
                                             }}
-                                            onChange={(date) => {
-                                                const formattedDate = date[0].toLocaleDateString("es-ES");
-                                                formik.setFieldValue("date", formattedDate);
-                                            }}
-                                            disabled
+                                            options={{ dateFormat: 'd/m/Y' }}
                                         />
-                                        {formik.touched.date && formik.errors.date && <FormFeedback className="d-block">{formik.errors.date}</FormFeedback>}
-
+                                        {formik.touched.date && formik.errors.date && (
+                                            <FormFeedback className="d-block">{formik.errors.date as string}</FormFeedback>
+                                        )}
                                     </div>
                                 </Col>
                             </Row>
@@ -531,20 +510,18 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
 
                                 <div className="w-25">
                                     <Label htmlFor="emissionDateInput" className="form-label">Fecha de emisión de factura</Label>
-                                    <Flatpickr
+                                    <DatePicker
                                         id="emissionDateInput"
-                                        className="form-control"
-                                        value={formik.values.emissionDate}
-                                        options={{
-                                            dateFormat: "d-m-Y",
-                                            defaultDate: formik.values.emissionDate,
+                                        className={`form-control ${formik.touched.emissionDate && formik.errors.emissionDate ? 'is-invalid' : ''}`}
+                                        value={formik.values.emissionDate ?? undefined}
+                                        onChange={(date: Date[]) => {
+                                            if (date[0]) formik.setFieldValue('emissionDate', date[0]);
                                         }}
-                                        onChange={(date) => {
-                                            const formattedDate = date[0].toLocaleDateString("es-ES");
-                                            formik.setFieldValue("emissionDate", formattedDate);
-                                        }}
+                                        options={{ dateFormat: 'd/m/Y' }}
                                     />
-                                    {formik.touched.emissionDate && formik.errors.emissionDate && <FormFeedback className="d-block">{formik.errors.emissionDate}</FormFeedback>}
+                                    {formik.touched.emissionDate && formik.errors.emissionDate && (
+                                        <FormFeedback className="d-block">{formik.errors.emissionDate as string}</FormFeedback>
+                                    )}
                                 </div>
 
                                 <div className="w-25">
@@ -575,29 +552,6 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                                     />
                                     {formik.touched.currency && formik.errors.currency && <FormFeedback>{formik.errors.currency}</FormFeedback>}
                                 </div>
-
-                                {/* <div className="w-25">
-                                    <Label htmlFor="currencyInput" className="form-label">Moneda</Label>
-                                    <Input
-                                        type="select" // Cambia a tipo "select"
-                                        id="currencyInput"
-                                        name="currency"
-                                        value={formik.values.currency}
-                                        onChange={formik.handleChange}
-                                        onBlur={formik.handleBlur}
-                                        invalid={formik.touched.currency && !!formik.errors.currency}
-                                    >
-                                        <option value="">Selecciona una moneda</option>
-                                        {currencies.map((currency) => (
-                                            <option key={currency.code} value={currency.code}>
-                                                {currency.code} - {currency.name}
-                                            </option>
-                                        ))}
-                                    </Input>
-                                    {formik.touched.currency && formik.errors.currency && (
-                                        <FormFeedback>{formik.errors.currency}</FormFeedback>
-                                    )}
-                                </div> */}
                             </div>
 
 
@@ -614,11 +568,10 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                                     invalid={formik.touched.incomeType && !!formik.errors.incomeType}
                                 >
                                     <option value="">Seleccione un tipo</option>
-                                    {configContext?.configurationData?.incomeTypes.map((type) => (
-                                        <option key={type} value={type}>
-                                            {type}
-                                        </option>
-                                    ))}
+                                    <option value="purchase">Compra</option>
+                                    <option value="donation">Donación</option>
+                                    <option value="internal_transfer">Transferencia interna</option>
+                                    <option value="own_production">Producción propia</option>
                                 </Input>
                                 {formik.touched.incomeType && formik.errors.incomeType && <FormFeedback>{formik.errors.incomeType}</FormFeedback>}
                             </div>
@@ -641,15 +594,15 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                                     type="select"
                                     id="supplierInput"
                                     name="origin.id"
-                                    value={formik.values.origin.id} // Valor controlado por formik
-                                    onChange={(e) => handleSupplierChange(e.target.value)} // Sincroniza el cambio
+                                    value={formik.values.origin.id}
+                                    onChange={(e) => handleSupplierChange(e.target.value)}
                                     onBlur={formik.handleBlur}
                                     invalid={formik.touched.origin?.id && !!formik.errors.origin?.id}
                                     disabled
                                 >
                                     <option value=''>Seleccione un proveedor</option>
                                     {suppliers.map((supplier) => (
-                                        <option key={supplier.id} value={supplier.id}>
+                                        <option key={supplier._id} value={supplier._id}>
                                             {supplier.name}
                                         </option>
                                     ))}
@@ -846,14 +799,18 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                             </Button>
 
                             <Button className="farm-primary-button ms-auto" type="submit" disabled={formik.isSubmitting}>
-                                {formik.isSubmitting ? "Guardando..." : initialData ? "Actualizar Transacción" : "Registrar Entrada"}
+                                {formik.isSubmitting ?
+                                    <>
+                                        <Spinner size='sm' className="me-3" />
+                                        Guardando...</>
+                                    : initialData ?
+                                        "Actualizar entrada" : "Registrar Entrada"}
                             </Button>
                         </div>
                     </TabPane>
                 </TabContent>
             </form>
 
-            {/* Modal de Confirmación */}
             <Modal isOpen={cancelModalOpen} centered toggle={() => setCancelModalOpen(!cancelModalOpen)}>
                 <ModalHeader>Confirmación</ModalHeader>
                 <ModalBody>¿Estás seguro de que deseas cancelar? Los datos no se guardarán.</ModalBody>
@@ -877,12 +834,16 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSubmit, onCancel
                 </ModalBody>
             </Modal>
 
-            {/* Alerta */}
-            {alertConfig.visible && (
-                <Alert color={alertConfig.color} className="position-fixed bottom-0 start-50 translate-middle-x p-3">
-                    {alertConfig.message}
-                </Alert>
-            )}
+            <Modal size="xl" isOpen={modals.createPurchaseOrder} toggle={() => toggleModal("createPurchaseOrder")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("createPurchaseOrder")}>Nueva orden de compra</ModalHeader>
+                <ModalBody>
+                    <PurchaseOrderForm onSave={() => { toggleModal('createPurchaseOrder'); fetchPurchaseOrders(); }} onCancel={() => { }} />
+                </ModalBody>
+            </Modal>
+
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} />
+
+            <SuccessModal isOpen={modals.success} onClose={onSave} message={"Entrada creada con exito"} />
         </>
     );
 };

@@ -8,23 +8,30 @@ import { useNavigate } from "react-router-dom";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Column } from "common/data/data_types";
+import { getLoggedinUser } from "helpers/api_helper";
+import LoadingAnimation from "Components/Common/LoadingAnimation";
+import AlertMessage from "Components/Common/AlertMesagge";
 
 
 const ViewSubwarehouse = () => {
     document.title = "Ver Subalmacénes | Subalmacén"
     const history = useNavigate();
-    const warehouseId = 'AG001'
     const configContext = useContext(ConfigContext)
+    const userLogged = getLoggedinUser();
 
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ create: false, details: false, update: false, delete: false });
     const [warehouses, setWarehouses] = useState([])
     const [selectedSubwarehouse, setSelectedSubwarehouse] = useState<SubwarehouseData>()
     const [loading, setLoading] = useState<boolean>(false);
+    const [mainWarehouseId, setMainWarehouseId] = useState<string>('')
 
+    const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
+        setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
+    };
 
     const columns: Column<any>[] = [
-        { header: 'Código', accessor: 'id', isFilterable: true, type: 'text' },
+        { header: 'Código', accessor: 'code', isFilterable: true, type: 'text' },
         { header: 'Nombre', accessor: 'name', isFilterable: true, type: 'text' },
         { header: 'Responsable', accessor: 'manager', isFilterable: true, type: 'text' },
         { header: 'Ubicación', accessor: 'location', isFilterable: true, type: 'text' },
@@ -43,51 +50,27 @@ const ViewSubwarehouse = () => {
             accessor: 'action',
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="farm-primary-button btn-icon" onClick={() => toggleModalDetails(row)}>
+                    <Button className="farm-primary-button btn-icon" onClick={() => history(`/subwarehouse/subwarehouse_details/${row._id}`)}>
                         <i className="ri-eye-fill align-middle" />
                     </Button>
 
-                    <Button className="farm-primary-button btn-icon" disabled={!row.status} onClick={() => toggleModalUpdate(row)}>
+                    <Button className="farm-primary-button btn-icon" disabled={!row.status} onClick={() => { setSelectedSubwarehouse(row); toggleModal('update'); }}>
                         <i className="ri-pencil-fill align-middle" />
                     </Button>
-
-                    {/* <Button className="farm-secondary-button btn-icon" disabled={!row.status} onClick={() => toggleModalDelete(row)}>
-                        <i className="ri-delete-bin-fill align-middle" />
-                    </Button> */}
                 </div>
             )
         }
     ]
 
-    const handleError = (error: any, message: string) => {
-        console.error(message, error);
-        setAlertConfig({ visible: true, color: "danger", message });
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-    };
-
-    const showAlert = (color: string, message: string) => {
-        setAlertConfig({ visible: true, color: color, message: message })
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
+    const fetchWarehouseId = async () => {
+        if (!configContext || !userLogged) return;
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/farm/get_main_warehouse/${userLogged.farm_assigned}`);
+            setMainWarehouseId(response.data.data)
+        } catch (error) {
+            console.error('Error fetching main warehouse ID:', error);
+        }
     }
-
-    const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
-        setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
-    };
-
-    const toggleModalDetails = (data: SubwarehouseData) => {
-        history(`/subwarehouse/subwarehouse_details/${data.id}`);
-    }
-
-    const toggleModalUpdate = (row: any) => {
-        setSelectedSubwarehouse(row)
-        toggleModal('update')
-    }
-
-    const toggleModalDelete = (row: any) => {
-        setSelectedSubwarehouse(row)
-        toggleModal('delete')
-    }
-
 
     const handleFetchSubwarehouses = async () => {
         setLoading(true)
@@ -98,81 +81,64 @@ const ViewSubwarehouse = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/`);
             const warehouses = response.data.data;
             setWarehouses(warehouses.filter(function (obj: any) {
-                return obj.id !== warehouseId;
+                return obj._id !== mainWarehouseId;
             }));
         } catch (error) {
-            handleError(error, 'El servicio no esta disponible, intentelo más tarde');
+            console.error('Error fetching subwarehouses:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: 'Error al obtener los datos de los subalmacenes.' });
         } finally {
             setLoading(false)
         }
     };
-
 
     const handleCreateSubwarehouse = async (data: SubwarehouseData) => {
         if (!configContext) return;
 
         try {
             await configContext.axiosHelper.create(`${configContext.apiUrl}/warehouse/create_warehouse`, data);
-            showAlert('success', 'Subalmacén agregado con éxito');
+            setAlertConfig({ visible: true, color: 'success', message: 'Subalmacén creado con éxito' });
             handleFetchSubwarehouses();
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error agregando el subalmacén, intentelo más tarde');
+            console.error('Error creating subwarehouse:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al crear el subalmacen, intentelo mas tarde' });
         } finally {
             toggleModal('create', false);
         }
     };
 
-
-    const handleUpdateSubwarehouse = async (data: SubwarehouseData) => {
+    const handleUpdateSubwarehouse = async (data: any) => {
         if (!configContext) return;
 
         try {
-            await configContext.axiosHelper.put(`${configContext.apiUrl}/warehouse/update_warehouse/${data.id}`, data);
-            showAlert('success', 'Subalmacén actualizado con éxito');
+            await configContext.axiosHelper.put(`${configContext.apiUrl}/warehouse/update_warehouse/${data._id}`, data);
+            setAlertConfig({ visible: true, color: 'success', message: 'Subalmacén actualizado con éxito' });
             handleFetchSubwarehouses();
         } catch (error) {
-            handleError(error, 'El servicio no esta disponible, intentelo más tarde');
+            console.error('Error updating subwarehouse:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al actualizar el subalmacen, intentelo mas tarde' });
         } finally {
             toggleModal('update', false);
         }
     };
 
-
-    const handleDeleteSubwarehouse = async (subwarehouse_id: string) => {
-        if (!configContext) return;
-
-        try {
-            await configContext.axiosHelper.delete(`${configContext.apiUrl}/warehouse/delete_warehouse/${subwarehouse_id}`);
-            showAlert('success', 'Subalmacén desactivado con éxito');
-            handleFetchSubwarehouses();
-        } catch (error) {
-            handleError(error, 'El servicio no esta disponible, intentelo más tarde');
-        } finally {
-            toggleModal('delete', false);
-        }
-    };
+    useEffect(() => {
+        fetchWarehouseId();
+    }, []);
 
     useEffect(() => {
-        if (!configContext?.userLogged) return;
-        document.body.style.overflow = 'hidden';
+        if (!userLogged) return;
 
-        if (configContext.userLogged.role === 'Encargado de subalmacen') {
-            history(`/subwarehouse/subwarehouse_details/${configContext.userLogged.assigment}`);
+        if (userLogged.role === 'subwarehouse_manager') {
+            history(`/subwarehouse/subwarehouse_details/${userLogged.assigment}`);
         } else {
             handleFetchSubwarehouses();
         }
-
-        return () => {
-            document.body.style.overflow = '';
-        };
-    }, [configContext?.userLogged]);
+    }, [mainWarehouseId]);
 
 
     if (loading) {
         return (
-            <div className="d-flex justify-content-center align-items-center vh-100 page-content">
-                <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
-            </div>
+            <LoadingAnimation />
         );
     }
 
@@ -191,8 +157,15 @@ const ViewSubwarehouse = () => {
                             </Button>
                         </div>
                     </CardHeader>
-                    <CardBody className="d-flex flex-column flex-grow-1">
-                        <CustomTable columns={columns} data={warehouses} showPagination={false} />
+                    <CardBody className={warehouses.length === 0 ? "d-flex flex-column justify-content-center align-items-center text-center" : "d-flex flex-column flex-grow-1"}>
+                        {warehouses.length === 0 ? (
+                            <>
+                                <i className="ri-drop-line text-muted mb-2" style={{ fontSize: "2rem" }} />
+                                <span className="fs-5 text-muted">Aún no hay productos registrados en el inventario</span>
+                            </>
+                        ) : (
+                            <CustomTable columns={columns} data={warehouses} showPagination={false} />
+                        )}
                     </CardBody>
                 </Card>
 
@@ -212,28 +185,9 @@ const ViewSubwarehouse = () => {
                     </ModalBody>
                 </Modal>
 
-                {/* Modal Delete */}
-                <Modal isOpen={modals.delete} toggle={() => toggleModal("delete")} backdrop='static' keyboard={false} centered>
-                    <ModalHeader toggle={() => toggleModal("delete")}>Desactivar Proveedor</ModalHeader>
-                    <ModalBody>¿Desea desactivar el subalmacén {selectedSubwarehouse?.id}?</ModalBody>
-                    <ModalFooter>
-                        <Button className="farm-secondary-button" onClick={() => toggleModal("delete", false)}>Cancelar</Button>
-                        <Button className="farm-primary-button" onClick={() => {
-                            if (selectedSubwarehouse) {
-                                handleDeleteSubwarehouse(selectedSubwarehouse.id)
-                            }
-                        }}>Confirmar</Button>
-                    </ModalFooter>
-                </Modal>
-
-
             </Container>
 
-            {alertConfig.visible && (
-                <Alert color={alertConfig.color} className="position-fixed bottom-0 start-50 translate-middle-x p-3">
-                    {alertConfig.message}
-                </Alert>
-            )}
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </div>
     )
 }

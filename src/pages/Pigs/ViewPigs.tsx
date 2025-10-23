@@ -350,7 +350,6 @@ const ViewPigs = () => {
                                 )}
                             </Button>
 
-                            {/* Popover de filtros */}
                             <Popover
                                 placement="bottom-end"
                                 isOpen={popoverOpen}
@@ -492,8 +491,17 @@ const ViewPigs = () => {
                         </div>
                     </CardHeader>
 
-                    <CardBody>
-                        <CustomTable columns={pigColumns} data={filteredPigs} showSearchAndFilter={false} showPagination={false} />
+                    <CardBody className={pigs.length === 0 ? 'd-flex justify-content-center align-items-center' : ''}>
+                        {pigs.length === 0 ? (
+                            <>
+                                <FiAlertCircle className="text-muted" size={22} />
+                                <span className="fs-5 text-black text-muted text-center rounded-5 ms-2">
+                                    Esta inseminación aun no tiene resultado
+                                </span>
+                            </>
+                        ) : (
+                            <CustomTable columns={pigColumns} data={filteredPigs} showSearchAndFilter={false} showPagination={false} />
+                        )}
                     </CardBody>
                 </Card>
             </Container>

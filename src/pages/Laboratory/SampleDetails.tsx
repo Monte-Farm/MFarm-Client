@@ -181,7 +181,7 @@ const SampleDetails = () => {
             header: "Acciones",
             accessor: "action",
             render: (value: any, row: any) => (
-                <Button className="p-0" color="link" onClick={() => { setSelectedDose(row); toggleModal('discardDose') }} disabled={row.status === "discarded" || 'used' || 'expired' ? true : false}>
+                <Button className="p-0" color="link" onClick={() => { setSelectedDose(row); toggleModal('discardDose') }} disabled={row.status === "available" ? false : true}>
                     Descartar
                 </Button>
             ),

@@ -146,7 +146,20 @@ const PigForm: React.FC<PigFormProps> = ({ initialData, onSave, onCancel }) => {
         }
     });
 
+    const fetchNextPigCode = async () => {
+        if (!configContext) return;
+        try {
+            const nextResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/pig/get_next_pig_code`)
+            const nextCode = nextResponse.data.data;
+            formik.setFieldValue('code', nextCode)
+        } catch (error) {
+            console.error('Error fetching the next code', { error })
+        }
+    }
+
+
     useEffect(() => {
+        fetchNextPigCode();
         formik.setFieldValue('birthdate', new Date())
     }, [])
 

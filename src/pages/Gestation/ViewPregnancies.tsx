@@ -4,23 +4,32 @@ import BreadCrumb from "Components/Common/BreadCrumb"
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, UncontrolledTooltip } from "reactstrap"
-import LoadingGif from '../../assets/images/loading-gif.gif'
-import InseminationFilters from "Components/Common/InseminationFilters";
 import CustomTable from "Components/Common/CustomTable";
 import AbortionForm from "Components/Common/AbortionForm";
 import PigDetailsModal from "Components/Common/DetailsPigModal";
+import AlertMessage from "Components/Common/AlertMesagge";
+import PregnancyDetails from "../../Components/Common/PregnancyDetails";
+import LoadingAnimation from "Components/Common/LoadingAnimation";
+import { FiInbox } from "react-icons/fi";
+import KPI from "Components/Common/Graphics/Kpi";
+import { IconBaseProps } from "react-icons";
+import { FaBaby, FaChartBar, FaChartLine, FaCheckCircle, FaClipboardList, FaClock, FaExclamationTriangle, FaHeartbeat } from "react-icons/fa";
+import { transformPregnancyStatsForChart } from "Components/Hooks/transformPregnancyStats";
+import { ResponsiveLine } from "@nivo/line";
+import LineChartCard from "Components/Common/Graphics/LineChartCard";
 
-
+type PeriodKey = "day" | "week" | "month" | "year";
 const ViewPregnancies = () => {
     document.title = "Ver embarazos | Management System"
     const userLoggged = getLoggedinUser();
     const configContext = useContext(ConfigContext);
     const [loading, setLoading] = useState<boolean>(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ create: false, update: false, viewPDF: false, abortion: false, pigDetails: false });
+    const [modals, setModals] = useState({ create: false, update: false, viewPDF: false, abortion: false, pigDetails: false, pregnancyDetails: false });
     const [pregnancies, setPregnancies] = useState<any[]>([])
-    const [selectedPregnancie, setSelectedPregnancie] = useState({})
+    const [selectedPregnancy, setSelectedPregnancy] = useState<any>({})
     const [selectedPigId, setSelectedPigId] = useState<any>({})
+    const [pregnancyStats, setPregnancyStats] = useState<any>({})
 
     const inseminationsColumns: Column<any>[] = [
         {
@@ -33,27 +42,29 @@ const ViewPregnancies = () => {
                     color="link"
                     onClick={(e) => {
                         e.stopPropagation();
-                        openPigDetailsModal(row)
+                        setSelectedPigId(row?.sow?._id)
+                        toggleModal('pigDetails')
                     }}
                 >
                     {row.sow?.code} ↗
                 </Button>
             )
         },
-        { header: "Fecha de inseminación", accessor: "date", type: "date", isFilterable: false },
+        { header: "Fecha de inseminación", accessor: "start_date", type: "date", isFilterable: false },
         {
-            header: "Estado",
-            accessor: "result",
+            header: "Estado de embarazo",
+            accessor: "farrowing_status",
             type: "text",
             isFilterable: true,
             render: (_, row) => {
                 let color = "secondary";
                 let text = "Pendiente";
-                switch (row.result) {
-                    case "pregnant": color = "success"; text = "Preñada"; break;
-                    case "empty": color = "warning"; text = "Vacía"; break;
-                    case "doubtful": color = "info"; text = "Dudosa"; break;
-                    case "resorption": color = "danger"; text = "Reabsorción"; break;
+                switch (row.farrowing_status) {
+                    case "pregnant": color = "success"; text = "Gestando"; break;
+                    case "close_to_farrow": color = "warning"; text = "Proxima a parir"; break;
+                    case "farrowing_pending": color = "info"; text = "Parto pendiente"; break;
+                    case "overdue_farrowing": color = "danger"; text = "Parto atrasado"; break;
+                    case "farrowed": color = "dark"; text = "Parida"; break;
                     case "abortion": color = "dark"; text = "Aborto"; break;
                 }
                 return <Badge color={color}>{text}</Badge>;
@@ -63,24 +74,21 @@ const ViewPregnancies = () => {
             header: "Fecha prevista de parto",
             accessor: "estimated_farrowing_date",
             type: "date",
-            render: (_, row) =>
-                row.estimated_farrowing_date
-                    ? new Date(row.estimated_farrowing_date).toLocaleDateString()
-                    : "N/A",
+            render: (_, row) => row.estimated_farrowing_date ? new Date(row.estimated_farrowing_date).toLocaleDateString() : "N/A",
         },
         {
             header: "Acciones",
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button id={`diagnose-button-${row._id}`} className="farm-secondary-button btn-icon" onClick={() => openAbortionModal(row)}>
+                    <Button id={`diagnose-button-${row._id}`} className="farm-secondary-button btn-icon" onClick={() => { setSelectedPregnancy(row); toggleModal('abortion'); }} disabled={row.farrowing_status === 'farrowed' || row.abortions.length !== 0}>
                         <i className="bx bxs-skull align-middle"></i>
                     </Button>
                     <UncontrolledTooltip target={`diagnose-button-${row._id}`}>
                         Registrar perdida
                     </UncontrolledTooltip>
 
-                    <Button id={`view-button-${row._id}`} className="farm-primary-button btn-icon">
+                    <Button id={`view-button-${row._id}`} className="farm-primary-button btn-icon" onClick={() => { setSelectedPregnancy(row); toggleModal('pregnancyDetails') }}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
                     <UncontrolledTooltip target={`view-button-${row._id}`}>
@@ -91,59 +99,36 @@ const ViewPregnancies = () => {
         },
     ];
 
-    const openPigDetailsModal = (data: any) => {
-        setSelectedPigId(data.sow?._id);
-        toggleModal('pigDetails')
-    }
-
-    const openAbortionModal = (row: any) => {
-        setSelectedPregnancie(row);
-        toggleModal('abortion');
-    }
-
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
 
-    const handleError = (error: any, message: string) => {
-        console.error(message, error);
-        setAlertConfig({ visible: true, color: "danger", message });
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-    };
-
-    const showAlert = (color: string, message: string) => {
-        setAlertConfig({ visible: true, color, message });
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-    }
-
-    const onSaveAbortion = () => {
-        fetchPregnancies();
-        toggleModal('abortion');
-    }
-
-
-    const fetchPregnancies = async () => {
+    const fetchData = async () => {
         if (!configContext || !userLoggged) return
         try {
             setLoading(true)
-            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/insemination/find_pregnancies/${userLoggged.farm_assigned}`)
-            setPregnancies(response.data.data)
+            const [pregnanciesResponse, statsResponse] = await Promise.all([
+                await configContext.axiosHelper.get(`${configContext.apiUrl}/pregnancies/find_by_farm/${userLoggged.farm_assigned}`),
+                await configContext.axiosHelper.get(`${configContext.apiUrl}/pregnancies/get_stats/${userLoggged.farm_assigned}`)
+            ])
+
+            setPregnancies(pregnanciesResponse.data.data)
+            setPregnancyStats(statsResponse.data.data)
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al obtener los datos')
+            console.error('An error has ocurred:', { error })
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
         } finally {
             setLoading(false)
         }
     }
 
     useEffect(() => {
-        fetchPregnancies();
+        fetchData();
     }, [])
 
     if (loading) {
         return (
-            <div className="d-flex justify-content-center align-items-center vh-100 page-content">
-                <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
-            </div>
+            <LoadingAnimation />
         );
     }
 
@@ -153,51 +138,93 @@ const ViewPregnancies = () => {
                 <BreadCrumb title={"Ver embarazos"} pageTitle={"Gestación"} />
 
                 <div className="d-flex gap-3 flex-wrap">
-                    <Card className="flex-fill text-center shadow-sm border-0">
-                        <CardBody>
-                            <h5 className="text-muted">Total embarazos</h5>
-                            <h2 className="fw-bold">{pregnancies.length}</h2>
-                        </CardBody>
-                    </Card>
+                    <KPI
+                        title={"Embarazos totales"}
+                        value={pregnancyStats?.generalStats?.[0]?.totalPregnancies ?? 0}
+                        icon={FaClipboardList}
+                        bgColor="#e8f4fd"
+                        iconColor="#0d6efd"
+                    />
 
-                    <Card className="flex-fill text-center shadow-sm border-0">
-                        <CardBody>
-                            <h5 className="text-muted">Embarazos activos</h5>
-                            <h2 className="fw-bold text-success">
-                                {pregnancies.filter(p => p.result === "pregnant").length}
-                            </h2>
-                        </CardBody>
-                    </Card>
+                    <KPI
+                        title={"Embarazos activos"}
+                        value={pregnancyStats?.generalStats?.[0]?.activePregnancies ?? 0}
+                        icon={FaHeartbeat}
+                        bgColor="#fff3cd"
+                        iconColor="#ffc107"
+                    />
 
-                    <Card className="flex-fill text-center shadow-sm border-0">
-                        <CardBody>
-                            <h5 className="text-muted">Perdidas</h5>
-                            <h2 className="fw-bold text-dark">
-                                {pregnancies.filter(p => p.result === "abortion").length}
-                            </h2>
-                        </CardBody>
-                    </Card>
+                    <KPI
+                        title={"Partos exitosos"}
+                        value={pregnancyStats?.generalStats?.[0]?.farrowedCount ?? 0}
+                        icon={FaBaby}
+                        bgColor="#e6f7e6"
+                        iconColor="#28a745"
+                    />
 
-                    <Card className="flex-fill text-center shadow-sm border-0">
-                        <CardBody>
-                            <h5 className="text-muted">Tasa de preñez</h5>
-                            <h2 className="fw-bold text-primary">
-                                {pregnancies.length > 0
-                                    ? `${((pregnancies.filter(p => p.result === "pregnant").length / pregnancies.length) * 100).toFixed(2)}%`
-                                    : "0%"}
-                            </h2>
-                        </CardBody>
-                    </Card>
+                    <KPI
+                        title={"Abortos registrados"}
+                        value={pregnancyStats?.generalStats?.[0]?.abortionCount ?? 0}
+                        icon={FaExclamationTriangle}
+                        bgColor="#fdecea"
+                        iconColor="#dc3545"
+                    />
+
+                    <KPI
+                        title={"Promedio días de gestación"}
+                        value={Math.round(pregnancyStats?.generalStats?.[0]?.avgGestationDays ?? 0)}
+                        icon={FaClock}
+                        bgColor="#f3e8fd"
+                        iconColor="#6f42c1"
+                    />
+
+                    <KPI
+                        title={"Tasa de éxito"}
+                        value={`${((pregnancyStats?.generalStats?.[0]?.successRate ?? 0) * 100).toFixed(2)}%`}
+                        icon={FaChartLine}
+                        bgColor="#e8f7fc"
+                        iconColor="#0dcaf0"
+                    />
+
+                    <KPI
+                        title={"Tasa de aborto"}
+                        value={`${((pregnancyStats?.generalStats?.[0]?.abortionRate ?? 0) * 100).toFixed(2)}%`}
+                        icon={FaChartBar}
+                        bgColor="#fdecea"
+                        iconColor="#dc3545"
+                    />
                 </div>
 
-                <Card style={{ height: '71vh' }}>
+                <div className="d-flex gap-3">
+                    <LineChartCard stats={pregnancyStats} type={"pregnancies"} title={"Embarazos por periodo"} yLabel={""} />
+                    <LineChartCard stats={pregnancyStats} type={"farrowings"} title={"Partos por periodo"} yLabel={""} />
+                    <LineChartCard stats={pregnancyStats} type={"abortions"} title={"Abortos por periodo"} yLabel={""} />
+                </div>
+
+                <Card style={{ height: '65vh' }}>
                     <CardHeader className="d-flex">
-                        <h4>Embarazos</h4>
+                        <h4>Embarazos activos</h4>
                     </CardHeader>
 
-                    <CardBody>
-
-                        <CustomTable columns={inseminationsColumns} data={pregnancies} showPagination={false} showSearchAndFilter={false} />
+                    <CardBody style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+                        {pregnancies && pregnancies.length > 0 ? (
+                            <div style={{ flex: 1 }}>
+                                <CustomTable
+                                    columns={inseminationsColumns}
+                                    data={pregnancies}
+                                    showPagination={true}
+                                    showSearchAndFilter={false}
+                                    rowsPerPage={10}
+                                />
+                            </div>
+                        ) : (
+                            <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", textAlign: "center", color: "#888", }}>
+                                <div>
+                                    <FiInbox size={48} style={{ marginBottom: 10 }} />
+                                    <div>No hay embarazos registrados</div>
+                                </div>
+                            </div>
+                        )}
                     </CardBody>
                 </Card>
             </Container>
@@ -212,11 +239,21 @@ const ViewPregnancies = () => {
             <Modal size="lg" isOpen={modals.abortion} toggle={() => toggleModal("abortion")} backdrop="static" keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("abortion")}>Registrar perdida</ModalHeader>
                 <ModalBody>
-                    <AbortionForm insemination={selectedPregnancie} onSave={() => onSaveAbortion()} onCancel={function (): void {
+                    <AbortionForm pregnancy={selectedPregnancy} onSave={() => { fetchData(); toggleModal('abortion'); }} onCancel={function (): void {
                         throw new Error("Function not implemented.");
                     }} />
                 </ModalBody>
             </Modal>
+
+            <Modal size="xl" isOpen={modals.pregnancyDetails} toggle={() => { toggleModal("pregnancyDetails"); fetchData() }} centered>
+                <ModalHeader toggle={() => { toggleModal("pregnancyDetails"); fetchData() }}>Detalles de embarazo</ModalHeader>
+                <ModalBody>
+                    <PregnancyDetails pregnancyId={selectedPregnancy._id} />
+                </ModalBody>
+            </Modal>
+
+
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </div>
     )
 }

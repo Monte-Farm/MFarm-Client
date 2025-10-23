@@ -4,8 +4,7 @@ import CustomTable from "Components/Common/CustomTable";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, UncontrolledTooltip } from "reactstrap";
-import LoadingGif from '../../assets/images/loading-gif.gif'
-import { FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo } from "react-icons/fi";
+import { FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo, FiPlayCircle, FiActivity, FiInbox } from "react-icons/fi";
 import InseminationForm from "Components/Common/InseminationForm";
 import { Column } from "common/data/data_types";
 import DiagnosisForm from "Components/Common/DiagnoseForm";
@@ -13,6 +12,13 @@ import HeatForm from "Components/Common/HeatForm";
 import InseminationFilters from "Components/Common/InseminationFilters";
 import PigDetailsModal from "Components/Common/DetailsPigModal";
 import { useNavigate } from "react-router-dom";
+import SimpleBar from "simplebar-react";
+import LoadingAnimation from "Components/Common/LoadingAnimation";
+import AlertMessage from "Components/Common/AlertMesagge";
+import KPI from "Components/Common/Graphics/Kpi";
+import LineChartCard from "Components/Common/Graphics/LineChartCard";
+import BasicBarChart from "Components/Common/Graphics/BasicBarChart";
+import BasicPieChart from "Components/Common/Graphics/BasicPieChart";
 
 const ViewInseminations = () => {
     document.title = "Ver inseminaciones | Management System"
@@ -27,8 +33,8 @@ const ViewInseminations = () => {
     const [possiblesPregnanciesCount, setPossiblesPregnanciesCount] = useState<number>(0)
     const [selectedInsemination, setSelectedInsemination] = useState({})
     const [filteredInseminations, setFilteredInseminations] = useState<any[]>([]);
-    const [activeKpi, setActiveKpi] = useState<string | null>(null);
     const [selectedPigId, setSelectedPigId] = useState<string>('')
+    const [inseminationsStats, setInseminationsStats] = useState<any>({})
 
     const inseminationsColumns: Column<any>[] = [
         {
@@ -41,7 +47,8 @@ const ViewInseminations = () => {
                     color="link"
                     onClick={(e) => {
                         e.stopPropagation();
-                        openPigDetailsModal(row)
+                        setSelectedPigId(row.sow?._id);
+                        toggleModal('pigDetails')
                     }}
                 >
                     {row.sow?.code} ↗
@@ -56,6 +63,26 @@ const ViewInseminations = () => {
             render: (_, row) => row.doses.length || 0,
         },
         { header: "Fecha de inseminación", accessor: "date", type: "date", isFilterable: false },
+        {
+            header: "F. de parto (tentativa)",
+            accessor: "date",
+            type: "date",
+            isFilterable: false,
+            render: (_, row) => {
+                const showDate =
+                    row.status === "active" ||
+                    (row.status === "completed" && row.result === "pregnant");
+
+                return (
+                    <span>
+                        {showDate
+                            ? new Date(new Date(row.date).getTime() + 115 * 24 * 60 * 60 * 1000)
+                                .toLocaleDateString("es-MX")
+                            : "N/A"}
+                    </span>
+                );
+            },
+        },
         {
             header: "Responsable",
             accessor: "responsible",
@@ -103,7 +130,7 @@ const ViewInseminations = () => {
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button id={`heat-button-${row._id}`} className="farm-warning-button btn-icon" onClick={() => openHeatModal(row)} disabled={row.status === 'completed' || row.status === 'failed'}>
+                    <Button id={`heat-button-${row._id}`} className="farm-warning-button btn-icon" onClick={() => { setSelectedInsemination(row); toggleModal('heat'); }} disabled={row.status === 'completed' || row.status === 'failed'}>
                         <i className="bx bx-heart align-middle"></i>
                     </Button>
                     <UncontrolledTooltip target={`heat-button-${row._id}`}>
@@ -111,7 +138,7 @@ const ViewInseminations = () => {
                     </UncontrolledTooltip>
 
 
-                    <Button id={`diagnose-button-${row._id}`} className="farm-secondary-button btn-icon" onClick={() => openDiagnoseModal(row)} disabled={row.status === 'completed' || row.status === 'failed'} >
+                    <Button id={`diagnose-button-${row._id}`} className="farm-secondary-button btn-icon" onClick={() => { setSelectedInsemination(row); toggleModal('diagnosis'); }} disabled={row.status === 'completed' || row.status === 'failed'} >
                         <i className="bx bx-dna align-middle"></i>
                     </Button>
                     <UncontrolledTooltip target={`diagnose-button-${row._id}`}>
@@ -129,39 +156,9 @@ const ViewInseminations = () => {
         },
     ];
 
-    const openPigDetailsModal = (data: any) => {
-        setSelectedPigId(data.sow?._id);
-        toggleModal('pigDetails')
-    }
-
-    const openDiagnoseModal = (row: any) => {
-        setSelectedInsemination(row);
-        toggleModal('diagnosis');
-    }
-
-    const openHeatModal = (row: any) => {
-        setSelectedInsemination(row);
-        toggleModal('heat');
-    };
-
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
-
-    const handleError = (error: any, message: string) => {
-        console.error(message, error);
-        setAlertConfig({ visible: true, color: "danger", message });
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-    };
-
-    const showAlert = (color: string, message: string) => {
-        setAlertConfig({ visible: true, color, message });
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-    }
-
-    const onSaveInsemination = () => { toggleModal('create'); fetchInseminations(); }
-    const onSaveDiagnosis = () => { fetchInseminations(); toggleModal('diagnosis'); }
-    const onSaveHeat = () => { fetchInseminations(); toggleModal('heat'); }
 
     const fetchInseminations = async () => {
         if (!configContext || !userLoggged) return;
@@ -178,17 +175,27 @@ const ViewInseminations = () => {
         setPossiblesPregnanciesCount(data.count);
     };
 
+    const fetchInseminationsStats = async () => {
+        if (!configContext || !userLoggged) return;
+        const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/insemination/get_stats/${userLoggged.farm_assigned}`);
+        const data = response.data.data;
+        console.log(data)
+        setInseminationsStats(data)
+    };
+
+
     useEffect(() => {
         const loadData = async () => {
             setLoading(true);
             try {
                 await Promise.all([
                     fetchInseminations(),
-                    fetchPossiblePregnancies()
+                    fetchPossiblePregnancies(),
+                    fetchInseminationsStats()
                 ]);
-                setActiveKpi('all');
             } catch (error) {
                 console.error(error);
+                setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un erorr al obtener los datos, intentelo de nuevo' })
             } finally {
                 setLoading(false);
             }
@@ -199,9 +206,7 @@ const ViewInseminations = () => {
 
     if (loading) {
         return (
-            <div className="d-flex justify-content-center align-items-center vh-100 page-content">
-                <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
-            </div>
+            <LoadingAnimation />
         );
     }
 
@@ -211,73 +216,111 @@ const ViewInseminations = () => {
                 <BreadCrumb title={"Ver Inseminaciones"} pageTitle={"Gestación"} />
 
                 <div className="d-flex gap-3 flex-wrap">
-                    <Card
-                        className={`flex-fill text-center shadow-sm ${activeKpi === 'all' ? 'border-primary border-1' : ''}`}
-                        onClick={() => { setActiveKpi('all'); setFilteredInseminations(inseminations); }}
-                    >
-                        <CardBody>
-                            <h5 className="text-muted">Total inseminaciones</h5>
-                            <h2 className="fw-bold">{inseminations.length}</h2>
-                        </CardBody>
-                    </Card>
+                    <KPI
+                        title="Total inseminaciones"
+                        value={inseminationsStats?.inseminationStats?.[0]?.total ?? 0}
+                        icon={FiActivity}
+                        bgColor="#e8f4fd"
+                        iconColor="#0d6efd"
+                    />
 
-                    <Card
-                        className={`flex-fill text-center shadow-sm  ${activeKpi === 'possible' ? 'border-1 border-info' : 'border-0'}`}
-                        onClick={() => { setActiveKpi('possible'); setFilteredInseminations(possiblesPregnancies); }}
-                    >
-                        <CardBody>
-                            <h5 className="text-muted">Posibles preñez</h5>
-                            <h2 className="fw-bold text-info">{possiblesPregnanciesCount}</h2>
-                        </CardBody>
-                    </Card>
+                    <KPI
+                        title="Inseminaciones activas"
+                        value={inseminationsStats?.inseminationStats?.[0]?.active ?? 0}
+                        icon={FiPlayCircle}
+                        bgColor="#fff8e1"
+                        iconColor="#f6c000"
+                    />
 
-                    <Card
-                        className={`flex-fill text-center shadow-sm ${activeKpi === 'pregnant' ? 'border-success border-1' : ''}`}
-                        onClick={() => { setActiveKpi('pregnant'); setFilteredInseminations(inseminations.filter(ins => ins.result === "pregnant")); }}
-                    >
-                        <CardBody>
-                            <h5 className="text-muted">Preñadas</h5>
-                            <h2 className="fw-bold text-success">{inseminations.filter(ins => ins.result === "pregnant").length}</h2>
-                        </CardBody>
-                    </Card>
+                    <KPI
+                        title="Inseminaciones completadas"
+                        value={inseminationsStats?.inseminationStats?.[0]?.completed ?? 0}
+                        icon={FiCheckCircle}
+                        bgColor="#e6f7e6"
+                        iconColor="#28a745"
+                    />
 
-                    <Card
-                        className={`flex-fill text-center shadow-sm ${activeKpi === 'failed' ? 'border-danger border-1' : ''}`}
-                        onClick={() => { setActiveKpi('failed'); setFilteredInseminations(inseminations.filter(ins => ins.status === "failed")); }}
-                    >
-                        <CardBody>
-                            <h5 className="text-muted">Fallidas</h5>
-                            <h2 className="fw-bold text-danger">{inseminations.filter(ins => ins.status === "failed").length}</h2>
-                        </CardBody>
-                    </Card>
-
-                    <Card className="flex-fill text-center shadow-sm border-0">
-                        <CardBody>
-                            <h5 className="text-muted">Tasa de preñez</h5>
-                            <h2 className="fw-bold text-primary">
-                                {inseminations.length > 0
-                                    ? `${((inseminations.filter(ins => ins.result === "pregnant").length / inseminations.length) * 100).toFixed(2)}%`
-                                    : "0%"}
-                            </h2>
-                        </CardBody>
-                    </Card>
+                    <KPI
+                        title="Inseminaciones fallidas"
+                        value={inseminationsStats?.inseminationStats?.[0]?.failed ?? 0}
+                        icon={FiXCircle}
+                        bgColor="#fdecea"
+                        iconColor="#dc3545"
+                    />
                 </div>
 
-                <Card style={{ height: '71vh' }}>
+                <div className="d-flex gap-3">
+                    <LineChartCard stats={inseminationsStats} type={"volume"} title={"Insemimaciones por periodo"} yLabel={"Inseminaciones"} />
+
+                    <BasicBarChart
+                        title="Inseminaciones por cerda"
+                        data={(inseminationsStats?.inseminationsBySow ?? []).map((item: any) => ({
+                            sowCode: item.sowCode,
+                            count: item.count
+                        }))}
+                        indexBy="sowCode"
+                        keys={["count"]}
+                        xLegend="Cerda"
+                        yLegend="Número de inseminaciones"
+                    />
+
+                    <BasicPieChart
+                        title="Resultados de inseminaciones"
+                        data={[
+                            { id: 'Preñadas', value: inseminationsStats?.resultsStats?.[0]?.pregnant ?? 0 },
+                            { id: 'Vacías', value: inseminationsStats?.resultsStats?.[0]?.empty ?? 0 },
+                            { id: 'Abortos', value: inseminationsStats?.resultsStats?.[0]?.abortion ?? 0 },
+                            { id: 'Reabsorciones', value: inseminationsStats?.resultsStats?.[0]?.resorption ?? 0 },
+                            { id: 'Dudosas / Sin diagnóstico', value: inseminationsStats?.resultsStats?.[0]?.doubtfulOrMissing ?? 0 }
+                        ]}
+                    />
+
+                </div>
+
+                <Card style={{ height: "65vh" }}>
                     <CardHeader className="d-flex">
                         <h4>Inseminaciones</h4>
-                        <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>
+                        <Button className="ms-auto farm-primary-button" onClick={() => toggleModal("create")}>
                             <i className="ri-add-line me-2" />
                             Registrar inseminación
                         </Button>
                     </CardHeader>
 
-                    <CardBody>
-                        <InseminationFilters
-                            inseminations={inseminations}
-                            setFilteredInseminations={setFilteredInseminations}
-                        />
-                        <CustomTable columns={inseminationsColumns} data={filteredInseminations} showPagination={false} showSearchAndFilter={false} />
+                    <CardBody style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+                        {filteredInseminations && filteredInseminations.length > 0 ? (
+                            <>
+                                <InseminationFilters
+                                    inseminations={inseminations}
+                                    setFilteredInseminations={setFilteredInseminations}
+                                />
+
+                                <div style={{ flex: 1 }}>
+                                    <CustomTable
+                                        columns={inseminationsColumns}
+                                        data={filteredInseminations}
+                                        showPagination={true}
+                                        showSearchAndFilter={false}
+                                        rowsPerPage={7}
+                                    />
+                                </div>
+                            </>
+                        ) : (
+                            <div
+                                style={{
+                                    flex: 1,
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    textAlign: "center",
+                                    color: "#888",
+                                }}
+                            >
+                                <div>
+                                    <FiInbox size={48} style={{ marginBottom: 10 }} />
+                                    <div>No hay inseminaciones disponibles</div>
+                                </div>
+                            </div>
+                        )}
                     </CardBody>
                 </Card>
             </Container>
@@ -285,21 +328,21 @@ const ViewInseminations = () => {
             <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("create")}>Nueva inseminación</ModalHeader>
                 <ModalBody>
-                    <InseminationForm onSave={onSaveInsemination} onCancel={() => toggleModal('create')} />
+                    <InseminationForm onSave={() => { toggleModal('create'); fetchInseminations(); fetchInseminationsStats(); }} onCancel={() => toggleModal('create')} />
                 </ModalBody>
             </Modal>
 
             <Modal size="lg" isOpen={modals.diagnosis} toggle={() => toggleModal("diagnosis")} backdrop="static" keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("diagnosis")}>Registrar diagnóstico</ModalHeader>
                 <ModalBody>
-                    <DiagnosisForm insemination={selectedInsemination} onSave={onSaveDiagnosis} onCancel={() => toggleModal('diagnosis')} />
+                    <DiagnosisForm insemination={selectedInsemination} onSave={() => { toggleModal('diagnosis'); fetchInseminations(); fetchInseminationsStats(); }} onCancel={() => toggleModal('diagnosis')} />
                 </ModalBody>
             </Modal>
 
             <Modal size="lg" isOpen={modals.heat} toggle={() => toggleModal("heat")} backdrop="static" keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("heat")}>Registrar celo</ModalHeader>
                 <ModalBody>
-                    {selectedInsemination && <HeatForm insemination={selectedInsemination} onSave={onSaveHeat} onCancel={() => toggleModal('heat')} />}
+                    {selectedInsemination && <HeatForm insemination={selectedInsemination} onSave={() => { toggleModal('heat'); fetchInseminations(); fetchInseminationsStats(); }} onCancel={() => toggleModal('heat')} />}
                 </ModalBody>
             </Modal>
 
@@ -310,20 +353,7 @@ const ViewInseminations = () => {
                 </ModalBody>
             </Modal>
 
-            {alertConfig.visible && (
-                <Alert
-                    color={alertConfig.color}
-                    className="position-fixed bottom-0 start-50 translate-middle-x d-flex align-items-center gap-2 shadow rounded-3 p-3"
-                    style={{ minWidth: "350px", maxWidth: "90%", zIndex: 1050 }}
-                >
-                    {alertConfig.color === "success" && <FiCheckCircle size={22} />}
-                    {alertConfig.color === "danger" && <FiXCircle size={22} />}
-                    {alertConfig.color === "warning" && <FiAlertCircle size={22} />}
-                    {alertConfig.color === "info" && <FiInfo size={22} />}
-                    <span className="flex-grow-1 text-black">{alertConfig.message}</span>
-                    <Button close onClick={() => setAlertConfig({ ...alertConfig, visible: false })} />
-                </Alert>
-            )}
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </div>
     )
 }

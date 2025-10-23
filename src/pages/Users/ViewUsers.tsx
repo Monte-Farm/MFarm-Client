@@ -12,6 +12,8 @@ import { Column } from "common/data/data_types"
 import UserCards from "Components/Common/UserCards"
 import { roleLabels } from "common/role_labels"
 import { useNavigate } from "react-router-dom"
+import LoadingAnimation from "Components/Common/LoadingAnimation"
+import AlertMessage from "Components/Common/AlertMesagge"
 
 const userAttributes: Attribute[] = [
     { key: 'username', label: 'Usuario', type: 'text' },
@@ -58,17 +60,6 @@ const ViewUsers = () => {
     ];
 
 
-    const handleError = (error: any, message: string) => {
-        console.error(message, error);
-        setAlertConfig({ visible: true, color: "danger", message });
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-    };
-
-    const showAlert = (color: string, message: string) => {
-        setAlertConfig({ visible: true, color: color, message: message })
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-    }
-
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
@@ -103,7 +94,8 @@ const ViewUsers = () => {
             }
 
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al obtener a los usuarios');
+            console.error('Error fetching users:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener a los usuarios' });
         } finally {
             setLoading(false);
         }
@@ -115,10 +107,11 @@ const ViewUsers = () => {
 
         try {
             await configContext.axiosHelper.create(`${configContext.apiUrl}/user/create_user`, data);
-            showAlert('success', 'Usuario creado con éxito');
+            setAlertConfig({ visible: true, color: 'success', message: 'Usuario creado con éxito' });
             handleFetchUsers();
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al crear el usuario, intentelo más tarde');
+            console.error('Error creating the user:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al crear el usuario, intentelo mas tarde' });
         } finally {
             toggleModal('create', false);
         }
@@ -129,10 +122,11 @@ const ViewUsers = () => {
 
         try {
             await configContext.axiosHelper.put(`${configContext.apiUrl}/user/update_user/${data.username}`, data);
-            showAlert('success', 'Usuario actualizado con éxito');
+            setAlertConfig({ visible: true, color: 'success', message: 'Usuario actualizado con éxito' });
             handleFetchUsers();
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al actualizar el usuario, intentelo más tarde');
+            console.error('Error updating user:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al actualizar el usuario, intentelo mas tarde' });
         } finally {
             toggleModal('update', false);
         }
@@ -144,10 +138,11 @@ const ViewUsers = () => {
 
         try {
             await configContext.axiosHelper.delete(`${configContext.apiUrl}/user/delete_user/${selectedUser.username}`);
-            showAlert('success', 'Usuario desactivado con éxito');
+            setAlertConfig({ visible: true, color: 'success', message: 'Usuario eliminado con éxito' });
             handleFetchUsers();
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al desactivar el usuario, intentelo mas tarde');
+            console.error('Error deleting user:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al eliminar el usuario, intentelo mas tarde' });
         } finally {
             toggleModal('delete', false);
         }
@@ -173,9 +168,7 @@ const ViewUsers = () => {
 
     if (loading) {
         return (
-            <div className="d-flex justify-content-center align-items-center vh-100 page-content">
-                <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
-            </div>
+            <LoadingAnimation />
         );
     }
 
@@ -195,23 +188,41 @@ const ViewUsers = () => {
                                 className="fs-5"
                             />
 
-                            <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')} style={{ width: '200px' }}>
+                            <Button
+                                className="ms-auto farm-primary-button"
+                                onClick={() => toggleModal("create")}
+                                style={{ width: "200px" }}
+                            >
                                 <i className="ri-add-line me-3" />
                                 Registrar Usuario
                             </Button>
                         </div>
                     </CardHeader>
-                    <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
-                        <UserCards
-                            columns={columns}
-                            data={filteredUsers}
-                            onDetailsClick={(user) => navigate(`/users/user_details/${user._id}`)}
-                            onCardClick={(user) => navigate(`/users/user_details/${user._id}`)}
-                            onEditClick={(user) => handleClicModal('update', user)}
-                            onDeleteClick={(user) => handleClicModal('delete', user)}
-                            imageAccessor="profile_image"
 
-                        />
+                    <CardBody
+                        className={
+                            filteredUsers.length === 0
+                                ? "d-flex flex-column justify-content-center align-items-center text-center"
+                                : "d-flex flex-column flex-grow-1"
+                        }
+                        style={{ maxHeight: "calc(80vh - 100px)", overflowY: "auto" }}
+                    >
+                        {filteredUsers.length === 0 ? (
+                            <>
+                                <i className="ri-user-unfollow-line text-muted mb-2" style={{ fontSize: "2rem" }} />
+                                <span className="fs-5 text-muted">Aún no hay usuarios registrados</span>
+                            </>
+                        ) : (
+                            <UserCards
+                                columns={columns}
+                                data={filteredUsers}
+                                onDetailsClick={(user) => navigate(`/users/user_details/${user._id}`)}
+                                onCardClick={(user) => navigate(`/users/user_details/${user._id}`)}
+                                onEditClick={(user) => handleClicModal("update", user)}
+                                onDeleteClick={(user) => handleClicModal("delete", user)}
+                                imageAccessor="profile_image"
+                            />
+                        )}
                     </CardBody>
                 </Card>
 
@@ -253,8 +264,7 @@ const ViewUsers = () => {
                             if (selectedUser) {
                                 handleDeleteUser();
                             }
-                        }}
-                        >
+                        }}>
                             Eliminar
                         </Button>
                     </ModalFooter>
@@ -263,11 +273,7 @@ const ViewUsers = () => {
 
             </Container>
 
-            {alertConfig.visible && (
-                <Alert color={alertConfig.color} className="position-fixed bottom-0 start-50 translate-middle-x p-3">
-                    {alertConfig.message}
-                </Alert>
-            )}
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </div>
     )
 }

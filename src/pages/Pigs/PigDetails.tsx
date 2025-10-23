@@ -12,7 +12,7 @@ import ObjectDetails from "Components/Common/ObjectDetails";
 import defaultPigImage from "../../assets/images/pig-default.png"; // imagen por defecto
 import KPIBox from "Components/Common/KPIBox";
 import PigTimeline from "Components/Common/PigTimeline";
-import LineChart from "Components/Common/LineChart";
+
 import { update } from "lodash";
 import PigForm from "Components/Common/PigForm";
 import PigEditForm from "Components/Common/PigEditForm";
@@ -323,16 +323,7 @@ const PigDetails = () => {
                                         <Card style={{ minHeight: '300px' }}>
                                             <CardHeader><h4>Peso</h4></CardHeader>
                                             <CardBody>
-                                                <LineChart
-                                                    title="Progreso de peso"
-                                                    categories={['Actual']}
-                                                    series={[
-                                                        {
-                                                            name: 'Peso (kg)',
-                                                            data: [typeof pigInfo?.weight === 'number' ? pigInfo.weight : 0],
-                                                        },
-                                                    ]}
-                                                />
+                                                {/* aqui va una grafica de la evolucion del peso */}
                                             </CardBody>
                                         </Card>
                                     </div>

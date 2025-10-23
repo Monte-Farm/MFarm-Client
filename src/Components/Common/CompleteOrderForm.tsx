@@ -40,7 +40,7 @@ const CompleteOrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, on
     const formik = useFormik({
         initialValues: initialData || {
             id: "",
-            date: "",
+            date: null,
             user: "",
             productsRequested: [],
             status: 'completed',

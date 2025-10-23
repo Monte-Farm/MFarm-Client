@@ -1,6 +1,6 @@
 import BreadCrumb from "Components/Common/BreadCrumb";
 import CustomTable from "Components/Common/CustomTable";
-import LineChart from "Components/Common/LineChart";
+
 import ObjectDetails from "Components/Common/ObjectDetails";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom"
@@ -414,7 +414,9 @@ const ProductDetails = () => {
                                 <h4>Existencias Historicas</h4>
                             </CardHeader>
                             {seriesIncomes && categoriesIncomes && seriesIncomes.length > 0 && categoriesIncomes.length > 0 ? (
-                                <LineChart series={seriesIncomes} categories={categoriesIncomes} title={""} />
+                                <>
+                                </>
+                                // <LineChart series={seriesIncomes} categories={categoriesIncomes} title={""} />
                             ) : (
                                 <div className="pt-4 pb-4" style={{ textAlign: "center" }}><h4>No hay datos disponibles para mostrar</h4> </div>
                             )}
@@ -427,7 +429,9 @@ const ProductDetails = () => {
                                 <h4>Precios Historicos</h4>
                             </CardHeader>
                             {seriesPrices && categoriesPrices && seriesPrices.length > 0 && categoriesPrices.length > 0 ? (
-                                <LineChart series={seriesPrices} categories={categoriesPrices} title={""} />
+                                <>
+                                </>
+                                // <LineChart series={seriesPrices} categories={categoriesPrices} title={""} />
                             ) : (
                                 <div className="pt-4 pb-4" style={{ textAlign: "center" }}><h4>No hay datos disponibles para mostrar</h4> </div>
                             )}

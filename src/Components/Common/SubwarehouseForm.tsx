@@ -19,7 +19,7 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ initialData, onSubm
     const [users, setUsers] = useState<{ username: string; name: string; lastname: string }[]>([])
 
     const validationSchema = Yup.object({
-        id: Yup.string()
+        code: Yup.string()
             .required('Por favor, ingrese el código')
             .test('unique_id', 'Este identificador ya existe, por favor ingrese otro', async (value) => {
                 if (initialData) return true
@@ -39,7 +39,7 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ initialData, onSubm
 
     const formik = useFormik({
         initialValues: initialData || {
-            id: '',
+            code: '',
             name: '',
             location: '',
             manager: '',
@@ -74,7 +74,7 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ initialData, onSubm
 
         try {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/warehouse_next_id`);
-            formik.setFieldValue('id', response.data.data);
+            formik.setFieldValue('code', response.data.data);
         } catch (error) {
             console.error('Ha ocurrido un error al obtener el id');
         }
@@ -109,14 +109,14 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ initialData, onSubm
                         id="idInput"
                         className="form-control"
                         name="id"
-                        value={formik.values.id}
+                        value={formik.values.code}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
-                        invalid={formik.touched.id && !!formik.errors.id}
+                        invalid={formik.touched.code && !!formik.errors.code}
                         disabled={isCodeDisabled}
                     />
-                    {formik.touched.id && formik.errors.id && (
-                        <FormFeedback>{formik.errors.id}</FormFeedback>
+                    {formik.touched.code && formik.errors.code && (
+                        <FormFeedback>{formik.errors.code}</FormFeedback>
                     )}
                 </div>
 
@@ -153,7 +153,7 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ initialData, onSubm
                         <option value="">Selecciona un responsable</option>
                         {users.map((user) => (
                             <option key={user.username} value={user.username}>
-                               {user.username} - {user.name} {user.lastname}
+                                {user.username} - {user.name} {user.lastname}
                             </option>
                         ))}
                     </Input>

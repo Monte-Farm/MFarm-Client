@@ -7,11 +7,8 @@ import { APIClient } from "helpers/api_helper"
 import { useContext, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Alert, Card, CardBody, Container } from "reactstrap"
-import { boolean } from "yup"
 
-
-
-const CreatIncome = () => {
+const CreateIncome = () => {
     document.title = 'Nueva Entrada | Almacén'
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
@@ -77,7 +74,7 @@ const CreatIncome = () => {
 
                 <Card className="rounded" style={{ maxHeight: '80vh' }}>
                     <CardBody>
-                        <IncomeForm onSubmit={handleCreateIncome} onCancel={handleCancel}></IncomeForm>
+                        <IncomeForm onSave={() => {}} onCancel={handleCancel}></IncomeForm>
                     </CardBody>
                 </Card>
 
@@ -95,4 +92,4 @@ const CreatIncome = () => {
     )
 }
 
-export default CreatIncome
+export default CreateIncome

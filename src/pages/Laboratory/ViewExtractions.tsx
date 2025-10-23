@@ -2,18 +2,20 @@ import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/BreadCrumb"
 import { getLoggedinUser } from "helpers/api_helper"
 import { useContext, useEffect, useState } from "react";
-import { Alert, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, UncontrolledTooltip } from "reactstrap"
-import { FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo } from "react-icons/fi";
+import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, UncontrolledTooltip } from "reactstrap"
+import { FiCheckCircle, FiAlertCircle, FiInfo, FiInbox } from "react-icons/fi";
 import CustomTable from "Components/Common/CustomTable";
 import { ExtractionData } from "common/data_interfaces";
 import ExtractionForm from "Components/Common/ExtractionForm";
 import { Column } from "common/data/data_types";
-import AreaChart from "Components/Common/AreaChart";
 import PigDetailsModal from "Components/Common/DetailsPigModal";
 import { useNavigate } from "react-router-dom";
 import LoadingAnimation from "Components/Common/LoadingAnimation";
 import ExtractionDetails from "Components/Common/ExtractionDetails";
 import AlertMessage from "Components/Common/AlertMesagge";
+import KPI from "Components/Common/Graphics/Kpi";
+import LineChartCard from "Components/Common/Graphics/LineChartCard";
+import BoarVolumeRadar from "Components/Common/Graphics/BoarVolumeRadar";
 
 const ViewExtractions = () => {
     document.title = 'Ver extracciones | Management System'
@@ -25,7 +27,6 @@ const ViewExtractions = () => {
     const [modals, setModals] = useState({ create: false, update: false, viewPDF: false, pigDetails: false, extractionDetails: false });
     const [stats, setStats] = useState<any>({})
     const [selectedExtraction, setSelectedExtraction] = useState<any>({})
-    const navigate = useNavigate();
 
     const extractionsColumns: Column<any>[] = [
         { header: 'Lote', accessor: 'batch', type: 'text', isFilterable: true },
@@ -39,7 +40,8 @@ const ViewExtractions = () => {
                     color="link"
                     onClick={(e) => {
                         e.stopPropagation();
-                        openPigDetailsModal(row)
+                        setSelectedExtraction(row);
+                        toggleModal('extractionDetails')
                     }}
                 >
                     {row.boar?.code} ↗
@@ -54,6 +56,15 @@ const ViewExtractions = () => {
             render: (_, row) => row.technician ? `${row.technician.name} ${row.technician.lastname}` : "Sin responsable"
         },
         { header: 'Ubicacion de la extracción', accessor: 'extraction_location', type: 'text', isFilterable: true },
+        {
+            header: 'Muestra registrada',
+            accessor: 'is_sample_registered',
+            type: 'text',
+            isFilterable: true,
+            render: (_, obj) => (
+                <Badge color={obj.is_sample_registered ? 'success' : 'warning'}>{obj.is_sample_registered ? 'Si' : 'No'}</Badge>
+            )
+        },
         {
             header: "Acciones",
             accessor: "action",
@@ -74,56 +85,27 @@ const ViewExtractions = () => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
 
-    const handleError = (error: any, message: string) => {
-        console.error(message, error);
-        setAlertConfig({ visible: true, color: "danger", message });
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-    };
-
-    const showAlert = (color: string, message: string) => {
-        setAlertConfig({ visible: true, color: color, message: message })
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-    }
-
-    const fetchExtractions = async () => {
-        if (!userLoggged || !configContext) return
+    const fetchData = async () => {
+        if (!configContext || !userLoggged) return;
         try {
-            setLoading(true)
-            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/extraction/find_by_farm/${userLoggged.farm_assigned}`)
-            setExtractions(response.data.data)
+            setLoading(true);
+            const [extractionsResponse, statsResponse] = await Promise.all([
+                configContext.axiosHelper.get(`${configContext.apiUrl}/extraction/find_by_farm/${userLoggged.farm_assigned}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/extraction/stadistics/${userLoggged.farm_assigned}`)
+            ])
+
+            setExtractions(extractionsResponse.data.data)
+            setStats(statsResponse.data.data)
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al obtener los datos, intentelo mas tarde')
+            console.error('Error fetching data:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: 'Error al obtener los datos, intentelo mas tarde.' })
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
-
-    const fetchStats = async () => {
-        if (!userLoggged || !configContext) return
-        try {
-            setLoading(true)
-            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/extraction/stadistics/${userLoggged.farm_assigned}`)
-            setStats(response.data.data)
-        } catch (error) {
-            handleError(error, 'Error al obtener las estadisticas')
-        }
-    }
-
-    const openPigDetailsModal = (extraction: any) => {
-        setSelectedExtraction(extraction);
-        toggleModal('pigDetails')
-    }
-
-
-    const onSaveExtraction = () => {
-        toggleModal('create')
-        fetchExtractions();
-        fetchStats();
     }
 
     useEffect(() => {
-        fetchExtractions();
-        fetchStats();
+        fetchData();
     }, [])
 
 
@@ -139,61 +121,90 @@ const ViewExtractions = () => {
                 <BreadCrumb title={"Ver extracciones"} pageTitle={"Extracciones"} />
 
                 <div className="d-flex flex-wrap gap-3">
-                    <Card className="flex-fill shadow-sm border-0 rounded-3">
-                        <CardBody className="text-center">
-                            <h6 className="text-muted mb-2">Total de extracciones</h6>
-                            <h3 className="fw-bold text-primary">{stats.totalExtractions || 0}</h3>
-                        </CardBody>
-                    </Card>
+                    {stats.extractionsByDay && (
+                        <KPI
+                            title="Total de extracciones"
+                            value={stats.extractionsByDay.reduce((sum: number, e: any) => sum + e.count, 0)}
+                            icon={FiAlertCircle}
+                            bgColor="#e6f0ff"
+                            iconColor="#0d6efd"
+                        />
+                    )}
 
-                    <Card className="flex-fill shadow-sm border-0 rounded-3">
-                        <CardBody className="text-center">
-                            <h6 className="text-muted mb-2">Promedio volumen</h6>
-                            <h3 className="fw-bold text-success">
-                                {stats.avgVolume ? stats.avgVolume.toFixed(2) : 0} ml
-                            </h3>
-                        </CardBody>
-                    </Card>
+                    {stats.volumeByDay && (
+                        <KPI
+                            title="Volumen total extraído"
+                            value={`${stats.volumeByDay.reduce((sum: number, v: any) => sum + v.totalVolume, 0)} ml`}
+                            icon={FiInfo}
+                            bgColor="#fff4e6"
+                            iconColor="#ffc107"
+                        />
+                    )}
 
-                    <Card className="flex-fill shadow-sm border-0 rounded-3">
-                        <CardBody className="text-center">
-                            <h6 className="text-muted mb-2">Volumen máximo</h6>
-                            <h3 className="fw-bold text-danger">
-                                {stats.maxVolume || 0} ml
-                            </h3>
-                        </CardBody>
-                    </Card>
+                    {stats.volumeByDay && stats.extractionsByDay && (
+                        <KPI
+                            title="Volumen promedio por extracción"
+                            value={(() => {
+                                const totalVol = stats.volumeByDay.reduce((sum: number, v: any) => sum + v.totalVolume, 0);
+                                const totalExt = stats.extractionsByDay.reduce((sum: number, e: any) => sum + e.count, 0);
+                                return totalExt > 0 ? `${(totalVol / totalExt).toFixed(1)} ml` : "0 ml";
+                            })()}
+                            icon={FiInfo}
+                            bgColor="#eaf9ff"
+                            iconColor="#0dcaf0"
+                        />
+                    )}
 
-                    <Card className="flex-fill shadow-sm border-0 rounded-3">
-                        <CardBody className="text-center">
-                            <h6 className="text-muted mb-2">Volumen mínimo</h6>
-                            <h3 className="fw-bold text-warning">
-                                {stats.minVolume || 0} ml
-                            </h3>
-                        </CardBody>
-                    </Card>
+                    {stats.volumeByDay && stats.volumeByDay.length > 0 && (() => {
+                        const maxDay = stats.volumeByDay.reduce((prev: any, curr: any) => curr.totalVolume > prev.totalVolume ? curr : prev);
+                        return (
+                            <KPI
+                                title="Día con mayor volumen"
+                                value={`${maxDay.totalVolume} ml`}
+                                subtext={maxDay._id}
+                                icon={FiInfo}
+                                bgColor="#f3e6ff"
+                                iconColor="#6f42c1"
+                            />
+                        );
+                    })()}
 
-                    <Card className="flex-fill shadow-sm border-0 rounded-3">
-                        <CardBody className="text-center">
-                            <h6 className="text-muted mb-2">Extracciones últimos 30 días</h6>
-                            <h3 className="fw-bold text-info">{stats.last30Days || 0}</h3>
-                        </CardBody>
-                    </Card>
+                    {stats.volumeByDay && stats.volumeByDay.length > 0 && (() => {
+                        const minDay = stats.volumeByDay.reduce((prev: any, curr: any) => curr.totalVolume < prev.totalVolume ? curr : prev);
+                        return (
+                            <KPI
+                                title="Día con menor volumen"
+                                value={`${minDay.totalVolume} ml`}
+                                subtext={minDay._id}
+                                icon={FiInfo}
+                                bgColor="#ffe6e6"
+                                iconColor="#dc3545"
+                            />
+                        );
+                    })()}
                 </div>
 
-                {/* <div className="">
-                    <Card className="shadow-sm border-0 rounded-3">
-                        <CardBody style={{ height: "300px" }}>
-                            <AreaChart
-                                title="Evolución mensual del volumen promedio"
-                                series={series}
-                                categories={categories}
-                            />
-                        </CardBody>
-                    </Card>
-                </div> */}
+                <div className="d-flex gap-3">
+                    <LineChartCard
+                        stats={stats}
+                        type="volume"
+                        title="Volumen"
+                        yLabel="Mililitros"
+                        color="#ffc107"
+                    />
 
-                <Card style={{ height: '75vh' }}>
+                    <LineChartCard
+                        stats={stats}
+                        type="extractions"
+                        title="Extracciones"
+                        yLabel="Número de extracciones"
+                        color="#198754"
+                    />
+
+                    <BoarVolumeRadar data={stats.volumeStatsByBoar} />
+                </div>
+
+                <Card style={{ height: '65vh' }}>
                     <CardHeader className="d-flex">
                         <h4>Extracciones</h4>
                         <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>
@@ -202,8 +213,24 @@ const ViewExtractions = () => {
                         </Button>
                     </CardHeader>
 
-                    <CardBody>
-                        <CustomTable columns={extractionsColumns} data={extractions || []} showPagination={false} />
+                    <CardBody style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+                        {extractions && extractions.length > 0 ? (
+                            <div style={{ flex: 1 }}>
+                                <CustomTable
+                                    columns={extractionsColumns}
+                                    data={extractions}
+                                    showPagination={true}
+                                    rowsPerPage={7}
+                                />
+                            </div>
+                        ) : (
+                            <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", textAlign: "center", color: "#888", }}>
+                                <div>
+                                    <FiInbox size={48} style={{ marginBottom: 10 }} />
+                                    <div>No hay datos disponibles</div>
+                                </div>
+                            </div>
+                        )}
                     </CardBody>
                 </Card>
             </Container>
@@ -211,7 +238,7 @@ const ViewExtractions = () => {
             <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("create")}>Nueva extracción</ModalHeader>
                 <ModalBody>
-                    <ExtractionForm onSave={onSaveExtraction} onCancel={function (): void {
+                    <ExtractionForm onSave={() => { toggleModal('create'); fetchData(); }} onCancel={function (): void {
                         throw new Error("Function not implemented.");
                     }} />
                 </ModalBody>

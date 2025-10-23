@@ -9,6 +9,8 @@ import { Attribute, ProductData } from "common/data_interfaces";
 import { ConfigContext } from "App";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Column } from "common/data/data_types";
+import AlertMessage from "Components/Common/AlertMesagge";
+import LoadingAnimation from "Components/Common/LoadingAnimation";
 
 
 const productAttributes: Attribute[] = [
@@ -19,7 +21,6 @@ const productAttributes: Attribute[] = [
     { key: 'description', label: 'Descripción', type: 'text' },
 ]
 
-const foldersArray = ['Products', 'Images']
 
 const ViewProducts = () => {
     document.title = "Catálogo de Productos | Almacén"
@@ -27,15 +28,14 @@ const ViewProducts = () => {
 
     const [products, setProducts] = useState([])
     const [selectedProduct, setSelectedProduct] = useState<ProductData>()
-    const [urlImageProduct, setUrlImageProduct] = useState<string>('')
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ create: false, details: false, update: false, delete: false, activate: false });
     const [loading, setLoading] = useState<boolean>(true);
 
     const columns: Column<any>[] = [
         {
-            header: 'Imagen', accessor: 'image', render: (value: string) => (
-                <img src={value || noImageUrl} alt="Imagen del Producto" style={{ height: "70px" }} />
+            header: 'Imagen', accessor: 'image', render: (_, row) => (
+                <img src={row.image || noImageUrl} alt="Imagen del Producto" style={{ height: "70px" }} />
             ),
         },
         { header: 'Código', accessor: 'id', isFilterable: true, type: 'text' },
@@ -72,17 +72,6 @@ const ViewProducts = () => {
         },
     ];
 
-    const handleError = (error: any, message: string) => {
-        console.error(message, error);
-        setAlertConfig({ visible: true, color: "danger", message });
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-    };
-
-    const showAlert = (color: string, message: string) => {
-        setAlertConfig({ visible: true, color: color, message: message })
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-    }
-
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
@@ -97,22 +86,10 @@ const ViewProducts = () => {
         try {
             if (!configContext) return;
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/product`);
-            if (response?.data?.data) {
-                const updatedProducts: any = await Promise.all(response.data.data.map(async (product: any) => {
-                    if (product.image) {
-                        const imageUrl = await fetchImageById(product.image);
-                        return { ...product, image: imageUrl };
-                    } else {
-                        return { ...product, image: noImageUrl };
-                    }
-                    return product;
-                }));
-                setProducts(updatedProducts);
-            } else {
-                handleError(new Error('No se encontraron productos'), 'No se encontraron productos');
-            }
+            setProducts(response.data.data)
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al recuperar los productos');
+            console.error('Error fetching products:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los productos, intentelo más tarde' });
         } finally {
             setLoading(false);
         }
@@ -124,10 +101,11 @@ const ViewProducts = () => {
 
         try {
             await configContext.axiosHelper.create(`${configContext.apiUrl}/product/create_product`, data);
-            showAlert('success', 'Producto creado con éxito');
+            setAlertConfig({ visible: true, color: 'success', message: 'Producto creado con éxito' });
             handleFetchProducts();
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al crear el producto, intentelo más tarde');
+            console.error('Error creating product:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al crear el producto, intentelo más tarde' });
         } finally {
             toggleModal('create');
         }
@@ -139,10 +117,12 @@ const ViewProducts = () => {
 
         try {
             await configContext.axiosHelper.put(`${configContext.apiUrl}/product/update_product/${data.id}`, data);
-            showAlert('success', 'Producto actualizado con éxito');
+            setAlertConfig({ visible: true, color: 'success', message: 'Producto actualizado con éxito' });
+
             handleFetchProducts();
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al actualizar el producto, intentelo más tarde');
+            console.error('Error updating products:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al actualizar el producto, intentelo mas tarde' });
         } finally {
             toggleModal('update');
             setSelectedProduct(undefined);
@@ -155,10 +135,12 @@ const ViewProducts = () => {
 
         try {
             await configContext.axiosHelper.delete(`${configContext.apiUrl}/product/delete_product/${product_id}`);
-            showAlert('success', 'Producto desactivado con éxito');
+            setAlertConfig({ visible: true, color: 'success', message: 'Producto desactivado con éxito' });
+
             handleFetchProducts();
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al desactivar el producto, intentelo más tarde');
+            console.error('Error deactivating products:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al desactivar el producto, intentelo mas tarde' });
         } finally {
             toggleModal('delete');
             setSelectedProduct(undefined);
@@ -170,10 +152,11 @@ const ViewProducts = () => {
 
         try {
             await configContext.axiosHelper.put(`${configContext.apiUrl}/product/activate_product/${product_id}`, {});
-            showAlert('success', 'Producto activado con éxito');
+            setAlertConfig({ visible: true, color: 'success', message: 'Producto activado con éxito' });
             handleFetchProducts();
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al activar el producto, intentelo más tarde');
+            console.error('Error ctivating products:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al sactivar el producto, intentelo mas tarde' });
         } finally {
             toggleModal('activate');
             setSelectedProduct(undefined);
@@ -195,27 +178,12 @@ const ViewProducts = () => {
 
 
     useEffect(() => {
-        document.body.style.overflow = 'hidden';
         handleFetchProducts();
-
-        return () => {
-            document.body.style.overflow = '';
-        };
     }, [])
-
-    useEffect(() => {
-        if (urlImageProduct) {
-            URL.revokeObjectURL(urlImageProduct);
-        }
-    }, [selectedProduct]);
-
-
 
     if (loading) {
         return (
-            <div className="d-flex justify-content-center align-items-center vh-100 page-content">
-                <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
-            </div>
+            <LoadingAnimation />
         );
     }
 
@@ -233,8 +201,15 @@ const ViewProducts = () => {
                             </Button>
                         </div>
                     </CardHeader>
-                    <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(75vh - 100px)', overflowY: 'auto' }}>
-                        <CustomTable columns={columns} data={products} showPagination={false} />
+                    <CardBody className={products.length === 0 ? "d-flex flex-column justify-content-center align-items-center text-center" : "d-flex flex-column flex-grow-1"}>
+                        {products.length === 0 ? (
+                            <>
+                                <i className="ri-box-line text-muted mb-2" style={{ fontSize: "2rem" }} />
+                                <span className="fs-5 text-muted">Aún no hay productos registrados en el inventario</span>
+                            </>
+                        ) : (
+                            <CustomTable columns={columns} data={products} showPagination={false} />
+                        )}
                     </CardBody>
                 </Card>
             </Container>
@@ -253,7 +228,7 @@ const ViewProducts = () => {
             <Modal size="lg" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("create")}>Nuevo Producto </ModalHeader>
                 <ModalBody>
-                    <ProductForm onSubmit={handleCreateProduct} onCancel={() => toggleModal("create", false)} foldersArray={foldersArray} />
+                    <ProductForm onSubmit={handleCreateProduct} onCancel={() => toggleModal("create", false)} />
                 </ModalBody>
             </Modal>
 
@@ -261,7 +236,7 @@ const ViewProducts = () => {
             <Modal size="lg" isOpen={modals.update} toggle={() => toggleModal("update")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("update")}>Actualizar Producto</ModalHeader>
                 <ModalBody>
-                    <ProductForm initialData={selectedProduct} onSubmit={handleUpdateProduct} onCancel={() => toggleModal("update", false)} isCodeDisabled={true} foldersArray={foldersArray} />
+                    <ProductForm initialData={selectedProduct} onSubmit={handleUpdateProduct} onCancel={() => toggleModal("update", false)} isCodeDisabled={true} />
                 </ModalBody>
             </Modal>
 
@@ -293,11 +268,7 @@ const ViewProducts = () => {
                 </ModalFooter>
             </Modal>
 
-            {alertConfig.visible && (
-                <Alert color={alertConfig.color} className="position-fixed bottom-0 start-50 translate-middle-x p-3">
-                    {alertConfig.message}
-                </Alert>
-            )}
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </div>
     )
 }

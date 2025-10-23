@@ -126,9 +126,6 @@ const InseminationDetails = () => {
 
             setSowDetails(sowResponse.data.data)
             setDosesDetails(dosesResponse.data.data)
-            if (inseminationData.abortions.length > 0) {
-                setAbortionDetails(inseminationData.abortions[0]);
-            }
         } catch (error) {
             console.error('Error fetching data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
@@ -314,7 +311,7 @@ const InseminationDetails = () => {
                                     <CardHeader className="d-flex gap-2 justify-content-between">
                                         <span className="text-black fs-5">Celo</span>
 
-                                        <Button className="" size="sm" onClick={() => toggleModal('heat')} disabled={inseminationDetails !== 'active'}>
+                                        <Button className="" size="sm" onClick={() => toggleModal('heat')} disabled={inseminationDetails.status !== 'active'}>
                                             Registrar celo
                                         </Button>
                                     </CardHeader>
@@ -438,7 +435,7 @@ const InseminationDetails = () => {
             <Modal size="lg" isOpen={modals.diagnosis} toggle={() => toggleModal("diagnosis")} backdrop="static" keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("diagnosis")}>Registrar diagnóstico</ModalHeader>
                 <ModalBody>
-                    <DiagnosisForm insemination={inseminationDetails} onSave={() => { toggleModal('diagnosis'); fetchData() }} onCancel={() => toggleModal('diagnosis')} />
+                    <DiagnosisForm insemination={{ ...inseminationDetails, sow: { _id: inseminationDetails.sow } }} onSave={() => { toggleModal('diagnosis'); fetchData() }} onCancel={() => toggleModal('diagnosis')} />
                 </ModalBody>
             </Modal>
 

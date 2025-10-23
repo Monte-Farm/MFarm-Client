@@ -1,46 +1,49 @@
 import { Attribute, ProductData, PurchaseOrderData, SupplierData } from "common/data_interfaces";
 import classnames from "classnames";
 import { useContext, useEffect, useState } from "react";
-import { Alert, Button, Card, CardBody, Col, FormFeedback, Input, Label, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
+import { Button, Card, CardBody, Col, FormFeedback, Input, Label, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
 import { ConfigContext } from "App";
 import * as Yup from "yup";
 import { useFormik } from "formik";
-import Flatpickr from 'react-flatpickr';
 import SelectTable from "./SelectTable";
 import CustomTable from "./CustomTable";
 import ObjectDetailsHorizontal from "./ObjectDetailsHorizontal";
 import SupplierForm from "./SupplierForm";
 import { Column } from "common/data/data_types";
+import AlertMessage from "./AlertMesagge";
+import SuccessModal from "./SuccessModal";
+import DatePicker from "react-flatpickr";
+import { getLoggedinUser } from "helpers/api_helper";
 
 interface PurchaseOrderFormProps {
     initialData?: PurchaseOrderData;
-    onSubmit: (data: PurchaseOrderData) => Promise<void>;
+    onSave: () => void;
     onCancel: () => void;
 }
 
 const purchaseOrderAttributes: Attribute[] = [
-    { key: 'id', label: 'Identificador' },
-    { key: 'date', label: 'Fecha de registro' },
+    { key: 'code', label: 'Identificador' },
+    { key: 'date', label: 'Fecha de registro', type: 'date' },
     { key: 'supplier', label: 'Proveedor' },
     { key: 'subtotal', label: 'Subtotal', type: 'currency' },
     { key: 'totalPrice', label: 'Total', type: 'currency' },
 
 ];
 
-const productColumns: Column<any>[]= [
-    { header: 'Código', accessor: 'id', isFilterable: true, type: 'text'  },
-    { header: 'Producto', accessor: 'name', isFilterable: true, type: 'text'  },
-    { header: 'Cantidad', accessor: 'quantity', isFilterable: true, type: 'number'  },
-    { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true, type: 'text'  },
-    { header: 'Precio Unitario', accessor: 'price', type: 'currency'  },
-    { header: 'Categoría', accessor: 'category', isFilterable: true, type: 'text'  },
+const productColumns: Column<any>[] = [
+    { header: 'Código', accessor: 'id', isFilterable: true, type: 'text' },
+    { header: 'Producto', accessor: 'name', isFilterable: true, type: 'text' },
+    { header: 'Cantidad', accessor: 'quantity', isFilterable: true, type: 'number' },
+    { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true, type: 'text' },
+    { header: 'Precio Unitario', accessor: 'price', type: 'currency' },
+    { header: 'Categoría', accessor: 'category', isFilterable: true, type: 'text' },
 ];
 
-const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSubmit, onCancel }) => {
-    const [cancelModalOpen, setCancelModalOpen] = useState(false);
-    const [suppliers, setSuppliers] = useState<SupplierData[]>([]);
+const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSave, onCancel }) => {
+    const userLogged = getLoggedinUser();
+    const [suppliers, setSuppliers] = useState<any[]>([]);
     const [selectedSupplier, setSelectedSupplier] = useState<SupplierData | null>(null);
-    const [modals, setModals] = useState({ createSupplier: false, createProduct: false });
+    const [modals, setModals] = useState({ success: false, createSupplier: false, createProduct: false });
     const [products, setProducts] = useState([])
     const [selectedProducts, setSelectedProducts] = useState([])
     const configContext = useContext(ConfigContext)
@@ -62,9 +65,9 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSu
     }
 
     const validationSchema = Yup.object({
-        id: Yup.string()
-            .required("Por favor, ingrese el ID")
-            .test('unique_id', "Este identificador ya existe, por favor ingrese otro", async (value) => {
+        code: Yup.string()
+            .required("Por favor, ingrese el codigo")
+            .test('unique_id', "Este codigo ya existe, por favor ingrese otro", async (value) => {
                 if (!value) return false;
                 try {
                     const result = await configContext?.axiosHelper.get(`${configContext.apiUrl}/purchase_orders/purchase_order_id_exists/${value}`);
@@ -74,7 +77,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSu
                     return false;
                 }
             }),
-        date: Yup.string().required("Por favor, ingrese la fecha"),
+        date: Yup.date().required("Por favor, ingrese la fecha"),
         supplier: Yup.string().required("Por favor, seleccione un proveedor"),
         tax: Yup.number().min(0, "El precio total debe ser positivo").required("Por favor, ingrese un impuesto"),
         discount: Yup.number().min(0, "El precio total debe ser positivo").required('Por favor, ingrese un descuento'),
@@ -96,6 +99,16 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSu
         setTimeout(() => {
             setAlertConfig({ ...alertConfig, visible: false })
         }, 5000);
+    }
+
+    const fetchWarehouseId = async () => {
+        if (!configContext || !userLogged) return;
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/farm/get_main_warehouse/${userLogged.farm_assigned}`);
+            formik.setFieldValue('warehouse', response.data.data);
+        } catch (error) {
+            console.error('Error fetching main warehouse ID:', error);
+        }
     }
 
     const fetchSuppliers = async () => {
@@ -125,7 +138,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSu
             if (!initialData && configContext) {
                 const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/purchase_orders/next_id`);
                 const nextId = response.data.data;
-                formik.setFieldValue('id', nextId);
+                formik.setFieldValue('code', nextId);
             }
         } catch (error) {
             console.error("Ha ocurrido un error obteniendo el id");
@@ -142,7 +155,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSu
 
             await fetchSuppliers();
             setSelectedSupplier(newSupplier);
-            formik.setFieldValue("supplier", newSupplier.id);
+            formik.setFieldValue("supplier", newSupplier._id);
 
             showAlert('success', 'El proveedor ha sido creado con éxito')
         } catch (error) {
@@ -167,8 +180,8 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSu
 
     const formik = useFormik({
         initialValues: initialData || {
-            id: "",
-            date: new Date().toLocaleDateString(),
+            code: "",
+            date: null,
             products: [],
             subtotal: 0,
             tax: 0,
@@ -176,18 +189,21 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSu
             totalPrice: 0,
             supplier: "",
             status: true,
-            warehouse: 'AG001',
+            warehouse: '',
         },
         enableReinitialize: true,
         validationSchema,
         validateOnChange: false,
         validateOnBlur: true,
         onSubmit: async (values, { setSubmitting, resetForm }) => {
+            if (!configContext) return
             try {
                 setSubmitting(true);
-                await onSubmit(values);
+                const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/purchase_orders/create_purchase_order`, values);
+                toggleModal('success')
             } catch (error) {
                 console.error("Error al enviar el formulario:", error);
+                setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al guardar los datos, intentelo mas tarde' })
             } finally {
                 setSubmitting(false);
             }
@@ -195,9 +211,9 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSu
     });
 
     const handleSupplierChange = (supplierId: string) => {
-        const supplier = suppliers.find((s) => s.id === supplierId) || null;
+        const supplier = suppliers.find((s) => s._id === supplierId) || null;
         setSelectedSupplier(supplier);
-        formik.setFieldValue("supplier", supplierId);
+        formik.setFieldValue("supplier", supplier._id);
     };
 
     const handleProductSelect = (selectedProductsData: Array<{ id: string; quantity: number; price: number }>) => {
@@ -212,18 +228,19 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSu
         });
 
         setSelectedProducts(updatedSelectedProducts);
-        console.log(updatedSelectedProducts)
     };
 
 
     useEffect(() => {
+        fetchWarehouseId();
         fetchProducts();
         fetchSuppliers();
         fetchNextId();
+        formik.setFieldValue('date', new Date())
     }, [])
 
     useEffect(() => {
-        const supplier = suppliers.find((s) => s.id === formik.values.supplier) || null;
+        const supplier = suppliers.find((s) => s._id === formik.values.supplier) || null;
         setSelectedSupplier(supplier);
     }, [formik.values.supplier, suppliers]);
 
@@ -304,36 +321,33 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSu
                     <TabPane id="step-purchaseOrderData-tab" tabId={1}>
                         <div className="d-flex gap-3">
                             <div className="w-50">
-                                <Label htmlFor="idInput" className="form-label">Identificador</Label>
+                                <Label htmlFor="codeInput" className="form-label">Codigo</Label>
                                 <Input
                                     type="text"
-                                    id="idInput"
-                                    name="id"
-                                    value={formik.values.id}
+                                    id="codeInput"
+                                    name="code"
+                                    value={formik.values.code}
                                     onChange={formik.handleChange}
                                     onBlur={formik.handleBlur}
-                                    invalid={formik.touched.id && !!formik.errors.id}
+                                    invalid={formik.touched.code && !!formik.errors.code}
                                 />
-                                {formik.touched.id && formik.errors.id && <FormFeedback>{formik.errors.id}</FormFeedback>}
+                                {formik.touched.code && formik.errors.code && <FormFeedback>{formik.errors.code}</FormFeedback>}
                             </div>
 
                             <div className="w-50">
                                 <Label htmlFor="dateInput" className="form-label">Fecha de registro</Label>
-                                <Flatpickr
-                                    id="dateInput"
-                                    className="form-control"
-                                    value={formik.values.date}
-                                    options={{
-                                        dateFormat: "d-m-Y",
-                                        defaultDate: formik.values.date,
+                                <DatePicker
+                                    id="date"
+                                    className={`form-control ${formik.touched.date && formik.errors.date ? 'is-invalid' : ''}`}
+                                    value={formik.values.date ?? undefined}
+                                    onChange={(date: Date[]) => {
+                                        if (date[0]) formik.setFieldValue('date', date[0]);
                                     }}
-                                    onChange={(date) => {
-                                        const formattedDate = date[0].toLocaleDateString("es-ES");
-                                        formik.setFieldValue("date", formattedDate);
-                                    }}
+                                    options={{ dateFormat: 'd/m/Y' }}
                                 />
-                                {formik.touched.date && formik.errors.date && <FormFeedback className="d-block">{formik.errors.date}</FormFeedback>}
-
+                                {formik.touched.date && formik.errors.date && (
+                                    <FormFeedback className="d-block">{formik.errors.date as string}</FormFeedback>
+                                )}
                             </div>
                         </div>
 
@@ -357,7 +371,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSu
                             >
                                 <option value=''>Seleccione un proveedor</option>
                                 {suppliers.map((supplier) => (
-                                    <option key={supplier.id} value={supplier.id}>
+                                    <option key={supplier._id} value={supplier._id}>
                                         {supplier.name}
                                     </option>
                                 ))}
@@ -436,7 +450,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSu
                                 className="btn btn-success btn-label right ms-auto nexttab nexttab ms-auto farm-secondary-button"
                                 onClick={() => toggleArrowTab(activeStep + 1)}
                                 disabled={
-                                    !formik.values.id ||
+                                    !formik.values.code ||
                                     !formik.values.date ||
                                     !formik.values.supplier ||
                                     formik.values.tax === null ||
@@ -564,12 +578,9 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSu
                 </ModalBody>
             </Modal>
 
-            {/* Alerta */}
-            {alertConfig.visible && (
-                <Alert color={alertConfig.color} className="position-fixed bottom-0 start-50 translate-middle-x p-3">
-                    {alertConfig.message}
-                </Alert>
-            )}
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} />
+
+            <SuccessModal isOpen={modals.success} onClose={onSave} message={"Orden de compra creada con exito"} />
         </>
     )
 }

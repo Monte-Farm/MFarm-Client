@@ -11,12 +11,12 @@ import { HttpStatusCode } from "axios";
 import FileUploader from "./FileUploader";
 
 interface AbortionFormProps {
-    insemination: any;
+    pregnancy: any;
     onSave: () => void;
     onCancel: () => void;
 }
 
-const AbortionForm = ({ insemination, onSave, onCancel }: AbortionFormProps) => {
+const AbortionForm = ({ pregnancy, onSave, onCancel }: AbortionFormProps) => {
     const userLogged = getLoggedinUser();
     const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -59,7 +59,7 @@ const AbortionForm = ({ insemination, onSave, onCancel }: AbortionFormProps) => 
                     await fileUpload(fileToUpload);
                 }
 
-                const result = await configContext.axiosHelper.update(`${configContext.apiUrl}/insemination/register_abortion/${insemination._id}`,
+                const result = await configContext.axiosHelper.update(`${configContext.apiUrl}/pregnancies/register_abortion/${pregnancy._id}`,
                     {
                         probable_cause: values.probable_cause,
                         date: values.date,
@@ -71,7 +71,7 @@ const AbortionForm = ({ insemination, onSave, onCancel }: AbortionFormProps) => 
 
                 if (result.data.status === HttpStatusCode.Ok) {
                     await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
-                        event: `Perdida de la inseminación: ${insemination} registrada`
+                        event: `Perdida de la inseminación: ${pregnancy} registrada`
                     });
                 }
                 setSuccessModalOpen(true)

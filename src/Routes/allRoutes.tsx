@@ -34,7 +34,6 @@ import Register from "../pages/Authentication/Register";
 import UserProfile from "../pages/Authentication/user-profile";
 import SupplierDetails from "pages/Suppliers/SupplierDetails";
 import IncomeDetails from "pages/Incomes/IncomeDetails";
-import CreateProduct from "pages/Inventory/CreateProduct";
 import SubwarehouseDetails from "pages/Subwarehouse/SubwarehouseDetails";
 import ViewOutcomes from "pages/Outcomes/ViewOutcomes";
 import CreateOutcome from "pages/Outcomes/CreateOutcome";
@@ -78,6 +77,8 @@ import ViewPregnancies from "pages/Gestation/ViewPregnancies";
 import ViewInseminations from "pages/Gestation/ViewInseminations";
 import SampleDetails from "pages/Laboratory/SampleDetails";
 import InseminationDetails from "pages/Gestation/InseminationDetails";
+import ViewBirths from "pages/Births/ViewBirths";
+import ViewUpcomingBirths from "pages/Births/ViewUpcomingBirths";
 
 
 
@@ -95,7 +96,6 @@ const authProtectedRoutes = [
 
 
   //Warehouse - Inventory
-  { path: '/warehouse/inventory/create_product', component: <CreateProduct /> },
   { path: '/warehouse/inventory/view_inventory', component: <ViewInventory /> },
   { path: '/warehouse/inventory/product_details', component: <ProductDetails /> },
 
@@ -167,6 +167,12 @@ const authProtectedRoutes = [
   { path: "/gestation/view_inseminations", component: <ViewInseminations /> },
   { path: "/gestation/insemination_details/:insemination_id", component: <InseminationDetails /> },
   { path: "/gestation/view_pregnancies", component: <ViewPregnancies /> },
+
+  //Births
+  { path: "/births/view_births", component: <ViewBirths /> },
+  { path: "/births/view_upcoming_births", component: <ViewUpcomingBirths /> },
+  { path: "/births/view_births", component: <ViewBirths /> },
+
 
 
   //Configuration

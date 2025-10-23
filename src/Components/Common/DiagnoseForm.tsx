@@ -1,4 +1,4 @@
-import { Alert, Button, FormFeedback, Input, Label, Spinner } from "reactstrap";
+import { Alert, Button, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from "reactstrap";
 import { Formik, useFormik } from "formik";
 import * as Yup from "yup";
 import { getLoggedinUser } from "helpers/api_helper";
@@ -22,6 +22,7 @@ const DiagnosisForm = ({ insemination, onSave, onCancel }: DiagnosisFormProps) =
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [successModalOpen, setSuccessModalOpen] = useState<boolean>(false)
     const [fileToUpload, setFileToUpload] = useState<File | null>(null)
+    const [confirmationModalOpen, setConfirmationModalOpen] = useState<boolean>(false)
 
     const handleError = (error: any, message: string) => {
         console.error(message, error);
@@ -71,7 +72,24 @@ const DiagnosisForm = ({ insemination, onSave, onCancel }: DiagnosisFormProps) =
                     }
                 );
 
-                if (result.data.status === HttpStatusCode.Ok) {
+                if (result.status === HttpStatusCode.Ok) {
+                    if (values.result === 'pregnant') {
+                        const estimatedFarrowingDate = new Date(insemination.date);
+                        estimatedFarrowingDate.setDate(estimatedFarrowingDate.getDate() + 115);
+
+                        await configContext.axiosHelper.create(`${configContext.apiUrl}/pregnancies/create`, {
+                            sow: insemination.sow._id,
+                            insemination: insemination._id,
+                            start_date: insemination.date,
+                            farrowing_status: 'pregnant',
+                            hasFarrowed: false,
+                            status_history: [],
+                            abortions: [],
+                            estimated_farrowing_date: estimatedFarrowingDate,
+                            farrowing_date: null,
+                        });
+                    }
+
                     await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
                         event: `Diagnostico de inseminación ${insemination} registrada`
                     });
@@ -98,6 +116,7 @@ const DiagnosisForm = ({ insemination, onSave, onCancel }: DiagnosisFormProps) =
     };
 
     useEffect(() => {
+        console.log(insemination)
         formik.setFieldValue('diagnosisDate', new Date())
     }, [])
 
@@ -180,7 +199,7 @@ const DiagnosisForm = ({ insemination, onSave, onCancel }: DiagnosisFormProps) =
                 </div>
 
                 <div className="d-flex gap-2 mt-3">
-                    <Button className="ms-auto" color="primary" type="submit" disabled={formik.isSubmitting}>
+                    <Button className="ms-auto" color="primary" type="button" onClick={() => setConfirmationModalOpen(true)}>
                         {formik.isSubmitting ? (
                             <div>
                                 <Spinner size='sm' />
@@ -193,7 +212,62 @@ const DiagnosisForm = ({ insemination, onSave, onCancel }: DiagnosisFormProps) =
                         )}
                     </Button>
                 </div>
+
+                <Modal size="md" isOpen={confirmationModalOpen} toggle={() => setConfirmationModalOpen(false)} centered>
+                    <ModalHeader toggle={() => setConfirmationModalOpen(false)}> Confirmar diagnóstico</ModalHeader>
+                    <ModalBody>
+                        <div className="d-flex flex-column align-items-center text-center gap-3">
+                            <FiCheckCircle size={50} />
+                            <div>
+                                <p className="mb-1 fs-5">
+                                    ¿Desea registrar el diagnóstico:{" "}
+                                    <strong>
+                                        {{
+                                            pregnant: "Preñada",
+                                            empty: "Vacía",
+                                            doubtful: "Dudosa",
+                                            resorption: "Reabsorción",
+                                            abortion: "Aborto"
+                                        }[formik.values.result]}
+                                    </strong>?
+                                </p>
+                                {formik.values.result === "pregnant" && (
+                                    <p className="text-muted fs-5">
+                                        Fecha de parto tentativa:{" "}
+                                        {new Date(new Date(insemination.date).getTime() + 115 * 24 * 60 * 60 * 1000)
+                                            .toLocaleDateString("es-MX")}
+                                    </p>
+                                )}
+                                {formik.values.result !== "pregnant" && (
+                                    <p className="text-muted fs-6">
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </ModalBody>
+                    <ModalFooter>
+                        <div className="d-flex gap-2 mt-3">
+                            <Button color="secondary" onClick={() => setConfirmationModalOpen(false)}>
+                                Cancelar
+                            </Button>
+                            <Button color="success" onClick={() => formik.handleSubmit()}>
+                                {formik.isSubmitting ? (
+                                    <div>
+                                        <Spinner size='sm' />
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <i className="ri-check-line me-2" />
+                                        Confirmar
+                                    </div>
+                                )}
+                            </Button>
+                        </div>
+                    </ModalFooter>
+                </Modal>
+
             </form>
+
             {alertConfig.visible && (
                 <Alert color={alertConfig.color} className="d-flex align-items-center gap-2 shadow rounded-3 p-3 mt-4">
                     {alertConfig.color === "success" && <FiCheckCircle size={22} />}
@@ -206,6 +280,7 @@ const DiagnosisForm = ({ insemination, onSave, onCancel }: DiagnosisFormProps) =
                     <Button close onClick={() => setAlertConfig({ ...alertConfig, visible: false })} />
                 </Alert>
             )}
+
 
             <SuccessModal isOpen={successModalOpen} onClose={onSave} message={"Diagnostico registrado con éxito"} />
         </>

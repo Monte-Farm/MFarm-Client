@@ -12,6 +12,7 @@ import classnames from "classnames";
 import ObjectDetailsHorizontal from './ObjectDetailsHorizontal';
 import CustomTable from './CustomTable';
 import { Column } from 'common/data/data_types';
+import DatePicker from 'react-flatpickr';
 
 interface OutcomeFormProps {
     initialData?: OutcomeData;
@@ -28,12 +29,12 @@ const outcomeAttributes = [
 ]
 
 const productColumns: Column<any>[] = [
-    { header: 'Código', accessor: 'id', isFilterable: true, type: 'text'  },
-    { header: 'Producto', accessor: 'name', isFilterable: true, type: 'text'  },
-    { header: 'Cantidad', accessor: 'quantity', isFilterable: true, type: 'number'  },
-    { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true, type: 'text'  },
-    { header: 'Precio Unitario', accessor: 'price', type: 'currency'  },
-    { header: 'Categoría', accessor: 'category', isFilterable: true, type: 'text'  },
+    { header: 'Código', accessor: 'id', isFilterable: true, type: 'text' },
+    { header: 'Producto', accessor: 'name', isFilterable: true, type: 'text' },
+    { header: 'Cantidad', accessor: 'quantity', isFilterable: true, type: 'number' },
+    { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true, type: 'text' },
+    { header: 'Precio Unitario', accessor: 'price', type: 'currency' },
+    { header: 'Categoría', accessor: 'category', isFilterable: true, type: 'text' },
 ];
 
 
@@ -96,8 +97,8 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSu
 
     const formik = useFormik({
         initialValues: initialData || {
-            id: "",
-            date: new Date().toLocaleDateString().split("T")[0],
+            code: "",
+            date: null,
             products: [],
             totalPrice: 0,
             outcomeType: "",
@@ -237,32 +238,29 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSu
                                     type="text"
                                     id="idInput"
                                     name="id"
-                                    value={formik.values.id}
+                                    value={formik.values.code}
                                     onChange={formik.handleChange}
                                     onBlur={formik.handleBlur}
-                                    invalid={formik.touched.id && !!formik.errors.id}
+                                    invalid={formik.touched.code && !!formik.errors.code}
                                 />
-                                {formik.touched.id && formik.errors.id && <FormFeedback>{formik.errors.id}</FormFeedback>}
+                                {formik.touched.code && formik.errors.code && <FormFeedback>{formik.errors.code}</FormFeedback>}
                             </div>
 
                             <div className="w-50">
-                                <Label htmlFor="dateInput" className="form-label">Fecha</Label>
+                                <Label htmlFor="date" className="form-label">Fecha</Label>
 
-                                <Flatpickr
-                                    id="dateInput"
-                                    className="form-control"
-                                    value={formik.values.date}
-                                    options={{
-                                        dateFormat: "d-m-Y",
-                                        defaultDate: formik.values.date,
+                                <DatePicker
+                                    id="date"
+                                    className={`form-control ${formik.touched.date && formik.errors.date ? 'is-invalid' : ''}`}
+                                    value={formik.values.date ?? undefined}
+                                    onChange={(date: Date[]) => {
+                                        if (date[0]) formik.setFieldValue('date', date[0]);
                                     }}
-                                    onChange={(date) => {
-                                        const formattedDate = date[0].toLocaleDateString("es-ES");
-                                        formik.setFieldValue("date", formattedDate);
-                                    }}
+                                    options={{ dateFormat: 'd/m/Y' }}
                                 />
-                                {formik.touched.date && formik.errors.date && <FormFeedback className="d-block">{formik.errors.date}</FormFeedback>}
-
+                                {formik.touched.date && formik.errors.date && (
+                                    <FormFeedback className="d-block">{formik.errors.date as string}</FormFeedback>
+                                )}
                             </div>
                         </div>
 
@@ -309,7 +307,7 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSu
                                     toggleArrowTab(activeStep + 1);
                                 }}
                                 disabled={
-                                    !formik.values.id ||
+                                    !formik.values.code ||
                                     !formik.values.date ||
                                     !formik.values.outcomeType ||
                                     !formik.values.description

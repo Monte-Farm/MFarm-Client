@@ -8,6 +8,8 @@ import { SupplierData } from "common/data_interfaces";
 import { ConfigContext } from "App";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Column } from "common/data/data_types";
+import LoadingAnimation from "Components/Common/LoadingAnimation";
+import AlertMessage from "Components/Common/AlertMesagge";
 
 const Suppliers = () => {
     document.title = 'Ver Proveedores | Almacén'
@@ -19,17 +21,6 @@ const Suppliers = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ create: false, update: false, delete: false, activate: false });
     const [loading, setLoading] = useState<boolean>(false)
-
-    const handleError = (error: any, message: string) => {
-        console.error(message, error);
-        setAlertConfig({ visible: true, color: "danger", message });
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-    };
-
-    const showAlert = (color: string, message: string) => {
-        setAlertConfig({ visible: true, color: color, message: message })
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-    }
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -88,13 +79,12 @@ const Suppliers = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/supplier`);
             setSuppliersData(response.data.data);
         } catch (error) {
-            handleError(error, 'El servicio no esta disponible, intentelo más tarde');
+            console.error('Error fetching suppliers data:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: 'Error al obtener los datos de los proveedores.' });
         } finally {
             setLoading(false)
         }
     };
-
-
 
     const handleSupplierDetails = (row: any) => {
         const id_supplier = row.id
@@ -123,10 +113,11 @@ const Suppliers = () => {
 
         try {
             await configContext.axiosHelper.create(`${configContext.apiUrl}/supplier/create_supplier`, data);
-            showAlert('success', 'Proveedor registrado con éxito');
+            setAlertConfig({ visible: true, color: 'success', message: 'Proveedor registrado con éxito' })
             fetchSuppliersData();
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al registrar al proveedor, intentelo más tarde');
+            console.error('Error creating supplier:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al crear al proveedor, intentelo mas tarde' });
         } finally {
             toggleModal('create', false);
         }
@@ -137,9 +128,10 @@ const Suppliers = () => {
         try {
             await configContext.axiosHelper.put(`${configContext.apiUrl}/supplier/update_supplier/${data.id}`, data);
             fetchSuppliersData();
-            showAlert('success', 'El proveedor ha sido actualizado con éxito');
+            setAlertConfig({ visible: true, color: 'success', message: 'Proveedor actualizado con éxito' })
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al actualizar al proveedor, intentelo más tarde');
+            console.error('Error updating supplier:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al actualizar el proveedor, intentelo mas tarde' });
         } finally {
             toggleModal('update', false);
         }
@@ -152,9 +144,10 @@ const Suppliers = () => {
         try {
             await configContext.axiosHelper.delete(`${configContext.apiUrl}/supplier/delete_supplier/${supplierId}`);
             fetchSuppliersData();
-            showAlert('success', 'El proveedor se ha desactivado con éxito');
+            setAlertConfig({ visible: true, color: 'success', message: 'Proveedor desactivado con éxito' })
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al desactivar al proveedor, intentelo más tarde');
+            console.error('Error deactivating supplier:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al desactivar el proveedor, intentelo mas tarde' });
         } finally {
             toggleModal('delete', false);
         }
@@ -167,29 +160,23 @@ const Suppliers = () => {
         try {
             await configContext.axiosHelper.put(`${configContext.apiUrl}/supplier/activate_supplier/${supplierId}`, {});
             fetchSuppliersData();
-            showAlert('success', 'El proveedor se ha desactivado con éxito');
+            setAlertConfig({ visible: true, color: 'success', message: 'Proveedor sactivado con éxito' })
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al desactivar al proveedor, intentelo más tarde');
+            console.error('Error activating supplier:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al desactivar el proveedor, intentelo mas tarde' });
         } finally {
             toggleModal('activate', false);
         }
     };
 
     useEffect(() => {
-        document.body.style.overflow = 'hidden';
         fetchSuppliersData();
-
-        return () => {
-            document.body.style.overflow = '';
-        };
     }, [])
 
 
     if (loading) {
         return (
-            <div className="d-flex justify-content-center align-items-center vh-100 page-content">
-                <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
-            </div>
+            <LoadingAnimation />
         );
     }
 
@@ -210,8 +197,27 @@ const Suppliers = () => {
                         </div>
                     </CardHeader>
 
-                    <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
-                        <CustomTable columns={supplierColumn} data={suppliersData} showSearchAndFilter={true} showPagination={false} />
+                    <CardBody
+                        className={
+                            suppliersData.length === 0
+                                ? "d-flex flex-column justify-content-center align-items-center text-center"
+                                : "d-flex flex-column flex-grow-1"
+                        }
+                        style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}
+                    >
+                        {suppliersData.length === 0 ? (
+                            <>
+                                <i className="ri-truck-line text-muted mb-2" style={{ fontSize: "2rem" }} />
+                                <span className="fs-5 text-muted">Aún no hay proveedores registrados</span>
+                            </>
+                        ) : (
+                            <CustomTable
+                                columns={supplierColumn}
+                                data={suppliersData}
+                                showSearchAndFilter={true}
+                                showPagination={false}
+                            />
+                        )}
                     </CardBody>
                 </Card>
 
@@ -266,11 +272,7 @@ const Suppliers = () => {
 
             </Container>
 
-            {alertConfig.visible && (
-                <Alert color={alertConfig.color} className="position-fixed bottom-0 start-50 translate-middle-x p-3">
-                    {alertConfig.message}
-                </Alert>
-            )}
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </div>
     )
 }

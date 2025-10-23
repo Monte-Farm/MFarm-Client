@@ -65,6 +65,7 @@ const Navdata = () => {
     const [isLaboratory, setIsLaboratory] = useState<boolean>(false)
     const [isExtraction, setIsExtraction] = useState<boolean>(false)
     const [isGestation, setIsGestation] = useState<boolean>(false)
+    const [isBirths, setIsBirths] = useState<boolean>(false)
 
     const [iscurrentState, setIscurrentState] = useState('Home');
 
@@ -243,13 +244,6 @@ const Navdata = () => {
                             roles: ['farm_manager', 'warehouse_manager'],
                             parentId: "incomes"
                         },
-                        {
-                            id: 3,
-                            label: "Configuración",
-                            link: "/warehouse/incomes/configuration",
-                            roles: ['farm_manager', 'warehouse_manager'],
-                            parentId: "incomes"
-                        }
                     ]
                 },
                 {
@@ -267,22 +261,8 @@ const Navdata = () => {
                     childItems: [
                         {
                             id: 1,
-                            label: "Nueva Salida",
-                            link: "/warehouse/outcomes/create_outcome",
-                            roles: ['farm_manager', 'warehouse_manager'],
-                            parentId: "outcomes"
-                        },
-                        {
-                            id: 2,
                             label: "Ver Salidas",
                             link: "/warehouse/outcomes/view_outcomes",
-                            roles: ['farm_manager', 'warehouse_manager'],
-                            parentId: "outcomes"
-                        },
-                        {
-                            id: 3,
-                            label: "Configuración",
-                            link: "/warehouse/outcomes/configuration",
                             roles: ['farm_manager', 'warehouse_manager'],
                             parentId: "outcomes"
                         },
@@ -308,13 +288,6 @@ const Navdata = () => {
                             roles: ['farm_manager', 'warehouse_manager'],
                             parentId: 'suppliers',
                         },
-                        {
-                            id: 2,
-                            label: 'Configuración',
-                            link: '/warehouse/suppliers/configuration',
-                            roles: ['farm_manager', 'warehouse_manager'],
-                            parentId: 'suppliers',
-                        },
                     ]
                 },
                 {
@@ -334,13 +307,6 @@ const Navdata = () => {
                             id: 1,
                             label: 'Ver Productos',
                             link: '/warehouse/products/product_catalog',
-                            roles: ['farm_manager', 'warehouse_manager'],
-                            parentId: 'products'
-                        },
-                        {
-                            id: 2,
-                            label: 'Configuración',
-                            link: '/warehouse/products/configuration',
                             roles: ['farm_manager', 'warehouse_manager'],
                             parentId: 'products'
                         },
@@ -411,18 +377,6 @@ const Navdata = () => {
                 updateIconSidebar(e);
             },
             subItems: [
-                {
-                    id: 'createSubwarehouseOutcome',
-                    label: "Nueva Salida",
-                    link: "/subwarehouse/create_subwarehouse_outcome",
-                    roles: ['subwarehouse_manager'],
-                    parentId: "subwarehouseOutcomes",
-                    click: function (e: any) {
-                        e.preventDefault();
-                        setIsCreateSubwarehouseOutcome(!isCreateSubwarehouseOutcome)
-                    },
-                    stateVariables: isCreateSubwarehouseOutcome
-                },
                 {
                     id: 'viewSubwarehouseOutcomes',
                     label: "Ver Salidas",
@@ -617,6 +571,36 @@ const Navdata = () => {
                         },
                     ]
                 },
+                {
+                    id: 'births',
+                    label: 'Partos',
+                    link: '/#',
+                    roles: ['farm_manager'],
+                    parentId: 'reproduction',
+                    isChildItem: true,
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsBirths(!isBirths)
+                    },
+                    stateVariables: isBirths,
+                    childItems: [
+                        {
+                            id: 1,
+                            label: "Proximos partos",
+                            link: "/births/view_upcoming_births",
+                            roles: ['farm_manager'],
+                            parentId: "births"
+                        },
+                        {
+                            id: 2,
+                            label: "Partos registrados",
+                            link: "/births/view_births",
+                            roles: ['farm_manager'],
+                            parentId: "births"
+                        },
+
+                    ]
+                }
             ]
         }
     ];

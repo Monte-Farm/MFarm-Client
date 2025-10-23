@@ -13,7 +13,7 @@ import { Column } from "common/data/data_types"
 
 const outcomeAttributes: Attribute[] = [
     { key: 'id', label: 'Identificador', type: 'text' },
-    { key: 'date', label: 'Fecha', type: 'text' },
+    { key: 'date', label: 'Fecha', type: 'date' },
     { key: 'warehouseDestiny', label: 'Almacén de destino', type: 'text' },
     { key: 'outcomeType', label: 'Motivo de salida', type: 'text' },
     { key: 'description', label: 'Descripción', type: 'text' },

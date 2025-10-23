@@ -68,7 +68,7 @@ const CompleteOrder = () => {
             lastOutcomeId = response.data.data;
 
             const outcomeData: OutcomeData = {
-                id: lastOutcomeId,
+                code: lastOutcomeId,
                 date: data.date,
                 products: data.productsDelivered,
                 outcomeType: "order",

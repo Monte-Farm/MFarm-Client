@@ -13,8 +13,8 @@ import { Column } from "common/data/data_types";
 const incomeAttributes: Attribute[] = [
     { key: 'id', label: 'Identificador', type: 'text' },
     { key: 'warehouse', label: 'Almacén', type: 'text'  },
-    { key: 'date', label: 'Fecha de registro', type: 'text'  },
-    { key: 'emissionDate', label: 'Fecha de emisión', type: 'text'  },
+    { key: 'date', label: 'Fecha de registro', type: 'date'  },
+    { key: 'emissionDate', label: 'Fecha de emisión', type: 'date'  },
     { key: 'origin.id', label: '', type: 'text'  },
     { key: 'totalPrice', label: 'Precio Total', type: 'currency'  },
     { key: 'incomeType', label: 'Tipo de alta', type: 'text'  }

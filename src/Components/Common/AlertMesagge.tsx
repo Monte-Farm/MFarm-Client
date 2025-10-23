@@ -8,6 +8,7 @@ interface AlertMessageProps {
     visible: boolean;
     onClose: () => void;
     autoClose?: number;
+    absolutePosition?: boolean
 }
 
 const AlertMessage: React.FC<AlertMessageProps> = ({
@@ -16,6 +17,7 @@ const AlertMessage: React.FC<AlertMessageProps> = ({
     visible,
     onClose,
     autoClose = 3000,
+    absolutePosition = true,
 }) => {
     useEffect(() => {
         if (visible && autoClose) {
@@ -46,8 +48,8 @@ const AlertMessage: React.FC<AlertMessageProps> = ({
     return (
         <Alert
             color={color}
-            className="position-fixed bottom-0 start-50 translate-middle-x d-flex align-items-center gap-2 shadow rounded-3 p-3"
-            style={{ minWidth: "350px", maxWidth: "90%", zIndex: 1050 }}
+            className={`${absolutePosition ? 'position-fixed bottom-0 start-50 translate-middle-x d-flex align-items-center gap-2 shadow rounded-3 p-3' : 'd-flex align-items-center gap-2 shadow rounded-3 mt-3'}`}
+            style={{ minWidth: "350px", maxWidth: "100%", zIndex: 1050 }}
         >
             {renderIcon()}
             <span className="flex-grow-1 text-black">{message}</span>

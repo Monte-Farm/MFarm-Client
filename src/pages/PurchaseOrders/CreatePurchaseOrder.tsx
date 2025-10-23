@@ -44,7 +44,7 @@ const CreatePurchaseOrder = () => {
 
                 <Card className="rounded" style={{ maxHeight: '75vh' }}>
                     <CardBody>
-                        <PurchaseOrderForm onSubmit={handleCreatePurchaseOrder} onCancel={handleCancel}></PurchaseOrderForm>
+                        <PurchaseOrderForm onSave={() => { }} onCancel={handleCancel}></PurchaseOrderForm>
                     </CardBody>
                 </Card>
             </Container>

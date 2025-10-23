@@ -7,31 +7,31 @@ File: Custom Css File
 */
 
 
-//Nav-bar and page css
-#page-topbar {
-    // background-color: #2F4F4F !important;
-    // border-bottom: 1px solid #2F4F4F !important;
-}
+// //Nav-bar and page css
+// #page-topbar {
+//     // background-color: #2F4F4F !important;
+//     // border-bottom: 1px solid #2F4F4F !important;
+// }
 
 .navbar-menu {
-    background-color: #6B8E23 !important; 
+    background-color: #6B8E23 !important;
 }
 
-.page-content {
-    // background-color: #F5F5DC;
-}
+// .page-content {
+//     // background-color: #F5F5DC;
+// }
 
 i {
     color: #FDFDFD;
 }
 
-html {
-    // background-color: #F5F5DC;
-}
+// html {
+//     // background-color: #F5F5DC;
+// }
 
-span {
-    color: #FDFDFD;
-}
+// span {
+//     color: #FDFDFD;
+// }
 
 .farm-text {
     color: #FDFDFD;
@@ -947,4 +947,29 @@ span {
     padding: 2px 8px;
     background-color: #f9f9f9;
     border-radius: 4px;
+}
+
+/* cambiar tamaño de los títulos de los días */
+.fc .fc-daygrid-day-number {
+    font-size: 18px;
+}
+
+/* cambiar tamaño de los eventos */
+.fc .fc-event {
+    font-size: 16px;
+}
+
+.fc .fc-event-title {
+    font-size: 16px;
+}
+
+.modal-xxl .modal-dialog {
+    max-width: 60% !important;
+    /* ajusta según lo que necesites */
+}
+
+.modal-tall {
+    height: 60vh;
+    max-height: 80vh;
+    overflow-y: auto;
 }

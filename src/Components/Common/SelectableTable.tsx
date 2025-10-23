@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { Table, Input, Label } from "reactstrap";
 import SimpleBar from "simplebar-react";
 import Pagination from "./Pagination";
@@ -18,9 +18,9 @@ type SelectableCustomTableProps<T> = {
     rowsPerPage?: number;
     showPagination?: boolean;
     className?: string;
+    disabled?: boolean;
 };
 
-// Formateo según tipo
 const formatValue = (value: any, type?: ColumnType) => {
     if (value == null) return "";
     switch (type) {
@@ -29,7 +29,10 @@ const formatValue = (value: any, type?: ColumnType) => {
         case "date":
             return new Date(value).toLocaleDateString();
         case "currency":
-            return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
+            return new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: "USD",
+            }).format(value);
         default:
             return value.toString();
     }
@@ -46,6 +49,7 @@ function SelectableCustomTable<T extends { id: string }>({
     rowsPerPage = 10,
     showPagination = true,
     className = "",
+    disabled = false,
 }: SelectableCustomTableProps<T>) {
     const [filterText, setFilterText] = useState<string>("");
     const [currentPage, setCurrentPage] = useState<number>(1);
@@ -54,18 +58,31 @@ function SelectableCustomTable<T extends { id: string }>({
     // Filtrado
     const filteredData = useMemo(() => {
         if (!filterText) return data;
-        return data.filter(row =>
-            columns.some(col => col.isFilterable && String(row[col.accessor]).toLowerCase().includes(filterText.toLowerCase()))
+        return data.filter((row) =>
+            columns.some(
+                (col) =>
+                    col.isFilterable &&
+                    String(row[col.accessor])
+                        .toLowerCase()
+                        .includes(filterText.toLowerCase())
+            )
         );
     }, [filterText, data, columns]);
 
-    const [sortConfig, setSortConfig] = useState<{ key: keyof T; direction: "asc" | "desc" } | null>(null);
+    // Ordenamiento
+    const [sortConfig, setSortConfig] = useState<{
+        key: keyof T;
+        direction: "asc" | "desc";
+    } | null>(null);
+
     const sortedData = useMemo(() => {
         const sortable = [...filteredData];
         if (sortConfig) {
             sortable.sort((a, b) => {
-                if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === "asc" ? -1 : 1;
-                if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === "asc" ? 1 : -1;
+                if (a[sortConfig.key] < b[sortConfig.key])
+                    return sortConfig.direction === "asc" ? -1 : 1;
+                if (a[sortConfig.key] > b[sortConfig.key])
+                    return sortConfig.direction === "asc" ? 1 : -1;
                 return 0;
             });
         }
@@ -73,7 +90,11 @@ function SelectableCustomTable<T extends { id: string }>({
     }, [filteredData, sortConfig]);
 
     const requestSort = (key: keyof T) => {
-        setSortConfig(prev => prev && prev.key === key && prev.direction === "asc" ? { key, direction: "desc" } : { key, direction: "asc" });
+        setSortConfig((prev) =>
+            prev && prev.key === key && prev.direction === "asc"
+                ? { key, direction: "desc" }
+                : { key, direction: "asc" }
+        );
     };
 
     // Paginación
@@ -88,51 +109,62 @@ function SelectableCustomTable<T extends { id: string }>({
     // Selección
     const handleSelectionChange = useCallback(
         (row: T, checked: boolean) => {
+            if (disabled) return;
             const newSelected = new Set(selectedIds);
 
             if (selectionMode === "single") {
+                // ✅ Siempre deja seleccionada la fila clickeada
                 newSelected.clear();
-                if (checked) newSelected.add(row.id);
+                newSelected.add(row.id);
             } else {
                 if (checked) newSelected.add(row.id);
                 else newSelected.delete(row.id);
             }
 
             setSelectedIds(newSelected);
-            const selectedItems = data.filter(d => newSelected.has(d.id));
+            const selectedItems = data.filter((d) => newSelected.has(d.id));
             onSelect?.(selectedItems);
         },
-        [selectedIds, selectionMode, data, onSelect]
+        [selectedIds, selectionMode, data, onSelect, disabled]
     );
 
     const toggleSelectAll = useCallback(() => {
+        if (disabled) return;
         if (selectedIds.size === paginatedData.length) {
             setSelectedIds(new Set());
             onSelect?.([]);
         } else {
-            const newSelected = new Set(paginatedData.map(d => d.id));
+            const newSelected = new Set(paginatedData.map((d) => d.id));
             setSelectedIds(newSelected);
-            onSelect?.(data.filter(d => newSelected.has(d.id)));
+            onSelect?.(data.filter((d) => newSelected.has(d.id)));
         }
-    }, [selectedIds, paginatedData, data, onSelect]);
+    }, [selectedIds, paginatedData, data, onSelect, disabled]);
 
     const handlePageChange = (page: number) => setCurrentPage(page);
 
     return (
-        <>
+        <div
+            style={{
+                pointerEvents: disabled ? "none" : "auto",
+                opacity: disabled ? 0.5 : 1,
+            }}
+        >
             {showSearchAndFilter && (
                 <div className="d-flex justify-content-between mb-3">
                     <Input
                         type="text"
                         placeholder="Buscar..."
                         value={filterText}
-                        onChange={e => setFilterText(e.target.value)}
+                        onChange={(e) => setFilterText(e.target.value)}
+                        disabled={disabled}
                     />
                 </div>
             )}
 
             <SimpleBar style={{ maxHeight: "60vh" }}>
-                <Table className={`table-hover align-middle table-nowrap mb-0 ${className}`}>
+                <Table
+                    className={`table-hover align-middle table-nowrap mb-0 ${className}`}
+                >
                     <thead className="table-light sticky-top">
                         <tr>
                             <th style={{ width: 50 }}>
@@ -141,19 +173,29 @@ function SelectableCustomTable<T extends { id: string }>({
                                         type="checkbox"
                                         checked={selectedIds.size === paginatedData.length}
                                         onChange={toggleSelectAll}
+                                        disabled={disabled}
                                     />
                                 )}
                             </th>
                             {columns.map((col, idx) => (
-                                <th key={idx} onClick={() => requestSort(col.accessor)} style={{ cursor: "pointer" }}>
-                                    {col.header} {sortConfig?.key === col.accessor ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+                                <th
+                                    key={idx}
+                                    onClick={() => requestSort(col.accessor)}
+                                    style={{ cursor: "pointer" }}
+                                >
+                                    {col.header}{" "}
+                                    {sortConfig?.key === col.accessor
+                                        ? sortConfig.direction === "asc"
+                                            ? "▲"
+                                            : "▼"
+                                        : ""}
                                 </th>
                             ))}
                         </tr>
                     </thead>
                     <tbody>
                         {paginatedData.length > 0 ? (
-                            paginatedData.map(row => {
+                            paginatedData.map((row) => {
                                 const isSelected = selectedIds.has(row.id);
                                 return (
                                     <tr
@@ -161,26 +203,35 @@ function SelectableCustomTable<T extends { id: string }>({
                                         className={isSelected ? "table-primary" : ""}
                                         style={{ cursor: rowClickable ? "pointer" : "default" }}
                                         onClick={() => {
-                                            if (rowClickable || selectionMode) handleSelectionChange(row, !isSelected);
-                                            if (rowClickable && onRowClick) onRowClick(row);
+                                            if (!disabled && (rowClickable || selectionMode))
+                                                handleSelectionChange(row, !isSelected);
+                                            if (!disabled && rowClickable && onRowClick)
+                                                onRowClick(row);
                                         }}
                                     >
                                         <td>
                                             <Label check className="d-block m-0 p-0">
                                                 <Input
-                                                    type={selectionMode === "single" ? "radio" : "checkbox"}
-                                                    name={selectionMode === "single" ? "selectRow" : undefined}
+                                                    type={
+                                                        selectionMode === "single" ? "radio" : "checkbox"
+                                                    }
+                                                    name={
+                                                        selectionMode === "single" ? "selectRow" : undefined
+                                                    }
                                                     checked={isSelected}
-                                                    onChange={e => {
+                                                    onChange={(e) => {
                                                         e.stopPropagation();
                                                         handleSelectionChange(row, e.target.checked);
                                                     }}
+                                                    disabled={disabled}
                                                 />
                                             </Label>
                                         </td>
                                         {columns.map((col, cIdx) => (
                                             <td key={cIdx}>
-                                                {col.render ? col.render(row[col.accessor], row) : formatValue(row[col.accessor], col.type)}
+                                                {col.render
+                                                    ? col.render(row[col.accessor], row)
+                                                    : formatValue(row[col.accessor], col.type)}
                                             </td>
                                         ))}
                                     </tr>
@@ -207,7 +258,7 @@ function SelectableCustomTable<T extends { id: string }>({
                     />
                 </div>
             )}
-        </>
+        </div>
     );
 }
 

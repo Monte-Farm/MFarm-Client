@@ -68,6 +68,7 @@ const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
             location: data?.location || '',
             status: data?.status ?? true,
             manager: (typeof data?.manager === 'object' && data?.manager !== null) ? (data.manager as UserData)._id : (data?.manager || ''),
+            main_warehouse: data?.main_warehouse || '',
         },
         enableReinitialize: true,
         validationSchema,
@@ -101,6 +102,17 @@ const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
         },
 
     });
+
+    const getNextCode = async () => {
+        if (!configContext) return;
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/farm/next_code`);
+            formik.setFieldValue('code', response.data.data)
+        } catch (error) {
+            console.error('Error fetching next farm code:', error);
+            setAlertConfig({ visible: true, color: "danger", message: "Ha ocurrido un error al obtener el siguiente código de granja" });
+        }
+    }
 
     const fetchManagerUsers = async () => {
         if (!configContext) return;
@@ -153,6 +165,7 @@ const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
     };
 
     useEffect(() => {
+        getNextCode();
         fetchManagerUsers();
     }, []);
 

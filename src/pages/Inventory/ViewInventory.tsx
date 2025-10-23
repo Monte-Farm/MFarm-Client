@@ -3,23 +3,27 @@ import { Button, Container, Alert, Card, CardHeader, CardBody, Modal, ModalBody,
 import BreadCrumb from "Components/Common/BreadCrumb";
 import CustomTable from "Components/Common/CustomTable";
 import { useNavigate } from "react-router-dom";
-import { ProductData } from "common/data_interfaces";
+import { IncomeData, ProductData } from "common/data_interfaces";
 import { ConfigContext } from "App";
-import LoadingGif from '../../assets/images/loading-gif.gif'
 import PDFViewer from "Components/Common/PDFViewer";
 import { Column } from "common/data/data_types";
+import LoadingAnimation from "Components/Common/LoadingAnimation";
+import AlertMessage from "Components/Common/AlertMesagge";
+import IncomeForm from "Components/Common/IncomeForm";
+import { getLoggedinUser } from "helpers/api_helper";
 
 const ViewInventory = () => {
   document.title = "Inventario | Almacén General";
-  const warehouseId = 'AG001';
-  const history = useNavigate();
+  const configContext = useContext(ConfigContext);
+  const userLogged = getLoggedinUser();
+  const navigate = useNavigate();
 
   const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
   const [productsData, setProductsData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const configContext = useContext(ConfigContext);
-  const [modals, setModals] = useState({ viewPDF: false });
+  const [modals, setModals] = useState({ viewPDF: false, createIncome: false });
   const [fileURL, setFileURL] = useState<string>('')
+  const [mainWarehouseId, setMainWarehouseId] = useState<string>('')
 
   const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
     setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -37,7 +41,7 @@ const ViewInventory = () => {
       accessor: "action",
       render: (value: any, row: any) => (
         <div className="d-flex gap-1">
-          <Button className="farm-primary-button btn-icon" onClick={() => handleProductDetails(row)}>
+          <Button className="farm-primary-button btn-icon" onClick={() => navigate(`/warehouse/inventory/product_details?warehouse=${mainWarehouseId}&product=${row.id}`)}>
             <i className="ri-eye-fill align-middle"></i>
           </Button>
         </div>
@@ -45,26 +49,28 @@ const ViewInventory = () => {
     },
   ];
 
-  const handleError = (error: any, message: string) => {
-    console.error(message, error);
-    setAlertConfig({ visible: true, color: "danger", message });
-    setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-  };
+  const fetchWarehouseId = async () => {
+    if (!configContext || !userLogged) return;
+    try {
+      const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/farm/get_main_warehouse/${userLogged.farm_assigned}`);
+      setMainWarehouseId(response.data.data)
+    } catch (error) {
+      console.error('Error fetching main warehouse ID:', error);
+    }
+  }
 
   const fetchProductsData = async () => {
-    setLoading(true);
+    if (!configContext || !mainWarehouseId) return;
     try {
-      if (!configContext) return;
-
-      const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/get_inventory/${warehouseId}`);
-
+      setLoading(true);
+      const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/get_inventory/${mainWarehouseId}`);
       setProductsData(response.data.data);
-    } catch (error) {
-      handleError(error, "El servicio no está disponible, inténtelo más tarde");
-    } finally {
       setLoading(false);
+    } catch (error) {
+      console.error('Error fetching products data:', error);
+      setAlertConfig({ visible: true, color: 'danger', message: 'Error al obtener los datos de los productos.' });
     }
-  };
+  }
 
 
   const handlePrintInventory = async () => {
@@ -77,33 +83,22 @@ const ViewInventory = () => {
       setFileURL(url);
       toggleModal('viewPDF')
     } catch (error) {
-      handleError(error, 'Ha ocurrido un error al generar el reporte, inténtelo más tarde.');
+      console.error('Error generating inventory report:', error);
+      setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el reporte de inventario.' });
     }
   };
 
-
-  const handleAddProduct = () => {
-    history('/warehouse/incomes/create_income');
-  };
-
-  const handleProductDetails = (product: ProductData) => {
-    history(`/warehouse/inventory/product_details?warehouse=${warehouseId}&product=${product.id}`)
-  };
+  useEffect(() => {
+    fetchWarehouseId();
+  }, []);
 
   useEffect(() => {
-    document.body.style.overflow = 'hidden';
     fetchProductsData();
-
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, []);
+  }, [mainWarehouseId]);
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center vh-100 page-content">
-        <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
-      </div>
+      <LoadingAnimation />
     );
   }
 
@@ -115,19 +110,33 @@ const ViewInventory = () => {
         <Card className="rounded" style={{ height: '75vh' }}>
           <CardHeader>
             <div className="d-flex gap-2">
-              <h4 className="m-2">Productos</h4>
-              <Button className="h-50 farm-primary-button ms-auto" onClick={(handlePrintInventory)}>
+              <h4 className="">Productos</h4>
+              <Button className="ms-auto" onClick={(handlePrintInventory)}>
                 Imprimir Inventario
               </Button>
 
-              <Button className="h-50 farm-primary-button" onClick={handleAddProduct}>
+              <Button className="" onClick={() => toggleModal('createIncome')}>
                 <i className="ri-add-line pe-2" />
-                Dar Entrada
+                Nueva Entrada
               </Button>
             </div>
           </CardHeader>
-          <CardBody className="d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
-            <CustomTable columns={columnsTable} data={productsData} showSearchAndFilter={true} rowClickable={false} showPagination={false} />
+
+          <CardBody className={productsData.length === 0 ? "d-flex flex-column justify-content-center align-items-center text-center" : "d-flex flex-column flex-grow-1"}>
+            {productsData.length === 0 ? (
+              <>
+                <i className="ri-drop-line text-muted mb-2" style={{ fontSize: "2rem" }} />
+                <span className="fs-5 text-muted">Aún no hay productos registrados en el inventario</span>
+              </>
+            ) : (
+              <CustomTable
+                columns={columnsTable}
+                data={productsData}
+                showSearchAndFilter={true}
+                rowClickable={false}
+                showPagination={false}
+              />
+            )}
           </CardBody>
 
         </Card>
@@ -140,11 +149,14 @@ const ViewInventory = () => {
         </ModalBody>
       </Modal>
 
-      {alertConfig.visible && (
-        <Alert color={alertConfig.color} className="position-fixed bottom-0 start-50 translate-middle-x p-3">
-          {alertConfig.message}
-        </Alert>
-      )}
+      <Modal size="xl" isOpen={modals.createIncome} toggle={() => toggleModal("createIncome")} backdrop='static' modalClassName="modal-xxl" keyboard={false} centered>
+        <ModalHeader toggle={() => toggleModal("createIncome")}>Nueva entrada</ModalHeader>
+        <ModalBody>
+          <IncomeForm onSave={() => { toggleModal('createIncome'); fetchProductsData() }} onCancel={() => { }} />
+        </ModalBody>
+      </Modal>
+
+      <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
     </div>
   );
 };

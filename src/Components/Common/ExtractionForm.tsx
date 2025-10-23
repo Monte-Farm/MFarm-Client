@@ -292,7 +292,8 @@ const ExtractionForm: React.FC<ExtractionFormProps> = ({ initialData, onSave, on
 
                 <TabContent activeTab={activeStep}>
                     <TabPane id="step-boarselect-tab" tabId={1}>
-                        <SelectableTable data={boars} columns={boarsColumns} selectionMode="single" showPagination={true} rowsPerPage={15} onSelect={(rows) => formik.setFieldValue('boar', rows[0]._id)} />
+                        <SelectableTable data={boars} columns={boarsColumns} selectionMode="single" showPagination={true} rowsPerPage={6} onSelect={(rows) => formik.setFieldValue('boar', rows[0]._id)} />
+                       
                         <div className="mt-4 d-flex">
                             <Button className="ms-auto" onClick={() => checkBoarSelected()}>
                                 Siguiente
@@ -483,7 +484,6 @@ const ExtractionForm: React.FC<ExtractionFormProps> = ({ initialData, onSave, on
 
                     <TabPane id="step-summary-tab" tabId={3}>
                         <div className="row g-4 mt-4">
-                            {/* Datos del verraco */}
                             <div className="col-md-6">
                                 <div className="card shadow-sm border-0 rounded-3 h-100">
                                     <div className="card-header bg-primary text-white fs-5 d-flex align-items-center justify-content-center">
@@ -524,7 +524,7 @@ const ExtractionForm: React.FC<ExtractionFormProps> = ({ initialData, onSave, on
                                 </div>
                             </div>
 
-                            {/* Información de la extracción */}
+
                             <div className="col-md-6">
                                 <div className="card shadow-sm border-0 rounded-3 h-100">
                                     <div className="card-header bg-success text-white fs-5 d-flex align-items-center justify-content-center">

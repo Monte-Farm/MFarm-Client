@@ -12,8 +12,8 @@ import { Column } from "common/data/data_types";
 
 
 const purchaseOrderAttributes: Attribute[] = [
-    { key: 'id', label: 'No. de Orden', type: "text" },
-    { key: 'date', label: 'Fecha', type: 'text' },
+    { key: 'code', label: 'No. de Orden', type: "text" },
+    { key: 'date', label: 'Fecha', type: 'date' },
     { key: 'supplier', label: 'Proveedor', type: "text" },
     { key: 'tax', label: 'Impuesto', type: "percentage" },
     { key: 'discount', label: 'Descuento', type: "percentage" },

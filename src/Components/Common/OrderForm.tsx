@@ -13,6 +13,7 @@ import ObjectDetailsHorizontal from './ObjectDetailsHorizontal';
 import CustomTable from './CustomTable';
 import CreateOrderTable from './CreateOrderTable';
 import { Column } from 'common/data/data_types';
+import DatePicker from 'react-flatpickr';
 
 
 interface OrderFormProps {
@@ -81,7 +82,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
     const formik = useFormik({
         initialValues: initialData || {
             id: "",
-            date: "",
+            date: null,
             user: "",
             productsRequested: [],
             status: 'pending',
@@ -195,7 +196,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
     };
 
     useEffect(() => {
-        if(!configContext) return; 
+        if (!configContext) return;
 
         handleFetchWarehouseProducts();
         fetchOrderOrigin();
@@ -289,21 +290,18 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
                             <div className="w-50">
                                 <Label htmlFor="dateInput" className="form-label">Fecha</Label>
 
-                                <Flatpickr
-                                    id="dateInput"
-                                    className="form-control"
-                                    value={formik.values.date}
-                                    options={{
-                                        dateFormat: "d-m-Y",
-                                        defaultDate: formik.values.date,
+                                <DatePicker
+                                    id="date"
+                                    className={`form-control ${formik.touched.date && formik.errors.date ? 'is-invalid' : ''}`}
+                                    value={formik.values.date ?? undefined}
+                                    onChange={(date: Date[]) => {
+                                        if (date[0]) formik.setFieldValue('date', date[0]);
                                     }}
-                                    onChange={(date) => {
-                                        const formattedDate = date[0].toLocaleDateString("es-ES");
-                                        formik.setFieldValue("date", date);
-                                    }}
+                                    options={{ dateFormat: 'd/m/Y' }}
                                 />
-                                {formik.touched.date && formik.errors.date && <FormFeedback className="d-block">{formik.errors.date as string}</FormFeedback>}
-
+                                {formik.touched.date && formik.errors.date && (
+                                    <FormFeedback className="d-block">{formik.errors.date as string}</FormFeedback>
+                                )}
                             </div>
                         </div>
 

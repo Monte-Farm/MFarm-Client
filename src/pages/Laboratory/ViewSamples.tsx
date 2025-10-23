@@ -6,16 +6,18 @@ import ExtractionForm from "Components/Common/ExtractionForm";
 import SemenSampleForm from "Components/Common/SemenSampleForm";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
-import { FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo } from "react-icons/fi";
+import { FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo, FiInbox } from "react-icons/fi";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, UncontrolledTooltip } from "reactstrap";
-import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Column } from "common/data/data_types";
 import DiscardSampleForm from "Components/Common/DiscardSampleForm";
 import PigDetailsModal from "Components/Common/DetailsPigModal";
 import { useNavigate } from "react-router-dom";
+import LoadingAnimation from "Components/Common/LoadingAnimation";
+import KPI from "Components/Common/Graphics/Kpi";
+import { IconBaseProps } from "react-icons";
 
 const ViewSamples = () => {
-    document.title = 'Ver muestras de semen | Management System'
+    document.title = 'Ver génetica liquida | Management System'
     const userLoggged = getLoggedinUser();
     const configContext = useContext(ConfigContext)
     const [loading, setLoading] = useState<boolean>(true);
@@ -63,13 +65,6 @@ const ViewSamples = () => {
             accessor: 'available_doses',
             type: 'number',
             isFilterable: true,
-        },
-        {
-            header: 'Volumen de dosis',
-            accessor: 'doses',
-            type: 'number',
-            isFilterable: true,
-            render: (_, row) => `${Number(row.extraction_id.volume / row.doses.length).toFixed(2)} ${row.extraction_id.unit_measurement}` || 0
         },
         { header: 'Fecha de expiracion', accessor: 'expiration_date', type: 'date', isFilterable: false },
         { header: 'Método de conservación', accessor: 'conservation_method', type: 'text', isFilterable: true },
@@ -142,17 +137,6 @@ const ViewSamples = () => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
 
-    const handleError = (error: any, message: string) => {
-        console.error(message, error);
-        setAlertConfig({ visible: true, color: "danger", message });
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-    };
-
-    const showAlert = (color: string, message: string) => {
-        setAlertConfig({ visible: true, color: color, message: message })
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-    }
-
     const openPigDetailsModal = (data: any) => {
         setSelectedPig(data.extraction_id?.boar?._id);
         toggleModal('pigDetails')
@@ -176,7 +160,8 @@ const ViewSamples = () => {
             setSamples(response.data.data)
             setFilteredSamples(response.data.data)
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al obtener los datos, intentelo mas tarde')
+            console.error('Error fetching the data: ', { error })
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
         } finally {
             setLoading(false)
         }
@@ -193,9 +178,7 @@ const ViewSamples = () => {
 
     if (loading) {
         return (
-            <div className="d-flex justify-content-center align-items-center vh-100 page-content">
-                <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
-            </div>
+            <LoadingAnimation />
         );
     }
 
@@ -205,78 +188,48 @@ const ViewSamples = () => {
                 <BreadCrumb title={"Lotes"} pageTitle={"Génetica liquida"} />
 
                 <div className="d-flex gap-3 flex-wrap">
-                    <Card
-                        className={`flex-fill text-center shadow-sm ${activeKpi === 'all' ? 'border-primary border-1' : ''}`}
-                        onClick={() => { setActiveKpi('all'); setFilteredSamples(samples); }}
-                    >
-                        <CardBody>
-                            <h5 className="text-muted">Total lotes</h5>
-                            <h2 className="fw-bold">{samples.length}</h2>
-                        </CardBody>
-                    </Card>
+                    <KPI
+                        title="Lotes totales"
+                        value={samples.length}
+                        icon={FiCheckCircle}
+                        bgColor="#e6f7e6"
+                        iconColor="#28a745"
+                    />
 
-                    <Card
-                        className={`flex-fill text-center shadow-sm ${activeKpi === 'near_expiration' ? 'border-warning border-1' : ''}`}
-                        onClick={() => {
-                            setActiveKpi('near_expiration');
-                            setFilteredSamples(samples.filter(s => s.lot_status === "near_expiration"));
-                        }}
-                    >
-                        <CardBody>
-                            <h5 className="text-muted">Próximos a expirar</h5>
-                            <h2 className="fw-bold text-warning">
-                                {samples.filter(s => s.lot_status === "near_expiration").length}
-                            </h2>
-                        </CardBody>
-                    </Card>
+                    <KPI
+                        title="Próximos a expirar"
+                        value={samples.filter(s => s.lot_status === "near_expiration").length}
+                        icon={FiAlertCircle}
+                        bgColor="#fff4e6"
+                        iconColor="#fd7e14"
+                    />
 
-                    <Card
-                        className={`flex-fill text-center shadow-sm ${activeKpi === 'available' ? 'border-success border-1' : ''}`}
-                        onClick={() => {
-                            setActiveKpi('available');
-                            setFilteredSamples(samples.filter(s => s.lot_status === "available"));
-                        }}
-                    >
-                        <CardBody>
-                            <h5 className="text-muted">Disponibles</h5>
-                            <h2 className="fw-bold text-success">
-                                {samples.filter(s => s.lot_status === "available").length}
-                            </h2>
-                        </CardBody>
-                    </Card>
+                    <KPI
+                        title="Disponibles"
+                        value={samples.filter(s => s.lot_status === "available").length}
+                        icon={FiCheckCircle}
+                        bgColor="#e6f0ff"
+                        iconColor="#0d6efd"
+                    />
 
-                    <Card
-                        className={`flex-fill text-center shadow-sm ${activeKpi === 'expired' ? 'border-dark border-1' : ''}`}
-                        onClick={() => {
-                            setActiveKpi('expired');
-                            setFilteredSamples(samples.filter(s => s.lot_status === "expired"));
-                        }}
-                    >
-                        <CardBody>
-                            <h5 className="text-muted">Expirados</h5>
-                            <h2 className="fw-bold text-dark">
-                                {samples.filter(s => s.lot_status === "expired").length}
-                            </h2>
-                        </CardBody>
-                    </Card>
+                    <KPI
+                        title="Expirados"
+                        value={samples.filter(s => s.lot_status === "expired").length}
+                        icon={FiXCircle}
+                        bgColor="#ffe6e6"
+                        iconColor="#dc3545"
+                    />
 
-                    <Card
-                        className={`flex-fill text-center shadow-sm ${activeKpi === 'discarded' ? 'border-secondary border-1' : ''}`}
-                        onClick={() => {
-                            setActiveKpi('discarded');
-                            setFilteredSamples(samples.filter(s => s.lot_status === "discarded"));
-                        }}
-                    >
-                        <CardBody>
-                            <h5 className="text-muted">Descartados</h5>
-                            <h2 className="fw-bold text-secondary">
-                                {samples.filter(s => s.lot_status === "discarded").length}
-                            </h2>
-                        </CardBody>
-                    </Card>
+                    <KPI
+                        title="Descartados"
+                        value={samples.filter(s => s.lot_status === "discarded").length}
+                        icon={FiXCircle}
+                        bgColor="#f0f0f0"
+                        iconColor="#6c757d"
+                    />
                 </div>
 
-                <Card style={{ height: '82vh' }}>
+                <Card style={{ height: '65vh' }}>
                     <CardHeader className="d-flex">
                         <h4>Génetica líquida</h4>
                         <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>
@@ -285,8 +238,24 @@ const ViewSamples = () => {
                         </Button>
                     </CardHeader>
 
-                    <CardBody>
-                        <CustomTable columns={samplesColumns} data={filteredSamples} showPagination={false} />
+                    <CardBody style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+                        {filteredSamples && filteredSamples.length > 0 ? (
+                            <div style={{ flex: 1 }}>
+                                <CustomTable
+                                    columns={samplesColumns}
+                                    data={filteredSamples}
+                                    showPagination={true}
+                                    rowsPerPage={7}
+                                />
+                            </div>
+                        ) : (
+                            <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", textAlign: "center", color: "#888", }}>
+                                <div>
+                                    <FiInbox size={48} style={{ marginBottom: 10 }} />
+                                    <div>No hay muestras disponibles</div>
+                                </div>
+                            </div>
+                        )}
                     </CardBody>
                 </Card>
 
@@ -295,9 +264,7 @@ const ViewSamples = () => {
             <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("create")}>Nueva muestra</ModalHeader>
                 <ModalBody>
-                    <SemenSampleForm onSave={() => onSaveSample()} onCancel={function (): void {
-                        throw new Error("Function not implemented.");
-                    }} />
+                    <SemenSampleForm onSave={() => onSaveSample()} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 

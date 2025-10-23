@@ -250,12 +250,8 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
 
         try {
             const [extractionRes, sampleRes] = await Promise.all([
-                configContext.axiosHelper.get(
-                    `${configContext.apiUrl}/extraction/find_by_id/${extractionId}`
-                ),
-                configContext.axiosHelper.get(
-                    `${configContext.apiUrl}/semen_sample/find_by_id/${sampleId}`
-                ),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/extraction/find_by_id/${extractionId}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/semen_sample/find_by_id/${sampleId}`),
             ]);
 
             setExtractionData({
@@ -621,7 +617,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                                         ) : (
                                             <ul className="list-group list-group-flush fs-5">
                                                 {formik.values.doses.map((dose, idx) => {
-                                                    // Buscar el code amigable de la dosis
+
                                                     const doseInfo = selectedDoses.find(d => d._id === dose.dose);
                                                     const displayCode = doseInfo?.code || dose.dose;
 

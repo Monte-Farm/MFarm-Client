@@ -22,8 +22,8 @@ interface ProductComplete {
 export interface IncomeData {
     id: string;
     warehouse: string;
-    date: string;
-    emissionDate: string;
+    date: Date | null;
+    emissionDate: Date | null;
     products: Array<Product>;
     totalPrice: number;
     incomeType: string;
@@ -54,7 +54,7 @@ interface ProductId {
 
 export interface OrderData {
     id: string;
-    date: string;
+    date: Date | null;
     user: string;
     productsRequested: Array<ProductId>;
     status: string;
@@ -64,8 +64,8 @@ export interface OrderData {
 }
 
 export interface OutcomeData {
-    id: string;
-    date: string;
+    code: string;
+    date: Date | null;
     products: Array<Product>;
     outcomeType: string;
     status: boolean;
@@ -86,7 +86,7 @@ export interface ProductData {
 }
 
 export interface SubwarehouseData {
-    id: string;
+    code: string;
     name: string;
     location: string;
     manager: string;
@@ -153,8 +153,8 @@ export interface UserData {
 
 
 export interface PurchaseOrderData {
-    id: string;
-    date: string;
+    code: string;
+    date: Date | null;
     products: Array<Product>;
     subtotal: number;
     tax: number;
@@ -253,12 +253,14 @@ export interface FarmData {
     manager: string;
     createdAt: Date;
     updatedAt: Date;
+    main_warehouse: string;
 }
 
 export interface GroupData {
     code: string;
     name: string;
     area: string;
+    creation_date: Date | null;
     group_mother?: string;
     observations?: string;
     observations_history?: {
@@ -266,7 +268,7 @@ export interface GroupData {
         userId: string;
         observation: string;
     }[];
-    userId: string;
+    responsible: string;
     farm: string;
     group_history?: {
         date: Date;
@@ -275,8 +277,9 @@ export interface GroupData {
         description: string;
     }[];
     pigCount: number;
+    avg_weight?: number;
     pigsInGroup?: string[];
-    feeding_history?: {
+    feedings?: {
         date: Date;
         userId: string;
         feedType: string;
@@ -299,7 +302,6 @@ export interface GroupData {
         unit_measurement: string;
         application_method: string;
     }[];
-
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -352,7 +354,7 @@ export interface SemenSample {
     discard_reason?: string;
     discarded_by?: string;
 
-    alert_days_before_expiration: number;
+    alert_hours_before_expiration: number;
 }
 
 export interface InseminationData {
@@ -377,4 +379,5 @@ export interface InseminationData {
         notes?: string;
         responsible: string;
     }[];
+    farrowind_status?: string;
 }

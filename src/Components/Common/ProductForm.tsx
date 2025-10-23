@@ -5,30 +5,22 @@ import { useFormik } from "formik";
 import FileUploader from "./FileUploader";
 import { ProductCategory, ProductData } from "common/data_interfaces";
 import { ConfigContext } from "App";
+import AlertMessage from "./AlertMesagge";
 
 interface ProductFormProps {
     initialData?: ProductData;
     onSubmit: (data: ProductData) => Promise<void>;
     onCancel: () => void;
     isCodeDisabled?: boolean,
-    foldersArray?: string[]
 }
 
-const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCancel, isCodeDisabled, foldersArray }) => {
+const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCancel, isCodeDisabled }) => {
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [fileToUpload, setFileToUpload] = useState<File | null>(null)
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const configContext = useContext(ConfigContext)
     const [selectedCategory, setSelectedCategory] = useState<ProductCategory>()
-
-    const handleError = (error: any, message: string) => {
-        console.error(error, message)
-        setAlertConfig({ visible: true, color: 'danger', message: message })
-        setTimeout(() => {
-            setAlertConfig({ ...alertConfig, visible: false })
-        }, 5000);
-    }
 
     const validationSchema = Yup.object({
         id: Yup.string()
@@ -68,11 +60,12 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
             try {
                 setSubmitting(true);
                 if (fileToUpload) {
-                    await fileUpload(fileToUpload)
+                    values.image = await fileUpload(fileToUpload)
                 }
                 await onSubmit(values);
             } catch (error) {
-                handleError(error, "Error al enviar el formulario")
+                console.error('Error sending product data: ', error);
+                setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al guardar el producto, por favor intentelo más tarde' });
             } finally {
                 setSubmitting(false);
             }
@@ -83,60 +76,13 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
         if (!configContext) return;
 
         try {
-            const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/google_drive/create_folders`, foldersArray);
-            const folderId = response.data.data;
-
-            const uploadResponse = await configContext.axiosHelper.uploadImage(`${configContext.apiUrl}/google_drive/upload_file/${folderId}`, file);
-            formik.values.image = uploadResponse.data.data;
+            const uploadResponse = await configContext.axiosHelper.uploadImage(`${configContext.apiUrl}/upload/upload_file/`, file);
+            return uploadResponse.data.data;
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al subir el archivo, por favor intentelo más tarde');
+            console.error('Error uploading image: ', error);
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al guardar la imagen, por favor intentelo más tarde' });
         }
     };
-
-
-    const getImageProduct = async () => {
-        if (!configContext) return;
-
-        try {
-            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/google_drive/download_file/${initialData?.image}`, { responseType: 'blob' });
-            setImagePreview(URL.createObjectURL(response.data));
-        } catch (error) {
-            console.error('Error al recuperar la imagen: ', error);
-        }
-    };
-
-
-    const changeSelectedCategory = (e: any) => {
-        const selectedCategory = JSON.parse(e)
-        setSelectedCategory(selectedCategory)
-        formik.setFieldValue('category', selectedCategory.value)
-    }
-
-    const handleFetchNextId = async () => {
-        if (!configContext || !selectedCategory) return;
-        try {
-            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/product/product_next_id/${selectedCategory.prefix}`)
-            const nextProductId = response.data.data
-            formik.setFieldValue('id', nextProductId)
-        } catch (error) {
-            console.error(error, 'Error al obtener el id')
-        }
-    }
-
-    useEffect(() => {
-        if (initialData && initialData.image) {
-            getImageProduct();
-        }
-
-        if(configContext && configContext.configurationData && initialData && initialData.category){
-            const foundCategory = configContext?.configurationData?.productCategories.find((category) => category.value === initialData.category)
-            if(foundCategory) setSelectedCategory(foundCategory)
-        }
-    }, [initialData]);
-
-    useEffect(() => {
-        handleFetchNextId()
-    }, [selectedCategory])
 
     return (
         <>
@@ -160,18 +106,23 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                         type="select"
                         id="categoryInput"
                         name="category"
-                        value={selectedCategory ? JSON.stringify(selectedCategory) : ""}
-                        onChange={(e) => changeSelectedCategory(e.target.value)}
+                        value={formik.values.category}
+                        onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
                         invalid={formik.touched.category && !!formik.errors.category}
                         disabled={isCodeDisabled}
                     >
                         <option value="">Seleccione una categoría</option>
-                        {configContext?.configurationData?.productCategories.map((category) => (
-                            <option key={category.prefix} value={JSON.stringify(category)}>
-                                {category.value}
-                            </option>
-                        ))}
+                        <option value="feed">Alimento</option>
+                        <option value="medicine">Medicamento</option>
+                        <option value="supplies">Insumos</option>
+                        <option value="breeders">Reproductores</option>
+                        <option value="hygiene_cleaning">Higiene y limpieza</option>
+                        <option value="equipment">Equipamiento</option>
+                        <option value="growing_pigs">Cerdos en crecimiento</option>
+                        <option value="fattening_pigs">Cerdos en engorde</option>
+                        <option value="breeding_pigs">Cerdos reproductores</option>
+                        <option value="others">Otros</option>
                     </Input>
                     {formik.touched.category && formik.errors.category && (
                         <FormFeedback>{formik.errors.category}</FormFeedback>
@@ -190,7 +141,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
                         invalid={formik.touched.id && !!formik.errors.id}
-                        disabled
                     />
                     {formik.touched.id && formik.errors.id && (
                         <FormFeedback>{formik.errors.id}</FormFeedback>
@@ -227,11 +177,13 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                         invalid={formik.touched.unit_measurement && !!formik.errors.unit_measurement}
                     >
                         <option value="">Seleccione una unidad</option>
-                        {configContext?.configurationData?.unitMeasurements.map((unit) => (
-                            <option key={unit} value={unit}>
-                                {unit}
-                            </option>
-                        ))}
+                        <option value="kg">Kilogramo (kg)</option>
+                        <option value="g">Gramo (g)</option>
+                        <option value="l">Litro (l)</option>
+                        <option value="ml">Mililitro (ml)</option>
+                        <option value="unit">Unidad</option>
+                        <option value="bag">Saco</option>
+                        <option value="box">Caja</option>
                     </Input>
                     {formik.touched.unit_measurement && formik.errors.unit_measurement && (
                         <FormFeedback>{formik.errors.unit_measurement}</FormFeedback>
@@ -269,12 +221,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                 </div>
             </form>
 
-            {/* Alerta de error */}
-            {alertConfig.visible && (
-                <Alert color={alertConfig.color} className="position-fixed bottom-0 start-50 translate-middle-x p-3">
-                    {alertConfig.message}
-                </Alert>
-            )}
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
 
             {/* Modal de confirmación de cancelación */}
             <Modal isOpen={cancelModalOpen} centered toggle={() => setCancelModalOpen(!cancelModalOpen)}>
