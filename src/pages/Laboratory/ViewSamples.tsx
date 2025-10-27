@@ -295,9 +295,7 @@ const ViewSamples = () => {
             <Modal size="lg" isOpen={modals.discard} toggle={() => toggleModal("discard")} backdrop="static" keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("discard")}>Descartar lote</ModalHeader>
                 <ModalBody>
-                    <DiscardSampleForm sample={selectedSample} onSave={() => onDiscardedSample()} onCancel={function (): void {
-                        throw new Error("Function not implemented.");
-                    }} />
+                    <DiscardSampleForm sample={selectedSample} onSave={() => onDiscardedSample()} onCancel={() => {}}/>
                 </ModalBody>
             </Modal>
         </div>

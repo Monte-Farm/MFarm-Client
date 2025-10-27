@@ -349,7 +349,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
 
                 <TabContent activeTab={activeStep}>
                     <TabPane id="step-sowselect-tab" tabId={1}>
-                        <SelectableTable data={sows} columns={sowsColumns} selectionMode="single" showPagination={true} rowsPerPage={15} onSelect={(rows) => formik.setFieldValue('sow', rows[0]._id)} />
+                        <SelectableTable data={sows} columns={sowsColumns} selectionMode="single" showPagination={true} rowsPerPage={15} onSelect={(rows) => formik.setFieldValue('sow', rows[0]?._id)} />
                         <div className="mt-4 d-flex">
                             <Button className="ms-auto" onClick={() => checkSowSelected()}>
                                 Siguiente

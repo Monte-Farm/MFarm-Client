@@ -292,7 +292,7 @@ const ExtractionForm: React.FC<ExtractionFormProps> = ({ initialData, onSave, on
 
                 <TabContent activeTab={activeStep}>
                     <TabPane id="step-boarselect-tab" tabId={1}>
-                        <SelectableTable data={boars} columns={boarsColumns} selectionMode="single" showPagination={true} rowsPerPage={6} onSelect={(rows) => formik.setFieldValue('boar', rows[0]._id)} />
+                        <SelectableTable data={boars} columns={boarsColumns} selectionMode="single" showPagination={true} rowsPerPage={6} onSelect={(rows) => formik.setFieldValue('boar', rows[0]?._id)} />
                        
                         <div className="mt-4 d-flex">
                             <Button className="ms-auto" onClick={() => checkBoarSelected()}>

@@ -386,7 +386,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
 
                 <TabContent activeTab={activeStep}>
                     <TabPane id="step-extractionselect-tab" tabId={1}>
-                        <SelectableTable data={extractions} columns={extractionsColumns} selectionMode="single" showPagination={true} rowsPerPage={15} onSelect={(rows) => formik.setFieldValue('extraction_id', rows[0]._id)} />
+                        <SelectableTable data={extractions} columns={extractionsColumns} selectionMode="single" showPagination={true} rowsPerPage={15} onSelect={(rows) => formik.setFieldValue('extraction_id', rows[0]?._id)} />
                         <div className="mt-4 d-flex">
                             <Button className="ms-auto" onClick={() => checkExtractionSelected()}>
                                 Siguiente

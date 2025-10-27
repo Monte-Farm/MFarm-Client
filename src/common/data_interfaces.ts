@@ -277,6 +277,8 @@ export interface GroupData {
         description: string;
     }[];
     pigCount: number;
+    maleCount: number;
+    femaleCount: number;
     avg_weight?: number;
     pigsInGroup?: string[];
     feedings?: {

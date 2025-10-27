@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { Table, Input, Label } from "reactstrap";
 import SimpleBar from "simplebar-react";
 import Pagination from "./Pagination";
@@ -19,6 +19,7 @@ type SelectableCustomTableProps<T> = {
     showPagination?: boolean;
     className?: string;
     disabled?: boolean;
+    resetSelectionTrigger?: any; // 👈 nuevo prop
 };
 
 const formatValue = (value: any, type?: ColumnType) => {
@@ -50,10 +51,17 @@ function SelectableCustomTable<T extends { id: string }>({
     showPagination = true,
     className = "",
     disabled = false,
+    resetSelectionTrigger, // 👈 nuevo prop
 }: SelectableCustomTableProps<T>) {
     const [filterText, setFilterText] = useState<string>("");
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+    // 👇 efecto para reiniciar selección cuando cambie el trigger
+    useEffect(() => {
+        setSelectedIds(new Set());
+        onSelect?.([]);
+    }, [resetSelectionTrigger]);
 
     // Filtrado
     const filteredData = useMemo(() => {
@@ -113,7 +121,6 @@ function SelectableCustomTable<T extends { id: string }>({
             const newSelected = new Set(selectedIds);
 
             if (selectionMode === "single") {
-                // ✅ Siempre deja seleccionada la fila clickeada
                 newSelected.clear();
                 newSelected.add(row.id);
             } else {
@@ -162,9 +169,7 @@ function SelectableCustomTable<T extends { id: string }>({
             )}
 
             <SimpleBar style={{ maxHeight: "60vh" }}>
-                <Table
-                    className={`table-hover align-middle table-nowrap mb-0 ${className}`}
-                >
+                <Table className={`table-hover align-middle table-nowrap mb-0 ${className}`}>
                     <thead className="table-light sticky-top">
                         <tr>
                             <th style={{ width: 50 }}>

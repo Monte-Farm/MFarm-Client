@@ -238,9 +238,7 @@ const ViewExtractions = () => {
             <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("create")}>Nueva extracción</ModalHeader>
                 <ModalBody>
-                    <ExtractionForm onSave={() => { toggleModal('create'); fetchData(); }} onCancel={function (): void {
-                        throw new Error("Function not implemented.");
-                    }} />
+                    <ExtractionForm onSave={() => { toggleModal('create'); fetchData(); }} onCancel={() => {}} />
                 </ModalBody>
             </Modal>
 
