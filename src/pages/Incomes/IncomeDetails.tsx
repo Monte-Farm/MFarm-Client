@@ -1,7 +1,6 @@
 import { ConfigContext } from "App";
 import { Attribute, IncomeData } from "common/data_interfaces";
-import BreadCrumb from "Components/Common/BreadCrumb";
-import CustomTable from "Components/Common/CustomTable";
+import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -9,6 +8,7 @@ import { Alert, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody,
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import PDFViewer from "Components/Common/PDFViewer";
 import { Column } from "common/data/data_types";
+import CustomTable from "Components/Common/Tables/CustomTable";
 
 const incomeAttributes: Attribute[] = [
     { key: 'id', label: 'Identificador', type: 'text' },

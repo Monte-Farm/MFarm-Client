@@ -1,6 +1,6 @@
 import { ConfigContext } from "App";
 import { ConfigurationData } from "common/data_interfaces";
-import StringTable from "Components/Common/StringTable";
+import StringTable from "Components/Common/Tables/StringTable";
 import { useContext, useEffect, useState } from "react";
 import { Card, CardBody, CardHeader, Container } from "reactstrap";
 

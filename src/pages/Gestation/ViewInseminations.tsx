@@ -1,24 +1,24 @@
 import { ConfigContext } from "App";
-import BreadCrumb from "Components/Common/BreadCrumb";
-import CustomTable from "Components/Common/CustomTable";
+import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, UncontrolledTooltip } from "reactstrap";
 import { FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo, FiPlayCircle, FiActivity, FiInbox } from "react-icons/fi";
-import InseminationForm from "Components/Common/InseminationForm";
 import { Column } from "common/data/data_types";
-import DiagnosisForm from "Components/Common/DiagnoseForm";
-import HeatForm from "Components/Common/HeatForm";
 import InseminationFilters from "Components/Common/InseminationFilters";
-import PigDetailsModal from "Components/Common/DetailsPigModal";
+import PigDetailsModal from "Components/Common/Details/DetailsPigModal";
 import { useNavigate } from "react-router-dom";
 import SimpleBar from "simplebar-react";
-import LoadingAnimation from "Components/Common/LoadingAnimation";
-import AlertMessage from "Components/Common/AlertMesagge";
+import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
+import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import KPI from "Components/Common/Graphics/Kpi";
 import LineChartCard from "Components/Common/Graphics/LineChartCard";
 import BasicBarChart from "Components/Common/Graphics/BasicBarChart";
 import BasicPieChart from "Components/Common/Graphics/BasicPieChart";
+import DiagnosisForm from "Components/Common/Forms/DiagnoseForm";
+import HeatForm from "Components/Common/Forms/HeatForm";
+import InseminationForm from "Components/Common/Forms/InseminationForm";
+import CustomTable from "Components/Common/Tables/CustomTable";
 
 const ViewInseminations = () => {
     document.title = "Ver inseminaciones | Management System"

@@ -1,11 +1,11 @@
 import { ConfigContext } from "App";
-import BreadCrumb from "Components/Common/BreadCrumb";
-import CustomTable from "Components/Common/CustomTable";
+import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Card, CardBody, CardHeader, Col, Container, Row } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Column } from "common/data/data_types";
+import CustomTable from "Components/Common/Tables/CustomTable";
 
 
 const SubwarehouseOutcomes = () => {

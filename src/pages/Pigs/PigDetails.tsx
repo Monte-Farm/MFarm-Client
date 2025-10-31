@@ -1,21 +1,17 @@
 import { ConfigContext } from "App";
-import { Attribute, FarmData, PigData, PigHistoryChanges } from "common/data_interfaces";
-import BreadCrumb from "Components/Common/BreadCrumb"
+import { Attribute, PigData, PigHistoryChanges } from "common/data_interfaces";
+import BreadCrumb from "Components/Common/Shared/BreadCrumb"
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom"
 import { Alert, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, TabPane, UncontrolledTooltip } from "reactstrap"
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import classnames from "classnames";
-import { Column } from "common/data/data_types";
 import ObjectDetails from "Components/Common/ObjectDetails";
-import defaultPigImage from "../../assets/images/pig-default.png"; // imagen por defecto
+import defaultPigImage from "../../assets/images/pig-default.png";
 import KPIBox from "Components/Common/KPIBox";
 import PigTimeline from "Components/Common/PigTimeline";
-
-import { update } from "lodash";
-import PigForm from "Components/Common/PigForm";
-import PigEditForm from "Components/Common/PigEditForm";
+import PigEditForm from "Components/Common/Forms/PigEditForm";
 import HistoryFlagItem from "Components/Common/HistoryFlagItem";
 import SimpleBar from "simplebar-react";
 import PDFViewer from "Components/Common/PDFViewer";

@@ -1,15 +1,15 @@
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
-import BreadCrumb from "Components/Common/BreadCrumb";
-import CustomTable from "Components/Common/CustomTable";
-import LoadingAnimation from "Components/Common/LoadingAnimation";
+import BreadCrumb from "Components/Common/Shared/BreadCrumb";
+import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import { getLoggedinUser } from "helpers/api_helper";
-import PregnancyDetails from "Components/Common/PregnancyDetails";
+import PregnancyDetails from "Components/Common/Details/PregnancyDetails";
 import { useContext, useEffect, useState } from "react";
 import { FiAlertCircle } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, UncontrolledTooltip } from "reactstrap";
-import BirthDetails from "Components/Common/BirthDetailsModal";
+import BirthDetails from "Components/Common/Details/BirthDetailsModal";
+import CustomTable from "Components/Common/Tables/CustomTable";
 
 const ViewBirths = () => {
     document.title = 'Partos registrados | Management System'

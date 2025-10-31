@@ -1,14 +1,14 @@
 import { ConfigContext } from "App";
 import { Attribute, SupplierData } from "common/data_interfaces";
-import BreadCrumb from "Components/Common/BreadCrumb";
-import CustomTable from "Components/Common/CustomTable";
+import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal";
-import SupplierForm from "Components/Common/SupplierForm";
+import SupplierForm from "Components/Common/Forms/SupplierForm";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Alert, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Column } from "common/data/data_types";
+import CustomTable from "Components/Common/Tables/CustomTable";
 
 const supplierAttributes: Attribute[] = [
     { key: 'name', label: 'Nombre', type: 'text' },

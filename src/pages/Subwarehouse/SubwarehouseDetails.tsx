@@ -1,7 +1,6 @@
 import { ConfigContext } from "App";
 import { Attribute, SubwarehouseData } from "common/data_interfaces";
-import BreadCrumb from "Components/Common/BreadCrumb";
-import CustomTable from "Components/Common/CustomTable";
+import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import ObjectDetails from "Components/Common/ObjectDetails";
 import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal";
 import { useContext, useEffect, useState } from "react";
@@ -10,6 +9,7 @@ import { Button, Card, CardBody, CardHeader, Col, Container, Nav, NavItem, NavLi
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import classnames from "classnames";
 import { Column } from "common/data/data_types";
+import CustomTable from "Components/Common/Tables/CustomTable";
 
 const subwarehouseAttributes: Attribute[] = [
     { key: 'name', label: 'Nombre', type: 'text' },

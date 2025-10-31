@@ -1,7 +1,5 @@
-import BreadCrumb from "Components/Common/BreadCrumb";
-import CustomTable from "Components/Common/CustomTable";
+import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import ObjectDetails from "Components/Common/ObjectDetails";
-import ProductForm from "Components/Common/ProductForm";
 import { useContext, useEffect, useState } from "react";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
 import noImageUrl from '../../assets/images/no-image.png'
@@ -9,8 +7,10 @@ import { Attribute, ProductData } from "common/data_interfaces";
 import { ConfigContext } from "App";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Column } from "common/data/data_types";
-import AlertMessage from "Components/Common/AlertMesagge";
-import LoadingAnimation from "Components/Common/LoadingAnimation";
+import AlertMessage from "Components/Common/Shared/AlertMesagge";
+import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
+import ProductForm from "Components/Common/Forms/ProductForm";
+import CustomTable from "Components/Common/Tables/CustomTable";
 
 
 const productAttributes: Attribute[] = [

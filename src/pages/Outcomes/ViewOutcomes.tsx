@@ -1,15 +1,14 @@
 import { ConfigContext } from "App";
-import BreadCrumb from "Components/Common/BreadCrumb";
-import CustomTable from "Components/Common/CustomTable";
+import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader } from "reactstrap";
 import { Column } from "common/data/data_types";
-import LoadingAnimation from "Components/Common/LoadingAnimation";
-import AlertMessage from "Components/Common/AlertMesagge";
-import OutcomeForm from "Components/Common/OutcomeForm";
-import { OutcomeData } from "common/data_interfaces";
+import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
+import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import { getLoggedinUser } from "helpers/api_helper";
+import OutcomeForm from "Components/Common/Forms/OutcomeForm";
+import CustomTable from "Components/Common/Tables/CustomTable";
 
 
 const ViewOutcomes = () => {

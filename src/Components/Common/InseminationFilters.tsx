@@ -1,12 +1,10 @@
-import { useState, useEffect, useRef, useContext } from "react";
+import { useState, useRef, useContext } from "react";
 import { ConfigContext } from "App";
 import { getLoggedinUser } from "helpers/api_helper";
-import { Button, Card, CardBody, CardHeader, Container, Input, Popover, PopoverHeader, PopoverBody, Row, Col, FormGroup, Label, Badge } from "reactstrap";
+import { Button, Input, Popover, PopoverHeader, PopoverBody, Row, Col, FormGroup, Label, Badge } from "reactstrap";
 import Select from "react-select";
 import Slider from "rc-slider";
 import 'rc-slider/assets/index.css';
-import CustomTable from "Components/Common/CustomTable";
-import { Column } from "common/data/data_types";
 import { FiFilter, FiX, FiSearch } from "react-icons/fi";
 
 const InseminationFilters = ({ inseminations, setFilteredInseminations }: { inseminations: any[], setFilteredInseminations: Function }) => {

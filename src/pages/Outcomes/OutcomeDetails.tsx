@@ -1,15 +1,14 @@
 import { ConfigContext } from "App"
 import { Attribute, OutcomeData, SubwarehouseData } from "common/data_interfaces"
-import BreadCrumb from "Components/Common/BreadCrumb"
-import CustomTable from "Components/Common/CustomTable"
-import ObjectDetails from "Components/Common/ObjectDetails"
+import BreadCrumb from "Components/Common/Shared/BreadCrumb"
 import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal"
 import { useContext, useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import { Alert, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalHeader, Row } from "reactstrap"
+import { Alert, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader } from "reactstrap"
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import PDFViewer from "Components/Common/PDFViewer"
 import { Column } from "common/data/data_types"
+import CustomTable from "Components/Common/Tables/CustomTable"
 
 const outcomeAttributes: Attribute[] = [
     { key: 'id', label: 'Identificador', type: 'text' },

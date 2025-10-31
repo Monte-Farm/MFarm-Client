@@ -1,14 +1,14 @@
 import { ConfigContext } from "App";
 import { OrderData, OutcomeData } from "common/data_interfaces";
-import BreadCrumb from "Components/Common/BreadCrumb";
-import CompleteOrderForm from "Components/Common/CompleteOrderForm";
+import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Alert, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
-import ErrorModal from "Components/Common/ErrorModal";
+import ErrorModal from "Components/Common/Shared/ErrorModal";
 import SuccessModal from "Components/Common/SuccessModal";
 import PDFViewer from "Components/Common/PDFViewer";
+import CompleteOrderForm from "Components/Common/Forms/CompleteOrderForm";
 
 const CompleteOrder = () => {
     const history = useNavigate();

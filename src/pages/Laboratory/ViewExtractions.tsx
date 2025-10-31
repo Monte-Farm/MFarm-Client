@@ -1,21 +1,21 @@
 import { ConfigContext } from "App";
-import BreadCrumb from "Components/Common/BreadCrumb"
+import BreadCrumb from "Components/Common/Shared/BreadCrumb"
 import { getLoggedinUser } from "helpers/api_helper"
 import { useContext, useEffect, useState } from "react";
 import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, UncontrolledTooltip } from "reactstrap"
 import { FiCheckCircle, FiAlertCircle, FiInfo, FiInbox } from "react-icons/fi";
-import CustomTable from "Components/Common/CustomTable";
 import { ExtractionData } from "common/data_interfaces";
-import ExtractionForm from "Components/Common/ExtractionForm";
 import { Column } from "common/data/data_types";
-import PigDetailsModal from "Components/Common/DetailsPigModal";
+import PigDetailsModal from "Components/Common/Details/DetailsPigModal";
 import { useNavigate } from "react-router-dom";
-import LoadingAnimation from "Components/Common/LoadingAnimation";
-import ExtractionDetails from "Components/Common/ExtractionDetails";
-import AlertMessage from "Components/Common/AlertMesagge";
+import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
+import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import KPI from "Components/Common/Graphics/Kpi";
 import LineChartCard from "Components/Common/Graphics/LineChartCard";
 import BoarVolumeRadar from "Components/Common/Graphics/BoarVolumeRadar";
+import ExtractionForm from "Components/Common/Forms/ExtractionForm";
+import ExtractionDetails from "Components/Common/Details/ExtractionDetails";
+import CustomTable from "Components/Common/Tables/CustomTable";
 
 const ViewExtractions = () => {
     document.title = 'Ver extracciones | Management System'

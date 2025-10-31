@@ -1,6 +1,6 @@
 import { ConfigContext } from "App";
 import { Attribute, FarmData, UserData } from "common/data_interfaces";
-import BreadCrumb from "Components/Common/BreadCrumb";
+import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardBody, CardHeader, Col, Container, Label, Row } from "reactstrap";

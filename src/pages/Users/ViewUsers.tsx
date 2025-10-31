@@ -1,19 +1,17 @@
 import { ConfigContext } from "App"
 import { Attribute, UserData } from "common/data_interfaces"
-import BreadCrumb from "Components/Common/BreadCrumb"
-import CustomTable from "Components/Common/CustomTable"
+import BreadCrumb from "Components/Common/Shared/BreadCrumb"
 import ObjectDetails from "Components/Common/ObjectDetails"
-import UserForm from "Components/Common/UserForm"
 import { getLoggedinUser } from "helpers/api_helper"
 import { useContext, useEffect, useMemo, useState } from "react"
-import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Input, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap"
-import LoadingGif from '../../assets/images/loading-gif.gif'
+import { Badge, Button, Card, CardBody, CardHeader, Container, Input, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap"
 import { Column } from "common/data/data_types"
 import UserCards from "Components/Common/UserCards"
 import { roleLabels } from "common/role_labels"
 import { useNavigate } from "react-router-dom"
-import LoadingAnimation from "Components/Common/LoadingAnimation"
-import AlertMessage from "Components/Common/AlertMesagge"
+import LoadingAnimation from "Components/Common/Shared/LoadingAnimation"
+import AlertMessage from "Components/Common/Shared/AlertMesagge"
+import UserForm from "Components/Common/Forms/UserForm"
 
 const userAttributes: Attribute[] = [
     { key: 'username', label: 'Usuario', type: 'text' },

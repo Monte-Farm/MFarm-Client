@@ -1,14 +1,14 @@
 import { ConfigContext } from "App"
-import BreadCrumb from "Components/Common/BreadCrumb"
-import CustomTable from "Components/Common/CustomTable"
+import BreadCrumb from "Components/Common/Shared/BreadCrumb"
 import { useContext, useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader } from "reactstrap"
 import { Column } from "common/data/data_types"
-import LoadingAnimation from "Components/Common/LoadingAnimation"
-import AlertMessage from "Components/Common/AlertMesagge"
-import IncomeForm from "Components/Common/IncomeForm"
+import LoadingAnimation from "Components/Common/Shared/LoadingAnimation"
+import AlertMessage from "Components/Common/Shared/AlertMesagge"
 import { getLoggedinUser } from "helpers/api_helper"
+import IncomeForm from "Components/Common/Forms/IncomeForm"
+import CustomTable from "Components/Common/Tables/CustomTable"
 
 
 const ViewIncomes = () => {

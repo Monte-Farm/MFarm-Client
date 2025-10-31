@@ -5,12 +5,12 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalFooter, ModalHeader, Row } from "reactstrap";
-import BreadCrumb from "Components/Common/BreadCrumb";
+import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import ObjectDetails from "Components/Common/ObjectDetails";
 import defaultImageProfila from '../../assets/images/default-profile-mage.jpg'
 import UserHistoryItem from "Components/Common/UserHistoryItem";
 import SimpleBar from "simplebar-react";
-import UserForm from "Components/Common/UserForm";
+import UserForm from "Components/Common/Forms/UserForm";
 
 const userAttributes: Attribute[] = [
     { key: 'username', label: 'Usuario', type: 'text' },

@@ -1,9 +1,8 @@
 import { ConfigContext } from "App";
 import { OutcomeData } from "common/data_interfaces";
-import BreadCrumb from "Components/Common/BreadCrumb";
-import ErrorModal from "Components/Common/ErrorModal";
-import OutcomeForm from "Components/Common/OutcomeForm";
-import SubwarehouseOutcomeForm from "Components/Common/SubwarehouseOutcomeForm";
+import BreadCrumb from "Components/Common/Shared/BreadCrumb";
+import ErrorModal from "Components/Common/Shared/ErrorModal";
+import SubwarehouseOutcomeForm from "Components/Common/Forms/SubwarehouseOutcomeForm";
 import SuccessModal from "Components/Common/SuccessModal";
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";

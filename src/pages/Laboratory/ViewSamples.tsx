@@ -1,20 +1,19 @@
 import { ConfigContext } from "App";
 import { SemenSample } from "common/data_interfaces";
-import BreadCrumb from "Components/Common/BreadCrumb";
-import CustomTable from "Components/Common/CustomTable";
-import ExtractionForm from "Components/Common/ExtractionForm";
-import SemenSampleForm from "Components/Common/SemenSampleForm";
+import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo, FiInbox } from "react-icons/fi";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, UncontrolledTooltip } from "reactstrap";
 import { Column } from "common/data/data_types";
-import DiscardSampleForm from "Components/Common/DiscardSampleForm";
-import PigDetailsModal from "Components/Common/DetailsPigModal";
+import PigDetailsModal from "Components/Common/Details/DetailsPigModal";
 import { useNavigate } from "react-router-dom";
-import LoadingAnimation from "Components/Common/LoadingAnimation";
+import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import KPI from "Components/Common/Graphics/Kpi";
 import { IconBaseProps } from "react-icons";
+import DiscardSampleForm from "Components/Common/Forms/DiscardSampleForm";
+import SemenSampleForm from "Components/Common/Forms/SemenSampleForm";
+import CustomTable from "Components/Common/Tables/CustomTable";
 
 const ViewSamples = () => {
     document.title = 'Ver génetica liquida | Management System'

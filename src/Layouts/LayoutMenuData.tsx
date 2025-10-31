@@ -1,6 +1,5 @@
 import { getLoggedinUser } from "helpers/api_helper";
 import ViewGroups from "pages/Groups/ViewGroups";
-import CreateOrder from "pages/Orders/CreateOrder";
 import ViewPigs from "pages/Pigs/ViewPigs";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";

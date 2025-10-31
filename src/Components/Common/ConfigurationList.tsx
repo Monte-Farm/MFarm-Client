@@ -5,7 +5,7 @@ import {
     Modal, ModalHeader, ModalBody, ModalFooter, Input
 } from "reactstrap";
 import SuccessModal from "./SuccessModal";
-import ErrorModal from "./ErrorModal";
+import ErrorModal from "./Shared/ErrorModal";
 
 // Definir tipos
 type ItemType = string | { prefix: string; value: string };

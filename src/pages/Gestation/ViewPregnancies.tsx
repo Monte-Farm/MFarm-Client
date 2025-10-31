@@ -1,15 +1,13 @@
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
-import BreadCrumb from "Components/Common/BreadCrumb"
+import BreadCrumb from "Components/Common/Shared/BreadCrumb"
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, UncontrolledTooltip } from "reactstrap"
-import CustomTable from "Components/Common/CustomTable";
-import AbortionForm from "Components/Common/AbortionForm";
-import PigDetailsModal from "Components/Common/DetailsPigModal";
-import AlertMessage from "Components/Common/AlertMesagge";
-import PregnancyDetails from "../../Components/Common/PregnancyDetails";
-import LoadingAnimation from "Components/Common/LoadingAnimation";
+import PigDetailsModal from "Components/Common/Details/DetailsPigModal";
+import AlertMessage from "Components/Common/Shared/AlertMesagge";
+import PregnancyDetails from "../../Components/Common/Details/PregnancyDetails";
+import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import { FiInbox } from "react-icons/fi";
 import KPI from "Components/Common/Graphics/Kpi";
 import { IconBaseProps } from "react-icons";
@@ -17,6 +15,8 @@ import { FaBaby, FaChartBar, FaChartLine, FaCheckCircle, FaClipboardList, FaCloc
 import { transformPregnancyStatsForChart } from "Components/Hooks/transformPregnancyStats";
 import { ResponsiveLine } from "@nivo/line";
 import LineChartCard from "Components/Common/Graphics/LineChartCard";
+import AbortionForm from "Components/Common/Forms/AbortionForm";
+import CustomTable from "Components/Common/Tables/CustomTable";
 
 type PeriodKey = "day" | "week" | "month" | "year";
 const ViewPregnancies = () => {

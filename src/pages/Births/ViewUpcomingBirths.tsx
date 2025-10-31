@@ -1,18 +1,18 @@
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
-import AlertMessage from "Components/Common/AlertMesagge";
-import BirthForm from "Components/Common/BirthForm";
-import BreadCrumb from "Components/Common/BreadCrumb";
-import CustomTable from "Components/Common/CustomTable";
-import LoadingAnimation from "Components/Common/LoadingAnimation";
+import AlertMessage from "Components/Common/Shared/AlertMesagge";
+import BreadCrumb from "Components/Common/Shared/BreadCrumb";
+import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge, Button, ButtonGroup, Card, CardBody, CardHeader, CardSubtitle, Container, Input, Modal, ModalBody, ModalHeader, UncontrolledTooltip } from "reactstrap";
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
-import PregnancyDetails from "Components/Common/PregnancyDetails";
-import AbortionForm from "Components/Common/AbortionForm";
+import PregnancyDetails from "Components/Common/Details/PregnancyDetails";
+import AbortionForm from "Components/Common/Forms/AbortionForm";
+import BirthForm from "Components/Common/Forms/BirthForm";
+import CustomTable from "Components/Common/Tables/CustomTable";
 
 const ViewUpcomingBirths = () => {
     document.title = 'Proximos partos | Management system';

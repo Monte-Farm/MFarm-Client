@@ -1,17 +1,15 @@
-import BreadCrumb from "Components/Common/BreadCrumb";
-import CustomTable from "Components/Common/CustomTable";
-
-import ObjectDetails from "Components/Common/ObjectDetails";
+import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { Alert, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalFooter, ModalHeader, Row } from "reactstrap"
-import ProductForm from "Components/Common/ProductForm";
 import noImageUrl from '../../assets/images/no-image.png'
 import { Attribute, ProductData } from "common/data_interfaces";
 import { ConfigContext } from "App";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal";
 import { Column } from "common/data/data_types";
+import ProductForm from "Components/Common/Forms/ProductForm";
+import CustomTable from "Components/Common/Tables/CustomTable";
 
 
 const displayAttributes: Attribute[] = [

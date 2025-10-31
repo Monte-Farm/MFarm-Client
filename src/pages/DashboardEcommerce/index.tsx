@@ -1,4 +1,4 @@
-import BreadCrumb from "Components/Common/BreadCrumb";
+import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useProfile } from "Components/Hooks/UserHooks";
 import { APIClient, getLoggedinUser } from "helpers/api_helper";
 import React from "react";

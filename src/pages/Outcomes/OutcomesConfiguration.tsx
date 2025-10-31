@@ -1,5 +1,5 @@
 import { ConfigContext } from "App"
-import BreadCrumb from "Components/Common/BreadCrumb"
+import BreadCrumb from "Components/Common/Shared/BreadCrumb"
 import ConfigurationsList from "Components/Common/ConfigurationList"
 import { useContext, useState, useEffect } from "react"
 import { Container, Spinner } from "reactstrap"

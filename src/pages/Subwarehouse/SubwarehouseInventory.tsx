@@ -1,12 +1,12 @@
 import { ConfigContext } from "App";
-import BreadCrumb from "Components/Common/BreadCrumb";
-import CustomTable from "Components/Common/CustomTable";
+import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Container, Button, Card, CardHeader, CardBody, Row, Col, Modal, ModalBody, ModalHeader, Spinner } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Column } from "common/data/data_types";
 import PDFViewer from "Components/Common/PDFViewer";
+import CustomTable from "Components/Common/Tables/CustomTable";
 
 
 const SubwarehouseInventory = () => {

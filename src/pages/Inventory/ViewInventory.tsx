@@ -1,16 +1,16 @@
 import { useContext, useEffect, useState } from "react";
 import { Button, Container, Alert, Card, CardHeader, CardBody, Modal, ModalBody, ModalHeader } from "reactstrap";
-import BreadCrumb from "Components/Common/BreadCrumb";
-import CustomTable from "Components/Common/CustomTable";
+import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useNavigate } from "react-router-dom";
 import { IncomeData, ProductData } from "common/data_interfaces";
 import { ConfigContext } from "App";
 import PDFViewer from "Components/Common/PDFViewer";
 import { Column } from "common/data/data_types";
-import LoadingAnimation from "Components/Common/LoadingAnimation";
-import AlertMessage from "Components/Common/AlertMesagge";
-import IncomeForm from "Components/Common/IncomeForm";
+import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
+import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import { getLoggedinUser } from "helpers/api_helper";
+import IncomeForm from "Components/Common/Forms/IncomeForm";
+import CustomTable from "Components/Common/Tables/CustomTable";
 
 const ViewInventory = () => {
   document.title = "Inventario | Almacén General";

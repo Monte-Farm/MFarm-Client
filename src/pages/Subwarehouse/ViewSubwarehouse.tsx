@@ -1,16 +1,16 @@
 import { ConfigContext } from "App";
 import { SubwarehouseData } from "common/data_interfaces";
-import BreadCrumb from "Components/Common/BreadCrumb";
-import CustomTable from "Components/Common/CustomTable";
-import SubwarehouseForm from "Components/Common/SubwarehouseForm";
+import BreadCrumb from "Components/Common/Shared/BreadCrumb";
+import SubwarehouseForm from "Components/Common/Forms/SubwarehouseForm";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Column } from "common/data/data_types";
 import { getLoggedinUser } from "helpers/api_helper";
-import LoadingAnimation from "Components/Common/LoadingAnimation";
-import AlertMessage from "Components/Common/AlertMesagge";
+import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
+import AlertMessage from "Components/Common/Shared/AlertMesagge";
+import CustomTable from "Components/Common/Tables/CustomTable";
 
 
 const ViewSubwarehouse = () => {

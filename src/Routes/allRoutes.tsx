@@ -8,9 +8,7 @@ import Home from "pages/Home/Index";
 import ViewInventory from "pages/Inventory/ViewInventory";
 import ProductDetails from "pages/Inventory/InventoryDetails";
 import Suppliers from "pages/Suppliers/Suppliers";
-import CreateSupplier from "pages/Suppliers/CreateSupplier";
 import ViewIncome from "pages/Incomes/ViewIncomes"
-import CreateIncome from "pages/Incomes/CreateIncome";
 import ViewProducts from "pages/Products/ViewProducts";
 
 //Subwarehouse
@@ -36,14 +34,11 @@ import SupplierDetails from "pages/Suppliers/SupplierDetails";
 import IncomeDetails from "pages/Incomes/IncomeDetails";
 import SubwarehouseDetails from "pages/Subwarehouse/SubwarehouseDetails";
 import ViewOutcomes from "pages/Outcomes/ViewOutcomes";
-import CreateOutcome from "pages/Outcomes/CreateOutcome";
 import OutcomeDetails from "pages/Outcomes/OutcomeDetails";
 
 //Configuration
 import ConfigurationPage from "pages/Configuration/ConfigurationPage";
 
-//
-import CreateOrder from "pages/Orders/CreateOrder";
 import ViewUsers from "pages/Users/ViewUsers";
 import SendOrders from "pages/Orders/SendOrders";
 import OrderDetails from "pages/Orders/OrderDetails";
@@ -60,16 +55,13 @@ import SupplierConfiguration from "pages/Suppliers/SupplierConfiguration";
 import ProductConfiguration from "pages/Products/ProductsConfiguration";
 import UserConfiguration from "pages/Users/UserConfiguration";
 import ViewPurchaseOrders from "pages/PurchaseOrders/ViewPurchaseOrders";
-import CreatePurchaseOrder from "pages/PurchaseOrders/CreatePurchaseOrder";
 import PurchaseOrderDetails from "pages/PurchaseOrders/PurchasOrderDetails";
 import ViewPigs from "pages/Pigs/ViewPigs";
 import ViewFarms from "pages/Farms/ViewFarms";
 import PigDetails from "pages/Pigs/PigDetails";
-import RegisterPig from "pages/Pigs/RegisterPig";
 import UserDetails from "pages/Users/UserDetails";
 import FarmDetails from "pages/Farms/FarmDetails";
 import ViewGroups from "pages/Groups/ViewGroups";
-import CreateGroup from "pages/Groups/CreateGroup";
 import ViewExtractions from "pages/Laboratory/ViewExtractions";
 import ViewSamples from "pages/Laboratory/ViewSamples";
 import ViewGestations from "pages/Gestation/ViewInseminations";
@@ -79,6 +71,7 @@ import SampleDetails from "pages/Laboratory/SampleDetails";
 import InseminationDetails from "pages/Gestation/InseminationDetails";
 import ViewBirths from "pages/Births/ViewBirths";
 import ViewUpcomingBirths from "pages/Births/ViewUpcomingBirths";
+import GroupDetails from "pages/Groups/GroupDetails";
 
 
 
@@ -101,18 +94,15 @@ const authProtectedRoutes = [
 
   //Warehouse - Suppliers
   { path: '/warehouse/suppliers/view_suppliers', component: <Suppliers /> },
-  { path: '/warehouse/suppliers/create_supplier', component: <CreateSupplier /> },
   { path: '/warehouse/suppliers/supplier_details/:id_supplier', component: <SupplierDetails /> },
   { path: '/warehouse/suppliers/configuration', component: <SupplierConfiguration /> },
 
   //Warehouse - Incomes
-  { path: '/warehouse/incomes/create_income', component: <CreateIncome /> },
   { path: '/warehouse/incomes/view_incomes', component: <ViewIncome /> },
   { path: '/warehouse/incomes/income_details/:id_income', component: <IncomeDetails /> },
   { path: '/warehouse/incomes/configuration', component: <IncomesConfiguration /> },
 
   //Warehouse - Outcomes
-  { path: '/warehouse/outcomes/create_outcome', component: <CreateOutcome /> },
   { path: '/warehouse/outcomes/view_outcomes', component: <ViewOutcomes /> },
   { path: '/warehouse/outcomes/outcome_details/:id_outcome', component: <OutcomeDetails /> },
   { path: '/warehouse/outcomes/configuration', component: <OutcomesConfiguration /> },
@@ -130,7 +120,6 @@ const authProtectedRoutes = [
   { path: '/subwarehouse/create_subwarehouse_outcome', component: <CreateSubwarehouseOutcome /> },
 
   //Orders
-  { path: '/orders/create_order', component: <CreateOrder /> },
   { path: '/orders/send_orders', component: <SendOrders /> },
   { path: '/orders/order_details/:id_order', component: <OrderDetails /> },
   { path: '/orders/complete_order/:id_order', component: <CompleteOrder /> },
@@ -138,13 +127,11 @@ const authProtectedRoutes = [
 
   //Purchase orders
   { path: '/purchase_orders/view_purchase_orders', component: <ViewPurchaseOrders /> },
-  { path: '/purchase_orders/create_purchase_order', component: <CreatePurchaseOrder /> },
   { path: '/purchase_orders/purchase_order_details/:id_order', component: <PurchaseOrderDetails /> },
 
   //Pigs
   { path: '/pigs/view_pigs', component: <ViewPigs /> },
   { path: '/pigs/pig_details/:pig_id', component: <PigDetails /> },
-  { path: '/pigs/register_pig/', component: <RegisterPig /> },
 
   //Users
   { path: 'users/view_users', component: <ViewUsers /> },
@@ -156,7 +143,7 @@ const authProtectedRoutes = [
 
   //Groups
   { path: "/groups/view_groups", component: <ViewGroups /> },
-  { path: "/groups/create_group", component: <CreateGroup /> },
+  { path: "/groups/group_details/:group_id", component: <GroupDetails /> },
 
   //Laboratory
   { path: "/laboratory/extractions/view_extractions", component: <ViewExtractions /> },

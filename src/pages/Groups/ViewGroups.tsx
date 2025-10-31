@@ -1,11 +1,11 @@
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import { GroupData, UserData } from "common/data_interfaces";
-import BreadCrumb from "Components/Common/BreadCrumb";
-import CustomTable from "Components/Common/CustomTable";
-import PigDetailsModal from "Components/Common/DetailsPigModal";
-import GroupForm from "Components/Common/GroupForm";
-import LoadingAnimation from "Components/Common/LoadingAnimation";
+import BreadCrumb from "Components/Common/Shared/BreadCrumb";
+import GroupDetails from "Components/Common/Details/GroupDetails";
+import GroupForm from "Components/Common/Forms/GroupForm";
+import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
+import CustomTable from "Components/Common/Tables/CustomTable";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { FiInbox } from "react-icons/fi";
@@ -18,8 +18,9 @@ const ViewGroups = () => {
     const userLogged = getLoggedinUser()
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ create: false, });
+    const [modals, setModals] = useState({ create: false, groupDetails: false, moveGroup: false, asign: false, withdraw: false });
     const [groups, setGroups] = useState<GroupData[]>([])
+    const [selectedGroup, setSelectedGroup] = useState<any>({})
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -96,13 +97,34 @@ const ViewGroups = () => {
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button id={`details-button-${row._id}`} className="farm-primary-button btn-icon">
+                    <Button id={`move-button-${row._id}`} className="btn-icon btn-warning" onClick={() => { setSelectedGroup(row); toggleModal('asign'); }}>
+                        <i className="ri-arrow-left-right-line align-middle"></i>
+                    </Button>
+                    <UncontrolledTooltip target={`move-button-${row._id}`}>
+                        Trasladar cerdos
+                    </UncontrolledTooltip>
+
+                    <Button id={`withdraw-button-${row._id}`} className="btn-icon btn-danger" onClick={() => { setSelectedGroup(row); toggleModal('withdraw'); }}>
+                        <i className="ri-upload-2-line align-middle"></i>
+                    </Button>
+                    <UncontrolledTooltip target={`withdraw-button-${row._id}`}>
+                        Retirar cerdo
+                    </UncontrolledTooltip>
+
+                    < Button id={`asign-button-${row._id}`} className="btn-icon btn-primary" onClick={() => { setSelectedGroup(row); toggleModal('asign'); }}>
+                        <i className="ri-download-2-line align-middle"></i>
+                    </Button >
+                    <UncontrolledTooltip target={`asign-button-${row._id}`}>
+                        Ingresar cerdo
+                    </UncontrolledTooltip>
+
+                    <Button id={`details-button-${row._id}`} className="btn-icon btn-success" onClick={() => { setSelectedGroup(row); toggleModal('groupDetails'); }}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
                     <UncontrolledTooltip target={`details-button-${row._id}`}>
                         Ver detalles
                     </UncontrolledTooltip>
-                </div>
+                </div >
             ),
         },
     ]
@@ -171,6 +193,43 @@ const ViewGroups = () => {
                 <ModalHeader toggle={() => toggleModal("create")}>Crear grupo</ModalHeader>
                 <ModalBody>
                     <GroupForm onSave={() => { toggleModal('create') }} onCancel={() => { }} />
+                </ModalBody>
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} centered backdrop={'static'} keyboard={false}>
+                <ModalHeader toggle={() => toggleModal("create")}>Crear grupo</ModalHeader>
+                <ModalBody>
+                    <GroupForm onSave={() => { toggleModal('create') }} onCancel={() => { }} />
+                </ModalBody>
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.moveGroup} toggle={() => toggleModal("moveGroup")} centered backdrop={'static'} keyboard={false}>
+                <ModalHeader toggle={() => toggleModal("moveGroup")}>Trasladar cerdos</ModalHeader>
+                <ModalBody>
+
+                </ModalBody>
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.asign} toggle={() => toggleModal("asign")} centered backdrop={'static'} keyboard={false}>
+                <ModalHeader toggle={() => toggleModal("asign")}>Ingresar cerdos</ModalHeader>
+                <ModalBody>
+
+                </ModalBody>
+            </Modal>
+
+
+            <Modal size="xl" isOpen={modals.withdraw} toggle={() => toggleModal("withdraw")} centered backdrop={'static'} keyboard={false}>
+                <ModalHeader toggle={() => toggleModal("withdraw")}>Retirar cerdos</ModalHeader>
+                <ModalBody>
+
+                </ModalBody>
+            </Modal>
+
+
+            <Modal size="xl" isOpen={modals.groupDetails} toggle={() => toggleModal("groupDetails")} centered modalClassName="modal-xxl" contentClassName="modal-tall" >
+                <ModalHeader toggle={() => toggleModal("groupDetails")}>Detalles de grupo</ModalHeader>
+                <ModalBody>
+                    <GroupDetails groupId={selectedGroup?._id} />
                 </ModalBody>
             </Modal>
 

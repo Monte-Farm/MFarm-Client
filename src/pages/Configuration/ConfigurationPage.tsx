@@ -1,4 +1,4 @@
-import BreadCrumb from "Components/Common/BreadCrumb";
+import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { Card, CardBody, Col, Container, ListGroup, ListGroupItem, Row, Spinner } from "reactstrap"
 import { useEffect, useState } from "react";
 import SystemConfiguration from "Components/Common/SystemConfiguration";

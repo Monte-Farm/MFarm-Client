@@ -1,14 +1,14 @@
 import { ConfigContext } from "App";
-import BreadCrumb from "Components/Common/BreadCrumb";
-import CustomTable from "Components/Common/CustomTable";
+import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
 import { Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader } from "reactstrap";
 import { useNavigate } from "react-router-dom";
 import { Column } from "common/data/data_types";
-import PurchaseOrderForm from "Components/Common/PurchaseOrderForm";
-import LoadingAnimation from "Components/Common/LoadingAnimation";
-import AlertMessage from "Components/Common/AlertMesagge";
+import PurchaseOrderForm from "Components/Common/Forms/PurchaseOrderForm";
+import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
+import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import { getLoggedinUser } from "helpers/api_helper";
+import CustomTable from "Components/Common/Tables/CustomTable";
 
 const ViewPurchaseOrders = () => {
     document.title = 'Ver Ordenes de compra | Ordenes de compra';

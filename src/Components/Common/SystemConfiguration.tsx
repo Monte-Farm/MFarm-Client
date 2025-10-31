@@ -1,12 +1,11 @@
 import { APIClient } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { Alert, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Spinner } from "reactstrap";
-import FileUploader from "./FileUploader";
+import FileUploader from "./Shared/FileUploader";
 import { useFormik } from "formik";
-import StringTable from "./StringTable";
-import TaxesTable from "./TaxesTable";
 import { ConfigurationData, Tax } from "common/data_interfaces";
 import { ConfigContext } from "App";
+import TaxesTable from "./Tables/TaxesTable";
 
 const SystemConfiguration = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });

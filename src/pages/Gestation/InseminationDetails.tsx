@@ -1,7 +1,7 @@
-import AlertMessage from "Components/Common/AlertMesagge";
+import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import { ConfigContext } from "App";
-import LoadingAnimation from "Components/Common/LoadingAnimation";
-import BreadCrumb from "Components/Common/BreadCrumb";
+import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
+import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -11,8 +11,8 @@ import { Attribute } from "common/data_interfaces";
 import { FiAlertCircle, FiXCircle } from "react-icons/fi";
 import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
-import DiagnosisForm from "Components/Common/DiagnoseForm";
-import HeatForm from "Components/Common/HeatForm";
+import DiagnosisForm from "Components/Common/Forms/DiagnoseForm";
+import HeatForm from "Components/Common/Forms/HeatForm";
 
 const InseminationDetails = () => {
     document.title = 'Detalles de inseminación | System Management'

@@ -1,7 +1,7 @@
 import { ConfigContext } from "App"
 import { PigData } from "common/data_interfaces"
-import BreadCrumb from "Components/Common/BreadCrumb"
-import PigForm from "Components/Common/PigForm"
+import BreadCrumb from "Components/Common/Shared/BreadCrumb"
+import PigForm from "Components/Common/Forms/PigForm"
 import { useContext, useEffect, useState, useRef } from "react"
 import {
     Alert, Button, Card, CardBody, CardHeader, Container,
@@ -20,8 +20,8 @@ import { useNavigate } from "react-router-dom"
 import PDFViewer from "Components/Common/PDFViewer"
 import SimpleBar from 'simplebar-react';
 import 'simplebar-react/dist/simplebar.min.css';
-import CustomTable from "Components/Common/CustomTable"
 import { Column } from "common/data/data_types"
+import CustomTable from "Components/Common/Tables/CustomTable"
 
 const ViewPigs = () => {
     const [modals, setModals] = useState({ create: false, update: false, viewPDF: false });
