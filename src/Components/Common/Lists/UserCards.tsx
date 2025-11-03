@@ -11,7 +11,7 @@ import {
 import { Column, ColumnType } from "common/data/data_types";
 import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
-import defaultProfile from '../../assets/images/default-profile-mage.jpg';
+import defaultProfile from '../../../assets/images/default-profile-mage.jpg';
 
 interface UserCardProps<T> {
     columns: Column<T>[];

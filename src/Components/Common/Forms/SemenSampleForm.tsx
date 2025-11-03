@@ -8,7 +8,7 @@ import * as Yup from 'yup';
 import classnames from "classnames";
 import { FiAlertCircle, FiCheckCircle, FiInfo, FiXCircle } from "react-icons/fi";
 import { Column } from "common/data/data_types";
-import SuccessModal from "../SuccessModal";
+import SuccessModal from "../Shared/SuccessModal";
 import { HttpStatusCode } from "axios";
 import DatePicker from "react-flatpickr";
 import SimpleBar from "simplebar-react";

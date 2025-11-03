@@ -6,7 +6,7 @@ import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import ExtractionDetails from "Components/Common/Details/ExtractionDetails";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
-import ObjectDetails from "Components/Common/ObjectDetails";
+import ObjectDetails from "Components/Common/Details/ObjectDetails";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";

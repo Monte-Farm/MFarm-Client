@@ -1,9 +1,8 @@
-import React from "react";
 import { Badge, Button, Card, CardBody, CardImg, CardText } from "reactstrap";
 import { Column, ColumnType } from "common/data/data_types";
 import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
-import defaultFarmImage from '../../assets/images/establo-cerdo.jpg'
+import defaultFarmImage from '../../../assets/images/establo-cerdo.jpg'
 
 interface FarmCardsProps<T> {
     columns: Column<T>[];

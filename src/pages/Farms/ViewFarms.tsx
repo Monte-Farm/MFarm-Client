@@ -4,7 +4,7 @@ import { FarmData } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState, useMemo } from "react";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Input, Modal, ModalBody, ModalHeader } from "reactstrap";
-import FarmCards from "Components/Common/FarmCards";
+import FarmCards from "Components/Common/Lists/FarmCards";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { useNavigate } from "react-router-dom";
 import FarmForm from "Components/Common/Forms/FarmForm";

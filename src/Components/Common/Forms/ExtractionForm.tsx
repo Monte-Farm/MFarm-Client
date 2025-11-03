@@ -10,7 +10,7 @@ import { Column } from "common/data/data_types";
 import { FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo } from "react-icons/fi";
 import DatePicker from "react-flatpickr";
 import { HttpStatusCode } from "axios";
-import SuccessModal from "../SuccessModal";
+import SuccessModal from "../Shared/SuccessModal";
 import PigDetailsModal from "../Details/DetailsPigModal";
 import SelectableTable from "../Tables/SelectableTable";
 

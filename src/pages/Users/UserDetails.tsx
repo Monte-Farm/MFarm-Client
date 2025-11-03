@@ -6,9 +6,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalFooter, ModalHeader, Row } from "reactstrap";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
-import ObjectDetails from "Components/Common/ObjectDetails";
+import ObjectDetails from "Components/Common/Details/ObjectDetails";
 import defaultImageProfila from '../../assets/images/default-profile-mage.jpg'
-import UserHistoryItem from "Components/Common/UserHistoryItem";
+import UserHistoryItem from "Components/Common/Lists/UserHistoryItem";
 import SimpleBar from "simplebar-react";
 import UserForm from "Components/Common/Forms/UserForm";
 

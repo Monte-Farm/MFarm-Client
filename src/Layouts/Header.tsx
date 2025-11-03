@@ -5,13 +5,12 @@ import { Dropdown, DropdownMenu, DropdownToggle, Form } from 'reactstrap';
 import { changeSidebarVisibility } from '../slices/thunks';
 import { useSelector, useDispatch } from "react-redux";
 import { createSelector } from 'reselect';
-import Configuration from 'Components/Common/Configuration';
+import Configuration from 'Components/Common/Velzon/Configuration';
 import { ConfigContext } from 'App';
-import Logout from 'Components/Common/Logout';
 import { getLoggedinUser } from 'helpers/api_helper';
 import LogoSystem from '../assets/images/logo.png'
 import { SubwarehouseData } from 'common/data_interfaces';
-import ProfileDropdown from 'Components/Common/ProfileDropdown';
+import ProfileDropdown from 'Components/Common/Velzon/ProfileDropdown';
 
 const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
     const dispatch: any = useDispatch();

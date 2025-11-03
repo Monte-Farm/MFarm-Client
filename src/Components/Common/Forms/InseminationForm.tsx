@@ -11,7 +11,7 @@ import { FiXCircle } from "react-icons/fi";
 import DatePicker from "react-flatpickr";
 import { DragDropContext, Draggable, Droppable, DropResult } from "react-beautiful-dnd";
 import SimpleBar from "simplebar-react";
-import SuccessModal from "../SuccessModal";
+import SuccessModal from "../Shared/SuccessModal";
 import { HttpStatusCode } from "axios";
 import PigDetailsModal from "../Details/DetailsPigModal";
 import SelectableTable from "../Tables/SelectableTable";

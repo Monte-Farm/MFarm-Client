@@ -1,6 +1,5 @@
-import { useEffect } from "react";
 import { Button, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
-import SuccessImg from "../../assets/images/success-modal.webp"
+import SuccessImg from "../../../assets/images/success-modal.webp"
 
 interface SuccessModalProps {
     isOpen: boolean;

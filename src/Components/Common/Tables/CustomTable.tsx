@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Table, Input } from "reactstrap";
-import Pagination from "../Pagination";
+import Pagination from "./Pagination";
 import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
 import { Column, ColumnType } from "common/data/data_types";

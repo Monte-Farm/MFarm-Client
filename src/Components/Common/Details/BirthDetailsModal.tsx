@@ -3,7 +3,7 @@ import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react"
 import AlertMessage from "../Shared/AlertMesagge";
 import { Badge, Button, Card, CardBody, CardHeader, Spinner } from "reactstrap";
-import ObjectDetails from "../ObjectDetails";
+import ObjectDetails from "./ObjectDetails";
 import { Attribute } from "common/data_interfaces";
 import { useNavigate } from "react-router-dom";
 import SimpleBar from "simplebar-react";

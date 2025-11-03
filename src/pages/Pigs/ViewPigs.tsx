@@ -11,17 +11,17 @@ import {
 } from "reactstrap"
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { getLoggedinUser } from "helpers/api_helper"
-import PigCards from "Components/Common/PigCards"
+import PigCards from "Components/Common/Lists/PigCards"
 import Select from "react-select"
 import { FiFilter, FiX, FiSearch, FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo } from "react-icons/fi"
 import Slider from 'rc-slider'
 import 'rc-slider/assets/index.css'
 import { useNavigate } from "react-router-dom"
-import PDFViewer from "Components/Common/PDFViewer"
 import SimpleBar from 'simplebar-react';
 import 'simplebar-react/dist/simplebar.min.css';
 import { Column } from "common/data/data_types"
 import CustomTable from "Components/Common/Tables/CustomTable"
+import PDFViewer from "Components/Common/Shared/PDFViewer"
 
 const ViewPigs = () => {
     const [modals, setModals] = useState({ create: false, update: false, viewPDF: false });

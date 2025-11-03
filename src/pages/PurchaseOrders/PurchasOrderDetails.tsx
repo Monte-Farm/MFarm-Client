@@ -5,10 +5,10 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Alert, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
-import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal";
-import PDFViewer from "Components/Common/PDFViewer";
+import ObjectDetailsHorizontal from "Components/Common/Details/ObjectDetailsHorizontal";
 import { Column } from "common/data/data_types";
 import CustomTable from "Components/Common/Tables/CustomTable";
+import PDFViewer from "Components/Common/Shared/PDFViewer";
 
 
 const purchaseOrderAttributes: Attribute[] = [

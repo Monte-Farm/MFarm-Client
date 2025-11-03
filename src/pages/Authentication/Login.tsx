@@ -1,12 +1,12 @@
 import React, { useContext, useState } from "react";
 import { Alert, Card, Col, Container, Row } from "reactstrap";
 import loginImage from "../../assets/images/portada.png";
-import LoginForm from "../../Components/Common/Login";
+import LoginForm from "../../Components/Common/Velzon/Login";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useNavigate } from "react-router-dom";
 import { ConfigContext } from "App";
-import Aurora from "Components/Common/Aurora";
+import Aurora from "Components/Common/Velzon/Aurora";
 import LogoSystem from '../../assets/images/logo.png'
 import systemLogo from '../../assets/images/system-logo.png'
 import loginBanner from '../../assets/images/login_banner.png'

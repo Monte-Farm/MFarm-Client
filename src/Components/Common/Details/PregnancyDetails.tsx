@@ -7,7 +7,7 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, Progress } from "reactstrap";
 import pigSilhouette from '../../assets/images/pig_silhouette.png'
-import ObjectDetails from "Components/Common/ObjectDetails";
+import ObjectDetails from "Components/Common/Details/ObjectDetails";
 import { Attribute } from "common/data_interfaces";
 import AbortionForm from "../Forms/AbortionForm";
 import BirthForm from "../Forms/BirthForm";

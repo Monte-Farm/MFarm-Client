@@ -9,7 +9,7 @@ import { FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo } from "react-icons/fi"
 
 import { HttpStatusCode } from "axios";
 import FileUploader from "../Shared/FileUploader";
-import SuccessModal from "../SuccessModal";
+import SuccessModal from "../Shared/SuccessModal";
 
 
 interface AbortionFormProps {

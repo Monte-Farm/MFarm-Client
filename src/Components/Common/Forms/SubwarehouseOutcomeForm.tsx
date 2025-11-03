@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { OutcomeData, ProductData } from 'common/data_interfaces';
 import { ConfigContext } from 'App';
 import classnames from "classnames";
-import ObjectDetailsHorizontal from '../ObjectDetailsHorizontal';
+import ObjectDetailsHorizontal from '../Details/ObjectDetailsHorizontal';
 
 import { Column } from 'common/data/data_types';
 import DatePicker from 'react-flatpickr';

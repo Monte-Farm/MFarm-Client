@@ -7,7 +7,7 @@ import DatePicker from "react-flatpickr";
 import { FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo } from "react-icons/fi";
 import { Alert, Button, FormFeedback, Input, Label, Spinner, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
 import * as Yup from "yup";
-import SuccessModal from "../SuccessModal";
+import SuccessModal from "../Shared/SuccessModal";
 
 interface DiscardSampleFormProps {
     sample: any;

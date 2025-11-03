@@ -5,11 +5,11 @@ import { Button, Card, CardBody, Col, FormFeedback, Input, Label, Modal, ModalBo
 import { ConfigContext } from "App";
 import * as Yup from "yup";
 import { useFormik } from "formik";
-import ObjectDetailsHorizontal from "../ObjectDetailsHorizontal";
+import ObjectDetailsHorizontal from "../Details/ObjectDetailsHorizontal";
 import SupplierForm from "./SupplierForm";
 import { Column } from "common/data/data_types";
 import AlertMessage from "../Shared/AlertMesagge";
-import SuccessModal from "../SuccessModal";
+import SuccessModal from "../Shared/SuccessModal";
 import DatePicker from "react-flatpickr";
 import { getLoggedinUser } from "helpers/api_helper";
 import CustomTable from "../Tables/CustomTable";

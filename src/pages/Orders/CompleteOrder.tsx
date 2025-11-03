@@ -6,9 +6,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Alert, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import ErrorModal from "Components/Common/Shared/ErrorModal";
-import SuccessModal from "Components/Common/SuccessModal";
-import PDFViewer from "Components/Common/PDFViewer";
+import SuccessModal from "Components/Common/Shared/SuccessModal";
 import CompleteOrderForm from "Components/Common/Forms/CompleteOrderForm";
+import PDFViewer from "Components/Common/Shared/PDFViewer";
 
 const CompleteOrder = () => {
     const history = useNavigate();

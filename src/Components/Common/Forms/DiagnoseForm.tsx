@@ -6,7 +6,7 @@ import { useContext, useEffect, useState } from "react";
 import { ConfigContext } from "App";
 import DatePicker from "react-flatpickr";
 import { FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo } from "react-icons/fi";
-import SuccessModal from "../SuccessModal";
+import SuccessModal from "../Shared/SuccessModal";
 import { HttpStatusCode } from "axios";
 import FileUploader from "../Shared/FileUploader";
 

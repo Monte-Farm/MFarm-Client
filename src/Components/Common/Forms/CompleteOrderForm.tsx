@@ -5,7 +5,7 @@ import { useFormik } from 'formik';
 import { useNavigate } from 'react-router-dom';
 import { OrderData } from 'common/data_interfaces';
 import { ConfigContext } from 'App';
-import ObjectDetailsHorizontal from '../ObjectDetailsHorizontal';
+import ObjectDetailsHorizontal from '../Details/ObjectDetailsHorizontal';
 import OrderTable from '../Tables/OrderTable';
 
 interface OrderFormProps {

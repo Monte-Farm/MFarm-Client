@@ -5,7 +5,7 @@ import { useContext, useEffect, useState } from "react";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, UncontrolledTooltip } from "reactstrap";
 import { FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo, FiPlayCircle, FiActivity, FiInbox } from "react-icons/fi";
 import { Column } from "common/data/data_types";
-import InseminationFilters from "Components/Common/InseminationFilters";
+import InseminationFilters from "Components/Common/Tables/InseminationFilters";
 import PigDetailsModal from "Components/Common/Details/DetailsPigModal";
 import { useNavigate } from "react-router-dom";
 import SimpleBar from "simplebar-react";

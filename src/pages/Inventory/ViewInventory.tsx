@@ -4,13 +4,13 @@ import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useNavigate } from "react-router-dom";
 import { IncomeData, ProductData } from "common/data_interfaces";
 import { ConfigContext } from "App";
-import PDFViewer from "Components/Common/PDFViewer";
 import { Column } from "common/data/data_types";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import { getLoggedinUser } from "helpers/api_helper";
 import IncomeForm from "Components/Common/Forms/IncomeForm";
 import CustomTable from "Components/Common/Tables/CustomTable";
+import PDFViewer from "Components/Common/Shared/PDFViewer";
 
 const ViewInventory = () => {
   document.title = "Inventario | Almacén General";

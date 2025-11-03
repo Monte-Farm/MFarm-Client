@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Collapse } from 'reactstrap';
 import navdata from "../LayoutMenuData";
 import { withTranslation } from "react-i18next";
-import withRouter from "../../Components/Common/withRouter";
+import withRouter from "../../Components/Common/Velzon/withRouter";
 import { useSelector } from "react-redux";
 import { createSelector } from 'reselect';
 import { getLoggedinUser } from 'helpers/api_helper';

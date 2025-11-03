@@ -7,18 +7,18 @@ import { useNavigate, useParams } from "react-router-dom"
 import { Alert, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, TabPane, UncontrolledTooltip } from "reactstrap"
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import classnames from "classnames";
-import ObjectDetails from "Components/Common/ObjectDetails";
+import ObjectDetails from "Components/Common/Details/ObjectDetails";
 import defaultPigImage from "../../assets/images/pig-default.png";
-import KPIBox from "Components/Common/KPIBox";
-import PigTimeline from "Components/Common/PigTimeline";
+import KPIBox from "Components/Common/Graphics/KPIBox";
+import PigTimeline from "Components/Common/Shared/PigTimeline";
 import PigEditForm from "Components/Common/Forms/PigEditForm";
-import HistoryFlagItem from "Components/Common/HistoryFlagItem";
+import HistoryFlagItem from "Components/Common/Lists/HistoryFlagItem";
 import SimpleBar from "simplebar-react";
-import PDFViewer from "Components/Common/PDFViewer";
-import FeedingEntryItem from "Components/Common/FeedingEntryItem";
-import InitialMedicationsItem from "Components/Common/InitialMedicationsItem";
-import HistoryList from "Components/Common/HistoryList";
-import ReproductionFilters from "Components/Common/HistoryListFilter";
+import FeedingEntryItem from "Components/Common/Lists/FeedingEntryItem";
+import InitialMedicationsItem from "Components/Common/Lists/InitialMedicationsItem";
+import HistoryList from "Components/Common/Lists/HistoryList";
+import ReproductionFilters from "Components/Common/Lists/HistoryListFilter";
+import PDFViewer from "Components/Common/Shared/PDFViewer";
 
 const pigDetailsAttributes: Attribute[] = [
     { key: 'code', label: 'Codigo', type: 'text' },

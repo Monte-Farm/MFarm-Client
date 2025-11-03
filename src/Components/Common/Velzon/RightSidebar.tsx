@@ -21,7 +21,7 @@ import {
     changePreLoader,
     changeSidebarVisibility
     // resetValue
-} from "../../slices/thunks";
+} from "../../../slices/thunks";
 
 import { useSelector, useDispatch } from "react-redux";
 
@@ -38,7 +38,7 @@ import {
     LEFT_SIDEBAR_IMAGE_TYPES,
     PERLOADER_TYPES,
     SIDEBAR_VISIBILITY_TYPES
-} from "../constants/layout";
+} from "../../constants/layout";
 
 //SimpleBar
 import SimpleBar from "simplebar-react";

@@ -6,7 +6,7 @@ import { useParams } from "react-router-dom";
 import { Card, CardBody, CardHeader, Col, Container, Label, Row } from "reactstrap";
 import loadingGif from '../../assets/images/loading-gif.gif'
 import { socialLogin } from "slices/thunks";
-import ObjectDetails from "Components/Common/ObjectDetails";
+import ObjectDetails from "Components/Common/Details/ObjectDetails";
 import farmDefaultImage from '../../assets/images/establo-cerdo.jpg'
 import managerDefaultImage from '../../assets/images/default-profile-mage.jpg'
 import { Column } from "common/data/data_types";

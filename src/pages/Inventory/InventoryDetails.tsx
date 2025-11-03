@@ -6,7 +6,7 @@ import noImageUrl from '../../assets/images/no-image.png'
 import { Attribute, ProductData } from "common/data_interfaces";
 import { ConfigContext } from "App";
 import LoadingGif from '../../assets/images/loading-gif.gif'
-import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal";
+import ObjectDetailsHorizontal from "Components/Common/Details/ObjectDetailsHorizontal";
 import { Column } from "common/data/data_types";
 import ProductForm from "Components/Common/Forms/ProductForm";
 import CustomTable from "Components/Common/Tables/CustomTable";

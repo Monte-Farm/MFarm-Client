@@ -24,7 +24,6 @@ import Offlinepage from "../pages/AuthenticationInner/Errors/Offlinepage";
 // //login
 import Login from "../pages/Authentication/Login";
 import ForgetPasswordPage from "../pages/Authentication/ForgetPassword";
-import Logout from "../pages/Authentication/Logout";
 import Register from "../pages/Authentication/Register";
 
 
@@ -36,9 +35,6 @@ import SubwarehouseDetails from "pages/Subwarehouse/SubwarehouseDetails";
 import ViewOutcomes from "pages/Outcomes/ViewOutcomes";
 import OutcomeDetails from "pages/Outcomes/OutcomeDetails";
 
-//Configuration
-import ConfigurationPage from "pages/Configuration/ConfigurationPage";
-
 import ViewUsers from "pages/Users/ViewUsers";
 import SendOrders from "pages/Orders/SendOrders";
 import OrderDetails from "pages/Orders/OrderDetails";
@@ -49,11 +45,6 @@ import SubwarehouseIncomes from "pages/Subwarehouse/SubwarehouseIncomes";
 import SubwarehouseOutcomes from "pages/Subwarehouse/SubwarehouseOutcomes";
 import CreateSubwarehouseOutcome from "pages/Subwarehouse/CreateSubwarehouseOutcome";
 import WarehouseConfiguration from "pages/Configuration/WarehouseConfiguration";
-import IncomesConfiguration from "pages/Incomes/IncomesConfiguration";
-import OutcomesConfiguration from "pages/Outcomes/OutcomesConfiguration";
-import SupplierConfiguration from "pages/Suppliers/SupplierConfiguration";
-import ProductConfiguration from "pages/Products/ProductsConfiguration";
-import UserConfiguration from "pages/Users/UserConfiguration";
 import ViewPurchaseOrders from "pages/PurchaseOrders/ViewPurchaseOrders";
 import PurchaseOrderDetails from "pages/PurchaseOrders/PurchasOrderDetails";
 import ViewPigs from "pages/Pigs/ViewPigs";
@@ -72,6 +63,7 @@ import InseminationDetails from "pages/Gestation/InseminationDetails";
 import ViewBirths from "pages/Births/ViewBirths";
 import ViewUpcomingBirths from "pages/Births/ViewUpcomingBirths";
 import GroupDetails from "pages/Groups/GroupDetails";
+import Logout from "Components/Common/Velzon/Logout";
 
 
 
@@ -95,21 +87,17 @@ const authProtectedRoutes = [
   //Warehouse - Suppliers
   { path: '/warehouse/suppliers/view_suppliers', component: <Suppliers /> },
   { path: '/warehouse/suppliers/supplier_details/:id_supplier', component: <SupplierDetails /> },
-  { path: '/warehouse/suppliers/configuration', component: <SupplierConfiguration /> },
 
   //Warehouse - Incomes
   { path: '/warehouse/incomes/view_incomes', component: <ViewIncome /> },
   { path: '/warehouse/incomes/income_details/:id_income', component: <IncomeDetails /> },
-  { path: '/warehouse/incomes/configuration', component: <IncomesConfiguration /> },
 
   //Warehouse - Outcomes
   { path: '/warehouse/outcomes/view_outcomes', component: <ViewOutcomes /> },
   { path: '/warehouse/outcomes/outcome_details/:id_outcome', component: <OutcomeDetails /> },
-  { path: '/warehouse/outcomes/configuration', component: <OutcomesConfiguration /> },
 
   //Warehouse - Product Catalog
   { path: '/warehouse/products/product_catalog', component: <ViewProducts /> },
-  { path: '/warehouse/products/configuration', component: <ProductConfiguration /> },
 
   //Subwarehouse
   { path: '/subwarehouse/view_subwarehouse', component: <ViewSubwarehouse /> },
@@ -135,7 +123,6 @@ const authProtectedRoutes = [
 
   //Users
   { path: 'users/view_users', component: <ViewUsers /> },
-  { path: 'users/configuration', component: <UserConfiguration /> },
   { path: 'users/user_details/:id_user', component: <UserDetails /> },
 
   //User Profile
@@ -160,10 +147,6 @@ const authProtectedRoutes = [
   { path: "/births/view_upcoming_births", component: <ViewUpcomingBirths /> },
   { path: "/births/view_births", component: <ViewBirths /> },
 
-
-
-  //Configuration
-  { path: '/configuration', component: <ConfigurationPage /> },
 
   // this route should be at the end of all other routes
   // eslint-disable-next-line react/display-name

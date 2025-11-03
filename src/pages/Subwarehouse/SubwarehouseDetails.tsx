@@ -1,8 +1,8 @@
 import { ConfigContext } from "App";
 import { Attribute, SubwarehouseData } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
-import ObjectDetails from "Components/Common/ObjectDetails";
-import ObjectDetailsHorizontal from "Components/Common/ObjectDetailsHorizontal";
+import ObjectDetails from "Components/Common/Details/ObjectDetails";
+import ObjectDetailsHorizontal from "Components/Common/Details/ObjectDetailsHorizontal";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button, Card, CardBody, CardHeader, Col, Container, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";

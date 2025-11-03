@@ -5,8 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { Container, Button, Card, CardHeader, CardBody, Row, Col, Modal, ModalBody, ModalHeader, Spinner } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Column } from "common/data/data_types";
-import PDFViewer from "Components/Common/PDFViewer";
 import CustomTable from "Components/Common/Tables/CustomTable";
+import PDFViewer from "Components/Common/Shared/PDFViewer";
 
 
 const SubwarehouseInventory = () => {

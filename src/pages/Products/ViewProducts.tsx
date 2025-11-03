@@ -1,5 +1,5 @@
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
-import ObjectDetails from "Components/Common/ObjectDetails";
+import ObjectDetails from "Components/Common/Details/ObjectDetails";
 import { useContext, useEffect, useState } from "react";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
 import noImageUrl from '../../assets/images/no-image.png'

@@ -7,7 +7,7 @@ import { logoutUser } from "../../slices/thunks";
 //redux
 import { useSelector, useDispatch } from "react-redux";
 
-import withRouter from "../../Components/Common/withRouter";
+import withRouter from "../../Components/Common/Velzon/withRouter";
 import { createSelector } from "reselect";
 
 const Logout = () => {

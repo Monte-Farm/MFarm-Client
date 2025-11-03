@@ -4,7 +4,7 @@ import { useContext, useEffect, useState } from "react";
 import { Button, Col, Container, Row, Card, CardBody, CardHeader } from "reactstrap";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
-import ObjectDetails from "../ObjectDetails";
+import ObjectDetails from "./ObjectDetails";
 import { Attribute } from "common/data_interfaces";
 import { useNavigate } from "react-router-dom";
 

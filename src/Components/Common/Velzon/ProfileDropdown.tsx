@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
 import { useSelector } from 'react-redux';
-import defaultProfileImage from '../../assets/images/default-profile-mage.jpg';
+import defaultProfileImage from '../../../assets/images/default-profile-mage.jpg';
 import { getLoggedinUser } from 'helpers/api_helper';
 
 const roleMap: Record<string, string> = {

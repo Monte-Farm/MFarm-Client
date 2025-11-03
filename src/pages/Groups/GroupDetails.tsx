@@ -7,7 +7,7 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Badge, Button, Card, CardBody, CardHeader, Container, Nav, NavItem, NavLink, TabContent, TabPane } from "reactstrap";
 import classnames from "classnames";
-import ObjectDetails from "Components/Common/ObjectDetails";
+import ObjectDetails from "Components/Common/Details/ObjectDetails";
 import { Attribute } from "common/data_interfaces";
 import KPI from "Components/Common/Graphics/Kpi";
 import { FaMars, FaPiggyBank, FaVenus } from "react-icons/fa";
