@@ -11,6 +11,7 @@ import { useContext, useEffect, useState } from "react";
 import { FiInbox } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, UncontrolledTooltip } from "reactstrap";
+import GroupWithDrawForm from "Components/Common/Forms/GroupWithdrawForm";
 
 const ViewGroups = () => {
     const navigate = useNavigate();
@@ -192,7 +193,7 @@ const ViewGroups = () => {
             <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} centered backdrop={'static'} keyboard={false}>
                 <ModalHeader toggle={() => toggleModal("create")}>Crear grupo</ModalHeader>
                 <ModalBody>
-                    <GroupForm onSave={() => { toggleModal('create') }} onCancel={() => { }} />
+                    <GroupForm onSave={() => { fetchGroups(); toggleModal('create') }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
@@ -221,7 +222,7 @@ const ViewGroups = () => {
             <Modal size="xl" isOpen={modals.withdraw} toggle={() => toggleModal("withdraw")} centered backdrop={'static'} keyboard={false}>
                 <ModalHeader toggle={() => toggleModal("withdraw")}>Retirar cerdos</ModalHeader>
                 <ModalBody>
-
+                    <GroupWithDrawForm groupId={selectedGroup?._id} onSave={() => { fetchGroups(); toggleModal('withdraw') }} />
                 </ModalBody>
             </Modal>
 

@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useCallback, useEffect } from "react";
-import { Table, Input, Label, Pagination } from "reactstrap";
+import { Table, Input, Label } from "reactstrap";
 import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
 import { Column, ColumnType } from "common/data/data_types";
+import Pagination from "./Pagination";
 
 type SelectionMode = "single" | "multiple";
 
@@ -18,7 +19,7 @@ type SelectableCustomTableProps<T> = {
     showPagination?: boolean;
     className?: string;
     disabled?: boolean;
-    resetSelectionTrigger?: any; // 👈 nuevo prop
+    resetSelectionTrigger?: any;
 };
 
 const formatValue = (value: any, type?: ColumnType) => {
