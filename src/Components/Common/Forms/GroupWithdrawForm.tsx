@@ -1,15 +1,13 @@
 import { ConfigContext } from "App";
-import { useContext, useEffect, useImperativeHandle, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import LoadingAnimation from "../Shared/LoadingAnimation";
 import AlertMessage from "../Shared/AlertMesagge";
 import { Badge, Button, Card, CardBody, CardHeader, Input, Label, Nav, NavItem, NavLink, TabContent, TabPane } from "reactstrap";
 import classnames from "classnames";
 import KPI from "../Graphics/Kpi";
-import { IconBaseProps } from "react-icons";
 import { FaMars, FaPiggyBank, FaVenus } from "react-icons/fa";
 import DatePicker from "react-flatpickr";
 import { getLoggedinUser } from "helpers/api_helper";
-import SelectableCustomTable from "../Tables/SelectableTable";
 import SelectableTable from "../Tables/SelectableTable";
 import { Column } from "common/data/data_types";
 import ObjectDetails from "../Details/ObjectDetails";
@@ -189,6 +187,7 @@ const GroupWithDrawForm: React.FC<GroupWithDrawFormProps> = ({ groupId, onSave }
                             onClick={() => toggleArrowTab(1)}
                             aria-selected={activeStep === 1}
                             aria-controls="step-pigselect-tab"
+                            disabled
                         >
                             Selección de cerdos
                         </NavLink>
@@ -205,6 +204,7 @@ const GroupWithDrawForm: React.FC<GroupWithDrawFormProps> = ({ groupId, onSave }
                             onClick={() => toggleArrowTab(2)}
                             aria-selected={activeStep === 2}
                             aria-controls="step-summary-tab"
+                            disabled
                         >
                             Resumen
                         </NavLink>
@@ -214,7 +214,15 @@ const GroupWithDrawForm: React.FC<GroupWithDrawFormProps> = ({ groupId, onSave }
 
             <TabContent activeTab={activeStep}>
                 <TabPane id="step-pigselect-tab" tabId={1}>
-                    {groupData.pigsInGroup.length > 0 ? (
+                    {groupData.pigsInGroup.length === 0 && groupData.maleCount === 0 && groupData.femaleCount === 0 ? (
+                        <div className="text-center py-5">
+                            <i className="ri-error-warning-line text-muted mb-3" style={{ fontSize: "3rem" }} />
+                            <h5 className="text-muted">Este grupo no contiene cerdos registrados</h5>
+                            <p className="text-muted mb-0">
+                                No es posible realizar un retiro hasta que el grupo tenga animales asignados.
+                            </p>
+                        </div>
+                    ) : groupData.pigsInGroup.length > 0 ? (
                         <>
                             <div className="d-flex gap-2">
                                 <KPI title={"Cerdos machos"} value={groupData.maleCount} icon={FaMars} bgColor="#E0F2FF" iconColor="#007BFF" />
@@ -224,16 +232,14 @@ const GroupWithDrawForm: React.FC<GroupWithDrawFormProps> = ({ groupId, onSave }
 
                             <div className="d-flex gap-2">
                                 <div className="w-50">
-                                    <Label htmlFor="date" className="form-label">
-                                        Fecha de retiro
-                                    </Label>
+                                    <Label htmlFor="date" className="form-label">Fecha de retiro</Label>
                                     <DatePicker
                                         id="date"
                                         className="form-control"
                                         value={trackedPigsWithdraw.date ?? undefined}
                                         onChange={(date: Date[]) => {
                                             if (date[0]) {
-                                                setUntrackedPigsWithdraw({
+                                                setTrackedPigsWithdraw({
                                                     ...trackedPigsWithdraw,
                                                     date: date[0],
                                                 });
@@ -275,24 +281,11 @@ const GroupWithDrawForm: React.FC<GroupWithDrawFormProps> = ({ groupId, onSave }
                             <div className="d-flex gap-2 mt-3">
                                 <div className="w-50">
                                     <Label htmlFor="femaleCount" className="form-label">Hembras a retirar</Label>
-                                    <Input
-                                        type="number"
-                                        id="femaleCount"
-                                        name="femaleCount"
-                                        value={trackedPigsWithdraw.femaleCount}
-                                        disabled
-                                    />
+                                    <Input type="number" id="femaleCount" name="femaleCount" value={trackedPigsWithdraw.femaleCount} disabled />
                                 </div>
-
                                 <div className="w-50">
                                     <Label htmlFor="maleCount" className="form-label">Machos a retirar</Label>
-                                    <Input
-                                        type="number"
-                                        id="maleCount"
-                                        name="maleCount"
-                                        value={trackedPigsWithdraw.maleCount}
-                                        disabled
-                                    />
+                                    <Input type="number" id="maleCount" name="maleCount" value={trackedPigsWithdraw.maleCount} disabled />
                                 </div>
                             </div>
 
@@ -332,9 +325,7 @@ const GroupWithDrawForm: React.FC<GroupWithDrawFormProps> = ({ groupId, onSave }
                                         id="femaleCount"
                                         name="femaleCount"
                                         value={untrackedPigsWithdraw.femaleCount === 0 ? "0" : untrackedPigsWithdraw.femaleCount}
-                                        onFocus={(e) => {
-                                            if (Number(e.target.value) === 0) e.target.value = "";
-                                        }}
+                                        onFocus={(e) => { if (Number(e.target.value) === 0) e.target.value = ""; }}
                                         onBlur={(e) => {
                                             if (e.target.value === "") {
                                                 setUntrackedPigsWithdraw(prev => ({ ...prev, femaleCount: 0 }));
@@ -359,9 +350,7 @@ const GroupWithDrawForm: React.FC<GroupWithDrawFormProps> = ({ groupId, onSave }
                                         id="maleCount"
                                         name="maleCount"
                                         value={untrackedPigsWithdraw.maleCount === 0 ? "0" : untrackedPigsWithdraw.maleCount}
-                                        onFocus={(e) => {
-                                            if (Number(e.target.value) === 0) e.target.value = "";
-                                        }}
+                                        onFocus={(e) => { if (Number(e.target.value) === 0) e.target.value = ""; }}
                                         onBlur={(e) => {
                                             if (e.target.value === "") {
                                                 setUntrackedPigsWithdraw(prev => ({ ...prev, maleCount: 0 }));
@@ -382,9 +371,7 @@ const GroupWithDrawForm: React.FC<GroupWithDrawFormProps> = ({ groupId, onSave }
 
                             <div className="d-flex gap-2">
                                 <div className="w-50">
-                                    <Label htmlFor="date" className="form-label">
-                                        Fecha de retiro
-                                    </Label>
+                                    <Label htmlFor="date" className="form-label">Fecha de retiro</Label>
                                     <DatePicker
                                         id="date"
                                         className="form-control"
@@ -443,6 +430,11 @@ const GroupWithDrawForm: React.FC<GroupWithDrawFormProps> = ({ groupId, onSave }
                 <TabPane id="step-summary-tab" tabId={2}>
                     {groupData.pigsInGroup.length > 0 ? (
                         <>
+                            <div className="d-flex gap-2">
+                                <KPI title={"Machos para retirar"} value={trackedPigsWithdraw.maleCount} icon={FaMars} bgColor="#E0F2FF" iconColor="#007BFF" />
+                                <KPI title={"Hembras para retirar"} value={trackedPigsWithdraw.femaleCount} icon={FaVenus} bgColor="#FFE0F0" iconColor="#FF007B" />
+                                <KPI title={"Total para retirar"} value={trackedPigsWithdraw.maleCount + trackedPigsWithdraw.femaleCount} icon={FaPiggyBank} bgColor="#F0F0F0" iconColor="#6C757D" />
+                            </div>
                             <div className="d-flex gap-3">
                                 <Card className="w-25">
                                     <CardHeader className="bg-light text-white fs-5">
@@ -465,6 +457,11 @@ const GroupWithDrawForm: React.FC<GroupWithDrawFormProps> = ({ groupId, onSave }
                         </>
                     ) : (
                         <>
+                            <div className="d-flex gap-2">
+                                <KPI title={"Machos para retirar"} value={untrackedPigsWithdraw.maleCount} icon={FaMars} bgColor="#E0F2FF" iconColor="#007BFF" />
+                                <KPI title={"Hembras para retirar"} value={untrackedPigsWithdraw.femaleCount} icon={FaVenus} bgColor="#FFE0F0" iconColor="#FF007B" />
+                                <KPI title={"Total para retirar"} value={untrackedPigsWithdraw.maleCount + untrackedPigsWithdraw.femaleCount} icon={FaPiggyBank} bgColor="#F0F0F0" iconColor="#6C757D" />
+                            </div>
                             <div>
                                 <Card className="">
                                     <CardHeader className="bg-light text-white fs-5">

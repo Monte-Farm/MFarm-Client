@@ -12,6 +12,8 @@ import { FiInbox } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, UncontrolledTooltip } from "reactstrap";
 import GroupWithDrawForm from "Components/Common/Forms/GroupWithdrawForm";
+import GroupInsertForm from "Components/Common/Forms/GroupInsertForm";
+import GroupTransferForm from "Components/Common/Forms/GroupTransferForm";
 
 const ViewGroups = () => {
     const navigate = useNavigate();
@@ -19,7 +21,7 @@ const ViewGroups = () => {
     const userLogged = getLoggedinUser()
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ create: false, groupDetails: false, moveGroup: false, asign: false, withdraw: false });
+    const [modals, setModals] = useState({ create: false, groupDetails: false, move: false, asign: false, withdraw: false });
     const [groups, setGroups] = useState<GroupData[]>([])
     const [selectedGroup, setSelectedGroup] = useState<any>({})
 
@@ -98,7 +100,7 @@ const ViewGroups = () => {
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button id={`move-button-${row._id}`} className="btn-icon btn-warning" onClick={() => { setSelectedGroup(row); toggleModal('asign'); }}>
+                    <Button id={`move-button-${row._id}`} className="btn-icon btn-warning" onClick={() => { setSelectedGroup(row); toggleModal('move'); }}>
                         <i className="ri-arrow-left-right-line align-middle"></i>
                     </Button>
                     <UncontrolledTooltip target={`move-button-${row._id}`}>
@@ -169,19 +171,15 @@ const ViewGroups = () => {
                     <CardBody style={{ display: "flex", flexDirection: "column", height: "100%" }}>
                         {groups.length > 0 ? (
                             <div style={{ flex: 1 }}>
-                                <CustomTable
-                                    columns={groupsColumns}
-                                    data={groups}
-                                    showPagination={true}
-                                    rowsPerPage={7}
-                                />
+                                <CustomTable columns={groupsColumns} data={groups} showPagination={true} rowsPerPage={7} />
                             </div>
                         ) : (
-                            <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", textAlign: "center", color: "#888", }}>
-                                <div>
-                                    <FiInbox size={48} style={{ marginBottom: 10 }} />
-                                    <div>No hay muestras disponibles</div>
-                                </div>
+                            <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", textAlign: "center", color: "#6c757d", padding: "2rem", flexDirection: "column", }}>
+                                <FiInbox size={56} style={{ marginBottom: 12, opacity: 0.8 }} />
+                                <h5 style={{ marginBottom: 6 }}>No hay grupos disponibles</h5>
+                                <p style={{ maxWidth: 360, margin: 0, fontSize: 15 }}>
+                                    Actualmente no existen grupos de cerdos registrados o activos para mostrar.
+                                </p>
                             </div>
                         )}
                     </CardBody>
@@ -197,24 +195,19 @@ const ViewGroups = () => {
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} centered backdrop={'static'} keyboard={false}>
-                <ModalHeader toggle={() => toggleModal("create")}>Crear grupo</ModalHeader>
+            <Modal size="xl" isOpen={modals.move} toggle={() => toggleModal("move")} centered backdrop={'static'} keyboard={false}>
+                <ModalHeader toggle={() => toggleModal("move")}>Trasladar cerdos</ModalHeader>
                 <ModalBody>
-                    <GroupForm onSave={() => { toggleModal('create') }} onCancel={() => { }} />
-                </ModalBody>
-            </Modal>
-
-            <Modal size="xl" isOpen={modals.moveGroup} toggle={() => toggleModal("moveGroup")} centered backdrop={'static'} keyboard={false}>
-                <ModalHeader toggle={() => toggleModal("moveGroup")}>Trasladar cerdos</ModalHeader>
-                <ModalBody>
-
+                    <GroupTransferForm groupId={selectedGroup._id} onSave={function (): void {
+                        throw new Error("Function not implemented.");
+                    }} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.asign} toggle={() => toggleModal("asign")} centered backdrop={'static'} keyboard={false}>
                 <ModalHeader toggle={() => toggleModal("asign")}>Ingresar cerdos</ModalHeader>
                 <ModalBody>
-
+                    <GroupInsertForm groupId={selectedGroup?._id} onSave={() => { fetchGroups(); toggleModal('asign') }} />
                 </ModalBody>
             </Modal>
 

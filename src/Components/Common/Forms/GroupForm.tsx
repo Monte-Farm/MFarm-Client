@@ -612,8 +612,17 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
                             </Button>
 
                             <Button className="btn btn-success" onClick={() => formik.handleSubmit()} disabled={formik.isSubmitting}>
-                                Guardar
-                                <i className="ri-check-line ms-1" />
+                                {formik.isSubmitting ? (
+                                    <>
+                                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        Guardando...
+                                    </>
+                                ) : (
+                                    <>
+                                        Confirmar
+                                        <i className="ri-check-line ms-2" />
+                                    </>
+                                )}
                             </Button>
                         </div>
                     </TabPane>
