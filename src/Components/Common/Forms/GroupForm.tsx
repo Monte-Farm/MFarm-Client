@@ -257,10 +257,6 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
             setAlertConfig({ visible: true, color: 'danger', message: 'Seleccione al menos 1 cerdo' })
             return;
         }
-        if (!pigManualSelection && (!formik.values.pigCount || formik.values.pigCount <= 0)) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'El número de cerdos no puede ser 0' })
-            return;
-        }
         toggleArrowTab(3);
     };
 

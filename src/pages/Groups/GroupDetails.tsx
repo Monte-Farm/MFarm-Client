@@ -13,6 +13,8 @@ import KPI from "Components/Common/Graphics/Kpi";
 import { FaMars, FaPiggyBank, FaVenus } from "react-icons/fa";
 import { Column } from "common/data/data_types";
 import CustomTable from "Components/Common/Tables/CustomTable";
+import GroupHistoryList from "Components/Common/Lists/GroupHistoryList";
+import SimpleBar from "simplebar-react";
 
 const GroupDetails = () => {
     document.title = 'Detalles de grupo | Management System';
@@ -95,46 +97,46 @@ const GroupDetails = () => {
     ]
 
     const pigColumns: Column<any>[] = [
-            { header: 'Codigo', accessor: 'code', type: 'text' },
-            { header: 'Raza', accessor: 'breed', type: 'text' },
-            { header: 'Fecha de N.', accessor: 'birthdate', type: 'date' },
-            {
-                header: 'Sexo',
-                accessor: 'sex',
-                render: (value: string) => (
-                    <Badge color={value === 'macho' ? "info" : "danger"}>
-                        {value === 'macho' ? "♂ Macho" : "♀ Hembra"}
-                    </Badge>
-                ),
+        { header: 'Codigo', accessor: 'code', type: 'text' },
+        { header: 'Raza', accessor: 'breed', type: 'text' },
+        { header: 'Fecha de N.', accessor: 'birthdate', type: 'date' },
+        {
+            header: 'Sexo',
+            accessor: 'sex',
+            render: (value: string) => (
+                <Badge color={value === 'macho' ? "info" : "danger"}>
+                    {value === 'macho' ? "♂ Macho" : "♀ Hembra"}
+                </Badge>
+            ),
+        },
+        { header: 'Peso actual', accessor: 'weight', type: 'number' },
+        {
+            header: 'Estado',
+            accessor: 'status',
+            isFilterable: true,
+            render: (value: string) => {
+                let color = 'secondary';
+                let label = value;
+
+                switch (value) {
+                    case 'vivo':
+                        color = 'success';
+                        label = 'Vivo';
+                        break;
+                    case 'descartado':
+                        color = 'warning';
+                        label = 'Descartado';
+                        break;
+                    case 'muerto':
+                        color = 'danger';
+                        label = 'Muerto';
+                        break;
+                }
+
+                return <Badge color={color}>{label}</Badge>;
             },
-            { header: 'Peso actual', accessor: 'weight', type: 'number' },
-            {
-                header: 'Estado',
-                accessor: 'status',
-                isFilterable: true,
-                render: (value: string) => {
-                    let color = 'secondary';
-                    let label = value;
-    
-                    switch (value) {
-                        case 'vivo':
-                            color = 'success';
-                            label = 'Vivo';
-                            break;
-                        case 'descartado':
-                            color = 'warning';
-                            label = 'Descartado';
-                            break;
-                        case 'muerto':
-                            color = 'danger';
-                            label = 'Muerto';
-                            break;
-                    }
-    
-                    return <Badge color={color}>{label}</Badge>;
-                },
-            },
-        ]
+        },
+    ]
 
 
     const fetchData = async () => {
@@ -196,39 +198,52 @@ const GroupDetails = () => {
 
                 <TabContent activeTab={activeTab} className="justified-tabs mt-3">
                     <TabPane tabId="1">
-                        <div className="d-flex gap-2">
-                            <div className="w-100">
-                                <Card className="">
-                                    <CardHeader className="bg-light">
-                                        <h5>Datos del grupo</h5>
+                        <div className="d-flex gap-3">
+                            <KPI title={"Machos en el grupo"} value={groupData.maleCount} icon={FaMars} bgColor="#E0F2FF" iconColor="#007BFF" />
+                            <KPI title={"Hembras en el grupo"} value={groupData.femaleCount} icon={FaVenus} bgColor="#FFE0F0" iconColor="#FF007B" />
+                            <KPI title={"Total en el grupo"} value={groupData.pigCount} icon={FaPiggyBank} bgColor="#EFE8FF" iconColor="#7B2FFF" />
+                        </div>
+
+                        <div className="d-flex gap-2" style={{ height: "500px" }}>
+                            <div className="w-25 h-100">
+                                <Card className="h-100">
+                                    <CardHeader className="bg-white border-bottom">
+                                        <h5 className="mb-0 text-dark fw-semibold">Datos del grupo</h5>
                                     </CardHeader>
-                                    <CardBody>
+
+                                    <CardBody className="h-100 overflow-hidden">
                                         <ObjectDetails attributes={groupAttibutes} object={groupData} />
                                     </CardBody>
                                 </Card>
                             </div>
 
-                            <div className="w-100">
-                                <Card className="">
-                                    <CardHeader className="bg-light">
-                                        <h5>Datos del grupo</h5>
+                            <div className="w-100 h-100">
+                                <Card className="h-100">
+                                    <CardHeader className="border-bottom custom-card-header">
+                                        <h5 className="mb-0 text-dark fw-semibold">Cerdos en el grupo</h5>
                                     </CardHeader>
-                                    <CardBody>
-                                        <ObjectDetails attributes={groupAttibutes} object={groupData} />
+
+                                    <CardBody className="h-100 overflow-hidden">
+                                        <CustomTable
+                                            columns={pigColumns}
+                                            data={groupData.pigsInGroup}
+                                            showSearchAndFilter={false}
+                                            rowsPerPage={10}
+                                        />
                                     </CardBody>
                                 </Card>
                             </div>
 
-                            <div className="w-100">
-                                <div className="d-flex gap-3">
-                                    <KPI title={"Machos"} value={groupData.maleCount} icon={FaMars} bgColor="#E0F2FF" iconColor="#007BFF" />
-                                    <KPI title={"Hembras"} value={groupData.femaleCount} icon={FaVenus} bgColor="#FFE0F0" iconColor="#FF007B" />
-                                    <KPI title={"Total"} value={groupData.pigCount} icon={FaPiggyBank} bgColor="#F0F0F0" iconColor="#6C757D" />
-                                </div>
+                            <div className="w-100 h-100">
+                                <Card className="h-100">
+                                    <CardHeader className="border-bottom custom-card-header">
+                                        <h5 className="mb-0 text-dark fw-semibold">Historial de grupo</h5>
+                                    </CardHeader>
 
-                                <Card className="m-0">
-                                    <CardBody>
-                                        <CustomTable columns={pigColumns} data={groupData.pigsInGroup} showSearchAndFilter={false} />
+                                    <CardBody className="h-100 overflow-hidden p-0">
+                                        <SimpleBar style={{ maxHeight: "100%" }}>
+                                            <GroupHistoryList data={groupData.group_history} />
+                                        </SimpleBar>
                                     </CardBody>
                                 </Card>
                             </div>

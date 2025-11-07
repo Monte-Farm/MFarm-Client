@@ -467,11 +467,14 @@ const GroupTransferForm: React.FC<GroupTransferFormProps> = ({ groupId, onSave }
                                             }
                                         }}
                                         onChange={(e) => {
+                                            const value = Number(e.target.value);
+                                            const max = groupData?.femaleCount ?? 0;
                                             setUntrackedPigsTransfer(prev => ({
                                                 ...prev,
-                                                femaleCount: Number(e.target.value)
+                                                femaleCount: value > max ? max : value,
                                             }));
                                         }}
+                                        max={groupData?.femaleCount ?? 0}
                                     />
                                 </div>
 
@@ -489,11 +492,14 @@ const GroupTransferForm: React.FC<GroupTransferFormProps> = ({ groupId, onSave }
                                             }
                                         }}
                                         onChange={(e) => {
+                                            const value = Number(e.target.value);
+                                            const max = groupData?.maleCount ?? 0;
                                             setUntrackedPigsTransfer(prev => ({
                                                 ...prev,
-                                                maleCount: Number(e.target.value)
+                                                maleCount: value > max ? max : value,
                                             }));
                                         }}
+                                        max={groupData?.maleCount ?? 0}
                                     />
                                 </div>
                             </div>

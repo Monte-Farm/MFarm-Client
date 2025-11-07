@@ -2,7 +2,6 @@ import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import { GroupData, UserData } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
-import GroupDetails from "Components/Common/Details/GroupDetails";
 import GroupForm from "Components/Common/Forms/GroupForm";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import CustomTable from "Components/Common/Tables/CustomTable";
@@ -21,7 +20,7 @@ const ViewGroups = () => {
     const userLogged = getLoggedinUser()
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ create: false, groupDetails: false, move: false, asign: false, withdraw: false });
+    const [modals, setModals] = useState({ create: false, move: false, asign: false, withdraw: false });
     const [groups, setGroups] = useState<GroupData[]>([])
     const [selectedGroup, setSelectedGroup] = useState<any>({})
 
@@ -121,7 +120,7 @@ const ViewGroups = () => {
                         Ingresar cerdo
                     </UncontrolledTooltip>
 
-                    <Button id={`details-button-${row._id}`} className="btn-icon btn-success" onClick={() => { setSelectedGroup(row); toggleModal('groupDetails'); }}>
+                    <Button id={`details-button-${row._id}`} className="btn-icon btn-success" onClick={() => navigate(`/groups/group_details/${row._id}`)}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
                     <UncontrolledTooltip target={`details-button-${row._id}`}>
@@ -216,15 +215,6 @@ const ViewGroups = () => {
                     <GroupWithDrawForm groupId={selectedGroup?._id} onSave={() => { fetchGroups(); toggleModal('withdraw') }} />
                 </ModalBody>
             </Modal>
-
-
-            <Modal size="xl" isOpen={modals.groupDetails} toggle={() => toggleModal("groupDetails")} centered modalClassName="modal-xxl" contentClassName="modal-tall" >
-                <ModalHeader toggle={() => toggleModal("groupDetails")}>Detalles de grupo</ModalHeader>
-                <ModalBody>
-                    <GroupDetails groupId={selectedGroup?._id} />
-                </ModalBody>
-            </Modal>
-
         </div>
     )
 }
