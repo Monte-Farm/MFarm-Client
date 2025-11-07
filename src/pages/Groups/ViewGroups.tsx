@@ -198,9 +198,7 @@ const ViewGroups = () => {
             <Modal size="xl" isOpen={modals.move} toggle={() => toggleModal("move")} centered backdrop={'static'} keyboard={false}>
                 <ModalHeader toggle={() => toggleModal("move")}>Trasladar cerdos</ModalHeader>
                 <ModalBody>
-                    <GroupTransferForm groupId={selectedGroup._id} onSave={function (): void {
-                        throw new Error("Function not implemented.");
-                    }} />
+                    <GroupTransferForm groupId={selectedGroup._id} onSave={() => { toggleModal('move'); fetchGroups(); }} />
                 </ModalBody>
             </Modal>
 
