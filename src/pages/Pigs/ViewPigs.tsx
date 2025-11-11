@@ -11,20 +11,23 @@ import {
 } from "reactstrap"
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { getLoggedinUser } from "helpers/api_helper"
-import PigCards from "Components/Common/Lists/PigCards"
 import Select from "react-select"
 import { FiFilter, FiX, FiSearch, FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo } from "react-icons/fi"
 import Slider from 'rc-slider'
 import 'rc-slider/assets/index.css'
 import { useNavigate } from "react-router-dom"
-import SimpleBar from 'simplebar-react';
 import 'simplebar-react/dist/simplebar.min.css';
 import { Column } from "common/data/data_types"
 import CustomTable from "Components/Common/Tables/CustomTable"
 import PDFViewer from "Components/Common/Shared/PDFViewer"
+import LoadingAnimation from "Components/Common/Shared/LoadingAnimation"
+import AlertMessage from "Components/Common/Shared/AlertMesagge"
+import { FaKeyboard, FaListUl } from "react-icons/fa"
+import SinglePigForm from "Components/Common/Forms/SinglePigForm"
+import BatchPigForm from "Components/Common/Forms/BatchPigForm"
 
 const ViewPigs = () => {
-    const [modals, setModals] = useState({ create: false, update: false, viewPDF: false });
+    const [modals, setModals] = useState({ selectCreationMode: false, createSingle: false, createBatch: false, update: false, viewPDF: false });
     const configContext = useContext(ConfigContext);
     const userLogged = getLoggedinUser();
     const [loading, setLoading] = useState<boolean>(true)
@@ -60,6 +63,35 @@ const ViewPigs = () => {
                 </Badge>
             ),
         },
+        {
+            header: 'Etapa',
+            accessor: 'currentStage',
+            render: (value: string) => {
+                let color = "secondary";
+                let label = value;
+
+                switch (value) {
+                    case "lechón":
+                        color = "info";
+                        label = "Lechón";
+                        break;
+                    case "destete":
+                        color = "warning";
+                        label = "Destete";
+                        break;
+                    case "engorda":
+                        color = "primary";
+                        label = "Engorda";
+                        break;
+                    case "reproductor":
+                        color = "success";
+                        label = "Reproductor";
+                        break;
+                }
+
+                return <Badge color={color}>{label}</Badge>;
+            },
+        },
         { header: 'Peso actual', accessor: 'weight', type: 'number' },
         {
             header: 'Estado',
@@ -92,10 +124,10 @@ const ViewPigs = () => {
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="farm-secondary-button btn-icon" onClick={() => handleUpdatePigSelection(row)} disabled={row.status === 'vivo' ? false : true}>
+                    <Button className="farm-secondary-button btn-icon" onClick={() => { setSelectedPig(row); toggleModal('update') }} disabled={row.status === 'vivo' ? false : true}>
                         <i className="ri-pencil-fill align-middle"></i>
                     </Button>
-                    <Button className="farm-primary-button btn-icon" onClick={() => handlePigSelection(row._id)}>
+                    <Button className="farm-primary-button btn-icon" onClick={() => navigate(`/pigs/pig_details/${row._id}`)}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
                 </div>
@@ -122,17 +154,6 @@ const ViewPigs = () => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
 
-    const handleError = (error: any, message: string) => {
-        console.error(message, error);
-        setAlertConfig({ visible: true, color: "danger", message });
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-    };
-
-    const showAlert = (color: string, message: string) => {
-        setAlertConfig({ visible: true, color: color, message: message })
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-    }
-
     const fetchPigs = async () => {
         if (!configContext) return
         try {
@@ -141,7 +162,8 @@ const ViewPigs = () => {
             setPigs(response.data.data)
             setFilteredPigs(response.data.data)
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al recuperar los datos, intentelo mas tarde')
+            console.log('Error fetching pigs: ', { error });
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
         } finally {
             setLoading(false)
         }
@@ -164,33 +186,12 @@ const ViewPigs = () => {
             setFileURL(url);
             toggleModal('viewPDF');
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al generar el reporte, inténtelo más tarde.');
+            console.log('Error generating report: ', { error });
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al generar el reporte, inténtelo más tarde.' })
         } finally {
             setGeneratingReport(false);
         }
     };
-
-    const handlePigSelection = (pigId: string) => {
-        navigate(`/pigs/pig_details/${pigId}`);
-    };
-
-    const handleUpdatePigSelection = (pig: PigData) => {
-        setSelectedPig(pig)
-        toggleModal('update')
-    }
-
-    const onSavePig = () => {
-        toggleModal('create')
-        showAlert('success', 'Cerdo registrado con éxito')
-        fetchPigs();
-    }
-
-    const onUpdatePig = () => {
-        toggleModal('update')
-        showAlert('success', 'Datos actualizados con éxito')
-        fetchPigs();
-    }
-
 
     useEffect(() => {
         fetchPigs()
@@ -277,7 +278,6 @@ const ViewPigs = () => {
         { value: "sacrificado", label: "Sacrificado" },
         { value: "muerto", label: "Muerto" },
         { value: "descartado", label: "Descartado" },
-
     ]
 
     const stageOptions = [
@@ -309,9 +309,7 @@ const ViewPigs = () => {
 
     if (loading) {
         return (
-            <div className="d-flex justify-content-center align-items-center vh-100 page-content">
-                <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
-            </div>
+            <LoadingAnimation />
         );
     }
 
@@ -320,7 +318,7 @@ const ViewPigs = () => {
             <Container fluid>
                 <BreadCrumb title={"Ver Cerdos"} pageTitle={"Cerdos"} />
 
-                <Card style={{ minHeight: "calc(100vh - 220px)" }}>
+                <Card>
                     <CardHeader>
                         <div className="d-flex flex-wrap align-items-center gap-3">
                             {/* Barra de búsqueda con icono */}
@@ -335,12 +333,7 @@ const ViewPigs = () => {
                                 />
                             </div>
 
-                            <Button
-                                innerRef={filterBtnRef}
-                                color="light"
-                                onClick={togglePopover}
-                                className="d-flex align-items-center position-relative fs-5"
-                            >
+                            <Button innerRef={filterBtnRef} color="light" onClick={togglePopover} className="d-flex align-items-center position-relative fs-5">
                                 <FiFilter className="me-2" />
                                 Filtros
                                 {activeFilterCount > 0 && (
@@ -350,15 +343,7 @@ const ViewPigs = () => {
                                 )}
                             </Button>
 
-                            <Popover
-                                placement="bottom-end"
-                                isOpen={popoverOpen}
-                                target={filterBtnRef}
-                                toggle={togglePopover}
-                                trigger="legacy"
-                                className="filter-popover"
-                                style={{ minWidth: "450px" }}
-                            >
+                            <Popover placement="bottom-end" isOpen={popoverOpen} target={filterBtnRef} toggle={togglePopover} trigger="legacy" className="filter-popover" style={{ minWidth: "450px" }}>
                                 <PopoverHeader className="d-flex justify-content-between align-items-center popover-header">
                                     <span className="text-black">Filtrar cerdos</span>
                                     <Button close onClick={togglePopover} />
@@ -481,10 +466,7 @@ const ViewPigs = () => {
                                 )}
                             </Button>
 
-                            <Button
-                                className="farm-primary-button fs-5"
-                                onClick={() => toggleModal('create')}
-                            >
+                            <Button className="farm-primary-button fs-5" onClick={() => toggleModal('selectCreationMode')}>
                                 <i className="ri-add-line me-2" />
                                 Registrar cerdo
                             </Button>
@@ -496,33 +478,15 @@ const ViewPigs = () => {
                             <>
                                 <FiAlertCircle className="text-muted" size={22} />
                                 <span className="fs-5 text-black text-muted text-center rounded-5 ms-2">
-                                    Esta inseminación aun no tiene resultado
+                                    No hay cerdos registrados
                                 </span>
                             </>
                         ) : (
-                            <CustomTable columns={pigColumns} data={filteredPigs} showSearchAndFilter={false} showPagination={false} />
+                            <CustomTable columns={pigColumns} data={filteredPigs} showSearchAndFilter={false} rowsPerPage={7} showPagination={true} />
                         )}
                     </CardBody>
                 </Card>
             </Container>
-
-
-            {alertConfig.visible && (
-                <Alert
-                    color={alertConfig.color}
-                    className="position-fixed bottom-0 start-50 translate-middle-x d-flex align-items-center gap-2 shadow rounded-3 p-3"
-                    style={{ minWidth: "350px", maxWidth: "90%", zIndex: 1050 }}
-                >
-                    {alertConfig.color === "success" && <FiCheckCircle size={22} />}
-                    {alertConfig.color === "danger" && <FiXCircle size={22} />}
-                    {alertConfig.color === "warning" && <FiAlertCircle size={22} />}
-                    {alertConfig.color === "info" && <FiInfo size={22} />}
-
-                    <span className="flex-grow-1 text-black">{alertConfig.message}</span>
-
-                    <Button close onClick={() => setAlertConfig({ ...alertConfig, visible: false })} />
-                </Alert>
-            )}
 
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Inventario </ModalHeader>
@@ -531,19 +495,48 @@ const ViewPigs = () => {
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("create")}>Registro de cerdo</ModalHeader>
+            <Modal size="xl" isOpen={modals.selectCreationMode} toggle={() => toggleModal("selectCreationMode")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("selectCreationMode")}>Seleccion modo de registro</ModalHeader>
                 <ModalBody>
-                    <PigForm onSave={onSavePig} onCancel={() => toggleModal('create')} />
+                    <div className="text-center py-5">
+                        <h5 className="mb-4 text-muted">¿Qué tipo de registro quieres realizar?</h5>
+                        <div className="d-flex justify-content-center gap-4">
+                            <Button color="secondary" size="lg" className="d-flex flex-column align-items-center p-4" onClick={() => { toggleModal('selectCreationMode'); toggleModal('createSingle') }}>
+                                <FaKeyboard size={32} className="mb-2" />
+                                <span>Registro individual</span>
+                            </Button>
+
+                            <Button color="primary" size="lg" className="d-flex flex-column align-items-center p-4" onClick={() => { toggleModal('selectCreationMode'); toggleModal('createBatch') }}>
+                                <FaListUl size={32} className="mb-2" />
+                                <span>Registro por lote</span>
+                            </Button>
+                        </div>
+                    </div>
+                </ModalBody>
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.createSingle} toggle={() => toggleModal("createSingle")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("createSingle")}>Registro individual de cerdo</ModalHeader>
+                <ModalBody>
+                    <SinglePigForm onSave={() => { toggleModal('createSingle'); fetchPigs(); }} onCancel={() => toggleModal('createSingle')} />
+                </ModalBody>
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.createBatch} toggle={() => toggleModal("createBatch")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("createBatch")}>Registro de cerdos por lote</ModalHeader>
+                <ModalBody>
+                    <BatchPigForm onSave={() => { toggleModal('createBatch'); fetchPigs(); }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.update} toggle={() => toggleModal("update")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("update")}>Edición de cerdo</ModalHeader>
                 <ModalBody>
-                    <PigForm initialData={selectedPig || undefined} onSave={onUpdatePig} onCancel={() => toggleModal('update')} />
+                    <PigForm onSave={() => { toggleModal('update'); fetchPigs(); }} onCancel={() => toggleModal('update')} />
                 </ModalBody>
             </Modal>
+
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </div>
     )
 }

@@ -213,7 +213,7 @@ export interface PigData {
     arrivalDate?: Date | null;
     status: 'vivo' | 'vendido' | 'sacrificado' | 'muerto' | 'descartado';
     currentStage: 'lechón' | 'destete' | 'engorda' | 'reproductor';
-    sex: 'macho' | 'hembra';
+    sex: 'macho' | 'hembra' | '';
     weight: number;
     observations?: string;
     historyChanges: PigHistoryChanges[];
