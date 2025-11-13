@@ -201,7 +201,7 @@ const ViewPregnancies = () => {
                     <LineChartCard stats={pregnancyStats} type={"abortions"} title={"Abortos por periodo"} yLabel={""} />
                 </div>
 
-                <Card style={{ height: '65vh' }}>
+                <Card>
                     <CardHeader className="d-flex">
                         <h4>Embarazos activos</h4>
                     </CardHeader>
@@ -214,7 +214,7 @@ const ViewPregnancies = () => {
                                     data={pregnancies}
                                     showPagination={true}
                                     showSearchAndFilter={false}
-                                    rowsPerPage={10}
+                                    rowsPerPage={7}
                                 />
                             </div>
                         ) : (
@@ -239,9 +239,7 @@ const ViewPregnancies = () => {
             <Modal size="lg" isOpen={modals.abortion} toggle={() => toggleModal("abortion")} backdrop="static" keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("abortion")}>Registrar perdida</ModalHeader>
                 <ModalBody>
-                    <AbortionForm pregnancy={selectedPregnancy} onSave={() => { fetchData(); toggleModal('abortion'); }} onCancel={function (): void {
-                        throw new Error("Function not implemented.");
-                    }} />
+                    <AbortionForm pregnancy={selectedPregnancy} onSave={() => { fetchData(); toggleModal('abortion'); }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 

@@ -165,6 +165,9 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
                 <span className="text-black">{userLogged.name} {userLogged.lastname}</span>
             )
         },
+        { key: 'stillborn', label: 'Nacidos muertos', type: 'text' },
+        { key: 'mummies', label: 'Momias', type: 'text' },
+
     ]
 
     const sowAttributes: Attribute[] = [
@@ -217,6 +220,9 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
             observations: '',
             responsible: userLogged._id,
             litter: '',
+            born_alive: 0,
+            stillborn: 0,
+            mummies: 0,
         },
         enableReinitialize: true,
         validationSchema,
@@ -309,7 +315,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
         if (!configContext || !userLogged) return;
         try {
             const [upcomingBirthsResponse] = await Promise.all([
-                configContext.axiosHelper.get(`${configContext.apiUrl}/pregnancies/find_upcoming_births/${userLogged.farm_assigned}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/pregnancies/find_available_births/${userLogged.farm_assigned}`),
             ])
 
             const birthsWithId = upcomingBirthsResponse.data.data.map((b: any) => ({ ...b, id: b._id }));
@@ -407,7 +413,25 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
 
             setPigletsArray([...malePiglets, ...femalePiglets]);
         }
-    }, [manualPigSelect, maleCount, femaleCount, avgWeight])
+    }, [manualPigSelect, maleCount, femaleCount])
+
+    useEffect(() => {
+        setGroupData({ ...groupData, avg_weight: Number(avgWeight), })
+    }, [avgWeight])
+
+
+    useEffect(() => {
+        if (manualPigSelect && pigletsArray.length > 0) {
+            const total = pigletsArray.reduce((acc, p) => acc + (p.weight || 0), 0);
+            setAvgWeight(Number((total / pigletsArray.length).toFixed(2)));
+        }
+    }, [pigletsArray, manualPigSelect]);
+
+
+    useEffect(() => {
+        const pigCount = Number(maleCount) + Number(femaleCount);
+        formik.setFieldValue('born_alive', pigCount)
+    }, [maleCount, femaleCount])
 
     return (
         <>
@@ -613,9 +637,10 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
 
                     <TabPane id="step-litter-tab" tabId={3}>
                         <fieldset disabled={manualPigSelect}>
-                            <div className="d-flex gap-2">
+
+                            <div className="d-flex gap-2 mb-4">
                                 <div className="w-50">
-                                    <Label htmlFor="femaleCount" className="form-label">Número de hembras</Label>
+                                    <Label htmlFor="femaleCount" className="form-label">Número de hembras vivas</Label>
                                     <Input
                                         type="number"
                                         id="femaleCount"
@@ -633,7 +658,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
                                 </div>
 
                                 <div className="w-50">
-                                    <Label htmlFor="maleCount" className="form-label">Número de machos</Label>
+                                    <Label htmlFor="maleCount" className="form-label">Número de machos vivos</Label>
                                     <Input
                                         type="number"
                                         id="maleCount"
@@ -647,25 +672,6 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
                                             if (maleCount === "") setMaleCount(0);
                                         }}
                                         placeholder="Ej: 0"
-                                    />
-                                </div>
-
-                                <div className="w-50">
-                                    <Label htmlFor="pigsCount" className="form-label">Número de lechones</Label>
-                                    <Input
-                                        type="number"
-                                        id="pigsCount"
-                                        name="pigsCount"
-                                        value={pigsCount}
-                                        onChange={(e) => setPigCount(Number(e.target.value))}
-                                        onFocus={() => {
-                                            if (pigsCount === 0) setPigCount("");
-                                        }}
-                                        onBlur={() => {
-                                            if (pigsCount === "") setPigCount(0);
-                                        }}
-                                        placeholder="Ej: 0"
-                                        disabled
                                     />
                                 </div>
 
@@ -687,6 +693,32 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
                                     />
                                 </div>
 
+                            </div>
+
+                            <div className="d-flex gap-2">
+                                <div className="w-50">
+                                    <Label htmlFor="stillborn" className="form-label">Nacidos muertos</Label>
+                                    <Input
+                                        type="number"
+                                        id="stillborn"
+                                        name="stillborn"
+                                        value={formik.values.stillborn}
+                                        onChange={formik.handleChange}
+                                        placeholder="Ej: 0"
+                                    />
+                                </div>
+
+                                <div className="w-50">
+                                    <Label htmlFor="mummies" className="form-label">Momias</Label>
+                                    <Input
+                                        type="number"
+                                        id="mummies"
+                                        name="mummies"
+                                        value={formik.values.mummies}
+                                        onChange={formik.handleChange}
+                                        placeholder="Ej: 0"
+                                    />
+                                </div>
                             </div>
 
                         </fieldset>

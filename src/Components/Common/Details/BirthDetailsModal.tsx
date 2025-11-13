@@ -8,6 +8,7 @@ import { Attribute } from "common/data_interfaces";
 import { useNavigate } from "react-router-dom";
 import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
+import LoadingAnimation from "../Shared/LoadingAnimation";
 
 interface BirthDetailsProps {
     birthId: string
@@ -128,9 +129,7 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
 
     if (loading) {
         return (
-            <div className="d-flex flex-column align-items-center justify-content-center" style={{ height: '250px' }}>
-                <Spinner color="primary" style={{ width: '2rem', height: '2rem' }} />
-            </div>
+            <LoadingAnimation absolutePosition={false} />
         );
     }
 
@@ -176,8 +175,8 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
                         <CardHeader className="bg-light">
                             <h5>Camada</h5>
                         </CardHeader>
-                        <CardBody className={`${litterDetails.pigsInGroup.length === 0 ? '' : 'p-2'}`} style={{ height: "450px" }}>
-                            {litterDetails.pigsInGroup.length === 0 ? (
+                        <CardBody className={`${litterDetails.pigsInGroup?.length === 0 ? '' : 'p-2'}`} style={{ height: "450px" }}>
+                            {litterDetails.pigsInGroup?.length === 0 ? (
                                 <>
                                     <ObjectDetails attributes={simpleLitterPigs} object={litterDetails} />
                                 </>
@@ -217,12 +216,7 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
                 </div >
             </div >
 
-            <AlertMessage
-                color={alertConfig.color}
-                message={alertConfig.message}
-                visible={alertConfig.visible}
-                onClose={() => setAlertConfig({ ...alertConfig, visible: false })}
-                absolutePosition={false}
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false}
             />
         </>
     );

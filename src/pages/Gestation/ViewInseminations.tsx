@@ -277,7 +277,7 @@ const ViewInseminations = () => {
 
                 </div>
 
-                <Card style={{ height: "65vh" }}>
+                <Card style={{ }}>
                     <CardHeader className="d-flex">
                         <h4>Inseminaciones</h4>
                         <Button className="ms-auto farm-primary-button" onClick={() => toggleModal("create")}>
@@ -300,7 +300,7 @@ const ViewInseminations = () => {
                                         data={filteredInseminations}
                                         showPagination={true}
                                         showSearchAndFilter={false}
-                                        rowsPerPage={7}
+                                        rowsPerPage={6}
                                     />
                                 </div>
                             </>

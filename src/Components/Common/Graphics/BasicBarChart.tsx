@@ -35,21 +35,45 @@ const BasicBarChart = ({
                         data={data}
                         keys={keys}
                         indexBy={indexBy}
-                        margin={{ top: 40, right: 40, bottom: 60, left: 60 }}
+                        groupMode="grouped"
+                        margin={{ top: 50, right: 130, bottom: 60, left: 60 }}
                         padding={0.3}
                         axisBottom={{
-                            tickRotation: -45,
-                            legend: xLegend,
-                            legendPosition: "middle",
-                            legendOffset: 45,
+                            legend: `${xLegend}`,
+                            legendOffset: 32,
                         }}
                         axisLeft={{
                             legend: yLegend,
-                            legendPosition: "middle",
-                            legendOffset: -50,
+                            legendOffset: -40,
                         }}
+                        labelSkipWidth={12}
+                        labelSkipHeight={12}
+                        legends={[
+                            {
+                                dataFrom: "keys",
+                                anchor: "bottom-right",
+                                direction: "column",
+                                translateX: 120,
+                                itemsSpacing: 3,
+                                itemWidth: 100,
+                                itemHeight: 16,
+                                symbolSize: 16,
+                                symbolShape: "circle",
+                            },
+                        ]}
                         tooltip={({ id, value, indexValue }) => (
-                            <strong>{indexValue}: {value}</strong>
+                            <div
+                                style={{
+                                    background: "white",
+                                    padding: "6px 9px",
+                                    border: "1px solid #ccc",
+                                    borderRadius: "4px",
+                                }}
+                            >
+                                <strong>{indexValue}</strong>
+                                <br />
+                                {id}: {value}
+                            </div>
                         )}
                     />
                 ) : (

@@ -215,9 +215,7 @@ const ViewUpcomingBirths = () => {
             <Modal isOpen={modals.birth} size="xl" backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal('birth')}> Registrar parto </ModalHeader>
                 <ModalBody>
-                    <BirthForm pregnancy={undefined} onSave={() => { toggleModal('birth'); fetchData(); }} onCancel={function (): void {
-                        throw new Error("Function not implemented.");
-                    }} />
+                    <BirthForm pregnancy={undefined} onSave={() => { toggleModal('birth'); fetchData(); }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
@@ -225,9 +223,7 @@ const ViewUpcomingBirths = () => {
             <Modal isOpen={modals.selectedBirth} size="xl" backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal('selectedBirth')}> Registrar parto </ModalHeader>
                 <ModalBody>
-                    <BirthForm pregnancy={selectedBirth} onSave={() => { toggleModal('selectedBirth'); fetchData(); }} onCancel={function (): void {
-                        throw new Error("Function not implemented.");
-                    }} />
+                    <BirthForm pregnancy={selectedBirth} onSave={() => { toggleModal('selectedBirth'); fetchData(); }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 

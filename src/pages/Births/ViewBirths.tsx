@@ -10,6 +10,11 @@ import { useNavigate } from "react-router-dom";
 import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, UncontrolledTooltip } from "reactstrap";
 import BirthDetails from "Components/Common/Details/BirthDetailsModal";
 import CustomTable from "Components/Common/Tables/CustomTable";
+import KPI from "Components/Common/Graphics/Kpi";
+import { FaBaby, FaBabyCarriage, FaBiohazard, FaClipboardList, FaClock, FaExclamationTriangle, FaHeartbeat, FaPiggyBank, FaSkullCrossbones } from "react-icons/fa";
+import LineChartCard from "Components/Common/Graphics/LineChartCard";
+import BasicBarChart from "Components/Common/Graphics/BasicBarChart";
+import { ResponsiveBar } from "@nivo/bar";
 
 const ViewBirths = () => {
     document.title = 'Partos registrados | Management System'
@@ -21,6 +26,7 @@ const ViewBirths = () => {
     const [births, setBirths] = useState<any[]>([]);
     const [modals, setModals] = useState({ pregnancyDetails: false, birthDetails: false })
     const [selectedBirth, setSelectedBirth] = useState<any>({})
+    const [birthStats, setBirthStats] = useState<any>({})
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -129,6 +135,7 @@ const ViewBirths = () => {
                     color="link"
                     onClick={(e) => {
                         e.stopPropagation();
+                        navigate(`/groups/group_details/${row.litter}`)
                     }}
                 >
                     Camada ↗
@@ -155,8 +162,12 @@ const ViewBirths = () => {
         if (!configContext || !userLogged) return
         try {
             setLoading(true)
-            const birthsResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/births/find_by_farm/${userLogged.farm_assigned}`)
+            const [birthsResponse, statsResponse] = await Promise.all([
+                await configContext.axiosHelper.get(`${configContext.apiUrl}/births/find_by_farm/${userLogged.farm_assigned}`),
+                await configContext.axiosHelper.get(`${configContext.apiUrl}/births/get_stats/${userLogged.farm_assigned}`)
+            ])
             setBirths(birthsResponse.data.data)
+            setBirthStats(statsResponse.data.data)
         } catch (error) {
             console.error('Error fetching data:', { error })
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
@@ -180,7 +191,80 @@ const ViewBirths = () => {
             <Container fluid>
                 <BreadCrumb title={"Partos registrados"} pageTitle={"Partos"} />
 
-                <Card style={{ height: '77vh' }}>
+                <div className="d-flex gap-3 flex-wrap">
+                    <KPI
+                        title="Partos totales"
+                        value={birthStats?.operationalKpis?.[0]?.totalBirths ?? 0}
+                        icon={FaPiggyBank}
+                        bgColor="#e8f0fe"
+                        iconColor="#0d6efd"
+                    />
+
+                    <KPI
+                        title="Tasa de mortalidad"
+                        value={birthStats?.operationalKpis?.[0]?.mortalityRate.toFixed(2) ?? 0}
+                        icon={FaSkullCrossbones}
+                        bgColor="#fdecea"
+                        iconColor="#dc3545"
+                    />
+
+                    <KPI
+                        title="Tasa de nacidos muertos"
+                        value={birthStats?.operationalKpis?.[0]?.stillbornRate ?? 0}
+                        icon={FaBabyCarriage}
+                        bgColor="#fff3cd"
+                        iconColor="#ff8800"
+                    />
+
+                    <KPI
+                        title="Tasa de momias"
+                        value={birthStats?.operationalKpis?.[0]?.mummiesRate ?? 0}
+                        icon={FaBiohazard}
+                        bgColor="#f8d7da"
+                        iconColor="#b02a37"
+                    />
+
+                    <KPI
+                        title="Promedio de nacidos vivos"
+                        value={birthStats?.operationalKpis?.[0]?.avgBornAlivePerBirth.toFixed(2) ?? 0}
+                        icon={FaBaby}
+                        bgColor="#e6f7e6"
+                        iconColor="#28a745"
+                    />
+                </div>
+
+                <div className="d-flex gap-3">
+                    <BasicBarChart
+                        title="Resultados por cerda"
+                        data={birthStats?.reproductiveStatsBySow?.map((sow: any) => ({
+                            cerda: sow.sowCode,
+                            "Nacidos vivos": sow.avgBornAlive,
+                            "Nacidos muertos": sow.avgStillborn,
+                            "Momias": sow.avgMummies,
+                        })) ?? []}
+                        indexBy="cerda"
+                        keys={["Nacidos vivos", "Nacidos muertos", "Momias"]}
+                        xLegend="Cerda"
+                        yLegend="Promedio por parto"
+                    />
+
+                    <BasicBarChart
+                        title="Promedio de resultados por lote"
+                        data={birthStats?.litterStats?.map((litter: any) => ({
+                            lote: litter.litterCode,
+                            "Nacidos vivos": litter.avgBornAlive,
+                            "Nacidos muertos": litter.avgStillborn,
+                            "Momias": litter.avgMummies,
+                        })) ?? []}
+                        indexBy="lote"
+                        keys={["Nacidos vivos", "Nacidos muertos", "Momias"]}
+                        xLegend="Camada"
+                        yLegend="Promedio por parto"
+                    />
+                </div>
+
+
+                <Card>
                     <CardHeader className="d-flex">
                         <h5>Partos registrados</h5>
                     </CardHeader>
@@ -189,11 +273,11 @@ const ViewBirths = () => {
                             <>
                                 <FiAlertCircle className="text-muted" size={22} />
                                 <span className="fs-5 text-black text-muted text-center rounded-5 ms-2">
-                                    Aun no se han regsitrado partos
+                                    Aun no se han registrado partos
                                 </span>
                             </>
                         ) : (
-                            <CustomTable columns={BirthsColumns} data={births} showSearchAndFilter={false} showPagination={false} />
+                            <CustomTable columns={BirthsColumns} data={births} showSearchAndFilter={false} showPagination={true} rowsPerPage={7} />
                         )}
                     </CardBody>
                 </Card>
@@ -208,7 +292,7 @@ const ViewBirths = () => {
                 </ModalBody>
             </Modal>
 
-            <Modal isOpen={modals.birthDetails} toggle={() => toggleModal('birthDetails')} size="xl" modalClassName="modal-xxl"  contentClassName="modal-tall" centered>
+            <Modal isOpen={modals.birthDetails} toggle={() => toggleModal('birthDetails')} size="xl" modalClassName="modal-xxl" contentClassName="modal-tall" centered>
                 <ModalHeader toggle={() => toggleModal('birthDetails')}>
                     <h5>Detalles de parto</h5>
                 </ModalHeader>

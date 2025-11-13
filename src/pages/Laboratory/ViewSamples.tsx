@@ -228,7 +228,7 @@ const ViewSamples = () => {
                     />
                 </div>
 
-                <Card style={{ height: '65vh' }}>
+                <Card>
                     <CardHeader className="d-flex">
                         <h4>Génetica líquida</h4>
                         <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>
