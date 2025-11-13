@@ -517,9 +517,9 @@ const PigDetails = () => {
             <Modal size="xl" isOpen={modals.update} toggle={() => toggleModal("update")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("update")}>Registrar cerdo </ModalHeader>
                 <ModalBody>
-                    {pigInfo && (
+                    {/* {pigInfo && (
                         <PigEditForm initialData={pigInfo} onSave={updatedSuccessfully} onCancel={() => toggleModal('update')} />
-                    )}
+                    )} */}
 
                 </ModalBody>
             </Modal>

@@ -5,25 +5,26 @@ import { useFormik } from "formik";
 import { getLoggedinUser } from "helpers/api_helper";
 import React, { useContext, useState } from "react";
 import DatePicker from "react-flatpickr";
-import { Alert, Button, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
+import { Alert, Button, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from "reactstrap";
 import * as Yup from "yup";
+import AlertMessage from "../Shared/AlertMesagge";
+import SuccessModal from "../Shared/SuccessModal";
+import ErrorModal from "../Shared/ErrorModal";
 
 interface PigEditFormProps {
-    initialData: PigData;
+    pigData: PigData,
     onSave: () => void;
     onCancel: () => void;
 }
 
-const PigEditForm: React.FC<PigEditFormProps> = ({ initialData, onSave, onCancel }) => {
+const PigEditForm: React.FC<PigEditFormProps> = ({ pigData, onSave, onCancel }) => {
     const configContext = useContext(ConfigContext);
     const userLogged = getLoggedinUser();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [cancelModalOpen, setCancelModalOpen] = useState(false);
+    const [modals, setModals] = useState({ success: false, error: false, cancel: false });
 
-    const handleError = (error: any, message: string) => {
-        console.error(`${message}: ${error}`);
-        setAlertConfig({ visible: true, color: "danger", message: message });
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
+    const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
+        setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
 
     const validationSchema = Yup.object({
@@ -48,13 +49,11 @@ const PigEditForm: React.FC<PigEditFormProps> = ({ initialData, onSave, onCancel
             then: (schema) => schema.required("Ingrese la granja de origen"),
             otherwise: (schema) => schema.notRequired(),
         }),
-        sex: Yup.mixed<"macho" | "hembra">().oneOf(["macho", "hembra"]).required("Seleccione el sexo"),
-        weight: Yup.number().min(0, "Peso inválido").max(300, "Peso inválido").required("Peso requerido"),
         observations: Yup.string().notRequired(),
     });
 
     const formik = useFormik<PigData>({
-        initialValues: initialData,
+        initialValues: pigData,
         enableReinitialize: true,
         validationSchema,
         validateOnChange: false,
@@ -62,19 +61,19 @@ const PigEditForm: React.FC<PigEditFormProps> = ({ initialData, onSave, onCancel
         onSubmit: async (values, { setSubmitting }) => {
             try {
                 setSubmitting(true);
-                if (!configContext) throw new Error("El servicio no está disponible");
+                if (!configContext || !userLogged) return
 
                 const response = await configContext.axiosHelper.update(`${configContext.apiUrl}/pig/update/${values._id}/${userLogged._id}`, values);
 
                 if (response.status === HttpStatusCode.Ok) {
-                    await configContext.axiosHelper.create(
-                        `${configContext.apiUrl}/user/add_user_history/${userLogged._id}`,
+                    await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`,
                         { event: `Edición de cerdo ${values.code}` }
                     );
-                    onSave();
+                    toggleModal('success')
                 }
             } catch (error) {
-                handleError(error, "Error al guardar los datos");
+                console.error('Error saving data: ', { error })
+                setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error guardando los datos, intentelo mas tarde' })
             } finally {
                 setSubmitting(false);
             }
@@ -84,7 +83,6 @@ const PigEditForm: React.FC<PigEditFormProps> = ({ initialData, onSave, onCancel
     return (
         <>
             <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }}>
-                {/* Código (deshabilitado) */}
                 <div className="mt-4">
                     <Label htmlFor="code">Código</Label>
                     <Input type="text" id="code" name="code" value={formik.values.code} disabled />
@@ -100,8 +98,6 @@ const PigEditForm: React.FC<PigEditFormProps> = ({ initialData, onSave, onCancel
                             value={formik.values.birthdate ?? undefined}
                             onChange={(date: Date[]) => { if (date[0]) formik.setFieldValue("birthdate", date[0]); }}
                             options={{ dateFormat: "d/m/Y" }}
-                            disabled
-                            style={{ backgroundColor: 'lightgrey' }}
                         />
                         {formik.touched.birthdate && formik.errors.birthdate && (
                             <FormFeedback className="d-block">{formik.errors.birthdate as string}</FormFeedback>
@@ -210,45 +206,6 @@ const PigEditForm: React.FC<PigEditFormProps> = ({ initialData, onSave, onCancel
                     </div>
                 )}
 
-                {/* Sexo y peso */}
-                <div className="d-flex gap-3">
-                    <div className="mt-4 w-50">
-                        <Label htmlFor="sex">Sexo</Label>
-                        <Input
-                            type="select"
-                            id="sex"
-                            name="sex"
-                            value={formik.values.sex}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            invalid={formik.touched.sex && !!formik.errors.sex}
-                        >
-                            <option value="macho">Macho</option>
-                            <option value="hembra">Hembra</option>
-                        </Input>
-                        {formik.touched.sex && formik.errors.sex && (
-                            <FormFeedback>{formik.errors.sex}</FormFeedback>
-                        )}
-                    </div>
-
-                    <div className="mt-4 w-50">
-                        <Label htmlFor="weight">Peso (kg)</Label>
-                        <Input
-                            type="number"
-                            id="weight"
-                            name="weight"
-                            value={formik.values.weight}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            invalid={formik.touched.weight && !!formik.errors.weight}
-                            disabled
-                        />
-                        {formik.touched.weight && formik.errors.weight && (
-                            <FormFeedback>{formik.errors.weight}</FormFeedback>
-                        )}
-                    </div>
-                </div>
-
                 {/* Observaciones */}
                 <div className="mt-4">
                     <Label htmlFor="observations">Observaciones</Label>
@@ -264,21 +221,33 @@ const PigEditForm: React.FC<PigEditFormProps> = ({ initialData, onSave, onCancel
 
                 {/* Botones */}
                 <div className="mt-4 d-flex gap-2 justify-content-end">
-                    <Button type="button" className="farm-secondary-button" onClick={() => setCancelModalOpen(true)}>Cancelar</Button>
-                    <Button type="submit" className="farm-primary-button">Guardar</Button>
+                    <Button type="button" className="farm-secondary-button" onClick={() => toggleModal('cancel')}>Cancelar</Button>
+                    <Button type="submit" className="farm-primary-button" disabled={formik.isSubmitting}>
+                        {formik.isSubmitting ? (
+                            <Spinner size="sm" />
+                        ) : (
+                            <div>
+                                <i className="ri-check-line me-2" />
+                                Registrar
+                            </div>
+                        )}
+                    </Button>
                 </div>
             </form>
 
-            {alertConfig.visible && <Alert color={alertConfig.color} className="p-3 mt-3">{alertConfig.message}</Alert>}
-
-            <Modal isOpen={cancelModalOpen} centered toggle={() => setCancelModalOpen(!cancelModalOpen)}>
+            <Modal isOpen={modals.cancel} centered toggle={() => toggleModal('cancel')}>
                 <ModalHeader>Cancelar edición</ModalHeader>
                 <ModalBody>¿Estás seguro de que deseas cancelar? Los cambios no se guardarán.</ModalBody>
                 <ModalFooter>
                     <Button color="danger" onClick={onCancel}>Sí, cancelar</Button>
-                    <Button color="success" onClick={() => setCancelModalOpen(false)}>No, continuar</Button>
+                    <Button color="success" onClick={() => toggleModal('cancel')}>No, continuar</Button>
                 </ModalFooter>
             </Modal>
+
+            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={"Datos actualizados con exito"} />
+            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message={"Ha ocurrido un error al actualizar los datos, intentelo mas tarde"} />
+
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </>
     );
 };

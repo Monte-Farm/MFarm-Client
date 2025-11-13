@@ -1,7 +1,6 @@
 import { ConfigContext } from "App"
 import { PigData } from "common/data_interfaces"
 import BreadCrumb from "Components/Common/Shared/BreadCrumb"
-import PigForm from "Components/Common/Forms/PigForm"
 import { useContext, useEffect, useState, useRef } from "react"
 import {
     Alert, Button, Card, CardBody, CardHeader, Container,
@@ -25,6 +24,7 @@ import AlertMessage from "Components/Common/Shared/AlertMesagge"
 import { FaKeyboard, FaListUl } from "react-icons/fa"
 import SinglePigForm from "Components/Common/Forms/SinglePigForm"
 import BatchPigForm from "Components/Common/Forms/BatchPigForm"
+import PigEditForm from "Components/Common/Forms/PigEditForm"
 
 const ViewPigs = () => {
     const [modals, setModals] = useState({ selectCreationMode: false, createSingle: false, createBatch: false, update: false, viewPDF: false });
@@ -532,7 +532,9 @@ const ViewPigs = () => {
             <Modal size="xl" isOpen={modals.update} toggle={() => toggleModal("update")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("update")}>Edición de cerdo</ModalHeader>
                 <ModalBody>
-                    <PigForm onSave={() => { toggleModal('update'); fetchPigs(); }} onCancel={() => toggleModal('update')} />
+                    {selectedPig && (
+                        <PigEditForm pigData={selectedPig} onSave={() => { toggleModal('update'); fetchPigs() }} onCancel={() => toggleModal('update')} />
+                    )}
                 </ModalBody>
             </Modal>
 
