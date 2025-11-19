@@ -101,8 +101,8 @@ const GroupTransferForm: React.FC<GroupTransferFormProps> = ({ groupId, onSave }
             header: 'Sexo',
             accessor: 'sex',
             render: (value: string) => (
-                <Badge color={value === 'macho' ? "info" : "danger"}>
-                    {value === 'macho' ? "♂ Macho" : "♀ Hembra"}
+                <Badge color={value === 'male' ? "info" : "danger"}>
+                    {value === 'male' ? "♂ Macho" : "♀ Hembra"}
                 </Badge>
             ),
         },
@@ -260,8 +260,8 @@ const GroupTransferForm: React.FC<GroupTransferFormProps> = ({ groupId, onSave }
 
 
     useEffect(() => {
-        const femaleCount = trackedPigsTransfer.pigsSelected.filter((p) => p.sex === 'hembra').length
-        const maleCount = trackedPigsTransfer.pigsSelected.filter((p) => p.sex === 'macho').length
+        const femaleCount = trackedPigsTransfer.pigsSelected.filter((p) => p.sex === 'female').length
+        const maleCount = trackedPigsTransfer.pigsSelected.filter((p) => p.sex === 'male').length
         setTrackedPigsTransfer({ ...trackedPigsTransfer, femaleCount: femaleCount, maleCount: maleCount })
     }, [trackedPigsTransfer.pigsSelected])
 

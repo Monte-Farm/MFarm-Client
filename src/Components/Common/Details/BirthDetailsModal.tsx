@@ -67,7 +67,39 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
         { key: "code", label: "Código", type: "text" },
         { key: "birthdate", label: "Fecha de nacimiento", type: "date" },
         { key: "breed", label: "Raza", type: "text" },
-        { key: "origin", label: "Origen", type: "text" },
+        {
+            key: "origin",
+            label: "Origen",
+            type: "text",
+            render: (value: string) => {
+                let color = 'secondary';
+                let label = value;
+
+                switch (value) {
+                    case 'born':
+                        color = 'success';
+                        label = 'Nacido en la granja';
+                        break;
+
+                    case 'purchased':
+                        color = 'warning';
+                        label = 'Comprado';
+                        break;
+
+                    case 'donated':
+                        color = 'info';
+                        label = 'Donado';
+                        break;
+
+                    case 'other':
+                        color = 'dark';
+                        label = 'Otro';
+                        break;
+                }
+
+                return <Badge color={color}>{label}</Badge>;
+            },
+        },
         { key: "weight", label: "Peso actual", type: "text" },
         {
             key: "status",
@@ -77,9 +109,9 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
                 let color = 'secondary';
                 let label = value;
                 switch (value) {
-                    case 'vivo': color = 'success'; label = 'Vivo'; break;
-                    case 'descartado': color = 'warning'; label = 'Descartado'; break;
-                    case 'muerto': color = 'danger'; label = 'Muerto'; break;
+                    case 'alive': color = 'success'; label = 'Vivo'; break;
+                    case 'discarded': color = 'warning'; label = 'Descartado'; break;
+                    case 'dead': color = 'danger'; label = 'Muerto'; break;
                 }
                 return <Badge color={color}>{label}</Badge>;
             },

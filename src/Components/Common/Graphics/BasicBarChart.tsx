@@ -36,7 +36,7 @@ const BasicBarChart = ({
                         keys={keys}
                         indexBy={indexBy}
                         groupMode="grouped"
-                        margin={{ top: 50, right: 130, bottom: 60, left: 60 }}
+                        margin={{ top: 50, right: 30, bottom: 60, left: 60 }}
                         padding={0.3}
                         axisBottom={{
                             legend: `${xLegend}`,
@@ -48,19 +48,6 @@ const BasicBarChart = ({
                         }}
                         labelSkipWidth={12}
                         labelSkipHeight={12}
-                        legends={[
-                            {
-                                dataFrom: "keys",
-                                anchor: "bottom-right",
-                                direction: "column",
-                                translateX: 120,
-                                itemsSpacing: 3,
-                                itemWidth: 100,
-                                itemHeight: 16,
-                                symbolSize: 16,
-                                symbolShape: "circle",
-                            },
-                        ]}
                         tooltip={({ id, value, indexValue }) => (
                             <div
                                 style={{

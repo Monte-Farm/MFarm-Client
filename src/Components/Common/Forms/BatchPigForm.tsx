@@ -28,12 +28,12 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
     const [modals, setModals] = useState({ success: false, error: false });
     const [activeStep, setActiveStep] = useState<number>(1);
     const [sharedBatchAttributes, setSharedBatchAttributes] = useState<{
-        origin: 'nacido' | 'comprado' | 'donado' | 'otro';
+        origin: 'born' | 'purchased' | 'donated' | 'other';
         originDetail?: string;
         sourceFarm?: string;
         arrivalDate?: Date | null;
     }>({
-        origin: 'nacido',
+        origin: 'born',
         originDetail: '',
         sourceFarm: '',
         arrivalDate: null,
@@ -54,8 +54,8 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
             header: 'Sexo',
             accessor: 'sex',
             render: (value: string) => (
-                <Badge color={value === 'macho' ? "info" : "danger"}>
-                    {value === 'macho' ? "♂ Macho" : "♀ Hembra"}
+                <Badge color={value === 'male' ? "info" : "danger"}>
+                    {value === 'female' ? "♂ Macho" : "♀ Hembra"}
                 </Badge>
             ),
         },
@@ -63,32 +63,11 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
     ]
 
     const pigSchema = Yup.object().shape({
-        birthdate: Yup.date()
-            .typeError("Fecha inválida")
-            .required("La fecha de nacimiento es obligatoria"),
-
-        breed: Yup.string()
-            .required("La raza es obligatoria"),
-
-        currentStage: Yup.string()
-            .oneOf(
-                ["lechón", "destete", "engorda", "reproductor"],
-                "Selecciona una etapa válida"
-            )
-            .required("La etapa es obligatoria"),
-
-        sex: Yup.string()
-            .oneOf(
-                ["macho", "hembra"],
-                "Selecciona un sexo válido"
-            )
-            .required("El sexo es obligatorio"),
-
-        weight: Yup.number()
-            .typeError("El peso debe ser un número válido")
-            .min(0.01, "El peso debe ser mayor a 0")
-            .required("El peso es obligatorio"),
-
+        birthdate: Yup.date().typeError("Fecha inválida").required("La fecha de nacimiento es obligatoria"),
+        breed: Yup.string().required("La raza es obligatoria"),
+        currentStage: Yup.string().oneOf(["piglet", "weaning", "fattening", "breeder"], "Selecciona una etapa válida").required("La etapa es obligatoria"),
+        sex: Yup.string().oneOf(["male", "female"], "Selecciona un sexo válido").required("El sexo es obligatorio"),
+        weight: Yup.number().typeError("El peso debe ser un número válido").min(0.01, "El peso debe ser mayor a 0").required("El peso es obligatorio"),
         observations: Yup.string().optional(),
     });
 
@@ -98,14 +77,10 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
         if (!sharedBatchAttributes?.origin) return false;
         if (pigsBatchLength <= 0) return false;
 
-        if (sharedBatchAttributes.origin === "otro" && !sharedBatchAttributes.originDetail) return false;
-        if (sharedBatchAttributes.origin !== "nacido" && !sharedBatchAttributes.arrivalDate) return false;
+        if (sharedBatchAttributes.origin === "other" && !sharedBatchAttributes.originDetail) return false;
+        if (sharedBatchAttributes.origin !== "born" && !sharedBatchAttributes.arrivalDate) return false;
 
-        if (
-            (sharedBatchAttributes.origin === "comprado" ||
-                sharedBatchAttributes.origin === "donado") &&
-            !sharedBatchAttributes.sourceFarm
-        ) return false;
+        if ((sharedBatchAttributes.origin === "purchased" || sharedBatchAttributes.origin === "donated") && !sharedBatchAttributes.sourceFarm) return false;
 
         return true;
     };
@@ -141,8 +116,8 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                 originDetail: sharedBatchAttributes.originDetail,
                 sourceFarm: sharedBatchAttributes.sourceFarm,
                 arrivalDate: sharedBatchAttributes.arrivalDate,
-                status: 'vivo',
-                currentStage: 'lechón',
+                status: 'alive',
+                currentStage: 'piglet',
                 sex: '',
                 weight: 0,
                 observations: '',
@@ -151,6 +126,8 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                 feedings: [],
                 medications: [],
                 reproduction: [],
+                registered_by: userLogged._id,
+                registration_date: new Date(),
             }));
 
             setPigsBatch(pigs);
@@ -219,10 +196,10 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                                 <h5 className="mb-0 fw-bold">Información del lote</h5>
 
                                 <span className="badge bg-info text-dark px-3 py-2 fs-6">
-                                    {sharedBatchAttributes.origin === "nacido" && "Nacidos en granja"}
-                                    {sharedBatchAttributes.origin === "comprado" && "Comprados"}
-                                    {sharedBatchAttributes.origin === "donado" && "Donados"}
-                                    {sharedBatchAttributes.origin === "otro" && "Otro origen"}
+                                    {sharedBatchAttributes.origin === "born" && "Nacidos en granja"}
+                                    {sharedBatchAttributes.origin === "purchased" && "Comprados"}
+                                    {sharedBatchAttributes.origin === "donated" && "Donados"}
+                                    {sharedBatchAttributes.origin === "other" && "Otro origen"}
                                 </span>
                             </div>
 
@@ -248,17 +225,17 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                                             setSharedBatchAttributes(p => ({ ...p, origin: e.target.value as any }))
                                         }
                                     >
-                                        <option value="nacido">Nacido en la granja</option>
-                                        <option value="comprado">Comprado</option>
-                                        <option value="donado">Donado</option>
-                                        <option value="otro">Otro</option>
+                                        <option value="born">Nacido en la granja</option>
+                                        <option value="purchased">Comprado</option>
+                                        <option value="donated">Donado</option>
+                                        <option value="other">Otro</option>
                                     </Input>
                                 </div>
                             </div>
 
                             {/* CAMPOS CONDICIONALES */}
                             <div className="d-flex gap-2">
-                                {sharedBatchAttributes.origin === 'otro' && (
+                                {sharedBatchAttributes.origin === 'other' && (
                                     <div className="mt-4 w-50">
                                         <Label className="form-label fw-semibold">Detalle del origen</Label>
                                         <Input
@@ -271,7 +248,7 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                                     </div>
                                 )}
 
-                                {sharedBatchAttributes.origin !== 'nacido' && (
+                                {sharedBatchAttributes.origin !== 'born' && (
                                     <div className="mt-4 w-50">
                                         <Label className="form-label fw-semibold">Fecha de llegada</Label>
                                         <DatePicker
@@ -285,8 +262,8 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                                     </div>
                                 )}
 
-                                {(sharedBatchAttributes.origin === 'comprado' ||
-                                    sharedBatchAttributes.origin === 'donado') && (
+                                {(sharedBatchAttributes.origin === 'purchased' ||
+                                    sharedBatchAttributes.origin === 'donated') && (
                                         <div className="mt-4 w-50">
                                             <Label className="form-label fw-semibold">Granja de origen</Label>
                                             <Input
@@ -318,9 +295,9 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                                                 <div className="d-flex justify-content-between mb-3">
                                                     <p className="fw-bold fs-5 m-0">Cerdo #{index + 1}</p>
 
-                                                    <Badge className="" color={pig.sex === 'macho' ? "info" : pig.sex === 'hembra' ? "danger" : "secondary"}>
-                                                        {pig.sex === 'macho' && (<><FaMars /> Macho</>)}
-                                                        {pig.sex === 'hembra' && (<><FaVenus /> Hembra</>)}
+                                                    <Badge className="" color={pig.sex === 'male' ? "info" : pig.sex === 'female' ? "danger" : "secondary"}>
+                                                        {pig.sex === 'male' && (<><FaMars /> Macho</>)}
+                                                        {pig.sex === 'female' && (<><FaVenus /> Hembra</>)}
                                                         {!pig.sex && "Sin sexo"}
                                                     </Badge>
                                                 </div>
@@ -391,10 +368,10 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                                                                 setPigsBatch(newPigs);
                                                             }}
                                                         >
-                                                            <option value="lechón">Lechón</option>
-                                                            <option value="destete">Destete</option>
-                                                            <option value="engorda">Engorda</option>
-                                                            <option value="reproductor">Reproductor</option>
+                                                            <option value="piglet">Lechón</option>
+                                                            <option value="weaning">Destete</option>
+                                                            <option value="fattening">Engorda</option>
+                                                            <option value="breeder">Reproductor</option>
                                                         </Input>
                                                         {pigsErrors[index]?.currentStage && (
                                                             <FormFeedback>{pigsErrors[index]?.currentStage}</FormFeedback>
@@ -415,8 +392,8 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                                                             }}
                                                         >
                                                             <option value="">Seleccionar</option>
-                                                            <option value="macho">Macho</option>
-                                                            <option value="hembra">Hembra</option>
+                                                            <option value="male">Macho</option>
+                                                            <option value="female">Hembra</option>
                                                         </Input>
                                                         {pigsErrors[index]?.sex && (
                                                             <FormFeedback>{pigsErrors[index]?.sex}</FormFeedback>
@@ -484,7 +461,6 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
 
                 <TabPane tabId={2}>
                     <div className="d-flex gap-3">
-
                         <Card className="w-25 shadow-sm">
                             <CardHeader>
                                 <h5 className="m-0">Datos compartidos</h5>
@@ -500,24 +476,24 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                                     <span className="text-muted d-block">Origen</span>
                                     <Badge
                                         color={
-                                            sharedBatchAttributes.origin === "nacido"
+                                            sharedBatchAttributes.origin === "born"
                                                 ? "success"
-                                                : sharedBatchAttributes.origin === "comprado"
+                                                : sharedBatchAttributes.origin === "purchased"
                                                     ? "info"
-                                                    : sharedBatchAttributes.origin === "donado"
+                                                    : sharedBatchAttributes.origin === "donated"
                                                         ? "primary"
                                                         : "secondary"
                                         }
                                         className="px-3 py-2"
                                     >
-                                        {sharedBatchAttributes.origin === "nacido" && "Nacido en la granja"}
-                                        {sharedBatchAttributes.origin === "comprado" && "Comprado"}
-                                        {sharedBatchAttributes.origin === "donado" && "Donado"}
-                                        {sharedBatchAttributes.origin === "otro" && "Otro origen"}
+                                        {sharedBatchAttributes.origin === "born" && "Nacido en la granja"}
+                                        {sharedBatchAttributes.origin === "purchased" && "Comprado"}
+                                        {sharedBatchAttributes.origin === "donated" && "Donado"}
+                                        {sharedBatchAttributes.origin === "other" && "Otro origen"}
                                     </Badge>
                                 </div>
 
-                                {sharedBatchAttributes.origin === "otro" && (
+                                {sharedBatchAttributes.origin === "other" && (
                                     <div>
                                         <span className="text-muted d-block">Detalle del origen</span>
                                         <span className="fw-semibold">{sharedBatchAttributes.originDetail || "-"}</span>
@@ -525,7 +501,7 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                                 )}
 
                                 {/* Fecha de llegada */}
-                                {sharedBatchAttributes.origin !== "nacido" && (
+                                {sharedBatchAttributes.origin !== "born" && (
                                     <div>
                                         <span className="text-muted d-block">Fecha de llegada</span>
                                         <span className="fw-semibold">
@@ -536,8 +512,8 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                                     </div>
                                 )}
 
-                                {(sharedBatchAttributes.origin === "comprado" ||
-                                    sharedBatchAttributes.origin === "donado") && (
+                                {(sharedBatchAttributes.origin === "purchased" ||
+                                    sharedBatchAttributes.origin === "donated") && (
                                         <div>
                                             <span className="text-muted d-block">Granja de origen</span>
                                             <span className="fw-semibold">{sharedBatchAttributes.sourceFarm || "-"}</span>

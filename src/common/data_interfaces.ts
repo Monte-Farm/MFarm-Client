@@ -207,24 +207,29 @@ export interface PigData {
     farmId: string;
     birthdate: Date | null;
     breed: string;
-    origin: 'nacido' | 'comprado' | 'donado' | 'otro';
+    origin: 'born' | 'purchased' | 'donated' | 'other';
     originDetail?: string;
     sourceFarm?: string;
     arrivalDate?: Date | null;
-    status: 'vivo' | 'vendido' | 'sacrificado' | 'muerto' | 'descartado';
-    currentStage: 'lechón' | 'destete' | 'engorda' | 'reproductor';
-    sex: 'macho' | 'hembra' | '';
+    status: 'alive' | 'sold' | 'slaughtered' | 'dead' | 'discarded';
+    currentStage: 'piglet' | 'weaning' | 'fattening' | 'breeder';
+    sex: 'male' | 'female' | '';
     weight: number;
     observations?: string;
+    discard?: {
+        isDiscarded: boolean;
+        reason?: string | null;
+        destination?: string | null;
+        date: Date;
+        responsible?: string | null;
+        observations?: string | null;
+    };
     historyChanges: PigHistoryChanges[];
-    discarded: boolean;
-    discardReason?: string | null;
-    discardDestination?: string | null;
-    discardDeathCause?: string;
-    discardResponsible?: string;
     feedings: PigFeedingEntry[];
     medications: PigMedicationEntry[];
     reproduction: PigReproductionEntry[];
+    registration_date: Date | null;
+    registered_by: string;
 }
 
 export interface PigHistoryChanges {

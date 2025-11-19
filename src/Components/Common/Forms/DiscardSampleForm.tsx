@@ -28,11 +28,6 @@ const DiscardSampleForm = ({ sample, onSave, onCancel }: DiscardSampleFormProps)
         setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
     };
 
-    const showAlert = (color: string, message: string) => {
-        setAlertConfig({ visible: true, color: color, message });
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-    };
-
     const validationSchema = Yup.object({
         discard_reason: Yup.string().required("Por favor ingrese el motivo del descarte"),
         discard_date: Yup.date().required("La fecha es obligatoria"),

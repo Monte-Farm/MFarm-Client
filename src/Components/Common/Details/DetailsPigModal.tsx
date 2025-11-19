@@ -5,6 +5,7 @@ import { FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo, FiExternalLink } from 
 import { Alert, Button, Row, Col, Badge } from "reactstrap"
 import { useNavigate } from "react-router-dom"
 import LoadingAnimation from "../Shared/LoadingAnimation"
+import AlertMessage from "../Shared/AlertMesagge"
 
 interface PigDetailsModalProps {
     pigId: string
@@ -61,39 +62,33 @@ const PigDetailsModal: React.FC<PigDetailsModalProps> = ({ pigId, showAllDetails
         if (!val) return "-"
         switch (key) {
             case "status":
-                return val === "activo" || val === "vivo" ? (
+                return val === "alive" ? (
                     <Badge color="success" className="fs-5 px-2 py-1 rounded-pill">Activo</Badge>
-                ) : val === "inactivo" || val === "muerto" ? (
+                ) : val === "dead" ? (
                     <Badge color="danger" className="fs-5 px-2 py-1 rounded-pill">Inactivo</Badge>
                 ) : (
                     <Badge color="secondary" className="fs-5 px-2 py-1 rounded-pill">{val}</Badge>
                 )
             case "sex":
-                return val === "macho" ? (
+                return val === "male" ? (
                     <Badge color="primary" className="fs-5 px-2 py-1 rounded-pill">Macho</Badge>
-                ) : val === "hembra" ? (
+                ) : val === "female" ? (
                     <Badge color="pink" className="fs-5 px-2 py-1 rounded-pill" style={{ backgroundColor: '#e83e8c' }}>Hembra</Badge>
                 ) : (
                     <Badge color="secondary" className="fs-5 px-2 py-1 rounded-pill">{val}</Badge>
                 )
             case "stage":
                 switch (val) {
-                    case "lechon":
+                    case "piglet":
                         return <Badge color="info" className="fs-5 px-2 py-1 rounded-pill">Lechón</Badge>
-                    case "destetado":
+                    case "weaning":
                         return <Badge color="secondary" className="fs-5 px-2 py-1 rounded-pill">Destetado</Badge>
-                    case "recria":
-                        return <Badge color="warning" className="fs-5 px-2 py-1 rounded-pill">Recría</Badge>
-                    case "engorda":
+                    case "fattening":
                         return <Badge color="dark" className="fs-5 px-2 py-1 rounded-pill">Engorda</Badge>
-                    case "gestacion":
-                        return <Badge color="primary" className="fs-5 px-2 py-1 rounded-pill">Gestación</Badge>
                     case "lactancia":
                         return <Badge color="success" className="fs-5 px-2 py-1 rounded-pill">Lactancia</Badge>
-                    case "reproductor":
+                    case "breeder":
                         return <Badge color="purple" className="fs-5 px-2 py-1 rounded-pill" style={{ backgroundColor: '#6f42c1' }}>Reproductor</Badge>
-                    case "descarte":
-                        return <Badge color="danger" className="fs-5 px-2 py-1 rounded-pill">Descarte</Badge>
                     default:
                         return <Badge color="secondary" className="fs-5 px-2 py-1 rounded-pill">{val}</Badge>
                 }
@@ -104,7 +99,7 @@ const PigDetailsModal: React.FC<PigDetailsModalProps> = ({ pigId, showAllDetails
 
     if (loading) {
         return (
-            <LoadingAnimation/>
+            <LoadingAnimation />
         )
     }
 
@@ -171,7 +166,7 @@ const PigDetailsModal: React.FC<PigDetailsModalProps> = ({ pigId, showAllDetails
                             </div>
                         </Col>
 
-                        {pigDetails.origin === "otro" && (
+                        {pigDetails.origin === "other" && (
                             <Col md={6}>
                                 <div className="mb-2">
                                     <label className="form-label text-muted mb-1 fs-5">Detalle origen</label>
@@ -179,7 +174,7 @@ const PigDetailsModal: React.FC<PigDetailsModalProps> = ({ pigId, showAllDetails
                                 </div>
                             </Col>
                         )}
-                        {pigDetails.origin !== "nacido" && (
+                        {pigDetails.origin !== "born" && (
                             <Col md={6}>
                                 <div className="mb-2">
                                     <label className="form-label text-muted mb-1 fs-5">Fecha de llegada</label>
@@ -187,7 +182,7 @@ const PigDetailsModal: React.FC<PigDetailsModalProps> = ({ pigId, showAllDetails
                                 </div>
                             </Col>
                         )}
-                        {(pigDetails.origin === "comprado" || pigDetails.origin === "donado") && (
+                        {(pigDetails.origin === "purchased" || pigDetails.origin === "donated") && (
                             <Col md={6}>
                                 <div className="mb-2">
                                     <label className="form-label text-muted mb-1 fs-5">Granja de origen</label>
@@ -203,7 +198,7 @@ const PigDetailsModal: React.FC<PigDetailsModalProps> = ({ pigId, showAllDetails
                             </div>
                         </Col>
 
-                        {pigDetails.discarded && (
+                        {pigDetails.discard?.isDiscarded && (
                             <>
                                 <Col md={12}>
                                     <hr className="my-2" />
@@ -212,31 +207,15 @@ const PigDetailsModal: React.FC<PigDetailsModalProps> = ({ pigId, showAllDetails
                                 <Col md={6}>
                                     <div className="mb-2">
                                         <label className="form-label text-muted mb-1 fs-5">Motivo del descarte</label>
-                                        <p className="mb-0 fs-5">{renderValue(pigDetails.discardReason)}</p>
+                                        <p className="mb-0 fs-5">{renderValue(pigDetails.discard?.reason)}</p>
                                     </div>
                                 </Col>
                                 <Col md={6}>
                                     <div className="mb-2">
                                         <label className="form-label text-muted mb-1 fs-5">Destino del animal</label>
-                                        <p className="mb-0 fs-5">{renderValue(pigDetails.discardDestination)}</p>
+                                        <p className="mb-0 fs-5">{renderValue(pigDetails.discard?.destination)}</p>
                                     </div>
                                 </Col>
-                                {pigDetails.discardReason === "muerto" && (
-                                    <>
-                                        <Col md={6}>
-                                            <div className="mb-2">
-                                                <label className="form-label text-muted mb-1 fs-5">Causa probable de muerte</label>
-                                                <p className="mb-0 fs-5">{renderValue(pigDetails.discardDeathCause)}</p>
-                                            </div>
-                                        </Col>
-                                        <Col md={6}>
-                                            <div className="mb-2">
-                                                <label className="form-label text-muted mb-1 fs-5">Responsable del reporte</label>
-                                                <p className="mb-0 fs-5">{renderValue(pigDetails.discardResponsible)}</p>
-                                            </div>
-                                        </Col>
-                                    </>
-                                )}
                             </>
                         )}
                     </Row>
@@ -244,17 +223,7 @@ const PigDetailsModal: React.FC<PigDetailsModalProps> = ({ pigId, showAllDetails
             )}
 
             {alertConfig.visible && (
-                <Alert
-                    color={alertConfig.color}
-                    className="d-flex align-items-center gap-2 shadow rounded-3 p-3 mt-3 border-0 fs-5"
-                >
-                    {alertConfig.color === "success" && <FiCheckCircle size={22} />}
-                    {alertConfig.color === "danger" && <FiXCircle size={22} />}
-                    {alertConfig.color === "warning" && <FiAlertCircle size={22} />}
-                    {alertConfig.color === "info" && <FiInfo size={22} />}
-                    <span className="flex-grow-1">{alertConfig.message}</span>
-                    <Button close onClick={() => setAlertConfig({ ...alertConfig, visible: false })} />
-                </Alert>
+                <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
             )}
         </div>
     )

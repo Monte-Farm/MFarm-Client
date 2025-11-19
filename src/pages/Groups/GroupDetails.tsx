@@ -104,8 +104,8 @@ const GroupDetails = () => {
             header: 'Sexo',
             accessor: 'sex',
             render: (value: string) => (
-                <Badge color={value === 'macho' ? "info" : "danger"}>
-                    {value === 'macho' ? "♂ Macho" : "♀ Hembra"}
+                <Badge color={value === 'male' ? "info" : "danger"}>
+                    {value === 'male' ? "♂ Macho" : "♀ Hembra"}
                 </Badge>
             ),
         },
@@ -119,15 +119,15 @@ const GroupDetails = () => {
                 let label = value;
 
                 switch (value) {
-                    case 'vivo':
+                    case 'alive':
                         color = 'success';
                         label = 'Vivo';
                         break;
-                    case 'descartado':
+                    case 'discarded':
                         color = 'warning';
                         label = 'Descartado';
                         break;
-                    case 'muerto':
+                    case 'dead':
                         color = 'danger';
                         label = 'Muerto';
                         break;

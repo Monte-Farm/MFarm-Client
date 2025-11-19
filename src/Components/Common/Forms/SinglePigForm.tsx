@@ -59,8 +59,8 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
             .required('Por favor ingrese la fecha de nacimiento'),
         breed: Yup.string()
             .required('Por favor seleccione la raza'),
-        origin: Yup.mixed<'nacido' | 'comprado' | 'donado' | 'otro'>()
-            .oneOf(['nacido', 'comprado', 'donado', 'otro'], 'Origen inválido')
+        origin: Yup.mixed<'born' | 'purchased' | 'donated' | 'other'>()
+            .oneOf(['born', 'purchased', 'donated', 'other'], 'Origen inválido')
             .required('Por favor seleccione el origen'),
         originDetail: Yup.string().when('origin', {
             is: 'otro',
@@ -68,25 +68,25 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
             otherwise: schema => schema.notRequired(),
         }),
         arrivalDate: Yup.date().when('origin', {
-            is: (val: string) => val !== 'nacido',
+            is: (val: string) => val !== 'born',
             then: schema => schema
                 .max(new Date(), 'La fecha no puede ser futura')
                 .required('Por favor ingrese la fecha de llegada'),
             otherwise: schema => schema.notRequired(),
         }),
         sourceFarm: Yup.string().when('origin', {
-            is: (val: string) => val === 'comprado' || val === 'donado',
+            is: (val: string) => val === 'purchased' || val === 'donated',
             then: schema => schema.required('Por favor ingrese la granja de origen'),
             otherwise: schema => schema.notRequired(),
         }),
-        status: Yup.mixed<'vivo' | 'vendido' | 'sacrificado' | 'muerto' | 'descartado'>()
-            .oneOf(['vivo', 'vendido', 'sacrificado', 'muerto', 'descartado'], 'Estado inválido')
+        status: Yup.mixed<'alive' | 'sold' | 'slaughtered' | 'dead' | 'discarded'>()
+            .oneOf(['alive', 'sold', 'slaughtered', 'dead', 'discarded'], 'Estado inválido')
             .required('Por favor seleccione el estado'),
-        currentStage: Yup.mixed<'lechón' | 'destete' | 'engorda' | 'reproductor'>()
-            .oneOf(['lechón', 'destete', 'engorda', 'reproductor'], 'Etapa inválida')
+        currentStage: Yup.mixed<'piglet' | 'weaning' | 'fattening' | 'breeder'>()
+            .oneOf(['piglet', 'weaning', 'fattening', 'breeder'], 'Etapa inválida')
             .required('Por favor seleccione la etapa'),
-        sex: Yup.mixed<'macho' | 'hembra'>()
-            .oneOf(['macho', 'hembra'], 'Sexo inválido')
+        sex: Yup.mixed<'male' | 'female'>()
+            .oneOf(['male', 'female'], 'Sexo inválido')
             .required('Por favor seleccione el sexo'),
         weight: Yup.number()
             .min(1, 'El peso deber ser mayor a 0')
@@ -102,24 +102,21 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
             farmId: '',
             breed: '',
             birthdate: null,
-            origin: 'nacido',
+            origin: 'born',
             originDetail: '',
             sourceFarm: '',
             arrivalDate: null,
-            status: 'vivo',
-            currentStage: 'lechón',
-            sex: 'macho',
+            status: 'alive',
+            currentStage: 'piglet',
+            sex: 'male',
             weight: 0,
             observations: '',
             historyChanges: [],
-            discarded: false,
-            discardReason: '',
-            discardDestination: '',
-            discardDeathCause: '',
-            discardResponsible: userLogged._id || '',
             feedings: [],
             medications: [],
-            reproduction: []
+            reproduction: [],
+            registered_by: userLogged._id,
+            registration_date: null
         },
         enableReinitialize: true,
         validationSchema,
@@ -158,6 +155,7 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
     useEffect(() => {
         fetchNextPigCode();
         formik.setFieldValue('birthdate', new Date())
+        formik.setFieldValue('registration_date', new Date())
     }, [])
 
     if (loading) {
@@ -286,10 +284,10 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
                                     onBlur={formik.handleBlur}
                                     invalid={formik.touched.currentStage && !!formik.errors.currentStage}
                                 >
-                                    <option value="lechón">Lechón</option>
-                                    <option value="destete">Destete</option>
-                                    <option value="engorda">Engorda</option>
-                                    <option value="reproductor">Reproductor</option>
+                                    <option value="piglet">Lechón</option>
+                                    <option value="weaning">Destete</option>
+                                    <option value="fattening">Engorda</option>
+                                    <option value="breeder">Reproductor</option>
                                 </Input>
                                 {formik.touched.currentStage && formik.errors.currentStage && (
                                     <FormFeedback>{formik.errors.currentStage}</FormFeedback>
@@ -307,10 +305,10 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
                                     onBlur={formik.handleBlur}
                                     invalid={formik.touched.origin && !!formik.errors.origin}
                                 >
-                                    <option value="nacido">Nacido en la granja</option>
-                                    <option value="comprado">Comprado</option>
-                                    <option value="donado">Donado</option>
-                                    <option value="otro">Otro</option>
+                                    <option value="born">Nacido en la granja</option>
+                                    <option value="purchased">Comprado</option>
+                                    <option value="donated">Donado</option>
+                                    <option value="other">Otro</option>
                                 </Input>
                                 {formik.touched.origin && formik.errors.origin && (
                                     <FormFeedback>{formik.errors.origin}</FormFeedback>
@@ -319,7 +317,7 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
 
                         </div>
 
-                        {formik.values.origin === 'otro' && (
+                        {formik.values.origin === 'other' && (
                             <div className="mt-4">
                                 <Label htmlFor="originDetail" className="form-label">Detalle del origen</Label>
                                 <Input
@@ -337,7 +335,7 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
                             </div>
                         )}
 
-                        {formik.values.origin !== 'nacido' && (
+                        {formik.values.origin !== 'born' && (
                             <div className="mt-4">
                                 <Label htmlFor="arrivalDate" className="form-label">Fecha de llegada</Label>
                                 <DatePicker
@@ -355,7 +353,7 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
                             </div>
                         )}
 
-                        {(formik.values.origin === 'comprado' || formik.values.origin === 'donado') && (
+                        {(formik.values.origin === 'purchased' || formik.values.origin === 'donated') && (
                             <div className="mt-4">
                                 <Label htmlFor="sourceFarm" className="form-label">Granja de origen</Label>
                                 <Input
@@ -454,12 +452,12 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
                                     const s = formik.values.sex;
                                     return (
                                         <span
-                                            className={`badge px-3 py-2 ${s === "macho" ? "bg-primary" : "bg-pink"
+                                            className={`badge px-3 py-2 ${s === "male" ? "bg-primary" : "bg-pink"
                                                 }`}
                                         >
-                                            <i className={`me-1 ${s === "macho" ? "ri-men-fill" : "ri-women-fill"
+                                            <i className={`me-1 ${s === "male" ? "ri-men-fill" : "ri-women-fill"
                                                 }`} />
-                                            {s === "macho" ? "Macho" : "Hembra"}
+                                            {s === "male" ? "Macho" : "Hembra"}
                                         </span>
                                     );
                                 };
@@ -467,18 +465,18 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
                                 const BadgeEstado = () => {
                                     const est = formik.values.status;
                                     const map = {
-                                        vivo: "success",
-                                        vendido: "info",
-                                        sacrificado: "warning",
-                                        muerto: "danger",
-                                        descartado: "secondary",
+                                        alive: "success",
+                                        sold: "info",
+                                        slaughtered: "warning",
+                                        dead: "danger",
+                                        discarded: "secondary",
                                     };
                                     const icon = {
-                                        vivo: "ri-heart-3-fill",
-                                        vendido: "ri-money-dollar-circle-fill",
-                                        sacrificado: "ri-knife-blood-fill",
-                                        muerto: "ri-skull-fill",
-                                        descartado: "ri-delete-bin-5-fill",
+                                        alive: "ri-heart-3-fill",
+                                        sold: "ri-money-dollar-circle-fill",
+                                        slaughtered: "ri-knife-blood-fill",
+                                        dead: "ri-skull-fill",
+                                        discarded: "ri-delete-bin-5-fill",
                                     };
 
                                     return (
@@ -492,10 +490,10 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
                                 const BadgeEtapa = () => {
                                     const etapa = formik.values.currentStage;
                                     const color = {
-                                        "lechón": "primary",
-                                        "destete": "info",
-                                        "engorda": "warning",
-                                        "reproductor": "success",
+                                        "piglet": "primary",
+                                        "weaning": "info",
+                                        "fattening": "warning",
+                                        "breeder": "success",
                                     };
                                     return (
                                         <span className={`badge bg-${color[etapa]} px-3 py-2`}>
@@ -507,16 +505,14 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
                                 const BadgeOrigen = () => {
                                     const o = formik.values.origin;
                                     const map = {
-                                        nacido: "success",
-                                        comprado: "info",
-                                        donado: "primary",
-                                        otro: "secondary",
+                                        born: "success",
+                                        purchased: "info",
+                                        donated: "primary",
+                                        other: "secondary",
                                     };
                                     return (
                                         <span className={`badge bg-${map[o]} px-3 py-2`}>
-                                            {o === "nacido"
-                                                ? "Nacido en la granja"
-                                                : o.charAt(0).toUpperCase() + o.slice(1)}
+                                            {o === "born" ? "Nacido en la granja" : o.charAt(0).toUpperCase() + o.slice(1)}
                                         </span>
                                     );
                                 };
@@ -564,6 +560,15 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
                                                         <div>{formik.values.observations || "Sin especificar"}</div>
                                                     </div>
 
+                                                    <div className="col-md-4">
+                                                        <label className="fw-semibold">Fecha de registro</label>
+                                                        <div>{userLogged.name} {userLogged.lastname}</div>
+                                                    </div>
+
+                                                    <div className="col-md-4">
+                                                        <label className="fw-semibold">Fecha de registro</label>
+                                                        <div>{formik.values.registration_date ? (formik.values.registration_date as Date).toLocaleDateString("es") : "Sin especificar"}</div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -579,22 +584,22 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
                                                         <div><BadgeOrigen /></div>
                                                     </div>
 
-                                                    {formik.values.origin === "otro" && (
+                                                    {formik.values.origin === "other" && (
                                                         <div className="col-md-6">
                                                             <label className="fw-semibold">Detalle del origen</label>
                                                             <div>{formik.values.originDetail}</div>
                                                         </div>
                                                     )}
 
-                                                    {formik.values.origin !== "nacido" && (
+                                                    {formik.values.origin !== "born" && (
                                                         <div className="col-md-6">
                                                             <label className="fw-semibold">Fecha de llegada</label>
                                                             <div>{formik.values.arrivalDate?.toLocaleDateString("es-MX")}</div>
                                                         </div>
                                                     )}
 
-                                                    {(formik.values.origin === "comprado" ||
-                                                        formik.values.origin === "donado") && (
+                                                    {(formik.values.origin === "purchased" ||
+                                                        formik.values.origin === "donated") && (
                                                             <div className="col-md-6">
                                                                 <label className="fw-semibold">Granja de origen</label>
                                                                 <div>{formik.values.sourceFarm}</div>

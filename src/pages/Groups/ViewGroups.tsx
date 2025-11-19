@@ -131,11 +131,13 @@ const ViewGroups = () => {
         },
     ]
 
-    const fetchGroups = async () => {
+    const fetchData = async () => {
         if (!configContext || !userLogged) return
         try {
             setLoading(true)
-            const groupResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/group/find_by_farm/${userLogged.farm_assigned}`)
+            const [groupResponse] = await Promise.all([
+                configContext.axiosHelper.get(`${configContext.apiUrl}/group/find_by_farm/${userLogged.farm_assigned}`),
+            ])
             setGroups(groupResponse.data.data)
         } catch (error) {
             console.error('Error fetching data:', { error })
@@ -146,7 +148,7 @@ const ViewGroups = () => {
     }
 
     useEffect(() => {
-        fetchGroups();
+        fetchData();
     }, [])
 
     if (loading) {
@@ -190,21 +192,21 @@ const ViewGroups = () => {
             <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} centered backdrop={'static'} keyboard={false}>
                 <ModalHeader toggle={() => toggleModal("create")}>Crear grupo</ModalHeader>
                 <ModalBody>
-                    <GroupForm onSave={() => { fetchGroups(); toggleModal('create') }} onCancel={() => { }} />
+                    <GroupForm onSave={() => { fetchData(); toggleModal('create') }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.move} toggle={() => toggleModal("move")} centered backdrop={'static'} keyboard={false}>
                 <ModalHeader toggle={() => toggleModal("move")}>Trasladar cerdos</ModalHeader>
                 <ModalBody>
-                    <GroupTransferForm groupId={selectedGroup._id} onSave={() => { toggleModal('move'); fetchGroups(); }} />
+                    <GroupTransferForm groupId={selectedGroup._id} onSave={() => { toggleModal('move'); fetchData(); }} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.asign} toggle={() => toggleModal("asign")} centered backdrop={'static'} keyboard={false}>
                 <ModalHeader toggle={() => toggleModal("asign")}>Ingresar cerdos</ModalHeader>
                 <ModalBody>
-                    <GroupInsertForm groupId={selectedGroup?._id} onSave={() => { fetchGroups(); toggleModal('asign') }} />
+                    <GroupInsertForm groupId={selectedGroup?._id} onSave={() => { fetchData(); toggleModal('asign') }} />
                 </ModalBody>
             </Modal>
 
@@ -212,7 +214,7 @@ const ViewGroups = () => {
             <Modal size="xl" isOpen={modals.withdraw} toggle={() => toggleModal("withdraw")} centered backdrop={'static'} keyboard={false}>
                 <ModalHeader toggle={() => toggleModal("withdraw")}>Retirar cerdos</ModalHeader>
                 <ModalBody>
-                    <GroupWithDrawForm groupId={selectedGroup?._id} onSave={() => { fetchGroups(); toggleModal('withdraw') }} />
+                    <GroupWithDrawForm groupId={selectedGroup?._id} onSave={() => { fetchData(); toggleModal('withdraw') }} />
                 </ModalBody>
             </Modal>
         </div>

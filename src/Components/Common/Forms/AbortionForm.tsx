@@ -10,6 +10,7 @@ import { FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo } from "react-icons/fi"
 import { HttpStatusCode } from "axios";
 import FileUploader from "../Shared/FileUploader";
 import SuccessModal from "../Shared/SuccessModal";
+import AlertMessage from "../Shared/AlertMesagge";
 
 
 interface AbortionFormProps {
@@ -24,17 +25,6 @@ const AbortionForm = ({ pregnancy, onSave, onCancel }: AbortionFormProps) => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [successModalOpen, setSuccessModalOpen] = useState<boolean>(false)
     const [fileToUpload, setFileToUpload] = useState<File | null>(null)
-
-    const handleError = (error: any, message: string) => {
-        console.error(message, error);
-        setAlertConfig({ visible: true, color: "danger", message });
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-    };
-
-    const showAlert = (color: string, message: string) => {
-        setAlertConfig({ visible: true, color: color, message: message })
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-    }
 
     const validationSchema = Yup.object({
         probable_cause: Yup.string().required('El resultado es obligatorio'),
@@ -78,7 +68,8 @@ const AbortionForm = ({ pregnancy, onSave, onCancel }: AbortionFormProps) => {
                 }
                 setSuccessModalOpen(true)
             } catch (error) {
-                handleError(error, 'Ha ocurrido un error al guardar los datos, intentelo mas tarde')
+                console.error('Error saving data: ', { error })
+                setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al guardar los datos, intentelo mas tarde' })
             } finally {
                 setSubmitting(false)
             }
@@ -91,9 +82,8 @@ const AbortionForm = ({ pregnancy, onSave, onCancel }: AbortionFormProps) => {
         try {
             const uploadResponse = await configContext.axiosHelper.uploadImage(`${configContext.apiUrl}/upload/upload_file/`, file);
             formik.values.attachments.push(uploadResponse.data.data)
-
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al subir el archivo, por favor intentelo más tarde');
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al subir el archivo, por favor intentelo más tarde' });
         }
     };
 
@@ -188,19 +178,8 @@ const AbortionForm = ({ pregnancy, onSave, onCancel }: AbortionFormProps) => {
                     </Button>
                 </div>
             </form>
-            {alertConfig.visible && (
-                <Alert color={alertConfig.color} className="d-flex align-items-center gap-2 shadow rounded-3 p-3 mt-4">
-                    {alertConfig.color === "success" && <FiCheckCircle size={22} />}
-                    {alertConfig.color === "danger" && <FiXCircle size={22} />}
-                    {alertConfig.color === "warning" && <FiAlertCircle size={22} />}
-                    {alertConfig.color === "info" && <FiInfo size={22} />}
 
-                    <span className="flex-grow-1 text-black">{alertConfig.message}</span>
-
-                    <Button close onClick={() => setAlertConfig({ ...alertConfig, visible: false })} />
-                </Alert>
-            )}
-
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
             <SuccessModal isOpen={successModalOpen} onClose={onSave} message={"Perdida registrada con éxito"} />
         </>
     );

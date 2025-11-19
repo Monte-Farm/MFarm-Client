@@ -31,24 +31,10 @@ const PigEditForm: React.FC<PigEditFormProps> = ({ pigData, onSave, onCancel }) 
         code: Yup.string().required("Código requerido"),
         birthdate: Yup.date().max(new Date(), "La fecha no puede ser futura").required("Fecha de nacimiento requerida"),
         breed: Yup.string().required("Raza requerida"),
-        origin: Yup.mixed<'nacido' | 'comprado' | 'donado' | 'otro'>()
-            .oneOf(["nacido", "comprado", "donado", "otro"])
-            .required("Seleccione el origen"),
-        originDetail: Yup.string().when("origin", {
-            is: "otro",
-            then: (schema) => schema.required("Especifique el origen"),
-            otherwise: (schema) => schema.notRequired(),
-        }),
-        arrivalDate: Yup.date().when("origin", {
-            is: (val: string) => val !== "nacido",
-            then: (schema) => schema.max(new Date(), "Fecha no válida").required("Ingrese fecha de llegada"),
-            otherwise: (schema) => schema.notRequired(),
-        }),
-        sourceFarm: Yup.string().when("origin", {
-            is: (val: string) => val === "comprado" || val === "donado",
-            then: (schema) => schema.required("Ingrese la granja de origen"),
-            otherwise: (schema) => schema.notRequired(),
-        }),
+        origin: Yup.mixed<'born' | 'purchased' | 'donated' | 'other'>().oneOf(["born", "purchased", "donated", "other"]).required("Seleccione el origen"),
+        originDetail: Yup.string().when("origin", { is: "other", then: (schema) => schema.required("Especifique el origen"), otherwise: (schema) => schema.notRequired(), }),
+        arrivalDate: Yup.date().when("origin", { is: (val: string) => val !== "born", then: (schema) => schema.max(new Date(), "Fecha no válida").required("Ingrese fecha de llegada"), otherwise: (schema) => schema.notRequired(), }),
+        sourceFarm: Yup.string().when("origin", { is: (val: string) => val === "purchased" || val === "donated", then: (schema) => schema.required("Ingrese la granja de origen"), otherwise: (schema) => schema.notRequired(), }),
         observations: Yup.string().notRequired(),
     });
 
@@ -141,10 +127,10 @@ const PigEditForm: React.FC<PigEditFormProps> = ({ pigData, onSave, onCancel }) 
                         onBlur={formik.handleBlur}
                         invalid={formik.touched.origin && !!formik.errors.origin}
                     >
-                        <option value="nacido">Nacido en la granja</option>
-                        <option value="comprado">Comprado</option>
-                        <option value="donado">Donado</option>
-                        <option value="otro">Otro</option>
+                        <option value="born">Nacido en la granja</option>
+                        <option value="purchased">Comprado</option>
+                        <option value="donated">Donado</option>
+                        <option value="other">Otro</option>
                     </Input>
                     {formik.touched.origin && formik.errors.origin && (
                         <FormFeedback>{formik.errors.origin}</FormFeedback>
@@ -152,7 +138,7 @@ const PigEditForm: React.FC<PigEditFormProps> = ({ pigData, onSave, onCancel }) 
                 </div>
 
                 {/* Detalle origen */}
-                {formik.values.origin === "otro" && (
+                {formik.values.origin === "other" && (
                     <div className="mt-4">
                         <Label htmlFor="originDetail">Detalle del origen</Label>
                         <Input
@@ -171,7 +157,7 @@ const PigEditForm: React.FC<PigEditFormProps> = ({ pigData, onSave, onCancel }) 
                 )}
 
                 {/* Fecha llegada */}
-                {formik.values.origin !== "nacido" && (
+                {formik.values.origin !== "born" && (
                     <div className="mt-4">
                         <Label htmlFor="arrivalDate">Fecha de llegada</Label>
                         <DatePicker
@@ -188,7 +174,7 @@ const PigEditForm: React.FC<PigEditFormProps> = ({ pigData, onSave, onCancel }) 
                 )}
 
                 {/* Granja de origen */}
-                {(formik.values.origin === "comprado" || formik.values.origin === "donado") && (
+                {(formik.values.origin === "purchased" || formik.values.origin === "donated") && (
                     <div className="mt-4">
                         <Label htmlFor="sourceFarm">Granja de origen</Label>
                         <Input

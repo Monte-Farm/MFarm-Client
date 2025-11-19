@@ -1,7 +1,7 @@
 import { ConfigContext } from "App";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
-import { Button, Col, Container, Row, Card, CardBody, CardHeader } from "reactstrap";
+import { Button, Col, Container, Row, Card, CardBody, CardHeader, Badge } from "reactstrap";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import ObjectDetails from "./ObjectDetails";
@@ -36,9 +36,55 @@ const ExtractionDetails: React.FC<ExtractionDetailsProps> = ({ extractionId }) =
         { key: "code", label: "Código", type: "text" },
         { key: "birthdate", label: "Fecha de nacimiento", type: "date" },
         { key: "breed", label: "Raza", type: "text" },
-        { key: "origin", label: "Origen", type: "text" },
+        {
+            key: "origin",
+            label: "Origen",
+            type: "text",
+            render: (value: string) => {
+                let color = 'secondary';
+                let label = value;
+
+                switch (value) {
+                    case 'born':
+                        color = 'success';
+                        label = 'Nacido en la granja';
+                        break;
+
+                    case 'purchased':
+                        color = 'warning';
+                        label = 'Comprado';
+                        break;
+
+                    case 'donated':
+                        color = 'info';
+                        label = 'Donado';
+                        break;
+
+                    case 'other':
+                        color = 'dark';
+                        label = 'Otro';
+                        break;
+                }
+
+                return <Badge color={color}>{label}</Badge>;
+            },
+        },
         { key: "weight", label: "Peso actual", type: "text" },
-        { key: "status", label: "Estado", type: "text" },
+        {
+            key: "status",
+            label: "Estado",
+            type: "text",
+            render: (value: string) => {
+                let color = 'secondary';
+                let label = value;
+                switch (value) {
+                    case 'alive': color = 'success'; label = 'Vivo'; break;
+                    case 'discarded': color = 'warning'; label = 'Descartado'; break;
+                    case 'dead': color = 'danger'; label = 'Muerto'; break;
+                }
+                return <Badge color={color}>{label}</Badge>;
+            },
+        },
         { key: "observations", label: "Observaciones", type: "text" },
     ];
 

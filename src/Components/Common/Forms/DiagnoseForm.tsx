@@ -9,6 +9,7 @@ import { FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo } from "react-icons/fi"
 import SuccessModal from "../Shared/SuccessModal";
 import { HttpStatusCode } from "axios";
 import FileUploader from "../Shared/FileUploader";
+import AlertMessage from "../Shared/AlertMesagge";
 
 interface DiagnosisFormProps {
     insemination: any;
@@ -29,11 +30,6 @@ const DiagnosisForm = ({ insemination, onSave, onCancel }: DiagnosisFormProps) =
         setAlertConfig({ visible: true, color: "danger", message });
         setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
     };
-
-    const showAlert = (color: string, message: string) => {
-        setAlertConfig({ visible: true, color: color, message: message })
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-    }
 
     const validationSchema = Yup.object({
         result: Yup.string()
@@ -268,20 +264,7 @@ const DiagnosisForm = ({ insemination, onSave, onCancel }: DiagnosisFormProps) =
 
             </form>
 
-            {alertConfig.visible && (
-                <Alert color={alertConfig.color} className="d-flex align-items-center gap-2 shadow rounded-3 p-3 mt-4">
-                    {alertConfig.color === "success" && <FiCheckCircle size={22} />}
-                    {alertConfig.color === "danger" && <FiXCircle size={22} />}
-                    {alertConfig.color === "warning" && <FiAlertCircle size={22} />}
-                    {alertConfig.color === "info" && <FiInfo size={22} />}
-
-                    <span className="flex-grow-1 text-black">{alertConfig.message}</span>
-
-                    <Button close onClick={() => setAlertConfig({ ...alertConfig, visible: false })} />
-                </Alert>
-            )}
-
-
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={false} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
             <SuccessModal isOpen={successModalOpen} onClose={onSave} message={"Diagnostico registrado con éxito"} />
         </>
     );

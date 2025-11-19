@@ -1,5 +1,6 @@
 import { getLoggedinUser } from "helpers/api_helper";
 import ViewGroups from "pages/Groups/ViewGroups";
+import DiscardedPigs from "pages/Pigs/DiscardedPigs";
 import ViewPigs from "pages/Pigs/ViewPigs";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -55,6 +56,7 @@ const Navdata = () => {
     //Pigs
     const [isPigs, setIsPigs] = useState<boolean>(false)
     const [isViewPigs, setIsViewPigs] = useState<boolean>(false)
+    const [isDiscardedPigs, setIsDiscardedPigs] = useState<boolean>(false)
 
     //Groups
     const [isViewGroups, setIsViewGroups] = useState<boolean>(false)
@@ -495,7 +497,19 @@ const Navdata = () => {
                         setIsViewGroups(!isViewGroups)
                     },
                     stateVariables: isViewGroups,
-                }
+                },
+                {
+                    id: "discardedPigs",
+                    label: "Descartados",
+                    link: "/pigs/discarded_pigs",
+                    roles: ['farm_manager'],
+                    parentId: "pigs",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsDiscardedPigs(!DiscardedPigs)
+                    },
+                    stateVariables: isViewPigs,
+                },
             ]
         },
         {

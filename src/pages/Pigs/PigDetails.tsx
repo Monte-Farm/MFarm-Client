@@ -217,7 +217,7 @@ const PigDetails = () => {
                             <Card className="w-25">
                                 <CardHeader className="d-flex">
                                     <h5>Informacion</h5>
-                                    {pigInfo?.discarded ? (
+                                    {pigInfo?.discard ? (
                                         <div id="editButton" className="ms-auto">
                                             <Button
                                                 className="farm-primary-button fs-6"
@@ -254,21 +254,16 @@ const PigDetails = () => {
 
                             <div className="w-75">
                                 <div>
-                                    {pigInfo?.discarded && (
+                                    {pigInfo?.discard && (
                                         <>
                                             <Card className="mt-1">
                                                 <CardHeader>
                                                     <h5 className="mb-0 text-danger">Información del Descarte</h5>
                                                 </CardHeader>
                                                 <CardBody className="d-flex">
-                                                    <KPIBox label="Motivo del descarte" value={pigInfo.discardReason || 'No especificado'} />
-                                                    <KPIBox label="Destino del animal" value={pigInfo.discardDestination || 'No especificado'} />
-                                                    {pigInfo.discardReason === 'muerto' && (
-                                                        <>
-                                                            <KPIBox label="Causa probable de muerte" value={pigInfo.discardDeathCause || 'No especificada'} />
-                                                            <KPIBox label="Responsable del reporte" value={`${userResponsible?.name} ${userResponsible?.lastname}` || 'No especificado'} />
-                                                        </>
-                                                    )}
+                                                    <KPIBox label="Motivo del descarte" value={pigInfo.discard.reason || 'No especificado'} />
+                                                    <KPIBox label="Destino del animal" value={pigInfo.discard.destination || 'No especificado'} />
+
                                                 </CardBody>
 
                                             </Card>
@@ -293,23 +288,23 @@ const PigDetails = () => {
                                     <KPIBox label={"Raza"} value={pigInfo?.breed || 'No especificado'} />
                                     <KPIBox label={"Origen"} value={getOriginLabel(pigInfo)} />
 
-                                    {pigInfo?.origin === 'otro' && (
+                                    {pigInfo?.origin === 'other' && (
                                         <KPIBox label={"Detalle origen"} value={pigInfo?.originDetail || 'No especificado'} />
                                     )}
 
-                                    {pigInfo?.origin !== 'nacido' && (
+                                    {pigInfo?.origin !== 'born' && (
                                         <KPIBox
                                             label={"Fecha llegada"}
                                             value={pigInfo?.arrivalDate ? new Date(pigInfo.arrivalDate).toLocaleDateString() : 'No especificada'}
                                         />
                                     )}
 
-                                    {(pigInfo?.origin === 'comprado' || pigInfo?.origin === 'donado') && (
+                                    {(pigInfo?.origin === 'purchased' || pigInfo?.origin === 'donated') && (
                                         <KPIBox label={"Granja origen"} value={pigInfo?.sourceFarm || 'No especificada'} />
                                     )}
 
                                     <KPIBox label={"Estado"} value={pigInfo?.status || 'No especificado'} />
-                                    <KPIBox label={"Sexo"} value={pigInfo?.sex === 'macho' ? 'Macho' : 'Hembra'} />
+                                    <KPIBox label={"Sexo"} value={pigInfo?.sex === 'male' ? 'Macho' : 'Hembra'} />
                                 </div>
 
 
@@ -330,7 +325,7 @@ const PigDetails = () => {
                                             <CardBody>
                                                 <PigTimeline
                                                     currentStage={pigInfo?.currentStage || ''}
-                                                    sex={pigInfo?.sex || 'hembra'}
+                                                    sex={pigInfo?.sex || 'female'}
                                                     className="my-4"
                                                 />
                                             </CardBody>

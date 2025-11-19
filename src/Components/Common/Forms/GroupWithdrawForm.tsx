@@ -61,8 +61,8 @@ const GroupWithDrawForm: React.FC<GroupWithDrawFormProps> = ({ groupId, onSave }
             header: 'Sexo',
             accessor: 'sex',
             render: (value: string) => (
-                <Badge color={value === 'macho' ? "info" : "danger"}>
-                    {value === 'macho' ? "♂ Macho" : "♀ Hembra"}
+                <Badge color={value === 'male' ? "info" : "danger"}>
+                    {value === 'male' ? "♂ Macho" : "♀ Hembra"}
                 </Badge>
             ),
         },
@@ -157,8 +157,8 @@ const GroupWithDrawForm: React.FC<GroupWithDrawFormProps> = ({ groupId, onSave }
     }
 
     useEffect(() => {
-        const femaleCount = trackedPigsWithdraw.pigsSelected.filter((p) => p.sex === 'hembra').length
-        const maleCount = trackedPigsWithdraw.pigsSelected.filter((p) => p.sex === 'macho').length
+        const femaleCount = trackedPigsWithdraw.pigsSelected.filter((p) => p.sex === 'female').length
+        const maleCount = trackedPigsWithdraw.pigsSelected.filter((p) => p.sex === 'male').length
         setTrackedPigsWithdraw({ ...trackedPigsWithdraw, femaleCount: femaleCount, maleCount: maleCount })
     }, [trackedPigsWithdraw.pigsSelected])
 

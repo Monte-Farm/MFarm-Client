@@ -24,16 +24,17 @@ interface GroupFormProps {
 }
 
 const areaLabels: Record<string, string> = {
-    gestacion: "Gestación",
-    paridera: "Paridera / Maternidad",
-    destete: "Destete",
-    preceba: "Preceba / Levante inicial",
-    ceba: "Ceba / Engorda",
-    reemplazo: "Reemplazo / Recría",
-    verracos: "Área de verracos",
-    cuarentena: "Cuarentena / Aislamiento",
+    gestation: "Gestación",
+    farrowing: "Paridera",
+    maternity: "Maternidad",
+    weaning: "Destete",
+    nursery: "Preceba / Levante inicial",
+    fattening: "Ceba / Engorda",
+    replacement: "Reemplazo / Recría",
+    boars: "Área de verracos",
+    quarantine: "Cuarentena / Aislamiento",
     hospital: "Hospital / Enfermería",
-    embarque: "Corrales de venta / embarque",
+    shipping: "Corrales de venta / embarque",
 };
 
 const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) => {
@@ -87,13 +88,41 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
             header: 'Sexo',
             accessor: 'sex',
             render: (value: string) => (
-                <Badge color={value === 'macho' ? "info" : "danger"}>
-                    {value === 'macho' ? "♂ Macho" : "♀ Hembra"}
+                <Badge color={value === 'male' ? "info" : "danger"}>
+                    {value === 'male' ? "♂ Macho" : "♀ Hembra"}
                 </Badge>
             ),
         },
         { header: 'Peso actual', accessor: 'weight', type: 'number', isFilterable: true },
-        { header: 'Etapa actual', accessor: 'currentStage', type: 'text', isFilterable: true },
+        {
+            header: 'Etapa',
+            accessor: 'currentStage',
+            render: (value: string) => {
+                let color = "secondary";
+                let label = value;
+
+                switch (value) {
+                    case "piglet":
+                        color = "info";
+                        label = "Lechón";
+                        break;
+                    case "weaning":
+                        color = "warning";
+                        label = "Destete";
+                        break;
+                    case "fattening":
+                        color = "primary";
+                        label = "Engorda";
+                        break;
+                    case "breeder":
+                        color = "success";
+                        label = "Reproductor";
+                        break;
+                }
+
+                return <Badge color={color}>{label}</Badge>;
+            },
+        },
         { header: 'Fecha de N.', accessor: 'birthdate', type: 'date' },
     ]
 
@@ -145,8 +174,8 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
             header: 'Sexo',
             accessor: 'sex',
             render: (value: string) => (
-                <Badge color={value === 'macho' ? "info" : "danger"}>
-                    {value === 'macho' ? "♂ Macho" : "♀ Hembra"}
+                <Badge color={value === 'male' ? "info" : "danger"}>
+                    {value === 'male' ? "♂ Macho" : "♀ Hembra"}
                 </Badge>
             ),
         },

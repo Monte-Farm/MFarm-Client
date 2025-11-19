@@ -379,10 +379,10 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
                 farmId: userLogged.farm_assigned,
                 birthdate: formik.values.birth_date,
                 breed: sowDetails.breed,
-                origin: 'nacido',
-                status: 'vivo',
-                currentStage: 'lechón',
-                sex: 'macho',
+                origin: 'born',
+                status: 'alive',
+                currentStage: 'piglet',
+                sex: 'male',
                 weight: 0,
                 observations: '',
                 historyChanges: [],
@@ -390,6 +390,8 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
                 feedings: [],
                 medications: [],
                 reproduction: [],
+                registered_by: userLogged._id,
+                registration_date: new Date(),
             }));
 
             const femalePiglets: PigData[] = Array.from({ length: Number(femaleCount) }, () => ({
@@ -398,10 +400,10 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
                 farmId: userLogged.farm_assigned,
                 birthdate: formik.values.birth_date,
                 breed: sowDetails.breed,
-                origin: 'nacido',
-                status: 'vivo',
-                currentStage: 'lechón',
-                sex: 'hembra',
+                origin: 'born',
+                status: 'alive',
+                currentStage: 'piglet',
+                sex: 'female',
                 weight: 0,
                 observations: '',
                 historyChanges: [],
@@ -409,6 +411,8 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
                 feedings: [],
                 medications: [],
                 reproduction: [],
+                registered_by: userLogged._id,
+                registration_date: new Date(),
             }));
 
             setPigletsArray([...malePiglets, ...femalePiglets]);
@@ -757,14 +761,14 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
                                                             value={piglet.sex}
                                                             onChange={(e) => {
                                                                 const newArray = [...pigletsArray];
-                                                                newArray[index].sex = e.target.value as 'macho' | 'hembra';
+                                                                newArray[index].sex = e.target.value as 'male' | 'female';
                                                                 setPigletsArray(newArray);
                                                             }}
                                                             disabled
                                                         >
                                                             <option value="">Seleccionar</option>
-                                                            <option value="macho">Macho</option>
-                                                            <option value="hembra">Hembra</option>
+                                                            <option value="male">Macho</option>
+                                                            <option value="female">Hembra</option>
                                                         </select>
                                                     </div>
 

@@ -73,11 +73,6 @@ const ExtractionForm: React.FC<ExtractionFormProps> = ({ initialData, onSave, on
         }
     }
 
-    const showAlert = (color: string, message: string) => {
-        setAlertConfig({ visible: true, color: color, message: message })
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 2000);
-    }
-
     const handleError = (error: any, message: string) => {
         console.error(`${message}: ${error}`)
         setAlertConfig({ visible: true, color: 'danger', message: message })

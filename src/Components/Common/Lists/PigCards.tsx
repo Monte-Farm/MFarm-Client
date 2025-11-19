@@ -95,7 +95,7 @@ const PigCards: React.FC<PigCardsProps> = ({
                                     <div><strong>Peso:</strong> {pig.weight} kg</div>
 
                                     <div className="d-flex gap-1 mt-2">
-                                        <Badge className="fs-6" color={pig.status === "vivo" ? "success" : "secondary"}>
+                                        <Badge className="fs-6" color={pig.status === "alive" ? "success" : "secondary"}>
                                             {pig.status}
                                         </Badge>
 
@@ -103,7 +103,7 @@ const PigCards: React.FC<PigCardsProps> = ({
                                             {pig.currentStage}
                                         </Badge>
 
-                                        {pig.discarded && (
+                                        {pig.discard && (
                                             <Badge className="fs-6" color={"danger"}>
                                                 descartado
                                             </Badge>

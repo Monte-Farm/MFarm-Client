@@ -59,8 +59,8 @@ const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) =>
             header: 'Sexo',
             accessor: 'sex',
             render: (value: string) => (
-                <Badge color={value === 'macho' ? "info" : "danger"}>
-                    {value === 'macho' ? "♂ Macho" : "♀ Hembra"}
+                <Badge color={value === 'male' ? "info" : "danger"}>
+                    {value === 'male' ? "♂ Macho" : "♀ Hembra"}
                 </Badge>
             ),
         },
@@ -176,8 +176,8 @@ const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) =>
     }
 
     useEffect(() => {
-        const femaleCount = trackedPigsInsert.pigsSelected.filter((p) => p.sex === 'hembra').length
-        const maleCount = trackedPigsInsert.pigsSelected.filter((p) => p.sex === 'macho').length
+        const femaleCount = trackedPigsInsert.pigsSelected.filter((p) => p.sex === 'female').length
+        const maleCount = trackedPigsInsert.pigsSelected.filter((p) => p.sex === 'male').length
         setTrackedPigsInsert({ ...trackedPigsInsert, femaleCount: femaleCount, maleCount: maleCount })
     }, [trackedPigsInsert.pigsSelected])
 

@@ -67,15 +67,15 @@ const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => 
                 let label = value;
 
                 switch (value) {
-                    case 'vivo':
+                    case 'alive':
                         color = 'success';
                         label = 'Vivo';
                         break;
-                    case 'descartado':
+                    case 'discarded':
                         color = 'warning';
                         label = 'Descartado';
                         break;
-                    case 'muerto':
+                    case 'dead':
                         color = 'danger';
                         label = 'Muerto';
                         break;

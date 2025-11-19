@@ -204,7 +204,7 @@ const ViewExtractions = () => {
                     <BoarVolumeRadar data={stats.volumeStatsByBoar} />
                 </div>
 
-                <Card style={{ height: '65vh' }}>
+                <Card>
                     <CardHeader className="d-flex">
                         <h4>Extracciones</h4>
                         <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>
@@ -216,12 +216,7 @@ const ViewExtractions = () => {
                     <CardBody style={{ display: "flex", flexDirection: "column", height: "100%" }}>
                         {extractions && extractions.length > 0 ? (
                             <div style={{ flex: 1 }}>
-                                <CustomTable
-                                    columns={extractionsColumns}
-                                    data={extractions}
-                                    showPagination={true}
-                                    rowsPerPage={7}
-                                />
+                                <CustomTable columns={extractionsColumns} data={extractions} showPagination={true} rowsPerPage={7} />
                             </div>
                         ) : (
                             <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", textAlign: "center", color: "#888", }}>
@@ -238,7 +233,7 @@ const ViewExtractions = () => {
             <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("create")}>Nueva extracción</ModalHeader>
                 <ModalBody>
-                    <ExtractionForm onSave={() => { toggleModal('create'); fetchData(); }} onCancel={() => {}} />
+                    <ExtractionForm onSave={() => { toggleModal('create'); fetchData(); }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 

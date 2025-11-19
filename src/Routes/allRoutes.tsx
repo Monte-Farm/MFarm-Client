@@ -64,6 +64,7 @@ import ViewBirths from "pages/Births/ViewBirths";
 import ViewUpcomingBirths from "pages/Births/ViewUpcomingBirths";
 import GroupDetails from "pages/Groups/GroupDetails";
 import Logout from "Components/Common/Velzon/Logout";
+import DiscardedPigs from "pages/Pigs/DiscardedPigs";
 
 
 
@@ -120,6 +121,7 @@ const authProtectedRoutes = [
   //Pigs
   { path: '/pigs/view_pigs', component: <ViewPigs /> },
   { path: '/pigs/pig_details/:pig_id', component: <PigDetails /> },
+  { path: '/pigs/discarded_pigs', component: <DiscardedPigs /> },
 
   //Users
   { path: 'users/view_users', component: <ViewUsers /> },
