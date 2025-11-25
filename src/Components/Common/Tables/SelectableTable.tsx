@@ -20,6 +20,7 @@ type SelectableCustomTableProps<T> = {
     className?: string;
     disabled?: boolean;
     resetSelectionTrigger?: any;
+    onChangeRow?: (updatedRow: T) => void; // NUEVO opcional
 };
 
 const formatValue = (value: any, type?: ColumnType) => {
@@ -39,31 +40,32 @@ const formatValue = (value: any, type?: ColumnType) => {
     }
 };
 
-function SelectableCustomTable<T extends { id: string }>({
-    columns,
-    data,
-    selectionMode = "multiple",
-    onSelect,
-    showSearchAndFilter = true,
-    rowClickable = false,
-    onRowClick,
-    rowsPerPage = 10,
-    showPagination = true,
-    className = "",
-    disabled = false,
-    resetSelectionTrigger, // 👈 nuevo prop
-}: SelectableCustomTableProps<T>) {
+function SelectableCustomTable<T extends { id: string }>(props: SelectableCustomTableProps<T>) {
+    const {
+        columns,
+        data,
+        selectionMode = "multiple",
+        onSelect,
+        showSearchAndFilter = true,
+        rowClickable = false,
+        onRowClick,
+        rowsPerPage = 10,
+        showPagination = true,
+        className = "",
+        disabled = false,
+        resetSelectionTrigger,
+        onChangeRow,
+    } = props;
+
     const [filterText, setFilterText] = useState<string>("");
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-    // 👇 efecto para reiniciar selección cuando cambie el trigger
     useEffect(() => {
         setSelectedIds(new Set());
         onSelect?.([]);
     }, [resetSelectionTrigger]);
 
-    // Filtrado
     const filteredData = useMemo(() => {
         if (!filterText) return data;
         return data.filter((row) =>
@@ -77,7 +79,6 @@ function SelectableCustomTable<T extends { id: string }>({
         );
     }, [filterText, data, columns]);
 
-    // Ordenamiento
     const [sortConfig, setSortConfig] = useState<{
         key: keyof T;
         direction: "asc" | "desc";
@@ -87,10 +88,8 @@ function SelectableCustomTable<T extends { id: string }>({
         const sortable = [...filteredData];
         if (sortConfig) {
             sortable.sort((a, b) => {
-                if (a[sortConfig.key] < b[sortConfig.key])
-                    return sortConfig.direction === "asc" ? -1 : 1;
-                if (a[sortConfig.key] > b[sortConfig.key])
-                    return sortConfig.direction === "asc" ? 1 : -1;
+                if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === "asc" ? -1 : 1;
+                if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === "asc" ? 1 : -1;
                 return 0;
             });
         }
@@ -105,7 +104,6 @@ function SelectableCustomTable<T extends { id: string }>({
         );
     };
 
-    // Paginación
     const paginatedData = useMemo(() => {
         if (!showPagination) return sortedData;
         const start = (currentPage - 1) * rowsPerPage;
@@ -114,7 +112,6 @@ function SelectableCustomTable<T extends { id: string }>({
 
     const totalPages = Math.ceil(filteredData.length / rowsPerPage);
 
-    // Selección
     const handleSelectionChange = useCallback(
         (row: T, checked: boolean) => {
             if (disabled) return;
@@ -149,13 +146,18 @@ function SelectableCustomTable<T extends { id: string }>({
 
     const handlePageChange = (page: number) => setCurrentPage(page);
 
+    // NUEVO: actualizar valores de inputs por fila
+    const handleFieldChange = (id: string, field: keyof T, value: any) => {
+        const updated = data.map((item) =>
+            item.id === id ? { ...item, [field]: value } : item
+        );
+
+        const updatedRow = updated.find((x) => x.id === id);
+        if (updatedRow && onChangeRow) onChangeRow(updatedRow);
+    };
+
     return (
-        <div
-            style={{
-                pointerEvents: disabled ? "none" : "auto",
-                opacity: disabled ? 0.5 : 1,
-            }}
-        >
+        <div style={{ pointerEvents: disabled ? "none" : "auto", opacity: disabled ? 0.5 : 1 }}>
             {showSearchAndFilter && (
                 <div className="d-flex justify-content-between mb-3">
                     <Input
@@ -189,11 +191,11 @@ function SelectableCustomTable<T extends { id: string }>({
                                     style={{ cursor: "pointer" }}
                                 >
                                     {col.header}{" "}
-                                    {sortConfig?.key === col.accessor
-                                        ? sortConfig.direction === "asc"
-                                            ? "▲"
-                                            : "▼"
-                                        : ""}
+                                    {sortConfig?.key === col.accessor ? (
+                                        sortConfig.direction === "asc" ? "▲" : "▼"
+                                    ) : (
+                                        ""
+                                    )}
                                 </th>
                             ))}
                         </tr>
@@ -217,12 +219,8 @@ function SelectableCustomTable<T extends { id: string }>({
                                         <td>
                                             <Label check className="d-block m-0 p-0">
                                                 <Input
-                                                    type={
-                                                        selectionMode === "single" ? "radio" : "checkbox"
-                                                    }
-                                                    name={
-                                                        selectionMode === "single" ? "selectRow" : undefined
-                                                    }
+                                                    type={selectionMode === "single" ? "radio" : "checkbox"}
+                                                    name={selectionMode === "single" ? "selectRow" : undefined}
                                                     checked={isSelected}
                                                     onChange={(e) => {
                                                         e.stopPropagation();
@@ -235,7 +233,13 @@ function SelectableCustomTable<T extends { id: string }>({
                                         {columns.map((col, cIdx) => (
                                             <td key={cIdx}>
                                                 {col.render
-                                                    ? col.render(row[col.accessor], row)
+                                                    ? col.render(
+                                                          row[col.accessor],
+                                                          row,
+                                                          isSelected,
+                                                          (field: keyof T, value: any) =>
+                                                              handleFieldChange(row.id, field, value)
+                                                      )
                                                     : formatValue(row[col.accessor], col.type)}
                                             </td>
                                         ))}

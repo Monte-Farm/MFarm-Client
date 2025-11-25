@@ -65,6 +65,8 @@ import ViewUpcomingBirths from "pages/Births/ViewUpcomingBirths";
 import GroupDetails from "pages/Groups/GroupDetails";
 import Logout from "Components/Common/Velzon/Logout";
 import DiscardedPigs from "pages/Pigs/DiscardedPigs";
+import ViewMedicationPackages from "pages/Medication/ViewMedicationPackages";
+import ViewVaccinationPlans from "pages/Medication/ViewVaccinePlans";
 
 
 
@@ -148,6 +150,11 @@ const authProtectedRoutes = [
   { path: "/births/view_births", component: <ViewBirths /> },
   { path: "/births/view_upcoming_births", component: <ViewUpcomingBirths /> },
   { path: "/births/view_births", component: <ViewBirths /> },
+
+  //Medication
+  { path: "/medication/view_medication_package", component: <ViewMedicationPackages /> },
+  { path: "/medication/view_vaccination_plans", component: <ViewVaccinationPlans /> },
+
 
 
   // this route should be at the end of all other routes

@@ -68,6 +68,11 @@ const Navdata = () => {
     const [isGestation, setIsGestation] = useState<boolean>(false)
     const [isBirths, setIsBirths] = useState<boolean>(false)
 
+    //Medication
+    const [isMedication, setIsMedication] = useState<boolean>(false)
+    const [isMedicationPackage, setIsMedicationPackage] = useState<boolean>(false)
+    const [isVaccinationPlans, setIsVaccinationPlans] = useState<boolean>(false)
+
     const [iscurrentState, setIscurrentState] = useState('Home');
 
     function updateIconSidebar(e: any) {
@@ -124,6 +129,9 @@ const Navdata = () => {
         if (iscurrentState !== 'Reproduction') {
             setIsReproduction(false)
         }
+        if (iscurrentState !== 'Medication') {
+            setIsMedication(false)
+        }
     }, [
         history,
         iscurrentState,
@@ -137,6 +145,7 @@ const Navdata = () => {
         isSubwarehouseOutcomes,
         isPigs,
         isReproduction,
+        isMedication
     ]);
 
     const menuItems: any = [
@@ -614,6 +623,46 @@ const Navdata = () => {
 
                     ]
                 }
+            ]
+        },
+        {
+            id: 'medication',
+            label: 'Medicación',
+            icon: 'mdi mdi-heart-pulse',
+            link: '/#',
+            roles: ['farm_manager', 'warehouse_manager',],
+            click: function (e: any) {
+                e.preventDefault();
+                setIscurrentState('Medication')
+                setIsMedication(!isMedication)
+                updateIconSidebar(e);
+            },
+            stateVariables: isMedication,
+            subItems: [
+                {
+                    id: "medicationPackages",
+                    label: "Paquetes de medicación",
+                    link: "/medication/view_medication_package",
+                    roles: ['farm_manager', 'warehouse_manager',],
+                    parentId: "medication",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsMedicationPackage(!isMedicationPackage)
+                    },
+                    stateVariables: isMedicationPackage,
+                },
+                {
+                    id: "vaccinationPlans",
+                    label: "Planes de vacunacion",
+                    link: "/medication/view_vaccination_plans",
+                    roles: ['farm_manager', 'warehouse_manager',],
+                    parentId: "medication",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsVaccinationPlans(!isVaccinationPlans)
+                    },
+                    stateVariables: isVaccinationPlans,
+                },
             ]
         }
     ];

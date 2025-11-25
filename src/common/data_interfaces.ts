@@ -388,3 +388,38 @@ export interface InseminationData {
     }[];
     farrowind_status?: string;
 }
+
+export interface MedicationPackage {
+    code: string;
+    name: string;
+    description?: string;
+    farm: string;
+    creation_date: Date | null;
+    creation_responsible: string;
+    is_active: boolean;
+    destination_area: string;
+    medications: {
+        medication: string;
+        quantity: number;
+        administration_route: string
+    }[]
+    objective_use: string;
+}
+
+export interface VaccinationPlan {
+    code: string;
+    name: string;
+    description?: string;
+    farm: string;
+    creation_date: Date | null;
+    creation_responsible: string
+    is_active: boolean;
+    stage: string;
+    vaccines: {
+        vaccine: string
+        dose: number;
+        administration_route: string;
+        age_objective: number;
+        frequency: string;
+    }[]
+}

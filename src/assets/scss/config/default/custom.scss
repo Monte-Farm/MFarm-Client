@@ -964,7 +964,7 @@ i {
 }
 
 .modal-xxl .modal-dialog {
-    max-width: 60% !important;
+    max-width: 70% !important;
     /* ajusta según lo que necesites */
 }
 
@@ -972,4 +972,11 @@ i {
     height: 60vh;
     max-height: 80vh;
     overflow-y: auto;
+}
+
+
+@media (min-width: 1400px) {
+    .modal-xxl {
+        max-width: 80% !important;
+    }
 }

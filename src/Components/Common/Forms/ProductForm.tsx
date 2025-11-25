@@ -113,17 +113,20 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                         disabled={isCodeDisabled}
                     >
                         <option value="">Seleccione una categoría</option>
-                        <option value="feed">Alimento</option>
-                        <option value="medicine">Medicamento</option>
+
+                        <option value="nutrition">Nutrición</option>
+                        <option value="medications">Medicamentos</option>
+                        <option value="vaccines">Vacunas</option>
+                        <option value="vitamins">Vitaminas</option>
+                        <option value="minerals">Minerales</option>
                         <option value="supplies">Insumos</option>
-                        <option value="breeders">Reproductores</option>
-                        <option value="hygiene_cleaning">Higiene y limpieza</option>
-                        <option value="equipment">Equipamiento</option>
-                        <option value="growing_pigs">Cerdos en crecimiento</option>
-                        <option value="fattening_pigs">Cerdos en engorde</option>
-                        <option value="breeding_pigs">Cerdos reproductores</option>
+                        <option value="hygiene_cleaning">Higiene y desinfección</option>
+                        <option value="equipment_tools">Equipamiento y herramientas</option>
+                        <option value="spare_parts">Refacciones y repuestos</option>
+                        <option value="office_supplies">Material de oficina</option>
                         <option value="others">Otros</option>
                     </Input>
+
                     {formik.touched.category && formik.errors.category && (
                         <FormFeedback>{formik.errors.category}</FormFeedback>
                     )}
