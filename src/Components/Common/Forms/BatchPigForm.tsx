@@ -125,6 +125,7 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                 discarded: false,
                 feedings: [],
                 medications: [],
+                medicationPackagesHistory: [],
                 reproduction: [],
                 registered_by: userLogged._id,
                 registration_date: new Date(),

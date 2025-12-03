@@ -2,20 +2,29 @@ import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Card, CardBody, CardHeader, Col, Container, Row } from "reactstrap";
+import { Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalHeader, Row } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Column } from "common/data/data_types";
 import CustomTable from "Components/Common/Tables/CustomTable";
+import { getLoggedinUser } from "helpers/api_helper";
+import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
+import SubwarehouseOutcomeForm from "Components/Common/Forms/SubwarehouseOutcomeForm";
 
 
 const SubwarehouseOutcomes = () => {
     document.title = "Detalles de Subalmacén | Subalmacén"
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
-
+    const userLogged = getLoggedinUser();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [subwarehouseOutcomes, setSubwarehouseOutcomes] = useState([])
     const [loading, setLoading] = useState<boolean>(true)
+    const [modals, setModals] = useState({ create: false, });
+
+    const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
+        setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
+    };
+
 
     const outcomesColumns: Column<any>[] = [
         { header: 'Identificador', accessor: 'id', isFilterable: true, type: 'text' },
@@ -26,7 +35,7 @@ const SubwarehouseOutcomes = () => {
             accessor: 'action',
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="farm-primary-button btn-icon" onClick={() => handleClicOutcomeDetails(row)}>
+                    <Button className="farm-primary-button btn-icon" onClick={() => history(`/warehouse/outcomes/outcome_details/${row.id}`)}>
                         <i className="ri-eye-fill align-middle" />
                     </Button>
                 </div>
@@ -34,50 +43,29 @@ const SubwarehouseOutcomes = () => {
         }
     ]
 
-    const handleError = (error: any, message: string) => {
-        console.error(message, error);
-        setAlertConfig({ visible: true, color: "danger", message });
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-    };
-
-    const showAlert = (color: string, message: string) => {
-        setAlertConfig({ visible: true, color: color, message: message })
-        setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
-    }
-
-
     const handleFetchWarehouseOutcomes = async () => {
-        if (!configContext || !configContext.userLogged) return;
+        if (!configContext || !userLogged) return;
 
         try {
-            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/outcomes/find_warehouse_outcomes/${configContext.userLogged.assigment}`);
+            setLoading(true)
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/outcomes/find_warehouse_outcomes/${userLogged.assigment}`);
             setSubwarehouseOutcomes(response.data.data);
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al obtener las salidas, intentelo más tarde');
+            console.error('Error fetching data', { error })
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
         } finally {
             setLoading(false)
         }
     };
 
-    const handleClicOutcomeDetails = (row: any) => {
-        history(`/warehouse/outcomes/outcome_details/${row.id}`)
-    }
-
     useEffect(() => {
-        document.body.style.overflow = 'hidden';
         handleFetchWarehouseOutcomes();
-
-        return () => {
-            document.body.style.overflow = '';
-        };
     }, [configContext])
 
 
     if (loading) {
         return (
-            <div className="d-flex justify-content-center align-items-center vh-100 page-content">
-                <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
-            </div>
+            <LoadingAnimation />
         );
     }
 
@@ -87,11 +75,11 @@ const SubwarehouseOutcomes = () => {
             <Container fluid>
                 <BreadCrumb title={"Salidas"} pageTitle={"Subalmacén"} />
 
-                <Card className="rounded" style={{ height: '75vh' }}>
+                <Card className="rounded">
                     <CardHeader>
                         <div className="d-flex">
                             <h4>Salidas</h4>
-                            <Button className="ms-auto farm-primary-button" onClick={() => history('/subwarehouse/create_subwarehouse_outcome')}>
+                            <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>
                                 <i className="ri-add-line me-3" />
                                 Nueva Salida
                             </Button>
@@ -102,8 +90,16 @@ const SubwarehouseOutcomes = () => {
                         <CustomTable columns={outcomesColumns} data={subwarehouseOutcomes} rowsPerPage={10} showPagination={false} />
                     </CardBody>
                 </Card>
-
             </Container>
+
+            {/* Modal Create */}
+            <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("create")}>Nueva salida</ModalHeader>
+                <ModalBody>
+                    <SubwarehouseOutcomeForm onSave={() => { toggleModal('create'); handleFetchWarehouseOutcomes(); }} onCancel={() => toggleModal('create')} />
+                </ModalBody>
+            </Modal>
+
         </div>
     )
 }

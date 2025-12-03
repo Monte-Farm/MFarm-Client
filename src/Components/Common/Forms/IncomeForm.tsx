@@ -356,13 +356,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
 
     return (
         <>
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    formik.handleSubmit();
-                }}
-                className="form-steps"
-            >
+            <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }} className="form-steps">
                 <div className="step-arrow-nav mb-4">
                     <Nav className="nav-pills custom-nav nav-justified">
                         <NavItem>
@@ -459,10 +453,10 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                             <Row>
                                 <Col lg={6}>
                                     <div className="">
-                                        <Label htmlFor="idInput" className="form-label">Identificador</Label>
+                                        <Label htmlFor="id" className="form-label">Identificador</Label>
                                         <Input
                                             type="text"
-                                            id="idInput"
+                                            id="id"
                                             name="id"
                                             value={formik.values.id}
                                             onChange={formik.handleChange}

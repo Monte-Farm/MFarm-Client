@@ -11,6 +11,7 @@ import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import ProductForm from "Components/Common/Forms/ProductForm";
 import CustomTable from "Components/Common/Tables/CustomTable";
+import { FiInbox } from "react-icons/fi";
 
 
 const productAttributes: Attribute[] = [
@@ -149,7 +150,6 @@ const ViewProducts = () => {
 
     const handleActivateProduct = async (product_id: string) => {
         if (!configContext) return;
-
         try {
             await configContext.axiosHelper.put(`${configContext.apiUrl}/product/activate_product/${product_id}`, {});
             setAlertConfig({ visible: true, color: 'success', message: 'Producto activado con éxito' });
@@ -162,20 +162,6 @@ const ViewProducts = () => {
             setSelectedProduct(undefined);
         }
     };
-
-
-    const fetchImageById = async (imageId: string) => {
-        if (!configContext) return;
-
-        try {
-            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/google_drive/download_file/${imageId}`, { responseType: 'blob' });
-            const imageUrl = URL.createObjectURL(response.data);
-            return imageUrl
-        } catch (error) {
-            console.error('Error al recuperar la imagen: ', error);
-        }
-    };
-
 
     useEffect(() => {
         handleFetchProducts();
@@ -191,7 +177,6 @@ const ViewProducts = () => {
         <div className="page-content">
             <Container fluid>
                 <BreadCrumb title={"Catálogo de Productos"} pageTitle={"Almacén General"}></BreadCrumb>
-
                 <Card className="rounded" style={{ height: '75vh' }}>
                     <CardHeader>
                         <div className="d-flex">
@@ -204,7 +189,7 @@ const ViewProducts = () => {
                     <CardBody className={products.length === 0 ? "d-flex flex-column justify-content-center align-items-center text-center" : "d-flex flex-column flex-grow-1"}>
                         {products.length === 0 ? (
                             <>
-                                <i className="ri-box-line text-muted mb-2" style={{ fontSize: "2rem" }} />
+                                <FiInbox className="text-muted" size={40} style={{ marginBottom: 12, opacity: 0.8 }} />
                                 <span className="fs-5 text-muted">Aún no hay productos registrados en el inventario</span>
                             </>
                         ) : (

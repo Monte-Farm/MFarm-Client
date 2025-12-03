@@ -389,6 +389,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
                 discarded: false,
                 feedings: [],
                 medications: [],
+                medicationPackagesHistory: [],
                 reproduction: [],
                 registered_by: userLogged._id,
                 registration_date: new Date(),
@@ -410,6 +411,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
                 discarded: false,
                 feedings: [],
                 medications: [],
+                medicationPackagesHistory: [],
                 reproduction: [],
                 registered_by: userLogged._id,
                 registration_date: new Date(),
@@ -440,12 +442,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
     return (
         <>
 
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    formik.handleSubmit();
-                }}
-            >
+            <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }}>
                 <div className="step-arrow-nav mb-4">
                     <Nav className="nav-pills custom-nav nav-justified">
                         {!pregnancy && (

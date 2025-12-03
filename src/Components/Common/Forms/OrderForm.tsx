@@ -33,7 +33,6 @@ const productsColumns: Column<any>[] = [
     { header: 'Observaciones', accessor: 'observations', isFilterable: true, type: 'text' },
 ]
 
-
 const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }) => {
 
     const history = useNavigate()
@@ -44,7 +43,6 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
     const configContext = useContext(ConfigContext)
     const [products, setProducts] = useState([])
     const [selectedProducts, setSelectedProducts] = useState([])
-
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
 

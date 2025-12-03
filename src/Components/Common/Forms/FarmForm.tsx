@@ -322,7 +322,7 @@ const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
             <Modal isOpen={modals.create} toggle={() => toggleModal('create')} size="xl" keyboard={false} backdrop='static' centered>
                 <ModalHeader toggle={() => toggleModal('create')}>Nuevo Usuario</ModalHeader>
                 <ModalBody>
-                    <UserForm onSubmit={(data: UserData) => handleCreateUser(data)} onCancel={() => toggleModal('create', false)} defaultRole="farm_manager" currentUserRole={userLogged.role} />
+                    <UserForm onSave={() => { toggleModal('create') }} onCancel={() => toggleModal('create', false)} defaultRole="farm_manager" currentUserRole={userLogged.role} />
                 </ModalBody>
             </Modal>
 

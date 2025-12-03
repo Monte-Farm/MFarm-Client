@@ -96,9 +96,7 @@ const ViewVaccinationPlans = () => {
             const [vaccinationResponse] = await Promise.all([
                 configContext.axiosHelper.get(`${configContext.apiUrl}/vaccination_plan/find_by_farm/${userLogged.farm_assigned}`),
             ])
-
             setVaccinationPlans(vaccinationResponse.data.data);
-
         } catch (error) {
             console.error('Error fetching data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al cargar los datos, intentelo mas tarde' })
@@ -155,7 +153,7 @@ const ViewVaccinationPlans = () => {
             <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => { toggleModal("details"); fetchData() }}>Detalles de plan de vacunacion</ModalHeader>
                 <ModalBody>
-                    <VaccinationPlanDetails vaccinationPlanId={selectedVaccinationPlan._id}/>
+                    <VaccinationPlanDetails vaccinationPlanId={selectedVaccinationPlan?._id}/>
                 </ModalBody>
             </Modal>
         </div>

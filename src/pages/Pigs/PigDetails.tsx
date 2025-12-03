@@ -15,10 +15,11 @@ import PigEditForm from "Components/Common/Forms/PigEditForm";
 import HistoryFlagItem from "Components/Common/Lists/HistoryFlagItem";
 import SimpleBar from "simplebar-react";
 import FeedingEntryItem from "Components/Common/Lists/FeedingEntryItem";
-import InitialMedicationsItem from "Components/Common/Lists/InitialMedicationsItem";
 import HistoryList from "Components/Common/Lists/HistoryList";
 import ReproductionFilters from "Components/Common/Lists/HistoryListFilter";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
+import AlertMessage from "Components/Common/Shared/AlertMesagge";
+import IndividualMedicationPackageForm from "Components/Common/Forms/IndividualMedicationPackageForm";
 
 const pigDetailsAttributes: Attribute[] = [
     { key: 'code', label: 'Codigo', type: 'text' },
@@ -44,7 +45,7 @@ const PigDetails = () => {
     const [pigHistory, setPigHistory] = useState<PigHistoryChanges[]>([])
     const [pigReproductionHistory, setPigReproductionHistory] = useState<any[]>([])
     const [activeTab, setActiveTab] = useState<string>('1');
-    const [modals, setModals] = useState({ update: false, viewPDF: false });
+    const [modals, setModals] = useState({ update: false, viewPDF: false, medicationPackage: false });
     const [fileURL, setFileURL] = useState<string>('')
     const navigate = useNavigate()
     const [generatingReport, setGeneratingReport] = useState(false);
@@ -191,7 +192,7 @@ const PigDetails = () => {
 
                         <NavItem>
                             <NavLink className={classnames({ active: activeTab === '3' })} onClick={() => toggleTab('3')} style={{ cursor: 'pointer' }}>
-                                Información medica
+                                Medicación
                             </NavLink>
                         </NavItem>
 
@@ -393,6 +394,11 @@ const PigDetails = () => {
                     </TabPane>
 
                     <TabPane tabId="3" id="medical-info-tab">
+                        <div>
+                            <Button className="btn-success" onClick={() => toggleModal('medicationPackage')}>
+                                Paquete de medicacion
+                            </Button>
+                        </div>
                         <div className="mt-3">
                             <div className="row">
                                 <div className="col-md-4">
@@ -401,13 +407,7 @@ const PigDetails = () => {
                                             <h5 className="mb-0">Medicamentos Iniciales</h5>
                                         </CardHeader>
                                         <CardBody>
-                                            {pigInfo?.medications?.length ? (
-                                                pigInfo.medications.map((medication, idx) => (
-                                                    <InitialMedicationsItem key={`med-${idx}`} medication={medication} />
-                                                ))
-                                            ) : (
-                                                <div className="text-muted text-center">Sin registros de medicamentos iniciales.</div>
-                                            )}
+                                            <div className="text-muted text-center">Sin registros de medicamentos iniciales.</div>
                                         </CardBody>
                                     </Card>
                                 </div>
@@ -503,12 +503,6 @@ const PigDetails = () => {
 
             </Container>
 
-            {alertConfig.visible && (
-                <Alert color={alertConfig.color} className="position-fixed bottom-0 start-50 translate-middle-x p-3">
-                    {alertConfig.message}
-                </Alert>
-            )}
-
             <Modal size="xl" isOpen={modals.update} toggle={() => toggleModal("update")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("update")}>Registrar cerdo </ModalHeader>
                 <ModalBody>
@@ -519,6 +513,13 @@ const PigDetails = () => {
                 </ModalBody>
             </Modal>
 
+            <Modal size="xl" isOpen={modals.medicationPackage} toggle={() => toggleModal("medicationPackage")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("medicationPackage")}>Asignar paquete de medicacion</ModalHeader>
+                <ModalBody>
+                    <IndividualMedicationPackageForm pigId={pig_id ?? ""} />
+                </ModalBody>
+            </Modal>
+
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Inventario </ModalHeader>
                 <ModalBody>
@@ -526,6 +527,7 @@ const PigDetails = () => {
                 </ModalBody>
             </Modal>
 
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </div>
     )
 }

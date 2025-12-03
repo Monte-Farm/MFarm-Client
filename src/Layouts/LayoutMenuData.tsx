@@ -155,7 +155,7 @@ const Navdata = () => {
             label: "Inicio",
             icon: "ri-home-2-line",
             link: "/home",
-            roles: ["Superadmin", 'farm_manager', 'warehouse_manager', 'warehouse_manager'],
+            roles: ["Superadmin", 'farm_manager', 'warehouse_manager', 'subwarehouse_manager', 'general_worker', 'reproduction_technician', 'veterinarian'],
             click: function (e: any) {
                 e.preventDefault();
                 setIscurrentState('Home');
@@ -202,131 +202,67 @@ const Navdata = () => {
                     id: 'purchaseOrders',
                     label: 'Ordenes de Compra',
                     icon: 'ri-currency-line',
-                    link: '/#',
+                    link: '/purchase_orders/view_purchase_orders',
                     roles: ['farm_manager', 'warehouse_manager'],
-                    isChildItem: true,
                     click: function (e: any) {
                         e.preventDefault();
                         setIsPurchaseOrders(!isPurchaseOrders);
                     },
                     stateVariables: isPurchaseOrders,
-                    childItems: [
-                        {
-                            id: 1,
-                            label: 'Crear Orden de Compra',
-                            link: '/purchase_orders/create_purchase_order',
-                            roles: ['warehouse_manager'],
-                            parentId: 'purchaseOrders',
-                        },
-                        {
-                            id: 2,
-                            label: 'Ver Ordenes de Compra',
-                            link: '/purchase_orders/view_purchase_orders',
-                            roles: ['farm_manager', 'warehouse_manager'],
-                            parentId: 'purchaseOrders',
-                        },
-                    ]
                 },
                 {
                     id: "incomes",
                     label: "Entradas",
-                    link: "/#",
+                    link: "/warehouse/incomes/view_incomes",
                     roles: ['farm_manager', 'warehouse_manager'],
                     parentId: "warehouse",
-                    isChildItem: true,
                     click: function (e: any) {
                         e.preventDefault();
                         setIsIncomes(!isIncomes);
                     },
                     stateVariables: isIncomes,
-                    childItems: [
-                        {
-                            id: 1,
-                            label: "Nueva Entrada",
-                            link: "/warehouse/incomes/create_income",
-                            roles: ['warehouse_manager'],
-                            parentId: "incomes"
-                        },
-                        {
-                            id: 2,
-                            label: "Ver Entradas",
-                            link: "/warehouse/incomes/view_incomes",
-                            roles: ['farm_manager', 'warehouse_manager'],
-                            parentId: "incomes"
-                        },
-                    ]
                 },
                 {
                     id: "outcomes",
                     label: "Salidas",
-                    link: "/#",
+                    link: "/warehouse/outcomes/view_outcomes",
                     roles: ['farm_manager', 'warehouse_manager'],
                     parentId: "warehouse",
-                    isChildItem: true,
                     click: function (e: any) {
                         e.preventDefault();
                         setIsOutcomes(!isOutcomes);
                     },
                     stateVariables: isOutcomes,
-                    childItems: [
-                        {
-                            id: 1,
-                            label: "Ver Salidas",
-                            link: "/warehouse/outcomes/view_outcomes",
-                            roles: ['farm_manager', 'warehouse_manager'],
-                            parentId: "outcomes"
-                        },
-                    ]
                 },
                 {
                     id: 'suppliers',
                     label: 'Proveedores',
-                    link: '/#',
+                    link: '/warehouse/suppliers/view_suppliers',
                     roles: ['farm_manager', 'warehouse_manager'],
                     parentId: "warehouse",
-                    isChildItem: true,
                     click: function (e: any) {
                         e.preventDefault();
                         setIsSuppliers(!isSuppliers);
                     },
                     stateVariables: isSuppliers,
-                    childItems: [
-                        {
-                            id: 1,
-                            label: 'Ver Proveedores',
-                            link: '/warehouse/suppliers/view_suppliers',
-                            roles: ['farm_manager', 'warehouse_manager'],
-                            parentId: 'suppliers',
-                        },
-                    ]
                 },
                 {
                     id: "products",
                     label: "Catálogo de Productos",
-                    link: "#",
+                    link: '/warehouse/products/product_catalog',
                     roles: ['farm_manager'],
                     parentId: "warehouse",
-                    isChildItem: true,
                     click: function (e: any) {
                         e.preventDefault();
                         setIsProducts(!isProducts);
                     },
                     stateVariables: isProducts,
-                    childItems: [
-                        {
-                            id: 1,
-                            label: 'Ver Productos',
-                            link: '/warehouse/products/product_catalog',
-                            roles: ['farm_manager', 'warehouse_manager'],
-                            parentId: 'products'
-                        },
-                    ]
                 },
             ],
         },
         {
             id: 'subwarehouse',
-            label: 'Subalmacén',
+            label: 'Subalmacenes',
             icon: 'ri-building-3-line',
             link: '/subwarehouse/view_subwarehouse',
             roles: ['farm_manager', 'warehouse_manager'],
@@ -337,21 +273,9 @@ const Navdata = () => {
                 setIscurrentState('Subwarehouse');
                 updateIconSidebar(e);
             },
-            subItems: [
-                {
-                    id: 'viewSubwarehouses',
-                    label: 'Ver Subalmacenes',
-                    link: '/subwarehouse/view_subwarehouse',
-                    roles: ['farm_manager', 'warehouse_manager'],
-                    parentId: 'subwarehouse',
-                    click: function (e: any) {
-                        e.preventDefault();
-                        setIsViewSubwarehouses(!isViewSubwarehouses)
-                    },
-                    stateVariables: isViewSubwarehouses
-                },
-            ]
         },
+
+        //Opcines de almacen para subwarehouseManager
         {
             id: "subwarehouseInventory",
             label: "Inventario",
@@ -378,7 +302,7 @@ const Navdata = () => {
             id: 'subwarehouseOutcomes',
             icon: "ri-inbox-unarchive-line",
             label: 'Salidas',
-            link: '#',
+            link: "/subwarehouse/subwarehouse_outcomes",
             roles: ['subwarehouse_manager'],
             click: function (e: any) {
                 e.preventDefault();
@@ -386,20 +310,6 @@ const Navdata = () => {
                 setIscurrentState('SubwarehouseOutcomes')
                 updateIconSidebar(e);
             },
-            subItems: [
-                {
-                    id: 'viewSubwarehouseOutcomes',
-                    label: "Ver Salidas",
-                    link: "/subwarehouse/subwarehouse_outcomes",
-                    roles: ['subwarehouse_manager'],
-                    parentId: "subwarehouseOutcomes",
-                    click: function (e: any) {
-                        e.preventDefault();
-                        setIsViewSubwarehouseOutcomes(!isViewSubwarehouseOutcomes)
-                    },
-                    stateVariables: isViewSubwarehouseOutcomes
-                },
-            ]
         },
         {
             id: 'orders',
@@ -407,33 +317,20 @@ const Navdata = () => {
             icon: 'ri-shopping-bag-line',
             link: '/#',
             roles: ['warehouse_manager', 'subwarehouse_manager'],
-
             click: function (e: any) {
                 e.preventDefault();
                 setIsOrders(!isOrders)
                 setIscurrentState('Orders');
                 updateIconSidebar(e);
             },
+            stateVariables: isOrders,
             subItems: [
                 {
-                    id: "createOrder",
-                    label: "Crear Pedido",
-                    link: "/orders/create_order",
-                    roles: ['subwarehouse_manager'],
-                    parentId: "orders",
-                    click: function (e: any) {
-                        e.preventDefault();
-                        setIsCreateOrder(!isCreateOrder)
-                    },
-                    stateVariables: isCreateOrder,
-                },
-                {
                     id: "pendingOrders",
-                    label: userLogged.role === 'Encargado de almacen' ? "Pedidos Recibidos" : "Pedidos Enviados",
+                    label: userLogged.role.includes('warehouse_manager') ? "Pedidos Recibidos" : "Pedidos Enviados",
                     link: "/orders/send_orders",
                     roles: ['warehouse_manager', 'subwarehouse_manager'],
                     parentId: "orders",
-
                     click: function (e: any) {
                         e.preventDefault();
                         setIsPendingOrders(!isPendingOrders)
@@ -455,6 +352,7 @@ const Navdata = () => {
                 },
             ]
         },
+
         {
             id: 'users',
             label: 'Usuarios',
@@ -469,12 +367,13 @@ const Navdata = () => {
                 updateIconSidebar(e);
             },
         },
+
         {
             id: 'pigs',
             label: 'Cerdos',
             icon: 'bx bxs-dog',
             link: '/#',
-            roles: ['farm_manager', 'warehouse_manager',],
+            roles: ['farm_manager', 'general_worker', 'reproduction_technician'],
             click: function (e: any) {
                 e.preventDefault();
                 setIscurrentState('Pigs')
@@ -487,7 +386,7 @@ const Navdata = () => {
                     id: "viewPigs",
                     label: "Cerdos",
                     link: "/pigs/view_pigs",
-                    roles: ['farm_manager', 'warehouse_manager',],
+                    roles: ['farm_manager', 'general_worker', , 'reproduction_technician', 'veterinarian'],
                     parentId: "pigs",
                     click: function (e: any) {
                         e.preventDefault();
@@ -499,7 +398,7 @@ const Navdata = () => {
                     id: "viewGroups",
                     label: "Grupos",
                     link: "/groups/view_groups",
-                    roles: ['farm_manager', 'warehouse_manager',],
+                    roles: ['farm_manager', 'general_worker', , 'reproduction_technician', 'veterinarian'],
                     parentId: "pigs",
                     click: function (e: any) {
                         e.preventDefault();
@@ -511,7 +410,7 @@ const Navdata = () => {
                     id: "discardedPigs",
                     label: "Descartados",
                     link: "/pigs/discarded_pigs",
-                    roles: ['farm_manager'],
+                    roles: ['farm_manager', 'general_worker', 'reproduction_technician', 'veterinarian'],
                     parentId: "pigs",
                     click: function (e: any) {
                         e.preventDefault();
@@ -521,12 +420,13 @@ const Navdata = () => {
                 },
             ]
         },
+
         {
             id: 'reproduction',
             label: 'Reproducción',
             icon: 'bx bx-heart',
             link: '/#',
-            roles: ['farm_manager', 'warehouse_manager',],
+            roles: ['farm_manager', 'reproduction_technician',],
             click: function (e: any) {
                 e.preventDefault();
                 setIscurrentState('Reproduction')
@@ -539,7 +439,7 @@ const Navdata = () => {
                     id: "laboratory",
                     label: "Laboratorio",
                     link: "/#",
-                    roles: ['farm_manager', 'warehouse_manager',],
+                    roles: ['farm_manager', 'reproduction_technician',],
                     parentId: "reproduction",
                     isChildItem: true,
                     click: function (e: any) {
@@ -552,14 +452,14 @@ const Navdata = () => {
                             id: 1,
                             label: "Extracciones",
                             link: "/laboratory/extractions/view_extractions",
-                            roles: ['farm_manager'],
+                            roles: ['farm_manager', 'reproduction_technician'],
                             parentId: "laboratory"
                         },
                         {
                             id: 2,
                             label: "Genética líquida",
                             link: "/laboratory/samples/view_samples",
-                            roles: ['farm_manager'],
+                            roles: ['farm_manager', 'reproduction_technician'],
                             parentId: "laboratory"
                         },
                     ]
@@ -568,7 +468,7 @@ const Navdata = () => {
                     id: "gestation",
                     label: "Gestación",
                     link: "/#",
-                    roles: ['farm_manager',],
+                    roles: ['farm_manager', 'reproduction_technician'],
                     parentId: "reproduction",
                     isChildItem: true,
                     click: function (e: any) {
@@ -581,14 +481,14 @@ const Navdata = () => {
                             id: 1,
                             label: "Inseminaciones",
                             link: "/gestation/view_inseminations",
-                            roles: ['farm_manager'],
+                            roles: ['farm_manager', 'reproduction_technician'],
                             parentId: "laboratory"
                         },
                         {
                             id: 2,
                             label: "Embarazos",
                             link: "/gestation/view_pregnancies",
-                            roles: ['farm_manager'],
+                            roles: ['farm_manager', 'reproduction_technician'],
                             parentId: "laboratory"
                         },
                     ]
@@ -597,7 +497,7 @@ const Navdata = () => {
                     id: 'births',
                     label: 'Partos',
                     link: '/#',
-                    roles: ['farm_manager'],
+                    roles: ['farm_manager', 'reproduction_technician'],
                     parentId: 'reproduction',
                     isChildItem: true,
                     click: function (e: any) {
@@ -610,14 +510,14 @@ const Navdata = () => {
                             id: 1,
                             label: "Proximos partos",
                             link: "/births/view_upcoming_births",
-                            roles: ['farm_manager'],
+                            roles: ['farm_manager', 'reproduction_technician'],
                             parentId: "births"
                         },
                         {
                             id: 2,
                             label: "Partos registrados",
                             link: "/births/view_births",
-                            roles: ['farm_manager'],
+                            roles: ['farm_manager', 'reproduction_technician'],
                             parentId: "births"
                         },
 
@@ -630,7 +530,7 @@ const Navdata = () => {
             label: 'Medicación',
             icon: 'mdi mdi-heart-pulse',
             link: '/#',
-            roles: ['farm_manager', 'warehouse_manager',],
+            roles: ['farm_manager', 'veterinarian',],
             click: function (e: any) {
                 e.preventDefault();
                 setIscurrentState('Medication')
@@ -643,7 +543,7 @@ const Navdata = () => {
                     id: "medicationPackages",
                     label: "Paquetes de medicación",
                     link: "/medication/view_medication_package",
-                    roles: ['farm_manager', 'warehouse_manager',],
+                    roles: ['farm_manager', 'veterinarian',],
                     parentId: "medication",
                     click: function (e: any) {
                         e.preventDefault();
@@ -655,7 +555,7 @@ const Navdata = () => {
                     id: "vaccinationPlans",
                     label: "Planes de vacunacion",
                     link: "/medication/view_vaccination_plans",
-                    roles: ['farm_manager', 'warehouse_manager',],
+                    roles: ['farm_manager', 'veterinarian',],
                     parentId: "medication",
                     click: function (e: any) {
                         e.preventDefault();

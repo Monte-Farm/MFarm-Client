@@ -12,6 +12,7 @@ import { Column, ColumnType } from "common/data/data_types";
 import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
 import defaultProfile from '../../../assets/images/default-profile-mage.jpg';
+import { userRoles } from "common/user_roles";
 
 interface UserCardProps<T> {
     columns: Column<T>[];
@@ -23,6 +24,20 @@ interface UserCardProps<T> {
     imageAccessor?: keyof T;
     className?: string;
 }
+
+const roleLabelsMap: Record<string, string> = Object.fromEntries(
+    userRoles.map(r => [r.value, r.label])
+);
+
+const roleColorsMap: Record<string, string> = {
+    Superadmin: "danger",
+    farm_manager: "primary",
+    warehouse_manager: "warning",
+    subwarehouse_manager: "secondary",
+    general_worker: "success",
+    reproduction_technician: "info",
+    veterinarian: "purple",
+};
 
 const UserCards = <T extends Record<string, any>>({
     columns,
@@ -144,14 +159,34 @@ const UserCards = <T extends Record<string, any>>({
                                         {bodyColumns.map((col, i) => (
                                             <div key={i} className="mb-1 fs-5">
                                                 <strong>{col.header}: </strong>
-                                                {col.render
-                                                    ? col.render(item[col.accessor], item)
-                                                    : col.type === ('status' as ColumnType) ? (
-                                                        <Badge color={item[col.accessor] ? "success" : "danger"}>
-                                                            {item[col.accessor] ? "Activo" : "Inactivo"}
-                                                        </Badge>
-                                                    ) : item[col.accessor]
-                                                }
+
+                                                {col.type === ('status' as ColumnType) ? (
+                                                    <Badge color={item[col.accessor] ? "success" : "danger"}>
+                                                        {item[col.accessor] ? "Activo" : "Inactivo"}
+                                                    </Badge>
+
+                                                ) : col.accessor === "role" ? (
+                                                    /* ROLES */
+                                                    <div className="d-flex flex-wrap gap-2">
+                                                        {(Array.isArray(item.role) ? item.role : [item.role]).map(
+                                                            (r: string, idx: number) => {
+                                                                const color = roleColorsMap[r] || "secondary";
+                                                                const label = roleLabelsMap[r] || r;
+
+                                                                return (
+                                                                    <Badge key={idx} color={color} pill>
+                                                                        {label}
+                                                                    </Badge>
+                                                                );
+                                                            }
+                                                        )}
+                                                    </div>
+
+                                                ) : (
+                                                    col.render
+                                                        ? col.render(item[col.accessor], item)
+                                                        : item[col.accessor]
+                                                )}
                                             </div>
                                         ))}
                                     </CardText>

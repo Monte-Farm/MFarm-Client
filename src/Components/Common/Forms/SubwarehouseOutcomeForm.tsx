@@ -3,28 +3,32 @@ import { Alert, Button, Card, CardBody, FormFeedback, Input, Label, Modal, Modal
 import * as Yup from 'yup'
 import { useFormik } from 'formik';
 import { useNavigate } from 'react-router-dom';
-import { OutcomeData, ProductData } from 'common/data_interfaces';
+import { Attribute, OutcomeData, ProductData } from 'common/data_interfaces';
 import { ConfigContext } from 'App';
 import classnames from "classnames";
 import ObjectDetailsHorizontal from '../Details/ObjectDetailsHorizontal';
-
 import { Column } from 'common/data/data_types';
-import DatePicker from 'react-flatpickr';
+import DatePicker from "react-flatpickr";
 import CustomTable from '../Tables/CustomTable';
 import SelectTable from '../Tables/SelectTable';
+import { getLoggedinUser } from 'helpers/api_helper';
+import SuccessModal from '../Shared/SuccessModal';
+import ErrorModal from '../Shared/ErrorModal';
+import AlertMessage from '../Shared/AlertMesagge';
+import LoadingAnimation from '../Shared/LoadingAnimation';
 
 interface OutcomeFormProps {
     initialData?: OutcomeData;
-    onSubmit: (data: OutcomeData) => Promise<void>
+    onSave: () => void;
     onCancel: () => void;
 }
 
-const outcomeAttributes = [
-    { key: 'id', label: 'Identificador' },
-    { key: 'date', label: 'Fecha' },
-    { key: 'warehouseDestiny', label: 'Almacén de destino' },
-    { key: 'outcomeType', label: 'Motivo de salida' },
-    { key: 'description', label: 'Descripción' },
+const outcomeAttributes: Attribute[] = [
+    { key: 'code', label: 'Identificador', type: 'text' },
+    { key: 'date', label: 'Fecha', type: 'date' },
+    { key: 'warehouseDestiny', label: 'Almacén de destino', type: 'text' },
+    { key: 'outcomeType', label: 'Motivo de salida', type: 'text' },
+    { key: 'description', label: 'Descripción', type: 'text' },
 ]
 
 const productColumns: Column<any>[] = [
@@ -37,16 +41,16 @@ const productColumns: Column<any>[] = [
 ];
 
 
-const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSubmit, onCancel }) => {
-    const history = useNavigate()
-    const [modals, setModals] = useState({ createWarehouse: false, cancel: false });
-    const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
+const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel }) => {
     const configContext = useContext(ConfigContext);
+    const userLogged = getLoggedinUser();
+    const [modals, setModals] = useState({ createWarehouse: false, cancel: false, success: false, error: false });
+    const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const [products, setProducts] = useState([])
     const [selectedProducts, setSelectedProducts] = useState([])
-
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
+    const [loading, setLoading] = useState<boolean>(true);
 
     function toggleArrowTab(tab: any) {
         if (activeStep !== tab) {
@@ -59,9 +63,8 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSu
         }
     }
 
-
     const validationSchema = Yup.object({
-        id: Yup.string()
+        code: Yup.string()
             .required('Por favor, ingrese el ID')
             .test('unique_id', 'Este identificador ya existe, por favor ingrese otro', async (value) => {
                 if (!value) return false
@@ -73,22 +76,10 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSu
                     return false
                 }
             }),
-        date: Yup.string().required('Por favor, ingrese la fecha'),
+        date: Yup.date().required('Por favor, ingrese la fecha'),
         outcomeType: Yup.string().required('Por favor, seleccione el tipo de salida'),
         description: Yup.string().required('Por favor, ingrese la descripción de la salida')
     })
-
-    const showAlert = (color: string, message: string) => {
-        setAlertConfig({ visible: true, color: color, message: message })
-        setTimeout(() => {
-            setAlertConfig({ ...alertConfig, visible: false })
-        }, 5000);
-    }
-
-    const handleError = (error: any, message: string) => {
-        console.error(message, error);
-        showAlert('danger', message);
-    }
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -102,16 +93,27 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSu
             totalPrice: 0,
             outcomeType: "",
             status: true,
-            warehouseDestiny: "",
-            warehouseOrigin: configContext?.userLogged?.assigment,
+            warehouseDestiny: null,
+            warehouseOrigin: userLogged?.assigment,
             description: ""
         },
         enableReinitialize: true,
         validationSchema,
         onSubmit: async (values, { setSubmitting, resetForm }) => {
+            if (!configContext || !userLogged) return;
             try {
                 setSubmitting(true);
-                await onSubmit(values);
+                try {
+                    await configContext.axiosHelper.create(`${configContext.apiUrl}/outcomes/create_outcome/${false}/${values.outcomeType}`, values);
+                    await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
+                        event: `Registro de salida de inventario ${values.code}`
+                    });
+
+                    toggleModal('success')
+                } catch (error) {
+                    console.error(error, 'Ha ocurrido un error creando la salida')
+                    toggleModal('error')
+                }
             } catch (error) {
                 console.error("Error al enviar el formulario:", error);
             } finally {
@@ -132,43 +134,38 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSu
         });
 
         setSelectedProducts(updatedSelectedProducts);
-        console.log(updatedSelectedProducts)
     };
 
-    const fetchNextId = async () => {
-        if (!configContext) return;
-
+    const fetchData = async () => {
+        if (!configContext || !userLogged) return;
         try {
-            const response = await configContext?.axiosHelper.get(`${configContext.apiUrl}/outcomes/outcome_next_id`);
-            const nextId = response.data.data;
-            formik.setFieldValue('id', nextId);
-        } catch (error) {
-            console.error('Ha ocurrido un error obteniendo el id');
-        }
-    };
+            setLoading(true)
+            const [productsResponse, nextCodeResponse] = await Promise.all([
+                configContext?.axiosHelper.get(`${configContext.apiUrl}/warehouse/get_inventory/${configContext.userLogged.assigment}`),
+                configContext?.axiosHelper.get(`${configContext.apiUrl}/outcomes/outcome_next_id`),
+            ])
 
-
-    const handleFetchWarehouseProducts = async () => {
-        if (!configContext || !configContext.userLogged) return;
-
-        try {
-            const response = await configContext?.axiosHelper.get(`${configContext.apiUrl}/warehouse/get_inventory/${configContext.userLogged.assigment}`);
-            const products = response.data.data;
-
-            const productsWithExistences = products.filter((obj: any) => obj.quantity !== 0);
+            formik.setFieldValue('code', nextCodeResponse.data.data);
+            const productsWithExistences = productsResponse.data.data.filter((obj: any) => obj.quantity !== 0);
             setProducts(productsWithExistences);
         } catch (error) {
-            console.error(error);
-            history('/auth-500');
+            console.error('Error fetching data: ', { error });
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
+        } finally {
+            setLoading(false)
         }
-    };
-
+    }
 
     useEffect(() => {
-        if (!configContext || !configContext.userLogged) return;
-        handleFetchWarehouseProducts();
-        fetchNextId();
-    }, [configContext])
+        fetchData();
+        formik.setFieldValue('date', new Date());
+    }, [])
+
+    if (loading) {
+        return (
+            <LoadingAnimation absolutePosition={false} />
+        )
+    }
 
     return (
         <>
@@ -232,11 +229,11 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSu
                     <TabPane id='step-outcomeData-tab' tabId={1}>
                         <div className='d-flex gap-3'>
                             <div className="w-50">
-                                <Label htmlFor="idInput" className="form-label">Identificador</Label>
+                                <Label htmlFor="codeInput" className="form-label">Identificador</Label>
                                 <Input
                                     type="text"
-                                    id="idInput"
-                                    name="id"
+                                    id="codeInput"
+                                    name="code"
                                     value={formik.values.code}
                                     onChange={formik.handleChange}
                                     onBlur={formik.handleBlur}
@@ -246,8 +243,7 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSu
                             </div>
 
                             <div className="w-50">
-                                <Label htmlFor="date" className="form-label">Fecha</Label>
-
+                                <Label htmlFor="date" className="form-label">Fecha de extracción</Label>
                                 <DatePicker
                                     id="date"
                                     className={`form-control ${formik.touched.date && formik.errors.date ? 'is-invalid' : ''}`}
@@ -276,13 +272,21 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSu
                                 invalid={formik.touched.outcomeType && !!formik.errors.outcomeType}
                             >
                                 <option value=''>Seleccione un motivo</option>
-                                {configContext?.configurationData?.outcomeTypes.map((value) => (
-                                    <option key={value} value={value}>
-                                        {value}
-                                    </option>
-                                ))}
+
+                                <option value='consumption'>Consumo interno</option>
+                                <option value='treatment'>Tratamiento veterinario</option>
+                                <option value='mortality'>Baja por mortalidad</option>
+                                <option value='sale'>Venta</option>
+                                <option value='transfer'>Transferencia a otra área</option>
+                                <option value='production_use'>Uso en producción</option>
+                                <option value='waste'>Desecho / Caducado</option>
+                                <option value='loss'>Pérdida / Extraviado</option>
+                                <option value='adjustment'>Ajuste de inventario</option>
+
                             </Input>
-                            {formik.touched.outcomeType && formik.errors.outcomeType && <FormFeedback>{formik.errors.outcomeType}</FormFeedback>}
+                            {formik.touched.outcomeType && formik.errors.outcomeType && (
+                                <FormFeedback>{formik.errors.outcomeType}</FormFeedback>
+                            )}
                         </div>
 
                         <div className="mt-4">
@@ -378,18 +382,12 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSu
                                 Atras
                             </Button>
 
-                            <Button className='farm-primary-button ms-auto' type='submit' disabled={formik.isSubmitting}>
+                            <Button className='farm-primary-button ms-auto' type='submit' onClick={() => formik.handleSubmit()} disabled={formik.isSubmitting}>
                                 {formik.isSubmitting ? <Spinner /> : "Guardar"}
                             </Button>
                         </div>
                     </TabPane>
                 </TabContent>
-
-
-
-
-
-
             </form>
 
             {/* Modal de Cancelar */}
@@ -402,12 +400,9 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSu
                 </ModalFooter>
             </Modal>
 
-            {/* Alerta */}
-            {alertConfig.visible && (
-                <Alert color={alertConfig.color} className="position-fixed bottom-0 start-50 translate-middle-x p-3">
-                    {alertConfig.message}
-                </Alert>
-            )}
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
+            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={"Salida creada exitosamente"}></SuccessModal>
+            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message="Ha ocurrido un error creando la salida, intentelo mas tarde" />
         </>
     )
 }

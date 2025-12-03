@@ -12,15 +12,7 @@ import { useNavigate } from "react-router-dom"
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation"
 import AlertMessage from "Components/Common/Shared/AlertMesagge"
 import UserForm from "Components/Common/Forms/UserForm"
-
-const userAttributes: Attribute[] = [
-    { key: 'username', label: 'Usuario', type: 'text' },
-    { key: 'name', label: 'Nombre', type: 'text' },
-    { key: 'lastname', label: 'Apellido', type: 'text' },
-    { key: 'email', label: 'Correo Electronico', type: 'text' },
-    { key: 'role', label: 'Rol', type: 'text' },
-    { key: 'status', label: 'Estado', type: 'status' },
-]
+import UserDetailsModal from "Components/Common/Details/UserDetails"
 
 const ViewUsers = () => {
     document.title = 'Ver Usuarios | Usuarios'
@@ -57,7 +49,6 @@ const ViewUsers = () => {
         },
     ];
 
-
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
@@ -73,76 +64,34 @@ const ViewUsers = () => {
         try {
             let response = null;
             let users = [];
-            if (userLogged.role === 'Superadmin') {
-                response = await configContext.axiosHelper.get(`${configContext.apiUrl}/user/find_by_role/farm_manager`)
+
+            const isSuperAdmin = Array.isArray(userLogged.role) ? userLogged.role.includes("Superadmin") : userLogged.role === "Superadmin";
+
+            if (isSuperAdmin) {
+                response = await configContext.axiosHelper.get(`${configContext.apiUrl}/user/find_by_role/farm_manager`);
                 users = response.data.data;
-                setUsers(
-                    users.filter(function (obj: any) {
-                        return obj.username !== userLogged.username;
-                    })
-                );
+                setUsers(users.filter((obj: any) => obj.username !== userLogged.username));
             } else {
-                response = await configContext.axiosHelper.get(`${configContext.apiUrl}/user`)
+                response = await configContext.axiosHelper.get(`${configContext.apiUrl}/user`);
                 users = response.data.data;
+
                 setUsers(
-                    users.filter(function (obj: any) {
-                        return obj.username !== userLogged.username && obj.role !== 'Superadmin' && obj.role !== 'farm_manager';
+                    users.filter((obj: any) => {
+                        const userRoles = Array.isArray(obj.role) ? obj.role : [];
+                        return (
+                            obj.username !== userLogged.username &&
+                            !userRoles.includes("Superadmin") &&
+                            !userRoles.includes("farm_manager")
+                        );
                     })
                 );
             }
 
         } catch (error) {
-            console.error('Error fetching users:', error);
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener a los usuarios' });
+            console.error("Error fetching users:", error);
+            setAlertConfig({ visible: true, color: "danger", message: "Ha ocurrido un error al obtener a los usuarios", });
         } finally {
             setLoading(false);
-        }
-    };
-
-
-    const handleCreateUser = async (data: UserData) => {
-        if (!configContext) return;
-
-        try {
-            await configContext.axiosHelper.create(`${configContext.apiUrl}/user/create_user`, data);
-            setAlertConfig({ visible: true, color: 'success', message: 'Usuario creado con éxito' });
-            handleFetchUsers();
-        } catch (error) {
-            console.error('Error creating the user:', error);
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al crear el usuario, intentelo mas tarde' });
-        } finally {
-            toggleModal('create', false);
-        }
-    };
-
-    const handleUpdateUser = async (data: UserData) => {
-        if (!configContext) return;
-
-        try {
-            await configContext.axiosHelper.put(`${configContext.apiUrl}/user/update_user/${data.username}`, data);
-            setAlertConfig({ visible: true, color: 'success', message: 'Usuario actualizado con éxito' });
-            handleFetchUsers();
-        } catch (error) {
-            console.error('Error updating user:', error);
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al actualizar el usuario, intentelo mas tarde' });
-        } finally {
-            toggleModal('update', false);
-        }
-    };
-
-
-    const handleDeleteUser = async () => {
-        if (!configContext) return;
-
-        try {
-            await configContext.axiosHelper.delete(`${configContext.apiUrl}/user/delete_user/${selectedUser.username}`);
-            setAlertConfig({ visible: true, color: 'success', message: 'Usuario eliminado con éxito' });
-            handleFetchUsers();
-        } catch (error) {
-            console.error('Error deleting user:', error);
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al eliminar el usuario, intentelo mas tarde' });
-        } finally {
-            toggleModal('delete', false);
         }
     };
 
@@ -158,7 +107,6 @@ const ViewUsers = () => {
         );
     }, [searchTerm, users, columns]);
 
-
     useEffect(() => {
         handleFetchUsers();
     }, [])
@@ -169,7 +117,6 @@ const ViewUsers = () => {
             <LoadingAnimation />
         );
     }
-
 
     return (
         <div className="page-content">
@@ -214,10 +161,9 @@ const ViewUsers = () => {
                             <UserCards
                                 columns={columns}
                                 data={filteredUsers}
-                                onDetailsClick={(user) => navigate(`/users/user_details/${user._id}`)}
-                                onCardClick={(user) => navigate(`/users/user_details/${user._id}`)}
+                                onDetailsClick={(user) => { setSelecteduser(user); toggleModal('details') }}
+                                onCardClick={(user) => { setSelecteduser(user); toggleModal('details') }}
                                 onEditClick={(user) => handleClicModal("update", user)}
-                                onDeleteClick={(user) => handleClicModal("delete", user)}
                                 imageAccessor="profile_image"
                             />
                         )}
@@ -225,12 +171,10 @@ const ViewUsers = () => {
                 </Card>
 
                 {/* Modal Details */}
-                <Modal size="lg" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered>
+                <Modal size="xl" isOpen={modals.details} toggle={() => { toggleModal("details"); handleFetchUsers(); }} backdrop='static' keyboard={false} centered>
                     <ModalHeader toggle={() => toggleModal("details")}><h4>Detalles de Usuario</h4></ModalHeader>
                     <ModalBody>
-                        {selectedUser && (
-                            <ObjectDetails attributes={userAttributes} object={selectedUser} showImage={true}></ObjectDetails>
-                        )}
+                        <UserDetailsModal userId={selectedUser?._id} />
                     </ModalBody>
                 </Modal>
 
@@ -238,7 +182,7 @@ const ViewUsers = () => {
                 <Modal isOpen={modals.create} toggle={() => toggleModal('create')} size="xl" keyboard={false} backdrop='static' centered>
                     <ModalHeader toggle={() => toggleModal('create')}>Nuevo Usuario</ModalHeader>
                     <ModalBody>
-                        <UserForm onSubmit={(data: UserData) => handleCreateUser(data)} onCancel={() => toggleModal('create', false)} defaultRole={userLogged.role === 'Superadmin' ? 'farm_manager' : ''} currentUserRole={userLogged.role} />
+                        <UserForm onSave={() => { toggleModal('create'); handleFetchUsers(); }} onCancel={() => toggleModal('create', false)} defaultRole={userLogged.role.includes('Superadmin') ? 'farm_manager' : ''} currentUserRole={userLogged.role} />
                     </ModalBody>
                 </Modal>
 
@@ -246,29 +190,9 @@ const ViewUsers = () => {
                 <Modal isOpen={modals.update} toggle={() => toggleModal('update')} size="xl" keyboard={false} backdrop='static' centered>
                     <ModalHeader toggle={() => toggleModal('update')}>Actualizar Usuario</ModalHeader>
                     <ModalBody>
-                        <UserForm initialData={selectedUser} isUsernameDisable={true} onSubmit={(data: UserData) => handleUpdateUser(data)} onCancel={() => toggleModal('update', false)} currentUserRole={userLogged.role} />
+                        <UserForm initialData={selectedUser} isUsernameDisable={true} onSave={() => { toggleModal('update'); handleFetchUsers(); }} onCancel={() => toggleModal('update', false)} currentUserRole={userLogged.role} />
                     </ModalBody>
                 </Modal>
-
-                {/* Modal delete */}
-                <Modal isOpen={modals.delete} toggle={() => toggleModal('delete')} size="md" keyboard={false} backdrop="static" centered>
-                    <ModalHeader toggle={() => toggleModal('delete')}>Confirmación de Eliminación</ModalHeader>
-                    <ModalBody>
-                        {`¿Estás seguro de que deseas desactivar al usuario ${selectedUser?.username}?`}
-                    </ModalBody>
-                    <ModalFooter>
-                        <Button className="farm-secondary-button" onClick={() => toggleModal('delete', false)}>Cancelar</Button>
-                        <Button className="farm-primary-button" onClick={() => {
-                            if (selectedUser) {
-                                handleDeleteUser();
-                            }
-                        }}>
-                            Eliminar
-                        </Button>
-                    </ModalFooter>
-                </Modal>
-
-
             </Container>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />

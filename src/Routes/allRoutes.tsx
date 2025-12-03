@@ -43,14 +43,12 @@ import CompletedOrders from "pages/Orders/CompletedOrders";
 import SubwarehouseInventory from "pages/Subwarehouse/SubwarehouseInventory";
 import SubwarehouseIncomes from "pages/Subwarehouse/SubwarehouseIncomes";
 import SubwarehouseOutcomes from "pages/Subwarehouse/SubwarehouseOutcomes";
-import CreateSubwarehouseOutcome from "pages/Subwarehouse/CreateSubwarehouseOutcome";
 import WarehouseConfiguration from "pages/Configuration/WarehouseConfiguration";
 import ViewPurchaseOrders from "pages/PurchaseOrders/ViewPurchaseOrders";
 import PurchaseOrderDetails from "pages/PurchaseOrders/PurchasOrderDetails";
 import ViewPigs from "pages/Pigs/ViewPigs";
 import ViewFarms from "pages/Farms/ViewFarms";
 import PigDetails from "pages/Pigs/PigDetails";
-import UserDetails from "pages/Users/UserDetails";
 import FarmDetails from "pages/Farms/FarmDetails";
 import ViewGroups from "pages/Groups/ViewGroups";
 import ViewExtractions from "pages/Laboratory/ViewExtractions";
@@ -108,7 +106,6 @@ const authProtectedRoutes = [
   { path: '/subwarehouse/subwarehouse_inventory', component: <SubwarehouseInventory /> },
   { path: '/subwarehouse/subwarehouse_incomes', component: <SubwarehouseIncomes /> },
   { path: '/subwarehouse/subwarehouse_outcomes', component: <SubwarehouseOutcomes /> },
-  { path: '/subwarehouse/create_subwarehouse_outcome', component: <CreateSubwarehouseOutcome /> },
 
   //Orders
   { path: '/orders/send_orders', component: <SendOrders /> },
@@ -127,7 +124,6 @@ const authProtectedRoutes = [
 
   //Users
   { path: 'users/view_users', component: <ViewUsers /> },
-  { path: 'users/user_details/:id_user', component: <UserDetails /> },
 
   //User Profile
   { path: "/profile", component: <UserProfile /> },

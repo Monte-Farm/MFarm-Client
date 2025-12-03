@@ -95,6 +95,7 @@ export interface SubwarehouseData {
     incomes: string[]
     outcomes: string[]
     isSubwarehouse: boolean
+    farm: string
 }
 
 export interface SupplierData {
@@ -140,7 +141,7 @@ export interface UserData {
     lastname: string;
     farm_assigned: string | null;
     email: string;
-    role: string;
+    role: string[];
     assigment?: string | null
     status: boolean;
     history: {
@@ -175,7 +176,7 @@ export interface Attribute {
 
 
 export interface PigFeedingEntry {
-    category: 'alimento' | 'suplemento' | 'vitamina' | 'otro';
+    category: string;
     name: string;
     dailyAmount: number;
     unit: string;
@@ -183,23 +184,37 @@ export interface PigFeedingEntry {
 }
 
 export interface PigMedicationEntry {
-    type: string;
-    name: string;
-    dose: number | '';
-    unit: string;
-    route: 'oral' | 'intramuscular' | 'subcutánea' | 'tópica' | 'intravenosa' | '';
-    applicationDate: Date | null;
+    medication: string;
+    dose?: number;
+    unit_measurement?: string;
+    administration_route?: string;
+    applicationDate?: Date;
     observations?: string;
 }
 
 export interface PigReproductionEntry {
     date: Date;
-    type: 'extraccion' | 'inseminacion' | 'parto' | 'monta' | 'aborto' | 'otro';
+    type: string;
     responsible?: string;
     description: string;
     eventRef?: string;
-    eventModel: 'Extraction' | 'Insemination' | 'Parto';
+    eventModel: string;
 }
+
+export interface medicationPackagesEntry {
+    packageId: string;
+    name: string;
+    objective: 'individual' | 'group';
+    destinationArea: string;
+    medications: {
+        medication: string;
+        quantity: number;
+        administration_route: string;
+    }[];
+    applicationDate: Date | null;
+    appliedBy: string;
+    observations?: string;
+};
 
 export interface PigData {
     _id: string;
@@ -227,6 +242,7 @@ export interface PigData {
     historyChanges: PigHistoryChanges[];
     feedings: PigFeedingEntry[];
     medications: PigMedicationEntry[];
+    medicationPackagesHistory: medicationPackagesEntry[];
     reproduction: PigReproductionEntry[];
     registration_date: Date | null;
     registered_by: string;

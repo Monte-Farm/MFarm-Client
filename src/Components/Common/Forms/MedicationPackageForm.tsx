@@ -78,7 +78,6 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { header: "Unidad M.", accessor: "unit_measurement", type: "text", isFilterable: true },
         {
             header: "Cantidad",
             accessor: "quantity",
@@ -88,19 +87,24 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                 const realValue = selected?.quantity ?? "";
 
                 return (
-                    <Input
-                        type="number"
-                        disabled={!isSelected}
-                        value={selected?.quantity === 0 ? "" : (selected?.quantity ?? "")}
-                        invalid={medicationErrors[row._id]?.quantity}
-                        onChange={(e) => {
-                            const newValue = e.target.value === "" ? 0 : Number(e.target.value);
-                            setMedicationsSelected(prev =>
-                                prev.map(m => m.medication === row._id ? { ...m, quantity: newValue } : m)
-                            );
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                    />
+                    <div className="input-group">
+                        <Input
+                            type="number"
+                            disabled={!isSelected}
+                            value={selected?.quantity === 0 ? "" : (selected?.quantity ?? "")}
+                            invalid={medicationErrors[row._id]?.quantity}
+                            onChange={(e) => {
+                                const newValue = e.target.value === "" ? 0 : Number(e.target.value);
+                                setMedicationsSelected(prev =>
+                                    prev.map(m => m.medication === row._id ? { ...m, quantity: newValue } : m)
+                                );
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            aria-describedby="unit-addon"
+                        />
+                        <span className="input-group-text" id="unit-addon">{row.unit_measurement}</span>
+                    </div>
+
                 );
             },
         },
@@ -276,6 +280,44 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                         color = "secondary";
                         text = "Corrales de venta";
                         break;
+                    case "piglet":
+                        color = "info";
+                        text = "Lechón";
+                        break;
+                    case "weaning":
+                        color = "warning";
+                        text = "Destete";
+                        break;
+                    case "fattening":
+                        color = "primary";
+                        text = "Engorda";
+                        break;
+                    case "breeder":
+                        color = "success";
+                        text = "Reproductor";
+                        break;
+                }
+
+                return <Badge color={color}>{text}</Badge>;
+            },
+        },
+        {
+            key: 'objective_use',
+            label: 'Objetivo de uso',
+            type: 'text',
+            render: (_, row) => {
+                let color = "secondary";
+                let text = "Desconocido";
+
+                switch (row.objective_use) {
+                    case "individual":
+                        color = "info";
+                        text = "Individual";
+                        break;
+                    case "group":
+                        color = "info";
+                        text = "Grupal";
+                        break;
                 }
 
                 return <Badge color={color}>{text}</Badge>;
@@ -427,6 +469,10 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
         formik.setFieldValue('creation_date', new Date())
     }, [])
 
+    useEffect(() => {
+        formik.setFieldValue("destination_area", "");
+    }, [formik.values.objective_use]);
+
 
     return (
         <form onSubmit={e => { e.preventDefault(); formik.handleSubmit(); }}>
@@ -525,36 +571,6 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
 
                     <div className="d-flex gap-3">
                         <div className="mt-4 w-50">
-                            <Label htmlFor="area" className="form-label">Área de destino</Label>
-                            <Input
-                                type="select"
-                                id="destination_area"
-                                name="destination_area"
-                                value={formik.values.destination_area}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                invalid={formik.touched.destination_area && !!formik.errors.destination_area}
-                            >
-                                <option value="">Seleccione un área destino</option>
-                                <option value="general">General</option>
-                                <option value="gestation">Gestación</option>
-                                <option value="farrowing">Paridera</option>
-                                <option value="maternity">Maternidad</option>
-                                <option value="weaning">Destete</option>
-                                <option value="nursery">Preceba / Levante inicial</option>
-                                <option value="fattening">Ceba / Engorda</option>
-                                <option value="replacement">Reemplazo / Recría</option>
-                                <option value="boars">Área de verracos</option>
-                                <option value="quarantine">Cuarentena / Aislamiento</option>
-                                <option value="hospital">Hospital / Enfermería</option>
-                                <option value="shipping">Corrales de venta / embarque</option>
-                            </Input>
-                            {formik.touched.destination_area && formik.errors.destination_area && (
-                                <FormFeedback>{formik.errors.destination_area}</FormFeedback>
-                            )}
-                        </div>
-
-                        <div className="mt-4 w-50">
                             <Label htmlFor="objective_use" className="form-label">Objetivo de uso</Label>
                             <Input
                                 type="select"
@@ -565,7 +581,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                                 onBlur={formik.handleBlur}
                                 invalid={formik.touched.objective_use && !!formik.errors.objective_use}
                             >
-                                <option value="">Seleccione un área destino</option>
+                                <option value="">Seleccione un objetivo de uso</option>
                                 <option value="individual">Individual</option>
                                 <option value="group">Grupal</option>
 
@@ -574,9 +590,50 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                                 <FormFeedback>{formik.errors.objective_use}</FormFeedback>
                             )}
                         </div>
+
+                        <div className="mt-4 w-50">
+                            <Label htmlFor="area" className="form-label">{formik.values.objective_use === 'individual' ? 'Etapa de destino' : 'Área de destino'}</Label>
+                            <Input
+                                key={formik.values.objective_use}               // <- fuerza remount al cambiar
+                                type="select"
+                                id="destination_area"
+                                name="destination_area"
+                                value={formik.values.destination_area}
+                                onChange={formik.handleChange}
+                                onBlur={formik.handleBlur}
+                                invalid={formik.touched.destination_area && !!formik.errors.destination_area}
+                            >
+                                <option value="">{formik.values.objective_use === 'individual' ? 'Seleccione una etapa de destino' : 'Seleccione un area de destino'}</option>
+
+                                {formik.values.objective_use === "individual" ? (
+                                    <>
+                                        <option value="piglet">Lechón</option>
+                                        <option value="weaning">Destete</option>
+                                        <option value="fattening">Engorda</option>
+                                        <option value="breeder">Reproductor</option>
+                                    </>
+                                ) : (
+                                    <>
+                                        <option value="general">General</option>
+                                        <option value="gestation">Gestación</option>
+                                        <option value="farrowing">Paridera</option>
+                                        <option value="maternity">Maternidad</option>
+                                        <option value="weaning">Destete</option>
+                                        <option value="nursery">Preceba / Levante inicial</option>
+                                        <option value="fattening">Ceba / Engorda</option>
+                                        <option value="replacement">Reemplazo / Recría</option>
+                                        <option value="boars">Área de verracos</option>
+                                        <option value="quarantine">Cuarentena / Aislamiento</option>
+                                        <option value="hospital">Hospital / Enfermería</option>
+                                        <option value="shipping">Corrales de venta / embarque</option>
+                                    </>
+                                )}
+                            </Input>
+                            {formik.touched.destination_area && formik.errors.destination_area && (
+                                <FormFeedback>{formik.errors.destination_area}</FormFeedback>
+                            )}
+                        </div>
                     </div>
-
-
 
                     <div className="d-flex gap-3">
                         <div className="mt-4 w-50">

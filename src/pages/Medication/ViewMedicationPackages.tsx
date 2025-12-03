@@ -93,6 +93,22 @@ const ViewMedicationPackages = () => {
                         color = "secondary";
                         text = "Corrales de venta / embarque";
                         break;
+                    case "piglet":
+                        color = "info";
+                        text = "Lechón";
+                        break;
+                    case "weaning":
+                        color = "warning";
+                        text = "Destete";
+                        break;
+                    case "fattening":
+                        color = "primary";
+                        text = "Engorda";
+                        break;
+                    case "breeder":
+                        color = "success";
+                        text = "Reproductor";
+                        break;
                 }
 
                 return <Badge color={color}>{text}</Badge>;

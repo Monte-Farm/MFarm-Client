@@ -114,6 +114,7 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
             historyChanges: [],
             feedings: [],
             medications: [],
+            medicationPackagesHistory: [],
             reproduction: [],
             registered_by: userLogged._id,
             registration_date: null

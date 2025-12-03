@@ -980,3 +980,37 @@ i {
         max-width: 80% !important;
     }
 }
+
+.role-selector-container {
+    row-gap: 12px;
+}
+
+.role-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: 2px solid #d4d7dd;
+    background: #f9fafb;
+    cursor: pointer;
+    user-select: none;
+    transition: 0.2s ease-in-out;
+    min-width: 170px;
+    font-size: 0.80rem;
+    font-weight: 500;
+}
+
+.role-card:hover {
+    border-color: #8aa0ff;
+    background: #f1f4ff;
+}
+
+.role-card.selected {
+    border-color: #4c6fff;
+    background: #e7ecff;
+}
+
+.role-card input {
+    display: none;
+}

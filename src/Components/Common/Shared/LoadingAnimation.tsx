@@ -5,13 +5,29 @@ interface LoadingAnimationProps {
     absolutePosition?: boolean;
 }
 
-const LoadingAnimation: React.FC<LoadingAnimationProps> = ({ absolutePosition = true }) => {
+const LoadingAnimation: React.FC<LoadingAnimationProps> = ({
+    absolutePosition = true,
+}) => {
+    if (absolutePosition) {
+        return (
+            <div className="d-flex justify-content-center align-items-center vh-100 page-content">
+                <img
+                    src={LoadingGif}
+                    alt="Cargando..."
+                    style={{ width: "200px" }}
+                />
+            </div>
+        );
+    }
+
+    // Vista normal (como antes)
     return (
-        <div
-            className={`d-flex justify-content-center align-items-center ${absolutePosition ? "vh-100 page-content" : "h-100"}`}
-            style={absolutePosition ? { position: "absolute", inset: 0, zIndex: 9999, backgroundColor: "white" } : {}}
-        >
-            <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
+        <div className="d-flex justify-content-center align-items-center h-100">
+            <img
+                src={LoadingGif}
+                alt="Cargando..."
+                style={{ width: "200px" }}
+            />
         </div>
     );
 };

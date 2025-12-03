@@ -109,7 +109,6 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
 
                 let createIncome: boolean = true
                 if (values.outcomeType.toLowerCase() === 'waste') createIncome = false
-
                 await configContext.axiosHelper.create(`${configContext.apiUrl}/outcomes/create_outcome/${createIncome}/${values.outcomeType}`, values);
                 toggleModal('success')
             } catch (error) {
@@ -194,24 +193,24 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
     };
 
 
-    const handleCreateWarehouse = async (data: SubwarehouseData) => {
-        if (!configContext) return;
+    // const handleCreateWarehouse = async (data: SubwarehouseData) => {
+    //     if (!configContext) return;
 
-        try {
-            const response = await configContext?.axiosHelper.create(`${configContext.apiUrl}/warehouse/create_warehouse`, data);
+    //     try {
+    //         const response = await configContext?.axiosHelper.create(`${configContext.apiUrl}/warehouse/create_warehouse`, data);
 
-            setAlertConfig({ visible: true, color: 'success', message: 'Subalmacen creado con exito' })
-            await handleFetchsubwarehouses();
-            const newWarehouse = response.data.data;
-            setSelectedSubwarehouse(newWarehouse);
-            formik.setFieldValue('warehouseDestiny', newWarehouse.id);
-        } catch (error) {
-            console.error('Error creating the subwarehouse', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al agregar el nuevo subalmacén, intentelo más tarde' })
-        } finally {
-            toggleModal('createWarehouse', false);
-        }
-    };
+    //         setAlertConfig({ visible: true, color: 'success', message: 'Subalmacen creado con exito' })
+    //         await handleFetchsubwarehouses();
+    //         const newWarehouse = response.data.data;
+    //         setSelectedSubwarehouse(newWarehouse);
+    //         formik.setFieldValue('warehouseDestiny', newWarehouse.id);
+    //     } catch (error) {
+    //         console.error('Error creating the subwarehouse', { error })
+    //         setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al agregar el nuevo subalmacén, intentelo más tarde' })
+    //     } finally {
+    //         toggleModal('createWarehouse', false);
+    //     }
+    // };
 
     useEffect(() => {
         fetchWarehouseId();
@@ -508,7 +507,9 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
             <Modal size='lg' isOpen={modals.createWarehouse} toggle={() => toggleModal('createWarehouse', false)} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal('createWarehouse')}>Nuevo Subalmacén</ModalHeader>
                 <ModalBody>
-                    <SubwarehouseForm onSubmit={handleCreateWarehouse} onCancel={() => toggleModal('createWarehouse', false)} />
+                    <SubwarehouseForm onCancel={() => toggleModal('createWarehouse', false)} onSave={function (): void {
+                        throw new Error('Function not implemented.');
+                    }} />
                 </ModalBody>
             </Modal>
 
