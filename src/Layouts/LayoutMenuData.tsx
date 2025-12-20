@@ -369,7 +369,7 @@ const Navdata = () => {
             label: 'Cerdos',
             icon: 'bx bxs-dog',
             link: '/#',
-            roles: ['farm_manager', 'general_worker', 'reproduction_technician'],
+            roles: ['farm_manager', 'general_worker', 'reproduction_technician', 'veterinarian'],
             click: function (e: any) {
                 e.preventDefault();
                 setIscurrentState('Pigs')
