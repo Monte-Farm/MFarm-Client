@@ -73,6 +73,11 @@ const Navdata = () => {
     const [isMedicationPackage, setIsMedicationPackage] = useState<boolean>(false)
     const [isVaccinationPlans, setIsVaccinationPlans] = useState<boolean>(false)
 
+    //Feeding
+    const [isFeeding, setIsFeeding] = useState<boolean>(false)
+    const [isFeedingPackage, setIsFeedingPackage] = useState<boolean>(false)
+
+
     const [iscurrentState, setIscurrentState] = useState('Home');
 
     function updateIconSidebar(e: any) {
@@ -132,6 +137,9 @@ const Navdata = () => {
         if (iscurrentState !== 'Medication') {
             setIsMedication(false)
         }
+        if (iscurrentState !== 'Feeding') {
+            setIsFeeding(false)
+        }
     }, [
         history,
         iscurrentState,
@@ -145,7 +153,8 @@ const Navdata = () => {
         isSubwarehouseOutcomes,
         isPigs,
         isReproduction,
-        isMedication
+        isMedication,
+        isFeeding,
     ]);
 
     const menuItems: any = [
@@ -336,19 +345,6 @@ const Navdata = () => {
                         setIsPendingOrders(!isPendingOrders)
                     },
                     stateVariables: isPendingOrders,
-                },
-                {
-                    id: "completedOrders",
-                    label: 'Pedidos Completados',
-                    link: "/orders/completed_orders",
-                    roles: ['warehouse_manager'],
-                    parentId: "orders",
-
-                    click: function (e: any) {
-                        e.preventDefault();
-                        setIsCompletedOrders(!isCompletedOrders)
-                    },
-                    stateVariables: isCompletedOrders,
                 },
             ]
         },
@@ -562,6 +558,34 @@ const Navdata = () => {
                         setIsVaccinationPlans(!isVaccinationPlans)
                     },
                     stateVariables: isVaccinationPlans,
+                },
+            ]
+        },
+        {
+            id: 'feeding',
+            label: 'Alimentacion',
+            icon: 'ri-plant-line',
+            link: '/#',
+            roles: ['farm_manager', 'veterinarian',],
+            click: function (e: any) {
+                e.preventDefault();
+                setIscurrentState('Feeding')
+                setIsFeeding(!isFeeding)
+                updateIconSidebar(e);
+            },
+            stateVariables: isFeeding,
+            subItems: [
+                {
+                    id: "feedingPackages",
+                    label: "Paquetes de alimentacion",
+                    link: "/feeding/view_feeding_packages",
+                    roles: ['farm_manager', 'veterinarian',],
+                    parentId: "feeding",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsFeedingPackage(!isFeedingPackage)
+                    },
+                    stateVariables: isFeedingPackage,
                 },
             ]
         }

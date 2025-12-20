@@ -1,9 +1,9 @@
 import { useContext, useEffect, useState } from 'react';
-import { Alert, Button, Card, CardBody, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from 'reactstrap';
+import { Alert, Badge, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from 'reactstrap';
 import * as Yup from 'yup'
 import { useFormik } from 'formik';
 import { useNavigate } from 'react-router-dom';
-import { OrderData, ProductData } from 'common/data_interfaces';
+import { Attribute, OrderData, ProductData } from 'common/data_interfaces';
 import { ConfigContext } from 'App';
 import classnames from "classnames";
 import ObjectDetailsHorizontal from '../Details/ObjectDetailsHorizontal';
@@ -11,40 +11,110 @@ import { Column } from 'common/data/data_types';
 import DatePicker from 'react-flatpickr';
 import CreateOrderTable from '../Tables/CreateOrderTable';
 import CustomTable from '../Tables/CustomTable';
+import { getLoggedinUser } from 'helpers/api_helper';
+import LoadingAnimation from '../Shared/LoadingAnimation';
+import AlertMessage from '../Shared/AlertMesagge';
+import SuccessModal from '../Shared/SuccessModal';
+import ErrorModal from '../Shared/ErrorModal';
+import ObjectDetails from '../Details/ObjectDetails';
 
 
 interface OrderFormProps {
     initialData?: OrderData;
-    onSubmit: (data: OrderData) => Promise<void>
+    onSave: () => void;
     onCancel: () => void;
 }
-
-const orderAttributes = [
-    { key: 'id', label: 'No. de Pedido' },
-    { key: 'date', label: 'Fecha de pedido' },
-]
 
 const productsColumns: Column<any>[] = [
     { header: 'Codigo', accessor: 'id', isFilterable: true, type: 'text' },
     { header: 'Nombre', accessor: 'name', isFilterable: true, type: 'text' },
-    { header: 'Cantidad Solicitada', accessor: 'quantity', isFilterable: true, type: 'number' },
-    { header: 'Unidad de medida', accessor: 'unit_measurement', isFilterable: true, type: 'text' },
-    { header: 'Categoria', accessor: 'category', isFilterable: true, type: 'text' },
-    { header: 'Observaciones', accessor: 'observations', isFilterable: true, type: 'text' },
+    {
+        header: 'Cantidad Solicitada',
+        accessor: 'quantity',
+        isFilterable: true,
+        type: 'number',
+        render: (_, row) => <span>{row.quantity} {row.unit_measurement}</span>
+    },
+    {
+        header: 'Categoria',
+        accessor: 'category',
+        isFilterable: true,
+        type: 'text',
+        render: (value: string) => {
+            let color = "secondary";
+            let label = value;
+
+            switch (value) {
+                case "nutrition":
+                    color = "info";
+                    label = "Nutrición";
+                    break;
+                case "medications":
+                    color = "warning";
+                    label = "Medicamentos";
+                    break;
+                case "vaccines":
+                    color = "primary";
+                    label = "Vacunas";
+                    break;
+                case "vitamins":
+                    color = "success";
+                    label = "Vitaminas";
+                    break;
+                case "minerals":
+                    color = "success";
+                    label = "Minerales";
+                    break;
+                case "supplies":
+                    color = "success";
+                    label = "Insumos";
+                    break;
+                case "hygiene_cleaning":
+                    color = "success";
+                    label = "Higiene y desinfección";
+                    break;
+                case "equipment_tools":
+                    color = "success";
+                    label = "Equipamiento y herramientas";
+                    break;
+                case "spare_parts":
+                    color = "success";
+                    label = "Refacciones y repuestos";
+                    break;
+                case "office_supplies":
+                    color = "success";
+                    label = "Material de oficina";
+                    break;
+                case "others":
+                    color = "success";
+                    label = "Otros";
+                    break;
+            }
+
+            return <Badge color={color}>{label}</Badge>;
+        },
+    },
+    {
+        header: 'Observaciones',
+        accessor: 'observations',
+        isFilterable: true,
+        type: 'text',
+        render: (_, row) => row.observations === '' ? <span>Sin observaciones</span> : <span>{row.observations}</span>
+    },
 ]
 
-const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }) => {
-
-    const history = useNavigate()
-    const [modals, setModals] = useState({ createWarehouse: false, cancel: false });
+const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) => {
+    const configContext = useContext(ConfigContext)
+    const userLogged = getLoggedinUser();
+    const [modals, setModals] = useState({ createWarehouse: false, cancel: false, success: false, error: false });
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const [orderOrigin, setOrderOrigin] = useState<string>('')
     const [orderDestiny, setOrderDestiny] = useState<string>('')
-    const configContext = useContext(ConfigContext)
     const [products, setProducts] = useState([])
     const [selectedProducts, setSelectedProducts] = useState([])
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
+    const [loading, setLoading] = useState<boolean>(true);
 
     function toggleArrowTab(tab: any) {
         if (activeStep !== tab) {
@@ -56,6 +126,29 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
             }
         }
     }
+
+    const orderAttributes: Attribute[] = [
+        { key: 'id', label: 'No. de Pedido', type: 'text' },
+        { key: 'date', label: 'Fecha de pedido', type: 'date' },
+        {
+            key: 'user',
+            label: 'Pedido por',
+            type: 'text',
+            render: (value) => <span>{userLogged.name} {userLogged.lastname}</span>
+        },
+        {
+            key: 'orderOrigin',
+            label: 'Pedido para',
+            type: 'text',
+            render: (value) => <span>{orderOrigin}</span>
+        },
+        {
+            key: 'orderDestiny',
+            label: 'Pedido hacia',
+            type: 'text',
+            render: (value) => <span>{orderDestiny}</span>
+        },
+    ]
 
     const validationSchema = Yup.object({
         id: Yup.string()
@@ -78,10 +171,10 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
         initialValues: initialData || {
             id: "",
             date: null,
-            user: "",
+            user: userLogged._id,
             productsRequested: [],
             status: 'pending',
-            orderOrigin: "AG001",
+            orderOrigin: "",
             orderDestiny: "",
             productsDelivered: []
         },
@@ -91,27 +184,24 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
         validationSchema,
         onSubmit: async (values, { setSubmitting, resetForm }) => {
             try {
+                if (!configContext || !userLogged) return
                 setSubmitting(true);
-                await onSubmit(values);
+
+                await configContext.axiosHelper.create(`${configContext.apiUrl}/orders/create_order`, values);
+                await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
+                    event: `Pedido ${values.id} creado`
+                });
+
+                toggleModal('success')
             } catch (error) {
                 console.error("Error al enviar el formulario:", error);
+                toggleModal('error');
             } finally {
                 setSubmitting(false);
             }
         },
     });
 
-    const showAlert = (color: string, message: string) => {
-        setAlertConfig({ visible: true, color: color, message: message })
-        setTimeout(() => {
-            setAlertConfig({ ...alertConfig, visible: false })
-        }, 5000);
-    }
-
-    const handleError = (error: any, message: string) => {
-        console.error(message, error);
-        showAlert('danger', message);
-    }
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -131,81 +221,73 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
         setSelectedProducts(updatedSelectedProducts);
     };
 
-
-    const handleFetchWarehouseProducts = async () => {
+    const fetchData = async () => {
+        if (!configContext || !userLogged) return;
         try {
-            if (!configContext) return;
+            setLoading(true)
 
-            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/get_inventory/AG001`);
-            const products = response.data.data;
+            const [nextIdResponse, farmResponse, orderDestinyResponse] = await Promise.all([
+                configContext.axiosHelper.get(`${configContext.apiUrl}/orders/order_next_id`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/farm/find_by_id/${userLogged.farm_assigned}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_id/${userLogged.assigment}`),
+            ])
 
-            const productsWithExistences = products.filter((obj: any) => obj.quantity !== 0);
+            formik.setFieldValue('id', nextIdResponse.data.data);
+            const main_warehouse = farmResponse.data.data.main_warehouse;
 
+            setOrderDestiny(orderDestinyResponse.data.data.name);
+            formik.setFieldValue('orderDestiny', orderDestinyResponse.data.data._id);
+
+            const [orderOriginResponse, productsResponse] = await Promise.all([
+                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_id/${main_warehouse}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/get_inventory/${main_warehouse}`),
+            ])
+
+            const productsWithExistences = productsResponse.data.data.filter((obj: any) => obj.quantity !== 0);
             setProducts(productsWithExistences);
+
+            setOrderOrigin(orderOriginResponse.data.data.name);
+            formik.setFieldValue('orderOrigin', orderOriginResponse.data.data._id);
         } catch (error) {
-            console.error(error);
-            history("/auth-500");
+            console.error('Error fetching data:', { error });
+            toggleModal('error');
+        } finally {
+            setLoading(false)
         }
-    };
+    }
 
+    const checkOrderData = async () => {
+        formik.setTouched({
+            id: true,
+            date: true,
+        });
 
-    const fetchOrderOrigin = async () => {
         try {
-            if (!configContext) return;
-
-            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_id/${formik.values.orderOrigin}`);
-            const orderOrigin = response.data.data.name;
-
-            setOrderOrigin(orderOrigin);
-        } catch (error) {
-            console.error('Ha ocurrido un error al obtener el origen de la orden');
+            await validationSchema.validate(formik.values, { abortEarly: false });
+            toggleArrowTab(2);
+        } catch (err) {
+            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor ingrese todos los datos' })
         }
-    };
+    }
 
-
-    const fetchOrderDestiny = async () => {
-        try {
-            if (!configContext || !configContext.userLogged) return;
-
-            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_id/${configContext.userLogged.assigment}`);
-            const orderDestiny = response.data.data;
-
-            setOrderDestiny(orderDestiny.name);
-            formik.setFieldValue('orderDestiny', orderDestiny.id);
-        } catch (error) {
-            console.error('Ha ocurrido un error al obtener el destino de la orden');
+    const checkProductsSelected = () => {
+        if (formik.values.productsRequested.length === 0) {
+            setAlertConfig({ visible: true, color: 'danger', message: 'Seleccione al menos 1 producto' })
+        } else {
+            toggleArrowTab(activeStep + 1)
         }
-    };
-
-
-    const fetchNextId = async () => {
-        try {
-            if (!configContext) return;
-
-            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/orders/order_next_id`);
-            const nextId = response.data.data;
-            formik.setFieldValue('id', nextId);
-        } catch (error) {
-            console.error('Ha ocurrido un error al obtener el id');
-        }
-    };
+    }
 
     useEffect(() => {
-        if (!configContext) return;
+        fetchData();
+        formik.setFieldValue('date', new Date())
+    }, [])
 
-        handleFetchWarehouseProducts();
-        fetchOrderOrigin();
-        fetchOrderDestiny();
-        fetchNextId();
-
-        const today = new Date().toLocaleDateString('es-ES')
-        formik.setFieldValue('date', today)
-
-        if (configContext?.userLogged) {
-            formik.setFieldValue('user', configContext.userLogged.username)
-        }
-    }, [configContext])
-
+    if (loading) {
+        return (
+            <LoadingAnimation absolutePosition={false} />
+        )
+    }
 
     return (
         <>
@@ -284,7 +366,6 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
 
                             <div className="w-50">
                                 <Label htmlFor="dateInput" className="form-label">Fecha</Label>
-
                                 <DatePicker
                                     id="date"
                                     className={`form-control ${formik.touched.date && formik.errors.date ? 'is-invalid' : ''}`}
@@ -306,13 +387,9 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
                                 type="text"
                                 id="userInput"
                                 name="userDisplay"
-                                value={`${configContext?.userLogged?.name} ${configContext?.userLogged?.lastname}` || ''}
+                                value={`${userLogged?.name} ${userLogged?.lastname}` || ''}
                                 disabled
                             />
-                            <Input type="hidden" name="user" value={formik.values.user} />
-                            {formik.touched.user && formik.errors.user && (
-                                <FormFeedback>{formik.errors.user}</FormFeedback>
-                            )}
                         </div>
 
                         <div className='d-flex gap-3 mt-4'>
@@ -325,10 +402,6 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
                                     value={orderOrigin || ''}
                                     disabled
                                 />
-                                <Input type="hidden" name="orderOrigin" value={formik.values.orderOrigin} />
-                                {formik.touched.orderOrigin && formik.errors.orderOrigin && (
-                                    <FormFeedback>{formik.errors.orderOrigin}</FormFeedback>
-                                )}
                             </div>
 
                             <div className='position-relative mt-3'>
@@ -352,16 +425,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
                         </div>
 
                         <div className="d-flex mt-4">
-                            <Button
-                                className="btn btn-success btn-label right ms-auto nexttab nexttab ms-auto farm-secondary-button"
-                                onClick={() => {
-                                    toggleArrowTab(activeStep + 1);
-                                }}
-                                disabled={
-                                    !formik.values.id ||
-                                    !formik.values.date
-                                }
-                            >
+                            <Button className="btn btn-success btn-label right ms-auto nexttab nexttab ms-auto farm-secondary-button" onClick={() => checkOrderData()}>
                                 <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
                                 Siguiente
                             </Button>
@@ -369,30 +433,18 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
                     </TabPane>
 
                     <TabPane id='step-products-tab' tabId={2}>
-                        {/* Productos */}
-                        <div className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(65vh - 100px)', overflowY: 'hidden' }}>
+                        <Label>Seleccion de productos para el pedido</Label>
+                        <div className="border border-0 d-flex flex-column flex-grow-1">
                             <CreateOrderTable data={products} onProductSelect={handleProductSelect} showStock={true} showPagination={false} />
                         </div>
 
                         <div className="d-flex mt-4">
-                            <Button
-                                className="btn btn-light btn-label previestab farm-secondary-button"
-                                onClick={() => {
-                                    toggleArrowTab(activeStep - 1);
-                                }}
-                            >
+                            <Button className="btn btn-light btn-label previestab farm-secondary-button" onClick={() => toggleArrowTab(activeStep - 1)}>
                                 <i className="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i>{" "}
                                 Atras
                             </Button>
 
-                            <Button
-                                className="btn btn-success btn-label right ms-auto nexttab nexttab ms-auto farm-secondary-button"
-                                onClick={() => toggleArrowTab(activeStep + 1)}
-                                disabled={
-                                    formik.values.productsRequested.length === 0 ||
-                                    formik.values.productsRequested.some(product => !product.quantity || product.quantity <= 0)
-                                }
-                            >
+                            <Button className="btn btn-success btn-label right ms-auto nexttab nexttab ms-auto farm-secondary-button" onClick={() => checkProductsSelected()}>
                                 <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
                                 Siguiente
                             </Button>
@@ -400,17 +452,26 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
                     </TabPane>
 
                     <TabPane id='step-summary-tab' tabId={3}>
-                        <Card style={{ backgroundColor: '#A3C293' }}>
-                            <CardBody className="pt-4">
-                                <ObjectDetailsHorizontal attributes={orderAttributes} object={formik.values} />
-                            </CardBody>
-                        </Card>
+                        <div className='d-flex gap-3'>
+                            <Card>
+                                <CardHeader className='bg-light'>
+                                    <h5>Informacion del pedido</h5>
+                                </CardHeader>
+                                <CardBody className="pt-4">
+                                    <ObjectDetails attributes={orderAttributes} object={formik.values} />
+                                </CardBody>
+                            </Card>
 
-                        <Card style={{ height: '49vh' }}>
-                            <CardBody className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(64vh - 100px)', overflowY: 'auto' }}>
-                                <CustomTable columns={productsColumns} data={selectedProducts} showSearchAndFilter={false} showPagination={false} />
-                            </CardBody>
-                        </Card>
+                            <Card className='w-100'>
+                                <CardHeader className='bg-light'>
+                                    <h5>Productos seleccionados</h5>
+                                </CardHeader>
+                                <CardBody className="p-0">
+                                    <CustomTable columns={productsColumns} data={selectedProducts} showSearchAndFilter={false} showPagination={true} rowsPerPage={6} />
+                                </CardBody>
+                            </Card>
+                        </div>
+
 
                         <div className='d-flex mt-4 gap-2'>
                             <Button
@@ -429,12 +490,9 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
                         </div>
                     </TabPane>
                 </TabContent>
+            </form >
 
 
-
-            </form>
-
-            {/* Modal de Cancelar */}
             <Modal isOpen={modals.cancel} centered toggle={() => toggleModal('cancel', false)}>
                 <ModalHeader>Confirmación</ModalHeader>
                 <ModalBody>¿Estás seguro de que deseas cancelar? Los datos no se guardarán.</ModalBody>
@@ -444,12 +502,9 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }
                 </ModalFooter>
             </Modal>
 
-            {/* Alerta */}
-            {alertConfig.visible && (
-                <Alert color={alertConfig.color} className="position-fixed bottom-0 start-50 translate-middle-x p-3">
-                    {alertConfig.message}
-                </Alert>
-            )}
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} />
+            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={'Pedido creado con exito'} />
+            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message={'El servicio no esta disponible, intentelo mas tarde'} />
         </>
     )
 }

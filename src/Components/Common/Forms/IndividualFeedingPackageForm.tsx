@@ -4,7 +4,7 @@ import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { Badge, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from "reactstrap";
 import LoadingAnimation from "../Shared/LoadingAnimation";
-import { Attribute, medicationPackagesEntry, PigData } from "common/data_interfaces";
+import { Attribute, FeedingPackagesEntry, medicationPackagesEntry, PigData } from "common/data_interfaces";
 import * as Yup from 'yup';
 import classnames from "classnames";
 import { useFormik } from "formik";
@@ -19,23 +19,23 @@ import ErrorModal from "../Shared/ErrorModal";
 import SuccessModal from "../Shared/SuccessModal";
 import MissingStockModal from "../Shared/MissingStockModal";
 
-interface IndividualMedicationPackageFormProps {
+interface IndividualFeedingPackageFormProps {
     pigId: string
     onSave: () => void
 }
 
-const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormProps> = ({ pigId, onSave }) => {
+const IndividualFeedingPackageForm: React.FC<IndividualFeedingPackageFormProps> = ({ pigId, onSave }) => {
     const userLogged = getLoggedinUser();
     const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
     const [loading, setLoading] = useState<boolean>(false);
-    const [modals, setModals] = useState({ medicationPackageDetails: false, success: false, error: false, missingStock: false });
-    const [medicationsPackages, setMedicationsPackages] = useState<any[]>([]);
+    const [modals, setModals] = useState({ feedingPackageDetails: false, success: false, error: false, missingStock: false });
+    const [feedingPackages, setFeedingPackages] = useState<any[]>([]);
     const [pigDetails, setPigDetails] = useState<PigData>()
-    const [selectedMedicationPackage, setSelectedMedicationPackage] = useState<any>();
-    const [medicationPackagesItems, setMedicationsPackagesItems] = useState<any[]>();
+    const [selectedFeedingPackage, setSelectedFeedingPackage] = useState<any>();
+    const [feedingPackagesItems, setFeedingPackagesItems] = useState<any[]>();
     const [missingItems, setMissingItems] = useState([]);
 
     function toggleArrowTab(tab: number) {
@@ -53,7 +53,7 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
 
-    const medicationPackagesColumns: Column<any>[] = [
+    const feedingPackagesColumns: Column<any>[] = [
         { header: 'Codigo', accessor: 'code', type: 'text', isFilterable: true },
         { header: 'Nombre', accessor: 'name', type: 'text', isFilterable: true },
         { header: 'Fecha de creacion', accessor: 'creation_date', type: 'date', isFilterable: true },
@@ -240,7 +240,7 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
         { key: "observations", label: "Observaciones", type: "text" },
     ];
 
-    const selectedMedicationsColumns: Column<any>[] = [
+    const selectedFeedingsColumns: Column<any>[] = [
         { header: "Codigo", accessor: "id", type: "text", isFilterable: true },
         { header: "Producto", accessor: "name", type: "text", isFilterable: true },
         {
@@ -250,52 +250,9 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
             isFilterable: true,
             render: (_, row) => <span>{row.quantity} {row.unit_measurement}</span>
         },
-        {
-            header: "Via de administracion",
-            accessor: "administration_route",
-            type: "text",
-            isFilterable: true,
-            render: (value: string) => {
-                let color = "secondary";
-                let label = value;
-
-                switch (value) {
-                    case "oral":
-                        color = "info";
-                        label = "Oral";
-                        break;
-                    case "intramuscular":
-                        color = "primary";
-                        label = "Intramuscular";
-                        break;
-                    case "subcutaneous":
-                        color = "primary";
-                        label = "Subcutánea";
-                        break;
-                    case "intravenous":
-                        color = "primary";
-                        label = "Intravenosa";
-                        break;
-                    case "intranasal":
-                        color = "primary";
-                        label = "Intranasal";
-                        break;
-                    case "topical":
-                        color = "primary";
-                        label = "Tópica";
-                        break;
-                    case "rectal":
-                        color = "primary";
-                        label = "Rectal";
-                        break;
-                }
-
-                return <Badge color={color}>{label}</Badge>;
-            },
-        },
     ]
 
-    const medicationPackagesAttributes: Attribute[] = [
+    const feedingsPackagesAttributes: Attribute[] = [
         { label: 'Codigo', key: 'code', type: 'text' },
         { label: 'Nombre', key: 'name', type: 'text', },
         { label: 'Fecha de creacion', key: 'creation_date', type: 'date', },
@@ -399,6 +356,59 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
                 return <Badge color={color}>{text}</Badge>;
             },
         },
+        {
+            key: 'periodicity',
+            label: 'Periodicidad',
+            type: 'text',
+            render: (_, row) => {
+                let color = "secondary";
+                let text = "Desconocido";
+
+                switch (row.periodicity) {
+                    case "once_day":
+                        color = "info";
+                        text = "1 vez al día";
+                        break;
+                    case "twice_day":
+                        color = "primary";
+                        text = "2 veces al día";
+                        break;
+                    case "three_times_day":
+                        color = "warning";
+                        text = "3 veces al día";
+                        break;
+                    case "ad_libitum":
+                        color = "success";
+                        text = "Libre acceso";
+                        break;
+                    case "weekly":
+                        color = "secondary";
+                        text = "1 vez a la semana";
+                        break;
+                    case "biweekly":
+                        color = "warning";
+                        text = "Cada 15 días";
+                        break;
+                    case "monthly":
+                        color = "dark";
+                        text = "Mensual";
+                        break;
+                    case "specific_days":
+                        color = "primary";
+                        text = "Días específicos";
+                        break;
+                    case "by_event":
+                        color = "danger";
+                        text = "Por evento productivo";
+                        break;
+                    default:
+                        color = "light";
+                        text = "No definido";
+                }
+
+                return <Badge color={color}>{text}</Badge>;
+            },
+        },
     ]
 
     const fetchData = async () => {
@@ -410,10 +420,10 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
             ])
             const pigData = pigResponse.data.data;
 
-            const medicationResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/medication_package/find_by_destination_objective/${userLogged.farm_assigned}/${pigData.currentStage}/individual`)
-            const packagesWithId = medicationResponse.data.data.map((b: any) => ({ ...b, id: b._id }));
+            const feedingResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/feeding_package/find_by_destination_objective/${userLogged.farm_assigned}/${pigData.currentStage}/individual`)
+            const packagesWithId = feedingResponse.data.data.map((b: any) => ({ ...b, id: b._id }));
             setPigDetails(pigData)
-            setMedicationsPackages(packagesWithId)
+            setFeedingPackages(packagesWithId)
         } catch (error) {
             console.error('Error fetching data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al cargar los datos, intentelo mas tarde' })
@@ -422,19 +432,19 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
         }
     }
 
-    const fetchMedicationsItems = async (medications: any[]) => {
-        if (!configContext || !userLogged || !medications) return;
+    const fetchFeedingItems = async (feedings: any[]) => {
+        if (!configContext || !userLogged || !feedings) return;
         try {
-            const medicationsIds = medications.map(m => m.medication)
-            const medicationResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/product/find_products_by_ids`, medicationsIds)
+            const feedingsIds = feedings.map(f => f.feeding)
+            const feedingResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/product/find_products_by_ids`, feedingsIds)
 
-            const products = medicationResponse.data.data;
+            const products = feedingResponse.data.data;
 
-            const combined = medications.map(med => {
-                const product = products.find((p: any) => p._id === med.medication);
-                return { ...product, ...med };
+            const combined = feedings.map(fed => {
+                const product = products.find((p: any) => p._id === fed.feeding);
+                return { ...product, ...fed };
             });
-            setMedicationsPackagesItems(combined)
+            setFeedingPackagesItems(combined)
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -445,16 +455,18 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
         appliedBy: Yup.string().required('El area de destino es obligatoria'),
     })
 
-    const formik = useFormik<medicationPackagesEntry>({
+    const formik = useFormik<FeedingPackagesEntry>({
         initialValues: {
             packageId: '',
             name: '',
             objective: 'individual',
             destinationArea: '',
-            medications: [],
+            feedings: [],
             applicationDate: null,
             appliedBy: userLogged._id,
-            observations: ''
+            observations: '',
+            periodicity: '',
+            is_active: true,
         },
         enableReinitialize: true,
         validationSchema,
@@ -464,9 +476,9 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
             if (!configContext) return;
             try {
 
-                const medicationResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/medication_package/asign_medication_package/${userLogged.farm_assigned}/${pigId}`, values)
+                const feedingResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/feeding_package/asign_feeding_package/${userLogged.farm_assigned}/${pigId}`, values)
                 await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
-                    event: `Paquete de medicación asignado al cerdo ${pigDetails?.code}`
+                    event: `Paquete de alimentacion asignado al cerdo ${pigDetails?.code}`
                 });
 
                 toggleModal('success', true)
@@ -482,9 +494,9 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
         }
     })
 
-    const checkMedicationPackageData = async () => {
+    const checkFeedingPackageData = async () => {
         if (formik.values.packageId === '') {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, seleccione un paquete de medicacion' })
+            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, seleccione un paquete de alimentacion' })
         } else {
             toggleArrowTab(activeStep + 1);
         }
@@ -496,15 +508,16 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
     }, [])
 
     useEffect(() => {
-        if (selectedMedicationPackage) {
-            formik.setFieldValue('packageId', selectedMedicationPackage._id)
-            formik.setFieldValue('name', selectedMedicationPackage.name)
-            formik.setFieldValue('destinationArea', selectedMedicationPackage.destination_area)
-            formik.setFieldValue('medications', selectedMedicationPackage.medications)
+        if (selectedFeedingPackage) {
+            formik.setFieldValue('packageId', selectedFeedingPackage._id)
+            formik.setFieldValue('name', selectedFeedingPackage.name)
+            formik.setFieldValue('destinationArea', selectedFeedingPackage.destination_area)
+            formik.setFieldValue('feedings', selectedFeedingPackage.feedings)
+            formik.setFieldValue('periodicity', selectedFeedingPackage.periodicity)
 
-            fetchMedicationsItems(selectedMedicationPackage.medications)
+            fetchFeedingItems(selectedFeedingPackage.feedings)
         }
-    }, [selectedMedicationPackage])
+    }, [selectedFeedingPackage])
 
     if (loading) {
         return (
@@ -528,7 +541,7 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
                             aria-controls="step-packageSelect-tab"
                             disabled
                         >
-                            Selección de paquete de medicamentos
+                            Selección de paquete de alimentacion
                         </NavLink>
                     </NavItem>
 
@@ -554,7 +567,7 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
                 <TabPane id="step-packageSelect-tab" tabId={1}>
                     <div className="d-flex gap-2 mt-4">
                         <div className="w-50">
-                            <Label htmlFor="applicationDate" className="form-label">Fecha de aplicacion</Label>
+                            <Label htmlFor="applicationDate" className="form-label">Fecha de asignacion</Label>
                             <DatePicker
                                 id="applicationDate"
                                 className={`form-control ${formik.touched.applicationDate && formik.errors.applicationDate ? 'is-invalid' : ''}`}
@@ -570,7 +583,7 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
                         </div>
 
                         <div className="w-50">
-                            <Label htmlFor="user" className="form-label">Responsable de aplicacion</Label>
+                            <Label htmlFor="user" className="form-label">Responsable de asignacion</Label>
                             <Input
                                 type="text"
                                 id="user"
@@ -602,19 +615,19 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
                         <Label htmlFor="observations" className="form-label">Seleccion de paquete de medicacion</Label>
 
                         <SelectableCustomTable
-                            columns={medicationPackagesColumns}
-                            data={medicationsPackages}
+                            columns={feedingPackagesColumns}
+                            data={feedingPackages}
                             showPagination={true}
                             rowsPerPage={6}
                             selectionMode="single"
                             showSearchAndFilter={false}
-                            onSelect={(rows) => setSelectedMedicationPackage(rows[0])}
+                            onSelect={(rows) => setSelectedFeedingPackage(rows[0])}
                         />
                     </div>
 
 
                     <div className="d-flex justify-content-between mt-4">
-                        <Button className="btn btn-primary ms-auto" onClick={() => checkMedicationPackageData()}>
+                        <Button className="btn btn-primary ms-auto" onClick={() => checkFeedingPackageData()}>
                             Siguiente
                             <i className="ri-arrow-right-line ms-1" />
                         </Button>
@@ -640,24 +653,24 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
                         <div className="w-100">
                             <Card className="shadow-sm mb-3">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
-                                    Información de paquete de medicamentos
+                                    Información de paquete de alimentacion
                                 </CardHeader>
                                 <CardBody>
                                     <ObjectDetails
-                                        attributes={medicationPackagesAttributes}
-                                        object={selectedMedicationPackage ?? {}}
+                                        attributes={feedingsPackagesAttributes}
+                                        object={selectedFeedingPackage ?? {}}
                                     />
                                 </CardBody>
                             </Card>
 
                             <Card className="shadow-sm">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
-                                    <h5>Medicamentos</h5>
+                                    <h5>Alimentos</h5>
                                 </CardHeader>
                                 <CardBody className="p-0 mb-3">
                                     <CustomTable
-                                        columns={selectedMedicationsColumns}
-                                        data={medicationPackagesItems || []}
+                                        columns={selectedFeedingsColumns}
+                                        data={feedingPackagesItems || []}
                                         showSearchAndFilter={false}
                                         rowsPerPage={4}
                                         showPagination={true}
@@ -699,4 +712,4 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
     )
 }
 
-export default IndividualMedicationPackageForm
+export default IndividualFeedingPackageForm;

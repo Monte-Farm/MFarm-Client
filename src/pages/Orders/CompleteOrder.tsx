@@ -142,7 +142,6 @@ const CompleteOrder = () => {
                         </div>
                     </CardHeader>
                     <CardBody>
-                        <CompleteOrderForm initialData={ordersDetails} onSubmit={(data: OrderData) => handleCompleteOrder(data)} onCancel={handleCancel}></CompleteOrderForm>
                     </CardBody>
                 </Card>
 

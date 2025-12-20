@@ -5,5 +5,4 @@ export const roleLabels: Record<string, string> = {
     subwarehouse_manager: 'Encargado de subalmacén',
     vet: 'Veterinario',
     worker: 'Trabajador',
-
 };

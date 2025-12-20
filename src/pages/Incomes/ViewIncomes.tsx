@@ -9,6 +9,7 @@ import AlertMessage from "Components/Common/Shared/AlertMesagge"
 import { getLoggedinUser } from "helpers/api_helper"
 import IncomeForm from "Components/Common/Forms/IncomeForm"
 import CustomTable from "Components/Common/Tables/CustomTable"
+import IncomeDetails from "Components/Common/Details/IncomeDetailsModal"
 
 
 const ViewIncomes = () => {
@@ -19,8 +20,9 @@ const ViewIncomes = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [incomes, setIncomes] = useState([])
     const [loading, setLoading] = useState<boolean>(true)
-    const [modals, setModals] = useState({ createIncome: false });
+    const [modals, setModals] = useState({ createIncome: false, details: false });
     const [mainWarehouseId, setMainWarehouseId] = useState<string>('')
+    const [selectedIncome, setSelectedIncome] = useState<any>({});
 
     const columns: Column<any>[] = [
         { header: 'Identificador', accessor: 'id', isFilterable: true, type: 'text' },
@@ -56,7 +58,7 @@ const ViewIncomes = () => {
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="farm-primary-button btn-icon" onClick={() => handleProductDetails(row)}>
+                    <Button className="farm-primary-button btn-icon" onClick={() => { setSelectedIncome(row); toggleModal('details') }}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
                 </div>
@@ -78,7 +80,6 @@ const ViewIncomes = () => {
         }
     }
 
-
     const handleFetchIncomes = async () => {
         if (!configContext || !mainWarehouseId) return;
         try {
@@ -93,11 +94,6 @@ const ViewIncomes = () => {
             setLoading(false)
         }
     };
-
-    const handleProductDetails = (row: any) => {
-        const id_income = row.id
-        navigate(`/warehouse/incomes/income_details/${id_income}`);
-    }
 
     useEffect(() => {
         fetchWarehouseId();
@@ -146,6 +142,13 @@ const ViewIncomes = () => {
                 <ModalHeader toggle={() => toggleModal("createIncome")}>Nueva entrada</ModalHeader>
                 <ModalBody>
                     <IncomeForm onSave={() => { toggleModal('createIncome'); handleFetchIncomes() }} onCancel={() => { }} />
+                </ModalBody>
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' modalClassName="modal-xxl" keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("details")}>Detalles de entrada</ModalHeader>
+                <ModalBody>
+                    <IncomeDetails incomeId={selectedIncome?._id} />
                 </ModalBody>
             </Modal>
 

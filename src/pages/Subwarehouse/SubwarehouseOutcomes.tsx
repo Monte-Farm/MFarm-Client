@@ -9,33 +9,34 @@ import CustomTable from "Components/Common/Tables/CustomTable";
 import { getLoggedinUser } from "helpers/api_helper";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import SubwarehouseOutcomeForm from "Components/Common/Forms/SubwarehouseOutcomeForm";
+import OutcomeDetails from "Components/Common/Details/OutcomeDetails";
 
 
 const SubwarehouseOutcomes = () => {
-    document.title = "Detalles de Subalmacén | Subalmacén"
+    document.title = "Ver salidas | Subalmacén"
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
     const userLogged = getLoggedinUser();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [subwarehouseOutcomes, setSubwarehouseOutcomes] = useState([])
     const [loading, setLoading] = useState<boolean>(true)
-    const [modals, setModals] = useState({ create: false, });
+    const [modals, setModals] = useState({ create: false, details: false });
+    const [selectedOutcome, setSelectedOutcome] = useState<any>({});
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
 
-
     const outcomesColumns: Column<any>[] = [
-        { header: 'Identificador', accessor: 'id', isFilterable: true, type: 'text' },
-        { header: 'Fecha de Salida', accessor: 'date', isFilterable: true, type: 'text' },
+        { header: 'Codigo', accessor: 'code', isFilterable: true, type: 'text' },
+        { header: 'Fecha de Salida', accessor: 'date', isFilterable: true, type: 'date' },
         { header: 'Motivo de Salida', accessor: 'outcomeType', isFilterable: true, type: 'text' },
         {
             header: 'Acciones',
             accessor: 'action',
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="farm-primary-button btn-icon" onClick={() => history(`/warehouse/outcomes/outcome_details/${row.id}`)}>
+                    <Button className="farm-primary-button btn-icon" onClick={() => { setSelectedOutcome(row); toggleModal('details') }}>
                         <i className="ri-eye-fill align-middle" />
                     </Button>
                 </div>
@@ -97,6 +98,13 @@ const SubwarehouseOutcomes = () => {
                 <ModalHeader toggle={() => toggleModal("create")}>Nueva salida</ModalHeader>
                 <ModalBody>
                     <SubwarehouseOutcomeForm onSave={() => { toggleModal('create'); handleFetchWarehouseOutcomes(); }} onCancel={() => toggleModal('create')} />
+                </ModalBody>
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("details")}>Detalles de salida</ModalHeader>
+                <ModalBody>
+                    <OutcomeDetails outcomeId={selectedOutcome._id} />
                 </ModalBody>
             </Modal>
 

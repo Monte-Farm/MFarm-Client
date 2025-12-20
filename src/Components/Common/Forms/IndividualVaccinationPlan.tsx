@@ -4,7 +4,7 @@ import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { Badge, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from "reactstrap";
 import LoadingAnimation from "../Shared/LoadingAnimation";
-import { Attribute, medicationPackagesEntry, PigData } from "common/data_interfaces";
+import { Attribute, medicationPackagesEntry, PigData, VaccinationPlanEntry } from "common/data_interfaces";
 import * as Yup from 'yup';
 import classnames from "classnames";
 import { useFormik } from "formik";
@@ -19,23 +19,23 @@ import ErrorModal from "../Shared/ErrorModal";
 import SuccessModal from "../Shared/SuccessModal";
 import MissingStockModal from "../Shared/MissingStockModal";
 
-interface IndividualMedicationPackageFormProps {
+interface IndividualVaccinationPlanFormProps {
     pigId: string
     onSave: () => void
 }
 
-const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormProps> = ({ pigId, onSave }) => {
+const IndividualVaccinationPlanForm: React.FC<IndividualVaccinationPlanFormProps> = ({ pigId, onSave }) => {
     const userLogged = getLoggedinUser();
     const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
     const [loading, setLoading] = useState<boolean>(false);
-    const [modals, setModals] = useState({ medicationPackageDetails: false, success: false, error: false, missingStock: false });
-    const [medicationsPackages, setMedicationsPackages] = useState<any[]>([]);
+    const [modals, setModals] = useState({ vaccinationDetails: false, success: false, error: false, missingStock: false });
+    const [vaccinationPlans, setVaccinationPlans] = useState<any[]>([]);
     const [pigDetails, setPigDetails] = useState<PigData>()
-    const [selectedMedicationPackage, setSelectedMedicationPackage] = useState<any>();
-    const [medicationPackagesItems, setMedicationsPackagesItems] = useState<any[]>();
+    const [selectedVaccinationPlan, setSelectedVaccinationPlan] = useState<any>();
+    const [vaccinationPlanItems, setVaccinationPlanItems] = useState<any[]>();
     const [missingItems, setMissingItems] = useState([]);
 
     function toggleArrowTab(tab: number) {
@@ -53,67 +53,23 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
 
-    const medicationPackagesColumns: Column<any>[] = [
+    const vaccinationPlanColumns: Column<any>[] = [
         { header: 'Codigo', accessor: 'code', type: 'text', isFilterable: true },
         { header: 'Nombre', accessor: 'name', type: 'text', isFilterable: true },
         { header: 'Fecha de creacion', accessor: 'creation_date', type: 'date', isFilterable: true },
         {
-            header: 'Área de destino',
-            accessor: 'destination_area',
+            header: 'Etapa',
+            accessor: 'stage',
             type: 'text',
             isFilterable: true,
             render: (_, row) => {
                 let color = "secondary";
                 let text = "Desconocido";
 
-                switch (row.destination_area) {
+                switch (row.stage) {
                     case "general":
                         color = "info";
                         text = "General";
-                        break;
-                    case "gestation":
-                        color = "info";
-                        text = "Gestación";
-                        break;
-                    case "farrowing":
-                        color = "primary";
-                        text = "Paridera";
-                        break;
-                    case "maternity":
-                        color = "primary";
-                        text = "Maternidad";
-                        break;
-                    case "weaning":
-                        color = "success";
-                        text = "Destete";
-                        break;
-                    case "nursery":
-                        color = "warning";
-                        text = "Preceba / Levante inicial";
-                        break;
-                    case "fattening":
-                        color = "dark";
-                        text = "Ceba / Engorda";
-                        break;
-                    case "replacement":
-                        color = "secondary";
-                        text = "Reemplazo / Recría";
-                        break;
-                    case "boars":
-                        color = "info";
-                        text = "Área de verracos";
-                        break;
-                    case "quarantine":
-                        color = "danger";
-                        text = "Cuarentena / Aislamiento";
-                        break;
-                    case "hospital":
-                        color = "danger";
-                        text = "Hospital / Enfermería";
-                        break;
-                    case "shipping":
-                        color = "secondary";
-                        text = "Corrales de venta / embarque";
                         break;
                     case "piglet":
                         color = "info";
@@ -130,29 +86,6 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
                     case "breeder":
                         color = "success";
                         text = "Reproductor";
-                        break;
-                }
-
-                return <Badge color={color}>{text}</Badge>;
-            },
-        },
-        {
-            header: 'Objetivo de uso',
-            accessor: 'objective_use',
-            type: 'text',
-            isFilterable: true,
-            render: (_, row) => {
-                let color = "secondary";
-                let text = "Desconocido";
-
-                switch (row.objective_use) {
-                    case "individual":
-                        color = "info";
-                        text = "Individual";
-                        break;
-                    case "group":
-                        color = "info";
-                        text = "Grupal";
                         break;
                 }
 
@@ -240,7 +173,7 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
         { key: "observations", label: "Observaciones", type: "text" },
     ];
 
-    const selectedMedicationsColumns: Column<any>[] = [
+    const selectedVaccinesColumns: Column<any>[] = [
         { header: "Codigo", accessor: "id", type: "text", isFilterable: true },
         { header: "Producto", accessor: "name", type: "text", isFilterable: true },
         {
@@ -295,66 +228,22 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
         },
     ]
 
-    const medicationPackagesAttributes: Attribute[] = [
+    const vaccinationPlanAttributes: Attribute[] = [
         { label: 'Codigo', key: 'code', type: 'text' },
         { label: 'Nombre', key: 'name', type: 'text', },
         { label: 'Fecha de creacion', key: 'creation_date', type: 'date', },
         {
-            label: 'Área de destino',
-            key: 'destination_area',
+            label: 'Etapa',
+            key: 'stage',
             type: 'text',
             render: (_, row) => {
                 let color = "secondary";
                 let text = "Desconocido";
 
-                switch (row.destination_area) {
+                switch (row.stage) {
                     case "general":
                         color = "info";
                         text = "General";
-                        break;
-                    case "gestation":
-                        color = "info";
-                        text = "Gestación";
-                        break;
-                    case "farrowing":
-                        color = "primary";
-                        text = "Paridera";
-                        break;
-                    case "maternity":
-                        color = "primary";
-                        text = "Maternidad";
-                        break;
-                    case "weaning":
-                        color = "success";
-                        text = "Destete";
-                        break;
-                    case "nursery":
-                        color = "warning";
-                        text = "Preceba / Levante inicial";
-                        break;
-                    case "fattening":
-                        color = "dark";
-                        text = "Ceba / Engorda";
-                        break;
-                    case "replacement":
-                        color = "secondary";
-                        text = "Reemplazo / Recría";
-                        break;
-                    case "boars":
-                        color = "info";
-                        text = "Área de verracos";
-                        break;
-                    case "quarantine":
-                        color = "danger";
-                        text = "Cuarentena / Aislamiento";
-                        break;
-                    case "hospital":
-                        color = "danger";
-                        text = "Hospital / Enfermería";
-                        break;
-                    case "shipping":
-                        color = "secondary";
-                        text = "Corrales de venta / embarque";
                         break;
                     case "piglet":
                         color = "info";
@@ -377,28 +266,6 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
                 return <Badge color={color}>{text}</Badge>;
             },
         },
-        {
-            label: 'Objetivo de uso',
-            key: 'objective_use',
-            type: 'text',
-            render: (_, row) => {
-                let color = "secondary";
-                let text = "Desconocido";
-
-                switch (row.objective_use) {
-                    case "individual":
-                        color = "info";
-                        text = "Individual";
-                        break;
-                    case "group":
-                        color = "info";
-                        text = "Grupal";
-                        break;
-                }
-
-                return <Badge color={color}>{text}</Badge>;
-            },
-        },
     ]
 
     const fetchData = async () => {
@@ -410,10 +277,10 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
             ])
             const pigData = pigResponse.data.data;
 
-            const medicationResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/medication_package/find_by_destination_objective/${userLogged.farm_assigned}/${pigData.currentStage}/individual`)
-            const packagesWithId = medicationResponse.data.data.map((b: any) => ({ ...b, id: b._id }));
+            const vaccinationResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/vaccination_plan/find_by_stage/${userLogged.farm_assigned}/${pigData.currentStage}`)
+            const plansWithId = vaccinationResponse.data.data.map((b: any) => ({ ...b, id: b._id }));
             setPigDetails(pigData)
-            setMedicationsPackages(packagesWithId)
+            setVaccinationPlans(plansWithId)
         } catch (error) {
             console.error('Error fetching data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al cargar los datos, intentelo mas tarde' })
@@ -422,19 +289,19 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
         }
     }
 
-    const fetchMedicationsItems = async (medications: any[]) => {
-        if (!configContext || !userLogged || !medications) return;
+    const fetchVaccinationItems = async (vaccines: any[]) => {
+        if (!configContext || !userLogged || !vaccines) return;
         try {
-            const medicationsIds = medications.map(m => m.medication)
-            const medicationResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/product/find_products_by_ids`, medicationsIds)
+            const vaccinesIds = vaccines.map(v => v.vaccine)
+            const vaccinationsResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/product/find_products_by_ids`, vaccinesIds)
 
-            const products = medicationResponse.data.data;
+            const products = vaccinationsResponse.data.data;
 
-            const combined = medications.map(med => {
-                const product = products.find((p: any) => p._id === med.medication);
-                return { ...product, ...med };
+            const combined = vaccines.map(vac => {
+                const product = products.find((p: any) => p._id === vac.vaccine);
+                return { ...product, ...vac };
             });
-            setMedicationsPackagesItems(combined)
+            setVaccinationPlanItems(combined)
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -445,16 +312,16 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
         appliedBy: Yup.string().required('El area de destino es obligatoria'),
     })
 
-    const formik = useFormik<medicationPackagesEntry>({
+    const formik = useFormik<VaccinationPlanEntry>({
         initialValues: {
-            packageId: '',
+            planId: '',
             name: '',
-            objective: 'individual',
-            destinationArea: '',
-            medications: [],
+            stage: '',
+            vaccines: [],
             applicationDate: null,
             appliedBy: userLogged._id,
-            observations: ''
+            observations: '',
+            is_active: true
         },
         enableReinitialize: true,
         validationSchema,
@@ -464,9 +331,9 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
             if (!configContext) return;
             try {
 
-                const medicationResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/medication_package/asign_medication_package/${userLogged.farm_assigned}/${pigId}`, values)
+                const vaccinationResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/vaccination_plan/asign_vaccination_plan/${userLogged.farm_assigned}/${pigId}`, values)
                 await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
-                    event: `Paquete de medicación asignado al cerdo ${pigDetails?.code}`
+                    event: `Plan de vacunacion asignado al cerdo ${pigDetails?.code}`
                 });
 
                 toggleModal('success', true)
@@ -482,9 +349,9 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
         }
     })
 
-    const checkMedicationPackageData = async () => {
-        if (formik.values.packageId === '') {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, seleccione un paquete de medicacion' })
+    const checkVaccinationPlanData = async () => {
+        if (formik.values.planId === '') {
+            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, seleccione un plan de vacunacion' })
         } else {
             toggleArrowTab(activeStep + 1);
         }
@@ -496,15 +363,15 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
     }, [])
 
     useEffect(() => {
-        if (selectedMedicationPackage) {
-            formik.setFieldValue('packageId', selectedMedicationPackage._id)
-            formik.setFieldValue('name', selectedMedicationPackage.name)
-            formik.setFieldValue('destinationArea', selectedMedicationPackage.destination_area)
-            formik.setFieldValue('medications', selectedMedicationPackage.medications)
+        if (selectedVaccinationPlan) {
+            formik.setFieldValue('planId', selectedVaccinationPlan._id)
+            formik.setFieldValue('name', selectedVaccinationPlan.name)
+            formik.setFieldValue('stage', selectedVaccinationPlan.stage)
+            formik.setFieldValue('vaccines', selectedVaccinationPlan.vaccines)
 
-            fetchMedicationsItems(selectedMedicationPackage.medications)
+            fetchVaccinationItems(selectedVaccinationPlan.vaccines)
         }
-    }, [selectedMedicationPackage])
+    }, [selectedVaccinationPlan])
 
     if (loading) {
         return (
@@ -528,7 +395,7 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
                             aria-controls="step-packageSelect-tab"
                             disabled
                         >
-                            Selección de paquete de medicamentos
+                            Selección de plan de vacunacion
                         </NavLink>
                     </NavItem>
 
@@ -551,7 +418,7 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
             </div>
 
             <TabContent activeTab={activeStep}>
-                <TabPane id="step-packageSelect-tab" tabId={1}>
+                <TabPane id="step-planSelect-tab" tabId={1}>
                     <div className="d-flex gap-2 mt-4">
                         <div className="w-50">
                             <Label htmlFor="applicationDate" className="form-label">Fecha de aplicacion</Label>
@@ -599,22 +466,22 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
                     </div>
 
                     <div className="mt-4">
-                        <Label htmlFor="observations" className="form-label">Seleccion de paquete de medicacion</Label>
+                        <Label htmlFor="observations" className="form-label">Seleccion de plan de vacunacion</Label>
 
                         <SelectableCustomTable
-                            columns={medicationPackagesColumns}
-                            data={medicationsPackages}
+                            columns={vaccinationPlanColumns}
+                            data={vaccinationPlans}
                             showPagination={true}
                             rowsPerPage={6}
                             selectionMode="single"
                             showSearchAndFilter={false}
-                            onSelect={(rows) => setSelectedMedicationPackage(rows[0])}
+                            onSelect={(rows) => setSelectedVaccinationPlan(rows[0])}
                         />
                     </div>
 
 
                     <div className="d-flex justify-content-between mt-4">
-                        <Button className="btn btn-primary ms-auto" onClick={() => checkMedicationPackageData()}>
+                        <Button className="btn btn-primary ms-auto" onClick={() => checkVaccinationPlanData()}>
                             Siguiente
                             <i className="ri-arrow-right-line ms-1" />
                         </Button>
@@ -637,27 +504,27 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
                             </Card>
                         </div>
 
-                        <div className="w-100">
-                            <Card className="shadow-sm mb-3">
+                        <div className="w-100 align-items-stretch d-flex flex-column gap-1">
+                            <Card className="shadow-sm h-100">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
-                                    Información de paquete de medicamentos
+                                    Información del plan de vacunacion
                                 </CardHeader>
                                 <CardBody>
                                     <ObjectDetails
-                                        attributes={medicationPackagesAttributes}
-                                        object={selectedMedicationPackage ?? {}}
+                                        attributes={vaccinationPlanAttributes}
+                                        object={selectedVaccinationPlan ?? {}}
                                     />
                                 </CardBody>
                             </Card>
 
-                            <Card className="shadow-sm">
+                            <Card className="shadow-sm h-100">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
-                                    <h5>Medicamentos</h5>
+                                    <h5>Vacunas</h5>
                                 </CardHeader>
-                                <CardBody className="p-0 mb-3">
+                                <CardBody className="p-0">
                                     <CustomTable
-                                        columns={selectedMedicationsColumns}
-                                        data={medicationPackagesItems || []}
+                                        columns={selectedVaccinesColumns}
+                                        data={vaccinationPlanItems || []}
                                         showSearchAndFilter={false}
                                         rowsPerPage={4}
                                         showPagination={true}
@@ -693,10 +560,10 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} autoClose={3000} />
             <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message={"Ha ocurrido un error, intentelo mas tarde"} />
-            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={"Paquete de medicacion asignado correctamente"} />
+            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={"Plan de vacunacion asignado correctamente"} />
             <MissingStockModal isOpen={modals.missingStock} onClose={() => toggleModal('missingStock', false)} missingItems={missingItems} />
         </>
     )
 }
 
-export default IndividualMedicationPackageForm
+export default IndividualVaccinationPlanForm;

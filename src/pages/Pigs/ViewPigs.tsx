@@ -355,7 +355,7 @@ const ViewPigs = () => {
 
                 <div className="d-flex gap-3">
                     <BasicPieChart title={"Cerdos por sexo"}
-                        data={stats.pigsBySex?.map((s: { _id: any; count: any }) => ({
+                        data={stats?.pigsBySex?.map((s: { _id: any; count: any }) => ({
                             id: s._id === 'male' ? 'Macho' : 'Hembra',
                             value: s.count,
                         })) ?? []}

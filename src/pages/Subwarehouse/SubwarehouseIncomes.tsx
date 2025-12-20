@@ -2,12 +2,13 @@ import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Container, Card, CardHeader, CardBody, Row, Col } from "reactstrap";
+import { Button, Container, Card, CardHeader, CardBody, Row, Col, Modal, ModalHeader, ModalBody } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Column } from "common/data/data_types";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import { getLoggedinUser } from "helpers/api_helper";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
+import IncomeDetails from "Components/Common/Details/IncomeDetailsModal";
 
 const SubwarehouseIncomes = () => {
     document.title = "Entradas de Subalmacén | Subalmacén"
@@ -17,17 +18,29 @@ const SubwarehouseIncomes = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [subwarehouseIncomes, setSubwarehouseIncomes] = useState([])
     const [loading, setLoading] = useState<boolean>(true)
+    const [modals, setModals] = useState({ details: false });
+    const [selectedIncome, setSelectedIncome] = useState<any>({})
+
+    const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
+        setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
+    };
 
     const incomesColumns: Column<any>[] = [
         { header: 'Identificador', accessor: 'id', isFilterable: true, type: 'text' },
-        { header: 'Fecha de entrada', accessor: 'date', isFilterable: true, type: 'text' },
-        { header: 'Origen', accessor: 'originName', isFilterable: true, type: 'text' },
+        { header: 'Fecha de entrada', accessor: 'date', isFilterable: true, type: 'date' },
+        {
+            header: 'Origen',
+            accessor: 'originName',
+            isFilterable: true,
+            type: 'text',
+            render: (_, row) => <span>{row?.origin?.originType}</span>
+        },
         {
             header: 'Acciones',
             accessor: 'action',
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="farm-primary-button btn-icon" onClick={() => history(`/warehouse/incomes/income_details/${row.id}`)}>
+                    <Button className="farm-primary-button btn-icon" onClick={() => { setSelectedIncome(row); toggleModal('details') }}>
                         <i className="ri-eye-fill align-middle" />
                     </Button>
                 </div>
@@ -52,15 +65,13 @@ const SubwarehouseIncomes = () => {
 
     useEffect(() => {
         handleFetchWarehouseIncomes();
-    }, [configContext])
-
+    }, [])
 
     if (loading) {
         return (
             <LoadingAnimation />
         );
     }
-
 
     return (
         <div className="page-content">
@@ -80,6 +91,14 @@ const SubwarehouseIncomes = () => {
                 </div>
 
             </Container>
+
+            <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} centered>
+                <ModalHeader toggle={() => toggleModal('details')}>Detalles de entrada</ModalHeader>
+                <ModalBody>
+                    <IncomeDetails incomeId={selectedIncome._id} />
+                </ModalBody>
+            </Modal>
+
         </div>
     )
 

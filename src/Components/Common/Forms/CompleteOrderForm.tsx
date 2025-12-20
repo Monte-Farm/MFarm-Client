@@ -1,163 +1,177 @@
 import { useContext, useEffect, useState } from 'react';
-import { Alert, Button, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from 'reactstrap';
+import { Alert, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from 'reactstrap';
 import * as Yup from 'yup'
 import { useFormik } from 'formik';
-import { useNavigate } from 'react-router-dom';
-import { OrderData } from 'common/data_interfaces';
+import { Attribute, OrderData } from 'common/data_interfaces';
 import { ConfigContext } from 'App';
 import ObjectDetailsHorizontal from '../Details/ObjectDetailsHorizontal';
 import OrderTable from '../Tables/OrderTable';
+import LoadingAnimation from '../Shared/LoadingAnimation';
+import ObjectDetails from '../Details/ObjectDetails';
+import CustomTable from '../Tables/CustomTable';
+import AlertMessage from '../Shared/AlertMesagge';
+import classnames from "classnames";
+import DatePicker from 'react-flatpickr';
+import { getLoggedinUser } from 'helpers/api_helper';
+import SuccessModal from '../Shared/SuccessModal';
+import ErrorModal from '../Shared/ErrorModal';
 
 interface OrderFormProps {
-    initialData?: OrderData;
-    onSubmit: (data: OrderData) => Promise<void>
+    orderId: string;
+    onSave: () => void;
     onCancel: () => void;
 }
 
-const orderAttributes = [
-    { key: 'id', label: 'No. de Pedido' },
-    { key: 'date', label: 'Fecha de Pedido' },
-    { key: 'user', label: 'Usuario' },
-    { key: 'orderDestiny', label: 'Almacén' },
-]
-
-const validationSchema = Yup.object({
-    id: Yup.string().required('Por favor, ingrese el ID'),
-    date: Yup.string().required('Por favor, ingrese la fecha'),
-    user: Yup.string().required('Por favor, seleccione el tipo de salida'),
-})
-
-const CompleteOrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, onCancel }) => {
-    const history = useNavigate()
-
-    const [modals, setModals] = useState({ createWarehouse: false, cancel: false });
-    const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
-    const [orderDisplay, setOrderDisplay] = useState<OrderData | undefined>(undefined)
-    const [products, setProducts] = useState([])
+const CompleteOrderForm: React.FC<OrderFormProps> = ({ orderId, onSave, onCancel }) => {
     const configContext = useContext(ConfigContext);
+    const userLogged = getLoggedinUser();
+    const [modals, setModals] = useState({ cancel: false, success: false, error: false });
+    const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
+    const [orderDetails, setOrderDetails] = useState<any>({})
+    const [productsRequested, setProductsRequested] = useState([])
+    const [loading, setLoading] = useState<boolean>(true);
+
+    const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
+        setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
+    };
+
+    const orderAttributes: Attribute[] = [
+        { key: 'id', label: 'No. de Pedido', type: 'text' },
+        { key: 'date', label: 'Fecha de pedido', type: 'date' },
+        {
+            key: 'user',
+            label: 'Pedido por',
+            type: 'text',
+            render: (value, object) => <span>{object?.user?.name} {object?.user?.lastname}</span>
+        },
+        {
+            key: 'orderOrigin',
+            label: 'Pedido para',
+            type: 'text',
+            render: (value, object) => <span>{object?.orderOrigin?.name}</span>
+        },
+        {
+            key: 'orderDestiny',
+            label: 'Pedido hacia',
+            type: 'text',
+            render: (value, object) => <span>{object?.orderDestiny?.name}</span>
+        },
+    ]
 
     const formik = useFormik({
-        initialValues: initialData || {
-            id: "",
+        initialValues: {
             date: null,
-            user: "",
-            productsRequested: [],
-            status: 'completed',
-            orderOrigin: "AG001",
-            orderDestiny: "",
+            user: userLogged?._id,
             productsDelivered: []
         },
         enableReinitialize: true,
         validateOnBlur: false,
         validateOnChange: true,
-        validationSchema,
         onSubmit: async (values, { setSubmitting, resetForm }) => {
             try {
+                if (!configContext || !userLogged) return
                 setSubmitting(true);
-                await onSubmit(values);
+
+                const completedOrder = await configContext.axiosHelper.create(`${configContext.apiUrl}/orders/complete_order/${orderId}`, values)
+                await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
+                    event: `Pedido ${orderDetails.code} completado`
+                });
+
+                toggleModal('success');
             } catch (error) {
                 console.error("Error al enviar el formulario:", error);
+                toggleModal('error');
             } finally {
                 setSubmitting(false);
             }
         },
     });
 
-    const showAlert = (color: string, message: string) => {
-        setAlertConfig({ visible: true, color: color, message: message })
-        setTimeout(() => {
-            setAlertConfig({ ...alertConfig, visible: false })
-        }, 5000);
-    }
-
-    const handleError = (error: any, message: string) => {
-        console.error(message, error);
-        showAlert('danger', message);
-    }
-
-    const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
-        setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
-    };
-
-    const handleFetchOrderProducts = async () => {
-        try {
-            if (!configContext || !initialData) return;
-
-            const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/product/find_products_by_array`, initialData.productsRequested);
-
-            const products = response.data.data;
-            formik.setFieldValue('productsDelivered', initialData.productsRequested)
-            setProducts(products);
-        } catch (error) {
-            console.error(error);
-            history("/auth-500");
-        }
-    };
-
-    const fetchDisplayInfo = async () => {
-        if (!initialData || !configContext) return;
+    const fetchData = async () => {
+        if (!configContext || !userLogged) return
 
         try {
-            const [userResponse, destinyResponse] = await Promise.all([
-                configContext.axiosHelper.get(`${configContext.apiUrl}/user/find_by_id/${initialData.user}`),
-                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_id/${initialData.orderDestiny}`)
-            ])
+            setLoading(true)
 
-            setOrderDisplay({
-                ...initialData,
-                user: `${userResponse.data.data.name} ${userResponse.data.data.lastname}`,
-                orderDestiny: destinyResponse.data.data.name
-            })
+            const orderResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/orders/find_id/${orderId}`);
+            const orderDetailsResponse = orderResponse.data.data;
+            setOrderDetails(orderDetailsResponse)
+
+            const productsResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/product/find_products_by_array/`, orderDetailsResponse.productsRequested);
+            setProductsRequested(productsResponse.data.data);
         } catch (error) {
-            console.error('Error al obtener los detalles del pedido', error);
+            console.error('Error fetching data:', { error })
+            toggleModal('error')
+        } finally {
+            setLoading(false)
         }
     }
-
 
     useEffect(() => {
-        fetchDisplayInfo();
-        handleFetchOrderProducts();
-    }, [initialData])
+        fetchData();
+        formik.setFieldValue('date', new Date())
+    }, [])
 
+    if (loading) {
+        return (
+            <LoadingAnimation absolutePosition={false} />
+        )
+    }
 
     return (
         <>
             <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }}>
-                <div className=''>
 
-                    <div className='mt1 w-100 h-100 rounded border bg-secondary-subtle pt-3 pb-2 ps-3'>
-                        {orderDisplay && <ObjectDetailsHorizontal attributes={orderAttributes} object={orderDisplay} />}
+                <div className='d-flex gap-3 mb-4'>
+                    <div className="w-50">
+                        <Label htmlFor="userInput" className="form-label">Responsable</Label>
+                        <Input
+                            type="text"
+                            id="userInput"
+                            name="userDisplay"
+                            value={`${userLogged?.name} ${userLogged?.lastname}` || ''}
+                            disabled
+                        />
+                    </div>
+
+                    <div className="w-50">
+                        <Label htmlFor="dateInput" className="form-label">Fecha</Label>
+                        <DatePicker
+                            id="date"
+                            className={`form-control ${formik.touched.date && formik.errors.date ? 'is-invalid' : ''}`}
+                            value={formik.values.date ?? undefined}
+                            onChange={(date: Date[]) => {
+                                if (date[0]) formik.setFieldValue('date', date[0]);
+                            }}
+                            options={{ dateFormat: 'd/m/Y' }}
+                        />
+                        {formik.touched.date && formik.errors.date && (
+                            <FormFeedback className="d-block">{formik.errors.date as string}</FormFeedback>
+                        )}
                     </div>
                 </div>
 
+                <Label htmlFor="dateInput" className="form-label">Productos entregados</Label>
+                <OrderTable data={productsRequested} onProductEdit={(updatedProducts) => formik.setFieldValue('productsDelivered', updatedProducts)} />
 
-                {/* Productos */}
-                <div className="d-flex mt-4">
-                    <h5 className="me-auto">Productos solicitados</h5>
-                </div>
-                <div className="border"></div>
-
-                <div className="mt-4">
-                    <OrderTable
-                        data={products}
-                        productsDelivered={formik.values.productsDelivered}
-                        onProductEdit={(updatedProducts) => formik.setFieldValue("productsDelivered", updatedProducts)}
-                    />
-
-                </div>
-
-                <div className='d-flex justify-content-end mt-5 gap-2'>
-                    <Button className='farm-secondary-button' disabled={formik.isSubmitting} onClick={() => toggleModal('cancel')}>
+                <div className="d-flex mt-4 gap-2 justify-content-end">
+                    <Button className='btn-danger' type='button' onClick={() => toggleModal('cancel')}>
                         Cancelar
                     </Button>
 
-                    <Button className='farm-primary-button' type='submit' disabled={formik.isSubmitting}>
-                        {formik.isSubmitting ? <Spinner /> : "Guardar"}
+                    <Button className='btn-success' type='submit' disabled={formik.isSubmitting}>
+                        {formik.isSubmitting ? <Spinner />
+                            : (
+                                <>
+                                    <i className='ri-check-line me-2' />
+                                    Completar
+                                </>
+                            )
+                        }
                     </Button>
                 </div>
             </form>
 
-            {/* Modal de Cancelar */}
             <Modal isOpen={modals.cancel} centered toggle={() => toggleModal('cancel', false)}>
                 <ModalHeader>Confirmación</ModalHeader>
                 <ModalBody>¿Estás seguro de que deseas cancelar? Los datos no se guardarán.</ModalBody>
@@ -167,12 +181,9 @@ const CompleteOrderForm: React.FC<OrderFormProps> = ({ initialData, onSubmit, on
                 </ModalFooter>
             </Modal>
 
-            {/* Alerta */}
-            {alertConfig.visible && (
-                <Alert color={alertConfig.color} className="position-fixed bottom-0 start-50 translate-middle-x p-3">
-                    {alertConfig.message}
-                </Alert>
-            )}
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
+            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={'Pedido completado con exito'} />
+            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={'El servicio no esta disponible, intentelo mas tarde'} />
         </>
     )
 }

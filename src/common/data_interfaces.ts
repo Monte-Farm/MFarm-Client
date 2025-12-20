@@ -216,6 +216,43 @@ export interface medicationPackagesEntry {
     observations?: string;
 };
 
+export interface VaccinationPlanEntry {
+    planId: string;
+    name: string;
+    stage: string;
+    vaccines: {
+        vaccine: string;
+        dose: number;
+        administration_route: string;
+        age_objective: number;
+        frequency: string;
+    }[];
+    applicationDate: Date | null;
+    appliedBy: string;
+    observations?: string;
+    is_active: boolean;
+};
+
+export interface SicknessHistory {
+    name: string;
+    status: string;
+    startDate: Date | null;
+    endDate?: Date | null;
+    symptoms?: string[];
+    severity?: string
+    detectedBy: string;
+    treatment?: {
+        medication: string;
+        dose?: number;
+        unit_measurement?: string;
+        administration_route?: string;
+        startDate?: Date | null;
+        endDate?: Date | null;
+    }[];
+    observations?: string;
+    is_active: boolean;
+}[];
+
 export interface PigData {
     _id: string;
     code: string;
@@ -243,6 +280,8 @@ export interface PigData {
     feedings: PigFeedingEntry[];
     medications: PigMedicationEntry[];
     medicationPackagesHistory: medicationPackagesEntry[];
+    vaccinationPlansHistory: VaccinationPlanEntry[];
+    sicknessHistory: SicknessHistory[];
     reproduction: PigReproductionEntry[];
     registration_date: Date | null;
     registered_by: string;
@@ -439,3 +478,37 @@ export interface VaccinationPlan {
         frequency: string;
     }[]
 }
+
+export interface FeedingPackage {
+    code: string;
+    name: string;
+    description?: string;
+    farm: string;
+    creation_date: Date | null;
+    creation_responsible: string;
+    is_active: boolean;
+    destination_area: string;
+    feedings: {
+        feeding: string;
+        quantity: number;
+        administration_route: string
+    }[]
+    objective_use: string;
+    periodicity: string;
+}
+
+export interface FeedingPackagesEntry {
+    packageId: string;
+    name: string;
+    objective: 'individual' | 'group';
+    destinationArea: string;
+    feedings: {
+        feeding: string;
+        quantity: number;
+    }[];
+    applicationDate: Date | null;
+    appliedBy: string;
+    observations?: string;
+    periodicity: string;
+    is_active: boolean;
+};

@@ -9,6 +9,7 @@ import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import { getLoggedinUser } from "helpers/api_helper";
 import OutcomeForm from "Components/Common/Forms/OutcomeForm";
 import CustomTable from "Components/Common/Tables/CustomTable";
+import OutcomeDetails from "Components/Common/Details/OutcomeDetails";
 
 
 const ViewOutcomes = () => {
@@ -19,9 +20,10 @@ const ViewOutcomes = () => {
 
     const [outcomes, setOutcomes] = useState([])
     const [loading, setLoading] = useState<boolean>(false)
-    const [modals, setModals] = useState({ createOutcome: false });
+    const [modals, setModals] = useState({ createOutcome: false, details: false });
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' });
     const [mainWarehouseId, setMainWarehouseId] = useState<string>('')
+    const [selectedOutcome, setSelectedOutcome] = useState<any>({});
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -43,7 +45,9 @@ const ViewOutcomes = () => {
                     case "purchase": color = "success"; text = "Compra"; break;
                     case "donacion": color = "warning"; text = "Donacion"; break;
                     case "internal_transfer": color = "info"; text = "Transferencia interna"; break;
+                    case "warehouse_order": color = "info"; text = "Pedido de almacen"; break;
                     case "own_production": color = "secondary"; text = "Producción"; break;
+                    case "consumption": color = "secondary"; text = "Consumo"; break;
                 }
                 return <Badge color={color}>{text}</Badge>;
             },
@@ -53,13 +57,13 @@ const ViewOutcomes = () => {
             accessor: 'warehouseDestiny',
             isFilterable: true,
             type: 'text',
-            render: (_, row) => <span>{row.warehouseDestiny.name}</span>
+            render: (_, row) => <span>{row.warehouseDestiny?.name || "N/A"}</span>
         },
         {
             header: 'Acciones', accessor: 'actions',
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="btn-icon farm-primary-button" onClick={() => navigate(`/warehouse/outcomes/outcome_details/${row._id}`)}>
+                    <Button className="btn-icon farm-primary-button" onClick={() => { setSelectedOutcome(row); toggleModal('details') }}>
                         <i className="ri-eye-fill align-middle" />
                     </Button>
                 </div>
@@ -139,6 +143,13 @@ const ViewOutcomes = () => {
                 <ModalHeader toggle={() => toggleModal("createOutcome")}>Nueva salida</ModalHeader>
                 <ModalBody>
                     <OutcomeForm onSave={() => { toggleModal('createOutcome'); handleFetchOutcomes(); }} onCancel={() => { }} />
+                </ModalBody>
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("details")}>Detalles de salida</ModalHeader>
+                <ModalBody>
+                    <OutcomeDetails outcomeId={selectedOutcome._id} />
                 </ModalBody>
             </Modal>
 

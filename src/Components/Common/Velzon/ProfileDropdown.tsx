@@ -4,18 +4,13 @@ import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Modal, Mo
 import { useSelector } from 'react-redux';
 import defaultProfileImage from '../../../assets/images/default-profile-mage.jpg';
 import { getLoggedinUser } from 'helpers/api_helper';
-
-const roleMap: Record<string, string> = {
-    farm_manager: 'Gerente de Granja',
-    // Puedes agregar más roles aquí en el futuro
-};
+import { userRoles } from 'common/user_roles';
 
 const ProfileDropdown = () => {
     const navigate = useNavigate();
     const userLogged = getLoggedinUser();
     const [isProfileDropdown, setIsProfileDropdown] = useState(false);
     const toggleProfileDropdown = () => setIsProfileDropdown(!isProfileDropdown);
-    const friendlyRole = roleMap[userLogged.role] || userLogged.role;
     const [modals, setModals] = useState({ logout: false });
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
@@ -28,6 +23,11 @@ const ProfileDropdown = () => {
         sessionStorage.removeItem('authUser')
     }
 
+    const roleLabels = userLogged.role.map((role: string) => {
+        const match = userRoles.find(r => r.value === role);
+        return match ? match.label : role;
+    });
+
     return (
         <>
 
@@ -39,8 +39,16 @@ const ProfileDropdown = () => {
                             <span className="d-none d-xl-inline-block ms-1 fw-medium user-name-text">
                                 {userLogged.name} {userLogged.lastname}
                             </span>
-                            <span className="d-none d-xl-block ms-1 fs-12 text-muted user-name-sub-text">
-                                {friendlyRole}
+                            <span className="d-none d-xl-flex gap-1 ms-1 flex-wrap">
+                                {roleLabels.map((label: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Iterable<React.ReactNode> | null | undefined, i: React.Key | null | undefined) => (
+                                    <span
+                                        key={i}
+                                        className="badge bg-primary-subtle text-primary fw-semibold"
+                                        style={{ fontSize: '10px' }}
+                                    >
+                                        {label}
+                                    </span>
+                                ))}
                             </span>
                         </span>
                     </span>

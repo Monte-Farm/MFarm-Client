@@ -1,7 +1,7 @@
 import { Attribute, ProductData, PurchaseOrderData, SupplierData } from "common/data_interfaces";
 import classnames from "classnames";
 import { useContext, useEffect, useState } from "react";
-import { Button, Card, CardBody, Col, FormFeedback, Input, Label, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
+import { Badge, Button, Card, CardBody, Col, FormFeedback, Input, Label, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
 import { ConfigContext } from "App";
 import * as Yup from "yup";
 import { useFormik } from "formik";
@@ -36,7 +36,65 @@ const productColumns: Column<any>[] = [
     { header: 'Cantidad', accessor: 'quantity', isFilterable: true, type: 'number' },
     { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true, type: 'text' },
     { header: 'Precio Unitario', accessor: 'price', type: 'currency' },
-    { header: 'Categoría', accessor: 'category', isFilterable: true, type: 'text' },
+    {
+        header: 'Categoria',
+        accessor: 'category',
+        isFilterable: true,
+        type: 'text',
+        render: (value: string) => {
+            let color = "secondary";
+            let label = value;
+
+            switch (value) {
+                case "nutrition":
+                    color = "info";
+                    label = "Nutrición";
+                    break;
+                case "medications":
+                    color = "warning";
+                    label = "Medicamentos";
+                    break;
+                case "vaccines":
+                    color = "primary";
+                    label = "Vacunas";
+                    break;
+                case "vitamins":
+                    color = "success";
+                    label = "Vitaminas";
+                    break;
+                case "minerals":
+                    color = "success";
+                    label = "Minerales";
+                    break;
+                case "supplies":
+                    color = "success";
+                    label = "Insumos";
+                    break;
+                case "hygiene_cleaning":
+                    color = "success";
+                    label = "Higiene y desinfección";
+                    break;
+                case "equipment_tools":
+                    color = "success";
+                    label = "Equipamiento y herramientas";
+                    break;
+                case "spare_parts":
+                    color = "success";
+                    label = "Refacciones y repuestos";
+                    break;
+                case "office_supplies":
+                    color = "success";
+                    label = "Material de oficina";
+                    break;
+                case "others":
+                    color = "success";
+                    label = "Otros";
+                    break;
+            }
+
+            return <Badge color={color}>{label}</Badge>;
+        },
+    },
 ];
 
 const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSave, onCancel }) => {

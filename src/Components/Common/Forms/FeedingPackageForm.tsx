@@ -1,5 +1,5 @@
 import { ConfigContext } from "App";
-import { Attribute, MedicationPackage, ProductData } from "common/data_interfaces";
+import { Attribute, FeedingPackage, MedicationPackage, ProductData } from "common/data_interfaces";
 import { useFormik } from "formik";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
@@ -17,12 +17,12 @@ import CustomTable from "../Tables/CustomTable";
 import SuccessModal from "../Shared/SuccessModal";
 import { HttpStatusCode } from "axios";
 
-interface MedicationPackageFormProps {
+interface FeedingPackageFormProps {
     onSave: () => void;
     onCancel: () => void;
 }
 
-const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, onCancel }) => {
+const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCancel }) => {
     const userLogged = getLoggedinUser();
     const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -30,8 +30,8 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
     const [loading, setLoading] = useState<boolean>(false);
     const [products, setProducts] = useState<any[]>([])
-    const [medicationsSelected, setMedicationsSelected] = useState<any[]>([])
-    const [medicationErrors, setMedicationErrors] = useState<Record<string, any>>({});
+    const [feedingsSelected, setFeedingsSelected] = useState<any[]>([])
+    const [feedingErrors, setFeedingErrors] = useState<Record<string, any>>({});
     const [modals, setModals] = useState({ success: false, error: false });
 
     function toggleArrowTab(tab: number) {
@@ -65,13 +65,17 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                 let label = value;
 
                 switch (value) {
-                    case "medications":
+                    case "nutrition":
                         color = "info";
-                        label = "Medicamentos";
+                        label = "Nutricion";
                         break;
-                    case "vaccines":
+                    case "vitamins":
                         color = "primary";
-                        label = "Vacunas";
+                        label = "Vitaminas";
+                        break;
+                    case "minerals":
+                        color = "primary";
+                        label = "Minerales";
                         break;
                 }
 
@@ -83,7 +87,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
             accessor: "quantity",
             type: "number",
             render: (value, row, isSelected) => {
-                const selected = medicationsSelected.find(m => m.medication === row._id);
+                const selected = feedingsSelected.find(f => f.feeding === row._id);
                 const realValue = selected?.quantity ?? "";
 
                 return (
@@ -92,11 +96,11 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                             type="number"
                             disabled={!isSelected}
                             value={selected?.quantity === 0 ? "" : (selected?.quantity ?? "")}
-                            invalid={medicationErrors[row._id]?.quantity}
+                            invalid={feedingErrors[row._id]?.quantity}
                             onChange={(e) => {
                                 const newValue = e.target.value === "" ? 0 : Number(e.target.value);
-                                setMedicationsSelected(prev =>
-                                    prev.map(m => m.medication === row._id ? { ...m, quantity: newValue } : m)
+                                setFeedingsSelected(prev =>
+                                    prev.map(f => f.feeding === row._id ? { ...f, quantity: newValue } : f)
                                 );
                             }}
                             onClick={(e) => e.stopPropagation()}
@@ -108,42 +112,9 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                 );
             },
         },
-        {
-            header: "Vía de administración",
-            accessor: "administration_route",
-            type: "text",
-            render: (value, row, isSelected) => {
-                const selected = medicationsSelected.find(m => m.medication === row._id);
-                const realValue = selected?.administration_route ?? "";
-                return (
-                    <Input
-                        type="select"
-                        disabled={!isSelected}
-                        value={realValue}
-                        invalid={medicationErrors[row._id]?.administration_route}
-                        onChange={(e) => {
-                            const newValue = e.target.value;
-                            setMedicationsSelected(prev =>
-                                prev.map(m => m.medication === row._id ? { ...m, administration_route: newValue } : m)
-                            );
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <option value="">Seleccione...</option>
-                        <option value="oral">Oral</option>
-                        <option value="intramuscular">Intramuscular</option>
-                        <option value="subcutaneous">Subcutánea</option>
-                        <option value="intravenous">Intravenosa</option>
-                        <option value="intranasal">Intranasal</option>
-                        <option value="topical">Tópica</option>
-                        <option value="rectal">Rectal</option>
-                    </Input>
-                );
-            }
-        },
     ];
 
-    const selectedMedicationsColumns: Column<any>[] = [
+    const selectedFeedingsColumns: Column<any>[] = [
         {
             header: 'Imagen', accessor: 'image', render: (_, row) => (
                 <img src={row.image || noImageUrl} alt="Imagen del Producto" style={{ height: "70px" }} />
@@ -174,52 +145,9 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
         // },
         { header: "Unidad M.", accessor: "unit_measurement", type: "text", isFilterable: true },
         { header: "Cantidad", accessor: "quantity", type: "text", isFilterable: true },
-        {
-            header: "Via de administracion",
-            accessor: "administration_route",
-            type: "text",
-            isFilterable: true,
-            render: (value: string) => {
-                let color = "secondary";
-                let label = value;
-
-                switch (value) {
-                    case "oral":
-                        color = "info";
-                        label = "Oral";
-                        break;
-                    case "intramuscular":
-                        color = "primary";
-                        label = "Intramuscular";
-                        break;
-                    case "subcutaneous":
-                        color = "primary";
-                        label = "Subcutánea";
-                        break;
-                    case "intravenous":
-                        color = "primary";
-                        label = "Intravenosa";
-                        break;
-                    case "intranasal":
-                        color = "primary";
-                        label = "Intranasal";
-                        break;
-                    case "topical":
-                        color = "primary";
-                        label = "Tópica";
-                        break;
-                    case "rectal":
-                        color = "primary";
-                        label = "Rectal";
-                        break;
-                }
-
-                return <Badge color={color}>{label}</Badge>;
-            },
-        },
     ]
 
-    const medicationAttributes: Attribute[] = [
+    const feedingAttributes: Attribute[] = [
         { key: 'code', label: 'Codigo', type: 'text' },
         { key: 'name', label: 'Nombre', type: 'text' },
         { key: 'creation_date', label: 'Fecha de creacion', type: 'date' },
@@ -337,7 +265,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
             if (!value) return false;
             if (!configContext) return true;
             try {
-                const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/medication_package/check_code_exists/${value}`);
+                const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/feeding_package/check_code_exists/${value}`);
                 return !response.data.codeExists
             } catch (error) {
                 console.error('Error validating unique code: ', error);
@@ -349,17 +277,14 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
         objective_use: Yup.string().required('El objetivo de uso es obligatorio'),
     })
 
-    const medicationValidation = Yup.object({
-        medication: Yup.string().required(),
+    const feedingValidation = Yup.object({
+        feeding: Yup.string().required(),
         quantity: Yup.number()
             .moreThan(0, "Cantidad inválida")
             .required("Cantidad requerida"),
-        administration_route: Yup.string()
-            .required("Vía requerida")
-            .notOneOf([""], "Debe seleccionar una vía"),
     });
 
-    const formik = useFormik<MedicationPackage>({
+    const formik = useFormik<FeedingPackage>({
         initialValues: {
             code: '',
             name: '',
@@ -369,8 +294,9 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
             creation_responsible: userLogged._id || '',
             is_active: true,
             destination_area: '',
-            medications: [],
+            feedings: [],
             objective_use: '',
+            periodicity: '',
         },
         enableReinitialize: true,
         validationSchema,
@@ -381,13 +307,13 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
             try {
                 const values = {
                     ...formik.values,
-                    medications: medicationsSelected
+                    feedings: feedingsSelected
                 }
-                const medicationResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/medication_package/create`, values)
+                const feedingResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/feeding_package/create`, values)
 
-                if (medicationResponse.status === HttpStatusCode.Created) {
+                if (feedingResponse.status === HttpStatusCode.Created) {
                     await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
-                        event: `Paquete de medicación ${values.code} creado`
+                        event: `Paquete de alimentacion ${values.code} creado`
                     });
 
                     toggleModal('success', true)
@@ -405,8 +331,8 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
             setLoading(true)
 
             const [codeResponse, productsResponse] = await Promise.all([
-                configContext.axiosHelper.get(`${configContext.apiUrl}/medication_package/next_medication_code`),
-                configContext.axiosHelper.get(`${configContext.apiUrl}/product/find_medication_products`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/feeding_package/next_feeding_code`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/product/find_feeding_products`),
             ])
 
             formik.setFieldValue('code', codeResponse.data.data)
@@ -420,13 +346,14 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
         }
     }
 
-    const checkMedicationData = async () => {
+    const checkFeedingData = async () => {
         formik.setTouched({
             code: true,
             name: true,
             creation_date: true,
             destination_area: true,
             objective_use: true,
+            periodicity: true,
         })
 
         try {
@@ -437,32 +364,32 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
         }
     }
 
-    const validateSelectedMedications = async () => {
+    const validateSelectedFeedings = async () => {
         const errors: Record<string, any> = {};
 
-        if (medicationsSelected.length === 0) {
+        if (feedingsSelected.length === 0) {
             setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, seleccione al menos 1 medicamento' })
             return false;
         }
 
-        for (const med of medicationsSelected) {
+        for (const fed of feedingsSelected) {
             try {
-                await medicationValidation.validate(med, { abortEarly: false });
+                await feedingValidation.validate(fed, { abortEarly: false });
             } catch (err: any) {
-                const medErrors: any = {};
+                const fedErrors: any = {};
 
                 err.inner.forEach((e: any) => {
-                    medErrors[e.path] = true;
+                    fedErrors[e.path] = true;
                 });
 
-                errors[med.medication] = medErrors;
+                errors[fed.feeding] = fedErrors;
             }
         }
 
-        setMedicationErrors(errors);
+        setFeedingErrors(errors);
 
         if (Object.keys(errors).length > 0) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, llene todos los datos de las medicaciones seleccionadas' })
+            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, llene todos los datos de los alimentos seleccionadas' })
             return false;
         }
 
@@ -486,34 +413,34 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                     <NavItem>
                         <NavLink
                             href="#"
-                            id="step-medicationPackageData-tab"
+                            id="step-feedingPackageData-tab"
                             className={classnames({
                                 active: activeStep === 1,
                                 done: activeStep > 1,
                             })}
                             onClick={() => toggleArrowTab(1)}
                             aria-selected={activeStep === 1}
-                            aria-controls="step-medicationPackageData-tab"
+                            aria-controls="step-feedingPackageData-tab"
                             disabled
                         >
-                            Información del paquete de medicación
+                            Información del paquete de alimentacion
                         </NavLink>
                     </NavItem>
 
                     <NavItem>
                         <NavLink
                             href="#"
-                            id="step-selecMedication-tab"
+                            id="step-selecFeeding-tab"
                             className={classnames({
                                 active: activeStep === 2,
                                 done: activeStep > 2,
                             })}
                             onClick={() => toggleArrowTab(2)}
                             aria-selected={activeStep === 2}
-                            aria-controls="step-selecMedication-tab"
+                            aria-controls="step-selecFeeding-tab"
                             disabled
                         >
-                            Seleccion de medicacion
+                            Seleccion de alimentos
                         </NavLink>
                     </NavItem>
 
@@ -537,7 +464,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
             </div>
 
             <TabContent activeTab={activeStep}>
-                <TabPane id="step-medicationPackageData-tab" tabId={1}>
+                <TabPane id="step-feedingPackageData-tab" tabId={1}>
                     <div className="d-flex gap-3">
                         <div className="mt-4 w-50">
                             <Label htmlFor="code" className="form-label">Código</Label>
@@ -575,7 +502,38 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                     </div>
 
                     <div className="d-flex gap-3">
-                        <div className="mt-4 w-50">
+                        <div className="mt-4 w-100">
+                            <Label htmlFor="periodicity" className="form-label">
+                                Periodicidad de alimentación / suplementación
+                            </Label>
+                            <Input
+                                type="select"
+                                id="periodicity"
+                                name="periodicity"
+                                value={formik.values.periodicity}
+                                onChange={formik.handleChange}
+                                onBlur={formik.handleBlur}
+                                invalid={formik.touched.periodicity && !!formik.errors.periodicity}
+                            >
+                                <option value="">Seleccione una periodicidad</option>
+                                <option value="once_day">1 vez al día</option>
+                                <option value="twice_day">2 veces al día</option>
+                                <option value="three_times_day">3 veces al día</option>
+                                <option value="ad_libitum">Ad libitum (libre acceso)</option>
+                                <option value="weekly">1 vez a la semana</option>
+                                <option value="biweekly">Cada 15 días</option>
+                                <option value="monthly">Mensual</option>
+                                <option value="specific_days">Días específicos</option>
+                                <option value="by_event">Por evento productivo</option>
+                            </Input>
+
+                            {formik.touched.periodicity && formik.errors.periodicity && (
+                                <FormFeedback>{formik.errors.periodicity}</FormFeedback>
+                            )}
+                        </div>
+
+
+                        <div className="mt-4 w-100">
                             <Label htmlFor="objective_use" className="form-label">Objetivo de uso</Label>
                             <Input
                                 type="select"
@@ -596,7 +554,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                             )}
                         </div>
 
-                        <div className="mt-4 w-50">
+                        <div className="mt-4 w-100">
                             <Label htmlFor="area" className="form-label">{formik.values.objective_use === 'individual' ? 'Etapa de destino' : 'Área de destino'}</Label>
                             <Input
                                 key={formik.values.objective_use}
@@ -688,29 +646,28 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                     </div>
 
                     <div className="d-flex justify-content-between mt-4">
-                        <Button className="btn btn-primary ms-auto" onClick={() => checkMedicationData()}>
+                        <Button className="btn btn-primary ms-auto" onClick={() => checkFeedingData()}>
                             Siguiente
                             <i className="ri-arrow-right-line ms-1" />
                         </Button>
                     </div>
                 </TabPane>
 
-                <TabPane id="step-selecMedication-tab" tabId={2}>
+                <TabPane id="step-selecFeeding-tab" tabId={2}>
                     <SelectableCustomTable
                         columns={columns}
                         data={products}
                         showPagination={true}
                         rowsPerPage={6}
                         onSelect={(rows) => {
-                            setMedicationsSelected(prev => {
+                            setFeedingsSelected(prev => {
                                 const newRows = rows.map(r => {
-                                    const existing = prev.find(p => p.medication === r._id);
+                                    const existing = prev.find(p => p.feeding === r._id);
                                     if (existing) return existing;
 
                                     return {
-                                        medication: r._id,
+                                        feeding: r._id,
                                         quantity: 0,
-                                        administration_route: "",
                                     };
                                 });
                                 return newRows;
@@ -728,7 +685,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                         <Button
                             className="btn btn-primary ms-auto"
                             onClick={async () => {
-                                const ok = await validateSelectedMedications();
+                                const ok = await validateSelectedFeedings();
                                 if (!ok) return;
                                 toggleArrowTab(3);
                             }}
@@ -743,22 +700,22 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                     <div className="d-flex gap-3">
                         <Card className="">
                             <CardHeader>
-                                <h5>Informacion del paquete de medicacion</h5>
+                                <h5>Informacion del paquete de alimentacion</h5>
                             </CardHeader>
                             <CardBody>
-                                <ObjectDetails attributes={medicationAttributes} object={formik.values} />
+                                <ObjectDetails attributes={feedingAttributes} object={formik.values} />
                             </CardBody>
                         </Card>
 
                         <Card className="w-100">
                             <CardHeader>
-                                <h5>Medicamentos seleccionados</h5>
+                                <h5>Alimentos seleccionados</h5>
                             </CardHeader>
                             <CardBody className="p-0">
                                 <CustomTable
-                                    columns={selectedMedicationsColumns}
-                                    data={medicationsSelected.map(ms => ({
-                                        ...products.find(p => p._id === ms.medication),
+                                    columns={selectedFeedingsColumns}
+                                    data={feedingsSelected.map(ms => ({
+                                        ...products.find(p => p._id === ms.feeding),
                                         ...ms
                                     }))}
                                     showSearchAndFilter={false}
@@ -797,4 +754,4 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
     )
 }
 
-export default MedicationPackageForm
+export default FeedingPackageForm;

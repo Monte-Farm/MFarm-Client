@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { Button, Container, Alert, Card, CardHeader, CardBody, Modal, ModalBody, ModalHeader } from "reactstrap";
+import { Button, Container, Alert, Card, CardHeader, CardBody, Modal, ModalBody, ModalHeader, Badge } from "reactstrap";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useNavigate } from "react-router-dom";
 import { IncomeData, ProductData } from "common/data_interfaces";
@@ -35,7 +35,65 @@ const ViewInventory = () => {
     { header: 'Existencias', accessor: 'quantity', isFilterable: true, type: 'number' },
     { header: 'Precio Promedio', accessor: 'averagePrice', isFilterable: true, type: 'currency' },
     { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true, type: 'text' },
-    { header: 'Categoría', accessor: 'category', isFilterable: true, type: "text" },
+    {
+      header: 'Categoria',
+      accessor: 'category',
+      isFilterable: true,
+      type: 'text',
+      render: (value: string) => {
+        let color = "secondary";
+        let label = value;
+
+        switch (value) {
+          case "nutrition":
+            color = "info";
+            label = "Nutrición";
+            break;
+          case "medications":
+            color = "warning";
+            label = "Medicamentos";
+            break;
+          case "vaccines":
+            color = "primary";
+            label = "Vacunas";
+            break;
+          case "vitamins":
+            color = "success";
+            label = "Vitaminas";
+            break;
+          case "minerals":
+            color = "success";
+            label = "Minerales";
+            break;
+          case "supplies":
+            color = "success";
+            label = "Insumos";
+            break;
+          case "hygiene_cleaning":
+            color = "success";
+            label = "Higiene y desinfección";
+            break;
+          case "equipment_tools":
+            color = "success";
+            label = "Equipamiento y herramientas";
+            break;
+          case "spare_parts":
+            color = "success";
+            label = "Refacciones y repuestos";
+            break;
+          case "office_supplies":
+            color = "success";
+            label = "Material de oficina";
+            break;
+          case "others":
+            color = "success";
+            label = "Otros";
+            break;
+        }
+
+        return <Badge color={color}>{label}</Badge>;
+      },
+    },
     {
       header: "Acciones",
       accessor: "action",

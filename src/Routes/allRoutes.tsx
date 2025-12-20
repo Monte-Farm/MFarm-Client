@@ -30,16 +30,13 @@ import Register from "../pages/Authentication/Register";
 // // User Profile
 import UserProfile from "../pages/Authentication/user-profile";
 import SupplierDetails from "pages/Suppliers/SupplierDetails";
-import IncomeDetails from "pages/Incomes/IncomeDetails";
 import SubwarehouseDetails from "pages/Subwarehouse/SubwarehouseDetails";
 import ViewOutcomes from "pages/Outcomes/ViewOutcomes";
-import OutcomeDetails from "pages/Outcomes/OutcomeDetails";
 
 import ViewUsers from "pages/Users/ViewUsers";
 import SendOrders from "pages/Orders/SendOrders";
 import OrderDetails from "pages/Orders/OrderDetails";
 import CompleteOrder from "pages/Orders/CompleteOrder";
-import CompletedOrders from "pages/Orders/CompletedOrders";
 import SubwarehouseInventory from "pages/Subwarehouse/SubwarehouseInventory";
 import SubwarehouseIncomes from "pages/Subwarehouse/SubwarehouseIncomes";
 import SubwarehouseOutcomes from "pages/Subwarehouse/SubwarehouseOutcomes";
@@ -65,6 +62,7 @@ import Logout from "Components/Common/Velzon/Logout";
 import DiscardedPigs from "pages/Pigs/DiscardedPigs";
 import ViewMedicationPackages from "pages/Medication/ViewMedicationPackages";
 import ViewVaccinationPlans from "pages/Medication/ViewVaccinePlans";
+import ViewFeedingPackages from "pages/Feeding/ViewFeedingPackages";
 
 
 
@@ -91,11 +89,9 @@ const authProtectedRoutes = [
 
   //Warehouse - Incomes
   { path: '/warehouse/incomes/view_incomes', component: <ViewIncome /> },
-  { path: '/warehouse/incomes/income_details/:id_income', component: <IncomeDetails /> },
 
   //Warehouse - Outcomes
   { path: '/warehouse/outcomes/view_outcomes', component: <ViewOutcomes /> },
-  { path: '/warehouse/outcomes/outcome_details/:id_outcome', component: <OutcomeDetails /> },
 
   //Warehouse - Product Catalog
   { path: '/warehouse/products/product_catalog', component: <ViewProducts /> },
@@ -111,7 +107,6 @@ const authProtectedRoutes = [
   { path: '/orders/send_orders', component: <SendOrders /> },
   { path: '/orders/order_details/:id_order', component: <OrderDetails /> },
   { path: '/orders/complete_order/:id_order', component: <CompleteOrder /> },
-  { path: '/orders/completed_orders', component: <CompletedOrders /> },
 
   //Purchase orders
   { path: '/purchase_orders/view_purchase_orders', component: <ViewPurchaseOrders /> },
@@ -151,6 +146,8 @@ const authProtectedRoutes = [
   { path: "/medication/view_medication_package", component: <ViewMedicationPackages /> },
   { path: "/medication/view_vaccination_plans", component: <ViewVaccinationPlans /> },
 
+  //Feeding
+  { path: "/feeding/view_feeding_packages", component: <ViewFeedingPackages /> },
 
 
   // this route should be at the end of all other routes
