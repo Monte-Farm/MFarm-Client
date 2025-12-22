@@ -574,6 +574,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
                             invalid={formik.touched.stage && !!formik.errors.stage}
                         >
                             <option value="">Seleccione una etapa</option>
+                            <option value="general">General</option>
                             <option value="piglet">Lechón</option>
                             <option value="weaning">Destete</option>
                             <option value="fattening">Engorda</option>

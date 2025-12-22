@@ -205,8 +205,7 @@ export interface PigReproductionEntry {
 export interface medicationPackagesEntry {
     packageId: string;
     name: string;
-    objective: 'individual' | 'group';
-    destinationArea: string;
+    stage: string;
     medications: {
         medication: string;
         quantity: number;
@@ -454,13 +453,12 @@ export interface MedicationPackage {
     creation_date: Date | null;
     creation_responsible: string;
     is_active: boolean;
-    destination_area: string;
+    stage: string;
     medications: {
         medication: string;
         quantity: number;
         administration_route: string
     }[]
-    objective_use: string;
 }
 
 export interface VaccinationPlan {

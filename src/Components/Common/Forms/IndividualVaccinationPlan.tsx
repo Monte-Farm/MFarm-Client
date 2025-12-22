@@ -178,10 +178,10 @@ const IndividualVaccinationPlanForm: React.FC<IndividualVaccinationPlanFormProps
         { header: "Producto", accessor: "name", type: "text", isFilterable: true },
         {
             header: "Cantidad",
-            accessor: "quantity",
+            accessor: "dose",
             type: "text",
             isFilterable: true,
-            render: (_, row) => <span>{row.quantity} {row.unit_measurement}</span>
+            render: (_, row) => <span>{row.dose} {row.unit_measurement}</span>
         },
         {
             header: "Via de administracion",

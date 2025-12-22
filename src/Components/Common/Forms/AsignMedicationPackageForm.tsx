@@ -8,12 +8,10 @@ import { Attribute, medicationPackagesEntry, PigData } from "common/data_interfa
 import * as Yup from 'yup';
 import classnames from "classnames";
 import { useFormik } from "formik";
-import { HttpStatusCode } from "axios";
 import DatePicker from "react-flatpickr";
 import SelectableCustomTable from "../Tables/SelectableTable";
 import AlertMessage from "../Shared/AlertMesagge";
 import ObjectDetails from "../Details/ObjectDetails";
-import PigDetails from "pages/Pigs/PigDetails";
 import CustomTable from "../Tables/CustomTable";
 import ErrorModal from "../Shared/ErrorModal";
 import SuccessModal from "../Shared/SuccessModal";
@@ -31,7 +29,7 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
     const [loading, setLoading] = useState<boolean>(false);
-    const [modals, setModals] = useState({ medicationPackageDetails: false, success: false, error: false, missingStock: false });
+    const [modals, setModals] = useState({ medicationPackageDetails: false, success: false, error: false, missingStock: false, subwarehouseError: false });
     const [medicationsPackages, setMedicationsPackages] = useState<any[]>([]);
     const [pigDetails, setPigDetails] = useState<PigData>()
     const [selectedMedicationPackage, setSelectedMedicationPackage] = useState<any>();
@@ -58,62 +56,18 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
         { header: 'Nombre', accessor: 'name', type: 'text', isFilterable: true },
         { header: 'Fecha de creacion', accessor: 'creation_date', type: 'date', isFilterable: true },
         {
-            header: 'Área de destino',
-            accessor: 'destination_area',
+            header: 'Etapa',
+            accessor: 'stage',
             type: 'text',
             isFilterable: true,
             render: (_, row) => {
                 let color = "secondary";
                 let text = "Desconocido";
 
-                switch (row.destination_area) {
+                switch (row.stage) {
                     case "general":
                         color = "info";
                         text = "General";
-                        break;
-                    case "gestation":
-                        color = "info";
-                        text = "Gestación";
-                        break;
-                    case "farrowing":
-                        color = "primary";
-                        text = "Paridera";
-                        break;
-                    case "maternity":
-                        color = "primary";
-                        text = "Maternidad";
-                        break;
-                    case "weaning":
-                        color = "success";
-                        text = "Destete";
-                        break;
-                    case "nursery":
-                        color = "warning";
-                        text = "Preceba / Levante inicial";
-                        break;
-                    case "fattening":
-                        color = "dark";
-                        text = "Ceba / Engorda";
-                        break;
-                    case "replacement":
-                        color = "secondary";
-                        text = "Reemplazo / Recría";
-                        break;
-                    case "boars":
-                        color = "info";
-                        text = "Área de verracos";
-                        break;
-                    case "quarantine":
-                        color = "danger";
-                        text = "Cuarentena / Aislamiento";
-                        break;
-                    case "hospital":
-                        color = "danger";
-                        text = "Hospital / Enfermería";
-                        break;
-                    case "shipping":
-                        color = "secondary";
-                        text = "Corrales de venta / embarque";
                         break;
                     case "piglet":
                         color = "info";
@@ -130,29 +84,6 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
                     case "breeder":
                         color = "success";
                         text = "Reproductor";
-                        break;
-                }
-
-                return <Badge color={color}>{text}</Badge>;
-            },
-        },
-        {
-            header: 'Objetivo de uso',
-            accessor: 'objective_use',
-            type: 'text',
-            isFilterable: true,
-            render: (_, row) => {
-                let color = "secondary";
-                let text = "Desconocido";
-
-                switch (row.objective_use) {
-                    case "individual":
-                        color = "info";
-                        text = "Individual";
-                        break;
-                    case "group":
-                        color = "info";
-                        text = "Grupal";
                         break;
                 }
 
@@ -300,61 +231,17 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
         { label: 'Nombre', key: 'name', type: 'text', },
         { label: 'Fecha de creacion', key: 'creation_date', type: 'date', },
         {
-            label: 'Área de destino',
-            key: 'destination_area',
+            label: 'Etapa',
+            key: 'stage',
             type: 'text',
             render: (_, row) => {
                 let color = "secondary";
                 let text = "Desconocido";
 
-                switch (row.destination_area) {
+                switch (row.stage) {
                     case "general":
                         color = "info";
                         text = "General";
-                        break;
-                    case "gestation":
-                        color = "info";
-                        text = "Gestación";
-                        break;
-                    case "farrowing":
-                        color = "primary";
-                        text = "Paridera";
-                        break;
-                    case "maternity":
-                        color = "primary";
-                        text = "Maternidad";
-                        break;
-                    case "weaning":
-                        color = "success";
-                        text = "Destete";
-                        break;
-                    case "nursery":
-                        color = "warning";
-                        text = "Preceba / Levante inicial";
-                        break;
-                    case "fattening":
-                        color = "dark";
-                        text = "Ceba / Engorda";
-                        break;
-                    case "replacement":
-                        color = "secondary";
-                        text = "Reemplazo / Recría";
-                        break;
-                    case "boars":
-                        color = "info";
-                        text = "Área de verracos";
-                        break;
-                    case "quarantine":
-                        color = "danger";
-                        text = "Cuarentena / Aislamiento";
-                        break;
-                    case "hospital":
-                        color = "danger";
-                        text = "Hospital / Enfermería";
-                        break;
-                    case "shipping":
-                        color = "secondary";
-                        text = "Corrales de venta / embarque";
                         break;
                     case "piglet":
                         color = "info";
@@ -377,28 +264,6 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
                 return <Badge color={color}>{text}</Badge>;
             },
         },
-        {
-            label: 'Objetivo de uso',
-            key: 'objective_use',
-            type: 'text',
-            render: (_, row) => {
-                let color = "secondary";
-                let text = "Desconocido";
-
-                switch (row.objective_use) {
-                    case "individual":
-                        color = "info";
-                        text = "Individual";
-                        break;
-                    case "group":
-                        color = "info";
-                        text = "Grupal";
-                        break;
-                }
-
-                return <Badge color={color}>{text}</Badge>;
-            },
-        },
     ]
 
     const fetchData = async () => {
@@ -410,7 +275,7 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
             ])
             const pigData = pigResponse.data.data;
 
-            const medicationResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/medication_package/find_by_destination_objective/${userLogged.farm_assigned}/${pigData.currentStage}/individual`)
+            const medicationResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/medication_package/find_by_stage/${userLogged.farm_assigned}/${pigData.currentStage}`)
             const packagesWithId = medicationResponse.data.data.map((b: any) => ({ ...b, id: b._id }));
             setPigDetails(pigData)
             setMedicationsPackages(packagesWithId)
@@ -449,8 +314,7 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
         initialValues: {
             packageId: '',
             name: '',
-            objective: 'individual',
-            destinationArea: '',
+            stage: '',
             medications: [],
             applicationDate: null,
             appliedBy: userLogged._id,
@@ -477,6 +341,11 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
                     toggleModal('missingStock');
                     return;
                 }
+
+                if (error.response?.status === 400 && !error.response?.data?.missing) {
+                    toggleModal('subwarehouseError');
+                    return;
+                }
                 toggleModal('error')
             }
         }
@@ -499,7 +368,7 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
         if (selectedMedicationPackage) {
             formik.setFieldValue('packageId', selectedMedicationPackage._id)
             formik.setFieldValue('name', selectedMedicationPackage.name)
-            formik.setFieldValue('destinationArea', selectedMedicationPackage.destination_area)
+            formik.setFieldValue('stage', selectedMedicationPackage.stage)
             formik.setFieldValue('medications', selectedMedicationPackage.medications)
 
             fetchMedicationsItems(selectedMedicationPackage.medications)
@@ -695,6 +564,8 @@ const IndividualMedicationPackageForm: React.FC<IndividualMedicationPackageFormP
             <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message={"Ha ocurrido un error, intentelo mas tarde"} />
             <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={"Paquete de medicacion asignado correctamente"} />
             <MissingStockModal isOpen={modals.missingStock} onClose={() => toggleModal('missingStock', false)} missingItems={missingItems} />
+            <ErrorModal isOpen={modals.subwarehouseError} onClose={() => toggleModal('subwarehouseError')} message={"No existe un subalmacen medico, pongase en contacto con el encargado de almacen"} />
+
         </>
     )
 }

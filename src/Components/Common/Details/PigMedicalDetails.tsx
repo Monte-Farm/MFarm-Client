@@ -4,7 +4,7 @@ import { useContext, useEffect, useState } from "react";
 import LoadingAnimation from "../Shared/LoadingAnimation";
 import AlertMessage from "../Shared/AlertMesagge";
 import { Button, Card, CardBody, CardHeader, Modal, ModalBody, ModalHeader } from "reactstrap";
-import IndividualMedicationPackageForm from "../Forms/IndividualMedicationPackageForm";
+import IndividualMedicationPackageForm from "../Forms/AsignMedicationPackageForm";
 import SingleMedicationForm from "../Forms/SingleMedicationForm";
 import { FaKeyboard, FaListUl } from "react-icons/fa";
 import { FiAlertCircle, FiEye } from "react-icons/fi";
@@ -287,18 +287,12 @@ const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
                                             timeStyle: "short",
                                         });
 
-                                        const objectiveLabels: Record<string, string> = {
-                                            individual: "Individual",
-                                            collective: "Colectivo",
-                                            mass: "Masivo",
-                                        };
-
-                                        const destinationLabels: Record<string, string> = {
+                                        const stageLabels: Record<string, string> = {
                                             piglet: "Lechón",
-                                            sow: "Cerda",
-                                            nursery: "Destete",
-                                            grower: "Crecimiento",
-                                            finisher: "Finalización",
+                                            weaning: "Destete",
+                                            fattening: "Engorda",
+                                            breeder: "Reproductor",
+                                            general: 'General'
                                         };
 
                                         return (
@@ -315,13 +309,8 @@ const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
                                                 <div className="d-flex flex-column gap-1 fs-6 mb-2">
 
                                                     <span>
-                                                        <strong className="text-muted">Objetivo:</strong>{" "}
-                                                        {objectiveLabels[p.objective] ?? p.objective}
-                                                    </span>
-
-                                                    <span>
-                                                        <strong className="text-muted">Área destino:</strong>{" "}
-                                                        {destinationLabels[p.destinationArea] ?? p.destinationArea}
+                                                        <strong className="text-muted">Etapa:</strong>{" "}
+                                                        {stageLabels[p.stage] ?? p.stage}
                                                     </span>
                                                 </div>
 

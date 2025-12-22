@@ -47,6 +47,10 @@ const ViewVaccinationPlans = () => {
                 let text = "Desconocido";
 
                 switch (row.stage) {
+                    case "general":
+                        color = "info";
+                        text = "General";
+                        break;
                     case "piglet":
                         color = "info";
                         text = "Lechon";
@@ -146,14 +150,14 @@ const ViewVaccinationPlans = () => {
             <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("create")}>Nuevo plan de vacunacion</ModalHeader>
                 <ModalBody>
-                    <VaccinationPlanForm onSave={() => {toggleModal('create'); fetchData();}} onCancel={() => {}}/>
+                    <VaccinationPlanForm onSave={() => { toggleModal('create'); fetchData(); }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => { toggleModal("details"); fetchData() }}>Detalles de plan de vacunacion</ModalHeader>
                 <ModalBody>
-                    <VaccinationPlanDetails vaccinationPlanId={selectedVaccinationPlan?._id}/>
+                    <VaccinationPlanDetails vaccinationPlanId={selectedVaccinationPlan?._id} />
                 </ModalBody>
             </Modal>
         </div>

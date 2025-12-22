@@ -392,17 +392,10 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                                         {formik.touched.warehouseDestiny && formik.errors.warehouseDestiny && <FormFeedback>{formik.errors.warehouseDestiny}</FormFeedback>}
                                     </div>
 
-                                    <Row className="mt-4">
-                                        <Col lg={6}>
-                                            <Label htmlFor="warehouseManager" className="form-label">Responsable</Label>
-                                            <Input type="text" className="form-control" id="warehouseManager" value={selectedSubwarehouse?.manager} disabled></Input>
-                                        </Col>
-
-                                        <Col lg={6}>
-                                            <Label htmlFor="warehouseLocation" className="form-label">Ubicación</Label>
-                                            <Input type="text" className="form-control" id="warehouseLocation" value={selectedSubwarehouse?.location} disabled></Input>
-                                        </Col>
-                                    </Row>
+                                    <div className='mt-4'>
+                                        <Label htmlFor="warehouseManager" className="form-label">Responsable</Label>
+                                        <Input type="text" className="form-control" id="warehouseManager" value={selectedSubwarehouse?.manager} disabled></Input>
+                                    </div>
                                 </div>
                             )}
 

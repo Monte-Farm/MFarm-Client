@@ -32,61 +32,17 @@ const MedicationPackageDetails: React.FC<MedicationPackageDetailsProps> = ({ med
         { key: 'name', label: 'Nombre', type: 'text' },
         { key: 'creation_date', label: 'Fecha de creacion', type: 'date' },
         {
-            key: 'destination_area',
-            label: 'Area de destino',
+            label: 'Etapa',
+            key: 'stage',
             type: 'text',
             render: (_, row) => {
                 let color = "secondary";
                 let text = "Desconocido";
 
-                switch (row.destination_area) {
+                switch (row.stage) {
                     case "general":
                         color = "info";
                         text = "General";
-                        break;
-                    case "gestation":
-                        color = "info";
-                        text = "Gestación";
-                        break;
-                    case "farrowing":
-                        color = "primary";
-                        text = "Paridera";
-                        break;
-                    case "maternity":
-                        color = "primary";
-                        text = "Maternidad";
-                        break;
-                    case "weaning":
-                        color = "success";
-                        text = "Destete";
-                        break;
-                    case "nursery":
-                        color = "warning";
-                        text = "Preceba";
-                        break;
-                    case "fattening":
-                        color = "dark";
-                        text = "Ceba";
-                        break;
-                    case "replacement":
-                        color = "secondary";
-                        text = "Reemplazo";
-                        break;
-                    case "boars":
-                        color = "info";
-                        text = "Área de verracos";
-                        break;
-                    case "quarantine":
-                        color = "danger";
-                        text = "Cuarentena";
-                        break;
-                    case "hospital":
-                        color = "danger";
-                        text = "Hospital";
-                        break;
-                    case "shipping":
-                        color = "secondary";
-                        text = "Corrales de venta";
                         break;
                     case "piglet":
                         color = "info";
@@ -103,28 +59,6 @@ const MedicationPackageDetails: React.FC<MedicationPackageDetailsProps> = ({ med
                     case "breeder":
                         color = "success";
                         text = "Reproductor";
-                        break;
-                }
-
-                return <Badge color={color}>{text}</Badge>;
-            },
-        },
-        {
-            key: 'objective_use',
-            label: 'Objetivo de uso',
-            type: 'text',
-            render: (_, row) => {
-                let color = "secondary";
-                let text = "Desconocido";
-
-                switch (row.objective_use) {
-                    case "individual":
-                        color = "info";
-                        text = "Individual";
-                        break;
-                    case "group":
-                        color = "info";
-                        text = "Grupal";
                         break;
                 }
 

@@ -19,7 +19,7 @@ import HistoryList from "Components/Common/Lists/HistoryList";
 import ReproductionFilters from "Components/Common/Lists/HistoryListFilter";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
-import IndividualMedicationPackageForm from "Components/Common/Forms/IndividualMedicationPackageForm";
+import IndividualMedicationPackageForm from "Components/Common/Forms/AsignMedicationPackageForm";
 import { FaKeyboard, FaListUl } from "react-icons/fa";
 import SingleMedicationForm from "Components/Common/Forms/SingleMedicationForm";
 import PigMedicalDetails from "Components/Common/Details/PigMedicalDetails";
