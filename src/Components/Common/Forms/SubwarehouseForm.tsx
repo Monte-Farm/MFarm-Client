@@ -16,6 +16,7 @@ import { userRoles } from 'common/user_roles';
 import AlertMessage from '../Shared/AlertMesagge';
 import ObjectDetails from '../Details/ObjectDetails';
 import defaultImageProfila from '../../../assets/images/default-profile-mage.jpg'
+import { subwarehouseTypes } from 'common/subawarehouse_types';
 
 interface SubwarehouseFormProps {
     onSave: () => void;
@@ -147,8 +148,36 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
     const subwarehouseAttributes: Attribute[] = [
         { key: 'code', label: 'Codigo', type: 'text' },
         { key: 'name', label: 'Nombre', type: 'text' },
-        { key: 'location', label: 'Ubicacion', type: 'text' },
+        {
+            key: 'type',
+            label: 'Tipo de subalmacen',
+            type: 'text',
+            render: (value: string) => {
+                let color = "secondary";
+                let label = value;
 
+                switch (value) {
+                    case "medical":
+                        color = "info";
+                        label = "Medico";
+                        break;
+                    case "feed":
+                        color = "success";
+                        label = "Alimento";
+                        break;
+                    case "cleaning":
+                        color = "primary";
+                        label = "Limpieza";
+                        break;
+                    case "supplies":
+                        color = "warning";
+                        label = "Insumos";
+                        break;
+                }
+
+                return <Badge color={color}>{label}</Badge>;
+            },
+        },
     ]
 
     const validationSchema = Yup.object({
@@ -165,11 +194,11 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
                 }
             }),
         name: Yup.string().required('Por favor, ingrese el nombre'),
-        location: Yup.string().required('Por favor, ingrese la ubicación'),
-        manager: Yup.string().required('Por favor, seleccione el responsable')
+        manager: Yup.string().required('Por favor, seleccione el responsable'),
+        type: Yup.string().required('Por favor, seleccione el tipo de subalmacen')
     })
 
-    const formik = useFormik<any>({
+    const formik = useFormik<SubwarehouseData>({
         initialValues: {
             code: '',
             name: '',
@@ -180,7 +209,8 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
             incomes: [],
             outcomes: [],
             isSubwarehouse: true,
-            farm: userLogged.farm_assigned
+            farm: userLogged.farm_assigned,
+            type: ''
         },
         enableReinitialize: true,
         validateOnChange: false,
@@ -245,7 +275,7 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
         formik.setTouched({
             code: true,
             name: true,
-            location: true
+            type: true
         })
 
         try {
@@ -369,22 +399,35 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
                             )}
                         </div>
 
-                        <div className='mt-4'>
-                            <Label htmlFor='locationInput' className='form-input'>Ubicación</Label>
-                            <Input
-                                type='text'
-                                id='locationInput'
-                                className='form-control'
-                                name='location'
-                                value={formik.values.location}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                invalid={formik.touched.location && !!formik.errors.location}
-                            />
-                            {formik.touched.location && formik.errors.location && (
-                                <FormFeedback>{formik.errors.location as string}</FormFeedback>
+                        <div className="mt-4">
+                            <Label className="form-label fw-bold">Tipo de almacén</Label>
+
+                            <div className="role-selector-container d-flex flex-wrap gap-3">
+                                {subwarehouseTypes.map((type) => {
+                                    const checked = formik.values.type === type.value;
+
+                                    return (
+                                        <label key={type.value} className={`role-card ${checked ? "selected" : ""}`}>
+                                            <input
+                                                type="radio"
+                                                name="type"
+                                                value={type.value}
+                                                checked={checked}
+                                                onChange={() => {
+                                                    formik.setFieldValue("type", type.value);
+                                                }}
+                                            />
+                                            <span>{type.label}</span>
+                                        </label>
+                                    );
+                                })}
+                            </div>
+
+                            {formik.touched.type && formik.errors.type && (
+                                <FormFeedback className="d-block mt-2">{formik.errors.type}</FormFeedback>
                             )}
                         </div>
+
 
                         <div className="d-flex justify-content-end mt-4 gap-2">
                             <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>

@@ -39,7 +39,37 @@ const ViewSubwarehouse = () => {
             type: 'text',
             render: (_, row) => <span>{row.manager.name} {row.manager.lastname}</span>
         },
-        { header: 'Ubicación', accessor: 'location', isFilterable: true, type: 'text' },
+        {
+            header: 'Tipo de subalmacen',
+            accessor: 'type',
+            isFilterable: true,
+            type: 'text',
+            render: (value: string) => {
+                let color = "secondary";
+                let label = value;
+
+                switch (value) {
+                    case "medical":
+                        color = "info";
+                        label = "Medico";
+                        break;
+                    case "feed":
+                        color = "success";
+                        label = "Alimento";
+                        break;
+                    case "cleaning":
+                        color = "primary";
+                        label = "Limpieza";
+                        break;
+                    case "supplies":
+                        color = "warning";
+                        label = "Insumos";
+                        break;
+                }
+
+                return <Badge color={color}>{label}</Badge>;
+            },
+        },
         {
             header: "Estado",
             accessor: "status",

@@ -88,7 +88,7 @@ export interface ProductData {
 export interface SubwarehouseData {
     code: string;
     name: string;
-    location: string;
+    location?: string;
     manager: string;
     status: boolean;
     products: ProductComplete[]
@@ -96,6 +96,7 @@ export interface SubwarehouseData {
     outcomes: string[]
     isSubwarehouse: boolean
     farm: string
+    type: string
 }
 
 export interface SupplierData {
