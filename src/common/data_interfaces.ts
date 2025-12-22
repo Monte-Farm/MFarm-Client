@@ -321,6 +321,7 @@ export interface GroupData {
     code: string;
     name: string;
     area: string;
+    stage: string;
     creation_date: Date | null;
     group_mother?: string;
     observations?: string;

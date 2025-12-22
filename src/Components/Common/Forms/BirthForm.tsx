@@ -51,6 +51,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
         code: '',
         name: '',
         area: 'maternity',
+        stage: 'piglet',
         creation_date: new Date(),
         group_mother: '',
         observations: '',

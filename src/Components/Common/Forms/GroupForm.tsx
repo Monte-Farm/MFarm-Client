@@ -142,6 +142,35 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
             type: 'text',
             render: (_, row) => <span>{areaLabels[row.area] || row.area}</span>
         },
+        {
+            label: 'Etapa',
+            key: 'currentStage',
+            render: (value, obj) => {
+                let color = "secondary";
+                let label = obj.stage;
+
+                switch (obj.stage) {
+                    case "piglet":
+                        color = "info";
+                        label = "Lechón";
+                        break;
+                    case "weaning":
+                        color = "warning";
+                        label = "Destete";
+                        break;
+                    case "fattening":
+                        color = "primary";
+                        label = "Engorda";
+                        break;
+                    case "breeder":
+                        color = "success";
+                        label = "Reproductor";
+                        break;
+                }
+
+                return <Badge color={color}>{label}</Badge>;
+            },
+        },
         { key: 'observations', label: 'Observaciones', type: 'text' },
     ];
 
@@ -198,6 +227,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
             }),
         name: Yup.string().required('El nombre es obligatorio'),
         area: Yup.string().required('El área es obligatoria'),
+        stage: Yup.string().required('La etapa es obligatoria'),
         observations: Yup.string().optional().max(500, 'Las observaciones no pueden exceder los 500 caracteres'),
         pigCount: Yup.number().required('El número de cerdos es obligatorio')
             .min(0, 'El número de cerdos no puede ser negativo')
@@ -208,6 +238,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
             code: '',
             name: '',
             area: '',
+            stage: '',
             group_mother: '',
             observations: '',
             creation_date: null,
@@ -248,19 +279,26 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
         try {
             setLoading(true)
 
-            const [codeResponse, pigsResponse] = await Promise.all([
-                configContext.axiosHelper.get(`${configContext.apiUrl}/group/next_group_code`),
-                configContext.axiosHelper.get(`${configContext.apiUrl}/pig/find_all_by_farm/${userLogged.farm_assigned}`)
-            ])
-
+            const codeResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/group/next_group_code`)
             formik.setFieldValue('code', codeResponse.data.data)
-            const pigsWithId = pigsResponse.data.data.map((b: any) => ({ ...b, id: b._id }));
-            setPigs(pigsWithId)
         } catch (error) {
             console.error('Error fetching information: ', { error })
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
         } finally {
             setLoading(false)
+        }
+    }
+
+    const fetchPigs = async () => {
+        if (!configContext || !formik.values.stage) return
+        try {
+
+            const pigsResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/pig/find_by_stage/${userLogged.farm_assigned}/${formik.values.stage}`)
+
+            const pigsWithId = pigsResponse.data.data.map((b: any) => ({ ...b, id: b._id }));
+            setPigs(pigsWithId)
+        } catch (error) {
+            console.error('Error fetching information: ', { error })
         }
     }
 
@@ -271,6 +309,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
             creation_date: true,
             responsible: true,
             area: true,
+            stage: true,
         })
 
         try {
@@ -303,6 +342,10 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
         fetchData();
         formik.setFieldValue('creation_date', new Date())
     }, [])
+
+    useEffect(() => {
+        fetchPigs();
+    }, [formik.values.stage])
 
     useEffect(() => {
         if (!pigManualSelection) {
@@ -382,7 +425,6 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
 
                         <h5 className="border-bottom border-2 pb-2">Datos Generales</h5>
 
-                        {/* Codigo */}
                         <div className="mt-4">
                             <Label htmlFor="code" className="form-label">Código *</Label>
                             <Input
@@ -400,7 +442,6 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
                             )}
                         </div>
 
-                        {/* Nombre */}
                         <div className="mt-4">
                             <Label htmlFor="name" className="form-label">Nombre del grupo *</Label>
                             <Input
@@ -449,35 +490,59 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
                             </div>
                         </div>
 
+                        <div className="d-flex gap-3">
+                            {/* Area */}
+                            <div className="mt-4 w-50">
+                                <Label htmlFor="area" className="form-label">Área *</Label>
+                                <Input
+                                    type="select"
+                                    id="area"
+                                    name="area"
+                                    value={formik.values.area}
+                                    onChange={formik.handleChange}
+                                    onBlur={formik.handleBlur}
+                                    invalid={formik.touched.area && !!formik.errors.area}
+                                >
+                                    <option value="">Seleccione un área</option>
+                                    <option value="gestation">Gestación</option>
+                                    <option value="farrowing">Paridera</option>
+                                    <option value="maternity">Maternidad</option>
+                                    <option value="weaning">Destete</option>
+                                    <option value="nursery">Preceba / Levante inicial</option>
+                                    <option value="fattening">Ceba / Engorda</option>
+                                    <option value="replacement">Reemplazo / Recría</option>
+                                    <option value="boars">Área de verracos</option>
+                                    <option value="quarantine">Cuarentena / Aislamiento</option>
+                                    <option value="hospital">Hospital / Enfermería</option>
+                                    <option value="shipping">Corrales de venta / embarque</option>
+                                </Input>
+                                {formik.touched.area && formik.errors.area && (
+                                    <FormFeedback>{formik.errors.area}</FormFeedback>
+                                )}
+                            </div>
 
-                        {/* Area */}
-                        <div className="mt-4">
-                            <Label htmlFor="area" className="form-label">Área *</Label>
-                            <Input
-                                type="select"
-                                id="area"
-                                name="area"
-                                value={formik.values.area}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                invalid={formik.touched.area && !!formik.errors.area}
-                            >
-                                <option value="">Seleccione un área</option>
-                                <option value="gestation">Gestación</option>
-                                <option value="farrowing">Paridera</option>
-                                <option value="maternity">Maternidad</option>
-                                <option value="weaning">Destete</option>
-                                <option value="nursery">Preceba / Levante inicial</option>
-                                <option value="fattening">Ceba / Engorda</option>
-                                <option value="replacement">Reemplazo / Recría</option>
-                                <option value="boars">Área de verracos</option>
-                                <option value="quarantine">Cuarentena / Aislamiento</option>
-                                <option value="hospital">Hospital / Enfermería</option>
-                                <option value="shipping">Corrales de venta / embarque</option>
-                            </Input>
-                            {formik.touched.area && formik.errors.area && (
-                                <FormFeedback>{formik.errors.area}</FormFeedback>
-                            )}
+                            <div className="mt-4 w-50">
+                                <Label htmlFor="stage" className="form-label">Etapa</Label>
+                                <Input
+                                    type="select"
+                                    id="stage"
+                                    name="stage"
+                                    value={formik.values.stage}
+                                    onChange={formik.handleChange}
+                                    onBlur={formik.handleBlur}
+                                    invalid={formik.touched.stage && !!formik.errors.stage}
+                                >
+                                    <option value="">Seleccione un área</option>
+                                    <option value="piglet">Lechón</option>
+                                    <option value="weaning">Destete</option>
+                                    <option value="fattening">Engorda</option>
+                                    <option value="breeder">Reproductor</option>
+                                </Input>
+                                {formik.touched.stage && formik.errors.stage && (
+                                    <FormFeedback>{formik.errors.stage}</FormFeedback>
+                                )}
+                            </div>
+
                         </div>
 
                         {/* Observaciones */}

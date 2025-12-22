@@ -90,6 +90,35 @@ const ViewGroups = () => {
                 return <Badge color={color}>{text}</Badge>;
             },
         },
+        {
+            header: 'Etapa',
+            accessor: 'currentStage',
+            render: (value, obj) => {
+                let color = "secondary";
+                let label = obj.stage;
+
+                switch (obj.stage) {
+                    case "piglet":
+                        color = "info";
+                        label = "Lechón";
+                        break;
+                    case "weaning":
+                        color = "warning";
+                        label = "Destete";
+                        break;
+                    case "fattening":
+                        color = "primary";
+                        label = "Engorda";
+                        break;
+                    case "breeder":
+                        color = "success";
+                        label = "Reproductor";
+                        break;
+                }
+
+                return <Badge color={color}>{label}</Badge>;
+            },
+        },
         { header: 'Fecha de creación', accessor: 'creation_date', type: 'date', isFilterable: true },
         { header: 'No. de cerdos', accessor: 'pigCount', type: 'text', isFilterable: true },
         { header: 'No. de hembras', accessor: 'femaleCount', type: 'text', isFilterable: true },

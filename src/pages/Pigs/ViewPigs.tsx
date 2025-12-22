@@ -364,7 +364,7 @@ const ViewPigs = () => {
                     <BasicPieChart
                         title={"Cerdos por etapa"}
                         data={
-                            stats.pigsByStage?.map((s: { _id: any; count: any }) => ({
+                            stats?.pigsByStage?.map((s: { _id: any; count: any }) => ({
                                 id: (() => {
                                     switch (s._id) {
                                         case "piglet": return "Lechón";
@@ -380,7 +380,7 @@ const ViewPigs = () => {
                     />
 
                     <BasicPieChart title={"Cerdos por raza"}
-                        data={stats.pigsByBreed?.map((s: { _id: any; count: any }) => ({
+                        data={stats?.pigsByBreed?.map((s: { _id: any; count: any }) => ({
                             id: s._id,
                             value: s.count,
                         })) ?? []}
@@ -391,7 +391,7 @@ const ViewPigs = () => {
                         keys={["weight"]}
                         xLegend="Etapa"
                         yLegend="Peso"
-                        data={stats.avgWeightByStage.map((s: { _id: any; avgWeight: any }) => ({
+                        data={stats?.avgWeightByStage.map((s: { _id: any; avgWeight: any }) => ({
                             stage: (() => {
                                 switch (s._id) {
                                     case "piglet": return "Lechón";

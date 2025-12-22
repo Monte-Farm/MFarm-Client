@@ -92,6 +92,35 @@ const GroupDetails = () => {
                 return <Badge color={color}>{text}</Badge>;
             },
         },
+        {
+            label: 'Etapa',
+            key: 'currentStage',
+            render: (value, obj) => {
+                let color = "secondary";
+                let label = obj.stage;
+
+                switch (obj.stage) {
+                    case "piglet":
+                        color = "info";
+                        label = "Lechón";
+                        break;
+                    case "weaning":
+                        color = "warning";
+                        label = "Destete";
+                        break;
+                    case "fattening":
+                        color = "primary";
+                        label = "Engorda";
+                        break;
+                    case "breeder":
+                        color = "success";
+                        label = "Reproductor";
+                        break;
+                }
+
+                return <Badge color={color}>{label}</Badge>;
+            },
+        },
         { key: 'creation_date', label: 'Fecha de creacion', type: 'date' },
         { key: 'observations', label: 'Observaciones', type: 'text' },
     ]
