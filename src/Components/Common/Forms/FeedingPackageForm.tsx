@@ -16,6 +16,7 @@ import ObjectDetails from "../Details/ObjectDetails";
 import CustomTable from "../Tables/CustomTable";
 import SuccessModal from "../Shared/SuccessModal";
 import { HttpStatusCode } from "axios";
+import LoadingAnimation from "../Shared/LoadingAnimation";
 
 interface FeedingPackageFormProps {
     onSave: () => void;
@@ -152,61 +153,17 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
         { key: 'name', label: 'Nombre', type: 'text' },
         { key: 'creation_date', label: 'Fecha de creacion', type: 'date' },
         {
-            key: 'destination_area',
-            label: 'Area de destino',
+            key: 'stage',
+            label: 'Etapa',
             type: 'text',
             render: (_, row) => {
                 let color = "secondary";
                 let text = "Desconocido";
 
-                switch (row.destination_area) {
+                switch (row.stage) {
                     case "general":
                         color = "info";
                         text = "General";
-                        break;
-                    case "gestation":
-                        color = "info";
-                        text = "Gestación";
-                        break;
-                    case "farrowing":
-                        color = "primary";
-                        text = "Paridera";
-                        break;
-                    case "maternity":
-                        color = "primary";
-                        text = "Maternidad";
-                        break;
-                    case "weaning":
-                        color = "success";
-                        text = "Destete";
-                        break;
-                    case "nursery":
-                        color = "warning";
-                        text = "Preceba";
-                        break;
-                    case "fattening":
-                        color = "dark";
-                        text = "Ceba";
-                        break;
-                    case "replacement":
-                        color = "secondary";
-                        text = "Reemplazo";
-                        break;
-                    case "boars":
-                        color = "info";
-                        text = "Área de verracos";
-                        break;
-                    case "quarantine":
-                        color = "danger";
-                        text = "Cuarentena";
-                        break;
-                    case "hospital":
-                        color = "danger";
-                        text = "Hospital";
-                        break;
-                    case "shipping":
-                        color = "secondary";
-                        text = "Corrales de venta";
                         break;
                     case "piglet":
                         color = "info";
@@ -223,28 +180,6 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
                     case "breeder":
                         color = "success";
                         text = "Reproductor";
-                        break;
-                }
-
-                return <Badge color={color}>{text}</Badge>;
-            },
-        },
-        {
-            key: 'objective_use',
-            label: 'Objetivo de uso',
-            type: 'text',
-            render: (_, row) => {
-                let color = "secondary";
-                let text = "Desconocido";
-
-                switch (row.objective_use) {
-                    case "individual":
-                        color = "info";
-                        text = "Individual";
-                        break;
-                    case "group":
-                        color = "info";
-                        text = "Grupal";
                         break;
                 }
 
@@ -273,8 +208,7 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
             }
         }),
         name: Yup.string().required('El nombre es obligatorio'),
-        destination_area: Yup.string().required('El area de destino es obligatoria'),
-        objective_use: Yup.string().required('El objetivo de uso es obligatorio'),
+        stage: Yup.string().required('El area de destino es obligatoria'),
     })
 
     const feedingValidation = Yup.object({
@@ -293,9 +227,8 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
             creation_date: null,
             creation_responsible: userLogged._id || '',
             is_active: true,
-            destination_area: '',
+            stage: '',
             feedings: [],
-            objective_use: '',
             periodicity: '',
         },
         enableReinitialize: true,
@@ -351,8 +284,7 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
             code: true,
             name: true,
             creation_date: true,
-            destination_area: true,
-            objective_use: true,
+            stage: true,
             periodicity: true,
         })
 
@@ -401,10 +333,11 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
         formik.setFieldValue('creation_date', new Date())
     }, [])
 
-    useEffect(() => {
-        formik.setFieldValue("destination_area", "");
-    }, [formik.values.objective_use]);
-
+    if (loading) {
+        return (
+            <LoadingAnimation absolutePosition={false} />
+        )
+    }
 
     return (
         <form onSubmit={e => { e.preventDefault(); formik.handleSubmit(); }}>
@@ -534,67 +467,25 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
 
 
                         <div className="mt-4 w-100">
-                            <Label htmlFor="objective_use" className="form-label">Objetivo de uso</Label>
+                            <Label htmlFor="stage" className="form-label">Etapa</Label>
                             <Input
                                 type="select"
-                                id="objective_use"
-                                name="objective_use"
-                                value={formik.values.objective_use}
+                                id="stage"
+                                name="stage"
+                                value={formik.values.stage}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                invalid={formik.touched.objective_use && !!formik.errors.objective_use}
+                                invalid={formik.touched.stage && !!formik.errors.stage}
                             >
-                                <option value="">Seleccione un objetivo de uso</option>
-                                <option value="individual">Individual</option>
-                                <option value="group">Grupal</option>
-
+                                <option value="">Seleccione una etapa</option>
+                                <option value="general">General</option>
+                                <option value="piglet">Lechón</option>
+                                <option value="weaning">Destete</option>
+                                <option value="fattening">Engorda</option>
+                                <option value="breeder">Reproductor</option>
                             </Input>
-                            {formik.touched.objective_use && formik.errors.objective_use && (
-                                <FormFeedback>{formik.errors.objective_use}</FormFeedback>
-                            )}
-                        </div>
-
-                        <div className="mt-4 w-100">
-                            <Label htmlFor="area" className="form-label">{formik.values.objective_use === 'individual' ? 'Etapa de destino' : 'Área de destino'}</Label>
-                            <Input
-                                key={formik.values.objective_use}
-                                type="select"
-                                id="destination_area"
-                                name="destination_area"
-                                value={formik.values.destination_area}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                invalid={formik.touched.destination_area && !!formik.errors.destination_area}
-                            >
-                                <option value="">{formik.values.objective_use === 'individual' ? 'Seleccione una etapa de destino' : 'Seleccione un area de destino'}</option>
-
-                                {formik.values.objective_use === "individual" ? (
-                                    <>
-                                        <option value="general">General</option>
-                                        <option value="piglet">Lechón</option>
-                                        <option value="weaning">Destete</option>
-                                        <option value="fattening">Engorda</option>
-                                        <option value="breeder">Reproductor</option>
-                                    </>
-                                ) : (
-                                    <>
-                                        <option value="general">General</option>
-                                        <option value="gestation">Gestación</option>
-                                        <option value="farrowing">Paridera</option>
-                                        <option value="maternity">Maternidad</option>
-                                        <option value="weaning">Destete</option>
-                                        <option value="nursery">Preceba / Levante inicial</option>
-                                        <option value="fattening">Ceba / Engorda</option>
-                                        <option value="replacement">Reemplazo / Recría</option>
-                                        <option value="boars">Área de verracos</option>
-                                        <option value="quarantine">Cuarentena / Aislamiento</option>
-                                        <option value="hospital">Hospital / Enfermería</option>
-                                        <option value="shipping">Corrales de venta / embarque</option>
-                                    </>
-                                )}
-                            </Input>
-                            {formik.touched.destination_area && formik.errors.destination_area && (
-                                <FormFeedback>{formik.errors.destination_area}</FormFeedback>
+                            {formik.touched.stage && formik.errors.stage && (
+                                <FormFeedback>{formik.errors.stage}</FormFeedback>
                             )}
                         </div>
                     </div>

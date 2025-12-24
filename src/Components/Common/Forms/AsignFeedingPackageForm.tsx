@@ -4,27 +4,25 @@ import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { Badge, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from "reactstrap";
 import LoadingAnimation from "../Shared/LoadingAnimation";
-import { Attribute, FeedingPackagesEntry, medicationPackagesEntry, PigData } from "common/data_interfaces";
+import { Attribute, FeedingPackagesEntry, PigData } from "common/data_interfaces";
 import * as Yup from 'yup';
 import classnames from "classnames";
 import { useFormik } from "formik";
-import { HttpStatusCode } from "axios";
 import DatePicker from "react-flatpickr";
 import SelectableCustomTable from "../Tables/SelectableTable";
 import AlertMessage from "../Shared/AlertMesagge";
 import ObjectDetails from "../Details/ObjectDetails";
-import PigDetails from "pages/Pigs/PigDetails";
 import CustomTable from "../Tables/CustomTable";
 import ErrorModal from "../Shared/ErrorModal";
 import SuccessModal from "../Shared/SuccessModal";
 import MissingStockModal from "../Shared/MissingStockModal";
 
-interface IndividualFeedingPackageFormProps {
+interface AsignFeedingPackageFormProps {
     pigId: string
     onSave: () => void
 }
 
-const IndividualFeedingPackageForm: React.FC<IndividualFeedingPackageFormProps> = ({ pigId, onSave }) => {
+const AsignFeedingPackageForm: React.FC<AsignFeedingPackageFormProps> = ({ pigId, onSave }) => {
     const userLogged = getLoggedinUser();
     const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -58,62 +56,17 @@ const IndividualFeedingPackageForm: React.FC<IndividualFeedingPackageFormProps> 
         { header: 'Nombre', accessor: 'name', type: 'text', isFilterable: true },
         { header: 'Fecha de creacion', accessor: 'creation_date', type: 'date', isFilterable: true },
         {
-            header: 'Área de destino',
-            accessor: 'destination_area',
+            header: 'Etapa',
+            accessor: 'stage',
             type: 'text',
-            isFilterable: true,
             render: (_, row) => {
                 let color = "secondary";
                 let text = "Desconocido";
 
-                switch (row.destination_area) {
+                switch (row.stage) {
                     case "general":
                         color = "info";
                         text = "General";
-                        break;
-                    case "gestation":
-                        color = "info";
-                        text = "Gestación";
-                        break;
-                    case "farrowing":
-                        color = "primary";
-                        text = "Paridera";
-                        break;
-                    case "maternity":
-                        color = "primary";
-                        text = "Maternidad";
-                        break;
-                    case "weaning":
-                        color = "success";
-                        text = "Destete";
-                        break;
-                    case "nursery":
-                        color = "warning";
-                        text = "Preceba / Levante inicial";
-                        break;
-                    case "fattening":
-                        color = "dark";
-                        text = "Ceba / Engorda";
-                        break;
-                    case "replacement":
-                        color = "secondary";
-                        text = "Reemplazo / Recría";
-                        break;
-                    case "boars":
-                        color = "info";
-                        text = "Área de verracos";
-                        break;
-                    case "quarantine":
-                        color = "danger";
-                        text = "Cuarentena / Aislamiento";
-                        break;
-                    case "hospital":
-                        color = "danger";
-                        text = "Hospital / Enfermería";
-                        break;
-                    case "shipping":
-                        color = "secondary";
-                        text = "Corrales de venta / embarque";
                         break;
                     case "piglet":
                         color = "info";
@@ -130,29 +83,6 @@ const IndividualFeedingPackageForm: React.FC<IndividualFeedingPackageFormProps> 
                     case "breeder":
                         color = "success";
                         text = "Reproductor";
-                        break;
-                }
-
-                return <Badge color={color}>{text}</Badge>;
-            },
-        },
-        {
-            header: 'Objetivo de uso',
-            accessor: 'objective_use',
-            type: 'text',
-            isFilterable: true,
-            render: (_, row) => {
-                let color = "secondary";
-                let text = "Desconocido";
-
-                switch (row.objective_use) {
-                    case "individual":
-                        color = "info";
-                        text = "Individual";
-                        break;
-                    case "group":
-                        color = "info";
-                        text = "Grupal";
                         break;
                 }
 
@@ -257,61 +187,17 @@ const IndividualFeedingPackageForm: React.FC<IndividualFeedingPackageFormProps> 
         { label: 'Nombre', key: 'name', type: 'text', },
         { label: 'Fecha de creacion', key: 'creation_date', type: 'date', },
         {
-            label: 'Área de destino',
-            key: 'destination_area',
+            label: 'Etapa',
+            key: 'stage',
             type: 'text',
             render: (_, row) => {
                 let color = "secondary";
                 let text = "Desconocido";
 
-                switch (row.destination_area) {
+                switch (row.stage) {
                     case "general":
                         color = "info";
                         text = "General";
-                        break;
-                    case "gestation":
-                        color = "info";
-                        text = "Gestación";
-                        break;
-                    case "farrowing":
-                        color = "primary";
-                        text = "Paridera";
-                        break;
-                    case "maternity":
-                        color = "primary";
-                        text = "Maternidad";
-                        break;
-                    case "weaning":
-                        color = "success";
-                        text = "Destete";
-                        break;
-                    case "nursery":
-                        color = "warning";
-                        text = "Preceba / Levante inicial";
-                        break;
-                    case "fattening":
-                        color = "dark";
-                        text = "Ceba / Engorda";
-                        break;
-                    case "replacement":
-                        color = "secondary";
-                        text = "Reemplazo / Recría";
-                        break;
-                    case "boars":
-                        color = "info";
-                        text = "Área de verracos";
-                        break;
-                    case "quarantine":
-                        color = "danger";
-                        text = "Cuarentena / Aislamiento";
-                        break;
-                    case "hospital":
-                        color = "danger";
-                        text = "Hospital / Enfermería";
-                        break;
-                    case "shipping":
-                        color = "secondary";
-                        text = "Corrales de venta / embarque";
                         break;
                     case "piglet":
                         color = "info";
@@ -328,28 +214,6 @@ const IndividualFeedingPackageForm: React.FC<IndividualFeedingPackageFormProps> 
                     case "breeder":
                         color = "success";
                         text = "Reproductor";
-                        break;
-                }
-
-                return <Badge color={color}>{text}</Badge>;
-            },
-        },
-        {
-            label: 'Objetivo de uso',
-            key: 'objective_use',
-            type: 'text',
-            render: (_, row) => {
-                let color = "secondary";
-                let text = "Desconocido";
-
-                switch (row.objective_use) {
-                    case "individual":
-                        color = "info";
-                        text = "Individual";
-                        break;
-                    case "group":
-                        color = "info";
-                        text = "Grupal";
                         break;
                 }
 
@@ -415,14 +279,12 @@ const IndividualFeedingPackageForm: React.FC<IndividualFeedingPackageFormProps> 
         if (!configContext || !userLogged) return;
         try {
             setLoading(true)
-            const [pigResponse] = await Promise.all([
-                configContext.axiosHelper.get(`${configContext.apiUrl}/pig/find_by_id/${pigId}`),
-            ])
+            const pigResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/pig/find_by_id/${pigId}`)
             const pigData = pigResponse.data.data;
-
-            const feedingResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/feeding_package/find_by_destination_objective/${userLogged.farm_assigned}/${pigData.currentStage}/individual`)
-            const packagesWithId = feedingResponse.data.data.map((b: any) => ({ ...b, id: b._id }));
             setPigDetails(pigData)
+
+            const feedingResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/feeding_package/find_by_stage/${userLogged.farm_assigned}/${pigData.currentStage}`)
+            const packagesWithId = feedingResponse.data.data.map((b: any) => ({ ...b, id: b._id }));
             setFeedingPackages(packagesWithId)
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -459,8 +321,7 @@ const IndividualFeedingPackageForm: React.FC<IndividualFeedingPackageFormProps> 
         initialValues: {
             packageId: '',
             name: '',
-            objective: 'individual',
-            destinationArea: '',
+            stage: '',
             feedings: [],
             applicationDate: null,
             appliedBy: userLogged._id,
@@ -511,7 +372,7 @@ const IndividualFeedingPackageForm: React.FC<IndividualFeedingPackageFormProps> 
         if (selectedFeedingPackage) {
             formik.setFieldValue('packageId', selectedFeedingPackage._id)
             formik.setFieldValue('name', selectedFeedingPackage.name)
-            formik.setFieldValue('destinationArea', selectedFeedingPackage.destination_area)
+            formik.setFieldValue('stage', selectedFeedingPackage.stage)
             formik.setFieldValue('feedings', selectedFeedingPackage.feedings)
             formik.setFieldValue('periodicity', selectedFeedingPackage.periodicity)
 
@@ -712,4 +573,4 @@ const IndividualFeedingPackageForm: React.FC<IndividualFeedingPackageFormProps> 
     )
 }
 
-export default IndividualFeedingPackageForm;
+export default AsignFeedingPackageForm;

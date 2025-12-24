@@ -36,62 +36,17 @@ const ViewFeedingPackages = () => {
             render: (_, row) => (<span>{row.creation_responsible.name} {row.creation_responsible.lastname}</span>)
         },
         {
-            header: 'Área de destino',
-            accessor: 'destination_area',
+            header: 'Etapa',
+            accessor: 'stage',
             type: 'text',
-            isFilterable: true,
             render: (_, row) => {
                 let color = "secondary";
                 let text = "Desconocido";
 
-                switch (row.destination_area) {
+                switch (row.stage) {
                     case "general":
                         color = "info";
                         text = "General";
-                        break;
-                    case "gestation":
-                        color = "info";
-                        text = "Gestación";
-                        break;
-                    case "farrowing":
-                        color = "primary";
-                        text = "Paridera";
-                        break;
-                    case "maternity":
-                        color = "primary";
-                        text = "Maternidad";
-                        break;
-                    case "weaning":
-                        color = "success";
-                        text = "Destete";
-                        break;
-                    case "nursery":
-                        color = "warning";
-                        text = "Preceba / Levante inicial";
-                        break;
-                    case "fattening":
-                        color = "dark";
-                        text = "Ceba / Engorda";
-                        break;
-                    case "replacement":
-                        color = "secondary";
-                        text = "Reemplazo / Recría";
-                        break;
-                    case "boars":
-                        color = "info";
-                        text = "Área de verracos";
-                        break;
-                    case "quarantine":
-                        color = "danger";
-                        text = "Cuarentena / Aislamiento";
-                        break;
-                    case "hospital":
-                        color = "danger";
-                        text = "Hospital / Enfermería";
-                        break;
-                    case "shipping":
-                        color = "secondary";
-                        text = "Corrales de venta / embarque";
                         break;
                     case "piglet":
                         color = "info";
@@ -108,29 +63,6 @@ const ViewFeedingPackages = () => {
                     case "breeder":
                         color = "success";
                         text = "Reproductor";
-                        break;
-                }
-
-                return <Badge color={color}>{text}</Badge>;
-            },
-        },
-        {
-            header: 'Objetivo de uso',
-            accessor: 'objective_use',
-            type: 'text',
-            isFilterable: true,
-            render: (_, row) => {
-                let color = "secondary";
-                let text = "Desconocido";
-
-                switch (row.objective_use) {
-                    case "individual":
-                        color = "info";
-                        text = "Individual";
-                        break;
-                    case "group":
-                        color = "info";
-                        text = "Grupal";
                         break;
                 }
 

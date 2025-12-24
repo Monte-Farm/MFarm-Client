@@ -16,6 +16,7 @@ import CustomTable from "Components/Common/Tables/CustomTable";
 import GroupHistoryList from "Components/Common/Lists/GroupHistoryList";
 import SimpleBar from "simplebar-react";
 import GroupMedicalDetails from "Components/Common/Details/GroupMedicalDetails";
+import GroupFeedingDetails from "Components/Common/Details/GroupFeedingDetails";
 
 const GroupDetails = () => {
     document.title = 'Detalles de grupo | Management System';
@@ -282,7 +283,7 @@ const GroupDetails = () => {
                     </TabPane>
 
                     <TabPane tabId="2">
-
+                        <GroupFeedingDetails groupId={group_id ?? ''} />
                     </TabPane>
 
                     <TabPane tabId="3">

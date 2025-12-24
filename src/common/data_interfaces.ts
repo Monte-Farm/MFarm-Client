@@ -356,6 +356,7 @@ export interface GroupFeedingPackagesHistory {
     periodicity: string;
     observations?: string;
     isActive: boolean;
+    stage: string;
 }
 
 export interface GroupMedications {
@@ -541,21 +542,19 @@ export interface FeedingPackage {
     creation_date: Date | null;
     creation_responsible: string;
     is_active: boolean;
-    destination_area: string;
+    stage: string;
     feedings: {
         feeding: string;
         quantity: number;
         administration_route: string
     }[]
-    objective_use: string;
     periodicity: string;
 }
 
 export interface FeedingPackagesEntry {
     packageId: string;
     name: string;
-    objective: 'individual' | 'group';
-    destinationArea: string;
+    stage: string;
     feedings: {
         feeding: string;
         quantity: number;

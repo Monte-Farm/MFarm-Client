@@ -12,19 +12,20 @@ import SuccessModal from "../Shared/SuccessModal";
 import MissingStockModal from "../Shared/MissingStockModal";
 import ErrorModal from "../Shared/ErrorModal";
 import AsignFeedingPackageForm from "../Forms/AsignFeedingPackageForm";
+import AsignGroupFeedingPackageForm from "../Forms/AsignGroupFeedingPackageForm";
 
-interface PigFeedingDetailsProps {
-    pigId: string
+interface GroupFeedingDetailsProps {
+    groupId: string
 }
 
-const PigFeedingDetails: React.FC<PigFeedingDetailsProps> = ({ pigId }) => {
+const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId }) => {
     const configContext = useContext(ConfigContext);
     const userLogged = getLoggedinUser();
     const [loading, setLoading] = useState<boolean>(true)
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({
-        asignSingle: false,
-        feedingPackage: false,
+        asignFeeding: false,
+        asignFeedingPackage: false,
         feedingPackageDetails: false,
         discountFeedingPackageStock: false,
         discountSingleFeedingStock: false,
@@ -49,7 +50,7 @@ const PigFeedingDetails: React.FC<PigFeedingDetailsProps> = ({ pigId }) => {
         if (!configContext || !userLogged) return;
         try {
             setLoading(true)
-            const feedingResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/pig/get_feeding_info/${pigId}`)
+            const feedingResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/group/get_feeding_info/${groupId}`)
             const feedingData = feedingResponse.data.data;
 
             setFeedingPackages(feedingData.feedingPackagesHistory);
@@ -90,8 +91,8 @@ const PigFeedingDetails: React.FC<PigFeedingDetailsProps> = ({ pigId }) => {
         if (!configContext || !userLogged) return;
         try {
             setLoading(true)
-            const packageResponse = await configContext.axiosHelper.put(`${configContext.apiUrl}/pig/unasign_feeding_package/${pigId}/${selectedFeedingPackage}`, {})
-            toggleModal('unasignPackageSuccess')
+            // const packageResponse = await configContext.axiosHelper.put(`${configContext.apiUrl}/pig/unasign_feeding_package/${pigId}/${selectedFeedingPackage}`, {})
+            // toggleModal('unasignPackageSuccess')
         } catch (error) {
             console.error('Error: ', { error });
             toggleModal('unasignPackageError')
@@ -117,7 +118,7 @@ const PigFeedingDetails: React.FC<PigFeedingDetailsProps> = ({ pigId }) => {
                     <CardHeader className="bg-light d-flex justify-content-between">
                         <h5>Alimentos administrados</h5>
 
-                        <Button className="" size="sm" onClick={() => toggleModal('asignSingle')}>
+                        <Button className="" size="sm" onClick={() => toggleModal('asignFeeding')}>
                             <i className="" />
                             Administrar alimentos
                         </Button>
@@ -197,7 +198,7 @@ const PigFeedingDetails: React.FC<PigFeedingDetailsProps> = ({ pigId }) => {
                     <CardHeader className="bg-light d-flex justify-content-between">
                         <h5>Paquetes de alimentacion administrados</h5>
 
-                        <Button className="" size="sm" onClick={() => toggleModal('feedingPackage')}>
+                        <Button className="" size="sm" onClick={() => toggleModal('asignFeedingPackage')}>
                             <i className="" />
                             Asignar paquete
                         </Button>
@@ -243,11 +244,11 @@ const PigFeedingDetails: React.FC<PigFeedingDetailsProps> = ({ pigId }) => {
                                     return (
                                         <div key={index} className="p-3 border rounded shadow-sm d-flex flex-column position-relative" style={{ backgroundColor: "#eef2ff" }}>
 
-                                            <Button className="btn position-absolute" size="sm" style={{ top: "10px", right: "10px", borderRadius: "4px", }} onClick={() => { setSelectedFeedingPackage(p.packageId); toggleModal('feedingPackageDetails') }}>
+                                            <Button className="btn position-absolute" size="sm" style={{ top: "10px", right: "10px", borderRadius: "4px", }} onClick={() => { setSelectedFeedingPackage(p.packageId._id); toggleModal('feedingPackageDetails') }}>
                                                 <FiEye size={18} />
                                             </Button>
 
-                                            <Button className="btn position-absolute" size="sm" style={{ top: "10px", right: "50px", borderRadius: "4px", }} onClick={() => { setSelectedFeedingPackage(p.packageId); toggleModal('discountFeedingPackageStock') }} disabled={!p.is_active}>
+                                            <Button className="btn position-absolute" size="sm" style={{ top: "10px", right: "50px", borderRadius: "4px", }} onClick={() => { setSelectedFeedingPackage(p.packageId._id); toggleModal('discountFeedingPackageStock') }} disabled={!p.isActive}>
                                                 <i className="bx bx-trending-down" />
                                             </Button>
 
@@ -264,7 +265,7 @@ const PigFeedingDetails: React.FC<PigFeedingDetailsProps> = ({ pigId }) => {
                                             <div className="d-flex flex-column gap-1 fs-6 mb-2">
                                                 <div className="fs-6 d-flex justify-content-between flex-wrap gap-2">
                                                     <span>
-                                                        <strong className="text-muted">Objetivo:</strong>{" "}
+                                                        <strong className="text-muted">Etapa:</strong>{" "}
                                                         {stageLabels[p.stage] ?? p.objective}
                                                     </span>
 
@@ -304,17 +305,17 @@ const PigFeedingDetails: React.FC<PigFeedingDetailsProps> = ({ pigId }) => {
 
             </div>
 
-            <Modal size="xl" isOpen={modals.feedingPackage} toggle={() => toggleModal("feedingPackage")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("feedingPackage")}>Asignar paquete de alimentacion</ModalHeader>
+            <Modal size="xl" isOpen={modals.asignFeedingPackage} toggle={() => toggleModal("asignFeedingPackage")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("asignFeedingPackage")}>Asignar paquete de alimentacion</ModalHeader>
                 <ModalBody>
-                    <AsignFeedingPackageForm pigId={pigId} onSave={() => { toggleModal('feedingPackage'); fetchFeedingInfo(); }} />
+                    <AsignGroupFeedingPackageForm groupId={groupId} onSave={() => { toggleModal('asignFeedingPackage'); fetchFeedingInfo(); }} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.asignSingle} toggle={() => toggleModal("asignSingle")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("asignSingle")}>Asignar alimento</ModalHeader>
+            <Modal size="xl" isOpen={modals.asignFeeding} toggle={() => toggleModal("asignFeeding")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("asignFeeding")}>Asignar alimento</ModalHeader>
                 <ModalBody>
-                    <SingleFeedingForm pigId={pigId} onSave={() => { toggleModal('asignSingle'); fetchFeedingInfo(); }} />
+
                 </ModalBody>
             </Modal>
 
@@ -409,4 +410,4 @@ const PigFeedingDetails: React.FC<PigFeedingDetailsProps> = ({ pigId }) => {
     )
 }
 
-export default PigFeedingDetails;
+export default GroupFeedingDetails;
