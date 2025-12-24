@@ -7,22 +7,20 @@ import { Button, Card, CardBody, CardHeader, Modal, ModalBody, ModalHeader } fro
 import { FiAlertCircle, FiEye } from "react-icons/fi";
 import MedicationPackageDetails from "./MedicationPackageDetails";
 import VaccinationPlanDetails from "./VaccinationPlanDetails";
-import PigSicknessForm from "../Forms/PigSicknessForm";
-import SicknessDetails from "./SicknessDetailsModal";
-import AsignMedicationPackageForm from "../Forms/AsignMedicationPackageForm";
-import AsignVaccinationPlanForm from "../Forms/AsignVaccinationPlan";
-import AsignMedicationForm from "../Forms/AsignMedicationForm";
+import AsignGroupMedicationPackageForm from "../Forms/AsignGroupMedicationPackageForm";
+import AsignGroupVaccinationPlanForm from "../Forms/AsignGroupVaccinationPlanForm";
+import AsignGroupMedicationForm from "../Forms/AsignGroupMedicationForm";
 
-interface PigMedicalDetailsProps {
-    pigId: string
+interface GroupMedicalDetailsProps {
+    groupId: string
 }
 
-const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
+const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId }) => {
     const configContext = useContext(ConfigContext);
     const userLogged = getLoggedinUser();
     const [loading, setLoading] = useState<boolean>(true)
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ asignSingle: false, medicationPackage: false, medicationPackageDetails: false, asignVaccinationPlan: false, vaccinationPlanDetails: false, registerSickness: false, sicknessDetails: false });
+    const [modals, setModals] = useState({ asignMedication: false, asignMedicationPackage: false, medicationPackageDetails: false, asignVaccinationPlan: false, vaccinationPlanDetails: false, registerSickness: false, sicknessDetails: false });
     const [medicationPackages, setMedicationPackages] = useState<any[]>([]);
     const [medications, setMedications] = useState<any[]>([]);
     const [sickness, setSickeness] = useState<any[]>([]);
@@ -40,13 +38,11 @@ const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
         if (!configContext || !userLogged) return;
         try {
             setLoading(true)
-            const medicalResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/pig/get_medical_info/${pigId}`)
+            const medicalResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/group/get_medical_info/${groupId}`)
             const medicalData = medicalResponse.data.data;
-
             setMedicationPackages(medicalData.medicationPackagesHistory);
-            setMedications(medicalData.medications);
             setVaccinationPlans(medicalData.vaccinationPlansHistory)
-            setSickeness(medicalData.sicknessHistory)
+            setMedications(medicalData.medications)
         } catch (error) {
             console.error('Error fetching data: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: 'Error al obtener la informacion medica, intentelo mas tarde' });
@@ -183,12 +179,12 @@ const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
                         <CardHeader className="bg-light d-flex justify-content-between">
                             <h5>Medicamentos administrados</h5>
 
-                            <Button className="" size="sm" onClick={() => toggleModal('asignSingle')}>
+                            <Button className="" size="sm" onClick={() => toggleModal('asignMedication')}>
                                 <i className="" />
                                 Administrar medicamento
                             </Button>
                         </CardHeader>
-                        <CardBody style={{ overflowY: "auto" }}>
+                        <CardBody className={medications.length === 0 ? 'd-flex justify-content-center align-items-center' : ''} style={{ overflowY: 'auto' }}>
                             {medications.length === 0 ? (
                                 <>
                                     <FiAlertCircle className="text-muted" size={22} />
@@ -224,12 +220,18 @@ const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
 
                                                 <div className="d-flex justify-content-between flex-wrap fs-6 mb-2">
                                                     <span>
-                                                        <strong className="text-muted">Dosis:</strong> {m.dose} {m.unit_measurement}
+                                                        <strong className="text-muted">Dosis total:</strong> {m.totalDose} {m.medication.unit_measurement}
+                                                    </span>
+                                                </div>
+
+                                                <div className="d-flex justify-content-between flex-wrap fs-6 mb-2">
+                                                    <span>
+                                                        <strong className="text-muted">Dosis por cerdo:</strong> {m.dosePerPig} {m.medication.unit_measurement}
                                                     </span>
 
                                                     <span>
                                                         <strong className="text-muted">Vía:</strong>{" "}
-                                                        {administrationRouteLabels[m.administration_route] ?? m.administration_route}
+                                                        {administrationRouteLabels[m.administrationRoute] ?? m.administrationRoute}
                                                     </span>
                                                 </div>
 
@@ -264,12 +266,12 @@ const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
                         <CardHeader className="bg-light d-flex justify-content-between">
                             <h5>Paquetes de medicacion administrados</h5>
 
-                            <Button className="" size="sm" onClick={() => toggleModal('medicationPackage')}>
+                            <Button className="" size="sm" onClick={() => toggleModal('asignMedicationPackage')}>
                                 <i className="" />
                                 Administrar paquete
                             </Button>
                         </CardHeader>
-                        <CardBody style={{ overflowY: "auto" }}>
+                        <CardBody className={medicationPackages.length === 0 ? 'd-flex justify-content-center align-items-center' : ''} style={{ overflowY: 'auto' }}>
                             {medicationPackages.length === 0 ? (
                                 <>
                                     <FiAlertCircle className="text-muted" size={22} />
@@ -297,7 +299,7 @@ const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
                                         return (
                                             <div key={index} className="p-3 border rounded shadow-sm bg-indigo-50 d-flex flex-column position-relative" style={{ backgroundColor: "#eef2ff" }}>
 
-                                                <Button className="btn position-absolute" size="sm" style={{ top: "10px", right: "10px", borderRadius: "4px", }} onClick={() => { setSelectedMedicationPackage(p.packageId); toggleModal('medicationPackageDetails') }}>
+                                                <Button className="btn position-absolute" size="sm" style={{ top: "10px", right: "10px", borderRadius: "4px", }} onClick={() => { setSelectedMedicationPackage(p.packageId._id); toggleModal('medicationPackageDetails') }}>
                                                     <FiEye size={18} />
                                                 </Button>
 
@@ -379,7 +381,7 @@ const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
                                         return (
                                             <div key={index} className="p-3 border rounded shadow-sm bg-indigo-50 d-flex flex-column position-relative" style={{ backgroundColor: "#eef2ff" }}>
 
-                                                <Button className="btn position-absolute" size="sm" style={{ top: "10px", right: "10px", borderRadius: "4px", }} onClick={() => { setSelectedVaccinationPlan(p.planId); toggleModal('vaccinationPlanDetails') }}>
+                                                <Button className="btn position-absolute" size="sm" style={{ top: "10px", right: "10px", borderRadius: "4px", }} onClick={() => { setSelectedVaccinationPlan(p.planId._id); toggleModal('vaccinationPlanDetails') }}>
                                                     <FiEye size={18} />
                                                 </Button>
 
@@ -428,21 +430,21 @@ const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
             <Modal size="xl" isOpen={modals.registerSickness} toggle={() => toggleModal("registerSickness")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("registerSickness")}>Registar enfermedad</ModalHeader>
                 <ModalBody>
-                    <PigSicknessForm pigId={pigId ?? ""} onSave={() => { toggleModal('registerSickness'); fetchMedicalInfo(); }} />
+
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.medicationPackage} toggle={() => toggleModal("medicationPackage")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("medicationPackage")}>Asignar paquete de medicacion</ModalHeader>
+            <Modal size="xl" isOpen={modals.asignMedicationPackage} toggle={() => toggleModal("asignMedicationPackage")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("asignMedicationPackage")}>Asignar paquete de medicacion</ModalHeader>
                 <ModalBody>
-                    <AsignMedicationPackageForm pigId={pigId ?? ""} onSave={() => { toggleModal('medicationPackage'); fetchMedicalInfo(); }} />
+                    <AsignGroupMedicationPackageForm groupId={groupId} onSave={() => { toggleModal('asignMedicationPackage'); fetchMedicalInfo(); }} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.asignSingle} toggle={() => toggleModal("asignSingle")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("asignSingle")}>Asignar medicacion</ModalHeader>
+            <Modal size="xl" isOpen={modals.asignMedication} toggle={() => toggleModal("asignMedication")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("asignMedication")}>Asignar medicacion</ModalHeader>
                 <ModalBody>
-                    <AsignMedicationForm pigId={pigId ?? ""} onSave={() => { toggleModal('asignSingle'); fetchMedicalInfo(); }} />
+                    <AsignGroupMedicationForm groupId={groupId} onSave={() => { toggleModal('asignMedication'); fetchMedicalInfo(); }} />
                 </ModalBody>
             </Modal>
 
@@ -456,7 +458,7 @@ const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
             <Modal size="xl" isOpen={modals.asignVaccinationPlan} toggle={() => toggleModal("asignVaccinationPlan")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("asignVaccinationPlan")}>Asignar plan de vacunacion</ModalHeader>
                 <ModalBody>
-                    <AsignVaccinationPlanForm pigId={pigId} onSave={() => { toggleModal('asignVaccinationPlan'); fetchMedicalInfo(); }} />
+                    <AsignGroupVaccinationPlanForm groupId={groupId} onSave={() => { toggleModal('asignVaccinationPlan'); fetchMedicalInfo(); }} />
                 </ModalBody>
             </Modal>
 
@@ -470,7 +472,7 @@ const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
             <Modal size="xl" isOpen={modals.sicknessDetails} toggle={() => toggleModal("sicknessDetails")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("sicknessDetails")}>Detalles de enfermedad</ModalHeader>
                 <ModalBody>
-                    <SicknessDetails pigId={pigId} sicknessId={selectedSickness} />
+
                 </ModalBody>
             </Modal>
 
@@ -480,4 +482,4 @@ const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
     )
 }
 
-export default PigMedicalDetails;
+export default GroupMedicalDetails;

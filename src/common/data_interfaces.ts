@@ -316,58 +316,112 @@ export interface FarmData {
     main_warehouse: string;
 }
 
+export interface GroupMedicationPackagesHistory {
+    packageId: string;
+    name: string;
+    stage: string;
+    medications: {
+        medication: string;
+        dosePerPig: number;
+        administrationRoute: string;
+        totalDose: number;
+    }[];
+    applicationDate: Date | null;
+    appliedBy: string;
+    observations?: string;
+    isActive: boolean;
+}
+
+export interface GroupFeedings {
+    feeding: string;
+    totalQuantity: number;
+    avgPerPig?: number;
+    applicationDate: Date | null;
+    appliedBy: string;
+    periodicity?: string;
+    observations?: string;
+    isActive: boolean;
+}
+
+export interface GroupFeedingPackagesHistory {
+    packageId: string;
+    name: string;
+    feedings: {
+        feeding: string;
+        totalQuantity: number;
+        avgPerPig?: number;
+    }[];
+    applicationDate: Date | null;
+    appliedBy: string;
+    periodicity: string;
+    observations?: string;
+    isActive: boolean;
+}
+
+export interface GroupMedications {
+    medication: string;
+    dosePerPig?: number;
+    administrationRoute?: string;
+    applicationDate: Date | null;
+    appliedBy: string;
+    observations?: string;
+    isActive: boolean;
+    totalDose: number;
+}
+
+export interface GroupVaccinationPlansHistory {
+    planId: string;
+    name: string;
+    stage: string;
+    vaccines: {
+        vaccine: string;
+        dosePerPig: number;
+        administrationRoute: string;
+        ageObjective?: number;
+        frequency?: string;
+        totalDose: number;
+    }[];
+    applicationDate: Date | null;
+    appliedBy: string;
+    observations?: string;
+    isActive: boolean;
+}
+
 export interface GroupData {
+    _id?: string;
     code: string;
     name: string;
+    farm: string;
     area: string;
-    stage: string;
-    creation_date: Date | null;
-    group_mother?: string;
+    groupMother: string,
+    creationDate: Date | null;
+    stage: 'piglet' | 'weaning' | 'fattening' | 'breeder' | '';
+    groupMode: 'linked' | 'count' | '';
+    pigsInGroup?: string[];
+    pigCount?: number;
+    maleCount?: number;
+    femaleCount?: number;
+    avgWeight?: number;
+    responsible: string;
     observations?: string;
-    observations_history?: {
+    observationsHistory?: {
         date: Date;
         userId: string;
         observation: string;
     }[];
-    responsible: string;
-    farm: string;
-    group_history?: {
+    groupHistory?: {
         date: Date;
         userId: string;
         action: string;
         description: string;
     }[];
-    pigCount: number;
-    maleCount: number;
-    femaleCount: number;
-    avg_weight?: number;
-    pigsInGroup?: string[];
-    feedings?: {
-        date: Date;
-        userId: string;
-        feedType: string;
-        amount: number;
-        unit_measurement: string;
-        average_p_pig: number;
-        notes?: string;
-        periodicity: string;
-        name: string;
-    }[];
-    medical_treatments?: {
-        applicationDate: Date;
-        userId: string;
-        treatmentType: string;
-        medication: string;
-        dosage: number;
-        average_p_pig?: number;
-        notes?: string;
-        periodicity: string;
-        unit_measurement: string;
-        application_method: string;
-    }[];
-    createdAt?: Date;
-    updatedAt?: Date;
+    feedings?: GroupFeedings[];
+    feedingPackagesHistory?: GroupFeedingPackagesHistory[];
+    medications?: GroupMedications[];
+    medicationPackagesHistory?: GroupMedicationPackagesHistory[];
+    vaccinationPlansHistory?: GroupVaccinationPlansHistory[];
 }
+
 
 export interface ExtractionData {
     _id?: string;

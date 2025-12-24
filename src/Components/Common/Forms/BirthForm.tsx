@@ -50,22 +50,26 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
     const [groupData, setGroupData] = useState<GroupData>({
         code: '',
         name: '',
-        area: 'maternity',
-        stage: 'piglet',
-        creation_date: new Date(),
-        group_mother: '',
+        area: '',
+        stage: '',
+        groupMother: '',
         observations: '',
-        observations_history: [],
-        responsible: userLogged._id,
-        farm: userLogged.farm_assigned,
-        group_history: [],
+        creationDate: null,
+        observationsHistory: [],
+        responsible: userLogged._id || '',
+        farm: userLogged.farm_assigned || '',
+        groupHistory: [],
         pigCount: 0,
         maleCount: 0,
         femaleCount: 0,
-        avg_weight: 0,
         pigsInGroup: [],
         feedings: [],
-        medical_treatments: []
+        medications: [],
+        groupMode: '',
+        avgWeight: 0,
+        feedingPackagesHistory: [],
+        medicationPackagesHistory: [],
+        vaccinationPlansHistory: [],
     })
 
     const toggleAlerts = (alertName: keyof typeof alerts, state?: boolean) => {
@@ -239,7 +243,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
                     groupData.pigsInGroup = batchResponse.data.data
                 }
 
-                groupData.group_mother = values.sow
+                groupData.groupMother = values.sow
                 const litterResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/group/create_group_birth`, groupData)
 
 
@@ -369,7 +373,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
             setGroupData({
                 ...groupData,
                 pigCount: Number(pigsCount),
-                avg_weight: Number(avgWeight),
+                avgWeight: Number(avgWeight),
                 maleCount: Number(maleCount),
                 femaleCount: Number(femaleCount)
             })
@@ -427,7 +431,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
     }, [manualPigSelect, maleCount, femaleCount])
 
     useEffect(() => {
-        setGroupData({ ...groupData, avg_weight: Number(avgWeight), })
+        setGroupData({ ...groupData, avgWeight: Number(avgWeight), })
     }, [avgWeight])
 
 

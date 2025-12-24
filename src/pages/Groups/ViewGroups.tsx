@@ -119,8 +119,7 @@ const ViewGroups = () => {
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { header: 'Fecha de creación', accessor: 'creation_date', type: 'date', isFilterable: true },
-        { header: 'No. de cerdos', accessor: 'pigCount', type: 'text', isFilterable: true },
+        { header: 'Fecha de creación', accessor: 'creationDate', type: 'date', isFilterable: true },
         { header: 'No. de hembras', accessor: 'femaleCount', type: 'text', isFilterable: true },
         { header: 'No. de machos', accessor: 'maleCount', type: 'text', isFilterable: true },
         {

@@ -4,7 +4,7 @@ import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { Badge, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from "reactstrap";
 import LoadingAnimation from "../Shared/LoadingAnimation";
-import { Attribute, medicationPackagesEntry, PigData, VaccinationPlanEntry } from "common/data_interfaces";
+import { Attribute, GroupData, GroupVaccinationPlansHistory, medicationPackagesEntry, PigData, VaccinationPlanEntry } from "common/data_interfaces";
 import * as Yup from 'yup';
 import classnames from "classnames";
 import { useFormik } from "formik";
@@ -18,13 +18,14 @@ import CustomTable from "../Tables/CustomTable";
 import ErrorModal from "../Shared/ErrorModal";
 import SuccessModal from "../Shared/SuccessModal";
 import MissingStockModal from "../Shared/MissingStockModal";
+import GroupDetails from "pages/Groups/GroupDetails";
 
-interface IndividualVaccinationPlanFormProps {
-    pigId: string
+interface AsignGroupVaccinationPlanFormProps {
+    groupId: string
     onSave: () => void
 }
 
-const IndividualVaccinationPlanForm: React.FC<IndividualVaccinationPlanFormProps> = ({ pigId, onSave }) => {
+const AsignGroupVaccinationPlanForm: React.FC<AsignGroupVaccinationPlanFormProps> = ({ groupId, onSave }) => {
     const userLogged = getLoggedinUser();
     const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -33,7 +34,7 @@ const IndividualVaccinationPlanForm: React.FC<IndividualVaccinationPlanFormProps
     const [loading, setLoading] = useState<boolean>(false);
     const [modals, setModals] = useState({ vaccinationDetails: false, success: false, error: false, missingStock: false });
     const [vaccinationPlans, setVaccinationPlans] = useState<any[]>([]);
-    const [pigDetails, setPigDetails] = useState<PigData>()
+    const [groupDetails, setGroupDetails] = useState<GroupData>()
     const [selectedVaccinationPlan, setSelectedVaccinationPlan] = useState<any>();
     const [vaccinationPlanItems, setVaccinationPlanItems] = useState<any[]>();
     const [missingItems, setMissingItems] = useState([]);
@@ -94,60 +95,76 @@ const IndividualVaccinationPlanForm: React.FC<IndividualVaccinationPlanFormProps
         },
     ]
 
-    const PigAttributes: Attribute[] = [
-        { key: "code", label: "Código", type: "text" },
-        { key: "birthdate", label: "Fecha de nacimiento", type: "date" },
-        { key: "breed", label: "Raza", type: "text" },
+    const groupAttributes: Attribute[] = [
+        { label: 'Codigo', key: 'code', type: 'text' },
+        { label: 'Nombre', key: 'name', type: 'text' },
         {
-            key: "origin",
-            label: "Origen",
-            type: "text",
-            render: (value: string) => {
-                let color = 'secondary';
-                let label = value;
+            label: 'Area',
+            key: 'area',
+            type: 'text',
+            render: (value, object) => {
+                let color = "secondary";
+                let text = "Desconocido";
 
-                switch (value) {
-                    case 'born':
-                        color = 'success';
-                        label = 'Nacido en la granja';
+                switch (object.area) {
+                    case "gestation":
+                        color = "info";
+                        text = "Gestación";
                         break;
-
-                    case 'purchased':
-                        color = 'warning';
-                        label = 'Comprado';
+                    case "farrowing":
+                        color = "primary";
+                        text = "Paridera";
                         break;
-
-                    case 'donated':
-                        color = 'info';
-                        label = 'Donado';
+                    case "maternity":
+                        color = "primary";
+                        text = "Maternidad";
                         break;
-
-                    case 'other':
-                        color = 'dark';
-                        label = 'Otro';
+                    case "weaning":
+                        color = "success";
+                        text = "Destete";
+                        break;
+                    case "nursery":
+                        color = "warning";
+                        text = "Preceba / Levante inicial";
+                        break;
+                    case "fattening":
+                        color = "dark";
+                        text = "Ceba / Engorda";
+                        break;
+                    case "replacement":
+                        color = "secondary";
+                        text = "Reemplazo / Recría";
+                        break;
+                    case "boars":
+                        color = "info";
+                        text = "Área de verracos";
+                        break;
+                    case "quarantine":
+                        color = "danger";
+                        text = "Cuarentena / Aislamiento";
+                        break;
+                    case "hospital":
+                        color = "danger";
+                        text = "Hospital / Enfermería";
+                        break;
+                    case "shipping":
+                        color = "secondary";
+                        text = "Corrales de venta / embarque";
                         break;
                 }
 
-                return <Badge color={color}>{label}</Badge>;
+                return <Badge color={color}>{text}</Badge>;
             },
         },
         {
-            key: 'sex',
-            label: 'Sexo',
-            render: (value: string) => (
-                <Badge color={value === 'male' ? "info" : "danger"}>
-                    {value === 'male' ? "♂ Macho" : "♀ Hembra"}
-                </Badge>
-            ),
-        },
-        {
-            key: 'currentStage',
             label: 'Etapa',
-            render: (value: string) => {
+            key: 'stage',
+            type: 'text',
+            render: (value, object) => {
                 let color = "secondary";
-                let label = value;
+                let label = object.stage;
 
-                switch (value) {
+                switch (object.stage) {
                     case "piglet":
                         color = "info";
                         label = "Lechón";
@@ -169,19 +186,27 @@ const IndividualVaccinationPlanForm: React.FC<IndividualVaccinationPlanFormProps
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { key: "weight", label: "Peso actual", type: "text" },
-        { key: "observations", label: "Observaciones", type: "text" },
-    ];
+        { label: 'Cerdos', key: 'pigCount', type: 'text' },
+        { label: 'Fecha de creacion', key: 'creationDate', type: 'date' },
+        { label: 'Observaciones', key: 'observations', type: 'text' },
+    ]
 
     const selectedVaccinesColumns: Column<any>[] = [
         { header: "Codigo", accessor: "id", type: "text", isFilterable: true },
         { header: "Producto", accessor: "name", type: "text", isFilterable: true },
         {
-            header: "Cantidad",
+            header: "Dosis",
             accessor: "dose",
             type: "text",
             isFilterable: true,
             render: (_, row) => <span>{row.dose} {row.unit_measurement}</span>
+        },
+        {
+            header: "Dosis total",
+            accessor: "totalDose",
+            type: "text",
+            isFilterable: true,
+            render: (_, row) => <span>{row.totalDose} {row.unit_measurement}</span>
         },
         {
             header: "Via de administracion",
@@ -272,14 +297,12 @@ const IndividualVaccinationPlanForm: React.FC<IndividualVaccinationPlanFormProps
         if (!configContext || !userLogged) return;
         try {
             setLoading(true)
-            const [pigResponse] = await Promise.all([
-                configContext.axiosHelper.get(`${configContext.apiUrl}/pig/find_by_id/${pigId}`),
-            ])
-            const pigData = pigResponse.data.data;
+            const groupResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/group/find_by_id/${groupId}`)
+            const groupData = groupResponse.data.data;
+            setGroupDetails(groupData)
 
-            const vaccinationResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/vaccination_plan/find_by_stage/${userLogged.farm_assigned}/${pigData.currentStage}`)
+            const vaccinationResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/vaccination_plan/find_by_stage/${userLogged.farm_assigned}/${groupData.stage}`)
             const plansWithId = vaccinationResponse.data.data.map((b: any) => ({ ...b, id: b._id }));
-            setPigDetails(pigData)
             setVaccinationPlans(plansWithId)
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -299,7 +322,8 @@ const IndividualVaccinationPlanForm: React.FC<IndividualVaccinationPlanFormProps
 
             const combined = vaccines.map(vac => {
                 const product = products.find((p: any) => p._id === vac.vaccine);
-                return { ...product, ...vac };
+                const productFormik = formik.values.vaccines.find((v: any) => v.vaccine === vac.vaccine)
+                return { ...product, ...vac, totalDose: productFormik?.totalDose };
             });
             setVaccinationPlanItems(combined)
         } catch (error) {
@@ -312,7 +336,7 @@ const IndividualVaccinationPlanForm: React.FC<IndividualVaccinationPlanFormProps
         appliedBy: Yup.string().required('El area de destino es obligatoria'),
     })
 
-    const formik = useFormik<VaccinationPlanEntry>({
+    const formik = useFormik<GroupVaccinationPlansHistory>({
         initialValues: {
             planId: '',
             name: '',
@@ -321,7 +345,7 @@ const IndividualVaccinationPlanForm: React.FC<IndividualVaccinationPlanFormProps
             applicationDate: null,
             appliedBy: userLogged._id,
             observations: '',
-            is_active: true
+            isActive: true
         },
         enableReinitialize: true,
         validationSchema,
@@ -330,10 +354,9 @@ const IndividualVaccinationPlanForm: React.FC<IndividualVaccinationPlanFormProps
         onSubmit: async (values, { setSubmitting }) => {
             if (!configContext) return;
             try {
-
-                const vaccinationResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/vaccination_plan/asign_vaccination_plan/${userLogged.farm_assigned}/${pigId}`, values)
+                const vaccinationResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/vaccination_plan/asign_group_vaccination_plan/${userLogged.farm_assigned}/${groupId}`, values)
                 await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
-                    event: `Plan de vacunacion asignado al cerdo ${pigDetails?.code}`
+                    event: `Plan de vacunacion asignado al grupo ${groupDetails?.code}`
                 });
 
                 toggleModal('success', true)
@@ -364,14 +387,27 @@ const IndividualVaccinationPlanForm: React.FC<IndividualVaccinationPlanFormProps
 
     useEffect(() => {
         if (selectedVaccinationPlan) {
+            const vaccinesFull = selectedVaccinationPlan.vaccines.map((v: any) => ({
+                vaccine: v.vaccine,
+                dosePerPig: v.dose,
+                administrationRoute: v.administration_route,
+                ageObjective: v.age_objective,
+                frequency: v.frequency,
+                totalDose: Number(v.dose * (groupDetails?.pigCount ?? 0))
+            }))
+
             formik.setFieldValue('planId', selectedVaccinationPlan._id)
             formik.setFieldValue('name', selectedVaccinationPlan.name)
             formik.setFieldValue('stage', selectedVaccinationPlan.stage)
-            formik.setFieldValue('vaccines', selectedVaccinationPlan.vaccines)
-
-            fetchVaccinationItems(selectedVaccinationPlan.vaccines)
+            formik.setFieldValue('vaccines', vaccinesFull)
         }
     }, [selectedVaccinationPlan])
+
+    useEffect(() => {
+        if (!formik.values.vaccines?.length) return;
+
+        fetchVaccinationItems(selectedVaccinationPlan.vaccines);
+    }, [formik.values.vaccines]);
 
     if (loading) {
         return (
@@ -493,12 +529,12 @@ const IndividualVaccinationPlanForm: React.FC<IndividualVaccinationPlanFormProps
                         <div className="">
                             <Card className="shadow-sm h-100">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
-                                    Información del cerdo
+                                    Información del grupo
                                 </CardHeader>
                                 <CardBody>
                                     <ObjectDetails
-                                        attributes={PigAttributes}
-                                        object={pigDetails ?? {}}
+                                        attributes={groupAttributes}
+                                        object={groupDetails ?? {}}
                                     />
                                 </CardBody>
                             </Card>
@@ -566,4 +602,4 @@ const IndividualVaccinationPlanForm: React.FC<IndividualVaccinationPlanFormProps
     )
 }
 
-export default IndividualVaccinationPlanForm;
+export default AsignGroupVaccinationPlanForm;

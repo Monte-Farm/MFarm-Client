@@ -4,36 +4,38 @@ import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { Badge, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from "reactstrap";
 import LoadingAnimation from "../Shared/LoadingAnimation";
-import { Attribute, medicationPackagesEntry, PigData } from "common/data_interfaces";
+import { Attribute, medicationPackagesEntry, PigData, VaccinationPlanEntry } from "common/data_interfaces";
 import * as Yup from 'yup';
 import classnames from "classnames";
 import { useFormik } from "formik";
+import { HttpStatusCode } from "axios";
 import DatePicker from "react-flatpickr";
 import SelectableCustomTable from "../Tables/SelectableTable";
 import AlertMessage from "../Shared/AlertMesagge";
 import ObjectDetails from "../Details/ObjectDetails";
+import PigDetails from "pages/Pigs/PigDetails";
 import CustomTable from "../Tables/CustomTable";
 import ErrorModal from "../Shared/ErrorModal";
 import SuccessModal from "../Shared/SuccessModal";
 import MissingStockModal from "../Shared/MissingStockModal";
 
-interface AsignMedicationPackageFormProps {
+interface AsignVaccinationPlanFormProps {
     pigId: string
     onSave: () => void
 }
 
-const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({ pigId, onSave }) => {
+const AsignVaccinationPlanForm: React.FC<AsignVaccinationPlanFormProps> = ({ pigId, onSave }) => {
     const userLogged = getLoggedinUser();
     const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
     const [loading, setLoading] = useState<boolean>(false);
-    const [modals, setModals] = useState({ medicationPackageDetails: false, success: false, error: false, missingStock: false, subwarehouseError: false });
-    const [medicationsPackages, setMedicationsPackages] = useState<any[]>([]);
+    const [modals, setModals] = useState({ vaccinationDetails: false, success: false, error: false, missingStock: false });
+    const [vaccinationPlans, setVaccinationPlans] = useState<any[]>([]);
     const [pigDetails, setPigDetails] = useState<PigData>()
-    const [selectedMedicationPackage, setSelectedMedicationPackage] = useState<any>();
-    const [medicationPackagesItems, setMedicationsPackagesItems] = useState<any[]>();
+    const [selectedVaccinationPlan, setSelectedVaccinationPlan] = useState<any>();
+    const [vaccinationPlanItems, setVaccinationPlanItems] = useState<any[]>();
     const [missingItems, setMissingItems] = useState([]);
 
     function toggleArrowTab(tab: number) {
@@ -51,7 +53,7 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
 
-    const medicationPackagesColumns: Column<any>[] = [
+    const vaccinationPlanColumns: Column<any>[] = [
         { header: 'Codigo', accessor: 'code', type: 'text', isFilterable: true },
         { header: 'Nombre', accessor: 'name', type: 'text', isFilterable: true },
         { header: 'Fecha de creacion', accessor: 'creation_date', type: 'date', isFilterable: true },
@@ -171,15 +173,15 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
         { key: "observations", label: "Observaciones", type: "text" },
     ];
 
-    const selectedMedicationsColumns: Column<any>[] = [
+    const selectedVaccinesColumns: Column<any>[] = [
         { header: "Codigo", accessor: "id", type: "text", isFilterable: true },
         { header: "Producto", accessor: "name", type: "text", isFilterable: true },
         {
             header: "Cantidad",
-            accessor: "quantity",
+            accessor: "dose",
             type: "text",
             isFilterable: true,
-            render: (_, row) => <span>{row.quantity} {row.unit_measurement}</span>
+            render: (_, row) => <span>{row.dose} {row.unit_measurement}</span>
         },
         {
             header: "Via de administracion",
@@ -226,7 +228,7 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
         },
     ]
 
-    const medicationPackagesAttributes: Attribute[] = [
+    const vaccinationPlanAttributes: Attribute[] = [
         { label: 'Codigo', key: 'code', type: 'text' },
         { label: 'Nombre', key: 'name', type: 'text', },
         { label: 'Fecha de creacion', key: 'creation_date', type: 'date', },
@@ -275,10 +277,10 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
             ])
             const pigData = pigResponse.data.data;
 
-            const medicationResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/medication_package/find_by_stage/${userLogged.farm_assigned}/${pigData.currentStage}`)
-            const packagesWithId = medicationResponse.data.data.map((b: any) => ({ ...b, id: b._id }));
+            const vaccinationResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/vaccination_plan/find_by_stage/${userLogged.farm_assigned}/${pigData.currentStage}`)
+            const plansWithId = vaccinationResponse.data.data.map((b: any) => ({ ...b, id: b._id }));
             setPigDetails(pigData)
-            setMedicationsPackages(packagesWithId)
+            setVaccinationPlans(plansWithId)
         } catch (error) {
             console.error('Error fetching data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al cargar los datos, intentelo mas tarde' })
@@ -287,19 +289,19 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
         }
     }
 
-    const fetchMedicationsItems = async (medications: any[]) => {
-        if (!configContext || !userLogged || !medications) return;
+    const fetchVaccinationItems = async (vaccines: any[]) => {
+        if (!configContext || !userLogged || !vaccines) return;
         try {
-            const medicationsIds = medications.map(m => m.medication)
-            const medicationResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/product/find_products_by_ids`, medicationsIds)
+            const vaccinesIds = vaccines.map(v => v.vaccine)
+            const vaccinationsResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/product/find_products_by_ids`, vaccinesIds)
 
-            const products = medicationResponse.data.data;
+            const products = vaccinationsResponse.data.data;
 
-            const combined = medications.map(med => {
-                const product = products.find((p: any) => p._id === med.medication);
-                return { ...product, ...med };
+            const combined = vaccines.map(vac => {
+                const product = products.find((p: any) => p._id === vac.vaccine);
+                return { ...product, ...vac };
             });
-            setMedicationsPackagesItems(combined)
+            setVaccinationPlanItems(combined)
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -310,15 +312,16 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
         appliedBy: Yup.string().required('El area de destino es obligatoria'),
     })
 
-    const formik = useFormik<medicationPackagesEntry>({
+    const formik = useFormik<VaccinationPlanEntry>({
         initialValues: {
-            packageId: '',
+            planId: '',
             name: '',
             stage: '',
-            medications: [],
+            vaccines: [],
             applicationDate: null,
             appliedBy: userLogged._id,
-            observations: ''
+            observations: '',
+            is_active: true
         },
         enableReinitialize: true,
         validationSchema,
@@ -328,9 +331,9 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
             if (!configContext) return;
             try {
 
-                const medicationResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/medication_package/asign_medication_package/${userLogged.farm_assigned}/${pigId}`, values)
+                const vaccinationResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/vaccination_plan/asign_vaccination_plan/${userLogged.farm_assigned}/${pigId}`, values)
                 await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
-                    event: `Paquete de medicación asignado al cerdo ${pigDetails?.code}`
+                    event: `Plan de vacunacion asignado al cerdo ${pigDetails?.code}`
                 });
 
                 toggleModal('success', true)
@@ -341,19 +344,14 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
                     toggleModal('missingStock');
                     return;
                 }
-
-                if (error.response?.status === 400 && !error.response?.data?.missing) {
-                    toggleModal('subwarehouseError');
-                    return;
-                }
                 toggleModal('error')
             }
         }
     })
 
-    const checkMedicationPackageData = async () => {
-        if (formik.values.packageId === '') {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, seleccione un paquete de medicacion' })
+    const checkVaccinationPlanData = async () => {
+        if (formik.values.planId === '') {
+            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, seleccione un plan de vacunacion' })
         } else {
             toggleArrowTab(activeStep + 1);
         }
@@ -365,15 +363,15 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
     }, [])
 
     useEffect(() => {
-        if (selectedMedicationPackage) {
-            formik.setFieldValue('packageId', selectedMedicationPackage._id)
-            formik.setFieldValue('name', selectedMedicationPackage.name)
-            formik.setFieldValue('stage', selectedMedicationPackage.stage)
-            formik.setFieldValue('medications', selectedMedicationPackage.medications)
+        if (selectedVaccinationPlan) {
+            formik.setFieldValue('planId', selectedVaccinationPlan._id)
+            formik.setFieldValue('name', selectedVaccinationPlan.name)
+            formik.setFieldValue('stage', selectedVaccinationPlan.stage)
+            formik.setFieldValue('vaccines', selectedVaccinationPlan.vaccines)
 
-            fetchMedicationsItems(selectedMedicationPackage.medications)
+            fetchVaccinationItems(selectedVaccinationPlan.vaccines)
         }
-    }, [selectedMedicationPackage])
+    }, [selectedVaccinationPlan])
 
     if (loading) {
         return (
@@ -397,7 +395,7 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
                             aria-controls="step-packageSelect-tab"
                             disabled
                         >
-                            Selección de paquete de medicamentos
+                            Selección de plan de vacunacion
                         </NavLink>
                     </NavItem>
 
@@ -420,7 +418,7 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
             </div>
 
             <TabContent activeTab={activeStep}>
-                <TabPane id="step-packageSelect-tab" tabId={1}>
+                <TabPane id="step-planSelect-tab" tabId={1}>
                     <div className="d-flex gap-2 mt-4">
                         <div className="w-50">
                             <Label htmlFor="applicationDate" className="form-label">Fecha de aplicacion</Label>
@@ -468,22 +466,22 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
                     </div>
 
                     <div className="mt-4">
-                        <Label htmlFor="observations" className="form-label">Seleccion de paquete de medicacion</Label>
+                        <Label htmlFor="observations" className="form-label">Seleccion de plan de vacunacion</Label>
 
                         <SelectableCustomTable
-                            columns={medicationPackagesColumns}
-                            data={medicationsPackages}
+                            columns={vaccinationPlanColumns}
+                            data={vaccinationPlans}
                             showPagination={true}
                             rowsPerPage={6}
                             selectionMode="single"
                             showSearchAndFilter={false}
-                            onSelect={(rows) => setSelectedMedicationPackage(rows[0])}
+                            onSelect={(rows) => setSelectedVaccinationPlan(rows[0])}
                         />
                     </div>
 
 
                     <div className="d-flex justify-content-between mt-4">
-                        <Button className="btn btn-primary ms-auto" onClick={() => checkMedicationPackageData()}>
+                        <Button className="btn btn-primary ms-auto" onClick={() => checkVaccinationPlanData()}>
                             Siguiente
                             <i className="ri-arrow-right-line ms-1" />
                         </Button>
@@ -506,27 +504,27 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
                             </Card>
                         </div>
 
-                        <div className="w-100">
-                            <Card className="shadow-sm mb-3">
+                        <div className="w-100 align-items-stretch d-flex flex-column gap-1">
+                            <Card className="shadow-sm h-100">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
-                                    Información de paquete de medicamentos
+                                    Información del plan de vacunacion
                                 </CardHeader>
                                 <CardBody>
                                     <ObjectDetails
-                                        attributes={medicationPackagesAttributes}
-                                        object={selectedMedicationPackage ?? {}}
+                                        attributes={vaccinationPlanAttributes}
+                                        object={selectedVaccinationPlan ?? {}}
                                     />
                                 </CardBody>
                             </Card>
 
-                            <Card className="shadow-sm">
+                            <Card className="shadow-sm h-100">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
-                                    <h5>Medicamentos</h5>
+                                    <h5>Vacunas</h5>
                                 </CardHeader>
-                                <CardBody className="p-0 mb-3">
+                                <CardBody className="p-0">
                                     <CustomTable
-                                        columns={selectedMedicationsColumns}
-                                        data={medicationPackagesItems || []}
+                                        columns={selectedVaccinesColumns}
+                                        data={vaccinationPlanItems || []}
                                         showSearchAndFilter={false}
                                         rowsPerPage={4}
                                         showPagination={true}
@@ -562,12 +560,10 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} autoClose={3000} />
             <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message={"Ha ocurrido un error, intentelo mas tarde"} />
-            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={"Paquete de medicacion asignado correctamente"} />
+            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={"Plan de vacunacion asignado correctamente"} />
             <MissingStockModal isOpen={modals.missingStock} onClose={() => toggleModal('missingStock', false)} missingItems={missingItems} />
-            <ErrorModal isOpen={modals.subwarehouseError} onClose={() => toggleModal('subwarehouseError')} message={"No existe un subalmacen medico, pongase en contacto con el encargado de almacen"} />
-
         </>
     )
 }
 
-export default AsignMedicationPackageForm;
+export default AsignVaccinationPlanForm;

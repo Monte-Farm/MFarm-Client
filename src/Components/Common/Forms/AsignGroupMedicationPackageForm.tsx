@@ -1,10 +1,11 @@
+
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { Badge, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from "reactstrap";
 import LoadingAnimation from "../Shared/LoadingAnimation";
-import { Attribute, medicationPackagesEntry, PigData } from "common/data_interfaces";
+import { Attribute, GroupData, GroupMedicationPackagesHistory, medicationPackagesEntry, PigData } from "common/data_interfaces";
 import * as Yup from 'yup';
 import classnames from "classnames";
 import { useFormik } from "formik";
@@ -17,12 +18,12 @@ import ErrorModal from "../Shared/ErrorModal";
 import SuccessModal from "../Shared/SuccessModal";
 import MissingStockModal from "../Shared/MissingStockModal";
 
-interface AsignMedicationPackageFormProps {
-    pigId: string
+interface AsignGroupMedicationPackageFormProps {
+    groupId: string
     onSave: () => void
 }
 
-const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({ pigId, onSave }) => {
+const AsignGroupMedicationPackageForm: React.FC<AsignGroupMedicationPackageFormProps> = ({ groupId, onSave }) => {
     const userLogged = getLoggedinUser();
     const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -31,7 +32,7 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
     const [loading, setLoading] = useState<boolean>(false);
     const [modals, setModals] = useState({ medicationPackageDetails: false, success: false, error: false, missingStock: false, subwarehouseError: false });
     const [medicationsPackages, setMedicationsPackages] = useState<any[]>([]);
-    const [pigDetails, setPigDetails] = useState<PigData>()
+    const [groupDetails, setGroupDetails] = useState<GroupData>()
     const [selectedMedicationPackage, setSelectedMedicationPackage] = useState<any>();
     const [medicationPackagesItems, setMedicationsPackagesItems] = useState<any[]>();
     const [missingItems, setMissingItems] = useState([]);
@@ -92,94 +93,22 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
         },
     ]
 
-    const PigAttributes: Attribute[] = [
-        { key: "code", label: "Código", type: "text" },
-        { key: "birthdate", label: "Fecha de nacimiento", type: "date" },
-        { key: "breed", label: "Raza", type: "text" },
-        {
-            key: "origin",
-            label: "Origen",
-            type: "text",
-            render: (value: string) => {
-                let color = 'secondary';
-                let label = value;
-
-                switch (value) {
-                    case 'born':
-                        color = 'success';
-                        label = 'Nacido en la granja';
-                        break;
-
-                    case 'purchased':
-                        color = 'warning';
-                        label = 'Comprado';
-                        break;
-
-                    case 'donated':
-                        color = 'info';
-                        label = 'Donado';
-                        break;
-
-                    case 'other':
-                        color = 'dark';
-                        label = 'Otro';
-                        break;
-                }
-
-                return <Badge color={color}>{label}</Badge>;
-            },
-        },
-        {
-            key: 'sex',
-            label: 'Sexo',
-            render: (value: string) => (
-                <Badge color={value === 'male' ? "info" : "danger"}>
-                    {value === 'male' ? "♂ Macho" : "♀ Hembra"}
-                </Badge>
-            ),
-        },
-        {
-            key: 'currentStage',
-            label: 'Etapa',
-            render: (value: string) => {
-                let color = "secondary";
-                let label = value;
-
-                switch (value) {
-                    case "piglet":
-                        color = "info";
-                        label = "Lechón";
-                        break;
-                    case "weaning":
-                        color = "warning";
-                        label = "Destete";
-                        break;
-                    case "fattening":
-                        color = "primary";
-                        label = "Engorda";
-                        break;
-                    case "breeder":
-                        color = "success";
-                        label = "Reproductor";
-                        break;
-                }
-
-                return <Badge color={color}>{label}</Badge>;
-            },
-        },
-        { key: "weight", label: "Peso actual", type: "text" },
-        { key: "observations", label: "Observaciones", type: "text" },
-    ];
-
     const selectedMedicationsColumns: Column<any>[] = [
         { header: "Codigo", accessor: "id", type: "text", isFilterable: true },
         { header: "Producto", accessor: "name", type: "text", isFilterable: true },
         {
-            header: "Cantidad",
+            header: "Dosis por cerdo",
             accessor: "quantity",
             type: "text",
             isFilterable: true,
             render: (_, row) => <span>{row.quantity} {row.unit_measurement}</span>
+        },
+        {
+            header: "Dosis total",
+            accessor: "totalDose",
+            type: "text",
+            isFilterable: true,
+            render: (_, row) => <span>{row.totalDose} {row.unit_measurement}</span>
         },
         {
             header: "Via de administracion",
@@ -266,19 +195,113 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
         },
     ]
 
+    const groupAttributes: Attribute[] = [
+        { label: 'Codigo', key: 'code', type: 'text' },
+        { label: 'Nombre', key: 'name', type: 'text' },
+        {
+            label: 'Area',
+            key: 'area',
+            type: 'text',
+            render: (value, object) => {
+                let color = "secondary";
+                let text = "Desconocido";
+
+                switch (object.area) {
+                    case "gestation":
+                        color = "info";
+                        text = "Gestación";
+                        break;
+                    case "farrowing":
+                        color = "primary";
+                        text = "Paridera";
+                        break;
+                    case "maternity":
+                        color = "primary";
+                        text = "Maternidad";
+                        break;
+                    case "weaning":
+                        color = "success";
+                        text = "Destete";
+                        break;
+                    case "nursery":
+                        color = "warning";
+                        text = "Preceba / Levante inicial";
+                        break;
+                    case "fattening":
+                        color = "dark";
+                        text = "Ceba / Engorda";
+                        break;
+                    case "replacement":
+                        color = "secondary";
+                        text = "Reemplazo / Recría";
+                        break;
+                    case "boars":
+                        color = "info";
+                        text = "Área de verracos";
+                        break;
+                    case "quarantine":
+                        color = "danger";
+                        text = "Cuarentena / Aislamiento";
+                        break;
+                    case "hospital":
+                        color = "danger";
+                        text = "Hospital / Enfermería";
+                        break;
+                    case "shipping":
+                        color = "secondary";
+                        text = "Corrales de venta / embarque";
+                        break;
+                }
+
+                return <Badge color={color}>{text}</Badge>;
+            },
+        },
+        {
+            label: 'Etapa',
+            key: 'stage',
+            type: 'text',
+            render: (value, object) => {
+                let color = "secondary";
+                let label = object.stage;
+
+                switch (object.stage) {
+                    case "piglet":
+                        color = "info";
+                        label = "Lechón";
+                        break;
+                    case "weaning":
+                        color = "warning";
+                        label = "Destete";
+                        break;
+                    case "fattening":
+                        color = "primary";
+                        label = "Engorda";
+                        break;
+                    case "breeder":
+                        color = "success";
+                        label = "Reproductor";
+                        break;
+                }
+
+                return <Badge color={color}>{label}</Badge>;
+            },
+        },
+        { label: 'Cerdos', key: 'pigCount', type: 'text' },
+        { label: 'Fecha de creacion', key: 'creationDate', type: 'date' },
+        { label: 'Observaciones', key: 'observations', type: 'text' },
+    ]
+
     const fetchData = async () => {
         if (!configContext || !userLogged) return;
         try {
             setLoading(true)
-            const [pigResponse] = await Promise.all([
-                configContext.axiosHelper.get(`${configContext.apiUrl}/pig/find_by_id/${pigId}`),
-            ])
-            const pigData = pigResponse.data.data;
+            const groupResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/group/find_by_id/${groupId}`)
+            const groupData = groupResponse.data.data;
+            setGroupDetails(groupData);
 
-            const medicationResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/medication_package/find_by_stage/${userLogged.farm_assigned}/${pigData.currentStage}`)
+            const medicationResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/medication_package/find_by_stage/${userLogged.farm_assigned}/${groupData.stage}`)
             const packagesWithId = medicationResponse.data.data.map((b: any) => ({ ...b, id: b._id }));
-            setPigDetails(pigData)
-            setMedicationsPackages(packagesWithId)
+            setMedicationsPackages(packagesWithId);
         } catch (error) {
             console.error('Error fetching data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al cargar los datos, intentelo mas tarde' })
@@ -294,10 +317,10 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
             const medicationResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/product/find_products_by_ids`, medicationsIds)
 
             const products = medicationResponse.data.data;
-
             const combined = medications.map(med => {
                 const product = products.find((p: any) => p._id === med.medication);
-                return { ...product, ...med };
+                const productFormik = formik.values.medications.find((p: any) => p.medication === med.medication)
+                return { ...product, ...med, totalDose: productFormik?.totalDose };
             });
             setMedicationsPackagesItems(combined)
         } catch (error) {
@@ -310,7 +333,7 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
         appliedBy: Yup.string().required('El area de destino es obligatoria'),
     })
 
-    const formik = useFormik<medicationPackagesEntry>({
+    const formik = useFormik<GroupMedicationPackagesHistory>({
         initialValues: {
             packageId: '',
             name: '',
@@ -318,7 +341,8 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
             medications: [],
             applicationDate: null,
             appliedBy: userLogged._id,
-            observations: ''
+            observations: '',
+            isActive: true,
         },
         enableReinitialize: true,
         validationSchema,
@@ -327,10 +351,9 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
         onSubmit: async (values, { setSubmitting }) => {
             if (!configContext) return;
             try {
-
-                const medicationResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/medication_package/asign_medication_package/${userLogged.farm_assigned}/${pigId}`, values)
+                const medicationResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/medication_package/asign_group_medication_package/${userLogged.farm_assigned}/${groupId}`, values)
                 await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
-                    event: `Paquete de medicación asignado al cerdo ${pigDetails?.code}`
+                    event: `Paquete de medicación asignado al grupo ${groupDetails?.code}`
                 });
 
                 toggleModal('success', true)
@@ -366,14 +389,28 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
 
     useEffect(() => {
         if (selectedMedicationPackage) {
+            const medicationsFull = selectedMedicationPackage.medications.map((m: any) => ({
+                medication: m.medication,
+                administrationRoute: m.administration_route,
+                dosePerPig: m.quantity,
+                totalDose: Number(m.quantity * (groupDetails?.pigCount ?? 0))
+            }))
+
             formik.setFieldValue('packageId', selectedMedicationPackage._id)
             formik.setFieldValue('name', selectedMedicationPackage.name)
             formik.setFieldValue('stage', selectedMedicationPackage.stage)
-            formik.setFieldValue('medications', selectedMedicationPackage.medications)
+            formik.setFieldValue('medications', medicationsFull)
 
             fetchMedicationsItems(selectedMedicationPackage.medications)
         }
     }, [selectedMedicationPackage])
+
+    useEffect(() => {
+        if (!formik.values.medications?.length) return;
+
+        fetchMedicationsItems(selectedMedicationPackage.medications);
+    }, [formik.values.medications]);
+
 
     if (loading) {
         return (
@@ -495,12 +532,12 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
                         <div className="">
                             <Card className="shadow-sm h-100">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
-                                    Información del cerdo
+                                    Información del grupo
                                 </CardHeader>
                                 <CardBody>
                                     <ObjectDetails
-                                        attributes={PigAttributes}
-                                        object={pigDetails ?? {}}
+                                        attributes={groupAttributes}
+                                        object={groupDetails ?? {}}
                                     />
                                 </CardBody>
                             </Card>
@@ -570,4 +607,4 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
     )
 }
 
-export default AsignMedicationPackageForm;
+export default AsignGroupMedicationPackageForm;

@@ -1,40 +1,42 @@
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
+import { Attribute, PigData } from "common/data_interfaces";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { Badge, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from "reactstrap";
 import LoadingAnimation from "../Shared/LoadingAnimation";
-import { Attribute, medicationPackagesEntry, PigData } from "common/data_interfaces";
-import * as Yup from 'yup';
 import classnames from "classnames";
-import { useFormik } from "formik";
 import DatePicker from "react-flatpickr";
 import SelectableCustomTable from "../Tables/SelectableTable";
+import noImageUrl from '../../../assets/images/no-image.png'
+import * as Yup from "yup";
 import AlertMessage from "../Shared/AlertMesagge";
 import ObjectDetails from "../Details/ObjectDetails";
 import CustomTable from "../Tables/CustomTable";
 import ErrorModal from "../Shared/ErrorModal";
-import SuccessModal from "../Shared/SuccessModal";
 import MissingStockModal from "../Shared/MissingStockModal";
+import SuccessModal from "../Shared/SuccessModal";
 
-interface AsignMedicationPackageFormProps {
+interface AsignMedicationFormProps {
     pigId: string
-    onSave: () => void
+    onSave: () => void;
 }
 
-const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({ pigId, onSave }) => {
+const AsignMedicationForm: React.FC<AsignMedicationFormProps> = ({ pigId, onSave }) => {
     const userLogged = getLoggedinUser();
     const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
     const [loading, setLoading] = useState<boolean>(false);
-    const [modals, setModals] = useState({ medicationPackageDetails: false, success: false, error: false, missingStock: false, subwarehouseError: false });
-    const [medicationsPackages, setMedicationsPackages] = useState<any[]>([]);
+    const [modals, setModals] = useState({ success: false, error: false, missingStock: false });
     const [pigDetails, setPigDetails] = useState<PigData>()
-    const [selectedMedicationPackage, setSelectedMedicationPackage] = useState<any>();
-    const [medicationPackagesItems, setMedicationsPackagesItems] = useState<any[]>();
+    const [medicationsItems, setMedicationsItems] = useState<any[]>([]);
     const [missingItems, setMissingItems] = useState([]);
+    const [medicationsSelected, setMedicationsSelected] = useState<any[]>([])
+    const [medicationErrors, setMedicationErrors] = useState<Record<string, any>>({});
+    const [applicationDate, setApplicationDate] = useState<Date>(new Date())
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
     function toggleArrowTab(tab: number) {
         if (activeStep !== tab) {
@@ -51,46 +53,122 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
 
-    const medicationPackagesColumns: Column<any>[] = [
-        { header: 'Codigo', accessor: 'code', type: 'text', isFilterable: true },
-        { header: 'Nombre', accessor: 'name', type: 'text', isFilterable: true },
-        { header: 'Fecha de creacion', accessor: 'creation_date', type: 'date', isFilterable: true },
+    const medicationsColumns: Column<any>[] = [
         {
-            header: 'Etapa',
-            accessor: 'stage',
-            type: 'text',
-            isFilterable: true,
-            render: (_, row) => {
+            header: 'Imagen', accessor: 'image', render: (_, row) => (
+                <img src={row.image || noImageUrl} alt="Imagen del Producto" style={{ height: "70px" }} />
+            ),
+        },
+        { header: "Codigo", accessor: "code", type: "text", isFilterable: true },
+        { header: "Producto", accessor: "name", type: "text", isFilterable: true },
+        {
+            header: 'Categoria',
+            accessor: 'category',
+            render: (value: string) => {
                 let color = "secondary";
-                let text = "Desconocido";
+                let label = value;
 
-                switch (row.stage) {
-                    case "general":
+                switch (value) {
+                    case "medications":
                         color = "info";
-                        text = "General";
+                        label = "Medicamentos";
                         break;
-                    case "piglet":
-                        color = "info";
-                        text = "Lechón";
-                        break;
-                    case "weaning":
-                        color = "warning";
-                        text = "Destete";
-                        break;
-                    case "fattening":
+                    case "vaccines":
                         color = "primary";
-                        text = "Engorda";
-                        break;
-                    case "breeder":
-                        color = "success";
-                        text = "Reproductor";
+                        label = "Vacunas";
                         break;
                 }
 
-                return <Badge color={color}>{text}</Badge>;
+                return <Badge color={color}>{label}</Badge>;
             },
         },
-    ]
+        {
+            header: "Dosis",
+            accessor: "dose",
+            type: "number",
+            render: (value, row, isSelected) => {
+                const selected = medicationsSelected.find(m => m.medication === row._id);
+                const realValue = selected?.dose ?? "";
+
+                return (
+                    <div className="input-group">
+                        <Input
+                            type="number"
+                            disabled={!isSelected}
+                            value={selected?.dose === 0 ? "" : (selected?.dose ?? "")}
+                            invalid={medicationErrors[row._id]?.dose}
+                            onChange={(e) => {
+                                const newValue = e.target.value === "" ? 0 : Number(e.target.value);
+                                setMedicationsSelected(prev =>
+                                    prev.map(m => m.medication === row._id ? { ...m, dose: newValue } : m)
+                                );
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            aria-describedby="unit-addon"
+                        />
+                        <span className="input-group-text" id="unit-addon">{row.unit_measurement}</span>
+                    </div>
+
+                );
+            },
+        },
+        {
+            header: "Vía de administración",
+            accessor: "administration_route",
+            type: "text",
+            render: (value, row, isSelected) => {
+                const selected = medicationsSelected.find(m => m.medication === row._id);
+                const realValue = selected?.administration_route ?? "";
+                return (
+                    <Input
+                        type="select"
+                        disabled={!isSelected}
+                        value={realValue}
+                        invalid={medicationErrors[row._id]?.administration_route}
+                        onChange={(e) => {
+                            const newValue = e.target.value;
+                            setMedicationsSelected(prev =>
+                                prev.map(m => m.medication === row._id ? { ...m, administration_route: newValue } : m)
+                            );
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <option value="">Seleccione...</option>
+                        <option value="oral">Oral</option>
+                        <option value="intramuscular">Intramuscular</option>
+                        <option value="subcutaneous">Subcutánea</option>
+                        <option value="intravenous">Intravenosa</option>
+                        <option value="intranasal">Intranasal</option>
+                        <option value="topical">Tópica</option>
+                        <option value="rectal">Rectal</option>
+                    </Input>
+                );
+            }
+        },
+        {
+            header: "Observaciones",
+            accessor: "observations",
+            type: "text",
+            render: (value, row, isSelected) => {
+                const selected = medicationsSelected.find(m => m.medication === row._id);
+                const realValue = selected?.observations ?? "";
+                return (
+                    <Input
+                        type="text"
+                        disabled={!isSelected}
+                        value={realValue}
+                        onChange={(e) => {
+                            const newValue = e.target.value;
+                            setMedicationsSelected(prev =>
+                                prev.map(m => m.medication === row._id ? { ...m, observations: newValue } : m)
+                            );
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                );
+            }
+        },
+    ];
 
     const PigAttributes: Attribute[] = [
         { key: "code", label: "Código", type: "text" },
@@ -172,14 +250,35 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
     ];
 
     const selectedMedicationsColumns: Column<any>[] = [
-        { header: "Codigo", accessor: "id", type: "text", isFilterable: true },
+        { header: "Codigo", accessor: "code", type: "text", isFilterable: true },
         { header: "Producto", accessor: "name", type: "text", isFilterable: true },
         {
-            header: "Cantidad",
-            accessor: "quantity",
+            header: "Dosis",
+            accessor: "dose",
             type: "text",
             isFilterable: true,
-            render: (_, row) => <span>{row.quantity} {row.unit_measurement}</span>
+            render: (_, row) => <span>{row.dose} {row.unit_measurement}</span>
+        },
+        {
+            header: 'Categoria',
+            accessor: 'category',
+            render: (value: string) => {
+                let color = "secondary";
+                let label = value;
+
+                switch (value) {
+                    case "medications":
+                        color = "info";
+                        label = "Medicamentos";
+                        break;
+                    case "vaccines":
+                        color = "primary";
+                        label = "Vacunas";
+                        break;
+                }
+
+                return <Badge color={color}>{label}</Badge>;
+            },
         },
         {
             header: "Via de administracion",
@@ -226,46 +325,6 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
         },
     ]
 
-    const medicationPackagesAttributes: Attribute[] = [
-        { label: 'Codigo', key: 'code', type: 'text' },
-        { label: 'Nombre', key: 'name', type: 'text', },
-        { label: 'Fecha de creacion', key: 'creation_date', type: 'date', },
-        {
-            label: 'Etapa',
-            key: 'stage',
-            type: 'text',
-            render: (_, row) => {
-                let color = "secondary";
-                let text = "Desconocido";
-
-                switch (row.stage) {
-                    case "general":
-                        color = "info";
-                        text = "General";
-                        break;
-                    case "piglet":
-                        color = "info";
-                        text = "Lechón";
-                        break;
-                    case "weaning":
-                        color = "warning";
-                        text = "Destete";
-                        break;
-                    case "fattening":
-                        color = "primary";
-                        text = "Engorda";
-                        break;
-                    case "breeder":
-                        color = "success";
-                        text = "Reproductor";
-                        break;
-                }
-
-                return <Badge color={color}>{text}</Badge>;
-            },
-        },
-    ]
-
     const fetchData = async () => {
         if (!configContext || !userLogged) return;
         try {
@@ -275,10 +334,10 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
             ])
             const pigData = pigResponse.data.data;
 
-            const medicationResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/medication_package/find_by_stage/${userLogged.farm_assigned}/${pigData.currentStage}`)
-            const packagesWithId = medicationResponse.data.data.map((b: any) => ({ ...b, id: b._id }));
-            setPigDetails(pigData)
-            setMedicationsPackages(packagesWithId)
+            const medicationsResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/product/find_medication_products`)
+            const medicationsWithId = medicationsResponse.data.data.map((b: any) => ({ ...b, code: b.id, id: b._id }));
+            setPigDetails(pigData);
+            setMedicationsItems(medicationsWithId)
         } catch (error) {
             console.error('Error fetching data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al cargar los datos, intentelo mas tarde' })
@@ -287,93 +346,76 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
         }
     }
 
-    const fetchMedicationsItems = async (medications: any[]) => {
-        if (!configContext || !userLogged || !medications) return;
+    const handleSubmit = async () => {
+        if (!configContext || !userLogged) return;
         try {
-            const medicationsIds = medications.map(m => m.medication)
-            const medicationResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/product/find_products_by_ids`, medicationsIds)
+            setIsSubmitting(true);
+            const medicationsData = medicationsSelected.map(prev => ({ ...prev, applicationDate: applicationDate, appliedBy: userLogged._id }))
 
-            const products = medicationResponse.data.data;
-
-            const combined = medications.map(med => {
-                const product = products.find((p: any) => p._id === med.medication);
-                return { ...product, ...med };
+            const medicationResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/medication_package/asign_medication/${userLogged.farm_assigned}/${pigId}`, medicationsData)
+            await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
+                event: `Paquete de medicación asignado al cerdo ${pigDetails?.code}`
             });
-            setMedicationsPackagesItems(combined)
-        } catch (error) {
-            console.error('Error fetching data:', error);
+
+            toggleModal('success', true)
+        } catch (error: any) {
+            console.error('Error saving the information: ', { error })
+            if (error.response?.status === 400 && error.response?.data?.missing) {
+                setMissingItems(error.response.data.missing);
+                toggleModal('missingStock');
+                return;
+            }
+            toggleModal('error')
+        } finally {
+            setIsSubmitting(false)
         }
     }
 
-    const validationSchema = Yup.object({
-        applicationDate: Yup.date().required('La fecha de aplicacion es obligatoria'),
-        appliedBy: Yup.string().required('El area de destino es obligatoria'),
-    })
+    const medicationValidation = Yup.object({
+        medication: Yup.string().required(),
+        dose: Yup.number()
+            .moreThan(0, "Cantidad inválida")
+            .required("Cantidad requerida"),
+        administration_route: Yup.string()
+            .required("Vía requerida")
+            .notOneOf([""], "Debe seleccionar una vía"),
+    });
 
-    const formik = useFormik<medicationPackagesEntry>({
-        initialValues: {
-            packageId: '',
-            name: '',
-            stage: '',
-            medications: [],
-            applicationDate: null,
-            appliedBy: userLogged._id,
-            observations: ''
-        },
-        enableReinitialize: true,
-        validationSchema,
-        validateOnChange: false,
-        validateOnBlur: true,
-        onSubmit: async (values, { setSubmitting }) => {
-            if (!configContext) return;
+    const validateSelectedMedications = async () => {
+        const errors: Record<string, any> = {};
+
+        if (medicationsSelected.length === 0) {
+            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, seleccione al menos 1 medicamento' })
+            return false;
+        }
+
+        for (const med of medicationsSelected) {
             try {
+                await medicationValidation.validate(med, { abortEarly: false });
+            } catch (err: any) {
+                const medErrors: any = {};
 
-                const medicationResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/medication_package/asign_medication_package/${userLogged.farm_assigned}/${pigId}`, values)
-                await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
-                    event: `Paquete de medicación asignado al cerdo ${pigDetails?.code}`
+                err.inner.forEach((e: any) => {
+                    medErrors[e.path] = true;
                 });
 
-                toggleModal('success', true)
-            } catch (error: any) {
-                console.error('Error saving the information: ', { error })
-                if (error.response?.status === 400 && error.response?.data?.missing) {
-                    setMissingItems(error.response.data.missing);
-                    toggleModal('missingStock');
-                    return;
-                }
-
-                if (error.response?.status === 400 && !error.response?.data?.missing) {
-                    toggleModal('subwarehouseError');
-                    return;
-                }
-                toggleModal('error')
+                errors[med.medication] = medErrors;
             }
         }
-    })
 
-    const checkMedicationPackageData = async () => {
-        if (formik.values.packageId === '') {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, seleccione un paquete de medicacion' })
-        } else {
-            toggleArrowTab(activeStep + 1);
+        setMedicationErrors(errors);
+
+        if (Object.keys(errors).length > 0) {
+            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, llene todos los datos de las medicaciones seleccionadas' })
+            return false;
         }
-    }
+
+        return true;
+    };
 
     useEffect(() => {
         fetchData();
-        formik.setFieldValue('applicationDate', new Date())
     }, [])
-
-    useEffect(() => {
-        if (selectedMedicationPackage) {
-            formik.setFieldValue('packageId', selectedMedicationPackage._id)
-            formik.setFieldValue('name', selectedMedicationPackage.name)
-            formik.setFieldValue('stage', selectedMedicationPackage.stage)
-            formik.setFieldValue('medications', selectedMedicationPackage.medications)
-
-            fetchMedicationsItems(selectedMedicationPackage.medications)
-        }
-    }, [selectedMedicationPackage])
 
     if (loading) {
         return (
@@ -397,7 +439,7 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
                             aria-controls="step-packageSelect-tab"
                             disabled
                         >
-                            Selección de paquete de medicamentos
+                            Selección de medicamentos
                         </NavLink>
                     </NavItem>
 
@@ -420,24 +462,8 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
             </div>
 
             <TabContent activeTab={activeStep}>
-                <TabPane id="step-packageSelect-tab" tabId={1}>
-                    <div className="d-flex gap-2 mt-4">
-                        <div className="w-50">
-                            <Label htmlFor="applicationDate" className="form-label">Fecha de aplicacion</Label>
-                            <DatePicker
-                                id="applicationDate"
-                                className={`form-control ${formik.touched.applicationDate && formik.errors.applicationDate ? 'is-invalid' : ''}`}
-                                value={formik.values.applicationDate ?? undefined}
-                                onChange={(date: Date[]) => {
-                                    if (date[0]) formik.setFieldValue('applicationDate', date[0]);
-                                }}
-                                options={{ dateFormat: 'd/m/Y' }}
-                            />
-                            {formik.touched.applicationDate && formik.errors.applicationDate && (
-                                <FormFeedback className="d-block">{formik.errors.applicationDate as string}</FormFeedback>
-                            )}
-                        </div>
-
+                <TabPane id="step-medicationSelect-tab" tabId={1}>
+                    <div className="d-flex gap-3">
                         <div className="w-50">
                             <Label htmlFor="user" className="form-label">Responsable de aplicacion</Label>
                             <Input
@@ -448,46 +474,64 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
                                 disabled
                             />
                         </div>
+
+                        <div className="w-50">
+                            <Label htmlFor="applicationDate" className="form-label">Fecha de aplicacion</Label>
+                            <DatePicker
+                                id="applicationDate"
+                                className={`form-control`}
+                                value={applicationDate}
+                                onChange={(date: Date[]) => {
+                                    if (date[0]) setApplicationDate(date[0]);
+                                }}
+                                options={{ dateFormat: 'd/m/Y' }}
+                            />
+                        </div>
                     </div>
 
-                    <div className="mt-4">
-                        <Label htmlFor="observations" className="form-label">Observaciones</Label>
-                        <Input
-                            type="text"
-                            id="observations"
-                            name="observations"
-                            value={formik.values.observations}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            invalid={formik.touched.observations && !!formik.errors.observations}
-                            placeholder="Observaciones de la aplicacion"
-                        />
-                        {formik.touched.observations && formik.errors.observations && (
-                            <FormFeedback>{formik.errors.observations}</FormFeedback>
-                        )}
-                    </div>
-
-                    <div className="mt-4">
-                        <Label htmlFor="observations" className="form-label">Seleccion de paquete de medicacion</Label>
-
+                    <div className="mt-3">
+                        <Label htmlFor="user" className="form-label">Seleccion de medicamentos</Label>
                         <SelectableCustomTable
-                            columns={medicationPackagesColumns}
-                            data={medicationsPackages}
+                            columns={medicationsColumns}
+                            data={medicationsItems}
                             showPagination={true}
                             rowsPerPage={6}
-                            selectionMode="single"
-                            showSearchAndFilter={false}
-                            onSelect={(rows) => setSelectedMedicationPackage(rows[0])}
+                            onSelect={(rows) => {
+                                setMedicationsSelected(prev => {
+                                    const newRows = rows.map(r => {
+                                        const existing = prev.find(p => p.medication === r._id);
+                                        if (existing) return existing;
+
+                                        return {
+                                            medication: r._id,
+                                            dose: 0,
+                                            administration_route: "",
+                                            applicationDate: null,
+                                            observations: "",
+                                            unit_measurement: r.unit_measurement,
+                                        };
+                                    });
+                                    return newRows;
+                                });
+                            }}
                         />
                     </div>
 
-
                     <div className="d-flex justify-content-between mt-4">
-                        <Button className="btn btn-primary ms-auto" onClick={() => checkMedicationPackageData()}>
+                        <Button
+                            className="btn btn-primary ms-auto"
+                            onClick={async () => {
+                                const ok = await validateSelectedMedications();
+                                if (!ok) return;
+                                toggleArrowTab(2);
+                            }}
+                        >
                             Siguiente
                             <i className="ri-arrow-right-line ms-1" />
                         </Button>
                     </div>
+
+
                 </TabPane>
 
                 <TabPane id="step-summary-tab" tabId={2}>
@@ -507,18 +551,6 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
                         </div>
 
                         <div className="w-100">
-                            <Card className="shadow-sm mb-3">
-                                <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
-                                    Información de paquete de medicamentos
-                                </CardHeader>
-                                <CardBody>
-                                    <ObjectDetails
-                                        attributes={medicationPackagesAttributes}
-                                        object={selectedMedicationPackage ?? {}}
-                                    />
-                                </CardBody>
-                            </Card>
-
                             <Card className="shadow-sm">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
                                     <h5>Medicamentos</h5>
@@ -526,10 +558,11 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
                                 <CardBody className="p-0 mb-3">
                                     <CustomTable
                                         columns={selectedMedicationsColumns}
-                                        data={medicationPackagesItems || []}
+                                        data={medicationsSelected.map(ms => ({
+                                            ...medicationsItems.find(p => p._id === ms.medication),
+                                            ...ms
+                                        }))}
                                         showSearchAndFilter={false}
-                                        rowsPerPage={4}
-                                        showPagination={true}
                                     />
                                 </CardBody>
                             </Card>
@@ -542,8 +575,8 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
                             Atrás
                         </Button>
 
-                        <Button className="ms-auto btn-success" onClick={() => formik.handleSubmit()} disabled={formik.isSubmitting}>
-                            {formik.isSubmitting ? (
+                        <Button className="ms-auto btn-success" onClick={() => handleSubmit()} disabled={isSubmitting}>
+                            {isSubmitting ? (
                                 <div>
                                     <Spinner size='sm' />
                                 </div>
@@ -557,17 +590,14 @@ const AsignMedicationPackageForm: React.FC<AsignMedicationPackageFormProps> = ({
                         </Button>
                     </div>
                 </TabPane>
-
             </TabContent>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} autoClose={3000} />
             <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message={"Ha ocurrido un error, intentelo mas tarde"} />
-            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={"Paquete de medicacion asignado correctamente"} />
+            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={"Medicacion asignada correctamente"} />
             <MissingStockModal isOpen={modals.missingStock} onClose={() => toggleModal('missingStock', false)} missingItems={missingItems} />
-            <ErrorModal isOpen={modals.subwarehouseError} onClose={() => toggleModal('subwarehouseError')} message={"No existe un subalmacen medico, pongase en contacto con el encargado de almacen"} />
-
         </>
     )
 }
 
-export default AsignMedicationPackageForm;
+export default AsignMedicationForm;

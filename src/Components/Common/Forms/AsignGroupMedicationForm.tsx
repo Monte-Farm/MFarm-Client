@@ -1,6 +1,6 @@
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
-import { Attribute, PigData } from "common/data_interfaces";
+import { Attribute, GroupData, PigData } from "common/data_interfaces";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { Badge, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from "reactstrap";
@@ -17,12 +17,12 @@ import ErrorModal from "../Shared/ErrorModal";
 import MissingStockModal from "../Shared/MissingStockModal";
 import SuccessModal from "../Shared/SuccessModal";
 
-interface SingleMedicationFormProps {
-    pigId: string
+interface AsignGroupMedicationFormProps {
+    groupId: string
     onSave: () => void;
 }
 
-const SingleMedicationForm: React.FC<SingleMedicationFormProps> = ({ pigId, onSave }) => {
+const AsignGroupMedicationForm: React.FC<AsignGroupMedicationFormProps> = ({ groupId, onSave }) => {
     const userLogged = getLoggedinUser();
     const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -30,7 +30,7 @@ const SingleMedicationForm: React.FC<SingleMedicationFormProps> = ({ pigId, onSa
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
     const [loading, setLoading] = useState<boolean>(false);
     const [modals, setModals] = useState({ success: false, error: false, missingStock: false });
-    const [pigDetails, setPigDetails] = useState<PigData>()
+    const [groupDetails, setGroupDetails] = useState<GroupData>()
     const [medicationsItems, setMedicationsItems] = useState<any[]>([]);
     const [missingItems, setMissingItems] = useState([]);
     const [medicationsSelected, setMedicationsSelected] = useState<any[]>([])
@@ -83,24 +83,25 @@ const SingleMedicationForm: React.FC<SingleMedicationFormProps> = ({ pigId, onSa
             },
         },
         {
-            header: "Dosis",
-            accessor: "dose",
+            header: "Dosis por cerdo",
+            accessor: "dosePerPig",
             type: "number",
             render: (value, row, isSelected) => {
                 const selected = medicationsSelected.find(m => m.medication === row._id);
-                const realValue = selected?.dose ?? "";
+                const realValue = selected?.dosePerPig ?? "";
 
                 return (
                     <div className="input-group">
                         <Input
                             type="number"
                             disabled={!isSelected}
-                            value={selected?.dose === 0 ? "" : (selected?.dose ?? "")}
-                            invalid={medicationErrors[row._id]?.dose}
+                            value={selected?.dosePerPig === 0 ? "" : (selected?.dosePerPig ?? "")}
+                            invalid={medicationErrors[row._id]?.dosePerPig}
                             onChange={(e) => {
                                 const newValue = e.target.value === "" ? 0 : Number(e.target.value);
+                                const totalDoseNew = Number(newValue * (groupDetails?.pigCount ?? 0))
                                 setMedicationsSelected(prev =>
-                                    prev.map(m => m.medication === row._id ? { ...m, dose: newValue } : m)
+                                    prev.map(m => m.medication === row._id ? { ...m, dosePerPig: newValue, totalDose: totalDoseNew } : m)
                                 );
                             }}
                             onClick={(e) => e.stopPropagation()}
@@ -118,17 +119,17 @@ const SingleMedicationForm: React.FC<SingleMedicationFormProps> = ({ pigId, onSa
             type: "text",
             render: (value, row, isSelected) => {
                 const selected = medicationsSelected.find(m => m.medication === row._id);
-                const realValue = selected?.administration_route ?? "";
+                const realValue = selected?.administrationRoute ?? "";
                 return (
                     <Input
                         type="select"
                         disabled={!isSelected}
                         value={realValue}
-                        invalid={medicationErrors[row._id]?.administration_route}
+                        invalid={medicationErrors[row._id]?.administrationRoute}
                         onChange={(e) => {
                             const newValue = e.target.value;
                             setMedicationsSelected(prev =>
-                                prev.map(m => m.medication === row._id ? { ...m, administration_route: newValue } : m)
+                                prev.map(m => m.medication === row._id ? { ...m, administrationRoute: newValue } : m)
                             );
                         }}
                         onClick={(e) => e.stopPropagation()}
@@ -170,60 +171,76 @@ const SingleMedicationForm: React.FC<SingleMedicationFormProps> = ({ pigId, onSa
         },
     ];
 
-    const PigAttributes: Attribute[] = [
-        { key: "code", label: "Código", type: "text" },
-        { key: "birthdate", label: "Fecha de nacimiento", type: "date" },
-        { key: "breed", label: "Raza", type: "text" },
+    const groupAttributes: Attribute[] = [
+        { label: 'Codigo', key: 'code', type: 'text' },
+        { label: 'Nombre', key: 'name', type: 'text' },
         {
-            key: "origin",
-            label: "Origen",
-            type: "text",
-            render: (value: string) => {
-                let color = 'secondary';
-                let label = value;
+            label: 'Area',
+            key: 'area',
+            type: 'text',
+            render: (value, object) => {
+                let color = "secondary";
+                let text = "Desconocido";
 
-                switch (value) {
-                    case 'born':
-                        color = 'success';
-                        label = 'Nacido en la granja';
+                switch (object.area) {
+                    case "gestation":
+                        color = "info";
+                        text = "Gestación";
                         break;
-
-                    case 'purchased':
-                        color = 'warning';
-                        label = 'Comprado';
+                    case "farrowing":
+                        color = "primary";
+                        text = "Paridera";
                         break;
-
-                    case 'donated':
-                        color = 'info';
-                        label = 'Donado';
+                    case "maternity":
+                        color = "primary";
+                        text = "Maternidad";
                         break;
-
-                    case 'other':
-                        color = 'dark';
-                        label = 'Otro';
+                    case "weaning":
+                        color = "success";
+                        text = "Destete";
+                        break;
+                    case "nursery":
+                        color = "warning";
+                        text = "Preceba / Levante inicial";
+                        break;
+                    case "fattening":
+                        color = "dark";
+                        text = "Ceba / Engorda";
+                        break;
+                    case "replacement":
+                        color = "secondary";
+                        text = "Reemplazo / Recría";
+                        break;
+                    case "boars":
+                        color = "info";
+                        text = "Área de verracos";
+                        break;
+                    case "quarantine":
+                        color = "danger";
+                        text = "Cuarentena / Aislamiento";
+                        break;
+                    case "hospital":
+                        color = "danger";
+                        text = "Hospital / Enfermería";
+                        break;
+                    case "shipping":
+                        color = "secondary";
+                        text = "Corrales de venta / embarque";
                         break;
                 }
 
-                return <Badge color={color}>{label}</Badge>;
+                return <Badge color={color}>{text}</Badge>;
             },
         },
         {
-            key: 'sex',
-            label: 'Sexo',
-            render: (value: string) => (
-                <Badge color={value === 'male' ? "info" : "danger"}>
-                    {value === 'male' ? "♂ Macho" : "♀ Hembra"}
-                </Badge>
-            ),
-        },
-        {
-            key: 'currentStage',
             label: 'Etapa',
-            render: (value: string) => {
+            key: 'stage',
+            type: 'text',
+            render: (value, object) => {
                 let color = "secondary";
-                let label = value;
+                let label = object.stage;
 
-                switch (value) {
+                switch (object.stage) {
                     case "piglet":
                         color = "info";
                         label = "Lechón";
@@ -245,19 +262,27 @@ const SingleMedicationForm: React.FC<SingleMedicationFormProps> = ({ pigId, onSa
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { key: "weight", label: "Peso actual", type: "text" },
-        { key: "observations", label: "Observaciones", type: "text" },
-    ];
+        { label: 'Cerdos', key: 'pigCount', type: 'text' },
+        { label: 'Fecha de creacion', key: 'creationDate', type: 'date' },
+        { label: 'Observaciones', key: 'observations', type: 'text' },
+    ]
 
     const selectedMedicationsColumns: Column<any>[] = [
         { header: "Codigo", accessor: "code", type: "text", isFilterable: true },
         { header: "Producto", accessor: "name", type: "text", isFilterable: true },
         {
-            header: "Dosis",
-            accessor: "dose",
+            header: "Dosis por cerdo",
+            accessor: "dosePerPig",
             type: "text",
             isFilterable: true,
-            render: (_, row) => <span>{row.dose} {row.unit_measurement}</span>
+            render: (_, row) => <span>{row.dosePerPig} {row.unit_measurement}</span>
+        },
+        {
+            header: "Dosis total",
+            accessor: "totalDose",
+            type: "text",
+            isFilterable: true,
+            render: (_, row) => <span>{row.totalDose} {row.unit_measurement}</span>
         },
         {
             header: 'Categoria',
@@ -281,8 +306,8 @@ const SingleMedicationForm: React.FC<SingleMedicationFormProps> = ({ pigId, onSa
             },
         },
         {
-            header: "Via de administracion",
-            accessor: "administration_route",
+            header: "Administracion",
+            accessor: "administrationRoute",
             type: "text",
             isFilterable: true,
             render: (value: string) => {
@@ -329,14 +354,12 @@ const SingleMedicationForm: React.FC<SingleMedicationFormProps> = ({ pigId, onSa
         if (!configContext || !userLogged) return;
         try {
             setLoading(true)
-            const [pigResponse] = await Promise.all([
-                configContext.axiosHelper.get(`${configContext.apiUrl}/pig/find_by_id/${pigId}`),
-            ])
-            const pigData = pigResponse.data.data;
+            const groupResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/group/find_by_id/${groupId}`)
+            const groupData = groupResponse.data.data;
+            setGroupDetails(groupData)
 
             const medicationsResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/product/find_medication_products`)
             const medicationsWithId = medicationsResponse.data.data.map((b: any) => ({ ...b, code: b.id, id: b._id }));
-            setPigDetails(pigData);
             setMedicationsItems(medicationsWithId)
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -350,11 +373,11 @@ const SingleMedicationForm: React.FC<SingleMedicationFormProps> = ({ pigId, onSa
         if (!configContext || !userLogged) return;
         try {
             setIsSubmitting(true);
-            const medicationsData = medicationsSelected.map(prev => ({ ...prev, applicationDate: applicationDate, appliedBy: userLogged._id }))
+            const medicationsData = medicationsSelected.map(prev => ({ ...prev, applicationDate: applicationDate }))
 
-            const medicationResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/medication_package/asign_medication/${userLogged.farm_assigned}/${pigId}`, medicationsData)
+            const medicationResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/medication_package/asign_group_medications/${userLogged.farm_assigned}/${groupId}`, medicationsData)
             await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
-                event: `Paquete de medicación asignado al cerdo ${pigDetails?.code}`
+                event: `Medicación asignada al grupo ${groupDetails?.code}`
             });
 
             toggleModal('success', true)
@@ -373,10 +396,10 @@ const SingleMedicationForm: React.FC<SingleMedicationFormProps> = ({ pigId, onSa
 
     const medicationValidation = Yup.object({
         medication: Yup.string().required(),
-        dose: Yup.number()
+        dosePerPig: Yup.number()
             .moreThan(0, "Cantidad inválida")
             .required("Cantidad requerida"),
-        administration_route: Yup.string()
+        administrationRoute: Yup.string()
             .required("Vía requerida")
             .notOneOf([""], "Debe seleccionar una vía"),
     });
@@ -504,11 +527,13 @@ const SingleMedicationForm: React.FC<SingleMedicationFormProps> = ({ pigId, onSa
 
                                         return {
                                             medication: r._id,
-                                            dose: 0,
-                                            administration_route: "",
+                                            dosePerPig: 0,
+                                            administrationRoute: "",
                                             applicationDate: null,
+                                            appliedBy: userLogged?._id,
                                             observations: "",
-                                            unit_measurement: r.unit_measurement,
+                                            isActive: true,
+                                            totalDose: 0,
                                         };
                                     });
                                     return newRows;
@@ -543,8 +568,8 @@ const SingleMedicationForm: React.FC<SingleMedicationFormProps> = ({ pigId, onSa
                                 </CardHeader>
                                 <CardBody>
                                     <ObjectDetails
-                                        attributes={PigAttributes}
-                                        object={pigDetails ?? {}}
+                                        attributes={groupAttributes}
+                                        object={groupDetails ?? {}}
                                     />
                                 </CardBody>
                             </Card>
@@ -600,4 +625,4 @@ const SingleMedicationForm: React.FC<SingleMedicationFormProps> = ({ pigId, onSa
     )
 }
 
-export default SingleMedicationForm;
+export default AsignGroupMedicationForm;

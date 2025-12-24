@@ -4,24 +4,9 @@ import BreadCrumb from "Components/Common/Shared/BreadCrumb"
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom"
-import { Alert, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, TabPane, UncontrolledTooltip } from "reactstrap"
-import LoadingGif from '../../assets/images/loading-gif.gif'
+import { Button, Card, Container, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from "reactstrap"
 import classnames from "classnames";
-import ObjectDetails from "Components/Common/Details/ObjectDetails";
-import defaultPigImage from "../../assets/images/pig-default.png";
-import KPIBox from "Components/Common/Graphics/KPIBox";
-import PigTimeline from "Components/Common/Shared/PigTimeline";
-import PigEditForm from "Components/Common/Forms/PigEditForm";
-import HistoryFlagItem from "Components/Common/Lists/HistoryFlagItem";
-import SimpleBar from "simplebar-react";
-import FeedingEntryItem from "Components/Common/Lists/FeedingEntryItem";
-import HistoryList from "Components/Common/Lists/HistoryList";
-import ReproductionFilters from "Components/Common/Lists/HistoryListFilter";
-import PDFViewer from "Components/Common/Shared/PDFViewer";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
-import IndividualMedicationPackageForm from "Components/Common/Forms/AsignMedicationPackageForm";
-import { FaKeyboard, FaListUl } from "react-icons/fa";
-import SingleMedicationForm from "Components/Common/Forms/SingleMedicationForm";
 import PigMedicalDetails from "Components/Common/Details/PigMedicalDetails";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import PigFeedingDetails from "Components/Common/Details/PigFeedingDetails";

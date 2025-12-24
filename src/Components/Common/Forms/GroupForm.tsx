@@ -239,19 +239,24 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
             name: '',
             area: '',
             stage: '',
-            group_mother: '',
+            groupMother: '',
             observations: '',
-            creation_date: null,
-            observations_history: [],
+            creationDate: null,
+            observationsHistory: [],
             responsible: userLogged._id || '',
             farm: userLogged.farm_assigned || '',
-            group_history: [],
+            groupHistory: [],
             pigCount: 0,
             maleCount: 0,
             femaleCount: 0,
             pigsInGroup: [],
             feedings: [],
-            medical_treatments: [],
+            medications: [],
+            groupMode: 'count',
+            avgWeight: 0,
+            feedingPackagesHistory: [],
+            medicationPackagesHistory: [],
+            vaccinationPlansHistory: [],
         },
         enableReinitialize: true,
         validationSchema,
@@ -306,7 +311,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
         formik.setTouched({
             code: true,
             name: true,
-            creation_date: true,
+            creationDate: true,
             responsible: true,
             area: true,
             stage: true,
@@ -332,8 +337,8 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
         if (pigManualSelection) {
             setSelectecPigs(pigs)
             formik.setFieldValue('pigsInGroup', pigs.map((pig) => pig._id))
-            formik.setFieldValue('femaleCount', pigs.filter((pig) => pig.sex === 'hembra').length)
-            formik.setFieldValue('maleCount', pigs.filter((pig) => pig.sex === 'macho').length)
+            formik.setFieldValue('femaleCount', pigs.filter((pig) => pig.sex === 'female').length)
+            formik.setFieldValue('maleCount', pigs.filter((pig) => pig.sex === 'male').length)
             formik.setFieldValue('pigCount', pigs.length)
         }
     }
@@ -349,9 +354,17 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
 
     useEffect(() => {
         if (!pigManualSelection) {
-            formik.setFieldValue('pigCount', formik.values.maleCount + formik.values.femaleCount)
+            formik.setFieldValue('pigCount', (formik.values.maleCount ?? 0) + (formik.values.femaleCount ?? 0))
         }
     }, [formik.values.maleCount, formik.values.femaleCount])
+
+    useEffect(() => {
+        if (pigManualSelection) {
+            formik.setFieldValue('groupMode', 'linked')
+        } else {
+            formik.setFieldValue('groupMode', 'count')
+        }
+    }, [pigManualSelection])
 
     if (loading) {
         return (
@@ -462,18 +475,18 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
                         <div className="d-flex gap-2">
                             {/* Fecha de registro */}
                             <div className="mt-4 w-50">
-                                <Label htmlFor="creation_date" className="form-label">Fecha de registro *</Label>
+                                <Label htmlFor="creationDate" className="form-label">Fecha de registro *</Label>
                                 <DatePicker
-                                    id="creation_date"
-                                    className={`form-control ${formik.touched.creation_date && formik.errors.creation_date ? 'is-invalid' : ''}`}
-                                    value={formik.values.creation_date ?? undefined}
+                                    id="creationDate"
+                                    className={`form-control ${formik.touched.creationDate && formik.errors.creationDate ? 'is-invalid' : ''}`}
+                                    value={formik.values.creationDate ?? undefined}
                                     onChange={(date: Date[]) => {
-                                        if (date[0]) formik.setFieldValue('date', date[0]);
+                                        if (date[0]) formik.setFieldValue('creationDate', date[0]);
                                     }}
                                     options={{ dateFormat: 'd/m/Y' }}
                                 />
-                                {formik.touched.creation_date && formik.errors.creation_date && (
-                                    <FormFeedback className="d-block">{formik.errors.creation_date as string}</FormFeedback>
+                                {formik.touched.creationDate && formik.errors.creationDate && (
+                                    <FormFeedback className="d-block">{formik.errors.creationDate as string}</FormFeedback>
                                 )}
                             </div>
 
@@ -532,7 +545,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
                                     onBlur={formik.handleBlur}
                                     invalid={formik.touched.stage && !!formik.errors.stage}
                                 >
-                                    <option value="">Seleccione un área</option>
+                                    <option value="">Seleccione una etapa</option>
                                     <option value="piglet">Lechón</option>
                                     <option value="weaning">Destete</option>
                                     <option value="fattening">Engorda</option>
@@ -631,7 +644,6 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
                                         formik.setFieldValue("maleCount", 0);
                                         formik.setFieldValue("femaleCount", 0);
                                         formik.setFieldValue("pigsInGroup", []);
-
                                     }
                                 }}
                             />
@@ -648,7 +660,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
                                         <p className="fs-5">No hay cerdos disponibles para agregar al grupo.</p>
                                     </div>
                                 ) : (
-                                    <SelectableTable columns={pigsColumns} data={pigs} selectionMode="multiple" onSelect={(pigs) => updateSelectedPigs(pigs)} resetSelectionTrigger={!pigManualSelection} />
+                                    <SelectableTable columns={pigsColumns} data={pigs} selectionMode="multiple" onSelect={(pigs) => updateSelectedPigs(pigs)} resetSelectionTrigger={!pigManualSelection} disabled={!pigManualSelection} />
                                 )}
 
                             </div>

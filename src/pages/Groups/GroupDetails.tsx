@@ -15,6 +15,7 @@ import { Column } from "common/data/data_types";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import GroupHistoryList from "Components/Common/Lists/GroupHistoryList";
 import SimpleBar from "simplebar-react";
+import GroupMedicalDetails from "Components/Common/Details/GroupMedicalDetails";
 
 const GroupDetails = () => {
     document.title = 'Detalles de grupo | Management System';
@@ -121,7 +122,7 @@ const GroupDetails = () => {
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { key: 'creation_date', label: 'Fecha de creacion', type: 'date' },
+        { key: 'creationDate', label: 'Fecha de creacion', type: 'date' },
         { key: 'observations', label: 'Observaciones', type: 'text' },
     ]
 
@@ -271,13 +272,21 @@ const GroupDetails = () => {
 
                                     <CardBody className="h-100 overflow-hidden p-0">
                                         <SimpleBar style={{ maxHeight: "100%" }}>
-                                            <GroupHistoryList data={groupData.group_history} />
+                                            <GroupHistoryList data={groupData.groupHistory} />
                                         </SimpleBar>
                                     </CardBody>
                                 </Card>
                             </div>
                         </div>
 
+                    </TabPane>
+
+                    <TabPane tabId="2">
+
+                    </TabPane>
+
+                    <TabPane tabId="3">
+                        <GroupMedicalDetails groupId={group_id ?? ""} />
                     </TabPane>
                 </TabContent>
 
