@@ -292,7 +292,7 @@ const ViewBirths = () => {
                 </ModalBody>
             </Modal>
 
-            <Modal isOpen={modals.birthDetails} toggle={() => toggleModal('birthDetails')} size="xl" modalClassName="modal-xxl" contentClassName="modal-tall" centered>
+            <Modal isOpen={modals.birthDetails} toggle={() => toggleModal('birthDetails')} size="xl" centered>
                 <ModalHeader toggle={() => toggleModal('birthDetails')}>
                     <h5>Detalles de parto</h5>
                 </ModalHeader>

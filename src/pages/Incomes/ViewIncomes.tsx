@@ -138,14 +138,14 @@ const ViewIncomes = () => {
                 </Card>
             </Container>
 
-            <Modal size="xl" isOpen={modals.createIncome} toggle={() => toggleModal("createIncome")} backdrop='static' modalClassName="modal-xxl" keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.createIncome} toggle={() => toggleModal("createIncome")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("createIncome")}>Nueva entrada</ModalHeader>
                 <ModalBody>
                     <IncomeForm onSave={() => { toggleModal('createIncome'); handleFetchIncomes() }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' modalClassName="modal-xxl" keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("details")}>Detalles de entrada</ModalHeader>
                 <ModalBody>
                     <IncomeDetails incomeId={selectedIncome?._id} />

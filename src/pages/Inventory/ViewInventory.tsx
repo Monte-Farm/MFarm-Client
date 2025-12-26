@@ -207,7 +207,7 @@ const ViewInventory = () => {
         </ModalBody>
       </Modal>
 
-      <Modal size="xl" isOpen={modals.createIncome} toggle={() => toggleModal("createIncome")} backdrop='static' modalClassName="modal-xxl" keyboard={false} centered>
+      <Modal size="xl" isOpen={modals.createIncome} toggle={() => toggleModal("createIncome")} backdrop='static' keyboard={false} centered>
         <ModalHeader toggle={() => toggleModal("createIncome")}>Nueva entrada</ModalHeader>
         <ModalBody>
           <IncomeForm onSave={() => { toggleModal('createIncome'); fetchProductsData() }} onCancel={() => { }} />
