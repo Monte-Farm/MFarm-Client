@@ -334,6 +334,7 @@ export interface GroupMedicationPackagesHistory {
 
 export interface GroupFeedings {
     feeding: string;
+    quantityPerPig: number;
     totalQuantity: number;
     avgPerPig?: number;
     applicationDate: Date | null;

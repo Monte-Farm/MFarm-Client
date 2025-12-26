@@ -17,12 +17,12 @@ import ErrorModal from "../Shared/ErrorModal";
 import MissingStockModal from "../Shared/MissingStockModal";
 import SuccessModal from "../Shared/SuccessModal";
 
-interface SingleFeedingFormProps {
+interface AsignFeedingFormProps {
     pigId: string
     onSave: () => void;
 }
 
-const SingleFeedingForm: React.FC<SingleFeedingFormProps> = ({ pigId, onSave }) => {
+const AsignFeedingForm: React.FC<AsignFeedingFormProps> = ({ pigId, onSave }) => {
     const userLogged = getLoggedinUser();
     const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -613,4 +613,4 @@ const SingleFeedingForm: React.FC<SingleFeedingFormProps> = ({ pigId, onSave }) 
     )
 }
 
-export default SingleFeedingForm;
+export default AsignFeedingForm;
