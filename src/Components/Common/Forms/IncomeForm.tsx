@@ -1,10 +1,9 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Button, Col, Row, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback, Alert, Nav, NavItem, NavLink, TabContent, TabPane, Card, CardBody, CardHeader, Spinner } from "reactstrap";
+import { Button, Col, Row, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback, Nav, NavItem, NavLink, TabContent, TabPane, Card, CardBody, Spinner, Badge } from "reactstrap";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import SupplierForm from "./SupplierForm";
 import DatePicker from "react-flatpickr";
-
 import { Attribute, IncomeData, ProductData, PurchaseOrderData, SupplierData } from "common/data_interfaces";
 import { ConfigContext } from "App";
 import classnames from "classnames";
@@ -48,10 +47,73 @@ const purchaseOrderAttributes: Attribute[] = [
 const productColumns: Column<any>[] = [
     { header: 'Código', accessor: 'id', isFilterable: true, type: "text" },
     { header: 'Producto', accessor: 'name', isFilterable: true, type: "text" },
-    { header: 'Cantidad', accessor: 'quantity', isFilterable: true, type: "number" },
-    { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true, type: "text" },
+    {
+        header: 'Cantidad',
+        accessor: 'quantity',
+        isFilterable: true,
+        type: "number",
+        render: (_, row) => <span>{row.quantity} {row.unit_measurement}</span>
+    },
     { header: 'Precio Unitario', accessor: 'price', type: "currency" },
-    { header: 'Categoría', accessor: 'category', isFilterable: true, type: "text" },
+    {
+        header: 'Categoria',
+        accessor: 'category',
+        isFilterable: true,
+        type: 'text',
+        render: (value: string) => {
+            let color = "secondary";
+            let label = value;
+
+            switch (value) {
+                case "nutrition":
+                    color = "info";
+                    label = "Nutrición";
+                    break;
+                case "medications":
+                    color = "warning";
+                    label = "Medicamentos";
+                    break;
+                case "vaccines":
+                    color = "primary";
+                    label = "Vacunas";
+                    break;
+                case "vitamins":
+                    color = "success";
+                    label = "Vitaminas";
+                    break;
+                case "minerals":
+                    color = "success";
+                    label = "Minerales";
+                    break;
+                case "supplies":
+                    color = "success";
+                    label = "Insumos";
+                    break;
+                case "hygiene_cleaning":
+                    color = "success";
+                    label = "Higiene y desinfección";
+                    break;
+                case "equipment_tools":
+                    color = "success";
+                    label = "Equipamiento y herramientas";
+                    break;
+                case "spare_parts":
+                    color = "success";
+                    label = "Refacciones y repuestos";
+                    break;
+                case "office_supplies":
+                    color = "success";
+                    label = "Material de oficina";
+                    break;
+                case "others":
+                    color = "success";
+                    label = "Otros";
+                    break;
+            }
+
+            return <Badge color={color}>{label}</Badge>;
+        },
+    },
 ];
 
 const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }) => {
@@ -441,7 +503,6 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                     </TabPane>
 
                     <TabPane id="step-incomeData-tab" tabId={2}>
-
                         <div>
                             <Card style={{ backgroundColor: '#A3C293' }}>
                                 <CardBody className="pt-4">
@@ -668,7 +729,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                         <div>
                             {/* Productos */}
                             <Row className="mb-3">
-                                <Col lg={4}>
+                                <Col lg={6}>
                                     <div className="">
                                         <Label htmlFor="totalPriceInput" className="form-label">Precio Total</Label>
                                         <div className="form-icon">
@@ -689,7 +750,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                     </div>
                                 </Col>
 
-                                <Col lg={4}>
+                                <Col lg={6}>
                                     {/* Documentos */}
                                     <div className="">
                                         <Label htmlFor="documentsInput" className="form-label">Documentos</Label>
@@ -704,13 +765,6 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                             }}
                                         />
                                     </div>
-                                </Col>
-
-                                <Col lg={4} className=" d-flex justify-content-end">
-                                    <Button className="mb-2 farm-primary-button" onClick={() => { toggleModal('createProduct') }}>
-                                        <i className="ri-add-line me-2"></i>
-                                        Nuevo Producto
-                                    </Button>
                                 </Col>
                             </Row>
 

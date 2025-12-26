@@ -32,9 +32,14 @@ const ViewInventory = () => {
   const columnsTable: Column<any>[] = [
     { header: "Código", accessor: "id", isFilterable: true, type: 'text' },
     { header: "Producto", accessor: "name", isFilterable: true, type: 'text' },
-    { header: 'Existencias', accessor: 'quantity', isFilterable: true, type: 'number' },
+    {
+      header: 'Existencias',
+      accessor: 'quantity',
+      isFilterable: true,
+      type: 'number',
+      render: (_, row) => <span>{row.quantity} {row.unit_measurement}</span>
+    },
     { header: 'Precio Promedio', accessor: 'averagePrice', isFilterable: true, type: 'currency' },
-    { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true, type: 'text' },
     {
       header: 'Categoria',
       accessor: 'category',

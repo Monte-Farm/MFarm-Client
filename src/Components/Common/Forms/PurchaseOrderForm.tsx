@@ -1,7 +1,7 @@
 import { Attribute, ProductData, PurchaseOrderData, SupplierData } from "common/data_interfaces";
 import classnames from "classnames";
 import { useContext, useEffect, useState } from "react";
-import { Badge, Button, Card, CardBody, Col, FormFeedback, Input, Label, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
+import { Badge, Button, Card, CardBody, Col, FormFeedback, Input, Label, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Row, Spinner, TabContent, TabPane } from "reactstrap";
 import { ConfigContext } from "App";
 import * as Yup from "yup";
 import { useFormik } from "formik";
@@ -33,8 +33,13 @@ const purchaseOrderAttributes: Attribute[] = [
 const productColumns: Column<any>[] = [
     { header: 'Código', accessor: 'id', isFilterable: true, type: 'text' },
     { header: 'Producto', accessor: 'name', isFilterable: true, type: 'text' },
-    { header: 'Cantidad', accessor: 'quantity', isFilterable: true, type: 'number' },
-    { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true, type: 'text' },
+    {
+        header: 'Cantidad',
+        accessor: 'quantity',
+        isFilterable: true,
+        type: 'number',
+        render: (_, row) => <span>{row.quantity} {row.unit_measurement}</span>,
+    },
     { header: 'Precio Unitario', accessor: 'price', type: 'currency' },
     {
         header: 'Categoria',
@@ -622,7 +627,16 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                             </Button>
 
                             <Button className="farm-primary-button ms-auto" type="submit" disabled={formik.isSubmitting}>
-                                {formik.isSubmitting ? "Guardando..." : "Registrar Orden de compra"}
+                                {formik.isSubmitting ? (
+                                    <div>
+                                        <Spinner size='sm' />
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <i className="ri-check-line me-2" />
+                                        Registrar
+                                    </div>
+                                )}
                             </Button>
                         </div>
                     </TabPane>

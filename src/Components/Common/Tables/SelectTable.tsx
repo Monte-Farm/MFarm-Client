@@ -1,3 +1,4 @@
+import { categoryLabels } from "common/product_categories";
 import React, { useEffect, useState, useCallback } from "react";
 import { Input, Pagination, Table } from "reactstrap";
 import SimpleBar from "simplebar-react";
@@ -201,9 +202,6 @@ const TableHeader: React.FC<{
           </th>
         )}
         <th>Cantidad</th>
-        <th onClick={() => requestSort("unit_measurement")} style={{ cursor: "pointer" }}>
-          Unidad de medida {getSortIndicator("unit_measurement")}
-        </th>
         {showStock ? (
           <th onClick={() => requestSort("averagePrice")} style={{ cursor: "pointer" }}>
             Precio Promedio {getSortIndicator("averagePrice")}
@@ -242,18 +240,22 @@ const TableBody: React.FC<{
             </td>
             <td>{product.id}</td>
             <td>{product.name}</td>
-            <td>{product.category}</td>
+            <td>{categoryLabels[product.category]}</td>
             {showStock && <td>{product.quantity}</td>}
             <td>
-              <Input
-                type="number"
-                value={selectedProducts.find((p) => p.id === product.id)?.quantity || ""}
-                onChange={(e) => handleInputChange(product.id, "quantity", parseInt(e.target.value, 10))}
-                disabled={!isSelected}
-                onClick={(e) => e.stopPropagation()}
-              />
+              <div className="input-group">
+                <Input
+                  type="number"
+                  value={selectedProducts.find((p) => p.id === product.id)?.quantity || ""}
+                  onChange={(e) => handleInputChange(product.id, "quantity", parseInt(e.target.value, 10))}
+                  disabled={!isSelected}
+                  onClick={(e) => e.stopPropagation()}
+                  aria-describedby="unit-addon"
+                />
+                <span className="input-group-text" id="unit-addon">{product.unit_measurement}</span>
+              </div>
+
             </td>
-            <td>{product.unit_measurement}</td>
             {showStock ? (
               <td>${product.averagePrice}</td>
             ) : (

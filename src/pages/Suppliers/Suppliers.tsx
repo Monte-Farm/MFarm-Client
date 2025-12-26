@@ -45,14 +45,6 @@ const Suppliers = () => {
             accessor: 'action',
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="farm-primary-button btn-icon" onClick={() => handleSupplierDetails(row)}>
-                        <i className="ri-eye-fill align-middle" />
-                    </Button>
-
-                    <Button className="farm-primary-button btn-icon" disabled={!row.status} onClick={() => handleModalUpdateSupplier(row)}>
-                        <i className="ri-pencil-fill align-middle" />
-                    </Button>
-
                     {row.status === true ? (
                         <Button className="farm-secondary-button btn-icon" disabled={!row.status} onClick={() => handleModalDeactivateSupplier(row)}>
                             <i className="ri-forbid-line align-middle" />
@@ -63,6 +55,13 @@ const Suppliers = () => {
                         </Button>
                     )}
 
+                    <Button className="farm-primary-button btn-icon" disabled={!row.status} onClick={() => handleModalUpdateSupplier(row)}>
+                        <i className="ri-pencil-fill align-middle" />
+                    </Button>
+
+                    <Button className="farm-primary-button btn-icon" onClick={() => handleSupplierDetails(row)}>
+                        <i className="ri-eye-fill align-middle" />
+                    </Button>
                 </div>
             )
         }

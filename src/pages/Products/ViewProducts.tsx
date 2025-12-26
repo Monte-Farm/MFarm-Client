@@ -111,12 +111,6 @@ const ViewProducts = () => {
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="farm-primary-button btn-icon" onClick={() => handleClicModal('details', row)}>
-                        <i className="ri-eye-fill align-middle"></i>
-                    </Button>
-                    <Button className="farm-primary-button btn-icon" disabled={row.status !== true} onClick={() => handleClicModal('update', row)}>
-                        <i className="ri-pencil-fill align-middle"></i>
-                    </Button>
                     {row.status === true ? (
                         <Button className="farm-secondary-button btn-icon" onClick={() => handleClicModal('delete', row)}>
                             <i className="ri-forbid-line align-middle"></i>
@@ -126,6 +120,14 @@ const ViewProducts = () => {
                             <i className="ri-check-fill align-middle"></i>
                         </Button>
                     )}
+
+                    <Button className="farm-primary-button btn-icon" disabled={row.status !== true} onClick={() => handleClicModal('update', row)}>
+                        <i className="ri-pencil-fill align-middle"></i>
+                    </Button>
+
+                    <Button className="farm-primary-button btn-icon" onClick={() => handleClicModal('details', row)}>
+                        <i className="ri-eye-fill align-middle"></i>
+                    </Button>
                 </div>
             ),
         },

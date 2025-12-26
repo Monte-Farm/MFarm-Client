@@ -1,3 +1,4 @@
+import { categoryLabels } from "common/product_categories";
 import React, { useEffect, useState, useMemo } from "react";
 import { Input, Table } from "reactstrap";
 import SimpleBar from "simplebar-react";
@@ -58,64 +59,63 @@ const PurchaseOrderProductsTable: React.FC<PurchaseOrderProductsTableProps> = ({
             <div className="d-flex justify-content-between mb-3">
                 <Input type="text" placeholder="Buscar..." value={filterText} onChange={e => setFilterText(e.target.value)} />
             </div>
-
-            <SimpleBar style={{ height: "500px" }}>
-                <Table className="table-hover align-middle table-nowrap mb-0" striped>
-                    <thead className="table-light sticky-top">
-                        <tr>
-                            {["id", "name", "category", "unit_measurement", "requested_quantity", "quantity", "price"].map(key => (
-                                <th key={key} onClick={() => requestSort(key)} style={{ cursor: "pointer" }}>
-                                    {key === "requested_quantity" ? "Cantidad Solicitada" :
-                                        key === "id" ? "Código" :
-                                            key === "name" ? "Nombre" :
-                                                key === "category" ? "Categoría" :
-                                                    key === "unit_measurement" ? "Unidad de Medida" :
-                                                        key === "quantity" ? "Cantidad" :
-                                                            key === "price" ? "Precio" :
-                                                                key.charAt(0).toUpperCase() + key.slice(1)}
-                                    {sortConfig?.key === key ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredData.length > 0 ? (
-                            filteredData.map(({ id, name, category, unit_measurement }) => {
-                                const productDelivered = productsDelivered.find(p => p.id === id);
-                                return (
-                                    <tr key={id}>
-                                        <td>{id}</td>
-                                        <td>{name}</td>
-                                        <td>{category}</td>
-                                        <td>{unit_measurement}</td>
-                                        <td>{productDelivered?.quantity || "0"}</td> {/* Cantidad solicitada */}
-                                        <td>
+            <Table className="table-hover align-middle table-nowrap mb-0" striped style={{ overflowY: 'auto' }}>
+                <thead className="table-light sticky-top">
+                    <tr>
+                        {["id", "name", "category", "requested_quantity", "quantity", "price"].map(key => (
+                            <th key={key} onClick={() => requestSort(key)} style={{ cursor: "pointer" }}>
+                                {key === "requested_quantity" ? "Cantidad Solicitada" :
+                                    key === "id" ? "Código" :
+                                        key === "name" ? "Nombre" :
+                                            key === "category" ? "Categoría" :
+                                                key === "quantity" ? "Cantidad" :
+                                                    key === "price" ? "Precio" :
+                                                        key.charAt(0).toUpperCase() + key.slice(1)}
+                                {sortConfig?.key === key ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+                            </th>
+                        ))}
+                    </tr>
+                </thead>
+                <tbody>
+                    {filteredData.length > 0 ? (
+                        filteredData.map(({ id, name, category, unit_measurement }) => {
+                            const productDelivered = productsDelivered.find(p => p.id === id);
+                            return (
+                                <tr key={id}>
+                                    <td>{id}</td>
+                                    <td>{name}</td>
+                                    <td>{categoryLabels[category]}</td>
+                                    <td>{productDelivered?.quantity || "0"} {unit_measurement}</td>
+                                    <td>
+                                        <div className="input-group">
                                             <Input
                                                 type="number"
                                                 value={editingValues[id]?.quantity || "0"}
                                                 onChange={e => handleInputChange(id, "quantity", e.target.value)}
                                                 min={0}
+                                                aria-describedby="unit-addon"
                                             />
-                                        </td>
-                                        <td>
-                                            {productDelivered?.price.toLocaleString("es-MX", {
-                                                style: "currency",
-                                                currency: "MXN", // Cambia a la moneda que necesites
-                                            })}
-                                        </td>
-                                    </tr>
-                                );
-                            })
-                        ) : (
-                            <tr>
-                                <td colSpan={7} className="text-center">
-                                    No hay productos disponibles.
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </Table>
-            </SimpleBar>
+                                            <span className="input-group-text" id="unit-addon">{unit_measurement}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {productDelivered?.price.toLocaleString("es-MX", {
+                                            style: "currency",
+                                            currency: "MXN", // Cambia a la moneda que necesites
+                                        })}
+                                    </td>
+                                </tr>
+                            );
+                        })
+                    ) : (
+                        <tr>
+                            <td colSpan={7} className="text-center">
+                                No hay productos disponibles.
+                            </td>
+                        </tr>
+                    )}
+                </tbody>
+            </Table>
         </div>
     );
 };

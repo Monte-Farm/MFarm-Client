@@ -5,7 +5,19 @@ import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Badge, Button, Card, CardBody, CardHeader, Container, Nav, NavItem, NavLink, TabContent, TabPane } from "reactstrap";
+import {
+    Badge,
+    Button,
+    Card,
+    CardBody,
+    CardHeader,
+    Container,
+    Nav,
+    NavItem,
+    NavLink,
+    TabContent,
+    TabPane,
+} from "reactstrap";
 import classnames from "classnames";
 import ObjectDetails from "Components/Common/Details/ObjectDetails";
 import { Attribute } from "common/data_interfaces";
@@ -19,13 +31,14 @@ import GroupMedicalDetails from "Components/Common/Details/GroupMedicalDetails";
 import GroupFeedingDetails from "Components/Common/Details/GroupFeedingDetails";
 
 const GroupDetails = () => {
-    document.title = 'Detalles de grupo | Management System';
+    document.title = "Detalles de grupo | Management System";
     const { group_id } = useParams();
     const configContext = useContext(ConfigContext);
     const userLogged = getLoggedinUser();
     const navigate = useNavigate();
+
     const [loading, setLoading] = useState<boolean>(true);
-    const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' });
+    const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [groupData, setGroupData] = useState<any>({});
     const [activeTab, setActiveTab] = useState("1");
 
@@ -33,13 +46,23 @@ const GroupDetails = () => {
         if (activeTab !== tab) setActiveTab(tab);
     };
 
+    /** --------------------------------
+     *  DERIVED STATE
+     * -------------------------------- */
+    const hasPigs = (groupData?.pigCount ?? 0) > 0;
+    const isLinkedMode = groupData?.groupMode === "linked";
+    const isCountMode = groupData?.groupMode === "count";
+
+    /** --------------------------------
+     *  ATTRIBUTES
+     * -------------------------------- */
     const groupAttibutes: Attribute[] = [
-        { key: 'code', label: 'Codigo', type: 'text' },
-        { key: 'name', label: 'Nombre', type: 'text' },
+        { key: "code", label: "Codigo", type: "text" },
+        { key: "name", label: "Nombre", type: "text" },
         {
-            key: 'area',
-            label: 'Area',
-            type: 'text',
+            key: "area",
+            label: "Area",
+            type: "text",
             render: (_, row) => {
                 let color = "secondary";
                 let text = "Desconocido";
@@ -95,9 +118,9 @@ const GroupDetails = () => {
             },
         },
         {
-            label: 'Etapa',
-            key: 'currentStage',
-            render: (value, obj) => {
+            label: "Etapa",
+            key: "currentStage",
+            render: (_, obj) => {
                 let color = "secondary";
                 let label = obj.stage;
 
@@ -123,75 +146,82 @@ const GroupDetails = () => {
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { key: 'creationDate', label: 'Fecha de creacion', type: 'date' },
-        { key: 'observations', label: 'Observaciones', type: 'text' },
-    ]
+        { key: "creationDate", label: "Fecha de creacion", type: "date" },
+        { key: "observations", label: "Observaciones", type: "text" },
+    ];
 
+    /** --------------------------------
+     *  TABLE COLUMNS
+     * -------------------------------- */
     const pigColumns: Column<any>[] = [
-        { header: 'Codigo', accessor: 'code', type: 'text' },
-        { header: 'Raza', accessor: 'breed', type: 'text' },
-        { header: 'Fecha de N.', accessor: 'birthdate', type: 'date' },
+        { header: "Codigo", accessor: "code", type: "text" },
+        { header: "Raza", accessor: "breed", type: "text" },
+        { header: "Fecha de N.", accessor: "birthdate", type: "date" },
         {
-            header: 'Sexo',
-            accessor: 'sex',
+            header: "Sexo",
+            accessor: "sex",
             render: (value: string) => (
-                <Badge color={value === 'male' ? "info" : "danger"}>
-                    {value === 'male' ? "♂ Macho" : "♀ Hembra"}
+                <Badge color={value === "male" ? "info" : "danger"}>
+                    {value === "male" ? "♂ Macho" : "♀ Hembra"}
                 </Badge>
             ),
         },
-        { header: 'Peso actual', accessor: 'weight', type: 'number' },
+        { header: "Peso actual", accessor: "weight", type: "number" },
         {
-            header: 'Estado',
-            accessor: 'status',
+            header: "Estado",
+            accessor: "status",
             isFilterable: true,
             render: (value: string) => {
-                let color = 'secondary';
+                let color = "secondary";
                 let label = value;
 
                 switch (value) {
-                    case 'alive':
-                        color = 'success';
-                        label = 'Vivo';
+                    case "alive":
+                        color = "success";
+                        label = "Vivo";
                         break;
-                    case 'discarded':
-                        color = 'warning';
-                        label = 'Descartado';
+                    case "discarded":
+                        color = "warning";
+                        label = "Descartado";
                         break;
-                    case 'dead':
-                        color = 'danger';
-                        label = 'Muerto';
+                    case "dead":
+                        color = "danger";
+                        label = "Muerto";
                         break;
                 }
 
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-    ]
+    ];
 
-
+    /** --------------------------------
+     *  DATA FETCH
+     * -------------------------------- */
     const fetchData = async () => {
-        if (!configContext || !userLogged) return
+        if (!configContext || !userLogged) return;
         try {
-            const groupResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/group/find_by_id/${group_id}`)
-            setGroupData(groupResponse.data.data)
+            const groupResponse = await configContext.axiosHelper.get(
+                `${configContext.apiUrl}/group/find_by_id/${group_id}`
+            );
+            setGroupData(groupResponse.data.data);
         } catch (error) {
-            console.error('Error fetching data: ', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
+            console.error("Error fetching data: ", { error });
+            setAlertConfig({
+                visible: true,
+                color: "danger",
+                message: "Ha ocurrido un error al obtener los datos, intentelo mas tarde",
+            });
         } finally {
             setLoading(false);
         }
-    }
+    };
 
     useEffect(() => {
         fetchData();
-    }, [])
+    }, []);
 
-    if (loading) {
-        return (
-            <LoadingAnimation />
-        )
-    }
+    if (loading) return <LoadingAnimation />;
 
     return (
         <div className="page-content">
@@ -208,69 +238,110 @@ const GroupDetails = () => {
                 <div className="p-3 bg-white rounded">
                     <Nav tabs className="nav-tabs nav-justified">
                         <NavItem>
-                            <NavLink style={{ cursor: "pointer" }} className={classnames({ active: activeTab === "1", })} onClick={() => { toggleTab("1"); }} >
+                            <NavLink
+                                style={{ cursor: "pointer" }}
+                                className={classnames({ active: activeTab === "1" })}
+                                onClick={() => toggleTab("1")}
+                            >
                                 Información del grupo
                             </NavLink>
                         </NavItem>
                         <NavItem>
-                            <NavLink style={{ cursor: "pointer" }} className={classnames({ active: activeTab === "2", })} onClick={() => { toggleTab("2"); }} >
+                            <NavLink
+                                style={{ cursor: "pointer" }}
+                                className={classnames({ active: activeTab === "2" })}
+                                onClick={() => toggleTab("2")}
+                            >
                                 Alimentación
                             </NavLink>
                         </NavItem>
                         <NavItem>
-                            <NavLink style={{ cursor: "pointer" }} className={classnames({ active: activeTab === "3", })} onClick={() => { toggleTab("3"); }} >
+                            <NavLink
+                                style={{ cursor: "pointer" }}
+                                className={classnames({ active: activeTab === "3" })}
+                                onClick={() => toggleTab("3")}
+                            >
                                 Medicación
                             </NavLink>
                         </NavItem>
                     </Nav>
                 </div>
 
-
-
                 <TabContent activeTab={activeTab} className="justified-tabs mt-3">
                     <TabPane tabId="1">
                         <div className="d-flex gap-3">
-                            <KPI title={"Machos en el grupo"} value={groupData.maleCount} icon={FaMars} bgColor="#E0F2FF" iconColor="#007BFF" />
-                            <KPI title={"Hembras en el grupo"} value={groupData.femaleCount} icon={FaVenus} bgColor="#FFE0F0" iconColor="#FF007B" />
-                            <KPI title={"Total en el grupo"} value={groupData.pigCount} icon={FaPiggyBank} bgColor="#EFE8FF" iconColor="#7B2FFF" />
+                            <KPI title="Machos en el grupo" value={groupData.maleCount} icon={FaMars} bgColor="#E0F2FF" iconColor="#007BFF" />
+                            <KPI title="Hembras en el grupo" value={groupData.femaleCount} icon={FaVenus} bgColor="#FFE0F0" iconColor="#FF007B" />
+                            <KPI title="Total en el grupo" value={groupData.pigCount} icon={FaPiggyBank} bgColor="#EFE8FF" iconColor="#7B2FFF" />
                         </div>
 
                         <div className="d-flex gap-2" style={{ height: "500px" }}>
+                            {/* DATOS DEL GRUPO */}
                             <div className="w-25 h-100">
                                 <Card className="h-100">
                                     <CardHeader className="bg-white border-bottom">
                                         <h5 className="mb-0 text-dark fw-semibold">Datos del grupo</h5>
                                     </CardHeader>
-
                                     <CardBody className="h-100 overflow-hidden">
                                         <ObjectDetails attributes={groupAttibutes} object={groupData} />
                                     </CardBody>
                                 </Card>
                             </div>
 
+                            {/* CERDOS EN EL GRUPO */}
                             <div className="w-100 h-100">
                                 <Card className="h-100">
                                     <CardHeader className="border-bottom custom-card-header">
                                         <h5 className="mb-0 text-dark fw-semibold">Cerdos en el grupo</h5>
                                     </CardHeader>
 
-                                    <CardBody className="h-100 overflow-hidden">
-                                        <CustomTable
-                                            columns={pigColumns}
-                                            data={groupData.pigsInGroup}
-                                            showSearchAndFilter={false}
-                                            rowsPerPage={10}
-                                        />
+                                    <CardBody className="h-100 p-0 d-flex align-items-center justify-content-center">
+                                        {!hasPigs && (
+                                            <div className="text-center text-muted">
+                                                <div className="mb-3">
+                                                    <i className="ri-error-warning-line" style={{ fontSize: "48px", color: "#F39C12" }} />
+                                                </div>
+                                                <h5 className="mb-1 fw-semibold">No hay cerdos en este grupo</h5>
+                                                <span>Aún no se han registrado animales</span>
+                                            </div>
+                                        )}
+
+                                        {hasPigs && isLinkedMode && (
+                                            <div className="w-100 h-100">
+                                                <CustomTable
+                                                    columns={pigColumns}
+                                                    data={groupData.pigsInGroup}
+                                                    showSearchAndFilter={false}
+                                                    rowsPerPage={10}
+                                                />
+                                            </div>
+                                        )}
+
+                                        {hasPigs && isCountMode && (
+                                            <div className="d-flex gap-4">
+                                                <div className="text-center p-4 rounded shadow-sm" style={{ minWidth: 220, background: "#E0F2FF" }}>
+                                                    <FaMars size={40} color="#007BFF" className="mb-2" />
+                                                    <h2 className="fw-bold mb-0">{groupData.maleCount}</h2>
+                                                    <span className="text-muted">Machos</span>
+                                                </div>
+
+                                                <div className="text-center p-4 rounded shadow-sm" style={{ minWidth: 220, background: "#FFE0F0" }}>
+                                                    <FaVenus size={40} color="#FF007B" className="mb-2" />
+                                                    <h2 className="fw-bold mb-0">{groupData.femaleCount}</h2>
+                                                    <span className="text-muted">Hembras</span>
+                                                </div>
+                                            </div>
+                                        )}
                                     </CardBody>
                                 </Card>
                             </div>
 
+                            {/* HISTORIAL */}
                             <div className="w-100 h-100">
                                 <Card className="h-100">
                                     <CardHeader className="border-bottom custom-card-header">
                                         <h5 className="mb-0 text-dark fw-semibold">Historial de grupo</h5>
                                     </CardHeader>
-
                                     <CardBody className="h-100 overflow-hidden p-0">
                                         <SimpleBar style={{ maxHeight: "100%" }}>
                                             <GroupHistoryList data={groupData.groupHistory} />
@@ -279,23 +350,26 @@ const GroupDetails = () => {
                                 </Card>
                             </div>
                         </div>
-
                     </TabPane>
 
                     <TabPane tabId="2">
-                        <GroupFeedingDetails groupId={group_id ?? ''} />
+                        <GroupFeedingDetails groupId={group_id ?? ""} />
                     </TabPane>
 
                     <TabPane tabId="3">
                         <GroupMedicalDetails groupId={group_id ?? ""} />
                     </TabPane>
                 </TabContent>
-
             </Container>
 
-            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
+            <AlertMessage
+                color={alertConfig.color}
+                message={alertConfig.message}
+                visible={alertConfig.visible}
+                onClose={() => setAlertConfig({ ...alertConfig, visible: false })}
+            />
         </div>
-    )
-}
+    );
+};
 
 export default GroupDetails;
