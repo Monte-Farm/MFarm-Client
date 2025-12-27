@@ -111,7 +111,7 @@ const AsignGroupMedicationPackageForm: React.FC<AsignGroupMedicationPackageFormP
             render: (_, row) => <span>{row.totalDose} {row.unit_measurement}</span>
         },
         {
-            header: "Via de administracion",
+            header: "Administracion",
             accessor: "administration_route",
             type: "text",
             isFilterable: true,
