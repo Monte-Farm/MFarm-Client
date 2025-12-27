@@ -308,7 +308,7 @@ const DiscardedPigs = () => {
 
                 <div className="d-flex gap-3">
                     <BasicPieChart title={"Cerdos descartados por sexo"}
-                        data={stats.bySex?.map((s: { _id: any; count: any }) => ({
+                        data={stats?.bySex?.map((s: { _id: any; count: any }) => ({
                             id: s._id === 'male' ? 'Macho' : 'Hembra',
                             value: s.count,
                         })) ?? []}

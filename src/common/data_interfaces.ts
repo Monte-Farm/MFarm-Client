@@ -389,6 +389,31 @@ export interface GroupVaccinationPlansHistory {
     isActive: boolean;
 }
 
+export interface GroupHealthEvents {
+    name: string;
+    status: 'active' | 'controlled' | 'resolved' | '';
+    startDate: Date | null;
+    endDate?: Date | null;
+    scope: {
+        type: 'total' | 'partial' | '';
+        affectedCount: number;
+    };
+    severity?: 'low' | 'medium' | 'high' | '';
+    symptoms?: string[];
+    treatments?: {
+        medication: string;
+        quantityPerPig: number;
+        totalQuantity?: number;
+        startDate?: Date | null;
+        endDate?: Date | null;
+        administration_route: string;
+        appliedBy: string;
+    }[];
+    observations?: string;
+    is_active?: boolean;
+    detectedBy: string;
+}[];
+
 export interface GroupData {
     _id?: string;
     code: string;
@@ -422,6 +447,7 @@ export interface GroupData {
     medications?: GroupMedications[];
     medicationPackagesHistory?: GroupMedicationPackagesHistory[];
     vaccinationPlansHistory?: GroupVaccinationPlansHistory[];
+    healthEvents?: GroupHealthEvents[];
 }
 
 

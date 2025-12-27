@@ -10,6 +10,7 @@ import VaccinationPlanDetails from "./VaccinationPlanDetails";
 import AsignGroupMedicationPackageForm from "../Forms/AsignGroupMedicationPackageForm";
 import AsignGroupVaccinationPlanForm from "../Forms/AsignGroupVaccinationPlanForm";
 import AsignGroupMedicationForm from "../Forms/AsignGroupMedicationForm";
+import GroupHealthEventForm from "../Forms/AsignGroupHealtEvent";
 
 interface GroupMedicalDetailsProps {
     groupId: string
@@ -20,10 +21,10 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId }) =>
     const userLogged = getLoggedinUser();
     const [loading, setLoading] = useState<boolean>(true)
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ asignMedication: false, asignMedicationPackage: false, medicationPackageDetails: false, asignVaccinationPlan: false, vaccinationPlanDetails: false, registerSickness: false, sicknessDetails: false });
+    const [modals, setModals] = useState({ asignMedication: false, asignMedicationPackage: false, medicationPackageDetails: false, asignVaccinationPlan: false, vaccinationPlanDetails: false, registerHealthEvent: false, healthEventDetails: false });
     const [medicationPackages, setMedicationPackages] = useState<any[]>([]);
     const [medications, setMedications] = useState<any[]>([]);
-    const [sickness, setSickeness] = useState<any[]>([]);
+    const [healthEvents, setHealthEvents] = useState<any[]>([]);
     const [vaccinationPlans, setVaccinationPlans] = useState<any[]>([])
 
     const [selectedMedicationPackage, setSelectedMedicationPackage] = useState<string>("")
@@ -43,6 +44,7 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId }) =>
             setMedicationPackages(medicalData.medicationPackagesHistory);
             setVaccinationPlans(medicalData.vaccinationPlansHistory)
             setMedications(medicalData.medications)
+            setHealthEvents(medicalData.healthEvents)
         } catch (error) {
             console.error('Error fetching data: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: 'Error al obtener la informacion medica, intentelo mas tarde' });
@@ -65,102 +67,134 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId }) =>
         <>
             <div className="d-flex gap-3 align-items-stretch" style={{ height: "700px" }}>
                 <div className="w-100 d-flex flex-column gap-3">
-                    <Card className="w-100 h-50 flex-grow-1 m-0">
-                        <CardHeader className="bg-light d-flex justify-content-between">
-                            <h5>Enfermedades</h5>
+                    <Card className="w-100 flex-grow-1 m-0" style={{ minHeight: "300px" }}>
+                        <CardHeader className="bg-light d-flex justify-content-between align-items-center">
+                            <h5 className="mb-0">Eventos sanitarios</h5>
 
-                            <Button className="" size="sm" onClick={() => toggleModal('registerSickness')}>
-                                <i className="" />
-                                Registrar enfermedad
+                            <Button size="sm" onClick={() => toggleModal('registerHealthEvent')}>
+                                Registrar eventos
                             </Button>
                         </CardHeader>
-                        <CardBody className={sickness.length === 0 ? 'd-flex justify-content-center align-items-center' : ''} style={{ overflowY: 'auto' }}>
-                            {sickness.length === 0 ? (
+
+                        <CardBody
+                            className={healthEvents.length === 0
+                                ? "d-flex flex-column justify-content-center align-items-center gap-2"
+                                : ""
+                            }
+                            style={{ overflowY: "auto" }}
+                        >
+                            {healthEvents.length === 0 ? (
                                 <>
-                                    <FiAlertCircle className="text-muted" size={22} />
-                                    <span className="fs-5 text-black text-muted text-center rounded-5 ms-2">
-                                        No hay enfermedades registradas
+                                    <FiAlertCircle className="text-muted" size={32} />
+                                    <span className="fs-5 text-muted text-center">
+                                        No hay eventos registrados
                                     </span>
                                 </>
                             ) : (
                                 <div className="d-flex flex-column gap-2">
-                                    {sickness.map((s, index) => {
+                                    {healthEvents.map((s, index) => {
                                         const startDate = new Date(s.startDate).toLocaleDateString("es-MX");
                                         const endDate = s.endDate
                                             ? new Date(s.endDate).toLocaleDateString("es-MX")
-                                            : null;
+                                            : "En curso";
 
-                                        /* ===== MAPEOS ===== */
                                         const statusLabels: Record<string, string> = {
-                                            active: "Activa",
-                                            recovered: "Recuperada",
-                                            dead: "Fallecido",
+                                            active: "Activo",
+                                            controlled: "Controlado",
+                                            resolved: "Resuelto",
                                         };
 
                                         const severityLabels: Record<string, string> = {
-                                            mild: "Leve",
+                                            low: "Baja",
                                             medium: "Media",
-                                            severe: "Grave",
+                                            high: "Alta",
+                                        };
+
+                                        const symptomLabels: Record<string, string> = {
+                                            diarrhea: "Diarrea",
+                                            bloody_diarrhea: "Diarrea con sangre",
+                                            fever: "Fiebre",
+                                            vomiting: "Vómito",
+                                            lethargy: "Letargo",
                                         };
 
                                         return (
                                             <div
-                                                key={index}
+                                                key={s._id || index}
                                                 className="p-3 border rounded shadow-sm bg-light d-flex flex-column position-relative"
                                             >
-                                                <Button className="btn position-absolute" size="sm" style={{ top: "10px", right: "10px", borderRadius: "4px" }} onClick={() => { setSelectedSickness(s._id); toggleModal('sicknessDetails'); }}>
-                                                    <FiEye size={18} />
+                                                {/* Botón ver detalles */}
+                                                <Button
+                                                    size="sm"
+                                                    className="position-absolute"
+                                                    style={{ top: "10px", right: "10px" }}
+                                                    onClick={() => {
+                                                        setSelectedSickness(s._id);
+                                                        toggleModal('healthEventDetails');
+                                                    }}
+                                                >
+                                                    <FiEye size={16} />
                                                 </Button>
 
-                                                {/* Nombre */}
-                                                <strong className="fs-5 mb-2 pe-4">
+                                                {/* Título */}
+                                                <strong className="fs-5 mb-2 pe-5">
                                                     {s.name}
                                                 </strong>
 
-                                                {/* Estado y severidad */}
+                                                {/* Estado */}
+                                                <div className="fs-6 mb-2">
+                                                    <strong className="text-muted">Estado:</strong>{" "}
+                                                    {statusLabels[s.status] ?? s.status}
+                                                </div>
+
+                                                {/* Alcance / severidad */}
                                                 <div className="d-flex justify-content-between flex-wrap fs-6 mb-2">
                                                     <span>
-                                                        <strong className="text-muted">Estado:</strong>{" "}
-                                                        {statusLabels[s.status] ?? s.status}
+                                                        <strong className="text-muted">Alcance:</strong>{" "}
+                                                        {s.scope.type === "total" ? "Todo el grupo" : "Parcial"} ({s.scope.affectedCount})
                                                     </span>
 
-                                                    {s.severity && (
-                                                        <span>
-                                                            <strong className="text-muted">Severidad:</strong>{" "}
-                                                            {severityLabels[s.severity] ?? s.severity}
-                                                        </span>
-                                                    )}
+                                                    <span>
+                                                        <strong className="text-muted">Severidad:</strong>{" "}
+                                                        {severityLabels[s.severity] ?? s.severity}
+                                                    </span>
                                                 </div>
 
                                                 {/* Fechas */}
-                                                <div className="fs-6 d-flex justify-content-between flex-wrap">
-                                                    <div>
+                                                <div className="d-flex justify-content-between flex-wrap fs-6 mb-2">
+                                                    <span>
                                                         <strong className="text-muted">Inicio:</strong> {startDate}
-                                                    </div>
-
-                                                    <div>
-                                                        <strong className="text-muted">Fin:</strong>{" "}
-                                                        {endDate ?? "—"}
-                                                    </div>
+                                                    </span>
+                                                    <span>
+                                                        <strong className="text-muted">Fin:</strong> {endDate}
+                                                    </span>
                                                 </div>
 
                                                 {/* Síntomas */}
                                                 {s.symptoms?.length > 0 && (
-                                                    <div className="mt-2 fs-6">
+                                                    <div className="fs-6 mb-2">
                                                         <strong className="text-muted">Síntomas:</strong>{" "}
-                                                        {s.symptoms.join(", ")}
+                                                        {s.symptoms.map((sym: any) => symptomLabels[sym] || sym).join(", ")}
+                                                    </div>
+                                                )}
+
+                                                {/* Tratamientos */}
+                                                {s.treatments?.length > 0 && (
+                                                    <div className="fs-6 mb-2">
+                                                        <strong className="text-muted">Tratamientos registrados:</strong>{" "}
+                                                        {s.treatments.length}
                                                     </div>
                                                 )}
 
                                                 {/* Detectado por */}
-                                                <div className="mt-1 fs-6">
-                                                    <strong className="text-muted">Detectado por:</strong>{" "}
+                                                <div className="fs-6 text-muted">
+                                                    <strong>Detectado por:</strong>{" "}
                                                     {s.detectedBy
                                                         ? `${s.detectedBy.name} ${s.detectedBy.lastname}`
-                                                        : "Desconocido"}
+                                                        : "N/A"}
                                                 </div>
 
-                                                {/* Observaciones */}
+                                                {/* Notas */}
                                                 {s.observations && s.observations.trim() !== "" && (
                                                     <div className="mt-2 fs-6">
                                                         <strong className="text-muted">Notas:</strong>{" "}
@@ -174,6 +208,7 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId }) =>
                             )}
                         </CardBody>
                     </Card>
+
 
                     <Card className="w-100 h-50 flex-grow-1 m-0">
                         <CardHeader className="bg-light d-flex justify-content-between">
@@ -427,10 +462,10 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId }) =>
 
             </div>
 
-            <Modal size="xl" isOpen={modals.registerSickness} toggle={() => toggleModal("registerSickness")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("registerSickness")}>Registar enfermedad</ModalHeader>
+            <Modal size="xl" isOpen={modals.registerHealthEvent} toggle={() => toggleModal("registerHealthEvent")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("registerHealthEvent")}>Registar evento sanitario</ModalHeader>
                 <ModalBody>
-
+                    <GroupHealthEventForm groupId={groupId} onSave={() => { toggleModal('registerHealthEvent'); fetchMedicalInfo(); }} />
                 </ModalBody>
             </Modal>
 
@@ -469,8 +504,8 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId }) =>
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.sicknessDetails} toggle={() => toggleModal("sicknessDetails")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("sicknessDetails")}>Detalles de enfermedad</ModalHeader>
+            <Modal size="xl" isOpen={modals.healthEventDetails} toggle={() => toggleModal("healthEventDetails")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("healthEventDetails")}>Detalles de enfermedad</ModalHeader>
                 <ModalBody>
 
                 </ModalBody>
