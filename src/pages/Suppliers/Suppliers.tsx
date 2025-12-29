@@ -9,6 +9,7 @@ import { Column } from "common/data/data_types";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import CustomTable from "Components/Common/Tables/CustomTable";
+import SupplierDetailsModal from "Components/Common/Details/SupplierDetailsModal";
 
 const Suppliers = () => {
     document.title = 'Ver Proveedores | Almacén'
@@ -16,9 +17,9 @@ const Suppliers = () => {
     const configContext = useContext(ConfigContext)
 
     const [suppliersData, setSuppliersData] = useState([]);
-    const [selectedSupplier, setSelectedSupplier] = useState<SupplierData | undefined>(undefined);
+    const [selectedSupplier, setSelectedSupplier] = useState<any | undefined>(undefined);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ create: false, update: false, delete: false, activate: false });
+    const [modals, setModals] = useState({ create: false, update: false, delete: false, activate: false, details: false });
     const [loading, setLoading] = useState<boolean>(false)
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
@@ -59,10 +60,10 @@ const Suppliers = () => {
                         <i className="ri-pencil-fill align-middle" />
                     </Button>
 
-                    <Button className="farm-primary-button btn-icon" onClick={() => handleSupplierDetails(row)}>
+                    <Button className="farm-primary-button btn-icon" onClick={() => { setSelectedSupplier(row); toggleModal('details') }}>
                         <i className="ri-eye-fill align-middle" />
                     </Button>
-                </div>
+                </div >
             )
         }
     ]
@@ -83,12 +84,6 @@ const Suppliers = () => {
             setLoading(false)
         }
     };
-
-    const handleSupplierDetails = (row: any) => {
-        const id_supplier = row.id
-        history(`/warehouse/suppliers/supplier_details/${id_supplier}`);
-    }
-
 
     const handleModalUpdateSupplier = (supplier: SupplierData) => {
         setSelectedSupplier(supplier)
@@ -268,10 +263,17 @@ const Suppliers = () => {
                     </ModalFooter>
                 </Modal>
 
+                <Modal isOpen={modals.details} toggle={() => { toggleModal('details'); fetchSuppliersData(); }} size="xl" keyboard={false} backdrop='static' centered>
+                    <ModalHeader toggle={() => { toggleModal('details'); fetchSuppliersData(); }}>Detalles de proveedor</ModalHeader>
+                    <ModalBody>
+                        <SupplierDetailsModal supplierId={selectedSupplier?._id} />
+                    </ModalBody>
+                </Modal>
+
             </Container>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
-        </div>
+        </div >
     )
 }
 

@@ -108,7 +108,7 @@ const ViewPurchaseOrders = () => {
             <Container fluid>
                 <BreadCrumb title={"Ver Ordenes de Compra"} pageTitle={"Ordenes de Compra"} />
 
-                <Card className="rounded" style={{ height: '75vh' }}>
+                <Card className="rounded">
                     <CardHeader>
                         <div className="d-flex justify-content-between">
                             <h4 className="m-2">Órdenes de Compra</h4>
@@ -119,7 +119,7 @@ const ViewPurchaseOrders = () => {
                         </div>
                     </CardHeader>
 
-                    <CardBody className={purchaseOrders.length === 0 ? "d-flex flex-column justify-content-center align-items-center text-center" : "d-flex flex-column flex-grow-1"} style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}>
+                    <CardBody className={purchaseOrders.length === 0 ? "d-flex flex-column justify-content-center align-items-center text-center" : "d-flex flex-column flex-grow-1"}>
                         {purchaseOrders.length === 0 ? (
                             <>
                                 <i className="ri-file-list-line text-muted mb-2" style={{ fontSize: "2rem" }} />
@@ -131,7 +131,8 @@ const ViewPurchaseOrders = () => {
                                 data={purchaseOrders}
                                 showSearchAndFilter={true}
                                 rowClickable={false}
-                                showPagination={false}
+                                showPagination={true}
+                                rowsPerPage={10}
                             />
                         )}
                     </CardBody>

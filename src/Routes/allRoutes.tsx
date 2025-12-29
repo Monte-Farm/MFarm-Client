@@ -29,7 +29,6 @@ import Register from "../pages/Authentication/Register";
 
 // // User Profile
 import UserProfile from "../pages/Authentication/user-profile";
-import SupplierDetails from "pages/Suppliers/SupplierDetails";
 import SubwarehouseDetails from "pages/Subwarehouse/SubwarehouseDetails";
 import ViewOutcomes from "pages/Outcomes/ViewOutcomes";
 
@@ -84,7 +83,6 @@ const authProtectedRoutes = [
 
   //Warehouse - Suppliers
   { path: '/warehouse/suppliers/view_suppliers', component: <Suppliers /> },
-  { path: '/warehouse/suppliers/supplier_details/:id_supplier', component: <SupplierDetails /> },
 
   //Warehouse - Incomes
   { path: '/warehouse/incomes/view_incomes', component: <ViewIncome /> },
