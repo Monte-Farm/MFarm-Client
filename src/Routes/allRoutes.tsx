@@ -42,7 +42,6 @@ import SubwarehouseIncomes from "pages/Subwarehouse/SubwarehouseIncomes";
 import SubwarehouseOutcomes from "pages/Subwarehouse/SubwarehouseOutcomes";
 import WarehouseConfiguration from "pages/Configuration/WarehouseConfiguration";
 import ViewPurchaseOrders from "pages/PurchaseOrders/ViewPurchaseOrders";
-import PurchaseOrderDetails from "pages/PurchaseOrders/PurchasOrderDetails";
 import ViewPigs from "pages/Pigs/ViewPigs";
 import ViewFarms from "pages/Farms/ViewFarms";
 import PigDetails from "pages/Pigs/PigDetails";
@@ -110,7 +109,6 @@ const authProtectedRoutes = [
 
   //Purchase orders
   { path: '/purchase_orders/view_purchase_orders', component: <ViewPurchaseOrders /> },
-  { path: '/purchase_orders/purchase_order_details/:id_order', component: <PurchaseOrderDetails /> },
 
   //Pigs
   { path: '/pigs/view_pigs', component: <ViewPigs /> },

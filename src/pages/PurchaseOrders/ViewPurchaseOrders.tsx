@@ -9,6 +9,7 @@ import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import { getLoggedinUser } from "helpers/api_helper";
 import CustomTable from "Components/Common/Tables/CustomTable";
+import PurchaseOrderDetails from "Components/Common/Details/PurchaseOrderDetails";
 
 const ViewPurchaseOrders = () => {
     document.title = 'Ver Ordenes de compra | Ordenes de compra';
@@ -18,9 +19,10 @@ const ViewPurchaseOrders = () => {
     const history = useNavigate()
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [purchaseOrders, setPurchaseOrders] = useState([])
-    const [modals, setModals] = useState({ createPurchaseOrder: false });
+    const [modals, setModals] = useState({ createPurchaseOrder: false, purchaseOrderDetails: false });
     const [mainWarehouseId, setMainWarehouseId] = useState<string>('')
     const [loading, setLoading] = useState(true);
+    const [selectedPurchaseOrder, setSelectedPurchaseOrder] = useState<string>('')
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -55,7 +57,7 @@ const ViewPurchaseOrders = () => {
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="farm-primary-button btn-icon" onClick={() => history(`/purchase_orders/purchase_order_details/${row.code}`)}>
+                    <Button className="farm-primary-button btn-icon" onClick={() => { setSelectedPurchaseOrder(row._id); toggleModal('purchaseOrderDetails') }}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
                 </div>
@@ -140,6 +142,13 @@ const ViewPurchaseOrders = () => {
                 <ModalHeader toggle={() => toggleModal("createPurchaseOrder")}>Nueva orden de compra</ModalHeader>
                 <ModalBody>
                     <PurchaseOrderForm onSave={() => { toggleModal('createPurchaseOrder'); fetchPurchaseOrdersData(); }} onCancel={() => { }} />
+                </ModalBody>
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.purchaseOrderDetails} toggle={() => toggleModal("purchaseOrderDetails")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("purchaseOrderDetails")}>Detalles de orden de compra</ModalHeader>
+                <ModalBody>
+                    <PurchaseOrderDetails purchaseId={selectedPurchaseOrder} />
                 </ModalBody>
             </Modal>
 
