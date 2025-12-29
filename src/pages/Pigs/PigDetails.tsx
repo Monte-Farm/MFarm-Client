@@ -189,12 +189,6 @@ const PigDetails = () => {
                                 Reproducción
                             </NavLink>
                         </NavItem>
-
-                        <NavItem>
-                            <NavLink className={classnames({ active: activeTab === '5' })} onClick={() => toggleTab('5')} style={{ cursor: 'pointer' }}>
-                                Historial
-                            </NavLink>
-                        </NavItem>
                     </Nav>
                 </Card>
 
@@ -212,9 +206,7 @@ const PigDetails = () => {
                     </TabPane>
 
                     <TabPane tabId="4" id="reproduction-info-tab">
-                    </TabPane>
 
-                    <TabPane tabId="5" id="history-info-tab">
                     </TabPane>
                 </TabContent>
 

@@ -114,7 +114,6 @@ const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) =>
             const pigsInGroupIds = (groupData.pigsInGroup || []).map((pig: any) => pig._id.toString());
 
             const availablePigs = pigData.filter((pig: any) => !pigsInGroupIds.includes(pig._id.toString()));
-            console.log(availablePigs)
 
             const pigsWithId = availablePigs.map((b: any) => ({ ...b, id: b._id }));
 

@@ -18,6 +18,7 @@ import ObjectDetails from "../Details/ObjectDetails"
 import SimpleBar from "simplebar-react"
 import CustomTable from "../Tables/CustomTable"
 import SelectableTable from "../Tables/SelectableTable"
+import { FaCommentsDollar } from "react-icons/fa"
 
 interface BirthFormProps {
     pregnancy?: any
@@ -50,8 +51,8 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
     const [groupData, setGroupData] = useState<GroupData>({
         code: '',
         name: '',
-        area: '',
-        stage: '',
+        area: 'farrowing',
+        stage: 'piglet',
         groupMother: '',
         observations: '',
         creationDate: null,
@@ -199,8 +200,8 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
             header: 'Sexo',
             accessor: 'sex',
             render: (value: string) => (
-                <Badge color={value === 'macho' ? "info" : "danger"}>
-                    {value === 'macho' ? "♂ Macho" : "♀ Hembra"}
+                <Badge color={value === 'male' ? "info" : "danger"}>
+                    {value === 'male' ? "♂ Macho" : "♀ Hembra"}
                 </Badge>
             ),
         },
@@ -368,14 +369,16 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
     useEffect(() => {
         if (!manualPigSelect) {
             setPigletsArray([])
-            setPigCount(Number(maleCount) + Number(femaleCount))
+            const pigCount = Number(maleCount) + Number(femaleCount);
+            setPigCount(pigCount)
 
             setGroupData({
                 ...groupData,
                 pigCount: Number(pigsCount),
                 avgWeight: Number(avgWeight),
                 maleCount: Number(maleCount),
-                femaleCount: Number(femaleCount)
+                femaleCount: Number(femaleCount),
+                creationDate: new Date(),
             })
         } else {
             const malePiglets: PigData[] = Array.from({ length: Number(maleCount) }, () => ({
@@ -399,6 +402,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
                 sicknessHistory: [],
                 reproduction: [],
                 registered_by: userLogged._id,
+                feedingsPackagesHistory: [],
                 registration_date: new Date(),
             }));
 
@@ -424,6 +428,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
                 reproduction: [],
                 registered_by: userLogged._id,
                 registration_date: new Date(),
+                feedingsPackagesHistory: [],
             }));
 
             setPigletsArray([...malePiglets, ...femalePiglets]);
@@ -441,6 +446,14 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
             setAvgWeight(Number((total / pigletsArray.length).toFixed(2)));
         }
     }, [pigletsArray, manualPigSelect]);
+
+    useEffect(() => {
+        if (manualPigSelect) {
+            setGroupData({ ...groupData, groupMode: 'linked' })
+        } else {
+            setGroupData({ ...groupData, groupMode: 'count' })
+        }
+    }, [manualPigSelect]);
 
 
     useEffect(() => {

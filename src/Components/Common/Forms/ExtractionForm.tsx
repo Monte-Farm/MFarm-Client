@@ -4,7 +4,7 @@ import { useFormik } from "formik";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import * as Yup from 'yup';
-import { Alert, Button, FormFeedback, Input, Label, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from "reactstrap";
+import { Alert, Badge, Button, FormFeedback, Input, Label, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from "reactstrap";
 import classnames from "classnames";
 import { Column } from "common/data/data_types";
 import { FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo } from "react-icons/fi";
@@ -56,7 +56,35 @@ const ExtractionForm: React.FC<ExtractionFormProps> = ({ initialData, onSave, on
         },
         { header: 'Raza', accessor: 'breed', type: 'text', isFilterable: true },
         { header: 'Peso actual', accessor: 'weight', type: 'number', isFilterable: true },
-        { header: 'Etapa actual', accessor: 'currentStage', type: 'text', isFilterable: true },
+        {
+            header: 'Etapa',
+            accessor: 'currentStage',
+            render: (value: string) => {
+                let color = "secondary";
+                let label = value;
+
+                switch (value) {
+                    case "piglet":
+                        color = "info";
+                        label = "Lechón";
+                        break;
+                    case "weaning":
+                        color = "warning";
+                        label = "Destete";
+                        break;
+                    case "fattening":
+                        color = "primary";
+                        label = "Engorda";
+                        break;
+                    case "breeder":
+                        color = "success";
+                        label = "Reproductor";
+                        break;
+                }
+
+                return <Badge color={color}>{label}</Badge>;
+            },
+        },
         { header: 'Fecha de N.', accessor: 'birthdate', type: 'date' },
     ]
 

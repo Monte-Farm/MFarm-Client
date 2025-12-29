@@ -184,6 +184,21 @@ export interface PigFeedingEntry {
     observations?: string;
 }
 
+export interface FeedingPackagesHistory {
+    packageId: string;
+    name: string;
+    stage: string;
+    feedings: {
+        feeding: string;
+        quantity: number;
+    }[];
+    applicationDate: Date;
+    appliedBy: string;
+    observations?: string;
+    periodicity: string;
+    is_active: boolean;
+}
+
 export interface PigMedicationEntry {
     medication: string;
     dose?: number;
@@ -278,6 +293,7 @@ export interface PigData {
     };
     historyChanges: PigHistoryChanges[];
     feedings: PigFeedingEntry[];
+    feedingsPackagesHistory: FeedingPackagesEntry[];
     medications: PigMedicationEntry[];
     medicationPackagesHistory: medicationPackagesEntry[];
     vaccinationPlansHistory: VaccinationPlanEntry[];

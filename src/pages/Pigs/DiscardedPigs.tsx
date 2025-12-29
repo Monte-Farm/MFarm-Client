@@ -155,7 +155,7 @@ const DiscardedPigs = () => {
             setFilteredPigs(pigsResponse.data.data)
             setStats(statsResponse.data.data)
         } catch (error) {
-            console.log('Error fetching pigs: ', { error });
+            console.error('Error fetching pigs: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
         } finally {
             setLoading(false)

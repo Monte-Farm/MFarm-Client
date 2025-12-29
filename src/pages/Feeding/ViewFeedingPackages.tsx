@@ -118,7 +118,7 @@ const ViewFeedingPackages = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Ver paquetes de medicación"} pageTitle={"Alimentacion"} />
+                <BreadCrumb title={"Ver paquetes de alimentacion"} pageTitle={"Alimentacion"} />
 
                 <Card className="rounded">
                     <CardHeader>

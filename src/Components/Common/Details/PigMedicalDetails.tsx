@@ -188,7 +188,7 @@ const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
                                 Administrar medicamento
                             </Button>
                         </CardHeader>
-                        <CardBody style={{ overflowY: "auto" }}>
+                        <CardBody className={medications.length === 0 ? 'd-flex justify-content-center align-items-center' : ''} style={{ overflowY: 'auto' }}>
                             {medications.length === 0 ? (
                                 <>
                                     <FiAlertCircle className="text-muted" size={22} />
@@ -269,7 +269,7 @@ const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
                                 Administrar paquete
                             </Button>
                         </CardHeader>
-                        <CardBody style={{ overflowY: "auto" }}>
+                        <CardBody className={medicationPackages.length === 0 ? 'd-flex justify-content-center align-items-center' : ''} style={{ overflowY: 'auto' }}>
                             {medicationPackages.length === 0 ? (
                                 <>
                                     <FiAlertCircle className="text-muted" size={22} />

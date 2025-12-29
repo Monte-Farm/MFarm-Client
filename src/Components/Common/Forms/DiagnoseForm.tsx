@@ -112,7 +112,6 @@ const DiagnosisForm = ({ insemination, onSave, onCancel }: DiagnosisFormProps) =
     };
 
     useEffect(() => {
-        console.log(insemination)
         formik.setFieldValue('diagnosisDate', new Date())
     }, [])
 

@@ -4,7 +4,7 @@ import { InseminationData, PigData } from "common/data_interfaces";
 import { useFormik } from "formik";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
-import { Alert, Button, Card, CardBody, CardHeader, CardText, CardTitle, Col, FormFeedback, Input, Label, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Row, Spinner, TabContent, TabPane } from "reactstrap";
+import { Alert, Badge, Button, Card, CardBody, CardHeader, CardText, CardTitle, Col, FormFeedback, Input, Label, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Row, Spinner, TabContent, TabPane } from "reactstrap";
 import * as Yup from 'yup';
 import classnames from "classnames";
 import { FiXCircle } from "react-icons/fi";
@@ -62,7 +62,35 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
         },
         { header: 'Raza', accessor: 'breed', type: 'text', isFilterable: true },
         { header: 'Peso actual', accessor: 'weight', type: 'number', isFilterable: true },
-        { header: 'Etapa actual', accessor: 'currentStage', type: 'text', isFilterable: true },
+        {
+            header: 'Etapa',
+            accessor: 'currentStage',
+            render: (value: string) => {
+                let color = "secondary";
+                let label = value;
+
+                switch (value) {
+                    case "piglet":
+                        color = "info";
+                        label = "Lechón";
+                        break;
+                    case "weaning":
+                        color = "warning";
+                        label = "Destete";
+                        break;
+                    case "fattening":
+                        color = "primary";
+                        label = "Engorda";
+                        break;
+                    case "breeder":
+                        color = "success";
+                        label = "Reproductor";
+                        break;
+                }
+
+                return <Badge color={color}>{label}</Badge>;
+            },
+        },
         { header: 'Fecha de N.', accessor: 'birthdate', type: 'date' },
     ]
 
@@ -590,7 +618,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                                                 <span className="text-black">{formik.values.notes || "Sin notas"}</span>
                                             </li>
                                             <li className="list-group-item d-flex justify-content-between">
-                                                <span className="text-black"><strong>Fecha de preñez (tentativa)</strong></span>
+                                                <span className="text-black"><strong>Fecha de parto (tentativa)</strong></span>
                                                 <span className="text-black">
                                                     {formik.values.date ? new Date(new Date(formik.values.date).getTime() + 115 * 24 * 60 * 60 * 1000).toLocaleDateString() : "Sin fecha"}
                                                 </span>

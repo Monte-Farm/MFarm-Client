@@ -179,7 +179,6 @@ const ViewInseminations = () => {
         if (!configContext || !userLoggged) return;
         const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/insemination/get_stats/${userLoggged.farm_assigned}`);
         const data = response.data.data;
-        console.log(data)
         setInseminationsStats(data)
     };
 
@@ -277,7 +276,7 @@ const ViewInseminations = () => {
 
                 </div>
 
-                <Card style={{ }}>
+                <Card style={{}}>
                     <CardHeader className="d-flex">
                         <h4>Inseminaciones</h4>
                         <Button className="ms-auto farm-primary-button" onClick={() => toggleModal("create")}>

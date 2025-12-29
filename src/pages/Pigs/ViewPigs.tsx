@@ -171,7 +171,7 @@ const ViewPigs = () => {
             setFilteredPigs(pigsResponse.data.data)
             setStats(statsResponse.data.data)
         } catch (error) {
-            console.log('Error fetching pigs: ', { error });
+            console.error('Error fetching pigs: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
         } finally {
             setLoading(false)
@@ -195,7 +195,7 @@ const ViewPigs = () => {
             setFileURL(url);
             toggleModal('viewPDF');
         } catch (error) {
-            console.log('Error generating report: ', { error });
+            console.error('Error generating report: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al generar el reporte, inténtelo más tarde.' })
         } finally {
             setGeneratingReport(false);
@@ -341,7 +341,7 @@ const ViewPigs = () => {
                         icon={FaMars}
                         bgColor="#e8f0fa"
                         iconColor="#1a4d8f"
-                        value={stats?.avgWeightBySex?.find((p: { _id: string }) => p._id === 'male')?.avgWeight ?? 0}
+                        value={stats?.avgWeightBySex?.find((p: { _id: string }) => p._id === 'male')?.avgWeight.toFixed(2) ?? 0}
                     />
 
                     <KPI

@@ -104,7 +104,7 @@ const AsignGroupFeedingForm: React.FC<AsignGroupFeedingFormProps> = ({ groupId, 
                             onChange={(e) => {
                                 const newValue = e.target.value === "" ? 0 : Number(e.target.value);
                                 const totalQuantityValue = Number(newValue * (groupDetails?.pigCount ?? 0));
-                                const avgPerPigValue = Number(newValue / (groupDetails?.pigCount ?? 0));
+                                const avgPerPigValue = Number(totalQuantityValue / (groupDetails?.pigCount ?? 0));
                                 setFeedingsSelected(prev =>
                                     prev.map(f => f.feeding === row._id ? { ...f, quantityPerPig: newValue, totalQuantity: totalQuantityValue, avgPerPig: avgPerPigValue } : f)
                                 );
