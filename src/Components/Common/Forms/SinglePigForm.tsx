@@ -102,7 +102,7 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
             farmId: '',
             breed: '',
             birthdate: null,
-            origin: 'born',
+            origin: '',
             originDetail: '',
             sourceFarm: '',
             arrivalDate: null,
@@ -247,7 +247,6 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
                         </div>
 
                         <div className="d-flex gap-3">
-
                             <div className="mt-4 w-100">
                                 <Label htmlFor="breedInput" className="form-label">Raza</Label>
                                 <Input
@@ -309,7 +308,8 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
                                     onBlur={formik.handleBlur}
                                     invalid={formik.touched.origin && !!formik.errors.origin}
                                 >
-                                    <option value="born">Nacido en la granja</option>
+                                    <option value="">Seleccione una opcion</option>
+                                    {/* <option value="born">Nacido en la granja</option> */}
                                     <option value="purchased">Comprado</option>
                                     <option value="donated">Donado</option>
                                     <option value="other">Otro</option>
@@ -321,59 +321,67 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
 
                         </div>
 
-                        {formik.values.origin === 'other' && (
-                            <div className="mt-4">
-                                <Label htmlFor="originDetail" className="form-label">Detalle del origen</Label>
-                                <Input
-                                    type="text"
-                                    id="originDetail"
-                                    name="originDetail"
-                                    value={formik.values.originDetail}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    invalid={formik.touched.originDetail && !!formik.errors.originDetail}
-                                />
-                                {formik.touched.originDetail && formik.errors.originDetail && (
-                                    <FormFeedback>{formik.errors.originDetail as string}</FormFeedback>
-                                )}
-                            </div>
-                        )}
+                        <div className="d-flex gap-3 mt-4">
+                            {formik.values.origin !== '' && (
+                                <>
+                                    {formik.values.origin === 'other' && (
+                                        <div className="w-50">
+                                            <Label htmlFor="originDetail" className="form-label">Detalle del origen</Label>
+                                            <Input
+                                                type="text"
+                                                id="originDetail"
+                                                name="originDetail"
+                                                value={formik.values.originDetail}
+                                                onChange={formik.handleChange}
+                                                onBlur={formik.handleBlur}
+                                                invalid={formik.touched.originDetail && !!formik.errors.originDetail}
+                                            />
+                                            {formik.touched.originDetail && formik.errors.originDetail && (
+                                                <FormFeedback>{formik.errors.originDetail as string}</FormFeedback>
+                                            )}
+                                        </div>
+                                    )}
 
-                        {formik.values.origin !== 'born' && (
-                            <div className="mt-4">
-                                <Label htmlFor="arrivalDate" className="form-label">Fecha de llegada</Label>
-                                <DatePicker
-                                    id="arrivalDate"
-                                    className={`form-control ${formik.touched.arrivalDate && formik.errors.arrivalDate ? 'is-invalid' : ''}`}
-                                    value={formik.values.arrivalDate ?? undefined}
-                                    onChange={(date: Date[]) => {
-                                        if (date[0]) formik.setFieldValue('arrivalDate', date[0]);
-                                    }}
-                                    options={{ dateFormat: 'd/m/Y' }}
-                                />
-                                {formik.touched.arrivalDate && formik.errors.arrivalDate && (
-                                    <FormFeedback className="d-block">{formik.errors.arrivalDate as string}</FormFeedback>
-                                )}
-                            </div>
-                        )}
+                                    {formik.values.origin !== 'born' && (
+                                        <div className="w-50">
+                                            <Label htmlFor="arrivalDate" className="form-label">Fecha de llegada</Label>
+                                            <DatePicker
+                                                id="arrivalDate"
+                                                className={`form-control ${formik.touched.arrivalDate && formik.errors.arrivalDate ? 'is-invalid' : ''}`}
+                                                value={formik.values.arrivalDate ?? undefined}
+                                                onChange={(date: Date[]) => {
+                                                    if (date[0]) formik.setFieldValue('arrivalDate', date[0]);
+                                                }}
+                                                options={{ dateFormat: 'd/m/Y' }}
+                                            />
+                                            {formik.touched.arrivalDate && formik.errors.arrivalDate && (
+                                                <FormFeedback className="d-block">{formik.errors.arrivalDate as string}</FormFeedback>
+                                            )}
+                                        </div>
+                                    )}
 
-                        {(formik.values.origin === 'purchased' || formik.values.origin === 'donated') && (
-                            <div className="mt-4">
-                                <Label htmlFor="sourceFarm" className="form-label">Granja de origen</Label>
-                                <Input
-                                    type="text"
-                                    id="sourceFarm"
-                                    name="sourceFarm"
-                                    value={formik.values.sourceFarm}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    invalid={formik.touched.sourceFarm && !!formik.errors.sourceFarm}
-                                />
-                                {formik.touched.sourceFarm && formik.errors.sourceFarm && (
-                                    <FormFeedback>{formik.errors.sourceFarm as string}</FormFeedback>
-                                )}
-                            </div>
-                        )}
+                                    {(formik.values.origin === 'purchased' || formik.values.origin === 'donated') && (
+                                        <div className="w-50">
+                                            <Label htmlFor="sourceFarm" className="form-label">Granja de origen</Label>
+                                            <Input
+                                                type="text"
+                                                id="sourceFarm"
+                                                name="sourceFarm"
+                                                value={formik.values.sourceFarm}
+                                                onChange={formik.handleChange}
+                                                onBlur={formik.handleBlur}
+                                                invalid={formik.touched.sourceFarm && !!formik.errors.sourceFarm}
+                                            />
+                                            {formik.touched.sourceFarm && formik.errors.sourceFarm && (
+                                                <FormFeedback>{formik.errors.sourceFarm as string}</FormFeedback>
+                                            )}
+                                        </div>
+                                    )}
+                                </>
+                            )}
+
+
+                        </div>
 
                         <div className="d-flex gap-3">
                             <div className="mt-4 w-50">
@@ -396,7 +404,7 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
                             </div>
 
                             <div className="mt-4 w-50">
-                                <Label htmlFor="weight" className="form-label">Peso (kg)</Label>
+                                <Label htmlFor="weight" className="form-label">Peso</Label>
                                 <Input
                                     type="number"
                                     id="weight"
@@ -494,6 +502,7 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
                                 const BadgeEtapa = () => {
                                     const etapa = formik.values.currentStage;
                                     const color = {
+                                        '': '',
                                         "piglet": "primary",
                                         "weaning": "info",
                                         "fattening": "warning",
@@ -509,6 +518,7 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
                                 const BadgeOrigen = () => {
                                     const o = formik.values.origin;
                                     const map = {
+                                        '': '',
                                         born: "success",
                                         purchased: "info",
                                         donated: "primary",

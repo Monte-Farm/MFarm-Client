@@ -61,6 +61,8 @@ import DiscardedPigs from "pages/Pigs/DiscardedPigs";
 import ViewMedicationPackages from "pages/Medication/ViewMedicationPackages";
 import ViewVaccinationPlans from "pages/Medication/ViewVaccinePlans";
 import ViewFeedingPackages from "pages/Feeding/ViewFeedingPackages";
+import ViewLitters from "pages/Lactation/ViewLitters";
+import LitterDetails from "pages/Lactation/LitterDetails";
 
 
 
@@ -144,6 +146,11 @@ const authProtectedRoutes = [
 
   //Feeding
   { path: "/feeding/view_feeding_packages", component: <ViewFeedingPackages /> },
+
+  //Lactation
+  { path: '/lactation/view_litters', component: <ViewLitters /> },
+  { path: '/lactation/litter_details/:litter_id', component: <LitterDetails /> },
+
 
 
   // this route should be at the end of all other routes

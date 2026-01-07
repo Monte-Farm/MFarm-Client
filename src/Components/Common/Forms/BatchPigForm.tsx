@@ -28,18 +28,18 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
     const [modals, setModals] = useState({ success: false, error: false });
     const [activeStep, setActiveStep] = useState<number>(1);
     const [sharedBatchAttributes, setSharedBatchAttributes] = useState<{
-        origin: 'born' | 'purchased' | 'donated' | 'other';
+        origin: 'born' | 'purchased' | 'donated' | 'other' | '';
         originDetail?: string;
         sourceFarm?: string;
         arrivalDate?: Date | null;
     }>({
-        origin: 'born',
+        origin: '',
         originDetail: '',
         sourceFarm: '',
         arrivalDate: null,
     })
     const [pigsBatch, setPigsBatch] = useState<PigData[]>([]);
-    const [pigsBatchLength, setPigsBatchLength] = useState<number>(0);
+    const [pigsBatchLength, setPigsBatchLength] = useState<number | ''>(0);
     const [pigsErrors, setPigsErrors] = useState<Record<number, any>>({});
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
@@ -75,7 +75,7 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
 
     const isBatchInfoComplete = () => {
         if (!sharedBatchAttributes?.origin) return false;
-        if (pigsBatchLength <= 0) return false;
+        if (Number(pigsBatchLength) <= 0) return false;
 
         if (sharedBatchAttributes.origin === "other" && !sharedBatchAttributes.originDetail) return false;
         if (sharedBatchAttributes.origin !== "born" && !sharedBatchAttributes.arrivalDate) return false;
@@ -117,7 +117,7 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                 sourceFarm: sharedBatchAttributes.sourceFarm,
                 arrivalDate: sharedBatchAttributes.arrivalDate,
                 status: 'alive',
-                currentStage: 'piglet',
+                currentStage: '',
                 sex: '',
                 weight: 0,
                 observations: '',
@@ -192,10 +192,8 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
             <TabContent activeTab={activeStep}>
                 <TabPane tabId={1}>
                     <>
-                        {/* CONTENEDOR GENERAL */}
                         <div className="border rounded p-3 shadow-sm bg-light mb-3">
 
-                            {/* CABECERA CON BADGE DEL ORIGEN */}
                             <div className="d-flex justify-content-between align-items-center mb-3">
                                 <h5 className="mb-0 fw-bold">Información del lote</h5>
 
@@ -207,14 +205,32 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                                 </span>
                             </div>
 
-                            {/* INPUTS DEL LOTE */}
                             <div className="d-flex gap-3">
                                 <div className="w-50">
                                     <Label className="form-label fw-semibold">Número de cerdos</Label>
                                     <Input
                                         type="number"
                                         value={pigsBatchLength}
-                                        onChange={(e) => setPigsBatchLength(Number(e.target.value))}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+
+                                            if (value === '') {
+                                                setPigsBatchLength('');
+                                                return;
+                                            }
+
+                                            setPigsBatchLength(Number(value));
+                                        }}
+                                        onBlur={() => {
+                                            if (pigsBatchLength === '') {
+                                                setPigsBatchLength(0);
+                                            }
+                                        }}
+                                        onFocus={() => {
+                                            if (pigsBatchLength === 0) {
+                                                setPigsBatchLength('');
+                                            }
+                                        }}
                                         className="shadow-sm"
                                     />
                                 </div>
@@ -229,7 +245,8 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                                             setSharedBatchAttributes(p => ({ ...p, origin: e.target.value as any }))
                                         }
                                     >
-                                        <option value="born">Nacido en la granja</option>
+                                        <option value="">Seleccione una opcion</option>
+                                        {/* <option value="born">Nacido en la granja</option> */}
                                         <option value="purchased">Comprado</option>
                                         <option value="donated">Donado</option>
                                         <option value="other">Otro</option>
@@ -237,48 +254,51 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                                 </div>
                             </div>
 
-                            {/* CAMPOS CONDICIONALES */}
                             <div className="d-flex gap-2">
-                                {sharedBatchAttributes.origin === 'other' && (
-                                    <div className="mt-4 w-50">
-                                        <Label className="form-label fw-semibold">Detalle del origen</Label>
-                                        <Input
-                                            className="shadow-sm"
-                                            value={sharedBatchAttributes.originDetail}
-                                            onChange={(e) =>
-                                                setSharedBatchAttributes(p => ({ ...p, originDetail: e.target.value }))
-                                            }
-                                        />
-                                    </div>
-                                )}
+                                {sharedBatchAttributes.origin !== '' && (
+                                    <>
+                                        {sharedBatchAttributes.origin === 'other' && (
+                                            <div className="mt-4 w-50">
+                                                <Label className="form-label fw-semibold">Detalle del origen</Label>
+                                                <Input
+                                                    className="shadow-sm"
+                                                    value={sharedBatchAttributes.originDetail}
+                                                    onChange={(e) =>
+                                                        setSharedBatchAttributes(p => ({ ...p, originDetail: e.target.value }))
+                                                    }
+                                                />
+                                            </div>
+                                        )}
 
-                                {sharedBatchAttributes.origin !== 'born' && (
-                                    <div className="mt-4 w-50">
-                                        <Label className="form-label fw-semibold">Fecha de llegada</Label>
-                                        <DatePicker
-                                            className="form-control shadow-sm"
-                                            value={sharedBatchAttributes.arrivalDate ?? undefined}
-                                            onChange={(value: Date[]) => {
-                                                if (value[0]) setSharedBatchAttributes(p => ({ ...p, arrivalDate: value[0] }));
-                                            }}
-                                            options={{ dateFormat: 'd/m/Y' }}
-                                        />
-                                    </div>
-                                )}
+                                        {sharedBatchAttributes.origin !== 'born' && (
+                                            <div className="mt-4 w-50">
+                                                <Label className="form-label fw-semibold">Fecha de llegada</Label>
+                                                <DatePicker
+                                                    className="form-control shadow-sm"
+                                                    value={sharedBatchAttributes.arrivalDate ?? undefined}
+                                                    onChange={(value: Date[]) => {
+                                                        if (value[0]) setSharedBatchAttributes(p => ({ ...p, arrivalDate: value[0] }));
+                                                    }}
+                                                    options={{ dateFormat: 'd/m/Y' }}
+                                                />
+                                            </div>
+                                        )}
 
-                                {(sharedBatchAttributes.origin === 'purchased' ||
-                                    sharedBatchAttributes.origin === 'donated') && (
-                                        <div className="mt-4 w-50">
-                                            <Label className="form-label fw-semibold">Granja de origen</Label>
-                                            <Input
-                                                className="shadow-sm"
-                                                value={sharedBatchAttributes.sourceFarm}
-                                                onChange={(e) =>
-                                                    setSharedBatchAttributes(p => ({ ...p, sourceFarm: e.target.value }))
-                                                }
-                                            />
-                                        </div>
-                                    )}
+                                        {(sharedBatchAttributes.origin === 'purchased' ||
+                                            sharedBatchAttributes.origin === 'donated') && (
+                                                <div className="mt-4 w-50">
+                                                    <Label className="form-label fw-semibold">Granja de origen</Label>
+                                                    <Input
+                                                        className="shadow-sm"
+                                                        value={sharedBatchAttributes.sourceFarm}
+                                                        onChange={(e) =>
+                                                            setSharedBatchAttributes(p => ({ ...p, sourceFarm: e.target.value }))
+                                                        }
+                                                    />
+                                                </div>
+                                            )}
+                                    </>
+                                )}
                             </div>
                         </div>
 
@@ -372,6 +392,7 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                                                                 setPigsBatch(newPigs);
                                                             }}
                                                         >
+                                                            <option value="">Seleccione una etapa</option>
                                                             <option value="piglet">Lechón</option>
                                                             <option value="weaning">Destete</option>
                                                             <option value="fattening">Engorda</option>
@@ -566,7 +587,7 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                 </TabPane>
             </TabContent>
 
-            <SuccessModal isOpen={modals.success} onClose={onSave} message={"Datos registrados con éxito"} />
+            <SuccessModal isOpen={modals.success} onClose={onSave} message={"Cerdos registrados con éxito"} />
             <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={"Ocurrió un error. Inténtalo más tarde."} />
         </>
     );

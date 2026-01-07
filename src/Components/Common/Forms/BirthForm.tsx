@@ -3,31 +3,29 @@ import { Column } from "common/data/data_types"
 import { useFormik } from "formik"
 
 import { useContext, useEffect, useState } from "react"
-import { Button, Badge, UncontrolledTooltip, Nav, NavItem, NavLink, TabContent, TabPane, Alert, Modal, ModalHeader, ModalBody, Label, Input, FormFeedback, Spinner, Card, CardHeader, CardBody } from "reactstrap"
+import { Button, Badge, Nav, NavItem, NavLink, TabContent, TabPane, Alert, Modal, ModalHeader, ModalBody, Label, Input, FormFeedback, Spinner, Card, CardHeader, CardBody } from "reactstrap"
 import * as Yup from 'yup';
 import classnames from "classnames";
 import { getLoggedinUser } from "helpers/api_helper"
 import { FiXCircle } from "react-icons/fi"
 import PigDetailsModal from "../Details/DetailsPigModal"
 import DatePicker from "react-flatpickr"
-import { HttpStatusCode } from "axios"
 import SuccessModal from "../Shared/SuccessModal"
 import ErrorModal from "../Shared/ErrorModal"
-import { Attribute, GroupData, PigData } from "common/data_interfaces"
+import { Attribute, Litter, PigletSnapshot } from "common/data_interfaces"
 import ObjectDetails from "../Details/ObjectDetails"
 import SimpleBar from "simplebar-react"
 import CustomTable from "../Tables/CustomTable"
 import SelectableTable from "../Tables/SelectableTable"
-import { FaCommentsDollar } from "react-icons/fa"
+import AlertMessage from "../Shared/AlertMesagge"
 
 interface BirthFormProps {
     pregnancy?: any
-    skipSelectInseminationStep?: false
     onSave: () => void
     onCancel: () => void
 }
 
-const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInseminationStep, onSave, onCancel }) => {
+const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) => {
     const configContext = useContext(ConfigContext)
     const userLogged = getLoggedinUser()
     const [upcomingBirths, setUpcomingBirths] = useState<any[]>([]);
@@ -41,37 +39,11 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
     const [errorModalOpen, setErrorModalOpen] = useState<boolean>(false)
     const [selectedPregnancy, setSelectedPregnancy] = useState<any>()
     const [sowDetails, setSowDetails] = useState<any>({})
-    const [pigletsArray, setPigletsArray] = useState<PigData[]>([])
+    const [pigletsArray, setPigletsArray] = useState<PigletSnapshot[]>([])
 
-    const [pigsCount, setPigCount] = useState<number | "">(0);
     const [maleCount, setMaleCount] = useState<number | "">(0);
     const [femaleCount, setFemaleCount] = useState<number | "">(0);
     const [avgWeight, setAvgWeight] = useState<number | "">(0);
-    const [manualPigSelect, setManualPigSelect] = useState<boolean>(false);
-    const [groupData, setGroupData] = useState<GroupData>({
-        code: '',
-        name: '',
-        area: 'farrowing',
-        stage: 'piglet',
-        groupMother: '',
-        observations: '',
-        creationDate: null,
-        observationsHistory: [],
-        responsible: userLogged._id || '',
-        farm: userLogged.farm_assigned || '',
-        groupHistory: [],
-        pigCount: 0,
-        maleCount: 0,
-        femaleCount: 0,
-        pigsInGroup: [],
-        feedings: [],
-        medications: [],
-        groupMode: '',
-        avgWeight: 0,
-        feedingPackagesHistory: [],
-        medicationPackagesHistory: [],
-        vaccinationPlansHistory: [],
-    })
 
     const toggleAlerts = (alertName: keyof typeof alerts, state?: boolean) => {
         setAlerts((prev) => ({ ...prev, [alertName]: state ?? !prev[alertName] }));
@@ -184,11 +156,6 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
         { key: "weight", label: "Peso actual", type: "text" },
     ]
 
-    const simpleLitterAttributes: Attribute[] = [
-        { key: 'pig_count', label: 'Número de cerdos', type: 'text' },
-        { key: 'avg_weight', label: 'Peso promedio', type: 'text' },
-    ]
-
     const pigletsColumns: Column<any>[] = [
         {
             header: 'Lechón',
@@ -225,7 +192,6 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
             assisted: false,
             observations: '',
             responsible: userLogged._id,
-            litter: '',
             born_alive: 0,
             stillborn: 0,
             mummies: 0,
@@ -239,35 +205,46 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
             try {
                 setSubmitting(true)
 
-                if (manualPigSelect) {
-                    const batchResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/pig/create_pig_batch`, pigletsArray)
-                    groupData.pigsInGroup = batchResponse.data.data
-                }
-
-                groupData.groupMother = values.sow
-                const litterResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/group/create_group_birth`, groupData)
-
-
-                values.litter = litterResponse.data.data._id;
                 const birthResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/births/create`, values);
+                const birthData = birthResponse.data.data;
 
-                if (birthResponse.status === HttpStatusCode.Created) {
-                    const reproductionItem = {
-                        date: new Date(),
-                        type: 'birth',
-                        responsible: userLogged._id,
-                        description: 'Parto registrado',
-                        eventRef: birthResponse.data.data._id,
-                        eventModel: 'births'
-                    }
-
-                    await configContext.axiosHelper.update(`${configContext.apiUrl}/pig/add_reproduction_item/${values.sow}`, reproductionItem)
-                    await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
-                        event: `Parto de la cerda ${values.sow} registrado`
-                    });
-
-                    setSuccessModalOpen(true)
+                const avgWeight = pigletsArray.reduce((acc, p) => Number(acc) + Number(p.weight), 0) / pigletsArray.length
+                const litterData: Litter = {
+                    code: "",
+                    farm: userLogged.farm_assigned,
+                    mother: birthData.sow,
+                    birth: birthData._id,
+                    birthDate: birthData.birth_date,
+                    initialMale: Number(maleCount),
+                    initialFemale: Number(femaleCount),
+                    currentMale: Number(maleCount),
+                    currentFemale: Number(femaleCount),
+                    averageWeight: avgWeight,
+                    status: 'active',
+                    piglets: pigletsArray,
+                    responsible: userLogged._id,
+                    events: [],
+                    medications: [],
+                    medicationPackagesHistory: [],
+                    vaccinationPlansHistory: [],
                 }
+
+                const reproductionItem = {
+                    date: new Date(),
+                    type: 'birth',
+                    responsible: userLogged._id,
+                    description: 'Parto registrado',
+                    eventRef: birthResponse.data.data._id,
+                    eventModel: 'births'
+                }
+
+                await configContext.axiosHelper.create(`${configContext.apiUrl}/litter/create`, litterData)
+                await configContext.axiosHelper.update(`${configContext.apiUrl}/pig/add_reproduction_item/${values.sow}`, reproductionItem)
+                await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
+                    event: `Parto de la cerda ${values.sow} registrado`
+                });
+
+                setSuccessModalOpen(true)
             } catch (error) {
                 console.error('An error has ocurred', { error })
                 setErrorModalOpen(true)
@@ -308,13 +285,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
 
     const checkLitterData = () => {
         toggleAlerts('litterEmpty', false)
-
-        if (!manualPigSelect) {
-            (pigsCount === 0 || avgWeight === 0) ? toggleAlerts('litterEmpty') : toggleArrowTab(4)
-        } else if (manualPigSelect) {
-            const checkedPigletArray = pigletsArray.find((piglet) => piglet.weight === 0)
-            checkedPigletArray ? toggleAlerts('litterEmpty') : toggleArrowTab(4)
-        }
+        pigletsArray.length === 0 ? toggleAlerts('litterEmpty') : toggleArrowTab(4)
     }
 
     const fetchData = async () => {
@@ -367,94 +338,23 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
     }, [])
 
     useEffect(() => {
-        if (!manualPigSelect) {
-            setPigletsArray([])
-            const pigCount = Number(maleCount) + Number(femaleCount);
-            setPigCount(pigCount)
+        const malePiglets: PigletSnapshot[] = Array.from({ length: Number(maleCount) }, () => ({
+            sex: 'male',
+            weight: 0,
+            status: 'alive',
+            recordedAt: new Date()
+        }));
 
-            setGroupData({
-                ...groupData,
-                pigCount: Number(pigsCount),
-                avgWeight: Number(avgWeight),
-                maleCount: Number(maleCount),
-                femaleCount: Number(femaleCount),
-                creationDate: new Date(),
-            })
-        } else {
-            const malePiglets: PigData[] = Array.from({ length: Number(maleCount) }, () => ({
-                _id: '',
-                code: '',
-                farmId: userLogged.farm_assigned,
-                birthdate: formik.values.birth_date,
-                breed: sowDetails.breed,
-                origin: 'born',
-                status: 'alive',
-                currentStage: 'piglet',
-                sex: 'male',
-                weight: 0,
-                observations: '',
-                historyChanges: [],
-                discarded: false,
-                feedings: [],
-                medications: [],
-                medicationPackagesHistory: [],
-                vaccinationPlansHistory: [],
-                sicknessHistory: [],
-                reproduction: [],
-                registered_by: userLogged._id,
-                feedingsPackagesHistory: [],
-                registration_date: new Date(),
-            }));
+        const femalePiglets: PigletSnapshot[] = Array.from({ length: Number(femaleCount) }, () => ({
+            sex: 'female',
+            weight: 0,
+            status: 'alive',
+            recordedAt: new Date()
+        }));
 
-            const femalePiglets: PigData[] = Array.from({ length: Number(femaleCount) }, () => ({
-                _id: '',
-                code: '',
-                farmId: userLogged.farm_assigned,
-                birthdate: formik.values.birth_date,
-                breed: sowDetails.breed,
-                origin: 'born',
-                status: 'alive',
-                currentStage: 'piglet',
-                sex: 'female',
-                weight: 0,
-                observations: '',
-                historyChanges: [],
-                discarded: false,
-                feedings: [],
-                medications: [],
-                medicationPackagesHistory: [],
-                vaccinationPlansHistory: [],
-                sicknessHistory: [],
-                reproduction: [],
-                registered_by: userLogged._id,
-                registration_date: new Date(),
-                feedingsPackagesHistory: [],
-            }));
+        setPigletsArray([...malePiglets, ...femalePiglets]);
 
-            setPigletsArray([...malePiglets, ...femalePiglets]);
-        }
-    }, [manualPigSelect, maleCount, femaleCount])
-
-    useEffect(() => {
-        setGroupData({ ...groupData, avgWeight: Number(avgWeight), })
-    }, [avgWeight])
-
-
-    useEffect(() => {
-        if (manualPigSelect && pigletsArray.length > 0) {
-            const total = pigletsArray.reduce((acc, p) => acc + (p.weight || 0), 0);
-            setAvgWeight(Number((total / pigletsArray.length).toFixed(2)));
-        }
-    }, [pigletsArray, manualPigSelect]);
-
-    useEffect(() => {
-        if (manualPigSelect) {
-            setGroupData({ ...groupData, groupMode: 'linked' })
-        } else {
-            setGroupData({ ...groupData, groupMode: 'count' })
-        }
-    }, [manualPigSelect]);
-
+    }, [maleCount, femaleCount])
 
     useEffect(() => {
         const pigCount = Number(maleCount) + Number(femaleCount);
@@ -463,7 +363,6 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
 
     return (
         <>
-
             <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }}>
                 <div className="step-arrow-nav mb-4">
                     <Nav className="nav-pills custom-nav nav-justified">
@@ -659,173 +558,141 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
                     </TabPane>
 
                     <TabPane id="step-litter-tab" tabId={3}>
-                        <fieldset disabled={manualPigSelect}>
-
-                            <div className="d-flex gap-2 mb-4">
-                                <div className="w-50">
-                                    <Label htmlFor="femaleCount" className="form-label">Número de hembras vivas</Label>
-                                    <Input
-                                        type="number"
-                                        id="femaleCount"
-                                        name="femaleCount"
-                                        value={femaleCount}
-                                        onChange={(e) => setFemaleCount(Number(e.target.value))}
-                                        onFocus={() => {
-                                            if (femaleCount === 0) setFemaleCount("");
-                                        }}
-                                        onBlur={() => {
-                                            if (femaleCount === "") setFemaleCount(0);
-                                        }}
-                                        placeholder="Ej: 0"
-                                    />
-                                </div>
-
-                                <div className="w-50">
-                                    <Label htmlFor="maleCount" className="form-label">Número de machos vivos</Label>
-                                    <Input
-                                        type="number"
-                                        id="maleCount"
-                                        name="maleCount"
-                                        value={maleCount}
-                                        onChange={(e) => setMaleCount(Number(e.target.value))}
-                                        onFocus={() => {
-                                            if (maleCount === 0) setMaleCount("");
-                                        }}
-                                        onBlur={() => {
-                                            if (maleCount === "") setMaleCount(0);
-                                        }}
-                                        placeholder="Ej: 0"
-                                    />
-                                </div>
-
-                                <div className="w-50">
-                                    <Label htmlFor="avgWeight" className="form-label">Peso promedio</Label>
-                                    <Input
-                                        type="number"
-                                        id="avgWeight"
-                                        name="avgWeight"
-                                        value={avgWeight}
-                                        onChange={(e) => setAvgWeight(Number(e.target.value))}
-                                        onFocus={() => {
-                                            if (avgWeight === 0) setAvgWeight("")
-                                        }}
-                                        onBlur={() => {
-                                            if (avgWeight === "") setAvgWeight(0)
-                                        }}
-                                        placeholder="Ej: 100"
-                                    />
-                                </div>
-
-                            </div>
-
-                            <div className="d-flex gap-2">
-                                <div className="w-50">
-                                    <Label htmlFor="stillborn" className="form-label">Nacidos muertos</Label>
-                                    <Input
-                                        type="number"
-                                        id="stillborn"
-                                        name="stillborn"
-                                        value={formik.values.stillborn}
-                                        onChange={formik.handleChange}
-                                        placeholder="Ej: 0"
-                                    />
-                                </div>
-
-                                <div className="w-50">
-                                    <Label htmlFor="mummies" className="form-label">Momias</Label>
-                                    <Input
-                                        type="number"
-                                        id="mummies"
-                                        name="mummies"
-                                        value={formik.values.mummies}
-                                        onChange={formik.handleChange}
-                                        placeholder="Ej: 0"
-                                    />
-                                </div>
-                            </div>
-
-                        </fieldset>
-
-                        <div className="mt-4 d-flex">
-                            {manualPigSelect && (
-                                <Label className="form-label">Detalles de lechones</Label>
-                            )}
-                            <div className="ms-auto">
+                        <div className="d-flex gap-2 mb-4">
+                            <div className="w-50">
+                                <Label htmlFor="femaleCount" className="form-label">Hembras vivas</Label>
                                 <Input
-                                    type="checkbox"
-                                    className="form-check-input"
-                                    id='manualPigSelect'
-                                    checked={manualPigSelect}
-                                    onChange={(e) => setManualPigSelect(e.target.checked)}
+                                    type="number"
+                                    id="femaleCount"
+                                    name="femaleCount"
+                                    value={femaleCount}
+                                    onChange={(e) => setFemaleCount(Number(e.target.value))}
+                                    onFocus={() => {
+                                        if (femaleCount === 0) setFemaleCount("");
+                                    }}
+                                    onBlur={() => {
+                                        if (femaleCount === "") setFemaleCount(0);
+                                    }}
+                                    placeholder="Ej: 0"
                                 />
-                                <Label className="form-check-label ms-2" htmlFor="manualPigSelect">Ingresar detalles de lechones</Label>
                             </div>
 
+                            <div className="w-50">
+                                <Label htmlFor="maleCount" className="form-label">Machos vivos</Label>
+                                <Input
+                                    type="number"
+                                    id="maleCount"
+                                    name="maleCount"
+                                    value={maleCount}
+                                    onChange={(e) => setMaleCount(Number(e.target.value))}
+                                    onFocus={() => {
+                                        if (maleCount === 0) setMaleCount("");
+                                    }}
+                                    onBlur={() => {
+                                        if (maleCount === "") setMaleCount(0);
+                                    }}
+                                    placeholder="Ej: 0"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="d-flex gap-2">
+                            <div className="w-50">
+                                <Label htmlFor="stillborn" className="form-label">Nacidos muertos</Label>
+                                <Input
+                                    type="number"
+                                    id="stillborn"
+                                    name="stillborn"
+                                    value={formik.values.stillborn}
+                                    onChange={formik.handleChange}
+                                    placeholder="Ej: 0"
+                                />
+                            </div>
+
+                            <div className="w-50">
+                                <Label htmlFor="mummies" className="form-label">Momias</Label>
+                                <Input
+                                    type="number"
+                                    id="mummies"
+                                    name="mummies"
+                                    value={formik.values.mummies}
+                                    onChange={formik.handleChange}
+                                    placeholder="Ej: 0"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="mt-3">
+                            <SimpleBar style={{ maxHeight: 400, paddingRight: 10 }}>
+                                {pigletsArray.map((piglet, index) => (
+                                    <div key={index} className="border rounded p-3 mb-2">
+                                        <p className="fw-bold">Lechón #{index + 1}</p>
+
+                                        <div className="d-flex gap-3">
+                                            <div className="w-50">
+                                                <label className="form-label">Sexo</label>
+                                                <select
+                                                    className="form-select"
+                                                    value={piglet.sex}
+                                                    onChange={(e) => {
+                                                        const newArray = [...pigletsArray];
+                                                        newArray[index].sex = e.target.value as 'male' | 'female';
+                                                        setPigletsArray(newArray);
+                                                    }}
+                                                    disabled
+                                                >
+                                                    <option value="">Seleccionar</option>
+                                                    <option value="male">Macho</option>
+                                                    <option value="female">Hembra</option>
+                                                </select>
+                                            </div>
+
+                                            <div className="w-50">
+                                                <label className="form-label">Peso (kg)</label>
+                                                <input
+                                                    type="number"
+                                                    step="0.01"
+                                                    className="form-control"
+                                                    value={pigletsArray[index].weight}
+                                                    onChange={(e) => {
+                                                        const value = e.target.value;
+
+                                                        const newArray = [...pigletsArray];
+
+                                                        if (value === '') {
+                                                            newArray[index].weight = '';
+                                                        } else {
+                                                            newArray[index].weight = Number(value);
+                                                        }
+
+                                                        setPigletsArray(newArray);
+                                                    }}
+                                                    onFocus={() => {
+                                                        const newArray = [...pigletsArray];
+
+                                                        if (newArray[index].weight === 0) {
+                                                            newArray[index].weight = '';
+                                                            setPigletsArray(newArray);
+                                                        }
+                                                    }}
+                                                    onBlur={() => {
+                                                        const newArray = [...pigletsArray];
+
+                                                        if (newArray[index].weight === '') {
+                                                            newArray[index].weight = 0;
+                                                            setPigletsArray(newArray);
+                                                        }
+                                                    }}
+                                                />
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </SimpleBar>
                         </div>
 
 
-                        <fieldset disabled={!manualPigSelect}>
-                            {manualPigSelect && pigletsArray.length > 0 && (
-                                <div className="mt-3">
-                                    <SimpleBar style={{ maxHeight: 400, paddingRight: 10 }}>
-                                        {pigletsArray.map((piglet, index) => (
-                                            <div key={index} className="border rounded p-3 mb-2">
-                                                <p className="fw-bold">Lechón #{index + 1}</p>
-
-                                                <div className="row">
-                                                    <div className="col-md-4">
-                                                        <label className="form-label">Sexo</label>
-                                                        <select
-                                                            className="form-select"
-                                                            value={piglet.sex}
-                                                            onChange={(e) => {
-                                                                const newArray = [...pigletsArray];
-                                                                newArray[index].sex = e.target.value as 'male' | 'female';
-                                                                setPigletsArray(newArray);
-                                                            }}
-                                                            disabled
-                                                        >
-                                                            <option value="">Seleccionar</option>
-                                                            <option value="male">Macho</option>
-                                                            <option value="female">Hembra</option>
-                                                        </select>
-                                                    </div>
-
-                                                    <div className="col-md-4">
-                                                        <label className="form-label">Peso (kg)</label>
-                                                        <input
-                                                            type="number"
-                                                            step="0.01"
-                                                            className="form-control"
-                                                            value={piglet.weight}
-                                                            onChange={(e) => {
-                                                                const newArray = [...pigletsArray];
-                                                                newArray[index].weight = parseFloat(e.target.value) || 0;
-                                                                setPigletsArray(newArray);
-                                                            }}
-                                                        />
-                                                    </div>
-
-                                                    <div className="col-md-4">
-                                                        <label className="form-label">Observaciones</label>
-                                                        <input
-                                                            type="text"
-                                                            className="form-control"
-                                                            value={piglet.observations}
-                                                            onChange={(e) => {
-                                                                const newArray = [...pigletsArray];
-                                                                newArray[index].observations = e.target.value;
-                                                                setPigletsArray(newArray);
-                                                            }}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </SimpleBar>
-                                </div>
-                            )}
-                        </fieldset>
                         <div className="mt-4 d-flex">
                             <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                                 <i className="ri-arrow-left-line me-2" />
@@ -839,17 +706,11 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
 
                         </div>
 
-                        {alerts.litterEmpty && (
-                            <Alert color='danger' className="d-flex align-items-center gap-2 shadow rounded-3 p-3 mt-3">
-                                <FiXCircle size={22} />
-                                <span className="flex-grow-1 text-black">Por favor, llene todos los datos requeridos</span>
-                                <Button close onClick={() => toggleAlerts('litterEmpty')} />
-                            </Alert>
-                        )}
+                        <AlertMessage color={"danger"} message={"Debe registrar al menos 1 lechon"} visible={alerts.litterEmpty} onClose={() => toggleAlerts('litterEmpty')} autoClose={3000} absolutePosition={false} />
                     </TabPane>
 
                     <TabPane id="step-summary-tab" tabId={4}>
-                        <div className="d-flex gap-2">
+                        <div className="d-flex gap-3">
                             <Card className="w-100">
                                 <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
                                     <span className="text-black">Información del parto</span>
@@ -874,19 +735,15 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, skipSelectInsemination
                                 <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
                                     <span className="text-black">Información de la camada</span>
                                 </CardHeader>
-                                <CardBody className={`flex-fill ${manualPigSelect ? 'p-0 py-2' : ''}`}>
-                                    {!manualPigSelect ? (
-                                        <ObjectDetails attributes={simpleLitterAttributes} object={{ pig_count: pigsCount, avg_weight: avgWeight }} />
-                                    ) : (
-                                        <SimpleBar style={{ maxHeight: 300, paddingRight: 10 }}>
-                                            <CustomTable
-                                                columns={pigletsColumns}
-                                                data={pigletsArray}
-                                                showPagination={false}
-                                                showSearchAndFilter={false}
-                                            />
-                                        </SimpleBar>
-                                    )}
+                                <CardBody className='flex-fill p-0'>
+                                    <SimpleBar style={{ maxHeight: 300 }}>
+                                        <CustomTable
+                                            columns={pigletsColumns}
+                                            data={pigletsArray}
+                                            showPagination={false}
+                                            showSearchAndFilter={false}
+                                        />
+                                    </SimpleBar>
                                 </CardBody>
                             </Card>
 

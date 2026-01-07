@@ -274,14 +274,14 @@ export interface PigData {
     farmId: string;
     birthdate: Date | null;
     breed: string;
-    origin: 'born' | 'purchased' | 'donated' | 'other';
+    origin: 'born' | 'purchased' | 'donated' | 'other' | '';
     originDetail?: string;
     sourceFarm?: string;
     arrivalDate?: Date | null;
     status: 'alive' | 'sold' | 'slaughtered' | 'dead' | 'discarded';
-    currentStage: 'piglet' | 'weaning' | 'fattening' | 'breeder';
+    currentStage: 'piglet' | 'weaning' | 'fattening' | 'breeder' | '';
     sex: 'male' | 'female' | '';
-    weight: number;
+    weight: number | '';
     observations?: string;
     discard?: {
         isDiscarded: boolean;
@@ -335,7 +335,7 @@ export interface FarmData {
 export interface GroupMedicationPackagesHistory {
     packageId: string;
     name: string;
-    stage: string;
+    stage?: string;
     medications: {
         medication: string;
         dosePerPig: number;
@@ -390,7 +390,7 @@ export interface GroupMedications {
 export interface GroupVaccinationPlansHistory {
     planId: string;
     name: string;
-    stage: string;
+    stage?: string;
     vaccines: {
         vaccine: string;
         dosePerPig: number;
@@ -608,3 +608,38 @@ export interface FeedingPackagesEntry {
     periodicity: string;
     is_active: boolean;
 };
+
+export interface PigletSnapshot {
+    sex: 'male' | 'female' | '';
+    weight: number | '';
+    status: 'alive' | 'dead';
+    recordedAt: Date | null;
+}
+
+export interface LitterEvent {
+    type: 'MORTALITY_SUMMARY' | 'AVERAGE_WEIGHT' | 'WEANING' | 'LOCATION_CHANGE' | 'GROUP_TREATMENT' | 'OBSERVATION' | '';
+    date: Date | null;
+    data: any;
+    registeredBy: string;
+}
+
+export interface Litter {
+    code: string;
+    farm: string;
+    mother: string;
+    birth: string;
+    birthDate: Date | null;
+    initialMale: number;
+    initialFemale: number;
+    currentMale: number;
+    currentFemale: number;
+    averageWeight: number;
+    status: 'active' | 'weaned' | '';
+    piglets: PigletSnapshot[];
+    observations?: string;
+    responsible: string;
+    events: LitterEvent[];
+    medications: GroupMedications[];
+    medicationPackagesHistory: GroupMedicationPackagesHistory[];
+    vaccinationPlansHistory: GroupVaccinationPlansHistory[];
+}

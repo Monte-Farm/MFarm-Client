@@ -77,6 +77,10 @@ const Navdata = () => {
     const [isFeeding, setIsFeeding] = useState<boolean>(false)
     const [isFeedingPackage, setIsFeedingPackage] = useState<boolean>(false)
 
+    //Lactation
+    const [isLactation, setIsLactation] = useState<boolean>(false)
+    const [isLitters, setIsLitters] = useState<boolean>(false)
+
 
     const [iscurrentState, setIscurrentState] = useState('Home');
 
@@ -140,6 +144,9 @@ const Navdata = () => {
         if (iscurrentState !== 'Feeding') {
             setIsFeeding(false)
         }
+        if (iscurrentState !== 'Lactation') {
+            setIsLactation(false)
+        }
     }, [
         history,
         iscurrentState,
@@ -155,6 +162,7 @@ const Navdata = () => {
         isReproduction,
         isMedication,
         isFeeding,
+        isLactation,
     ]);
 
     const menuItems: any = [
@@ -522,6 +530,34 @@ const Navdata = () => {
             ]
         },
         {
+            id: 'lactation',
+            label: 'Lactancia',
+            icon: 'mdi mdi-baby-bottle-outline',
+            link: '/#',
+            roles: ['farm_manager', 'veterinarian', 'general_worker',],
+            click: function (e: any) {
+                e.preventDefault();
+                setIscurrentState('Lactation')
+                setIsLactation(!isLactation)
+                updateIconSidebar(e);
+            },
+            stateVariables: isLactation,
+            subItems: [
+                {
+                    id: "litters",
+                    label: "Camadas",
+                    link: "/lactation/view_litters",
+                    roles: ['farm_manager', 'veterinarian', 'general_worker'],
+                    parentId: "lactation",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsLitters(!isLitters)
+                    },
+                    stateVariables: isLitters,
+                },
+            ]
+        },
+        {
             id: 'medication',
             label: 'Medicación',
             icon: 'mdi mdi-heart-pulse',
@@ -588,7 +624,8 @@ const Navdata = () => {
                     stateVariables: isFeedingPackage,
                 },
             ]
-        }
+        },
+
     ];
     return <React.Fragment>{menuItems}</React.Fragment>;
 };

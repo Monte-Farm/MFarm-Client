@@ -200,8 +200,8 @@ const DiscardedPigs = () => {
         }
         if (filters.weightRange) {
             result = result.filter(pig =>
-                pig.weight >= filters.weightRange[0] &&
-                pig.weight <= filters.weightRange[1]
+                Number(pig.weight) >= filters.weightRange[0] &&
+                Number(pig.weight) <= filters.weightRange[1]
             )
         }
 
