@@ -35,12 +35,12 @@ const formatValue = (value: any, type?: ColumnType) => {
 
 const CustomTable = <T,>({
   columns,
-  data,
+  data = [],
   className = "",
   showSearchAndFilter = true,
   rowClickable = false,
   onRowClick,
-  rowsPerPage = 10,          // ✅ por defecto como la otra tabla
+  rowsPerPage = 10,
   showPagination = true,
 }: CustomTableProps<T>) => {
 
@@ -48,7 +48,6 @@ const CustomTable = <T,>({
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [sortConfig, setSortConfig] = useState<{ key: keyof T; direction: 'asc' | 'desc' } | null>(null);
 
-  // ✅ Filtro
   const filteredData = useMemo(() => {
     if (!filterText) return data;
 
@@ -61,12 +60,10 @@ const CustomTable = <T,>({
     );
   }, [filterText, data, columns]);
 
-  // ✅ Reiniciar página cuando cambie el filtro o la data
   useEffect(() => {
     setCurrentPage(1);
   }, [filterText, data.length]);
 
-  // ✅ Ordenamiento
   const sortedData = useMemo(() => {
     let sortable = [...filteredData];
     if (sortConfig) {
@@ -108,7 +105,6 @@ const CustomTable = <T,>({
         </div>
       )}
 
-      {/* ✅ TABLA */}
       <SimpleBar style={{ maxHeight: showPagination ? "none" : "60vh" }}>
         <Table className={`table-hover align-middle table-nowrap mb-0 ${className} fs-5`}>
           <thead className="table-light sticky-top">

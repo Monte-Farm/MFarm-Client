@@ -53,7 +53,7 @@ const ViewLitters = () => {
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="farm-primary-button btn-icon">
+                    <Button className="farm-primary-button btn-icon" onClick={() => navigate(`/lactation/litter_details/${row._id}`)}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
                 </div>

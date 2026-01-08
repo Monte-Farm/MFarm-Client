@@ -46,9 +46,6 @@ const GroupDetails = () => {
         if (activeTab !== tab) setActiveTab(tab);
     };
 
-    /** --------------------------------
-     *  DERIVED STATE
-     * -------------------------------- */
     const hasPigs = (groupData?.pigCount ?? 0) > 0;
     const isLinkedMode = groupData?.groupMode === "linked";
     const isCountMode = groupData?.groupMode === "count";
@@ -195,9 +192,6 @@ const GroupDetails = () => {
         },
     ];
 
-    /** --------------------------------
-     *  DATA FETCH
-     * -------------------------------- */
     const fetchData = async () => {
         if (!configContext || !userLogged) return;
         try {
@@ -276,7 +270,6 @@ const GroupDetails = () => {
                         </div>
 
                         <div className="d-flex gap-2" style={{ height: "500px" }}>
-                            {/* DATOS DEL GRUPO */}
                             <div className="w-25 h-100">
                                 <Card className="h-100">
                                     <CardHeader className="bg-white border-bottom">
