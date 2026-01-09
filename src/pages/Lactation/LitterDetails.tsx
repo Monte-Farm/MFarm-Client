@@ -6,7 +6,7 @@ import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
-import { FaMars, FaPiggyBank, FaVenus } from "react-icons/fa";
+import { FaMars, FaPiggyBank, FaVenus, FaWeightHanging } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 import { Badge, Button, Card, CardBody, CardHeader, Container, Nav, NavItem, NavLink, TabContent, TabPane } from "reactstrap";
 import classnames from "classnames";
@@ -16,6 +16,7 @@ import CustomTable from "Components/Common/Tables/CustomTable";
 import { Column } from "common/data/data_types";
 import { FiInbox } from "react-icons/fi";
 import LitterMedicalDetails from "Components/Common/Details/LitterMedicalDetails";
+import LitterEventsCard from "Components/Common/Shared/LitterEventsCard";
 
 const LitterDetails = () => {
     const { litter_id } = useParams();
@@ -160,10 +161,11 @@ const LitterDetails = () => {
                             <KPI title="Machos" value={litterDetails.currentMale} icon={FaMars} bgColor="#E0F2FF" iconColor="#007BFF" />
                             <KPI title="Hembras" value={litterDetails.currentFemale} icon={FaVenus} bgColor="#FFE0F0" iconColor="#FF007B" />
                             <KPI title="Lechones totales" value={litterDetails.currentMale + litterDetails.currentFemale} icon={FaPiggyBank} bgColor="#EFE8FF" iconColor="#7B2FFF" />
+                            <KPI title="Peso promedio" value={`${litterDetails.averageWeight} kg`} icon={FaWeightHanging} bgColor="#E6F4EA" iconColor="#2E7D32" />
                         </div>
 
-                        <div className="d-flex gap-3 align-items-stretch">
-                            <div className="d-flex flex-column flex-fill">
+                        <div className="row g-3">
+                            <div className="col-12 col-lg-4 d-flex flex-column">
                                 <Card className="flex-fill">
                                     <CardHeader className="bg-white border-bottom">
                                         <h5 className="mb-0 text-dark fw-semibold">Datos de la camada</h5>
@@ -186,7 +188,7 @@ const LitterDetails = () => {
                                 </Card>
                             </div>
 
-                            <div className="d-flex flex-column flex-fill">
+                            <div className="col-12 col-lg-4 d-flex flex-column">
                                 <Card className="flex-fill">
                                     <CardHeader className="bg-white border-bottom">
                                         <h5 className="mb-0 text-dark fw-semibold">Lechones</h5>
@@ -196,26 +198,11 @@ const LitterDetails = () => {
                                     </CardBody>
                                 </Card>
                             </div>
-                            <div className="d-flex flex-column flex-fill">
-                                <Card className="flex-fill">
-                                    <CardHeader className="bg-white border-bottom">
-                                        <h5 className="mb-0 text-dark fw-semibold">Eventos</h5>
-                                    </CardHeader>
-                                    <CardBody className={litterDetails?.events?.length === 0 ? "d-flex flex-column justify-content-center align-items-center text-center" : "d-flex flex-column flex-grow-1"}>
-                                        {litterDetails?.events?.length === 0 ? (
-                                            <>
-                                                <FiInbox className="text-muted" size={48} style={{ marginBottom: 10 }} />
-                                                <span className="fs-5 text-muted">Aún no hay eventos de la camada registrados</span>
-                                            </>
-                                        ) : (
-                                            <CustomTable columns={[]} data={[]} showPagination={true} rowsPerPage={10} />
-                                        )}
-                                    </CardBody>
-                                </Card>
+
+                            <div className="col-12 col-lg-4 d-flex flex-column">
+                                <LitterEventsCard events={litterDetails?.events} />
                             </div>
-
                         </div>
-
                     </TabPane>
 
                     <TabPane tabId="2">

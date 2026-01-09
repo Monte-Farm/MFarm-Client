@@ -1,6 +1,6 @@
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
-import { Attribute, GroupData, PigData } from "common/data_interfaces";
+import { Attribute, GroupData, LitterEvent, PigData } from "common/data_interfaces";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { Badge, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from "reactstrap";
@@ -316,6 +316,17 @@ const AsignLitterMedicationForm: React.FC<AsignLitterMedicationFormProps> = ({ l
             const medicationsData = medicationsSelected.map(prev => ({ ...prev, applicationDate: applicationDate }))
 
             const medicationResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/medication_package/asign_litter_medications/${userLogged.farm_assigned}/${litterId}`, medicationsData)
+
+            const litterEvent: LitterEvent = {
+                type: "GROUP_TREATMENT",
+                date: new Date(),
+                data: `Medicacion administrada`,
+                registeredBy: userLogged._id
+            }
+
+            await configContext.axiosHelper.put(`${configContext.apiUrl}/litter/add_event/${litterId}`, litterEvent)
+
+
             await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
                 event: `Medicación asignada a la camada ${litterDetails?.code}`
             });

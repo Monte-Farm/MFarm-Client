@@ -14,6 +14,8 @@ import ErrorModal from "../Shared/ErrorModal";
 import AsignFeedingPackageForm from "../Forms/AsignFeedingPackageForm";
 import AsignGroupFeedingPackageForm from "../Forms/AsignGroupFeedingPackageForm";
 import AsignGroupFeedingForm from "../Forms/AsignGroupFeedings";
+import AdministeredFeedingsCard from "../Shared/AdministeredFeedingsCard";
+import FeedingPackagesCard from "../Shared/FeedingPackagesCard";
 
 interface GroupFeedingDetailsProps {
     groupId: string
@@ -169,204 +171,36 @@ const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId }) =>
         <>
             <div className="d-flex gap-3 align-items-stretch" style={{ height: "600px" }}>
 
-                <Card className="w-50 h-100 flex-grow-1">
-                    <CardHeader className="bg-light d-flex justify-content-between">
-                        <h5>Alimentos administrados</h5>
+                <AdministeredFeedingsCard
+                    feedings={feedings}
+                    onAdd={() => toggleModal("asignFeeding")}
+                    onDiscountStock={(id) => {
+                        setSelectedFeeding(id);
+                        toggleModal("discountFeedingStock");
+                    }}
+                    onUnassign={(id) => {
+                        setSelectedFeeding(id);
+                        toggleModal("unasignFeeding");
+                    }}
+                />
 
-                        <Button className="" size="sm" onClick={() => toggleModal('asignFeeding')}>
-                            <i className="" />
-                            Administrar alimentos
-                        </Button>
-                    </CardHeader>
-                    <CardBody className={feedings.length === 0 ? 'd-flex justify-content-center align-items-center' : ''} style={{ overflowY: 'auto' }}>
-                        {feedings.length === 0 ? (
-                            <>
-                                <FiAlertCircle className="text-muted" size={22} />
-                                <span className="fs-5 text-black text-muted text-center rounded-5 ms-2">
-                                    No hay alimentos administrados
-                                </span>
-                            </>
-                        ) : (
-                            <div className="d-flex flex-column gap-2">
+                <FeedingPackagesCard
+                    packages={feedingPackages}
+                    onAdd={() => toggleModal("asignFeedingPackage")}
+                    onViewDetails={(id) => {
+                        setSelectedFeedingPackage(id);
+                        toggleModal("feedingPackageDetails");
+                    }}
+                    onDiscountStock={(id) => {
+                        setSelectedFeedingPackage(id);
+                        toggleModal("discountFeedingPackageStock");
+                    }}
+                    onUnassign={(id) => {
+                        setSelectedFeedingPackage(id);
+                        toggleModal("unasignGroupPackage");
+                    }}
+                />
 
-                                {feedings.map((f, index) => {
-                                    const date = new Date(f.applicationDate).toLocaleString("es-MX", {
-                                        dateStyle: "short",
-                                        timeStyle: "short",
-                                    });
-
-                                    const periodicityLabels: Record<string, string> = {
-                                        once_day: '1 vez al dia',
-                                        twice_day: '2 veces al dia',
-                                        three_times_day: '3 veces al dia',
-                                        ad_libitum: 'Libre acceso',
-                                        weekly: '1 vez a la semana',
-                                        biweekly: '2 veces a la semana',
-                                        montly: 'Mensual',
-                                        specific_days: 'Dias especificos',
-                                        by_event: 'Por evento',
-                                    }
-
-                                    return (
-                                        <div key={index} className="p-3 border rounded shadow-sm d-flex flex-column position-relative" style={{ backgroundColor: '#eef2ff' }}>
-
-                                            <Button className="btn position-absolute" size="sm" style={{ top: "10px", right: "10px", borderRadius: "4px", }} onClick={() => { setSelectedFeeding(f._id); toggleModal('discountFeedingStock') }} disabled={!f.isActive}>
-                                                <i className="bx bx-trending-down" />
-                                            </Button>
-
-                                            {f.isActive === true ? (
-                                                <Button className="btn position-absolute btn-danger" size="sm" style={{ top: "10px", right: "43px", borderRadius: "4px", }} onClick={() => { setSelectedFeeding(f._id); toggleModal('unasignFeeding') }}>
-                                                    <i className="ri-forbid-line" />
-                                                </Button>
-                                            ) : null}
-
-                                            <strong className="fs-5 mb-2">
-                                                {f.feeding.name}
-                                            </strong>
-
-                                            <div className="d-flex justify-content-between flex-wrap fs-6 mb-2">
-                                                <span>
-                                                    <strong className="text-muted">Cantidad</strong> {f.totalQuantity} {f.feeding.unit_measurement}
-                                                </span>
-
-                                                <span>
-                                                    <strong className="text-muted">Periodicidad: </strong>{periodicityLabels[f.periodicity] ?? f.periodicity}
-                                                </span>
-                                            </div>
-
-                                            <div className="fs-6 d-flex justify-content-between">
-                                                <div>
-                                                    <strong className="text-muted">Aplicado por:</strong>{" "}
-                                                    {f.appliedBy ? `${f.appliedBy.name} ${f.appliedBy.lastname}` : "Desconocido"}
-                                                </div>
-
-                                                <div className="">
-                                                    <strong className="text-muted">Fecha:</strong> {date}
-                                                </div>
-
-                                            </div>
-
-                                            {f.observations && f.observations.trim() !== "" && (
-                                                <div className="mt-2 fs-6">
-                                                    <strong className="text-muted">Notas:</strong> {f.observations}
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </CardBody>
-                </Card>
-
-                <Card className="w-50 h-100 flex-grow-1">
-                    <CardHeader className="bg-light d-flex justify-content-between">
-                        <h5>Paquetes de alimentacion administrados</h5>
-
-                        <Button className="" size="sm" onClick={() => toggleModal('asignFeedingPackage')}>
-                            <i className="" />
-                            Asignar paquete
-                        </Button>
-                    </CardHeader>
-                    <CardBody className={feedingPackages.length === 0 ? 'd-flex justify-content-center align-items-center' : ''} style={{ overflowY: 'auto' }}>
-                        {feedingPackages.length === 0 ? (
-                            <>
-                                <FiAlertCircle className="text-muted" size={22} />
-                                <span className="fs-5 text-muted text-center rounded-5 ms-2">
-                                    No hay paquetes administrados
-                                </span>
-                            </>
-                        ) : (
-                            <div className="d-flex flex-column gap-3">
-
-                                {feedingPackages.map((p, index) => {
-                                    const date = new Date(p.applicationDate).toLocaleString("es-MX", {
-                                        dateStyle: "short",
-                                        timeStyle: "short",
-                                    });
-
-
-                                    const stageLabels: Record<string, string> = {
-                                        piglet: "Lechón",
-                                        sow: "Cerda",
-                                        nursery: "Destete",
-                                        grower: "Crecimiento",
-                                        finisher: "Finalización",
-                                    };
-
-                                    const periodicityLabels: Record<string, string> = {
-                                        once_day: '1 vez al dia',
-                                        twice_day: '2 veces al dia',
-                                        three_times_day: '3 veces al dia',
-                                        ad_libitum: 'Libre acceso',
-                                        weekly: '1 vez a la semana',
-                                        biweekly: '2 veces a la semana',
-                                        montly: 'Mensual',
-                                        specific_days: 'Dias especificos',
-                                        by_event: 'Por evento',
-                                    }
-
-                                    return (
-                                        <div key={index} className="p-3 border rounded shadow-sm d-flex flex-column position-relative" style={{ backgroundColor: "#eef2ff" }}>
-
-                                            <Button className="btn position-absolute" size="sm" style={{ top: "10px", right: "10px", borderRadius: "4px", }} onClick={() => { setSelectedFeedingPackage(p.packageId._id); toggleModal('feedingPackageDetails') }}>
-                                                <FiEye size={18} />
-                                            </Button>
-
-                                            <Button className="btn position-absolute" size="sm" style={{ top: "10px", right: "50px", borderRadius: "4px", }} onClick={() => { setSelectedFeedingPackage(p.packageId._id); toggleModal('discountFeedingPackageStock') }} disabled={!p.isActive}>
-                                                <i className="bx bx-trending-down" />
-                                            </Button>
-
-                                            {p.isActive === true ? (
-                                                <Button className="btn position-absolute btn-danger" size="sm" style={{ top: "10px", right: "83px", borderRadius: "4px", }} onClick={() => { setSelectedFeedingPackage(p._id); toggleModal('unasignGroupPackage') }}>
-                                                    <i className="ri-forbid-line" />
-                                                </Button>
-                                            ) : null}
-
-                                            <strong className="fs-5 mb-2 pe-4">
-                                                {p.name}
-                                            </strong>
-
-                                            <div className="d-flex flex-column gap-1 fs-6 mb-2">
-                                                <div className="fs-6 d-flex justify-content-between flex-wrap gap-2">
-                                                    <span>
-                                                        <strong className="text-muted">Etapa:</strong>{" "}
-                                                        {stageLabels[p.stage] ?? p.objective}
-                                                    </span>
-
-                                                    <span>
-                                                        <strong className="text-muted">Periodicidad:</strong>{" "}
-                                                        {periodicityLabels[p.periodicity] ?? p.periodicity}
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            <div className="fs-6 d-flex justify-content-between flex-wrap gap-2">
-                                                <div>
-                                                    <strong className="text-muted">Aplicado por:</strong>{" "}
-                                                    {p.appliedBy ? `${p.appliedBy.name} ${p.appliedBy.lastname}` : "Desconocido"}
-                                                </div>
-
-                                                <div>
-                                                    <strong className="text-muted">Fecha:</strong> {date}
-                                                </div>
-                                            </div>
-
-                                            {p.observations && p.observations.trim() !== "" && (
-                                                <div className="mt-2 fs-6">
-                                                    <strong className="text-muted">Notas:</strong>{" "}
-                                                    {p.observations}
-                                                </div>
-                                            )}
-
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </CardBody>
-
-                </Card>
 
             </div>
 

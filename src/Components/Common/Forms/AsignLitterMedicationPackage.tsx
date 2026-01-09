@@ -5,7 +5,7 @@ import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { Badge, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from "reactstrap";
 import LoadingAnimation from "../Shared/LoadingAnimation";
-import { Attribute, GroupData, GroupMedicationPackagesHistory, medicationPackagesEntry, PigData } from "common/data_interfaces";
+import { Attribute, GroupData, GroupMedicationPackagesHistory, LitterEvent, medicationPackagesEntry, PigData } from "common/data_interfaces";
 import * as Yup from 'yup';
 import classnames from "classnames";
 import { useFormik } from "formik";
@@ -291,6 +291,16 @@ const AsignLitterMedicationPackageForm: React.FC<AsignLitterMedicationPackageFor
             if (!configContext) return;
             try {
                 const medicationResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/medication_package/asign_litter_medication_package/${userLogged.farm_assigned}/${litterId}`, values)
+
+                const litterEvent: LitterEvent = {
+                    type: "GROUP_TREATMENT",
+                    date: new Date(),
+                    data: `Paquete de medicacion ${selectedMedicationPackage.code} asignado`,
+                    registeredBy: userLogged._id
+                }
+
+                await configContext.axiosHelper.put(`${configContext.apiUrl}/litter/add_event/${litterId}`, litterEvent)
+
                 await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
                     event: `Paquete de medicación asignado a la camada ${litterDetails?.code}`
                 });
