@@ -746,7 +746,6 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                     </SimpleBar>
                                 </CardBody>
                             </Card>
-
                         </div>
 
 
