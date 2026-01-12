@@ -8,7 +8,7 @@ import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { FaMars, FaPiggyBank, FaVenus, FaWeightHanging } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
-import { Badge, Button, Card, CardBody, CardHeader, Container, Nav, NavItem, NavLink, TabContent, TabPane } from "reactstrap";
+import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, TabContent, TabPane } from "reactstrap";
 import classnames from "classnames";
 import ObjectDetails from "Components/Common/Details/ObjectDetails";
 import { Attribute } from "common/data_interfaces";
@@ -17,6 +17,7 @@ import { Column } from "common/data/data_types";
 import { FiInbox } from "react-icons/fi";
 import LitterMedicalDetails from "Components/Common/Details/LitterMedicalDetails";
 import LitterEventsCard from "Components/Common/Shared/LitterEventsCard";
+import WeanLitterForm from "Components/Common/Forms/WeanLitterForm";
 
 const LitterDetails = () => {
     const { litter_id } = useParams();
@@ -27,6 +28,7 @@ const LitterDetails = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const [litterDetails, setLitterDetails] = useState<any>({})
     const [activeTab, setActiveTab] = useState("1");
+    const [modals, setModals] = useState({ weanLitter: true });
 
     const litterAttributes: Attribute[] = [
         { key: 'code', label: 'Codigo', type: 'text' },
@@ -94,6 +96,10 @@ const LitterDetails = () => {
 
     const toggleTab = (tab: string) => {
         if (activeTab !== tab) setActiveTab(tab);
+    };
+
+    const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
+        setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
 
     const fetchData = async () => {
@@ -167,8 +173,12 @@ const LitterDetails = () => {
                         <div className="row g-3">
                             <div className="col-12 col-lg-4 d-flex flex-column">
                                 <Card className="flex-fill">
-                                    <CardHeader className="bg-white border-bottom">
+                                    <CardHeader className="bg-white border-bottom d-flex justify-content-between">
                                         <h5 className="mb-0 text-dark fw-semibold">Datos de la camada</h5>
+
+                                        <Button color="success" onClick={() => toggleModal('weanLitter')}>
+                                            Destetar
+                                        </Button>
                                     </CardHeader>
                                     <CardBody>
                                         <ObjectDetails attributes={litterAttributes} object={litterDetails} />
@@ -209,9 +219,14 @@ const LitterDetails = () => {
                         <LitterMedicalDetails litterId={litter_id ?? ''} />
                     </TabPane>
                 </TabContent>
-
-
             </Container>
+
+            <Modal size="xl" isOpen={modals.weanLitter} toggle={() => toggleModal("weanLitter")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("weanLitter")}>Destetar camada </ModalHeader>
+                <ModalBody>
+                    <WeanLitterForm litterId={litter_id ?? ''} onSave={() => { toggleModal('weanLitter'); fetchData(); }} />
+                </ModalBody>
+            </Modal>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </div>
