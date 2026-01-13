@@ -163,8 +163,8 @@ const ViewPigs = () => {
         try {
             setLoading(true)
             const [pigsResponse, statsResponse] = await Promise.all([
-                configContext.axiosHelper.get(`${configContext.apiUrl}/pig/find_available_by_farm/${userLogged.farm_assigned}`),
-                configContext.axiosHelper.get(`${configContext.apiUrl}/pig/get_alive_stats/${userLogged.farm_assigned}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/pig/find_breeders_by_farm/${userLogged.farm_assigned}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/pig/get_breeder_stats/${userLogged.farm_assigned}`),
             ])
 
             setPigs(pigsResponse.data.data)
@@ -361,48 +361,11 @@ const ViewPigs = () => {
                         })) ?? []}
                     />
 
-                    <BasicPieChart
-                        title={"Cerdos por etapa"}
-                        data={
-                            stats?.pigsByStage?.map((s: { _id: any; count: any }) => ({
-                                id: (() => {
-                                    switch (s._id) {
-                                        case "piglet": return "Lechón";
-                                        case "weaning": return "Destete";
-                                        case "fattening": return "Engorda";
-                                        case "breeder": return "Reproductor";
-                                        default: return s._id;
-                                    }
-                                })(),
-                                value: s.count,
-                            })) ?? []
-                        }
-                    />
-
                     <BasicPieChart title={"Cerdos por raza"}
                         data={stats?.pigsByBreed?.map((s: { _id: any; count: any }) => ({
                             id: s._id,
                             value: s.count,
                         })) ?? []}
-                    />
-
-                    <BasicBarChart title={"Peso promedio por etapa"}
-                        indexBy="stage"
-                        keys={["weight"]}
-                        xLegend="Etapa"
-                        yLegend="Peso"
-                        data={stats?.avgWeightByStage.map((s: { _id: any; avgWeight: any }) => ({
-                            stage: (() => {
-                                switch (s._id) {
-                                    case "piglet": return "Lechón";
-                                    case "weaning": return "Destete";
-                                    case "fattening": return "Engorda";
-                                    case "breeder": return "Reproductor";
-                                    default: return s._id;
-                                }
-                            })(),
-                            weight: s.avgWeight
-                        }))}
                     />
                 </div>
 
@@ -556,8 +519,8 @@ const ViewPigs = () => {
                                 )}
                             </Button>
 
-                            <Button className="farm-primary-button" onClick={() => toggleModal('selectCreationMode')}>
-                                <i className="ri-add-line me-2" />
+                            <Button className="h-50 farm-primary-button" onClick={() => toggleModal('selectCreationMode')}>
+                                <i className="ri ri-add-line me-2"/>
                                 Registrar cerdo
                             </Button>
                         </div>

@@ -63,6 +63,7 @@ import ViewVaccinationPlans from "pages/Medication/ViewVaccinePlans";
 import ViewFeedingPackages from "pages/Feeding/ViewFeedingPackages";
 import ViewLitters from "pages/Lactation/ViewLitters";
 import LitterDetails from "pages/Lactation/LitterDetails";
+import InventoryPigs from "pages/Pigs/InventoryPigs";
 
 
 
@@ -114,6 +115,7 @@ const authProtectedRoutes = [
   { path: '/pigs/view_pigs', component: <ViewPigs /> },
   { path: '/pigs/pig_details/:pig_id', component: <PigDetails /> },
   { path: '/pigs/discarded_pigs', component: <DiscardedPigs /> },
+  { path: '/pigs/inventory_pigs', component: <InventoryPigs /> },
 
   //Users
   { path: 'users/view_users', component: <ViewUsers /> },

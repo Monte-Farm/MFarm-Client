@@ -11,6 +11,7 @@ interface Props {
     plans: any[];
     onAdd: () => void;
     onViewDetails: (id: string) => void;
+    status?: string
 }
 
 const STAGE_LABELS: Record<string, string> = {
@@ -25,6 +26,7 @@ const VaccinationPlansCard = ({
     plans,
     onAdd,
     onViewDetails,
+    status,
 }: Props) => {
     const hasData = plans && plans.length > 0;
 
@@ -35,7 +37,7 @@ const VaccinationPlansCard = ({
                     Planes de vacunación asignados
                 </h5>
 
-                <Button size="sm" color="primary" onClick={onAdd}>
+                <Button size="sm" color="primary" onClick={onAdd} disabled={status === 'weaned'}>
                     Asignar plan
                 </Button>
             </CardHeader>

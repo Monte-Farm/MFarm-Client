@@ -57,6 +57,7 @@ const Navdata = () => {
     const [isPigs, setIsPigs] = useState<boolean>(false)
     const [isViewPigs, setIsViewPigs] = useState<boolean>(false)
     const [isDiscardedPigs, setIsDiscardedPigs] = useState<boolean>(false)
+    const [isInventoryPigs, setIsInventoryPigs] = useState<boolean>(false)
 
     //Groups
     const [isViewGroups, setIsViewGroups] = useState<boolean>(false)
@@ -387,10 +388,22 @@ const Navdata = () => {
             stateVariables: isPigs,
             subItems: [
                 {
+                    id: "pigsInventory",
+                    label: "Inventario",
+                    link: "/pigs/inventory_pigs",
+                    roles: ['farm_manager', 'general_worker' , 'reproduction_technician', 'veterinarian'],
+                    parentId: "pigs",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsInventoryPigs(!isInventoryPigs)
+                    },
+                    stateVariables: isInventoryPigs,
+                },
+                {
                     id: "viewPigs",
-                    label: "Cerdos",
+                    label: "Reproductores",
                     link: "/pigs/view_pigs",
-                    roles: ['farm_manager', 'general_worker', , 'reproduction_technician', 'veterinarian'],
+                    roles: ['farm_manager', 'general_worker' , 'reproduction_technician', 'veterinarian'],
                     parentId: "pigs",
                     click: function (e: any) {
                         e.preventDefault();

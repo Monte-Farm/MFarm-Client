@@ -11,6 +11,7 @@ interface Props {
     packages: any[];
     onAdd: () => void;
     onViewDetails: (id: string) => void;
+    status?: string;
 }
 
 const STAGE_LABELS: Record<string, string> = {
@@ -25,6 +26,7 @@ const MedicationPackagesCard = ({
     packages,
     onAdd,
     onViewDetails,
+    status
 }: Props) => {
     const hasData = packages && packages.length > 0;
 
@@ -35,7 +37,7 @@ const MedicationPackagesCard = ({
                     Paquetes de medicación administrados
                 </h5>
 
-                <Button size="sm" color="primary" onClick={onAdd}>
+                <Button size="sm" color="primary" onClick={onAdd} disabled={status === 'weaned'}>
                     Administrar paquete
                 </Button>
             </CardHeader>

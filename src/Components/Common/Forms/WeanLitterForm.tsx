@@ -118,7 +118,7 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
         if (!configContext || !userLogged) return
         try {
             setIsSubmitting(true)
-            const weanedLitter = await configContext.axiosHelper.put(`${configContext.apiUrl}/litter/wean_litter/${litterId}`, {})
+            const weanedLitter = await configContext.axiosHelper.put(`${configContext.apiUrl}/litter/wean_litter/${litterId}`, pigletsArray)
             await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
                 event: `Camada destetada`
             });
@@ -142,7 +142,7 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
             _id: '',
             code: '',
             farmId: litter.farm,
-            birthdate: new Date(),
+            birthdate: litter.birthDate,
             breed: litter.mother.breed,
             origin: 'born',
             status: 'alive',
@@ -165,7 +165,7 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
             _id: '',
             code: '',
             farmId: litter.farm,
-            birthdate: new Date(),
+            birthdate: litter.birthDate,
             breed: litter.mother.breed,
             origin: 'born',
             status: 'alive',
@@ -185,7 +185,6 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
         }));
 
         setPigletsArray([...malePiglets, ...femalePiglets])
-
     }, [litter])
 
     if (loading) {
@@ -361,7 +360,6 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
                                     Destetar camada
                                 </div>
                             )}
-
                         </Button>
                     </div>
                 </TabPane>

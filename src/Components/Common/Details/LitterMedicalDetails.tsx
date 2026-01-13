@@ -27,6 +27,7 @@ const LitterMedicalDetails: React.FC<LitterMedicalDetailsProps> = ({ litterId })
     const [medicationPackages, setMedicationPackages] = useState<any[]>([]);
     const [medications, setMedications] = useState<any[]>([]);
     const [vaccinationPlans, setVaccinationPlans] = useState<any[]>([])
+    const [litter, setLitter] = useState<any>({})
 
     const [selectedMedicationPackage, setSelectedMedicationPackage] = useState<string>("")
     const [selectedVaccinationPlan, setSelectedVaccinationPlan] = useState<string>("")
@@ -45,6 +46,9 @@ const LitterMedicalDetails: React.FC<LitterMedicalDetailsProps> = ({ litterId })
             setMedicationPackages(medicalData.medicationPackagesHistory);
             setVaccinationPlans(medicalData.vaccinationPlansHistory)
             setMedications(medicalData.medications)
+
+            const litterResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/litter/find_by_id/${litterId}`)
+            setLitter(litterResponse.data.data);
         } catch (error) {
             console.error('Error fetching data: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: 'Error al obtener la informacion medica, intentelo mas tarde' });
@@ -70,6 +74,7 @@ const LitterMedicalDetails: React.FC<LitterMedicalDetailsProps> = ({ litterId })
                 <AdministeredMedicationsCard
                     medications={medications}
                     onAdd={() => toggleModal("asignMedication")}
+                    status={litter.status}
                 />
 
                 <MedicationPackagesCard
@@ -79,6 +84,7 @@ const LitterMedicalDetails: React.FC<LitterMedicalDetailsProps> = ({ litterId })
                         setSelectedMedicationPackage(id);
                         toggleModal("medicationPackageDetails");
                     }}
+                    status={litter.status}
                 />
 
                 <VaccinationPlansCard
@@ -88,6 +94,7 @@ const LitterMedicalDetails: React.FC<LitterMedicalDetailsProps> = ({ litterId })
                         setSelectedVaccinationPlan(id);
                         toggleModal("vaccinationPlanDetails");
                     }}
+                    status={litter.status}
                 />
             </div>
 

@@ -4,6 +4,7 @@ import { FiAlertCircle, FiDroplet, FiCalendar, FiUser } from "react-icons/fi";
 interface Props {
     medications: any[];
     onAdd: () => void;
+    status?: string;
 }
 
 const ROUTE_LABELS: Record<string, string> = {
@@ -16,7 +17,7 @@ const ROUTE_LABELS: Record<string, string> = {
     rectal: "Rectal",
 };
 
-const AdministeredMedicationsCard = ({ medications, onAdd }: Props) => {
+const AdministeredMedicationsCard = ({ medications, onAdd, status }: Props) => {
     const hasData = medications && medications.length > 0;
 
     return (
@@ -24,7 +25,7 @@ const AdministeredMedicationsCard = ({ medications, onAdd }: Props) => {
             <CardHeader className="bg-white d-flex justify-content-between align-items-center border-bottom">
                 <h5 className="mb-0 fw-semibold">Medicamentos administrados</h5>
 
-                <Button size="sm" color="primary" onClick={onAdd}>
+                <Button size="sm" color="primary" onClick={onAdd} disabled={status === 'weaned'}>
                     Administrar medicamento
                 </Button>
             </CardHeader>

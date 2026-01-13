@@ -28,7 +28,7 @@ const LitterDetails = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const [litterDetails, setLitterDetails] = useState<any>({})
     const [activeTab, setActiveTab] = useState("1");
-    const [modals, setModals] = useState({ weanLitter: true });
+    const [modals, setModals] = useState({ weanLitter: false });
 
     const litterAttributes: Attribute[] = [
         { key: 'code', label: 'Codigo', type: 'text' },
@@ -176,7 +176,7 @@ const LitterDetails = () => {
                                     <CardHeader className="bg-white border-bottom d-flex justify-content-between">
                                         <h5 className="mb-0 text-dark fw-semibold">Datos de la camada</h5>
 
-                                        <Button color="success" onClick={() => toggleModal('weanLitter')}>
+                                        <Button color="success" onClick={() => toggleModal('weanLitter')} disabled={litterDetails.status === 'weaned'}>
                                             Destetar
                                         </Button>
                                     </CardHeader>

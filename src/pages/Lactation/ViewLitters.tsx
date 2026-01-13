@@ -8,7 +8,7 @@ import { config } from "process";
 import { useContext, useEffect, useState } from "react";
 import { FiInbox } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import { Button, Card, CardBody, CardHeader, Container } from "reactstrap";
+import { Badge, Button, Card, CardBody, CardHeader, Container } from "reactstrap";
 
 const ViewLitters = () => {
     const configContext = useContext(ConfigContext);
@@ -47,6 +47,29 @@ const ViewLitters = () => {
             type: 'text',
             isFilterable: true,
             render: (_, row) => <span>{row.responsible.name} {row.responsible.lastname}</span>
+        },
+        {
+            header: 'Estado',
+            accessor: 'status',
+            type: 'text',
+            isFilterable: true,
+            render: (value: string) => {
+                let color = "secondary";
+                let label = value;
+
+                switch (value) {
+                    case "active":
+                        color = "warning";
+                        label = "Lactando";
+                        break;
+                    case "weaned":
+                        color = "success";
+                        label = "Destetada";
+                        break;
+                }
+
+                return <Badge color={color}>{label}</Badge>;
+            },
         },
         {
             header: "Acciones",
@@ -92,7 +115,7 @@ const ViewLitters = () => {
 
                 <Card>
                     <CardHeader className="d-flex">
-                        <h4>Extracciones</h4>
+                        <h4>Camadas</h4>
                     </CardHeader>
 
                     <CardBody style={{ display: "flex", flexDirection: "column", height: "100%" }}>
