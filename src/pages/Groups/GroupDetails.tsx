@@ -305,7 +305,7 @@ const GroupDetails = () => {
                                                     columns={pigColumns}
                                                     data={groupData.pigsInGroup}
                                                     showSearchAndFilter={false}
-                                                    rowsPerPage={10}
+                                                    rowsPerPage={7}
                                                 />
                                             </div>
                                         )}

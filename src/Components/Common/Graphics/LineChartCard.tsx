@@ -5,7 +5,7 @@ import { FiInbox } from "react-icons/fi";
 
 interface LineChartCardProps {
     stats: any;
-    type: "volume" | "extractions" | "pregnancies" | "farrowings" | "abortions";
+    type: "volume" | "extractions" | "pregnancies" | "farrowings" | "abortions" | "inventory";
     title: string;
     yLabel: string;
     color?: string;

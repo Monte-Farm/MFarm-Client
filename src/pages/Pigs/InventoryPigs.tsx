@@ -2,13 +2,15 @@ import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import BasicPieChart from "Components/Common/Graphics/BasicPieChart";
 import KPI from "Components/Common/Graphics/Kpi";
+import LineChartCard from "Components/Common/Graphics/LineChartCard";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
+import { StatCard } from "Components/Common/Shared/StatCard";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { IconBaseProps } from "react-icons";
-import { FaAccessibleIcon, FaArrowDown, FaArrowUp, FaBalanceScale, FaPiggyBank } from "react-icons/fa";
+import { FaAccessibleIcon, FaArrowDown, FaArrowUp, FaBalanceScale, FaChartLine, FaPiggyBank } from "react-icons/fa";
 import { Badge, Card, CardBody, CardHeader, Container } from "reactstrap";
 
 const InventoryPigs = () => {
@@ -118,19 +120,39 @@ const InventoryPigs = () => {
                     <KPI title="Peso promedio" value={pigStats?.generalStats[0]?.avgWeight} icon={FaBalanceScale} bgColor="#E0F2FE" iconColor="#0284C7" />
                     <KPI title="Peso mínimo" value={pigStats?.generalStats[0]?.minWeight} icon={FaArrowDown} bgColor="#FEF3C7" iconColor="#D97706" />
                     <KPI title="Peso máximo" value={pigStats?.generalStats[0]?.maxWeight} icon={FaArrowUp} bgColor="#ECFDF5" iconColor="#16A34A" />
+
+                    <StatCard
+                        title="Registros este mes"
+                        value={pigStats?.monthlyComparison[0].currentMonth}
+                        suffix=""
+                        change={pigStats?.monthlyComparison[0].percentageChange}
+                        changeText="vs. mes anterior"
+                        icon={<FaChartLine className="text-info" size={22} />}
+                    />
+
+                </div>
+
+                <div>
+                    <LineChartCard
+                        stats={pigStats}
+                        type="inventory"
+                        title="Cerdos registrados"
+                        yLabel="Cantidad"
+                    />
+
                 </div>
 
                 <div className="d-flex gap-3">
                     <BasicPieChart title={"Cerdos por raza"}
-                        data={pigStats?.inventoryByStage?.map((s: { _id: any; count: any }) => ({
-                            id: s._id,
+                        data={pigStats?.inventoryByStage?.map((s: { stage: any; count: any }) => ({
+                            id: s.stage,
                             value: s.count,
                         })) ?? []}
                     />
 
                     <BasicPieChart title={"Peso promedio por raza"}
-                        data={pigStats?.avgWeightByStage?.map((s: { _id: any; avgWeight: any }) => ({
-                            id: s._id,
+                        data={pigStats?.avgWeightByStage?.map((s: { stage: any; avgWeight: any }) => ({
+                            id: s.stage,
                             value: s.avgWeight,
                         })) ?? []}
                     />

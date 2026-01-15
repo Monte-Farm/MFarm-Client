@@ -436,7 +436,6 @@ export interface GroupData {
     name: string;
     farm: string;
     area: string;
-    groupMother: string,
     creationDate: Date | null;
     stage: 'piglet' | 'weaning' | 'fattening' | 'breeder' | '';
     groupMode: 'linked' | 'count' | '';

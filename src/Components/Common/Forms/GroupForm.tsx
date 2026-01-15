@@ -239,7 +239,6 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
             name: '',
             area: '',
             stage: '',
-            groupMother: '',
             observations: '',
             creationDate: null,
             observationsHistory: [],

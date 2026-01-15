@@ -167,7 +167,7 @@ const LitterDetails = () => {
                             <KPI title="Machos" value={litterDetails.currentMale} icon={FaMars} bgColor="#E0F2FF" iconColor="#007BFF" />
                             <KPI title="Hembras" value={litterDetails.currentFemale} icon={FaVenus} bgColor="#FFE0F0" iconColor="#FF007B" />
                             <KPI title="Lechones totales" value={litterDetails.currentMale + litterDetails.currentFemale} icon={FaPiggyBank} bgColor="#EFE8FF" iconColor="#7B2FFF" />
-                            <KPI title="Peso promedio" value={`${litterDetails.averageWeight} kg`} icon={FaWeightHanging} bgColor="#E6F4EA" iconColor="#2E7D32" />
+                            <KPI title="Peso promedio" value={`${litterDetails?.averageWeight?.toFixed(2)} kg`} icon={FaWeightHanging} bgColor="#E6F4EA" iconColor="#2E7D32" />
                         </div>
 
                         <div className="row g-3">
@@ -203,7 +203,7 @@ const LitterDetails = () => {
                                     <CardHeader className="bg-white border-bottom">
                                         <h5 className="mb-0 text-dark fw-semibold">Lechones</h5>
                                     </CardHeader>
-                                    <CardBody className="overflow-auto px-0">
+                                    <CardBody className="overflow-auto p-0">
                                         <CustomTable columns={pigletsColumns} data={litterDetails?.piglets} showSearchAndFilter={false} showPagination rowsPerPage={7} />
                                     </CardBody>
                                 </Card>
