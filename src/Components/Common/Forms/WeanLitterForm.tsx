@@ -7,15 +7,12 @@ import SuccessModal from "../Shared/SuccessModal";
 import { Badge, Button, Card, CardBody, CardHeader, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from "reactstrap";
 import LoadingAnimation from "../Shared/LoadingAnimation";
 import classnames from "classnames";
-import LitterDetails from "pages/Lactation/LitterDetails";
 import { Attribute, GroupData, PigData } from "common/data_interfaces";
 import CustomTable from "../Tables/CustomTable";
 import { Column } from "common/data/data_types";
 import SimpleBar from "simplebar-react";
 import ObjectDetails from "../Details/ObjectDetails";
 import SelectableCustomTable from "../Tables/SelectableTable";
-import CompleteOrder from "pages/Orders/CompleteOrder";
-import { setLocale } from "yup";
 import AlertMessage from "../Shared/AlertMesagge";
 
 interface WeanLitterFormProps {

@@ -5,12 +5,11 @@ import KPI from "Components/Common/Graphics/Kpi";
 import LineChartCard from "Components/Common/Graphics/LineChartCard";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
-import { StatCard } from "Components/Common/Shared/StatCard";
+import StatCard from "Components/Common/Shared/StatCard";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
-import { IconBaseProps } from "react-icons";
-import { FaAccessibleIcon, FaArrowDown, FaArrowUp, FaBalanceScale, FaChartLine, FaPiggyBank } from "react-icons/fa";
+import { FaArrowDown, FaArrowUp, FaBalanceScale, FaChartLine, FaPiggyBank } from "react-icons/fa";
 import { Badge, Card, CardBody, CardHeader, Container } from "reactstrap";
 
 const InventoryPigs = () => {

@@ -10,7 +10,7 @@ interface StatCardProps {
     duration?: number;
 }
 
-export const StatCard: React.FC<StatCardProps> = ({
+const StatCard: React.FC<StatCardProps> = ({
     title,
     value,
     suffix = "",
@@ -79,3 +79,5 @@ export const StatCard: React.FC<StatCardProps> = ({
         </div>
     );
 };
+
+export default StatCard;
