@@ -122,9 +122,9 @@ const InventoryPigs = () => {
 
                     <StatCard
                         title="Registros este mes"
-                        value={pigStats?.monthlyComparison[0].currentMonth}
+                        value={pigStats?.monthlyComparison[0]?.currentMonth}
                         suffix=""
-                        change={pigStats?.monthlyComparison[0].percentageChange}
+                        change={pigStats?.monthlyComparison[0]?.percentageChange}
                         changeText="vs. mes anterior"
                         icon={<FaChartLine className="text-info" size={22} />}
                     />
