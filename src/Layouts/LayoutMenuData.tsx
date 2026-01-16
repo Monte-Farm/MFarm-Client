@@ -82,6 +82,11 @@ const Navdata = () => {
     const [isLactation, setIsLactation] = useState<boolean>(false)
     const [isLitters, setIsLitters] = useState<boolean>(false)
 
+    //Pre-iniation
+    const [isPreinitiation, setIsPreinitiation] = useState<boolean>(false)
+    const [isViewWeanedGroups, setIsViewWeanedGroups] = useState<boolean>(false)
+
+
 
     const [iscurrentState, setIscurrentState] = useState('Home');
 
@@ -148,6 +153,9 @@ const Navdata = () => {
         if (iscurrentState !== 'Lactation') {
             setIsLactation(false)
         }
+        if (iscurrentState !== 'Pre-initiation') {
+            setIsPreinitiation(false)
+        }
     }, [
         history,
         iscurrentState,
@@ -164,6 +172,7 @@ const Navdata = () => {
         isMedication,
         isFeeding,
         isLactation,
+        isPreinitiation
     ]);
 
     const menuItems: any = [
@@ -391,7 +400,7 @@ const Navdata = () => {
                     id: "pigsInventory",
                     label: "Inventario",
                     link: "/pigs/inventory_pigs",
-                    roles: ['farm_manager', 'general_worker' , 'reproduction_technician', 'veterinarian'],
+                    roles: ['farm_manager', 'general_worker', 'reproduction_technician', 'veterinarian'],
                     parentId: "pigs",
                     click: function (e: any) {
                         e.preventDefault();
@@ -403,7 +412,7 @@ const Navdata = () => {
                     id: "viewPigs",
                     label: "Reproductores",
                     link: "/pigs/view_pigs",
-                    roles: ['farm_manager', 'general_worker' , 'reproduction_technician', 'veterinarian'],
+                    roles: ['farm_manager', 'general_worker', 'reproduction_technician', 'veterinarian'],
                     parentId: "pigs",
                     click: function (e: any) {
                         e.preventDefault();
@@ -567,6 +576,34 @@ const Navdata = () => {
                         setIsLitters(!isLitters)
                     },
                     stateVariables: isLitters,
+                },
+            ]
+        },
+        {
+            id: 'pre-initiation',
+            label: 'Pre-iniciacion',
+            icon: 'bx bx-bowl-rice',
+            link: '/#',
+            roles: ['farm_manager', 'veterinarian', 'general_worker',],
+            click: function (e: any) {
+                e.preventDefault();
+                setIscurrentState('Pre-initiation')
+                setIsPreinitiation(!isPreinitiation)
+                updateIconSidebar(e);
+            },
+            stateVariables: isPreinitiation,
+            subItems: [
+                {
+                    id: "weanedGroups",
+                    label: "Grupos destetados",
+                    link: "/pre-initiation/view_weaned_groups",
+                    roles: ['farm_manager', 'veterinarian', 'general_worker'],
+                    parentId: "initiation",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsViewWeanedGroups(!isViewWeanedGroups)
+                    },
+                    stateVariables: isViewWeanedGroups,
                 },
             ]
         },

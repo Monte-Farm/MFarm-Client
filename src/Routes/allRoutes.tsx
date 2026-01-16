@@ -64,6 +64,7 @@ import ViewFeedingPackages from "pages/Feeding/ViewFeedingPackages";
 import ViewLitters from "pages/Lactation/ViewLitters";
 import LitterDetails from "pages/Lactation/LitterDetails";
 import InventoryPigs from "pages/Pigs/InventoryPigs";
+import ViewWeanedGroups from "pages/Pre-initiation/ViewWeanedGroups";
 
 
 
@@ -152,6 +153,9 @@ const authProtectedRoutes = [
   //Lactation
   { path: '/lactation/view_litters', component: <ViewLitters /> },
   { path: '/lactation/litter_details/:litter_id', component: <LitterDetails /> },
+
+  //Pre-initiation
+  { path: '/pre-initiation/view_weaned_groups', component: <ViewWeanedGroups /> },
 
 
 
