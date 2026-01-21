@@ -15,6 +15,7 @@ import { FaBaby, FaBabyCarriage, FaBiohazard, FaClipboardList, FaClock, FaExclam
 import LineChartCard from "Components/Common/Graphics/LineChartCard";
 import BasicBarChart from "Components/Common/Graphics/BasicBarChart";
 import { ResponsiveBar } from "@nivo/bar";
+import BasicPieChart from "Components/Common/Graphics/BasicPieChart";
 
 const ViewBirths = () => {
     document.title = 'Partos registrados | Management System'
@@ -175,45 +176,11 @@ const ViewBirths = () => {
                 <BreadCrumb title={"Partos registrados"} pageTitle={"Partos"} />
 
                 <div className="d-flex gap-3 flex-wrap">
-                    <KPI
-                        title="Partos totales"
-                        value={birthStats?.operationalKpis?.[0]?.totalBirths ?? 0}
-                        icon={FaPiggyBank}
-                        bgColor="#e8f0fe"
-                        iconColor="#0d6efd"
-                    />
-
-                    <KPI
-                        title="Tasa de mortalidad"
-                        value={birthStats?.operationalKpis?.[0]?.mortalityRate.toFixed(2) ?? 0}
-                        icon={FaSkullCrossbones}
-                        bgColor="#fdecea"
-                        iconColor="#dc3545"
-                    />
-
-                    <KPI
-                        title="Tasa de nacidos muertos"
-                        value={birthStats?.operationalKpis?.[0]?.stillbornRate ?? 0}
-                        icon={FaBabyCarriage}
-                        bgColor="#fff3cd"
-                        iconColor="#ff8800"
-                    />
-
-                    <KPI
-                        title="Tasa de momias"
-                        value={birthStats?.operationalKpis?.[0]?.mummiesRate ?? 0}
-                        icon={FaBiohazard}
-                        bgColor="#f8d7da"
-                        iconColor="#b02a37"
-                    />
-
-                    <KPI
-                        title="Promedio de nacidos vivos"
-                        value={birthStats?.operationalKpis?.[0]?.avgBornAlivePerBirth.toFixed(2) ?? 0}
-                        icon={FaBaby}
-                        bgColor="#e6f7e6"
-                        iconColor="#28a745"
-                    />
+                    <KPI title="Partos totales" value={birthStats?.operationalKpis?.[0]?.totalBirths ?? 0} icon={FaPiggyBank} bgColor="#e8f0fe" iconColor="#0d6efd" />
+                    <KPI title="Tasa de mortalidad" value={birthStats?.operationalKpis?.[0]?.mortalityRate.toFixed(2) ?? 0} icon={FaSkullCrossbones} bgColor="#fdecea" iconColor="#dc3545" />
+                    <KPI title="Tasa de nacidos muertos" value={birthStats?.operationalKpis?.[0]?.stillbornRate ?? 0} icon={FaBabyCarriage} bgColor="#fff3cd" iconColor="#ff8800" />
+                    <KPI title="Tasa de momias" value={birthStats?.operationalKpis?.[0]?.mummiesRate ?? 0} icon={FaBiohazard} bgColor="#f8d7da" iconColor="#b02a37" />
+                    <KPI title="Promedio de nacidos vivos" value={birthStats?.operationalKpis?.[0]?.avgBornAlivePerBirth.toFixed(2) ?? 0} icon={FaBaby} bgColor="#e6f7e6" iconColor="#28a745" />
                 </div>
 
                 <div className="d-flex gap-3">
@@ -231,19 +198,26 @@ const ViewBirths = () => {
                         yLegend="Promedio por parto"
                     />
 
-                    <BasicBarChart
-                        title="Promedio de resultados por lote"
-                        data={birthStats?.litterStats?.map((litter: any) => ({
-                            lote: litter.litterCode,
-                            "Nacidos vivos": litter.avgBornAlive,
-                            "Nacidos muertos": litter.avgStillborn,
-                            "Momias": litter.avgMummies,
-                        })) ?? []}
-                        indexBy="lote"
-                        keys={["Nacidos vivos", "Nacidos muertos", "Momias"]}
-                        xLegend="Camada"
-                        yLegend="Promedio por parto"
+                    <BasicPieChart
+                        title="Distribución por tipo de parto"
+                        data={
+                            (birthStats?.statsByBirthType ?? []).map((item: any) => {
+                                const labelMap: Record<string, string> = {
+                                    normal: "Normal",
+                                    dystocia: "Distócico",
+                                    cesarean: "Cesárea",
+                                    induced: "Inducido",
+                                    abortive: "Abortivo",
+                                };
+
+                                return {
+                                    id: labelMap[item.birthType] ?? item.birthType,
+                                    value: item.totalBirths,
+                                };
+                            })
+                        }
                     />
+
                 </div>
 
 
