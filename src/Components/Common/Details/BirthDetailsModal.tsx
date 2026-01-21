@@ -190,29 +190,9 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
     return (
         <>
             <div className="d-flex gap-3">
-                <KPI
-                    title="Nacidos vivos"
-                    value={birthDetails.born_alive}
-                    icon={FaHeart}
-                    bgColor="#E6F9F0"
-                    iconColor="#28A745"
-                />
-
-                <KPI
-                    title="Nacidos muertos"
-                    value={birthDetails.stillborn}
-                    icon={FaSkull}
-                    bgColor="#FDECEA"
-                    iconColor="#DC3545"
-                />
-
-                <KPI
-                    title="Momias"
-                    value={birthDetails.mummies}
-                    icon={FaExclamationTriangle}
-                    bgColor="#FFF4E5"
-                    iconColor="#FD7E14"
-                />
+                <KPI title="Nacidos vivos" value={birthDetails.born_alive} icon={FaHeart} bgColor="#E6F9F0" iconColor="#28A745" />
+                <KPI title="Nacidos muertos" value={birthDetails.stillborn} icon={FaSkull} bgColor="#FDECEA" iconColor="#DC3545" />
+                <KPI title="Momias" value={birthDetails.mummies} icon={FaExclamationTriangle} bgColor="#FFF4E5" iconColor="#FD7E14" />
             </div>
 
             <div className="d-flex gap-3 align-items-stretch">
