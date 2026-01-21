@@ -11,6 +11,9 @@ import "simplebar-react/dist/simplebar.min.css";
 import LoadingAnimation from "../Shared/LoadingAnimation";
 import CustomTable from "../Tables/CustomTable";
 import { Column } from "common/data/data_types";
+import KPI from "../Graphics/Kpi";
+import { IconBaseProps } from "react-icons";
+import { FaExclamationTriangle, FaHeart, FaMars, FaPiggyBank, FaSkull, FaVenus } from "react-icons/fa";
 
 interface BirthDetailsProps {
     birthId: string
@@ -137,15 +140,15 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
             ),
         },
         { header: 'Peso', accessor: 'weight', type: 'text', isFilterable: true },
-        {
-            header: 'Estado',
-            accessor: 'status',
-            render: (value: string) => (
-                <Badge color={value === 'alive' ? "info" : "danger"}>
-                    {value === 'alive' ? "Vivo" : "Muerto"}
-                </Badge>
-            ),
-        },
+        // {
+        //     header: 'Estado',
+        //     accessor: 'status',
+        //     render: (value: string) => (
+        //         <Badge color={value === 'alive' ? "info" : "danger"}>
+        //             {value === 'alive' ? "Vivo" : "Muerto"}
+        //         </Badge>
+        //     ),
+        // },
     ]
 
     const fetchData = async () => {
@@ -186,6 +189,32 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
 
     return (
         <>
+            <div className="d-flex gap-3">
+                <KPI
+                    title="Nacidos vivos"
+                    value={birthDetails.born_alive}
+                    icon={FaHeart}
+                    bgColor="#E6F9F0"
+                    iconColor="#28A745"
+                />
+
+                <KPI
+                    title="Nacidos muertos"
+                    value={birthDetails.stillborn}
+                    icon={FaSkull}
+                    bgColor="#FDECEA"
+                    iconColor="#DC3545"
+                />
+
+                <KPI
+                    title="Momias"
+                    value={birthDetails.mummies}
+                    icon={FaExclamationTriangle}
+                    bgColor="#FFF4E5"
+                    iconColor="#FD7E14"
+                />
+            </div>
+
             <div className="d-flex gap-3 align-items-stretch">
                 <div className="w-100 d-flex flex-column">
                     <Card className="flex-fill shadow-sm mb-3">
@@ -224,8 +253,8 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
                 <div className="w-100 d-flex flex-column">
                     <Card className="flex-fill shadow-sm">
                         <CardHeader className="bg-light d-flex justify-content-between align-items-center fs-5">
-                             <span className="text-black fs-5">Camada</span>
-                             <Button color="link" onClick={() => navigate(`/lactation/litter_details/${litterDetails._id}`)}>
+                            <span className="text-black fs-5">Camada</span>
+                            <Button color="link" onClick={() => navigate(`/lactation/litter_details/${litterDetails._id}`)}>
                                 Información ↗
                             </Button>
                         </CardHeader>
