@@ -9,6 +9,8 @@ import { useNavigate } from "react-router-dom";
 import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
 import LoadingAnimation from "../Shared/LoadingAnimation";
+import CustomTable from "../Tables/CustomTable";
+import { Column } from "common/data/data_types";
 
 interface BirthDetailsProps {
     birthId: string
@@ -124,13 +126,30 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
         { key: "estimated_farrowing_date", label: "Fecha de parto prevista", type: "date" },
     ]
 
-    const simpleLitterPigs: Attribute[] = [
-        { key: 'pigCount', label: 'Lechones', type: 'text' },
-        { key: 'avg_weight', label: 'Peso promedio', type: 'text' },
+    const pigletsColumns: Column<any>[] = [
+        {
+            header: 'Sexo',
+            accessor: 'sex',
+            render: (value: string) => (
+                <Badge color={value === 'male' ? "info" : "danger"}>
+                    {value === 'male' ? "♂ Macho" : "♀ Hembra"}
+                </Badge>
+            ),
+        },
+        { header: 'Peso', accessor: 'weight', type: 'text', isFilterable: true },
+        {
+            header: 'Estado',
+            accessor: 'status',
+            render: (value: string) => (
+                <Badge color={value === 'alive' ? "info" : "danger"}>
+                    {value === 'alive' ? "Vivo" : "Muerto"}
+                </Badge>
+            ),
+        },
     ]
 
     const fetchData = async () => {
-        if (!configContext) return;
+        if (!configContext || !birthId) return;
         try {
             setLoading(true);
 
@@ -141,11 +160,11 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
             const [sowResponse, pregnancyResponse, litterResponse] = await Promise.all([
                 configContext.axiosHelper.get(`${configContext.apiUrl}/pig/find_by_id/${birthData.sow}`),
                 configContext.axiosHelper.get(`${configContext.apiUrl}/pregnancies/find_by_id/${birthData.pregnancy}`),
-                configContext.axiosHelper.get(`${configContext.apiUrl}/group/find_by_id/${birthData.litter}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/litter/find_by_birth/${birthId}`),
             ]);
 
-            setPregnancyDetails(pregnancyResponse.data.data);
             setSowDetails(sowResponse.data.data);
+            setPregnancyDetails(pregnancyResponse.data.data);
             setLitterDetails(litterResponse.data.data);
         } catch (error) {
             console.error('Error al obtener los datos', { error });
@@ -204,45 +223,14 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
 
                 <div className="w-100 d-flex flex-column">
                     <Card className="flex-fill shadow-sm">
-                        <CardHeader className="bg-light">
-                            <h5>Camada</h5>
+                        <CardHeader className="bg-light d-flex justify-content-between align-items-center fs-5">
+                             <span className="text-black fs-5">Camada</span>
+                             <Button color="link" onClick={() => navigate(`/lactation/litter_details/${litterDetails._id}`)}>
+                                Información ↗
+                            </Button>
                         </CardHeader>
-                        <CardBody className={`${litterDetails.pigsInGroup?.length === 0 ? '' : 'p-2'}`} style={{ height: "450px" }}>
-                            {litterDetails.pigsInGroup?.length === 0 ? (
-                                <>
-                                    <ObjectDetails attributes={simpleLitterPigs} object={litterDetails} />
-                                </>
-                            ) : (
-                                <>
-                                    <SimpleBar style={{ maxHeight: "100%" }}>
-                                        <div className="d-flex flex-column gap-3">
-                                            {litterDetails?.pigsInGroup?.map((pig: any, idx: number) => (
-                                                <div key={pig._id} className="d-flex p-2 border rounded bg-light">
-                                                    <div className="d-flex align-items-center justify-content-center bg-secondary text-white rounded me-3" style={{ width: "50px", fontWeight: 600 }}>
-                                                        {idx + 1}
-                                                    </div>
-                                                    <div className="flex-grow-1 d-flex flex-column gap-1 fs-5">
-                                                        <div className="d-flex justify-content-between">
-                                                            <span className="fw-semibold text-black">Código:</span>
-                                                            <span className="text-black">{pig.code}</span>
-                                                        </div>
-                                                        <div className="d-flex justify-content-between">
-                                                            <span className="fw-semibold text-black">Peso:</span>
-                                                            <span className="text-black">{pig.weight}</span>
-                                                        </div>
-                                                        <div className="d-flex justify-content-between">
-                                                            <span className="fw-semibold text-black">Sexo:</span>
-                                                            <Badge color={pig.sex === 'macho' ? "info" : "danger"}>
-                                                                {pig.sex === 'macho' ? "♂ Macho" : "♀ Hembra"}
-                                                            </Badge>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </SimpleBar>
-                                </>
-                            )}
+                        <CardBody className="p-0">
+                            <CustomTable columns={pigletsColumns} data={litterDetails.piglets} showSearchAndFilter={false} showPagination rowsPerPage={7} />
                         </CardBody>
                     </Card>
                 </div >

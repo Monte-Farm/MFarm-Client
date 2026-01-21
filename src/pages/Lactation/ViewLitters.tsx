@@ -48,6 +48,14 @@ const ViewLitters = () => {
             isFilterable: true,
             render: (_, row) => <span>{row.responsible.name} {row.responsible.lastname}</span>
         },
+        { header: 'Peso promedio', accessor: 'averageWeight', type: 'text', isFilterable: true },
+        {
+            header: 'Peso total',
+            accessor: 'averageWeight',
+            type: 'text',
+            isFilterable: true,
+            render: (_,row) => <span>{row.averageWeight * (row.currentMale + row.currentFemale)}</span>
+        },
         {
             header: 'Estado',
             accessor: 'status',

@@ -126,23 +126,6 @@ const ViewBirths = () => {
             )
         },
         {
-            header: "Camada",
-            accessor: "litter",
-            type: "text",
-            render: (_, row) => (
-                <Button
-                    className="text-underline fs-5"
-                    color="link"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/groups/group_details/${row.litter}`)
-                    }}
-                >
-                    Camada ↗
-                </Button>
-            )
-        },
-        {
             header: "Acciones",
             accessor: "action",
             render: (value: any, row: any) => (

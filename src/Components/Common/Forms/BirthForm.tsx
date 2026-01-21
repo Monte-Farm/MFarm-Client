@@ -219,7 +219,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                     initialFemale: Number(femaleCount),
                     currentMale: Number(maleCount),
                     currentFemale: Number(femaleCount),
-                    averageWeight: avgWeight,
+                    averageWeight: Number(avgWeight.toFixed(2)),
                     status: 'active',
                     piglets: pigletsArray,
                     responsible: userLogged._id,
