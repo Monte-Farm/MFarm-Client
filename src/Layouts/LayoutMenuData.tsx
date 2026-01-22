@@ -86,7 +86,13 @@ const Navdata = () => {
     const [isPreinitiation, setIsPreinitiation] = useState<boolean>(false)
     const [isViewWeanedGroups, setIsViewWeanedGroups] = useState<boolean>(false)
 
+    //Growing
+    const [isGrowing, setIsGrowing] = useState<boolean>(false)
+    const [isViewGrowingGroups, setIsViewGrowingGroups] = useState<boolean>(false)
 
+    //Finishing - Ceba
+    const [isFinishing, setIsFinishing] = useState<boolean>(false)
+    const [isViewFinishingGroups, setIsViewFinishingGroups] = useState<boolean>(false)
 
     const [iscurrentState, setIscurrentState] = useState('Home');
 
@@ -156,6 +162,12 @@ const Navdata = () => {
         if (iscurrentState !== 'Pre-initiation') {
             setIsPreinitiation(false)
         }
+        if (iscurrentState !== 'Growing') {
+            setIsGrowing(false)
+        }
+        if (iscurrentState !== 'Finishing') {
+            setIsFinishing(false)
+        }
     }, [
         history,
         iscurrentState,
@@ -172,7 +184,9 @@ const Navdata = () => {
         isMedication,
         isFeeding,
         isLactation,
-        isPreinitiation
+        isPreinitiation,
+        isGrowing,
+        isFinishing,
     ]);
 
     const menuItems: any = [
@@ -582,7 +596,7 @@ const Navdata = () => {
         {
             id: 'pre-initiation',
             label: 'Pre-iniciacion',
-            icon: 'bx bx-bowl-rice',
+            icon: 'mdi mdi-baby-carriage',
             link: '/#',
             roles: ['farm_manager', 'veterinarian', 'general_worker',],
             click: function (e: any) {
@@ -604,6 +618,62 @@ const Navdata = () => {
                         setIsViewWeanedGroups(!isViewWeanedGroups)
                     },
                     stateVariables: isViewWeanedGroups,
+                },
+            ]
+        },
+        {
+            id: 'growing',
+            label: 'Crecimiento',
+            icon: 'mdi mdi-chart-line-variant',
+            link: '/#',
+            roles: ['farm_manager', 'general_worker',],
+            click: function (e: any) {
+                e.preventDefault();
+                setIscurrentState('Growing')
+                setIsGrowing(!isGrowing)
+                updateIconSidebar(e);
+            },
+            stateVariables: isGrowing,
+            subItems: [
+                {
+                    id: "growingGroups",
+                    label: "Grupos en crecimiento",
+                    link: "/#",
+                    roles: ['farm_manager', 'general_worker'],
+                    parentId: "growing",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsViewGrowingGroups(!isViewGrowingGroups)
+                    },
+                    stateVariables: isViewGrowingGroups,
+                },
+            ]
+        },
+        {
+            id: 'finishing',
+            label: 'Ceba',
+            icon: 'mdi mdi-weight',
+            link: '/#',
+            roles: ['farm_manager', 'general_worker',],
+            click: function (e: any) {
+                e.preventDefault();
+                setIscurrentState('Finishing')
+                setIsFinishing(!isFinishing)
+                updateIconSidebar(e);
+            },
+            stateVariables: isFinishing,
+            subItems: [
+                {
+                    id: "finishingGroups",
+                    label: "Grupos en ceba",
+                    link: "/#",
+                    roles: ['farm_manager', 'general_worker'],
+                    parentId: "finishing",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsViewFinishingGroups(!isViewFinishingGroups)
+                    },
+                    stateVariables: isViewFinishingGroups,
                 },
             ]
         },
