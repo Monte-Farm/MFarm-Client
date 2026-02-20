@@ -68,7 +68,35 @@ const GroupWithDrawForm: React.FC<GroupWithDrawFormProps> = ({ groupId, onSave }
         },
         { header: 'Raza', accessor: 'breed', type: 'text', isFilterable: true },
         { header: 'Peso actual', accessor: 'weight', type: 'number', isFilterable: true },
-        { header: 'Etapa actual', accessor: 'currentStage', type: 'text', isFilterable: true },
+        {
+            accessor: 'currentStage',
+            header: 'Etapa',
+            render: (value: string) => {
+                let color = "secondary";
+                let label = value;
+
+                switch (value) {
+                    case "piglet":
+                        color = "info";
+                        label = "Lechón";
+                        break;
+                    case "weaning":
+                        color = "warning";
+                        label = "Destete";
+                        break;
+                    case "fattening":
+                        color = "primary";
+                        label = "Engorda";
+                        break;
+                    case "breeder":
+                        color = "success";
+                        label = "Reproductor";
+                        break;
+                }
+
+                return <Badge color={color}>{label}</Badge>;
+            },
+        },
         { header: 'Fecha de N.', accessor: 'birthdate', type: 'date' },
     ]
 
@@ -83,7 +111,6 @@ const GroupWithDrawForm: React.FC<GroupWithDrawFormProps> = ({ groupId, onSave }
             type: 'text',
             render: (_, obj) => <span>{userLogged.name} {userLogged.lastname}</span>
         },
-
     ]
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
@@ -108,7 +135,8 @@ const GroupWithDrawForm: React.FC<GroupWithDrawFormProps> = ({ groupId, onSave }
             const groupResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/group/find_by_id/${groupId}`)
             setGroupData(groupResponse.data.data)
             const pigsWithId = groupResponse.data.data.pigsInGroup.map((b: any) => ({ ...b, id: b._id }));
-            setPigs(pigsWithId);
+            const pigsFiltered = pigsWithId.filter((p: any) => p.status === 'alive')
+            setPigs(pigsFiltered)
         } catch (error) {
             console.error('Error fetching data', { error })
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un errro la obtener los datos, intentelo mas tarde' })

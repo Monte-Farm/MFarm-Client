@@ -54,7 +54,7 @@ const ViewLitters = () => {
             accessor: 'averageWeight',
             type: 'text',
             isFilterable: true,
-            render: (_,row) => <span>{row.averageWeight * (row.currentMale + row.currentFemale)}</span>
+            render: (_, row) => <span>{row.averageWeight * (row.currentMale + row.currentFemale)}</span>
         },
         {
             header: 'Estado',
@@ -67,12 +67,20 @@ const ViewLitters = () => {
 
                 switch (value) {
                     case "active":
-                        color = "warning";
+                        color = "primary";
                         label = "Lactando";
+                        break;
+                    case "ready_to_wean":
+                        color = "warning";
+                        label = "Listo para destetar";
                         break;
                     case "weaned":
                         color = "success";
                         label = "Destetada";
+                        break;
+                    case "wean_overdue":
+                        color = "black";
+                        label = "Destete vencido";
                         break;
                 }
 

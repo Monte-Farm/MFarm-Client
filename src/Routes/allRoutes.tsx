@@ -48,7 +48,6 @@ import FarmDetails from "pages/Farms/FarmDetails";
 import ViewGroups from "pages/Groups/ViewGroups";
 import ViewExtractions from "pages/Laboratory/ViewExtractions";
 import ViewSamples from "pages/Laboratory/ViewSamples";
-import ViewGestations from "pages/Gestation/ViewInseminations";
 import ViewPregnancies from "pages/Gestation/ViewPregnancies";
 import ViewInseminations from "pages/Gestation/ViewInseminations";
 import SampleDetails from "pages/Laboratory/SampleDetails";
@@ -64,7 +63,11 @@ import ViewFeedingPackages from "pages/Feeding/ViewFeedingPackages";
 import ViewLitters from "pages/Lactation/ViewLitters";
 import LitterDetails from "pages/Lactation/LitterDetails";
 import InventoryPigs from "pages/Pigs/InventoryPigs";
-import ViewWeanedGroups from "pages/Pre-initiation/ViewWeanedGroups";
+import ViewWeanedGroups from "pages/Groups/ViewWeanedGroups";
+import ViewGrowingGroups from "pages/Groups/ViewGrowingGroups";
+import ViewFinishingGroups from "pages/Groups/ViewFinishingGroups";
+import ViewSows from "pages/Replacement/ViewSows";
+import ViewBoars from "pages/Replacement/ViewBoars";
 
 
 
@@ -127,6 +130,11 @@ const authProtectedRoutes = [
   //Groups
   { path: "/groups/view_groups", component: <ViewGroups /> },
   { path: "/groups/group_details/:group_id", component: <GroupDetails /> },
+  { path: '/groups/view_weaned_groups', component: <ViewWeanedGroups /> },
+  { path: '/groups/view_growing_groups', component: <ViewGrowingGroups /> },
+  { path: '/groups/view_finishing_groups', component: <ViewFinishingGroups /> },
+  { path: '/groups/view_exit_groups', component: <ViewFinishingGroups /> },
+
 
   //Laboratory
   { path: "/laboratory/extractions/view_extractions", component: <ViewExtractions /> },
@@ -154,8 +162,9 @@ const authProtectedRoutes = [
   { path: '/lactation/view_litters', component: <ViewLitters /> },
   { path: '/lactation/litter_details/:litter_id', component: <LitterDetails /> },
 
-  //Pre-initiation
-  { path: '/pre-initiation/view_weaned_groups', component: <ViewWeanedGroups /> },
+  //Replacement
+  { path: '/replacement/view_sows', component: <ViewSows /> },
+  { path: '/replacement/view_boars', component: <ViewBoars /> },
 
 
 

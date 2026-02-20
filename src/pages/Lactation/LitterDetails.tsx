@@ -44,13 +44,21 @@ const LitterDetails = () => {
                 let label = value;
 
                 switch (value) {
-                    case 'active':
-                        color = 'warning';
-                        label = 'Lactando';
+                    case "active":
+                        color = "primary";
+                        label = "Lactando";
                         break;
-                    case 'weaned':
-                        color = 'success';
-                        label = 'Destetada';
+                    case "ready_to_wean":
+                        color = "warning";
+                        label = "Listo para destetar";
+                        break;
+                    case "weaned":
+                        color = "success";
+                        label = "Destetada";
+                        break;
+                    case "wean_overdue":
+                        color = "black";
+                        label = "Destete vencido";
                         break;
                 }
 
@@ -176,7 +184,8 @@ const LitterDetails = () => {
                                     <CardHeader className="bg-white border-bottom d-flex justify-content-between">
                                         <h5 className="mb-0 text-dark fw-semibold">Datos de la camada</h5>
 
-                                        <Button color="success" onClick={() => toggleModal('weanLitter')} disabled={litterDetails.status === 'weaned'}>
+                                        <Button color="success" onClick={() => toggleModal('weanLitter')} disabled={litterDetails.status === 'weaned' || litterDetails.status === 'active'}>
+                                            <i className="mdi mdi-baby-bottle-outline me-2" />
                                             Destetar
                                         </Button>
                                     </CardHeader>

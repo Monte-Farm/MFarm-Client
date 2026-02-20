@@ -94,6 +94,15 @@ const Navdata = () => {
     const [isFinishing, setIsFinishing] = useState<boolean>(false)
     const [isViewFinishingGroups, setIsViewFinishingGroups] = useState<boolean>(false)
 
+    //Exit
+    const [isExit, setIsExit] = useState<boolean>(false)
+    const [isViewExitGroups, setIsViewExitGroups] = useState<boolean>(false)
+
+    //Replacement
+    const [isReplacement, setIsReplacement] = useState<boolean>(false);
+    const [isSows, setIsSows] = useState<boolean>(false);
+    const [isBoars, setIsBoars] = useState<boolean>(false);
+
     const [iscurrentState, setIscurrentState] = useState('Home');
 
     function updateIconSidebar(e: any) {
@@ -140,7 +149,6 @@ const Navdata = () => {
         if (iscurrentState !== 'SubwarehouseOutcomes') {
             setIsSubwarehouseOutcomes(false)
         }
-
         if (iscurrentState !== 'PurchaseOrders') {
             setIsPurchaseOrders(false)
         }
@@ -168,6 +176,12 @@ const Navdata = () => {
         if (iscurrentState !== 'Finishing') {
             setIsFinishing(false)
         }
+        if (iscurrentState !== 'Replacement') {
+            setIsReplacement(false)
+        }
+        if (iscurrentState !== 'Exit') {
+            setIsExit(false)
+        }
     }, [
         history,
         iscurrentState,
@@ -187,6 +201,8 @@ const Navdata = () => {
         isPreinitiation,
         isGrowing,
         isFinishing,
+        isReplacement,
+        isExit,
     ]);
 
     const menuItems: any = [
@@ -434,18 +450,18 @@ const Navdata = () => {
                     },
                     stateVariables: isViewPigs,
                 },
-                {
-                    id: "viewGroups",
-                    label: "Grupos",
-                    link: "/groups/view_groups",
-                    roles: ['farm_manager', 'general_worker', , 'reproduction_technician', 'veterinarian'],
-                    parentId: "pigs",
-                    click: function (e: any) {
-                        e.preventDefault();
-                        setIsViewGroups(!isViewGroups)
-                    },
-                    stateVariables: isViewGroups,
-                },
+                // {
+                //     id: "viewGroups",
+                //     label: "Grupos",
+                //     link: "/groups/view_groups",
+                //     roles: ['farm_manager', 'general_worker', , 'reproduction_technician', 'veterinarian'],
+                //     parentId: "pigs",
+                //     click: function (e: any) {
+                //         e.preventDefault();
+                //         setIsViewGroups(!isViewGroups)
+                //     },
+                //     stateVariables: isViewGroups,
+                // },
                 {
                     id: "discardedPigs",
                     label: "Descartados",
@@ -610,7 +626,7 @@ const Navdata = () => {
                 {
                     id: "weanedGroups",
                     label: "Grupos destetados",
-                    link: "/pre-initiation/view_weaned_groups",
+                    link: "/groups/view_weaned_groups",
                     roles: ['farm_manager', 'veterinarian', 'general_worker'],
                     parentId: "initiation",
                     click: function (e: any) {
@@ -623,7 +639,7 @@ const Navdata = () => {
         },
         {
             id: 'growing',
-            label: 'Crecimiento',
+            label: 'Crecimiento y ceba',
             icon: 'mdi mdi-chart-line-variant',
             link: '/#',
             roles: ['farm_manager', 'general_worker',],
@@ -638,7 +654,7 @@ const Navdata = () => {
                 {
                     id: "growingGroups",
                     label: "Grupos en crecimiento",
-                    link: "/#",
+                    link: "/groups/view_growing_groups",
                     roles: ['farm_manager', 'general_worker'],
                     parentId: "growing",
                     click: function (e: any) {
@@ -650,32 +666,73 @@ const Navdata = () => {
             ]
         },
         {
-            id: 'finishing',
-            label: 'Ceba',
-            icon: 'mdi mdi-weight',
+            id: 'exit',
+            label: 'Salida',
+            icon: 'bx bx-exit',
             link: '/#',
             roles: ['farm_manager', 'general_worker',],
             click: function (e: any) {
                 e.preventDefault();
-                setIscurrentState('Finishing')
-                setIsFinishing(!isFinishing)
+                setIscurrentState('Exit')
+                setIsExit(!isExit)
                 updateIconSidebar(e);
             },
-            stateVariables: isFinishing,
+            stateVariables: isExit,
             subItems: [
                 {
-                    id: "finishingGroups",
-                    label: "Grupos en ceba",
-                    link: "/#",
+                    id: "exitingGroups",
+                    label: "Grupos para salida",
+                    link: "/groups/view_exit_groups",
                     roles: ['farm_manager', 'general_worker'],
-                    parentId: "finishing",
+                    parentId: "exit",
                     click: function (e: any) {
                         e.preventDefault();
-                        setIsViewFinishingGroups(!isViewFinishingGroups)
+                        setIsViewExitGroups(!isViewExitGroups)
                     },
-                    stateVariables: isViewFinishingGroups,
+                    stateVariables: isViewExitGroups,
                 },
             ]
+        },
+        {
+            id: 'replacement',
+            label: 'Reemplazo',
+            icon: 'mdi mdi-cat',
+            link: '/#',
+            roles: ['farm_manager', 'reproduction_technician', 'general_worker', 'veterinarian',],
+            click: function (e: any) {
+                e.preventDefault();
+                setIscurrentState('Replacement')
+                setIsReplacement(!isReplacement)
+                updateIconSidebar(e);
+            },
+            stateVariables: isReplacement,
+            subItems: [
+                {
+                    id: "sows",
+                    label: "Cerdas",
+                    link: "/replacement/view_sows",
+                    roles: ['farm_manager', 'reproduction_technician', 'general_worker', 'veterinarian',],
+                    parentId: "replacement",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsSows(!isSows)
+                    },
+                    stateVariables: isSows,
+                },
+                {
+                    id: "boars",
+                    label: "Berracos",
+                    link: "/replacement/view_boars",
+                    roles: ['farm_manager', 'reproduction_technician', 'general_worker', 'veterinarian',],
+                    parentId: "replacement",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsBoars(!isBoars)
+                    },
+                    stateVariables: isBoars,
+                },
+            ]
+
         },
         {
             id: 'medication',

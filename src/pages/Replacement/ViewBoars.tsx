@@ -1,29 +1,40 @@
-import { ConfigContext } from "App";
-import { Column } from "common/data/data_types";
-import { PigData } from "common/data_interfaces";
-import DiscardPigForm from "Components/Common/Forms/DiscardPigForm";
-import BasicBarChart from "Components/Common/Graphics/BasicBarChart";
-import BasicPieChart from "Components/Common/Graphics/BasicPieChart";
-import KPI from "Components/Common/Graphics/Kpi";
+import { ConfigContext } from "App"
+import { PigData } from "common/data_interfaces"
 import BreadCrumb from "Components/Common/Shared/BreadCrumb"
-import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
-import CustomTable from "Components/Common/Tables/CustomTable";
-import { getLoggedinUser } from "helpers/api_helper";
-import Slider from "rc-slider";
-import { useContext, useEffect, useRef, useState } from "react";
-import { FaMars, FaVenus } from "react-icons/fa";
-import { FiAlertCircle, FiCheckCircle, FiFilter, FiSearch, FiTrash2, FiTrendingDown, FiX } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
+import { useContext, useEffect, useState, useRef } from "react"
+import {
+    Button, Card, CardBody, CardHeader, Container,
+    Modal, ModalBody, ModalHeader, Input, Popover, PopoverHeader,
+    PopoverBody, Row, Col, FormGroup, Label, Badge,
+    Spinner
+} from "reactstrap"
+import { getLoggedinUser } from "helpers/api_helper"
 import Select from "react-select"
-import { Badge, Button, Card, CardBody, CardHeader, Col, Container, FormGroup, Input, Label, Modal, ModalBody, ModalHeader, Popover, PopoverBody, PopoverHeader, Row } from "reactstrap"
+import { FiFilter, FiX, FiSearch, FiCheckCircle, FiAlertCircle } from "react-icons/fi"
+import Slider from 'rc-slider'
+import 'rc-slider/assets/index.css'
+import { useNavigate } from "react-router-dom"
+import 'simplebar-react/dist/simplebar.min.css';
+import { Column } from "common/data/data_types"
+import CustomTable from "Components/Common/Tables/CustomTable"
+import PDFViewer from "Components/Common/Shared/PDFViewer"
+import LoadingAnimation from "Components/Common/Shared/LoadingAnimation"
+import AlertMessage from "Components/Common/Shared/AlertMesagge"
+import { FaKeyboard, FaListUl, FaMars, FaVenus } from "react-icons/fa"
+import SinglePigForm from "Components/Common/Forms/SinglePigForm"
+import BatchPigForm from "Components/Common/Forms/BatchPigForm"
+import PigEditForm from "Components/Common/Forms/PigEditForm"
+import KPI from "Components/Common/Graphics/Kpi"
+import BasicPieChart from "Components/Common/Graphics/BasicPieChart"
 
-const DiscardedPigs = () => {
+const ViewBoars = () => {
+    const [modals, setModals] = useState({ selectCreationMode: false, createSingle: false, createBatch: false, update: false, viewPDF: false });
     const configContext = useContext(ConfigContext);
     const userLogged = getLoggedinUser();
-    const [modals, setModals] = useState({ discard: false, });
     const [loading, setLoading] = useState<boolean>(true)
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [pigs, setPigs] = useState<PigData[]>([])
+    const [stats, setStats] = useState<any>()
     const [filteredPigs, setFilteredPigs] = useState<PigData[]>([])
     const [fileURL, setFileURL] = useState<string>('')
     const [generatingReport, setGeneratingReport] = useState(false);
@@ -39,7 +50,7 @@ const DiscardedPigs = () => {
     const [popoverOpen, setPopoverOpen] = useState(false)
     const filterBtnRef = useRef(null)
     const navigate = useNavigate();
-    const [stats, setStats] = useState<any>()
+    const [selectedPig, setSelectedPig] = useState<PigData | null>(null)
 
     const pigColumns: Column<any>[] = [
         { header: 'Codigo', accessor: 'code', type: 'text' },
@@ -83,7 +94,7 @@ const DiscardedPigs = () => {
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { header: 'Peso', accessor: 'weight', type: 'number' },
+        { header: 'Peso actual', accessor: 'weight', type: 'number' },
         {
             header: 'Estado',
             accessor: 'status',
@@ -115,6 +126,9 @@ const DiscardedPigs = () => {
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
+                    <Button className="farm-secondary-button btn-icon" onClick={() => { setSelectedPig(row); toggleModal('update') }} disabled={row.status === 'vivo' ? false : true}>
+                        <i className="ri-pencil-fill align-middle"></i>
+                    </Button>
                     <Button className="farm-primary-button btn-icon" onClick={() => navigate(`/pigs/pig_details/${row._id}`)}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
@@ -147,8 +161,8 @@ const DiscardedPigs = () => {
         try {
             setLoading(true)
             const [pigsResponse, statsResponse] = await Promise.all([
-                configContext.axiosHelper.get(`${configContext.apiUrl}/pig/find_discarded_by_farm/${userLogged.farm_assigned}`),
-                configContext.axiosHelper.get(`${configContext.apiUrl}/pig/get_discarded_stats/${userLogged.farm_assigned}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/pig/find_boars/${userLogged.farm_assigned}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/pig/get_breeder_stats/${userLogged.farm_assigned}`),
             ])
 
             setPigs(pigsResponse.data.data)
@@ -162,6 +176,29 @@ const DiscardedPigs = () => {
         }
     }
 
+    const handlePrintReport = async () => {
+        if (!configContext) return;
+
+        setGeneratingReport(true);
+        try {
+            const pigIds = filteredPigs.map(pig => pig._id);
+
+            const response = await configContext.axiosHelper.postBlob(
+                `${configContext.apiUrl}/reports/generate_multiple_pig_report/`,
+                pigIds,
+                { responseType: 'blob' }
+            );
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            setFileURL(url);
+            toggleModal('viewPDF');
+        } catch (error) {
+            console.error('Error generating report: ', { error });
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al generar el reporte, inténtelo más tarde.' })
+        } finally {
+            setGeneratingReport(false);
+        }
+    };
 
     useEffect(() => {
         fetchData()
@@ -286,91 +323,42 @@ const DiscardedPigs = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Cerdos descartados"} pageTitle={"Cerdos"} />
+                <BreadCrumb title={"Ver Cerdos"} pageTitle={"Cerdos"} />
 
                 <div className="d-flex gap-3 flex-wrap">
-                    <KPI title="Cerdos descartados" value={stats?.general[0]?.totalDiscarded ?? 0} icon={FiTrash2} bgColor="#fdecea" iconColor="#d93025" />
-                    <KPI title="Porcentaje de cerdos descartados" value={`${stats?.general[0]?.discardRate ?? 0} %`} icon={FiTrendingDown} bgColor="#fff4e5" iconColor="#f5a623" />
+                    <KPI
+                        title="Cerdas totales"
+                        value={stats?.generalStats[0]?.totalAlive ?? 0}
+                        icon={FiCheckCircle}
+                        bgColor="#e6f7e6"
+                        iconColor="#28a745"
+                    />
+
+                    <KPI
+                        title="Peso promedio de hembras"
+                        icon={FaVenus}
+                        bgColor="#fde8f2"
+                        iconColor="#d63384"
+                        value={stats?.avgWeightBySex?.find((p: { _id: string }) => p._id === 'female')?.avgWeight ?? 0}
+                    />
                 </div>
 
-                <div className="d-flex gap-3">
-                    <BasicPieChart title={"Cerdos descartados por sexo"}
-                        data={stats?.bySex?.map((s: { _id: any; count: any }) => ({
+                {/* <div className="d-flex gap-3">
+                    <BasicPieChart title={"Cerdos por sexo"}
+                        data={stats?.pigsBySex?.map((s: { _id: any; count: any }) => ({
                             id: s._id === 'male' ? 'Macho' : 'Hembra',
                             value: s.count,
                         })) ?? []}
                     />
 
-                    <BasicPieChart
-                        title={"Cerdos descartados por etapa"}
-                        data={
-                            stats.byStage?.map((s: { _id: any; count: any }) => ({
-                                id: (() => {
-                                    switch (s._id) {
-                                        case "piglet": return "Lechón";
-                                        case "weaning": return "Destete";
-                                        case "fattening": return "Engorda";
-                                        case "breeder": return "Reproductor";
-                                        default: return s._id;
-                                    }
-                                })(),
-                                value: s.count,
-                            })) ?? []
-                        }
+                    <BasicPieChart title={"Cerdos por raza"}
+                        data={stats?.pigsByBreed?.map((s: { _id: any; count: any }) => ({
+                            id: s._id,
+                            value: s.count,
+                        })) ?? []}
                     />
+                </div> */}
 
-                    <BasicBarChart title={"Razon de descarte de cerdos"}
-                        indexBy="stage"
-                        keys={["cantidad"]}
-                        xLegend="Etapa"
-                        yLegend="Cantidad"
-                        data={stats.byReason.map((s: { _id: any; count: any }) => ({
-                            stage: (() => {
-                                switch (s._id) {
-                                    case "lameness": return "Cojeras";
-                                    case "poor_body_condition": return "Condición corporal deficiente";
-                                    case "reproductive_failure": return "Falla reproductiva";
-                                    case "low_milk_production": return "Baja producción de leche";
-                                    case "disease": return "Enfermedad";
-                                    case "injury": return "Lesión";
-                                    case "aggressive_behavior": return "Comportamiento agresivo";
-                                    case "old_age": return "Edad avanzada";
-                                    case "death": return "Muerte";
-                                    case "poor_growth": return "Bajo crecimiento / rendimiento";
-                                    case "hernias": return "Hernias";
-                                    case "prolapse": return "Prolapso";
-                                    case "non_ambulatory": return "No puede caminar";
-                                    case "respiratory_failure": return "Problemas respiratorios severos";
-                                    default: return s._id;
-                                }
-                            })(),
-                            cantidad: s.count
-                        }))}
-                    />
-
-                    <BasicBarChart title={"Destino de cerdos descartados"}
-                        indexBy="destination"
-                        keys={["cantidad"]}
-                        xLegend="Destino"
-                        yLegend="Cantidad"
-                        data={stats.byDestination.map((s: { _id: any; count: any }) => ({
-                            destination: (() => {
-                                switch (s._id) {
-                                    case "slaughterhouse": return "Rastro";
-                                    case "on_farm_euthanasia": return "Eutanasia en granja";
-                                    case "sale": return "Venta";
-                                    case "research": return "Investigación";
-                                    case "rendering": return "Procesadora / despojos";
-                                    case "composting": return "Compostaje";
-                                    case "burial": return "Enterrado";
-                                    case "incineration": return "Incineración";
-                                    default: return s._id;
-                                }
-                            })(),
-                            cantidad: s.count
-                        }))}
-                    />
-                </div>
 
 
                 <Card>
@@ -508,9 +496,17 @@ const DiscardedPigs = () => {
                                 </PopoverBody>
                             </Popover>
 
-                            <Button className="farm-primary-button ms-auto" onClick={() => toggleModal('discard')}>
-                                <i className="ri-add-line me-2" />
-                                Descartar cerdo
+                            <Button className="h-50 farm-primary-button ms-auto" onClick={handlePrintReport} disabled={generatingReport}>
+                                {generatingReport ? (
+                                    <>
+                                        <Spinner size="sm" /> Generando...
+                                    </>
+                                ) : (
+                                    <>
+                                        <i className="ri-download-line me-2"></i>
+                                        Exportar datos
+                                    </>
+                                )}
                             </Button>
                         </div>
                     </CardHeader>
@@ -520,7 +516,7 @@ const DiscardedPigs = () => {
                             <>
                                 <FiAlertCircle className="text-muted" size={22} />
                                 <span className="fs-5 text-black text-muted text-center rounded-5 ms-2">
-                                    No hay cerdos descartados
+                                    No hay berracos registrados
                                 </span>
                             </>
                         ) : (
@@ -530,14 +526,16 @@ const DiscardedPigs = () => {
                 </Card>
             </Container>
 
-            <Modal size="xl" isOpen={modals.discard} toggle={() => toggleModal("discard")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("discard")}>Descartar cerdo</ModalHeader>
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de berracos</ModalHeader>
                 <ModalBody>
-                    <DiscardPigForm onSave={() => { toggleModal('discard'); fetchData(); }} onCancel={() => { }} />
+                    {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>
             </Modal>
+
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </div>
     )
 }
 
-export default DiscardedPigs
+export default ViewBoars

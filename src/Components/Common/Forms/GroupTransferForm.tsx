@@ -20,10 +20,11 @@ import { Attribute } from "common/data_interfaces";
 
 interface GroupTransferFormProps {
     groupId: string;
+    stage: string;
     onSave: () => void
 }
 
-const GroupTransferForm: React.FC<GroupTransferFormProps> = ({ groupId, onSave }) => {
+const GroupTransferForm: React.FC<GroupTransferFormProps> = ({ groupId, stage, onSave }) => {
     const configContext = useContext(ConfigContext);
     const userLogged = getLoggedinUser();
     const [loading, setLoading] = useState<boolean>(true);
@@ -174,7 +175,7 @@ const GroupTransferForm: React.FC<GroupTransferFormProps> = ({ groupId, onSave }
                 return <Badge color={color}>{text}</Badge>;
             },
         },
-        { header: 'Fecha de creación', accessor: 'creation_date', type: 'date', isFilterable: true },
+        { header: 'Fecha de creación', accessor: 'creationDate', type: 'date', isFilterable: true },
         { header: 'No. de cerdos', accessor: 'pigCount', type: 'text', isFilterable: true },
         { header: 'No. de hembras', accessor: 'femaleCount', type: 'text', isFilterable: true },
         { header: 'No. de machos', accessor: 'maleCount', type: 'text', isFilterable: true },
@@ -187,7 +188,7 @@ const GroupTransferForm: React.FC<GroupTransferFormProps> = ({ groupId, onSave }
 
             const [groupResponse, availableGroupsResponse,] = await Promise.all([
                 configContext.axiosHelper.get(`${configContext.apiUrl}/group/find_by_id/${groupId}`),
-                configContext.axiosHelper.get(`${configContext.apiUrl}/group/find_by_farm/${userLogged.farm_assigned}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/group/find_by_stage/${userLogged.farm_assigned}/${stage}`),
             ]);
 
             const groupData = groupResponse.data.data;
@@ -205,7 +206,8 @@ const GroupTransferForm: React.FC<GroupTransferFormProps> = ({ groupId, onSave }
                 setAvailableGroups(groupsWithId)
 
                 const pigsWithId = groupResponse.data.data.pigsInGroup.map((b: any) => ({ ...b, id: b._id }));
-                setGroupPigs(pigsWithId)
+                const pigsFiltered = pigsWithId.filter((p: any) => p.status === 'alive')
+                setGroupPigs(pigsFiltered)
             }
         } catch (error) {
             console.error("Error fetching data", { error });

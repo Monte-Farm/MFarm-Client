@@ -438,6 +438,7 @@ export interface GroupData {
     area: string;
     creationDate: Date | null;
     stage: 'piglet' | 'weaning' | 'fattening' | 'breeder' | '';
+    status?: 'weaning' | 'ready_to_grow' | 'grow_overdue' | 'growing' | 'ready_to_exit' | 'exit_overdue' | 'exit' | 'replacement'
     groupMode: 'linked' | 'count' | '';
     pigsInGroup?: string[];
     pigCount?: number;

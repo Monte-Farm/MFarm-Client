@@ -35,6 +35,7 @@ const areaLabels: Record<string, string> = {
     quarantine: "Cuarentena / Aislamiento",
     hospital: "Hospital / Enfermería",
     shipping: "Corrales de venta / embarque",
+    exit: 'Salida'
 };
 
 const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) => {
@@ -161,6 +162,10 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
                     case "fattening":
                         color = "primary";
                         label = "Engorda";
+                        break;
+                    case "finishing":
+                        color = "primary";
+                        label = "Ceba";
                         break;
                     case "breeder":
                         color = "success";

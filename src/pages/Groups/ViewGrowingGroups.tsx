@@ -13,15 +13,18 @@ import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody,
 import GroupWithDrawForm from "Components/Common/Forms/GroupWithdrawForm";
 import GroupInsertForm from "Components/Common/Forms/GroupInsertForm";
 import GroupTransferForm from "Components/Common/Forms/GroupTransferForm";
+import KPI from "Components/Common/Graphics/Kpi";
+import { FaArrowDown, FaArrowUp, FaBalanceScale, FaLayerGroup, FaMars, FaPiggyBank, FaVenus, FaWeight } from "react-icons/fa";
 
-const ViewWeanedGroups = () => {
+const ViewGrowingGroups = () => {
     const navigate = useNavigate();
     const configContext = useContext(ConfigContext)
     const userLogged = getLoggedinUser()
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ create: false, move: false, asign: false, withdraw: false });
-    const [weanedGroups, setWeanedGroups] = useState<GroupData[]>([])
+    const [growingGroups, setGrowingGroups] = useState<GroupData[]>([])
+    const [stats, setStats] = useState<any>({})
     const [selectedGroup, setSelectedGroup] = useState<any>({})
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
@@ -90,38 +93,52 @@ const ViewWeanedGroups = () => {
                 return <Badge color={color}>{text}</Badge>;
             },
         },
+        { header: 'Fecha de creación', accessor: 'creationDate', type: 'date', isFilterable: true },
         {
-            header: 'Etapa',
-            accessor: 'currentStage',
-            render: (value, obj) => {
+            header: 'Estado',
+            accessor: 'status',
+            type: 'text',
+            isFilterable: true,
+            render: (_, row) => {
                 let color = "secondary";
-                let label = obj.stage;
+                let text = "N/A";
 
-                switch (obj.stage) {
-                    case "piglet":
-                        color = "info";
-                        label = "Lechón";
-                        break;
+                switch (row.status) {
                     case "weaning":
-                        color = "warning";
-                        label = "Destete";
+                        color = "info";
+                        text = "En destete";
                         break;
-                    case "fattening":
+                    case "ready_to_grow":
                         color = "primary";
-                        label = "Engorda";
+                        text = "Listo para crecimiento";
                         break;
-                    case "breeder":
+                    case "":
+                        color = "grow_overdue";
+                        text = "Retradado en crecimiento";
+                        break;
+                    case "growing":
                         color = "success";
-                        label = "Reproductor";
+                        text = "En crecimiento y ceba";
+                        break;
+                    case "ready_to_exit":
+                        color = "warning";
+                        text = "Listo para salida";
+                        break;
+                    case "exit_overdue":
+                        color = "dark";
+                        text = "Retrasado para salida";
+                        break;
+                    case "replacement":
+                        color = "secondary";
+                        text = "Reemplazo";
                         break;
                 }
 
-                return <Badge color={color}>{label}</Badge>;
+                return <Badge color={color}>{text}</Badge>;
             },
         },
-        { header: 'Fecha de creación', accessor: 'creationDate', type: 'date', isFilterable: true },
-        { header: 'No. de hembras', accessor: 'femaleCount', type: 'text', isFilterable: true },
-        { header: 'No. de machos', accessor: 'maleCount', type: 'text', isFilterable: true },
+        // { header: 'No. de hembras', accessor: 'femaleCount', type: 'text', isFilterable: true },
+        // { header: 'No. de machos', accessor: 'maleCount', type: 'text', isFilterable: true },
         {
             header: "Acciones",
             accessor: "action",
@@ -131,7 +148,7 @@ const ViewWeanedGroups = () => {
                         <i className="ri-arrow-left-right-line align-middle"></i>
                     </Button>
                     <UncontrolledTooltip target={`move-button-${row._id}`}>
-                        Trasladar cerdos
+                        Transferir cerdos
                     </UncontrolledTooltip>
 
                     <Button id={`withdraw-button-${row._id}`} className="btn-icon btn-danger" onClick={() => { setSelectedGroup(row); toggleModal('withdraw'); }}>
@@ -139,13 +156,6 @@ const ViewWeanedGroups = () => {
                     </Button>
                     <UncontrolledTooltip target={`withdraw-button-${row._id}`}>
                         Retirar cerdo
-                    </UncontrolledTooltip>
-
-                    < Button id={`asign-button-${row._id}`} className="btn-icon btn-primary" onClick={() => { setSelectedGroup(row); toggleModal('asign'); }}>
-                        <i className="ri-download-2-line align-middle"></i>
-                    </Button >
-                    <UncontrolledTooltip target={`asign-button-${row._id}`}>
-                        Ingresar cerdo
                     </UncontrolledTooltip>
 
                     <Button id={`details-button-${row._id}`} className="btn-icon btn-success" onClick={() => navigate(`/groups/group_details/${row._id}`)}>
@@ -163,10 +173,12 @@ const ViewWeanedGroups = () => {
         if (!configContext || !userLogged) return
         try {
             setLoading(true)
-            const [groupResponse] = await Promise.all([
-                configContext.axiosHelper.get(`${configContext.apiUrl}/group/find_by_stage/${userLogged.farm_assigned}/weaning`),
+            const [groupResponse, statsResponse] = await Promise.all([
+                configContext.axiosHelper.get(`${configContext.apiUrl}/group/find_by_stage/${userLogged.farm_assigned}/fattening`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/group/group_alive_stats/${userLogged.farm_assigned}/fattening`),
             ])
-            setWeanedGroups(groupResponse.data.data)
+            setGrowingGroups(groupResponse.data.data)
+            setStats(statsResponse.data.data)
         } catch (error) {
             console.error('Error fetching data:', { error })
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intenelo mas tarde' })
@@ -188,7 +200,18 @@ const ViewWeanedGroups = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Ver grupos destetados"} pageTitle={"Pre-iniciacion"} />
+                <BreadCrumb title={"Ver grupos en crecimiento"} pageTitle={"Crecimiento"} />
+
+                <div className="d-flex gap-3 flex-wrap">
+                    <KPI title="Grupos" value={stats?.population?.totalGroups ?? 0} icon={FaLayerGroup} bgColor="#e8f4fd" iconColor="#0d6efd" />
+                    <KPI title="Cerdos totales" value={stats?.population?.totalPigs ?? 0} icon={FaPiggyBank} bgColor="#fff3cd" iconColor="#ffc107" />
+                    <KPI title="Cerdos promedio por grupo" value={stats?.population?.avgPigsPerGroup ?? 0} icon={FaBalanceScale} bgColor="#e6f7e6" iconColor="#28a745" />
+                    <KPI title="Mínimo por grupo" value={stats?.population?.minPigsPerGroup ?? 0} icon={FaArrowDown} bgColor="#f8d7da" iconColor="#dc3545" />
+                    <KPI title="Máximo por grupo" value={stats?.population?.maxPigsPerGroup ?? 0} icon={FaArrowUp} bgColor="#d1e7dd" iconColor="#198754" />
+                    <KPI title="Machos" value={stats?.population?.totalMales ?? 0} icon={FaMars} bgColor="#e7f1ff" iconColor="#0a58ca" />
+                    <KPI title="Hembras" value={stats?.population?.totalFemales ?? 0} icon={FaVenus} bgColor="#fde7f3" iconColor="#d63384" />
+                    <KPI title="Peso promedio por cerdo (kg)" value={stats?.avgWeight?.toFixed(1) ?? 0} icon={FaWeight} bgColor="#ede9fe" iconColor="#6f42c1" />
+                </div>
 
                 <Card>
                     {/* <CardHeader className="d-flex">
@@ -198,9 +221,9 @@ const ViewWeanedGroups = () => {
                         </Button>
                     </CardHeader> */}
                     <CardBody style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-                        {weanedGroups.length > 0 ? (
+                        {growingGroups.length > 0 ? (
                             <div style={{ flex: 1 }}>
-                                <CustomTable columns={groupsColumns} data={weanedGroups} showPagination={true} rowsPerPage={7} />
+                                <CustomTable columns={groupsColumns} data={growingGroups} showPagination={true} rowsPerPage={7} />
                             </div>
                         ) : (
                             <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", textAlign: "center", color: "#6c757d", padding: "2rem", flexDirection: "column", }}>
@@ -227,7 +250,7 @@ const ViewWeanedGroups = () => {
             <Modal size="xl" isOpen={modals.move} toggle={() => toggleModal("move")} centered backdrop={'static'} keyboard={false}>
                 <ModalHeader toggle={() => toggleModal("move")}>Trasladar cerdos</ModalHeader>
                 <ModalBody>
-                    <GroupTransferForm groupId={selectedGroup._id} onSave={() => { toggleModal('move'); fetchData(); }} />
+                    <GroupTransferForm groupId={selectedGroup._id} onSave={() => { toggleModal('move'); fetchData(); }} stage="weaning" />
                 </ModalBody>
             </Modal>
 
@@ -249,4 +272,4 @@ const ViewWeanedGroups = () => {
     )
 }
 
-export default ViewWeanedGroups;
+export default ViewGrowingGroups;

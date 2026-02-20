@@ -18,13 +18,13 @@ import { HttpStatusCode } from "axios";
 import ObjectDetails from "../Details/ObjectDetails";
 import { Attribute } from "common/data_interfaces";
 
-interface DiscardPigFormProps {
-    pig?: any
+interface DiscardPigInGroupFormProps {
+    groupId: string
     onSave: () => void
     onCancel: () => void
 }
 
-const DiscardPigForm: React.FC<DiscardPigFormProps> = ({ pig, onSave, onCancel }) => {
+const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, onSave, onCancel }) => {
     const configContext = useContext(ConfigContext)
     const userLogged = getLoggedinUser()
     const [modals, setModals] = useState({ pigDetails: false, success: false, error: false })
@@ -308,7 +308,7 @@ const DiscardPigForm: React.FC<DiscardPigFormProps> = ({ pig, onSave, onCancel }
 
     const formik = useFormik({
         initialValues: {
-            reason: '',
+            reason: 'death',
             destination: '',
             date: null,
             responsible: userLogged._id,
@@ -343,9 +343,10 @@ const DiscardPigForm: React.FC<DiscardPigFormProps> = ({ pig, onSave, onCancel }
         if (!configContext || !userLogged) return
         try {
             setLoading(true);
-            const pigResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/pig/find_available_by_farm/${userLogged.farm_assigned}`)
+            const pigResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/group/find_pigs/${groupId}`)
             const pigsWithId = pigResponse.data.data.map((b: any) => ({ ...b, id: b._id }));
-            setPigs(pigsWithId)
+            const pigsFiltered = pigsWithId.filter((p: any) => p.status === 'alive')
+            setPigs(pigsFiltered)
         } catch (error) {
             console.error('Error fetching data: ', { error })
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
@@ -392,30 +393,25 @@ const DiscardPigForm: React.FC<DiscardPigFormProps> = ({ pig, onSave, onCancel }
 
     return (
         <>
-            <form onSubmit={(e) => {
-                e.preventDefault();
-                formik.handleSubmit();
-            }}>
+            <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }}>
 
                 <div className="step-arrow-nav mb-4">
                     <Nav className="nav-pills custom-nav nav-justified">
-                        {!pig && (
-                            <NavItem>
-                                <NavLink
-                                    href='#'
-                                    id="step-pigSelect-tab"
-                                    className={classnames({
-                                        active: activeStep === 1,
-                                        done: activeStep > 1,
-                                    })}
-                                    onClick={() => toggleArrowTab(1)}
-                                    aria-selected={activeStep === 1}
-                                    aria-controls="step-pigSelect-tab"
-                                >
-                                    Selección de cerdo
-                                </NavLink>
-                            </NavItem>
-                        )}
+                        <NavItem>
+                            <NavLink
+                                href='#'
+                                id="step-pigSelect-tab"
+                                className={classnames({
+                                    active: activeStep === 1,
+                                    done: activeStep > 1,
+                                })}
+                                onClick={() => toggleArrowTab(1)}
+                                aria-selected={activeStep === 1}
+                                aria-controls="step-pigSelect-tab"
+                            >
+                                Selección de cerdo
+                            </NavLink>
+                        </NavItem>
 
                         <NavItem>
                             <NavLink
@@ -429,7 +425,7 @@ const DiscardPigForm: React.FC<DiscardPigFormProps> = ({ pig, onSave, onCancel }
                                 aria-selected={activeStep === 2}
                                 aria-controls="step-discardInfo-tab"
                             >
-                                Información de descarte
+                                Información de muerte
                             </NavLink>
                         </NavItem>
 
@@ -467,40 +463,7 @@ const DiscardPigForm: React.FC<DiscardPigFormProps> = ({ pig, onSave, onCancel }
 
                     <TabPane id="step-discardInfo-tab" tabId={2}>
                         <div className="d-flex gap-2 mt-4">
-                            <div className="w-50">
-                                <Label htmlFor="discard_reason" className="form-label">Razón del descarte</Label>
-                                <Input
-                                    type="select"
-                                    id="discard_reason"
-                                    name="reason"
-                                    value={formik.values.reason}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    invalid={formik.touched.reason && !!formik.errors.reason}
-                                >
-                                    <option value="">Selecciona una razón</option>
-                                    <option value="lameness">Cojeras</option>
-                                    <option value="poor_body_condition">Condición corporal deficiente</option>
-                                    <option value="reproductive_failure">Falla reproductiva</option>
-                                    <option value="low_milk_production">Baja producción de leche</option>
-                                    <option value="disease">Enfermedad</option>
-                                    <option value="injury">Lesión</option>
-                                    <option value="aggressive_behavior">Comportamiento agresivo</option>
-                                    <option value="old_age">Edad avanzada</option>
-                                    <option value="death">Muerte</option>
-                                    <option value="poor_growth">Bajo crecimiento / rendimiento</option>
-                                    <option value="hernias">Hernias</option>
-                                    <option value="prolapse">Prolapso</option>
-                                    <option value="non_ambulatory">No puede caminar</option>
-                                    <option value="respiratory_failure">Problemas respiratorios severos</option>
-                                </Input>
-
-                                {formik.touched.reason && formik.errors.reason && (
-                                    <FormFeedback>{formik.errors.reason}</FormFeedback>
-                                )}
-                            </div>
-
-                            <div className="w-50">
+                            <div className="w-100">
                                 <Label htmlFor="destination" className="form-label">Destino del cerdo</Label>
                                 <Input
                                     type="select"
@@ -512,10 +475,6 @@ const DiscardPigForm: React.FC<DiscardPigFormProps> = ({ pig, onSave, onCancel }
                                     invalid={formik.touched.destination && !!formik.errors.destination}
                                 >
                                     <option value="">Selecciona un destino</option>
-                                    <option value="slaughterhouse">Rastro</option>
-                                    <option value="on_farm_euthanasia">Eutanasia en granja</option>
-                                    <option value="sale">Venta</option>
-                                    <option value="research">Investigación</option>
                                     <option value="rendering">Procesadora / despojos</option>
                                     <option value="composting">Compostaje</option>
                                     <option value="burial">Enterrado</option>
@@ -528,10 +487,9 @@ const DiscardPigForm: React.FC<DiscardPigFormProps> = ({ pig, onSave, onCancel }
                             </div>
                         </div>
 
-
                         <div className="d-flex gap-2 mt-4">
                             <div className="w-50">
-                                <Label htmlFor="discard_date" className="form-label">Fecha del descarte</Label>
+                                <Label htmlFor="discard_date" className="form-label">Fecha de muerte</Label>
                                 <DatePicker
                                     id="discard_date"
                                     className={`form-control ${formik.touched.date && formik.errors.date ? 'is-invalid' : ''}`}
@@ -545,7 +503,7 @@ const DiscardPigForm: React.FC<DiscardPigFormProps> = ({ pig, onSave, onCancel }
                             </div>
 
                             <div className="w-50">
-                                <Label htmlFor="responsible" className="form-label">Responsable del descarte</Label>
+                                <Label htmlFor="responsible" className="form-label">Responsable de registro</Label>
                                 <Input
                                     type="text"
                                     id="responsible"
@@ -614,7 +572,7 @@ const DiscardPigForm: React.FC<DiscardPigFormProps> = ({ pig, onSave, onCancel }
                                     Información del cerdo
                                 </CardHeader>
                                 <CardBody>
-                                    <ObjectDetails attributes={pigsAttributes} object={pig ? pig : selectedPig} />
+                                    <ObjectDetails attributes={pigsAttributes} object={selectedPig} />
                                 </CardBody>
                             </Card>
                         </div>
@@ -660,4 +618,4 @@ const DiscardPigForm: React.FC<DiscardPigFormProps> = ({ pig, onSave, onCancel }
     )
 }
 
-export default DiscardPigForm
+export default DiscardPigInGroupForm

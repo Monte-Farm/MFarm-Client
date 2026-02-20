@@ -295,6 +295,7 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
                     area: 'weaning',
                     creationDate: new Date(),
                     stage: "weaning",
+                    status: 'weaning',
                     groupMode: "linked",
                     pigsInGroup: pigletsIds,
                     pigCount: litter?.currentMale + litter?.currentFemale,

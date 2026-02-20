@@ -20,7 +20,7 @@ if (token)
  * Sets the default authorization
  * @param {*} token
  */
-const setAuthorization = (token : string) => {
+const setAuthorization = (token: string) => {
   axios.defaults.headers.common["Authorization"] = "Bearer " + token;
 };
 
@@ -29,24 +29,11 @@ class APIClient {
    * Fetches data from the given URL
    */
   get = (url: string, params?: any): Promise<AxiosResponse> => {
-    let response: Promise<AxiosResponse>;
-
-    let paramKeys: string[] = [];
-
-    if (params) {
-      Object.keys(params).map(key => {
-        paramKeys.push(key + '=' + params[key]);
-        return paramKeys;
-      });
-
-      const queryString = paramKeys && paramKeys.length ? paramKeys.join('&') : "";
-      response = axios.get(`${url}?${queryString}`, params);
-    } else {
-      response = axios.get(`${url}`, params);
-    }
-
-    return response;
+    return axios.get(url, {
+      params,
+    });
   };
+
 
   /**
    * Posts the given data to the URL
@@ -57,11 +44,11 @@ class APIClient {
 
   postBlob = (url: string, data: any, config?: AxiosRequestConfig): Promise<AxiosResponse> => {
     return axios.post(url, data, config);
-};
+  };
 
-   /**
-   * Uploads an image
-   */
+  /**
+  * Uploads an image
+  */
   uploadImage = (url: string, file: File): Promise<AxiosResponse> => {
     const formData = new FormData();
     formData.append("file", file);

@@ -12,6 +12,9 @@ import {
     CardBody,
     CardHeader,
     Container,
+    Modal,
+    ModalBody,
+    ModalHeader,
     Nav,
     NavItem,
     NavLink,
@@ -22,13 +25,19 @@ import classnames from "classnames";
 import ObjectDetails from "Components/Common/Details/ObjectDetails";
 import { Attribute } from "common/data_interfaces";
 import KPI from "Components/Common/Graphics/Kpi";
-import { FaMars, FaPiggyBank, FaVenus } from "react-icons/fa";
+import { FaBalanceScale, FaBirthdayCake, FaCalendarDay, FaChartLine, FaMars, FaPiggyBank, FaSkullCrossbones, FaVenus } from "react-icons/fa";
 import { Column } from "common/data/data_types";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import GroupHistoryList from "Components/Common/Lists/GroupHistoryList";
 import SimpleBar from "simplebar-react";
 import GroupMedicalDetails from "Components/Common/Details/GroupMedicalDetails";
 import GroupFeedingDetails from "Components/Common/Details/GroupFeedingDetails";
+import ChangeStageGroup from "Components/Common/Forms/ChangeStageGroup";
+import WeightEvolutionChart from "Components/Common/Graphics/WeightEvolutionChart";
+import WeightDistributionChart from "Components/Common/Graphics/WeightDistributionChart";
+import GroupTransferForm from "Components/Common/Forms/GroupTransferForm";
+import GroupWithDrawForm from "Components/Common/Forms/GroupWithdrawForm";
+import DiscardPigInGroupForm from "Components/Common/Forms/DiscardPigInGroupForm";
 
 const GroupDetails = () => {
     document.title = "Detalles de grupo | Management System";
@@ -41,18 +50,26 @@ const GroupDetails = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [groupData, setGroupData] = useState<any>({});
     const [activeTab, setActiveTab] = useState("1");
+    const [modals, setModals] = useState({ changeStage: false, registerDeath: false, discard: false, transfer: false });
+    const [lastWeighted, setLastWeigthed] = useState<any>({})
+    const [growthRate, setGrowthRate] = useState<number>(0);
+    const [averageAge, setAverageaAge] = useState<any>()
+    const [weightDistribution, setWeightDistribution] = useState<any>();
+    const [active, setActive] = useState<any>();
+    const [mortality, setMortality] = useState<any>();
 
     const toggleTab = (tab: string) => {
         if (activeTab !== tab) setActiveTab(tab);
+    };
+
+    const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
+        setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
 
     const hasPigs = (groupData?.pigCount ?? 0) > 0;
     const isLinkedMode = groupData?.groupMode === "linked";
     const isCountMode = groupData?.groupMode === "count";
 
-    /** --------------------------------
-     *  ATTRIBUTES
-     * -------------------------------- */
     const groupAttibutes: Attribute[] = [
         { key: "code", label: "Codigo", type: "text" },
         { key: "name", label: "Nombre", type: "text" },
@@ -109,47 +126,65 @@ const GroupDetails = () => {
                         color = "secondary";
                         text = "Corrales de venta / embarque";
                         break;
+                    case "exit":
+                        color = "secondary";
+                        text = "Salida";
+                        break;
                 }
 
                 return <Badge color={color}>{text}</Badge>;
             },
         },
         {
-            label: "Etapa",
-            key: "currentStage",
-            render: (_, obj) => {
+            key: "status",
+            label: "Estado",
+            type: "text",
+            render: (_, row) => {
                 let color = "secondary";
-                let label = obj.stage;
+                let text = "Desconocido";
 
-                switch (obj.stage) {
-                    case "piglet":
-                        color = "info";
-                        label = "Lechón";
-                        break;
+                switch (row.status) {
                     case "weaning":
-                        color = "warning";
-                        label = "Destete";
+                        color = "info";
+                        text = "En destete";
                         break;
-                    case "fattening":
+                    case "ready_to_grow":
                         color = "primary";
-                        label = "Engorda";
+                        text = "Listo para crecimiento";
                         break;
-                    case "breeder":
+                    case "grow_overdue":
+                        color = "primary";
+                        text = "Retradado en crecimiento";
+                        break;
+                    case "growing":
                         color = "success";
-                        label = "Reproductor";
+                        text = "En crecimiento y ceba";
+                        break;
+                    case "ready_to_exit":
+                        color = "warning";
+                        text = "Listo para salida";
+                        break;
+                    case "exit_overdue":
+                        color = "dark";
+                        text = "Retrasado para salida";
+                        break;
+                    case "exit":
+                        color = "warning";
+                        text = "Salida";
+                        break;
+                    case "replacement":
+                        color = "secondary";
+                        text = "Reemplazo";
                         break;
                 }
 
-                return <Badge color={color}>{label}</Badge>;
+                return <Badge color={color}>{text}</Badge>;
             },
         },
         { key: "creationDate", label: "Fecha de creacion", type: "date" },
         { key: "observations", label: "Observaciones", type: "text" },
     ];
 
-    /** --------------------------------
-     *  TABLE COLUMNS
-     * -------------------------------- */
     const pigColumns: Column<any>[] = [
         { header: "Codigo", accessor: "code", type: "text" },
         { header: "Raza", accessor: "breed", type: "text" },
@@ -182,7 +217,7 @@ const GroupDetails = () => {
                         label = "Descartado";
                         break;
                     case "dead":
-                        color = "danger";
+                        color = "dark";
                         label = "Muerto";
                         break;
                 }
@@ -195,10 +230,24 @@ const GroupDetails = () => {
     const fetchData = async () => {
         if (!configContext || !userLogged) return;
         try {
-            const groupResponse = await configContext.axiosHelper.get(
-                `${configContext.apiUrl}/group/find_by_id/${group_id}`
-            );
+
+            const [groupResponse, lastWeightResponse, growthResponse, averageAgeResponse, weightResponse, activeResponse, mortalityResponse] = await Promise.all([
+                configContext.axiosHelper.get(`${configContext.apiUrl}/group/find_by_id/${group_id}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/weighing/group_latest/${group_id}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/weighing/growth_rate/${group_id}`, { isGroup: true }),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/group/group_average_age/${group_id}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/group/weight_distribution/${group_id}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/group/active_counts/${group_id}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/group/mortality/${group_id}`),
+            ])
+
             setGroupData(groupResponse.data.data);
+            setLastWeigthed(lastWeightResponse.data.data)
+            setGrowthRate(growthResponse.data.data)
+            setAverageaAge(averageAgeResponse.data.data)
+            setWeightDistribution(weightResponse.data.data)
+            setActive(activeResponse.data.data)
+            setMortality(mortalityResponse.data.data)
         } catch (error) {
             console.error("Error fetching data: ", { error });
             setAlertConfig({
@@ -210,6 +259,14 @@ const GroupDetails = () => {
             setLoading(false);
         }
     };
+
+    const daysSinceLastWeigh = lastWeighted?.weighedAt
+        ? Math.floor(
+            (Date.now() - new Date(lastWeighted.weighedAt).getTime()) /
+            (1000 * 60 * 60 * 24)
+        )
+        : 0;
+
 
     useEffect(() => {
         fetchData();
@@ -258,92 +315,96 @@ const GroupDetails = () => {
                                 Medicación
                             </NavLink>
                         </NavItem>
+                        <NavItem>
+                            <NavLink
+                                style={{ cursor: "pointer" }}
+                                className={classnames({ active: activeTab === "4" })}
+                                onClick={() => toggleTab("4")}
+                            >
+                                Historial
+                            </NavLink>
+                        </NavItem>
                     </Nav>
                 </div>
 
                 <TabContent activeTab={activeTab} className="justified-tabs mt-3">
                     <TabPane tabId="1">
-                        <div className="d-flex gap-3">
-                            <KPI title="Machos en el grupo" value={groupData.maleCount} icon={FaMars} bgColor="#E0F2FF" iconColor="#007BFF" />
-                            <KPI title="Hembras en el grupo" value={groupData.femaleCount} icon={FaVenus} bgColor="#FFE0F0" iconColor="#FF007B" />
-                            <KPI title="Total en el grupo" value={groupData.pigCount} icon={FaPiggyBank} bgColor="#EFE8FF" iconColor="#7B2FFF" />
-                        </div>
+                        <div className="row g-3 align-items-stretch">
 
-                        <div className="d-flex gap-2" style={{ height: "500px" }}>
-                            <div className="w-25 h-100">
-                                <Card className="h-100">
-                                    <CardHeader className="bg-white border-bottom">
-                                        <h5 className="mb-0 text-dark fw-semibold">Datos del grupo</h5>
+                            <div className="bg-white p-3 rounded shadow-sm d-flex gap-3">
+                                <KPI title="Total activos" value={active?.total} icon={FaPiggyBank} bgColor="#F3F4F6" iconColor="#374151" />
+                                <KPI title="Machos" value={active?.male} icon={FaMars} bgColor="#E0F2FF" iconColor="#007BFF" />
+                                <KPI title="Hembras" value={active?.female} icon={FaVenus} bgColor="#FFE0F0" iconColor="#FF007B" />
+                                <KPI title="Mortalidad" value={mortality.mortality} icon={FaSkullCrossbones} bgColor="#FDECEC" iconColor="#E74C3C" />
+                                <KPI title="Edad promedio" value={averageAge ? `${averageAge.days} días` : "-"} icon={FaBirthdayCake} bgColor="#E8F6F3" iconColor="#1ABC9C" />
+                                <KPI title="Peso promedio" value={`${lastWeighted?.weight?.toFixed(2) ?? groupData.avgWeight.toFixed(2)} kg`} icon={FaBalanceScale} bgColor="#E9F7EF" iconColor="#2ECC71" />
+                                <KPI title="Ganancia diaria" value={`${growthRate.toFixed(2)} kg/día`} icon={FaChartLine} bgColor="#EEF2FF" iconColor="#4F46E5" />
+                                <KPI title="Último pesaje" value={`${daysSinceLastWeigh} días`} icon={FaCalendarDay} bgColor="#FFF4E5" iconColor="#F39C12" />
+                            </div>
+
+                            {/* 🔹 2. COLUMNA IZQUIERDA: GRÁFICOS (Análisis visual) */}
+                            <div className="col-12 col-xl-7 d-flex flex-column gap-2 h-100">
+                                <WeightDistributionChart data={weightDistribution} title="Distribución de pesos" />
+                                <WeightEvolutionChart entityId={group_id ?? ""} mode="group" title="Evolución del peso" />
+                            </div>
+
+                            {/* 🔹 3. COLUMNA DERECHA: DATOS Y LISTADO (Detalles técnicos) */}
+                            <div className="col-12 col-xl-5 d-flex flex-column gap-2">
+                                {/* Datos del grupo (Ahora más compacto) */}
+                                <Card className="shadow-sm flex-grow-1 h-50">
+                                    <CardHeader className="bg-white d-flex justify-content-between align-items-center">
+                                        <h5 className="mb-0 text-uppercase text-muted">Información General</h5>
+
+                                        {['weaning', 'ready_to_grow', 'grow_overdue'].includes(groupData.status) && (
+                                            <Button color="success" disabled={!['ready_to_grow', 'grow_overdue'].includes(groupData.status)} onClick={() => toggleModal('changeStage')}>
+                                                <i className="mdi mdi-chart-line-variant me-2" />
+                                                Cambiar a crecimiento
+                                            </Button>
+                                        )}
+
+                                        {['growing', 'ready_to_exit', 'exit_overdue'].includes(groupData.status) && (
+                                            <Button color="success" disabled={!['ready_to_exit', 'exit_overdue'].includes(groupData.status)} onClick={() => toggleModal('changeStage')}>
+                                                <i className=" bx bx-exit me-2" />
+                                                Cambiar a salida
+                                            </Button>
+                                        )}
                                     </CardHeader>
-                                    <CardBody className="h-100 overflow-hidden">
+                                    <CardBody>
                                         <ObjectDetails attributes={groupAttibutes} object={groupData} />
                                     </CardBody>
                                 </Card>
-                            </div>
 
-                            {/* CERDOS EN EL GRUPO */}
-                            <div className="w-100 h-100">
-                                <Card className="h-100">
-                                    <CardHeader className="border-bottom custom-card-header">
-                                        <h5 className="mb-0 text-dark fw-semibold">Cerdos en el grupo</h5>
+                                {/* Tabla de Cerdos */}
+                                <Card className="shadow-sm flex-grow-1 h-50">
+                                    <CardHeader className="bg-white d-flex justify-content-between align-items-center">
+                                        <h5 className="mb-0 fw-bold text-uppercase text-muted">Cerdos en el grupo</h5>
+
+                                        <div className="d-flex gap-2">
+                                            <Button color="danger" onClick={() => toggleModal('discard')}>
+                                                <i className="ri-upload-2-line align-middle" />
+                                            </Button>
+                                            <Button color="warning" onClick={() => toggleModal('transfer')}>
+                                                <i className="ri-arrow-left-right-line align-middle" />
+                                            </Button>
+                                            <Button color="dark" onClick={() => toggleModal('registerDeath')}>
+                                                <FaSkullCrossbones color="white" />
+                                            </Button>
+                                        </div>
                                     </CardHeader>
-
-                                    <CardBody className="h-100 p-0 d-flex align-items-center justify-content-center">
-                                        {!hasPigs && (
-                                            <div className="text-center text-muted">
-                                                <div className="mb-3">
-                                                    <i className="ri-error-warning-line" style={{ fontSize: "48px", color: "#F39C12" }} />
-                                                </div>
-                                                <h5 className="mb-1 fw-semibold">No hay cerdos en este grupo</h5>
-                                                <span>Aún no se han registrado animales</span>
-                                            </div>
-                                        )}
-
-                                        {hasPigs && isLinkedMode && (
-                                            <div className="w-100 h-100">
-                                                <CustomTable
-                                                    columns={pigColumns}
-                                                    data={groupData.pigsInGroup}
-                                                    showSearchAndFilter={false}
-                                                    rowsPerPage={7}
-                                                />
-                                            </div>
-                                        )}
-
-                                        {hasPigs && isCountMode && (
-                                            <div className="d-flex gap-4">
-                                                <div className="text-center p-4 rounded shadow-sm" style={{ minWidth: 220, background: "#E0F2FF" }}>
-                                                    <FaMars size={40} color="#007BFF" className="mb-2" />
-                                                    <h2 className="fw-bold mb-0">{groupData.maleCount}</h2>
-                                                    <span className="text-muted">Machos</span>
-                                                </div>
-
-                                                <div className="text-center p-4 rounded shadow-sm" style={{ minWidth: 220, background: "#FFE0F0" }}>
-                                                    <FaVenus size={40} color="#FF007B" className="mb-2" />
-                                                    <h2 className="fw-bold mb-0">{groupData.femaleCount}</h2>
-                                                    <span className="text-muted">Hembras</span>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </CardBody>
-                                </Card>
-                            </div>
-
-                            {/* HISTORIAL */}
-                            <div className="w-100 h-100">
-                                <Card className="h-100">
-                                    <CardHeader className="border-bottom custom-card-header">
-                                        <h5 className="mb-0 text-dark fw-semibold">Historial de grupo</h5>
-                                    </CardHeader>
-                                    <CardBody className="h-100 overflow-hidden p-0">
-                                        <SimpleBar style={{ maxHeight: "100%" }}>
-                                            <GroupHistoryList data={groupData.groupHistory} />
-                                        </SimpleBar>
+                                    <CardBody className="px-0">
+                                        <CustomTable
+                                            columns={pigColumns}
+                                            data={groupData.pigsInGroup}
+                                            showSearchAndFilter={false}
+                                            rowsPerPage={5}
+                                            showPagination
+                                        />
                                     </CardBody>
                                 </Card>
                             </div>
                         </div>
                     </TabPane>
+
 
                     <TabPane tabId="2">
                         <GroupFeedingDetails groupId={group_id ?? ""} />
@@ -352,15 +413,55 @@ const GroupDetails = () => {
                     <TabPane tabId="3">
                         <GroupMedicalDetails groupId={group_id ?? ""} />
                     </TabPane>
+
+                    <TabPane tabId="4">
+                        <div className="w-100 h-100">
+                            <Card className="h-100">
+                                <CardHeader className="border-bottom custom-card-header">
+                                    <h5 className="mb-0 text-dark fw-semibold">Historial de grupo</h5>
+                                </CardHeader>
+                                <CardBody className="h-100 overflow-hidden p-0">
+                                    <SimpleBar style={{ maxHeight: "100%" }}>
+                                        <GroupHistoryList data={groupData.groupHistory} />
+                                    </SimpleBar>
+                                </CardBody>
+                            </Card>
+                        </div>
+                    </TabPane>
                 </TabContent>
             </Container>
 
-            <AlertMessage
-                color={alertConfig.color}
-                message={alertConfig.message}
-                visible={alertConfig.visible}
-                onClose={() => setAlertConfig({ ...alertConfig, visible: false })}
-            />
+
+            <Modal size="xl" isOpen={modals.changeStage} toggle={() => toggleModal("changeStage")} centered backdrop={'static'} keyboard={false}>
+                <ModalHeader toggle={() => toggleModal("changeStage")}>Cambiar de etapa</ModalHeader>
+                <ModalBody>
+                    <ChangeStageGroup groupId={groupData._id} onSave={() => { toggleModal('changeStage'); fetchData() }} />
+                </ModalBody>
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.transfer} toggle={() => toggleModal("transfer")} centered backdrop={'static'} keyboard={false}>
+                <ModalHeader toggle={() => toggleModal("transfer")}>Trasferir cerdos</ModalHeader>
+                <ModalBody>
+                    <GroupTransferForm groupId={group_id ?? ''} onSave={() => { toggleModal('transfer'); fetchData(); }} stage={groupData.stage} />
+                </ModalBody>
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.discard} toggle={() => toggleModal("discard")} centered backdrop={'static'} keyboard={false}>
+                <ModalHeader toggle={() => toggleModal("discard")}>Retirar cerdos</ModalHeader>
+                <ModalBody>
+                    <GroupWithDrawForm groupId={group_id ?? ''} onSave={() => { fetchData(); toggleModal('discard') }} />
+                </ModalBody>
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.registerDeath} toggle={() => toggleModal("registerDeath")} centered backdrop={'static'} keyboard={false}>
+                <ModalHeader toggle={() => toggleModal("registerDeath")}>Registrar muerte</ModalHeader>
+                <ModalBody>
+                    <DiscardPigInGroupForm groupId={group_id ?? ''} onSave={() => { fetchData(); toggleModal('registerDeath') }} onCancel={() => { }} />
+                </ModalBody>
+            </Modal>
+
+
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </div>
     );
 };
