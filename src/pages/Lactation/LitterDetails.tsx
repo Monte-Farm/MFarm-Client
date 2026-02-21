@@ -18,6 +18,7 @@ import { FiInbox } from "react-icons/fi";
 import LitterMedicalDetails from "Components/Common/Details/LitterMedicalDetails";
 import LitterEventsCard from "Components/Common/Shared/LitterEventsCard";
 import WeanLitterForm from "Components/Common/Forms/WeanLitterForm";
+import WeaningProgress from "Components/Common/Shared/WeaningProgress";
 
 const LitterDetails = () => {
     const { litter_id } = useParams();
@@ -172,11 +173,19 @@ const LitterDetails = () => {
                 <TabContent activeTab={activeTab} className="justified-tabs mt-3">
                     <TabPane tabId="1">
                         <div className="d-flex gap-3">
-                            <KPI title="Machos" value={litterDetails.currentMale} icon={FaMars} bgColor="#E0F2FF" iconColor="#007BFF" />
-                            <KPI title="Hembras" value={litterDetails.currentFemale} icon={FaVenus} bgColor="#FFE0F0" iconColor="#FF007B" />
-                            <KPI title="Lechones totales" value={litterDetails.currentMale + litterDetails.currentFemale} icon={FaPiggyBank} bgColor="#EFE8FF" iconColor="#7B2FFF" />
-                            <KPI title="Peso promedio" value={`${litterDetails?.averageWeight?.toFixed(2)} kg`} icon={FaWeightHanging} bgColor="#E6F4EA" iconColor="#2E7D32" />
+                            <div className="d-flex gap-3 h-100">
+                                <KPI title="Machos" value={litterDetails.currentMale} icon={FaMars} bgColor="#E0F2FF" iconColor="#007BFF" />
+                                <KPI title="Hembras" value={litterDetails.currentFemale} icon={FaVenus} bgColor="#FFE0F0" iconColor="#FF007B" />
+                                <KPI title="Lechones totales" value={litterDetails.currentMale + litterDetails.currentFemale} icon={FaPiggyBank} bgColor="#EFE8FF" iconColor="#7B2FFF" />
+                                <KPI title="Peso promedio" value={`${litterDetails?.averageWeight?.toFixed(2)} kg`} icon={FaWeightHanging} bgColor="#E6F4EA" iconColor="#2E7D32" />
+                            </div>
+
+                            <div className="w-100 h-100">
+                                <WeaningProgress birthDate={litterDetails?.birthDate} litterStatus={litterDetails?.status} />
+                            </div>
+
                         </div>
+
 
                         <div className="row g-3">
                             <div className="col-12 col-lg-4 d-flex flex-column">
@@ -213,7 +222,7 @@ const LitterDetails = () => {
                                         <h5 className="mb-0 text-dark fw-semibold">Lechones</h5>
                                     </CardHeader>
                                     <CardBody className="overflow-auto p-0">
-                                        <CustomTable columns={pigletsColumns} data={litterDetails?.piglets} showSearchAndFilter={false} showPagination rowsPerPage={7} />
+                                        <CustomTable columns={pigletsColumns} data={litterDetails?.piglets} showSearchAndFilter={false} showPagination rowsPerPage={9} />
                                     </CardBody>
                                 </Card>
                             </div>

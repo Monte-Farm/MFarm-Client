@@ -88,6 +88,10 @@ const ViewExitGroups = () => {
                         color = "secondary";
                         text = "Corrales de venta / embarque";
                         break;
+                    case "exit":
+                        color = "secondary";
+                        text = "Salida";
+                        break;
                 }
 
                 return <Badge color={color}>{text}</Badge>;
@@ -112,8 +116,8 @@ const ViewExitGroups = () => {
                         color = "primary";
                         text = "Listo para crecimiento";
                         break;
-                    case "":
-                        color = "grow_overdue";
+                    case "grow_overdue":
+                        color = "info";
                         text = "Retradado en crecimiento";
                         break;
                     case "growing":
@@ -131,6 +135,10 @@ const ViewExitGroups = () => {
                     case "replacement":
                         color = "secondary";
                         text = "Reemplazo";
+                        break;
+                    case "exit":
+                        color = "secondary";
+                        text = "Salida";
                         break;
                 }
 

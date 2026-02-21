@@ -240,6 +240,9 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
 
                 await configContext.axiosHelper.create(`${configContext.apiUrl}/litter/create`, litterData)
                 await configContext.axiosHelper.update(`${configContext.apiUrl}/pig/add_reproduction_item/${values.sow}`, reproductionItem)
+                await configContext.axiosHelper.update(`${configContext.apiUrl}/pig/update/${sowDetails._id}/${userLogged._id}`, {
+                    currentStage: 'breeder'
+                });
                 await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
                     event: `Parto de la cerda ${values.sow} registrado`
                 });

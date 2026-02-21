@@ -3,15 +3,14 @@ import { PigData } from "common/data_interfaces"
 import BreadCrumb from "Components/Common/Shared/BreadCrumb"
 import { useContext, useEffect, useState, useRef } from "react"
 import {
-    Alert, Button, Card, CardBody, CardHeader, Container,
+    Button, Card, CardBody, CardHeader, Container,
     Modal, ModalBody, ModalHeader, Input, Popover, PopoverHeader,
     PopoverBody, Row, Col, FormGroup, Label, Badge,
     Spinner
 } from "reactstrap"
-import LoadingGif from '../../assets/images/loading-gif.gif'
 import { getLoggedinUser } from "helpers/api_helper"
 import Select from "react-select"
-import { FiFilter, FiX, FiSearch, FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo, FiPieChart, FiBarChart } from "react-icons/fi"
+import { FiFilter, FiX, FiSearch, FiCheckCircle, FiAlertCircle } from "react-icons/fi"
 import Slider from 'rc-slider'
 import 'rc-slider/assets/index.css'
 import { useNavigate } from "react-router-dom"
@@ -27,7 +26,6 @@ import BatchPigForm from "Components/Common/Forms/BatchPigForm"
 import PigEditForm from "Components/Common/Forms/PigEditForm"
 import KPI from "Components/Common/Graphics/Kpi"
 import BasicPieChart from "Components/Common/Graphics/BasicPieChart"
-import BasicBarChart from "Components/Common/Graphics/BasicBarChart"
 
 const ViewPigs = () => {
     const [modals, setModals] = useState({ selectCreationMode: false, createSingle: false, createBatch: false, update: false, viewPDF: false });
@@ -90,6 +88,10 @@ const ViewPigs = () => {
                     case "breeder":
                         color = "success";
                         label = "Reproductor";
+                        break;
+                    case "gestation":
+                        color = "info";
+                        label = "Gestacion";
                         break;
                 }
 
@@ -520,7 +522,7 @@ const ViewPigs = () => {
                             </Button>
 
                             <Button className="h-50 farm-primary-button" onClick={() => toggleModal('selectCreationMode')}>
-                                <i className="ri ri-add-line me-2"/>
+                                <i className="ri ri-add-line me-2" />
                                 Registrar cerdo
                             </Button>
                         </div>

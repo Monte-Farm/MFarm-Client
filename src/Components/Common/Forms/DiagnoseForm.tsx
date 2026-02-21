@@ -86,6 +86,10 @@ const DiagnosisForm = ({ insemination, onSave, onCancel }: DiagnosisFormProps) =
                         });
                     }
 
+                    await configContext.axiosHelper.update(`${configContext.apiUrl}/pig/update/${insemination.sow._id}/${userLogged._id}`, {
+                        currentStage: 'gestation'
+                    });
+
                     await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
                         event: `Diagnostico de inseminación ${insemination} registrada`
                     });

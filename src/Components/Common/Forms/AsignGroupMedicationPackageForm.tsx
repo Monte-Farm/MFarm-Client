@@ -36,6 +36,8 @@ const AsignGroupMedicationPackageForm: React.FC<AsignGroupMedicationPackageFormP
     const [selectedMedicationPackage, setSelectedMedicationPackage] = useState<any>();
     const [medicationPackagesItems, setMedicationsPackagesItems] = useState<any[]>();
     const [missingItems, setMissingItems] = useState([]);
+    const [medicationPackagePreview, setMedicationPackagePreview] = useState<any>();
+    const [active, setActive] = useState<any>();
 
     function toggleArrowTab(tab: number) {
         if (activeStep !== tab) {
@@ -101,14 +103,24 @@ const AsignGroupMedicationPackageForm: React.FC<AsignGroupMedicationPackageFormP
             accessor: "quantity",
             type: "text",
             isFilterable: true,
-            render: (_, row) => <span>{row.quantity} {row.unit_measurement}</span>
+            render: (_, row) => {
+                const previewProduct = medicationPackagePreview?.products.find(
+                    (p: any) => p.code === row.id
+                );
+                return (<span>{previewProduct?.quantityPerAnimal} {previewProduct?.unitMeasurement}</span>);
+            }
         },
         {
             header: "Dosis total",
             accessor: "totalDose",
             type: "text",
             isFilterable: true,
-            render: (_, row) => <span>{row.totalDose} {row.unit_measurement}</span>
+            render: (_, row) => {
+                const previewProduct = medicationPackagePreview?.products.find(
+                    (p: any) => p.code === row.id
+                );
+                return (<span>{previewProduct?.totalQuantity} {previewProduct?.unitMeasurement}</span>);
+            }
         },
         {
             header: "Administracion",
@@ -152,7 +164,36 @@ const AsignGroupMedicationPackageForm: React.FC<AsignGroupMedicationPackageFormP
 
                 return <Badge color={color}>{label}</Badge>;
             },
+
         },
+        {
+            header: "Precio unitario",
+            accessor: "unitPrice",
+            type: "text",
+            isFilterable: false,
+            render: (_, row) => {
+                const previewProduct = medicationPackagePreview?.products.find(
+                    (p: any) => p.code === row.id
+                );
+
+                if (!previewProduct || !previewProduct.hasPrice) {
+                    return (
+                        <span className="badge bg-warning text-dark">
+                            Sin precio
+                        </span>
+                    );
+                }
+
+                return (
+                    <span>
+                        {new Intl.NumberFormat('es-MX', {
+                            style: 'currency',
+                            currency: 'MXN'
+                        }).format(previewProduct.unitPrice)}
+                    </span>
+                );
+            }
+        }
     ]
 
     const medicationPackagesAttributes: Attribute[] = [
@@ -302,6 +343,9 @@ const AsignGroupMedicationPackageForm: React.FC<AsignGroupMedicationPackageFormP
             const medicationResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/medication_package/find_by_stage/${userLogged.farm_assigned}/${groupData.stage}`)
             const packagesWithId = medicationResponse.data.data.map((b: any) => ({ ...b, id: b._id }));
             setMedicationsPackages(packagesWithId);
+
+            const activeResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/group/active_counts/${groupId}`)
+            setActive(activeResponse.data.data)
         } catch (error) {
             console.error('Error fetching data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al cargar los datos, intentelo mas tarde' })
@@ -328,6 +372,18 @@ const AsignGroupMedicationPackageForm: React.FC<AsignGroupMedicationPackageFormP
         }
     }
 
+    const fetchPreviewData = async () => {
+        if (!selectedMedicationPackage || !configContext) return;
+        try {
+            const previewResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/medication_package/preview_application/${selectedMedicationPackage._id}/${groupId}`)
+            const previewData = previewResponse.data.data
+            setMedicationPackagePreview(previewData)
+            return previewData
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
+
     const validationSchema = Yup.object({
         applicationDate: Yup.date().required('La fecha de aplicacion es obligatoria'),
         appliedBy: Yup.string().required('El area de destino es obligatoria'),
@@ -343,6 +399,7 @@ const AsignGroupMedicationPackageForm: React.FC<AsignGroupMedicationPackageFormP
             appliedBy: userLogged._id,
             observations: '',
             isActive: true,
+            estimatedTotal: 0
         },
         enableReinitialize: true,
         validationSchema,
@@ -350,26 +407,51 @@ const AsignGroupMedicationPackageForm: React.FC<AsignGroupMedicationPackageFormP
         validateOnBlur: true,
         onSubmit: async (values, { setSubmitting }) => {
             if (!configContext) return;
+
             try {
-                const medicationResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/medication_package/asign_group_medication_package/${userLogged.farm_assigned}/${groupId}`, values)
-                await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
-                    event: `Paquete de medicación asignado al grupo ${groupDetails?.code}`
+
+                const medicationsWithCosts = values.medications.map((m: any) => {
+                    const previewProduct = medicationPackagePreview?.products?.find(
+                        (p: any) => p.productId === m.medication
+                    );
+
+                    return {
+                        ...m,
+                        unitPrice: previewProduct?.unitPrice ?? null,
+                        totalCost: previewProduct?.totalCost ?? null,
+                        hasPrice: previewProduct?.hasPrice ?? false
+                    };
                 });
 
-                toggleModal('success', true)
+                const payload = {
+                    ...values,
+                    medications: medicationsWithCosts,
+                    estimatedTotal: medicationPackagePreview?.estimatedTotal ?? 0,
+                };
+
+                await configContext.axiosHelper.create(`${configContext.apiUrl}/medication_package/asign_group_medication_package/${userLogged.farm_assigned}/${groupId}`, payload);
+
+                await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`,
+                    {
+                        event: `Paquete de medicación asignado al grupo ${groupDetails?.code}`
+                    }
+                );
+
+                toggleModal('success', true);
             } catch (error: any) {
-                console.error('Error saving the information: ', { error })
+                console.error('Error saving the information: ', { error });
                 if (error.response?.status === 400 && error.response?.data?.missing) {
                     setMissingItems(error.response.data.missing);
                     toggleModal('missingStock');
                     return;
                 }
-
                 if (error.response?.status === 400 && !error.response?.data?.missing) {
                     toggleModal('subwarehouseError');
                     return;
                 }
-                toggleModal('error')
+                toggleModal('error');
+            } finally {
+                setSubmitting(false);
             }
         }
     })
@@ -393,7 +475,7 @@ const AsignGroupMedicationPackageForm: React.FC<AsignGroupMedicationPackageFormP
                 medication: m.medication,
                 administrationRoute: m.administration_route,
                 dosePerPig: m.quantity,
-                totalDose: Number(m.quantity * (groupDetails?.pigCount ?? 0))
+                totalDose: Number(m.quantity * (active?.total ?? 0))
             }))
 
             formik.setFieldValue('packageId', selectedMedicationPackage._id)
@@ -402,15 +484,10 @@ const AsignGroupMedicationPackageForm: React.FC<AsignGroupMedicationPackageFormP
             formik.setFieldValue('medications', medicationsFull)
 
             fetchMedicationsItems(selectedMedicationPackage.medications)
+
+            fetchPreviewData();
         }
     }, [selectedMedicationPackage])
-
-    useEffect(() => {
-        if (!formik.values.medications?.length) return;
-
-        fetchMedicationsItems(selectedMedicationPackage.medications);
-    }, [formik.values.medications]);
-
 
     if (loading) {
         return (
@@ -547,6 +624,12 @@ const AsignGroupMedicationPackageForm: React.FC<AsignGroupMedicationPackageFormP
                             <Card className="shadow-sm mb-3">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
                                     Información de paquete de medicamentos
+
+                                    {medicationPackagePreview?.hasMissingPrices && (
+                                        <span className="badge bg-warning text-dark">
+                                            Precios pendientes
+                                        </span>
+                                    )}
                                 </CardHeader>
                                 <CardBody>
                                     <ObjectDetails
@@ -558,7 +641,23 @@ const AsignGroupMedicationPackageForm: React.FC<AsignGroupMedicationPackageFormP
 
                             <Card className="shadow-sm">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
-                                    <h5>Medicamentos</h5>
+                                    <h5 className="mb-0">Medicamentos</h5>
+
+                                    {medicationPackagePreview && (
+                                        <div className="d-flex align-items-center gap-3">
+                                            <div className="text-end">
+                                                <div className="small text-muted">
+                                                    Total aproximado de aplicación
+                                                </div>
+                                                <div className="fw-bold">
+                                                    {new Intl.NumberFormat('es-MX', {
+                                                        style: 'currency',
+                                                        currency: 'MXN'
+                                                    }).format(medicationPackagePreview.estimatedTotal || 0)}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </CardHeader>
                                 <CardBody className="p-0 mb-3">
                                     <CustomTable

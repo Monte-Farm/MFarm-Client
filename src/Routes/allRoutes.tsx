@@ -68,6 +68,7 @@ import ViewGrowingGroups from "pages/Groups/ViewGrowingGroups";
 import ViewFinishingGroups from "pages/Groups/ViewFinishingGroups";
 import ViewSows from "pages/Replacement/ViewSows";
 import ViewBoars from "pages/Replacement/ViewBoars";
+import ViewExitGroups from "pages/Groups/ViewExitGroups";
 
 
 
@@ -133,7 +134,7 @@ const authProtectedRoutes = [
   { path: '/groups/view_weaned_groups', component: <ViewWeanedGroups /> },
   { path: '/groups/view_growing_groups', component: <ViewGrowingGroups /> },
   { path: '/groups/view_finishing_groups', component: <ViewFinishingGroups /> },
-  { path: '/groups/view_exit_groups', component: <ViewFinishingGroups /> },
+  { path: '/groups/view_exit_groups', component: <ViewExitGroups /> },
 
 
   //Laboratory

@@ -185,6 +185,10 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
                         color = 'success';
                         label = 'Destetada';
                         break;
+                    case 'ready_to_wean':
+                        color = 'success';
+                        label = 'Lista para destetar';
+                        break;
                 }
 
                 return <Badge color={color}>{label}</Badge>;
@@ -651,7 +655,7 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
                                     <span className="text-black">Peso de los lechones</span>
                                 </CardHeader>
                                 <CardBody className='flex-fill p-0'>
-                                    <SimpleBar style={{ maxHeight: 300 }}>
+                                    <SimpleBar style={{ maxHeight: 400 }}>
                                         <CustomTable
                                             columns={pigletsColumns}
                                             data={pigletsArray}

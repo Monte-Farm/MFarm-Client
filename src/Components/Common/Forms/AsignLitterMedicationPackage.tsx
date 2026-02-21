@@ -282,6 +282,7 @@ const AsignLitterMedicationPackageForm: React.FC<AsignLitterMedicationPackageFor
             appliedBy: userLogged._id,
             observations: '',
             isActive: true,
+            estimatedTotal: 0,
         },
         enableReinitialize: true,
         validationSchema,

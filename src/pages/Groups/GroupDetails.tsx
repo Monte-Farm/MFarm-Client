@@ -38,6 +38,8 @@ import WeightDistributionChart from "Components/Common/Graphics/WeightDistributi
 import GroupTransferForm from "Components/Common/Forms/GroupTransferForm";
 import GroupWithDrawForm from "Components/Common/Forms/GroupWithdrawForm";
 import DiscardPigInGroupForm from "Components/Common/Forms/DiscardPigInGroupForm";
+import GrowthStatusProgress from "Components/Common/Shared/GrowthStatusProgress";
+import ProcessPigExitForm from "Components/Common/Forms/ProcessPigExitForm";
 
 const GroupDetails = () => {
     document.title = "Detalles de grupo | Management System";
@@ -50,7 +52,7 @@ const GroupDetails = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [groupData, setGroupData] = useState<any>({});
     const [activeTab, setActiveTab] = useState("1");
-    const [modals, setModals] = useState({ changeStage: false, registerDeath: false, discard: false, transfer: false });
+    const [modals, setModals] = useState({ changeStage: false, registerDeath: false, discard: false, transfer: false, processExit: false });
     const [lastWeighted, setLastWeigthed] = useState<any>({})
     const [growthRate, setGrowthRate] = useState<number>(0);
     const [averageAge, setAverageaAge] = useState<any>()
@@ -331,15 +333,21 @@ const GroupDetails = () => {
                     <TabPane tabId="1">
                         <div className="row g-3 align-items-stretch">
 
-                            <div className="bg-white p-3 rounded shadow-sm d-flex gap-3">
-                                <KPI title="Total activos" value={active?.total} icon={FaPiggyBank} bgColor="#F3F4F6" iconColor="#374151" />
-                                <KPI title="Machos" value={active?.male} icon={FaMars} bgColor="#E0F2FF" iconColor="#007BFF" />
-                                <KPI title="Hembras" value={active?.female} icon={FaVenus} bgColor="#FFE0F0" iconColor="#FF007B" />
-                                <KPI title="Mortalidad" value={mortality.mortality} icon={FaSkullCrossbones} bgColor="#FDECEC" iconColor="#E74C3C" />
-                                <KPI title="Edad promedio" value={averageAge ? `${averageAge.days} días` : "-"} icon={FaBirthdayCake} bgColor="#E8F6F3" iconColor="#1ABC9C" />
-                                <KPI title="Peso promedio" value={`${lastWeighted?.weight?.toFixed(2) ?? groupData.avgWeight.toFixed(2)} kg`} icon={FaBalanceScale} bgColor="#E9F7EF" iconColor="#2ECC71" />
-                                <KPI title="Ganancia diaria" value={`${growthRate.toFixed(2)} kg/día`} icon={FaChartLine} bgColor="#EEF2FF" iconColor="#4F46E5" />
-                                <KPI title="Último pesaje" value={`${daysSinceLastWeigh} días`} icon={FaCalendarDay} bgColor="#FFF4E5" iconColor="#F39C12" />
+                            <div className="d-flex gap-2">
+                                <div className="bg-white p-3 rounded shadow-sm d-flex gap-3">
+                                    <KPI title="Total activos" value={active?.total} icon={FaPiggyBank} bgColor="#F3F4F6" iconColor="#374151" />
+                                    <KPI title="Machos" value={active?.male} icon={FaMars} bgColor="#E0F2FF" iconColor="#007BFF" />
+                                    <KPI title="Hembras" value={active?.female} icon={FaVenus} bgColor="#FFE0F0" iconColor="#FF007B" />
+                                    <KPI title="Mortalidad" value={mortality.mortality} icon={FaSkullCrossbones} bgColor="#FDECEC" iconColor="#E74C3C" />
+                                    <KPI title="Edad promedio" value={averageAge ? `${averageAge.days} días` : "-"} icon={FaBirthdayCake} bgColor="#E8F6F3" iconColor="#1ABC9C" />
+                                    <KPI title="Peso promedio" value={`${lastWeighted?.weight?.toFixed(2) ?? groupData.avgWeight.toFixed(2)} kg`} icon={FaBalanceScale} bgColor="#E9F7EF" iconColor="#2ECC71" />
+                                    <KPI title="Ganancia diaria" value={`${growthRate.toFixed(2)} kg/día`} icon={FaChartLine} bgColor="#EEF2FF" iconColor="#4F46E5" />
+                                    <KPI title="Último pesaje" value={`${daysSinceLastWeigh} días`} icon={FaCalendarDay} bgColor="#FFF4E5" iconColor="#F39C12" />
+                                </div>
+
+                                <div className="d-flex gap-3 w-100">
+                                    <GrowthStatusProgress status={groupData.status} title="Progreso de ciclo de vida del grupo" />
+                                </div>
                             </div>
 
                             {/* 🔹 2. COLUMNA IZQUIERDA: GRÁFICOS (Análisis visual) */}
@@ -366,6 +374,13 @@ const GroupDetails = () => {
                                             <Button color="success" disabled={!['ready_to_exit', 'exit_overdue'].includes(groupData.status)} onClick={() => toggleModal('changeStage')}>
                                                 <i className=" bx bx-exit me-2" />
                                                 Cambiar a salida
+                                            </Button>
+                                        )}
+
+                                        {['exit'].includes(groupData.status) && (
+                                            <Button color="success" disabled={!['exit'].includes(groupData.status)} onClick={() => toggleModal('processExit')}>
+                                                <i className=" bx bx-exit me-2" />
+                                                Procesar salida de cerdos
                                             </Button>
                                         )}
                                     </CardHeader>
@@ -436,6 +451,13 @@ const GroupDetails = () => {
                 <ModalHeader toggle={() => toggleModal("changeStage")}>Cambiar de etapa</ModalHeader>
                 <ModalBody>
                     <ChangeStageGroup groupId={groupData._id} onSave={() => { toggleModal('changeStage'); fetchData() }} />
+                </ModalBody>
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.processExit} toggle={() => toggleModal("processExit")} centered backdrop={'static'} keyboard={false}>
+                <ModalHeader toggle={() => toggleModal("processExit")}>Procesar salida de cerdos</ModalHeader>
+                <ModalBody>
+                    <ProcessPigExitForm groupId={groupData._id} onSave={() => { toggleModal('processExit'); fetchData() }} />
                 </ModalBody>
             </Modal>
 

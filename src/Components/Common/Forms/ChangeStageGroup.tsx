@@ -29,7 +29,7 @@ const statusData = {
     },
     fattening: {
         proximo: "Salida",
-        actual: "Crecimiento / Ceba",
+        actual: "Crecimiento y Ceba",
         color: "warning",
         icon: "ri-truck-line"
     }
@@ -265,10 +265,8 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
             const newWeights = buildPigUpdates();
             const newStage = buildNewStage();
 
-            // 1. guardar pesajes individuales
             await configContext.axiosHelper.create(`${configContext.apiUrl}/weighing/create_bulk`, weighings);
 
-            // 2. guardar promedio grupo
             await configContext.axiosHelper.create(`${configContext.apiUrl}/weighing/create_group_average/${groupId}`, {
                 avgWeight,
                 pigsCount: pigsArray.length,
@@ -276,10 +274,8 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
                 registeredBy: userLogged._id
             });
 
-            // 3. actualizar peso actual de cerdos
             await configContext.axiosHelper.put(`${configContext.apiUrl}/pig/update_many_pig_weights`, newWeights);
 
-            // 4. cambiar etapa del grupo
             await configContext.axiosHelper.put(`${configContext.apiUrl}/group/change_stage/${groupId}`, newStage);
 
             await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
@@ -360,11 +356,7 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
 
                                             {/* Info del Cerdo - Ajustado para mayor contraste */}
                                             <div className="col-auto">
-                                                <div
-                                                    className={`bg-${accentColor} bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center`}
-                                                    style={{ width: '48px', height: '48px' }}
-                                                >
-                                                    {/* Quitamos la opacidad al texto del icono para que resalte */}
+                                                <div className={`bg-${accentColor} bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center`} style={{ width: '48px', height: '48px' }}>
                                                     <i className={`ri-${isMale ? 'men-line' : 'women-line'} fs-4 text-${accentColor}`}></i>
                                                 </div>
                                             </div>
@@ -437,6 +429,58 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
                 </TabPane>
 
                 <TabPane tabId={2}>
+                    <div className="mb-4">
+                        <Card className="border-0 shadow-sm">
+                            <CardBody className="p-4">
+
+                                <div className="text-center mb-4">
+                                    <h5 className="fw-bold text-dark mb-1">
+                                        Cambio de etapa
+                                    </h5>
+                                    <span className="text-muted small">
+                                        El grupo pasará a la siguiente fase productiva
+                                    </span>
+                                </div>
+
+                                <div className="d-flex justify-content-center align-items-center gap-4 flex-wrap">
+
+                                    {/* Etapa actual */}
+                                    <div className="text-center d-flex flex-column justify-content-center align-items-center">
+                                        <div className="bg-light rounded-circle d-flex align-items-center justify-content-center mb-2 border" style={{ width: 70, height: 70 }}>
+                                            <i className={`ri-information-line fs-2 text-secondary`} />
+                                        </div>
+                                        <div className="fw-semibold text-muted small">
+                                            Actual
+                                        </div>
+                                        <div className="fw-bold text-dark">
+                                            {currentInfo.actual}
+                                        </div>
+                                    </div>
+
+                                    {/* Flecha */}
+                                    <div className="d-flex align-items-center">
+                                        <i className="ri-arrow-right-line fs-2 text-muted" />
+                                    </div>
+
+                                    {/* Próxima etapa */}
+                                    <div className="text-center text-center d-flex flex-column justify-content-center align-items-center">
+                                        <div className={`bg-${currentInfo.color} bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center mb-2`} style={{ width: 70, height: 70 }}>
+                                            <i className={`${currentInfo.icon} fs-2 text-${currentInfo.color}`} />
+                                        </div>
+                                        <div className="fw-semibold text-muted small">
+                                            Próxima
+                                        </div>
+                                        <div className={`fw-bold text-${currentInfo.color}`}>
+                                            {currentInfo.proximo}
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </CardBody>
+                        </Card>
+                    </div>
+
                     <div className="d-flex gap-3 align-items-stretch">
                         <div className="d'flex flex-column w-50">
                             <Card className="w-100">

@@ -341,11 +341,14 @@ export interface GroupMedicationPackagesHistory {
         dosePerPig: number;
         administrationRoute: string;
         totalDose: number;
+        totalCost?: number;
+        unitPrice?: number;
     }[];
     applicationDate: Date | null;
     appliedBy: string;
     observations?: string;
     isActive: boolean;
+    estimatedTotal: number
 }
 
 export interface GroupFeedings {
