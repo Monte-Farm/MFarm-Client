@@ -20,8 +20,9 @@ interface GrowthStatusProgressProps {
     | "exit"
     | "replacement"
     | "sold"
-    | "deceased";
-    title?: string; // 👈 nuevo prop opcional
+    | "deceased"
+    | "exit_processed";
+    title?: string;
 }
 
 const baseSteps = [
@@ -48,6 +49,11 @@ const finalStagesMap: Record<
         key: "deceased",
         label: "Baja",
         icon: FaSkull
+    },
+    exit_processed: {
+        key: "exit_processed",
+        label: "Salida Procesada",
+        icon: FaCheck
     }
 };
 
@@ -65,12 +71,19 @@ const GrowthStatusProgress: React.FC<GrowthStatusProgressProps> = ({ status, tit
             exit_overdue: 1,
 
             exit: 2,
+
             replacement: 3,
             sold: 3,
-            deceased: 3
+            deceased: 3,
+            exit_processed: 3
         };
 
-        const hasFinalStage = ["replacement", "sold", "deceased"].includes(status);
+        const hasFinalStage = [
+            "replacement",
+            "sold",
+            "deceased",
+            "exit_processed"
+        ].includes(status);
 
         const dynamicSteps = hasFinalStage
             ? [...baseSteps, finalStagesMap[status]]
@@ -101,7 +114,6 @@ const GrowthStatusProgress: React.FC<GrowthStatusProgressProps> = ({ status, tit
                 boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
             }}
         >
-            {/* 👇 título opcional */}
             {title && (
                 <div
                     style={{
@@ -124,6 +136,7 @@ const GrowthStatusProgress: React.FC<GrowthStatusProgressProps> = ({ status, tit
                     alignItems: "center"
                 }}
             >
+                {/* Línea base */}
                 <div
                     style={{
                         position: "absolute",
@@ -137,6 +150,7 @@ const GrowthStatusProgress: React.FC<GrowthStatusProgressProps> = ({ status, tit
                     }}
                 />
 
+                {/* Línea progreso */}
                 <div
                     style={{
                         position: "absolute",

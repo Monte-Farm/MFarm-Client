@@ -178,6 +178,10 @@ const GroupDetails = () => {
                         color = "secondary";
                         text = "Reemplazo";
                         break;
+                    case "exit_processed":
+                        color = "success";
+                        text = "Salida Procesada";
+                        break;
                 }
 
                 return <Badge color={color}>{text}</Badge>;

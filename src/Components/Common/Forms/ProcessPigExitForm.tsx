@@ -224,6 +224,10 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
                         color = "secondary";
                         text = "Corrales de venta / embarque";
                         break;
+                    case "exit":
+                        color = "secondary";
+                        text = "Salida";
+                        break;
                 }
 
                 return <Badge color={color}>{text}</Badge>;
@@ -246,8 +250,8 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
                         color = "primary";
                         text = "Listo para crecimiento";
                         break;
-                    case "":
-                        color = "grow_overdue";
+                    case "grow_overdue":
+                        color = "warning";
                         text = "Retradado en crecimiento";
                         break;
                     case "growing":
@@ -265,6 +269,14 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
                     case "replacement":
                         color = "secondary";
                         text = "Reemplazo";
+                        break;
+                    case "exit":
+                        color = "secondary";
+                        text = "Salida";
+                        break;
+                    case "exit_processed":
+                        color = "success";
+                        text = "Salida procesada";
                         break;
                 }
 
@@ -295,7 +307,7 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
             setGroup(groupDetails)
 
             const replacementGroupsResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/group/find_compatible_replacement_groups/${userLogged.farm_assigned}/${groupDetails.creationDate}`)
-            const saleGroupsResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/group/find_compatible_replacement_groups/${userLogged.farm_assigned}/${groupDetails.creationDate}`)
+            const saleGroupsResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/group/find_compatible_sale_groups/${userLogged.farm_assigned}/${groupDetails.creationDate}`)
 
             const replacementGroupsData = replacementGroupsResponse.data.data;
             const saleGroupsData = saleGroupsResponse.data.data;
@@ -327,11 +339,6 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
         }));
     };
 
-    const calculateAverage = () => {
-        const total = pigsArray.reduce((sum, p) => sum + Number(p.newWeight), 0);
-        return total / pigsArray.length;
-    };
-
     const buildPigUpdates = () => {
         return pigsArray.map(pig => ({
             pigId: pig._id,
@@ -339,6 +346,176 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
         }));
     };
 
+    const calculateAverage = (pigs: any[]) => {
+        const total = pigs.reduce((sum, p) => sum + Number(p.newWeight), 0);
+        return total / pigs.length;
+    };
+
+
+    const processReplacementGroup = async () => {
+        if (!configContext) return;
+        try {
+            if (newReplacementGroup) {
+                const nextGroupCodeResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/group/next_group_code`);
+                const nextCode = nextGroupCodeResponse.data.data;
+
+                const replacementSows = pigsArray.filter((s: any) => s.sex === 'female' && s.destination === 'replacement');
+                const sowsReplacementIds = replacementSows.map(s => s._id)
+                const avgWeight = calculateAverage(replacementSows)
+
+                const sowsReplacementGroupData: GroupData = {
+                    code: nextCode,
+                    name: nextCode,
+                    farm: userLogged.farm_assigned,
+                    area: 'replacement',
+                    creationDate: new Date(),
+                    stage: "breeder",
+                    status: 'replacement',
+                    groupMode: "linked",
+                    pigsInGroup: replacementSows.map(s => s._id),
+                    pigCount: replacementSows.length,
+                    maleCount: 0,
+                    femaleCount: replacementSows.length,
+                    avgWeight: avgWeight,
+                    responsible: userLogged?._id,
+                    observations: "",
+                    observationsHistory: [],
+                    groupHistory: [],
+                    feedings: [],
+                    feedingPackagesHistory: [],
+                    medications: [],
+                    medicationPackagesHistory: [],
+                    vaccinationPlansHistory: [],
+                    healthEvents: [],
+                }
+
+                const groupResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/group/create_group`, sowsReplacementGroupData)
+                const groupData = groupResponse.data.data;
+
+                await configContext.axiosHelper.create(`${configContext.apiUrl}/weighing/create_group_average/${groupData._id}`, {
+                    avgWeight: avgWeight,
+                    pigsCount: replacementSows.length,
+                    weighedAt: new Date(),
+                    registeredBy: userLogged._id
+                });
+
+                await configContext.axiosHelper.update(`${configContext.apiUrl}/pig/update_pigs_stage`,
+                    {
+                        pigsIds: sowsReplacementIds,
+                        newStage: 'breeder',
+                        userId: userLogged._id,
+                    }
+                )
+            } else if (!newReplacementGroup && selectedReplacementCompatibleGroup) {
+                const sowsReplacement = pigsArray.filter((s: any) => s.sex === 'female' && s.destination === 'replacement');
+                const sowsReplacementIds = sowsReplacement.map(s => s._id)
+                const transferedResponse = await configContext.axiosHelper.put(`${configContext.apiUrl}/group/transfer_all_pigs/${selectedReplacementCompatibleGroup._id}/${userLogged._id}`, sowsReplacementIds);
+                await configContext.axiosHelper.update(`${configContext.apiUrl}/pig/update_pigs_stage`,
+                    {
+                        pigIds: sowsReplacementIds,
+                        newStage: 'breeder',
+                        userId: userLogged._id,
+                    }
+                )
+            }
+        } catch (error) {
+            console.error('Error processing replacement group:', { error })
+            throw error;
+        }
+    }
+
+    const processSaleGroup = async () => {
+        if (!configContext) return;
+        try {
+            if (newSalesGroup) {
+                const nextGroupCodeResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/group/next_group_code`);
+                const nextCode = nextGroupCodeResponse.data.data;
+
+                const salePigs = pigsArray.filter((s: any) => s.destination === 'sale');
+                const avgWeight = calculateAverage(salePigs)
+
+                const salePigsGroupData: GroupData = {
+                    code: nextCode,
+                    name: nextCode,
+                    farm: userLogged.farm_assigned,
+                    area: 'sale',
+                    creationDate: new Date(),
+                    stage: "sale",
+                    status: 'sale',
+                    groupMode: "linked",
+                    pigsInGroup: salePigs.map(s => s._id),
+                    pigCount: salePigs.length,
+                    maleCount: salePigs.filter((p: any) => p.sex === 'male').length,
+                    femaleCount: salePigs.filter((p: any) => p.sex === 'female').length,
+                    avgWeight: avgWeight,
+                    responsible: userLogged?._id,
+                    observations: "",
+                    observationsHistory: [],
+                    groupHistory: [],
+                    feedings: [],
+                    feedingPackagesHistory: [],
+                    medications: [],
+                    medicationPackagesHistory: [],
+                    vaccinationPlansHistory: [],
+                    healthEvents: [],
+                }
+
+                const groupResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/group/create_group`, salePigsGroupData)
+                const groupData = groupResponse.data.data;
+
+                await configContext.axiosHelper.create(`${configContext.apiUrl}/weighing/create_group_average/${groupData._id}`, {
+                    avgWeight: avgWeight,
+                    pigsCount: salePigs.length,
+                    weighedAt: new Date(),
+                    registeredBy: userLogged._id
+                });
+
+                await configContext.axiosHelper.update(`${configContext.apiUrl}/pig/update_pigs_stage`,
+                    {
+                        pigsIds: salePigs,
+                        newStage: 'sale',
+                        userId: userLogged._id,
+                    }
+                )
+            } else if (!newSalesGroup && selectedSaleCompatibleGroup) {
+                const salePigs = pigsArray.filter((s: any) => s.destination === 'sale');
+                const salePigsIds = salePigs.map(s => s._id)
+
+                const transferedResponse = await configContext.axiosHelper.put(`${configContext.apiUrl}/group/transfer_all_pigs/${selectedSaleCompatibleGroup._id}/${userLogged._id}`, salePigsIds);
+                await configContext.axiosHelper.update(`${configContext.apiUrl}/pig/update_pigs_stage`,
+                    {
+                        pigIds: salePigs,
+                        newStage: 'sale',
+                        userId: userLogged._id,
+                    }
+                )
+            }
+        } catch (error) {
+            console.error('Error processing replacement group:', { error })
+            throw error
+        }
+    }
+
+    const processReplacementBoars = async () => {
+        if (!configContext) return;
+        try {
+            const replacementBoars = pigsArray.filter((s: any) => s.sex === 'male' && s.destination === 'replacement');
+            const boarsReplacementIds = replacementBoars.map(s => s._id)
+
+            if (replacementBoars.length !== 0) {
+                await configContext.axiosHelper.update(`${configContext.apiUrl}/pig/update_pigs_stage`,
+                    {
+                        pigsIds: boarsReplacementIds,
+                        newStage: 'breeder',
+                        userId: userLogged._id,
+                    }
+                )
+            }
+        } catch (error) {
+            console.error('Error processing replacement group:', { error })
+            throw error;
+        }
+    }
 
     const handleProcessExit = async () => {
         if (!configContext || !userLogged) return;
@@ -346,19 +523,22 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
             setIsSubmitting(true);
 
             const weighings = buildWeighings();
-            const avgWeight = calculateAverage();
             const newWeights = buildPigUpdates();
+
+            await processReplacementGroup();
+            await processSaleGroup();
+            await processReplacementBoars();
 
             await configContext.axiosHelper.create(`${configContext.apiUrl}/weighing/create_bulk`, weighings);
 
-            await configContext.axiosHelper.create(`${configContext.apiUrl}/weighing/create_group_average/${groupId}`, {
-                avgWeight,
-                pigsCount: pigsArray.length,
-                weighedAt: new Date(),
-                registeredBy: userLogged._id
-            });
-
             await configContext.axiosHelper.put(`${configContext.apiUrl}/pig/update_many_pig_weights`, newWeights);
+
+            await configContext.axiosHelper.put(`${configContext.apiUrl}/group/change_stage/${groupId}`, {
+                area: 'exit',
+                stage: 'exit',
+                status: 'exit_processed',
+                userId: userLogged._id
+            });
 
             await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
                 event: `Cambio de etapa al grupo ${group.code} registrado`
@@ -654,7 +834,7 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
                     </div>
                 </TabPane>
 
-                <TabPane tabId={2}>
+                <TabPane tabId={3}>
                     <div>
                         {compatibleSalesGroups && compatibleSalesGroups.length === 0 ? (
                             <div className="alert alert-info d-flex flex-column align-items-center text-center gap-2">
@@ -720,13 +900,56 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
 
                 <TabPane tabId={4}>
                     <div className="d-flex gap-3 align-items-stretch">
-                        <div className="d'flex flex-column w-50">
+                        <div className="d-flex flex-column w-50">
                             <Card className="w-100">
                                 <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
                                     <span className="text-black">Información del grupo</span>
                                 </CardHeader>
                                 <CardBody className="flex-fill">
                                     <ObjectDetails attributes={groupAttributes} object={group} />
+                                </CardBody>
+                            </Card>
+
+                            <Card className="w-100 m-0">
+                                <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
+                                    <span className="text-black">Grupo de venta destino</span>
+                                </CardHeader>
+                                <CardBody className="flex-fill">
+                                    {newReplacementGroup && newReplacementGroup === true ? (
+                                        <div className="alert alert-info d-flex flex-column align-items-center text-center gap-2">
+                                            <FaInfo size={22} />
+
+                                            <div>
+                                                <div className="fw-semibold">
+                                                    Nuevo grupo de venta
+                                                </div>
+                                                <div className="small">
+                                                    Se creará un nuevo grupo de venta al procesar la salida
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <ObjectDetails attributes={groupAttributes} object={selectedSaleCompatibleGroup} />
+                                    )}
+                                </CardBody>
+                            </Card>
+                        </div>
+
+                        <div className="d-flex flex-column w-50 gap-3">
+                            <Card className="w-100 h-100 m-0">
+                                <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
+                                    <span className="text-black">Peso de los cerdos</span>
+                                </CardHeader>
+                                <CardBody className='flex-fill p-0'>
+                                    <SimpleBar style={{ maxHeight: 400 }}>
+                                        <CustomTable
+                                            columns={pigletsColumns}
+                                            data={pigsArray}
+                                            showPagination={false}
+                                            showSearchAndFilter={false}
+                                            rowsPerPage={4}
+                                        />
+                                    </SimpleBar>
                                 </CardBody>
                             </Card>
 
@@ -751,24 +974,6 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
                                     ) : (
                                         <ObjectDetails attributes={groupAttributes} object={selectedReplacementCompatibleGroup} />
                                     )}
-                                </CardBody>
-                            </Card>
-                        </div>
-
-                        <div className="w-50">
-                            <Card className="w-100 h-100 m-0">
-                                <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
-                                    <span className="text-black">Peso de los cerdos</span>
-                                </CardHeader>
-                                <CardBody className='flex-fill p-0'>
-                                    <SimpleBar style={{ maxHeight: 400 }}>
-                                        <CustomTable
-                                            columns={pigletsColumns}
-                                            data={pigsArray}
-                                            showPagination={false}
-                                            showSearchAndFilter={false}
-                                        />
-                                    </SimpleBar>
                                 </CardBody>
                             </Card>
                         </div>
@@ -820,7 +1025,7 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
                 </ModalBody>
 
                 <ModalFooter>
-                    <Button class Name="" color="success">
+                    <Button class Name="" color="success" onClick={() => handleProcessExit()}>
                         {isSubmitting ? (
                             <Spinner size='sm' />
                         ) : (

@@ -440,8 +440,8 @@ export interface GroupData {
     farm: string;
     area: string;
     creationDate: Date | null;
-    stage: 'piglet' | 'weaning' | 'fattening' | 'breeder' | '';
-    status?: 'weaning' | 'ready_to_grow' | 'grow_overdue' | 'growing' | 'ready_to_exit' | 'exit_overdue' | 'exit' | 'replacement'
+    stage: | 'general' | 'lactation' | 'weaning' | 'fattening' | 'gestation' | 'breeder' | 'exit' | 'sale' | "";
+    status?: 'weaning' | 'ready_to_grow' | 'grow_overdue' | 'growing' | 'ready_to_exit' | 'exit_overdue' | 'exit' | 'replacement' | 'sale' | 'sold'
     groupMode: 'linked' | 'count' | '';
     pigsInGroup?: string[];
     pigCount?: number;
