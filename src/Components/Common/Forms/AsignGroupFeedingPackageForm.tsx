@@ -35,6 +35,9 @@ const AsignGroupFeedingPackageForm: React.FC<AsignGroupFeedingPackageFormProps> 
     const [selectedFeedingPackage, setSelectedFeedingPackage] = useState<any>();
     const [feedingPackagesItems, setFeedingPackagesItems] = useState<any[]>();
     const [missingItems, setMissingItems] = useState([]);
+    const [feedingPackagePreview, setFeedingPackagePreview] = useState<any>();
+    const [active, setActive] = useState<any>();
+
 
     function toggleArrowTab(tab: number) {
         if (activeStep !== tab) {
@@ -195,14 +198,24 @@ const AsignGroupFeedingPackageForm: React.FC<AsignGroupFeedingPackageFormProps> 
             accessor: "quantity",
             type: "text",
             isFilterable: true,
-            render: (_, row) => <span>{row.quantity} {row.unit_measurement}</span>
+            render: (_, row) => {
+                const previewProduct = feedingPackagePreview?.products.find(
+                    (p: any) => p.code === row.id
+                );
+                return (<span>{previewProduct?.quantityPerAnimal} {previewProduct?.unitMeasurement}</span>);
+            }
         },
         {
             header: "Cantidad total",
             accessor: "quantity",
             type: "text",
             isFilterable: true,
-            render: (_, row) => <span>{row.totalQuantity} {row.unit_measurement}</span>
+            render: (_, row) => {
+                const previewProduct = feedingPackagePreview?.products.find(
+                    (p: any) => p.code === row.id
+                );
+                return (<span>{previewProduct?.totalQuantity} {previewProduct?.unitMeasurement}</span>);
+            }
         },
         {
             header: "Promedio por cerdo",
@@ -211,6 +224,34 @@ const AsignGroupFeedingPackageForm: React.FC<AsignGroupFeedingPackageFormProps> 
             isFilterable: true,
             render: (_, row) => <span>{row.avgPerPig} {row.unit_measurement}</span>
         },
+        {
+            header: "Precio unitario",
+            accessor: "unitPrice",
+            type: "text",
+            isFilterable: false,
+            render: (_, row) => {
+                const previewProduct = feedingPackagePreview?.products.find(
+                    (p: any) => p.code === row.id
+                );
+
+                if (!previewProduct || !previewProduct.hasPrice) {
+                    return (
+                        <span className="badge bg-warning text-dark">
+                            Sin precio
+                        </span>
+                    );
+                }
+
+                return (
+                    <span>
+                        {new Intl.NumberFormat('es-MX', {
+                            style: 'currency',
+                            currency: 'MXN'
+                        }).format(previewProduct.unitPrice)}
+                    </span>
+                );
+            }
+        }
     ]
 
     const feedingsPackagesAttributes: Attribute[] = [
@@ -317,6 +358,9 @@ const AsignGroupFeedingPackageForm: React.FC<AsignGroupFeedingPackageFormProps> 
             const feedingResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/feeding_package/find_by_stage/${userLogged.farm_assigned}/${groupData.stage}`)
             const packagesWithId = feedingResponse.data.data.map((b: any) => ({ ...b, id: b._id }));
             setFeedingPackages(packagesWithId)
+
+            const activeResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/group/active_counts/${groupId}`)
+            setActive(activeResponse.data.data)
         } catch (error) {
             console.error('Error fetching data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al cargar los datos, intentelo mas tarde' })
@@ -339,6 +383,18 @@ const AsignGroupFeedingPackageForm: React.FC<AsignGroupFeedingPackageFormProps> 
                 return { ...product, ...fed, totalQuantity: formikProduct?.totalQuantity, avgPerPig: formikProduct?.avgPerPig };
             });
             setFeedingPackagesItems(combined)
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
+
+    const fetchPreviewData = async () => {
+        if (!selectedFeedingPackage || !configContext) return;
+        try {
+            const previewResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/feeding_package/preview_application/${selectedFeedingPackage._id}/${groupId}`)
+            const previewData = previewResponse.data.data
+            setFeedingPackagePreview(previewData)
+            return previewData
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -368,7 +424,27 @@ const AsignGroupFeedingPackageForm: React.FC<AsignGroupFeedingPackageFormProps> 
         onSubmit: async (values, { setSubmitting }) => {
             if (!configContext) return;
             try {
-                const feedingResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/feeding_package/asign_group_feeding_package/${userLogged.farm_assigned}/${groupId}`, values)
+                const feedingsWithCosts = values.feedings.map((m: any) => {
+                    const previewProduct = feedingPackagePreview?.products?.find(
+                        (p: any) => p.productId === m.feeding
+                    );
+
+                    return {
+                        ...m,
+                        unitPrice: previewProduct?.unitPrice ?? null,
+                        totalCost: previewProduct?.totalCost ?? null,
+                        hasPrice: previewProduct?.hasPrice ?? false
+                    };
+                });
+
+                const payload = {
+                    ...values,
+                    feedings: feedingsWithCosts,
+                    estimatedTotal: feedingPackagePreview?.estimatedTotal ?? 0,
+                };
+
+                const feedingResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/feeding_package/asign_group_feeding_package/${userLogged.farm_assigned}/${groupId}`, payload)
+
                 await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
                     event: `Paquete de alimentacion asignado al grupo ${groupDetails?.code}`
                 });
@@ -412,6 +488,8 @@ const AsignGroupFeedingPackageForm: React.FC<AsignGroupFeedingPackageFormProps> 
             formik.setFieldValue('stage', selectedFeedingPackage.stage)
             formik.setFieldValue('periodicity', selectedFeedingPackage.periodicity)
             formik.setFieldValue('feedings', feedingsFull)
+
+            fetchPreviewData();
         }
     }, [selectedFeedingPackage])
 
@@ -555,7 +633,13 @@ const AsignGroupFeedingPackageForm: React.FC<AsignGroupFeedingPackageFormProps> 
                         <div className="w-100">
                             <Card className="shadow-sm mb-3">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
-                                    Información de paquete de alimentacion
+                                    Información del paquete de alimentacion
+
+                                    {feedingPackagePreview?.hasMissingPrices && (
+                                        <span className="badge bg-warning text-dark">
+                                            Precios pendientes
+                                        </span>
+                                    )}
                                 </CardHeader>
                                 <CardBody>
                                     <ObjectDetails
@@ -567,7 +651,23 @@ const AsignGroupFeedingPackageForm: React.FC<AsignGroupFeedingPackageFormProps> 
 
                             <Card className="shadow-sm">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
-                                    <h5>Alimentos</h5>
+                                    <h5 className="mb-0">Alimentos</h5>
+
+                                    {feedingPackagePreview && (
+                                        <div className="d-flex align-items-center gap-3">
+                                            <div className="text-end">
+                                                <div className="small text-muted">
+                                                    Total aproximado de aplicación
+                                                </div>
+                                                <div className="fw-bold">
+                                                    {new Intl.NumberFormat('es-MX', {
+                                                        style: 'currency',
+                                                        currency: 'MXN'
+                                                    }).format(feedingPackagePreview.estimatedTotal || 0)}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </CardHeader>
                                 <CardBody className="p-0 mb-3">
                                     <CustomTable
@@ -608,7 +708,7 @@ const AsignGroupFeedingPackageForm: React.FC<AsignGroupFeedingPackageFormProps> 
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} autoClose={3000} />
             <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message={"Ha ocurrido un error, intentelo mas tarde"} />
-            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={"Paquete de medicacion asignado correctamente"} />
+            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={"Paquete de alimentacion asignado correctamente"} />
             <MissingStockModal isOpen={modals.missingStock} onClose={() => toggleModal('missingStock', false)} missingItems={missingItems} />
         </>
     )
