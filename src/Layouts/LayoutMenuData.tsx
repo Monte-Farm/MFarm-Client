@@ -103,6 +103,10 @@ const Navdata = () => {
     const [isSows, setIsSows] = useState<boolean>(false);
     const [isBoars, setIsBoars] = useState<boolean>(false);
 
+    //Sale
+    const [isSale, setIsSale] = useState<boolean>(false);
+    const [isSaleGroups, setIsSaleGroups] = useState<boolean>(false);
+
     const [iscurrentState, setIscurrentState] = useState('Home');
 
     function updateIconSidebar(e: any) {
@@ -182,6 +186,9 @@ const Navdata = () => {
         if (iscurrentState !== 'Exit') {
             setIsExit(false)
         }
+        if (iscurrentState !== 'Sale') {
+            setIsSale(false)
+        }
     }, [
         history,
         iscurrentState,
@@ -203,6 +210,7 @@ const Navdata = () => {
         isFinishing,
         isReplacement,
         isExit,
+        isSale,
     ]);
 
     const menuItems: any = [
@@ -733,6 +741,34 @@ const Navdata = () => {
                 },
             ]
 
+        },
+        {
+            id: 'sale',
+            label: 'Venta',
+            icon: 'ri-money-dollar-circle-line',
+            link: '/#',
+            roles: ['farm_manager', 'general_worker',],
+            click: function (e: any) {
+                e.preventDefault();
+                setIscurrentState('Sale')
+                setIsSale(!isSale)
+                updateIconSidebar(e);
+            },
+            stateVariables: isSale,
+            subItems: [
+                {
+                    id: "saleGroups",
+                    label: "Grupos para venta",
+                    link: "/sale/view_sale_groups",
+                    roles: ['farm_manager', 'general_worker'],
+                    parentId: "sale",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsSaleGroups(!isSaleGroups)
+                    },
+                    stateVariables: isSaleGroups,
+                },
+            ]
         },
         {
             id: 'medication',

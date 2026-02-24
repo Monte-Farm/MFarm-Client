@@ -19,6 +19,7 @@ import LitterMedicalDetails from "Components/Common/Details/LitterMedicalDetails
 import LitterEventsCard from "Components/Common/Shared/LitterEventsCard";
 import WeanLitterForm from "Components/Common/Forms/WeanLitterForm";
 import WeaningProgress from "Components/Common/Shared/WeaningProgress";
+import LitterFeedingDetails from "Components/Common/Details/LitterFeedingDetails";
 
 const LitterDetails = () => {
     const { litter_id } = useParams();
@@ -167,6 +168,15 @@ const LitterDetails = () => {
                                 Informacion medica
                             </NavLink>
                         </NavItem>
+                        <NavItem>
+                            <NavLink
+                                style={{ cursor: "pointer" }}
+                                className={classnames({ active: activeTab === "3" })}
+                                onClick={() => toggleTab("3")}
+                            >
+                                Alimentación
+                            </NavLink>
+                        </NavItem>
                     </Nav>
                 </div>
 
@@ -235,6 +245,10 @@ const LitterDetails = () => {
 
                     <TabPane tabId="2">
                         <LitterMedicalDetails litterId={litter_id ?? ''} />
+                    </TabPane>
+
+                    <TabPane tabId="3">
+                        <LitterFeedingDetails litterId={litter_id ?? ""} />
                     </TabPane>
                 </TabContent>
             </Container>

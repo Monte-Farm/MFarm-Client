@@ -424,7 +424,6 @@ const GroupDetails = () => {
                         </div>
                     </TabPane>
 
-
                     <TabPane tabId="2">
                         <GroupFeedingDetails groupId={group_id ?? ""} />
                     </TabPane>

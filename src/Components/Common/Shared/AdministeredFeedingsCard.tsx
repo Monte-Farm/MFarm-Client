@@ -20,12 +20,7 @@ const PERIODICITY_LABELS: Record<string, string> = {
     by_event: "Por evento",
 };
 
-const AdministeredFeedingsCard = ({
-    feedings,
-    onAdd,
-    onDiscountStock,
-    onUnassign,
-}: Props) => {
+const AdministeredFeedingsCard = ({ feedings, onAdd, onDiscountStock, onUnassign, }: Props) => {
     const hasFeedings = feedings && feedings.length > 0;
 
     return (
@@ -38,13 +33,7 @@ const AdministeredFeedingsCard = ({
                 </Button>
             </CardHeader>
 
-            <CardBody
-                className={
-                    hasFeedings
-                        ? "d-flex flex-column gap-3 flex-grow-1 overflow-auto"
-                        : "d-flex flex-column justify-content-center align-items-center gap-2 text-center"
-                }
-            >
+            <CardBody className={hasFeedings ? "d-flex flex-column gap-3 flex-grow-1 overflow-auto" : "d-flex flex-column justify-content-center align-items-center gap-2 text-center"}>
                 {!hasFeedings ? (
                     <>
                         <FiAlertCircle size={36} className="text-muted" />
@@ -63,31 +52,28 @@ const AdministeredFeedingsCard = ({
                         );
 
                         return (
-                            <div
-                                key={f._id || index}
-                                className="border rounded p-3 position-relative bg-light-subtle"
-                            >
+                            <div key={f._id || index} className="border rounded p-3 position-relative bg-light-subtle">
                                 {/* Acciones */}
-                                <Button
-                                    size="sm"
-                                    color="link"
-                                    className="position-absolute top-0 end-0 m-2"
-                                    onClick={() => onDiscountStock(f._id)}
-                                    disabled={!f.isActive}
-                                >
-                                    <i className="bx bx-trending-down fs-5" />
-                                </Button>
+                                <div className="position-absolute top-0 end-0 m-2 d-flex gap-1">
+                                    {f.isActive && (
+                                        <Button
+                                            size="sm"
+                                            className="btn-danger"
+                                            onClick={() => onUnassign(f._id)}
+                                        >
+                                            <i className="ri-forbid-line fs-5" />
+                                        </Button>
+                                    )}
 
-                                {f.isActive && (
                                     <Button
                                         size="sm"
-                                        color="link"
-                                        className="position-absolute top-0 end-0 mt-2 me-5 text-danger"
-                                        onClick={() => onUnassign(f._id)}
+                                        onClick={() => onDiscountStock(f._id)}
+                                        disabled={!f.isActive}
                                     >
-                                        <i className="ri-forbid-line fs-5" />
+                                        <i className="bx bx-trending-down fs-5" />
                                     </Button>
-                                )}
+                                </div>
+
 
                                 {/* Título */}
                                 <div className="d-flex align-items-center gap-2 mb-2">

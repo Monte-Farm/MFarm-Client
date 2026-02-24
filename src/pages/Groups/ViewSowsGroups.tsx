@@ -16,14 +16,14 @@ import GroupTransferForm from "Components/Common/Forms/GroupTransferForm";
 import KPI from "Components/Common/Graphics/Kpi";
 import { FaArrowDown, FaArrowUp, FaBalanceScale, FaLayerGroup, FaMars, FaPiggyBank, FaVenus, FaWeight } from "react-icons/fa";
 
-const ViewExitGroups = () => {
+const ViewSowsGroups = () => {
     const navigate = useNavigate();
     const configContext = useContext(ConfigContext)
     const userLogged = getLoggedinUser()
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ create: false, move: false, asign: false, withdraw: false });
-    const [exitGroups, setExitGroups] = useState<GroupData[]>([])
+    const [sowsGroups, setSowsGroups] = useState<GroupData[]>([])
     const [stats, setStats] = useState<any>({})
     const [selectedGroup, setSelectedGroup] = useState<any>({})
 
@@ -186,10 +186,10 @@ const ViewExitGroups = () => {
         try {
             setLoading(true)
             const [groupResponse, statsResponse] = await Promise.all([
-                configContext.axiosHelper.get(`${configContext.apiUrl}/group/find_by_stage/${userLogged.farm_assigned}/exit`),
-                configContext.axiosHelper.get(`${configContext.apiUrl}/group/group_alive_stats/${userLogged.farm_assigned}/exit`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/group/find_by_stage/${userLogged.farm_assigned}/breeder`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/group/group_alive_stats/${userLogged.farm_assigned}/breeder`),
             ])
-            setExitGroups(groupResponse.data.data)
+            setSowsGroups(groupResponse.data.data)
             setStats(statsResponse.data.data)
         } catch (error) {
             console.error('Error fetching data:', { error })
@@ -212,7 +212,7 @@ const ViewExitGroups = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Ver grupos de salida"} pageTitle={"Salida"} />
+                <BreadCrumb title={"Ver grupos de cerdas de reemplazo"} pageTitle={"Reemplazo"} />
 
                 <div className="d-flex gap-3 flex-wrap">
                     <KPI title="Grupos" value={stats?.population?.totalGroups ?? 0} icon={FaLayerGroup} bgColor="#e8f4fd" iconColor="#0d6efd" />
@@ -220,7 +220,6 @@ const ViewExitGroups = () => {
                     <KPI title="Cerdos promedio por grupo" value={stats?.population?.avgPigsPerGroup ?? 0} icon={FaBalanceScale} bgColor="#e6f7e6" iconColor="#28a745" />
                     <KPI title="Mínimo por grupo" value={stats?.population?.minPigsPerGroup ?? 0} icon={FaArrowDown} bgColor="#f8d7da" iconColor="#dc3545" />
                     <KPI title="Máximo por grupo" value={stats?.population?.maxPigsPerGroup ?? 0} icon={FaArrowUp} bgColor="#d1e7dd" iconColor="#198754" />
-                    <KPI title="Machos" value={stats?.population?.totalMales ?? 0} icon={FaMars} bgColor="#e7f1ff" iconColor="#0a58ca" />
                     <KPI title="Hembras" value={stats?.population?.totalFemales ?? 0} icon={FaVenus} bgColor="#fde7f3" iconColor="#d63384" />
                     <KPI title="Peso promedio por cerdo (kg)" value={stats?.avgWeight?.toFixed(1) ?? 0} icon={FaWeight} bgColor="#ede9fe" iconColor="#6f42c1" />
                 </div>
@@ -233,9 +232,9 @@ const ViewExitGroups = () => {
                         </Button>
                     </CardHeader> */}
                     <CardBody style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-                        {exitGroups.length > 0 ? (
+                        {sowsGroups.length > 0 ? (
                             <div style={{ flex: 1 }}>
-                                <CustomTable columns={groupsColumns} data={exitGroups} showPagination={true} rowsPerPage={7} />
+                                <CustomTable columns={groupsColumns} data={sowsGroups} showPagination={true} rowsPerPage={7} />
                             </div>
                         ) : (
                             <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", textAlign: "center", color: "#6c757d", padding: "2rem", flexDirection: "column", }}>
@@ -284,4 +283,4 @@ const ViewExitGroups = () => {
     )
 }
 
-export default ViewExitGroups;
+export default ViewSowsGroups;

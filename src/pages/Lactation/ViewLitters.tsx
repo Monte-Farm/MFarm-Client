@@ -54,7 +54,7 @@ const ViewLitters = () => {
             accessor: 'averageWeight',
             type: 'text',
             isFilterable: true,
-            render: (_, row) => <span>{row.averageWeight * (row.currentMale + row.currentFemale)}</span>
+            render: (_, row) => <span>{(row.averageWeight * (row.currentMale + row.currentFemale)).toFixed(2)}</span>
         },
         {
             header: 'Estado',

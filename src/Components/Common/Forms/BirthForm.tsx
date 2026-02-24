@@ -224,6 +224,8 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                     piglets: pigletsArray,
                     responsible: userLogged._id,
                     events: [],
+                    feedings: [],
+                    feedingPackagesHistory: [],
                     medications: [],
                     medicationPackagesHistory: [],
                     vaccinationPlansHistory: [],

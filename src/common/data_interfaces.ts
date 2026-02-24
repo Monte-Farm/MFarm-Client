@@ -642,6 +642,8 @@ export interface Litter {
     observations?: string;
     responsible: string;
     events: LitterEvent[];
+    feedings: GroupFeedings[];
+    feedingPackagesHistory: FeedingPackagesHistory[];
     medications: GroupMedications[];
     medicationPackagesHistory: GroupMedicationPackagesHistory[];
     vaccinationPlansHistory: GroupVaccinationPlansHistory[];

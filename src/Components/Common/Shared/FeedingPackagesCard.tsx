@@ -75,43 +75,39 @@ const FeedingPackagesCard = ({
                         );
 
                         return (
-                            <div
-                                key={p._id || index}
-                                className="border rounded p-3 position-relative bg-light-subtle"
-                            >
+                            <div key={p._id || index} className="border rounded p-3 position-relative bg-light-subtle">
                                 {/* Acciones */}
-                                <Button
-                                    size="sm"
-                                    color="link"
-                                    className="position-absolute top-0 end-0 m-2"
-                                    onClick={() => onViewDetails(p.packageId?._id)}
-                                >
-                                    <FiEye size={18} />
-                                </Button>
+                                <div className="position-absolute top-0 end-0 m-2 d-flex gap-1">
+                                    {p.isActive && (
+                                        <Button
+                                            size="sm"
+                                            className="btn-danger"
+                                            onClick={() => onUnassign(p._id)}
+                                        >
+                                            <i className="ri-forbid-line fs-5" />
+                                        </Button>
+                                    )}
 
-                                <Button
-                                    size="sm"
-                                    color="link"
-                                    className="position-absolute top-0 end-0 mt-2 me-5"
-                                    disabled={!p.isActive}
-                                    onClick={() =>
-                                        onDiscountStock(p.packageId?._id)
-                                    }
-                                >
-                                    <i className="bx bx-trending-down fs-5" />
-                                </Button>
-
-                                {p.isActive && (
                                     <Button
                                         size="sm"
-                                        color="link"
-                                        className="position-absolute top-0 end-0 mt-2 me-10 text-danger"
-                                        onClick={() => onUnassign(p._id)}
-                                        style={{ marginRight: "4.5rem" }}
+                                        className=""
+                                        onClick={() => onViewDetails(p.packageId?._id)}
                                     >
-                                        <i className="ri-forbid-line fs-5" />
+                                        <FiEye size={18} />
                                     </Button>
-                                )}
+
+                                    <Button
+                                        size="sm"
+                                        className=""
+                                        disabled={!p.isActive}
+                                        onClick={() =>
+                                            onDiscountStock(p.packageId?._id)
+                                        }
+                                    >
+                                        <i className="bx bx-trending-down fs-5" />
+                                    </Button>
+                                </div>
+
 
                                 {/* Título */}
                                 <div className="d-flex align-items-center gap-2 mb-2">
