@@ -44,26 +44,52 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
     ];
 
     const productColumns: Column<any>[] = [
-        { header: 'Código', accessor: 'id', isFilterable: true, type: 'text' },
-        { header: 'Producto', accessor: 'name', isFilterable: true, type: 'text' },
+        {
+            header: 'Código',
+            accessor: 'id.id',
+            isFilterable: true,
+            type: 'text',
+            render: (value, row) => <span>{row.id.id}</span>
+        },
+        {
+            header: 'Producto',
+            accessor: 'name',
+            isFilterable: true,
+            type: 'text',
+            render: (value, row) => <span>{row.id.name}</span>
+        },
         {
             header: 'Cantidad',
             accessor: 'quantity',
             isFilterable: true,
             type: 'number',
-            render: (value, row) => <span>{row.quantity} {row.unit_measurement}</span>
+            render: (value, row) => <span>{row.quantity} {row.id.unit_measurement}</span>,
+            bgColor: '#e3f2fd',
         },
-        { header: 'Precio Unitario', accessor: 'price', type: 'currency' },
+        { header: 'Precio Unitario', accessor: 'price', type: 'currency', bgColor: '#f3e5f5', },
+        {
+            header: 'Precio Total',
+            accessor: 'totalPrice',
+            type: 'currency',
+            render: (_, row) => {
+                const totalPrice = (row.quantity || 0) * (row.price || 0);
+                return new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                }).format(totalPrice);
+            },
+            bgColor: '#e8f5e8',
+        },
         {
             header: 'Categoría',
             accessor: 'category',
             isFilterable: true,
             type: 'text',
-            render: (value: string) => {
+            render: (value, row) => {
                 let color = "secondary";
-                let label = value;
+                let label = row.id.category;
 
-                switch (value) {
+                switch (row.id.category) {
                     case "nutrition":
                         color = "info";
                         label = "Nutrición";
@@ -119,7 +145,6 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
 
-
     const fetchPurchaseOrder = async () => {
         if (!configContext || !purchaseId) return;
         try {
@@ -127,9 +152,7 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/purchase_orders/find_purchase_order_id/${purchaseId}`)
             const purchaseOrderFound = response.data.data;
             setPurchaseOrderDetails(purchaseOrderFound);
-
-            const productsResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/product/find_products_by_array`, purchaseOrderFound.products);
-            setProducts(productsResponse.data.data)
+            setProducts(purchaseOrderFound.products);
         } catch (error) {
             console.error('Error fetching data:', { error })
             setAlertConfig({ visible: true, color: 'danger', message: 'Error al obtener los datos, intentelo mas tarde' })
@@ -140,13 +163,8 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
 
     const handlePrintPurchaseOrder = async () => {
         if (!configContext) return;
-
         try {
-
-            const response = await configContext.axiosHelper.get(
-                `${configContext.apiUrl}/reports/generate_purchase_order_report/${purchaseId}`,
-                { responseType: 'blob' }
-            );
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/reports/generate_purchase_order_report/${purchaseId}`, { responseType: 'blob' });
 
             const url = window.URL.createObjectURL(new Blob([response.data]));
             setFileURL(url);
@@ -182,17 +200,17 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
                 <Card className="w-100">
                     <CardHeader>
                         <div className="d-flex gap-2">
-                            <h4>Productos</h4>
+                            <h5>Productos</h5>
 
-                            <Button className="ms-auto farm-primary-button" onClick={handlePrintPurchaseOrder}>
+                            {/* <Button className="ms-auto farm-primary-button" onClick={handlePrintPurchaseOrder}>
                                 <i className="ri-download-line me-2"></i>
                                 Descargar Reporte
-                            </Button>
+                            </Button> */}
                         </div>
                     </CardHeader>
 
-                    <CardBody>
-                        <CustomTable columns={productColumns} data={products} rowClickable={false} showPagination={true} rowsPerPage={7} />
+                    <CardBody className="p-0">
+                        <CustomTable columns={productColumns} data={products} rowClickable={false} showPagination={true} rowsPerPage={10} showSearchAndFilter={false} />
                     </CardBody>
                 </Card>
             </div>

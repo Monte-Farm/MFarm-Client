@@ -1,11 +1,10 @@
 import { Attribute, ProductData, PurchaseOrderData, SupplierData } from "common/data_interfaces";
 import classnames from "classnames";
 import { useContext, useEffect, useState } from "react";
-import { Badge, Button, Card, CardBody, Col, FormFeedback, Input, Label, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Row, Spinner, TabContent, TabPane } from "reactstrap";
+import { Badge, Button, Card, CardBody, CardHeader, Col, FormFeedback, Input, Label, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Row, Spinner, TabContent, TabPane } from "reactstrap";
 import { ConfigContext } from "App";
 import * as Yup from "yup";
 import { useFormik } from "formik";
-import ObjectDetailsHorizontal from "../Details/ObjectDetailsHorizontal";
 import SupplierForm from "./SupplierForm";
 import { Column } from "common/data/data_types";
 import AlertMessage from "../Shared/AlertMesagge";
@@ -13,7 +12,9 @@ import SuccessModal from "../Shared/SuccessModal";
 import DatePicker from "react-flatpickr";
 import { getLoggedinUser } from "helpers/api_helper";
 import CustomTable from "../Tables/CustomTable";
-import SelectTable from "../Tables/SelectTable";
+import SelectableTable from "../Tables/SelectableTable";
+import ObjectDetails from "../Details/ObjectDetails";
+import SelectableCustomTable from "../Tables/SelectableTable";
 
 interface PurchaseOrderFormProps {
     initialData?: PurchaseOrderData;
@@ -27,24 +28,14 @@ const purchaseOrderAttributes: Attribute[] = [
     { key: 'supplier', label: 'Proveedor' },
     { key: 'subtotal', label: 'Subtotal', type: 'currency' },
     { key: 'totalPrice', label: 'Total', type: 'currency' },
-
 ];
 
-const productColumns: Column<any>[] = [
-    { header: 'Código', accessor: 'id', isFilterable: true, type: 'text' },
-    { header: 'Producto', accessor: 'name', isFilterable: true, type: 'text' },
-    {
-        header: 'Cantidad',
-        accessor: 'quantity',
-        isFilterable: true,
-        type: 'number',
-        render: (_, row) => <span>{row.quantity} {row.unit_measurement}</span>,
-    },
-    { header: 'Precio Unitario', accessor: 'price', type: 'currency' },
-    {
-        header: 'Categoria',
-        accessor: 'category',
-        isFilterable: true,
+const summaryProductColumns: Column<any>[] = [
+    { header: 'Código', accessor: 'id', type: 'text' },
+    { header: 'Producto', accessor: 'name', type: 'text' },
+    { 
+        header: 'Categoría', 
+        accessor: 'category', 
         type: 'text',
         render: (value: string) => {
             let color = "secondary";
@@ -100,6 +91,41 @@ const productColumns: Column<any>[] = [
             return <Badge color={color}>{label}</Badge>;
         },
     },
+    { 
+        header: 'Cantidad', 
+        accessor: 'quantity', 
+        type: 'number',
+        render: (value: number, row: any) => `${value} ${row.unit_measurement || ''}`
+    },
+    { 
+        header: 'Precio Unitario', 
+        accessor: 'price', 
+        type: 'currency',
+        render: (value: number) => new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+        }).format(value)
+    },
+    { 
+        header: 'Total', 
+        accessor: 'totalPrice', 
+        type: 'currency',
+        render: (_, row: any) => {
+            const totalPrice = (row.quantity || 0) * (row.price || 0);
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+            }).format(totalPrice);
+        }
+    },
+];
+
+const supplierColumns: Column<any>[] = [
+    { header: 'Nombre', accessor: 'name', isFilterable: true, type: "text" },
+    { header: 'RNC', accessor: 'rnc', isFilterable: true, type: "text" },
+    { header: 'Dirección', accessor: 'address', isFilterable: true, type: "text" },
+    { header: 'Teléfono', accessor: 'phone_number', isFilterable: true, type: "text" },
+    { header: 'Tipo de Proveedor', accessor: 'supplier_type', isFilterable: true, type: "text" },
 ];
 
 const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSave, onCancel }) => {
@@ -108,11 +134,11 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
     const [selectedSupplier, setSelectedSupplier] = useState<SupplierData | null>(null);
     const [modals, setModals] = useState({ success: false, createSupplier: false, createProduct: false });
     const [products, setProducts] = useState([])
-    const [selectedProducts, setSelectedProducts] = useState([])
+    const [selectedProducts, setSelectedProducts] = useState<any[]>([])
     const configContext = useContext(ConfigContext)
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [displayInfo, setDisplayInfo] = useState({})
-
+    const [productErrors, setProductErrors] = useState<Record<string, any>>({});
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
 
@@ -120,12 +146,180 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
         if (activeStep !== tab) {
             var modifiedSteps = [...passedarrowSteps, tab];
 
-            if (tab >= 1 && tab <= 3) {
+            if (tab >= 1 && tab <= 4) {
                 setActiveStep(tab);
                 setPassedarrowSteps(modifiedSteps);
             }
         }
     }
+
+    const productColumns: Column<any>[] = [
+        { header: 'Código', accessor: 'id', isFilterable: true, type: 'text' },
+        { header: 'Producto', accessor: 'name', isFilterable: true, type: 'text' },
+        {
+            header: "Cantidad",
+            accessor: "quantity",
+            type: "number",
+            render: (value, row, isSelected) => {
+                const selected = selectedProducts.find(p => p.id === row._id);
+                const realValue = selected?.quantity ?? "";
+
+                return (
+                    <div className="input-group">
+                        <Input
+                            type="number"
+                            disabled={!isSelected}
+                            value={selected?.quantity === 0 ? "" : (selected?.quantity ?? "")}
+                            invalid={productErrors[row._id]?.quantity}
+                            onChange={(e) => {
+                                const newValue = e.target.value === "" ? 0 : Number(e.target.value);
+                                const updatedProducts = selectedProducts.map(p => 
+                                    p.id === row._id ? { ...p, quantity: newValue } : p
+                                );
+                                setSelectedProducts(updatedProducts);
+                                
+                                // Clear error for this field if value is valid
+                                if (newValue > 0) {
+                                    setProductErrors(prev => {
+                                        const newErrors = { ...prev };
+                                        if (newErrors[row._id]) {
+                                            delete newErrors[row._id].quantity;
+                                            if (Object.keys(newErrors[row._id]).length === 0) {
+                                                delete newErrors[row._id];
+                                            }
+                                        }
+                                        return newErrors;
+                                    });
+                                }
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            aria-describedby="unit-addon"
+                        />
+                        <span className="input-group-text" id="unit-addon">{row.unit_measurement}</span>
+                    </div>
+
+                );
+            },
+        },
+        {
+            header: "Precio Unitario",
+            accessor: "price",
+            type: "number",
+            render: (value, row, isSelected) => {
+                const selected = selectedProducts.find(p => p.id === row._id);
+                const realValue = selected?.price ?? "";
+
+                return (
+                    <div className="input-group">
+                        <Input
+                            type="number"
+                            disabled={!isSelected}
+                            value={selected?.price === 0 ? "" : (selected?.price ?? "")}
+                            invalid={productErrors[row._id]?.price}
+                            onChange={(e) => {
+                                const newValue = e.target.value === "" ? 0 : Number(e.target.value);
+                                const updatedProducts = selectedProducts.map(p => 
+                                    p.id === row._id ? { ...p, price: newValue } : p
+                                );
+                                setSelectedProducts(updatedProducts);
+                                
+                                // Clear error for this field if value is valid
+                                if (newValue > 0) {
+                                    setProductErrors(prev => {
+                                        const newErrors = { ...prev };
+                                        if (newErrors[row._id]) {
+                                            delete newErrors[row._id].price;
+                                            if (Object.keys(newErrors[row._id]).length === 0) {
+                                                delete newErrors[row._id];
+                                            }
+                                        }
+                                        return newErrors;
+                                    });
+                                }
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            aria-describedby="unit-addon"
+                        />
+                    </div>
+
+                );
+            },
+        },
+        {
+            header: 'Precio Total',
+            accessor: 'totalPrice',
+            type: 'currency',
+            render: (_, row) => {
+                const selected = selectedProducts.find(p => p.id === row._id);
+                const quantity = selected?.quantity || 0;
+                const price = selected?.price || 0;
+                const totalPrice = quantity * price;
+                return new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                }).format(totalPrice);
+            }
+        },
+        {
+            header: 'Categoria',
+            accessor: 'category',
+            isFilterable: true,
+            type: 'text',
+            render: (value: string) => {
+                let color = "secondary";
+                let label = value;
+
+                switch (value) {
+                    case "nutrition":
+                        color = "info";
+                        label = "Nutrición";
+                        break;
+                    case "medications":
+                        color = "warning";
+                        label = "Medicamentos";
+                        break;
+                    case "vaccines":
+                        color = "primary";
+                        label = "Vacunas";
+                        break;
+                    case "vitamins":
+                        color = "success";
+                        label = "Vitaminas";
+                        break;
+                    case "minerals":
+                        color = "success";
+                        label = "Minerales";
+                        break;
+                    case "supplies":
+                        color = "success";
+                        label = "Insumos";
+                        break;
+                    case "hygiene_cleaning":
+                        color = "success";
+                        label = "Higiene y desinfección";
+                        break;
+                    case "equipment_tools":
+                        color = "success";
+                        label = "Equipamiento y herramientas";
+                        break;
+                    case "spare_parts":
+                        color = "success";
+                        label = "Refacciones y repuestos";
+                        break;
+                    case "office_supplies":
+                        color = "success";
+                        label = "Material de oficina";
+                        break;
+                    case "others":
+                        color = "success";
+                        label = "Otros";
+                        break;
+                }
+
+                return <Badge color={color}>{label}</Badge>;
+            },
+        },
+    ];
 
     const validationSchema = Yup.object({
         code: Yup.string()
@@ -240,6 +434,29 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
         return totalAfterDiscount + (totalAfterDiscount * (tax / 100));
     };
 
+    const validateSelectedProducts = () => {
+        const errors: Record<string, any> = {};
+        
+        selectedProducts.forEach(product => {
+            if (product.quantity === 0 || product.quantity === "" || !product.quantity) {
+                errors[product.id] = {
+                    ...errors[product.id],
+                    quantity: "La cantidad es requerida"
+                };
+            }
+            
+            if (product.price === 0 || product.price === "" || !product.price) {
+                errors[product.id] = {
+                    ...errors[product.id],
+                    price: "El precio es requerido"
+                };
+            }
+        });
+        
+        setProductErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
 
     const formik = useFormik({
         initialValues: initialData || {
@@ -273,26 +490,13 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
         },
     });
 
-    const handleSupplierChange = (supplierId: string) => {
-        const supplier = suppliers.find((s) => s._id === supplierId) || null;
-        setSelectedSupplier(supplier);
-        formik.setFieldValue("supplier", supplier._id);
+    const handleSupplierSelect = (selectedSuppliers: any[]) => {
+        if (selectedSuppliers.length > 0) {
+            const supplier = selectedSuppliers[0];
+            setSelectedSupplier(supplier);
+            formik.setFieldValue("supplier", supplier._id);
+        }
     };
-
-    const handleProductSelect = (selectedProductsData: Array<{ id: string; quantity: number; price: number }>) => {
-        formik.setFieldValue("products", selectedProductsData);
-
-        const updatedSelectedProducts: any = selectedProductsData.map((selectedProduct) => {
-            const productData = products.find((p: any) => p.id === selectedProduct.id) as ProductData | undefined;
-
-            return productData
-                ? { ...productData, ...selectedProduct }
-                : selectedProduct;
-        });
-
-        setSelectedProducts(updatedSelectedProducts);
-    };
-
 
     useEffect(() => {
         fetchWarehouseId();
@@ -314,18 +518,22 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
 
 
     useEffect(() => {
-        const subtotal = calculateSubtotal(formik.values.products);
+        const subtotal = calculateSubtotal(selectedProducts);
         const totalPrice = calculateTotal(subtotal, formik.values.tax, formik.values.discount);
 
         formik.setFieldValue("subtotal", subtotal);
         formik.setFieldValue("totalPrice", totalPrice);
-    }, [formik.values.products, formik.values.tax, formik.values.discount]);
+        formik.setFieldValue("products", selectedProducts.map(p => ({
+            id: p.id,
+            quantity: p.quantity,
+            price: p.price
+        })));
+    }, [selectedProducts, formik.values.tax, formik.values.discount]);
 
 
     return (
         <>
             <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }} className="form-steps">
-
                 <div className="step-arrow-nav mb-4">
                     <Nav className="nav-pills custom-nav nav-justified">
                         <NavItem>
@@ -348,13 +556,30 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                         <NavItem>
                             <NavLink
                                 href="#"
-                                id="step-products-tab"
+                                id="step-supplier-tab"
                                 className={classnames({
                                     active: activeStep === 2,
                                     done: activeStep > 2,
                                 })}
                                 onClick={() => toggleArrowTab(2)}
                                 aria-selected={activeStep === 2}
+                                aria-controls="step-supplier-tab"
+                                disabled
+                            >
+                                Selección de Proveedor
+                            </NavLink>
+                        </NavItem>
+
+                        <NavItem>
+                            <NavLink
+                                href="#"
+                                id="step-products-tab"
+                                className={classnames({
+                                    active: activeStep === 3,
+                                    done: activeStep > 3,
+                                })}
+                                onClick={() => toggleArrowTab(3)}
+                                aria-selected={activeStep === 3}
                                 aria-controls="step-products-tab"
                                 disabled
                             >
@@ -367,10 +592,10 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                                 href="#"
                                 id="step-summary-tab"
                                 className={classnames({
-                                    active: activeStep === 3,
+                                    active: activeStep === 4,
                                 })}
-                                onClick={() => toggleArrowTab(3)}
-                                aria-selected={activeStep === 3}
+                                onClick={() => toggleArrowTab(4)}
+                                aria-selected={activeStep === 4}
                                 aria-controls="step-summary-tab"
                                 disabled
                             >
@@ -413,62 +638,6 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                                 )}
                             </div>
                         </div>
-
-                        <div className="d-flex mt-3">
-                            <Button className="h-50 farm-primary-button ms-auto" onClick={() => toggleModal('createSupplier')}>
-                                <i className="ri-add-line me-2"></i>
-                                Nuevo Proveedor
-                            </Button>
-                        </div>
-
-                        <div className="">
-                            <Label htmlFor="supplierInput" className="form-label">Proveedor</Label>
-                            <Input
-                                type="select"
-                                id="supplierInput"
-                                name="supplier"
-                                value={formik.values.supplier}
-                                onChange={(e) => handleSupplierChange(e.target.value)}
-                                onBlur={formik.handleBlur}
-                                invalid={formik.touched.supplier && !!formik.errors.supplier}
-                            >
-                                <option value=''>Seleccione un proveedor</option>
-                                {suppliers.map((supplier) => (
-                                    <option key={supplier._id} value={supplier._id}>
-                                        {supplier.name}
-                                    </option>
-                                ))}
-                            </Input>
-
-                            {formik.touched.supplier && formik.errors.supplier && <FormFeedback>{formik.errors.supplier}</FormFeedback>}
-                        </div>
-
-                        <Row className="mt-4">
-                            <Col lg={6}>
-                                <Label htmlFor="supplierAddress" className="form-label">Dirección</Label>
-                                <Input type="text" className="form-control" id="supplierAddress" value={selectedSupplier?.address} disabled></Input>
-                            </Col>
-
-                            <Col lg={6}>
-                                <Label htmlFor="supplierEmail" className="form-label">Correo Electrónico</Label>
-                                <Input type="text" className="form-control" id="supplierEmail" value={selectedSupplier?.email} disabled></Input>
-                            </Col>
-                        </Row>
-
-                        <Row className="mt-4">
-                            <Col lg={4}>
-                                <Label htmlFor="supplierRNC" className="form-label">RNC</Label>
-                                <Input type="text" className="form-control" id="supplierRNC" value={selectedSupplier?.rnc} disabled></Input>
-                            </Col>
-                            <Col lg={4}>
-                                <Label htmlFor="supplierPhoneNumber" className="form-label">Número Telefonico</Label>
-                                <Input type="text" className="form-control" id="supplierPhoneNumber" value={selectedSupplier?.phone_number} disabled></Input>
-                            </Col>
-                            <Col lg={4}>
-                                <Label htmlFor="supplierType" className="form-label">Tipo de Proveedor</Label>
-                                <Input type="text" className="form-control" id="supplierType" value={selectedSupplier?.supplier_type} disabled></Input>
-                            </Col>
-                        </Row>
 
                         <Row className="mt-4">
                             <Col lg={6}>
@@ -515,12 +684,12 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                                 disabled={
                                     !formik.values.code ||
                                     !formik.values.date ||
-                                    !formik.values.supplier ||
-                                    formik.values.tax === null ||
-                                    formik.values.tax === undefined ||
-                                    formik.values.discount === null ||
-                                    formik.values.discount === undefined ||
-                                    Object.keys(formik.errors).length > 0
+                                    formik.values.tax < 0 ||
+                                    formik.values.discount < 0 ||
+                                    !!formik.errors.code ||
+                                    !!formik.errors.date ||
+                                    !!formik.errors.tax ||
+                                    !!formik.errors.discount
                                 }
                             >
                                 <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
@@ -529,50 +698,29 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                         </div>
                     </TabPane>
 
-                    <TabPane id="step-products-tab" tabId={2}>
-                        <div className="d-flex gap-3 mb-3">
-                            <div className="w-50">
-                                <Label htmlFor="subtotalInput" className="form-label">Subtotal</Label>
-                                <div className="input-group">
-                                    <span className="input-group-text">$</span>
-                                    <Input
-                                        type="number"
-                                        id="subtotalInput"
-                                        name="subtotal"
-                                        value={formik.values.subtotal}
-                                        onChange={formik.handleChange}
-                                        onBlur={formik.handleBlur}
-                                        invalid={formik.touched.subtotal && !!formik.errors.subtotal}
-                                        disabled
-                                    />
-                                </div>
-
-                                {formik.touched.subtotal && formik.errors.subtotal && <FormFeedback>{formik.errors.subtotal}</FormFeedback>}
-                            </div>
-
-                            <div className="w-50">
-                                <Label htmlFor="totalInput" className="form-label">Total</Label>
-                                <div className="input-group">
-                                    <span className="input-group-text">$</span>
-                                    <Input
-                                        type="number"
-                                        id="totalPriceInput"
-                                        name="totalPrice"
-                                        value={formik.values.totalPrice}
-                                        onChange={formik.handleChange}
-                                        onBlur={formik.handleBlur}
-                                        invalid={formik.touched.totalPrice && !!formik.errors.totalPrice}
-                                        disabled
-                                    />
-                                </div>
-
-                                {formik.touched.totalPrice && formik.errors.totalPrice && <FormFeedback>{formik.errors.totalPrice}</FormFeedback>}
-
-                            </div>
+                    <TabPane id="step-supplier-tab" tabId={2}>
+                        <div className="d-flex mt-3">
+                            <Button className="h-50 farm-primary-button ms-auto" onClick={() => toggleModal('createSupplier')}>
+                                <i className="ri-add-line me-2"></i>
+                                Nuevo Proveedor
+                            </Button>
                         </div>
 
-                        <div className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(60vh - 100px)', overflowY: 'hidden' }}>
-                            <SelectTable data={products} onProductSelect={handleProductSelect} showPagination={false}></SelectTable>
+                        <div className="">
+                            <Label className="form-label">Proveedor</Label>
+                            <div className="border rounded" style={{ maxHeight: '300px', overflow: 'auto' }}>
+                                <SelectableTable
+                                    columns={supplierColumns}
+                                    data={suppliers}
+                                    onSelect={handleSupplierSelect}
+                                    selectionMode="single"
+                                    showSearchAndFilter={true}
+                                    showPagination={false}
+                                />
+                            </div>
+                            {formik.touched.supplier && formik.errors.supplier &&
+                                <div className="text-danger mt-1">{formik.errors.supplier}</div>
+                            }
                         </div>
 
                         <div className="d-flex mt-4">
@@ -589,10 +737,79 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                             <Button
                                 className="btn btn-success btn-label right ms-auto nexttab nexttab ms-auto farm-secondary-button"
                                 onClick={() => toggleArrowTab(activeStep + 1)}
-                                disabled={
-                                    formik.values.products.length === 0 ||
-                                    formik.values.products.some(product => !product.quantity || product.quantity <= 0 || !product.price || product.price <= 0)
-                                }
+                                disabled={!formik.values.supplier || Object.keys(formik.errors).length > 0}
+                            >
+                                <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
+                                Siguiente
+                            </Button>
+                        </div>
+                    </TabPane>
+
+                    <TabPane id="step-products-tab" tabId={3}>
+                        <div className="d-flex gap-3 mb-3">
+                            <div className="w-50">
+                                <Label className="form-label fw-bold">Subtotal</Label>
+                                <div className="form-control bg-light border rounded d-flex align-items-center" style={{ minHeight: '38px' }}>
+                                    <span className="ms-2 fs-5">${new Intl.NumberFormat('en-US', {
+                                        style: 'currency',
+                                        currency: 'USD',
+                                    }).format(formik.values.subtotal).replace('$', '')}</span>
+                                </div>
+                            </div>
+
+                            <div className="w-50">
+                                <Label className="form-label fw-bold">Total</Label>
+                                <div className="form-control bg-light border rounded d-flex align-items-center" style={{ minHeight: '38px' }}>
+                                    <span className="ms-2 fs-5">${new Intl.NumberFormat('en-US', {
+                                        style: 'currency',
+                                        currency: 'USD',
+                                    }).format(formik.values.totalPrice).replace('$', '')}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(60vh - 100px)', overflowY: 'hidden' }}>
+                            <SelectableCustomTable
+                                columns={productColumns}
+                                data={products}
+                                showPagination={true}
+                                rowsPerPage={6}
+                                onSelect={(rows) => {
+                                    setSelectedProducts(prev => {
+                                        const newRows = rows.map(r => {
+                                            const existing = prev.find(p => p.id === r._id);
+                                            if (existing) return existing;
+
+                                            return {
+                                                id: r._id,
+                                                quantity: 0,
+                                                price: 0,
+                                            };
+                                        });
+                                        return newRows;
+                                    });
+                                }}
+                            />
+                        </div>
+
+                        <div className="d-flex mt-4">
+                            <Button
+                                className="btn btn-light btn-label previestab farm-secondary-button"
+                                onClick={() => {
+                                    toggleArrowTab(activeStep - 1);
+                                }}
+                            >
+                                <i className="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i>{" "}
+                                Atras
+                            </Button>
+
+                            <Button
+                                className="btn btn-success btn-label right ms-auto nexttab nexttab ms-auto farm-secondary-button"
+                                onClick={() => {
+                                    if (validateSelectedProducts()) {
+                                        toggleArrowTab(activeStep + 1);
+                                    }
+                                }}
                             >
                                 <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
                                 Siguiente
@@ -601,18 +818,42 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                         </div>
                     </TabPane>
 
-                    <TabPane id="step-summary-tab" tabId={3}>
-                        <Card style={{ backgroundColor: '#A3C293' }}>
-                            <CardBody className="pt-4">
-                                <ObjectDetailsHorizontal attributes={purchaseOrderAttributes} object={displayInfo} />
-                            </CardBody>
-                        </Card>
+                    <TabPane id="step-summary-tab" tabId={4}>
+                        <div className="d-flex flex-grow-1 gap-3 w-100">
+                            <Card>
+                                <CardHeader>
+                                    <h5 className="mb-0">Información de la Orden de Compra</h5>
+                                </CardHeader>
+                                <CardBody className="pt-4">
+                                    <ObjectDetails attributes={purchaseOrderAttributes} object={displayInfo} />
+                                </CardBody>
+                            </Card>
 
-                        <Card style={{ height: '49vh' }}>
-                            <CardBody className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(62vh - 100px)', overflowY: 'auto' }}>
-                                <CustomTable columns={productColumns} data={selectedProducts} showSearchAndFilter={false} showPagination={false} />
-                            </CardBody>
-                        </Card>
+                            <Card className="w-100">
+                                <CardHeader>
+                                    <h5 className="mb-0">Información de Productos</h5>
+                                </CardHeader>
+                                <CardBody className="border border-0 d-flex flex-column flex-grow-1 p-0">
+                                    <CustomTable 
+                                        columns={summaryProductColumns} 
+                                        data={selectedProducts.map(selectedProduct => {
+                                            const fullProductData = products.find((p: any) => p._id === selectedProduct.id);
+                                            return {
+                                                ...(fullProductData || {}),
+                                                price: selectedProduct.price,
+                                                quantity: selectedProduct.quantity,
+                                                subtotal: selectedProduct.price * selectedProduct.quantity,
+                                                total: selectedProduct.price * selectedProduct.quantity,
+                                            };
+                                        })} 
+                                        showSearchAndFilter={false} 
+                                        showPagination={true} 
+                                        rowsPerPage={10} 
+                                    />
+                                </CardBody>
+                            </Card>
+
+                        </div>
 
                         {/* Botones */}
                         <div className="d-flex mt-4 gap-2">

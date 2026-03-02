@@ -113,7 +113,7 @@ const CustomTable = <T,>({
                 <th
                   key={index}
                   onClick={() => requestSort(col.accessor)}
-                  style={{ cursor: "pointer" }}
+                  style={{ cursor: "pointer", backgroundColor: col.bgColor }}
                 >
                   {col.header}
                   {sortConfig?.key === col.accessor &&
@@ -132,7 +132,7 @@ const CustomTable = <T,>({
                   style={{ cursor: rowClickable ? "pointer" : "default" }}
                 >
                   {columns.map((col, j) => (
-                    <td key={j}>
+                    <td key={j} style={{ backgroundColor: col.bgColor }}>
                       {col.render
                         ? col.render(row[col.accessor], row)
                         : formatValue(row[col.accessor], col.type)}

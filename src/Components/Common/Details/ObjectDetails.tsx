@@ -78,6 +78,13 @@ const ObjectDetails: React.FC<ObjectDetailsProps> = ({
                                             month: "2-digit",
                                             year: "numeric",
                                         })
+                                    ) : type === "currency" && value !== undefined && value !== null ? (
+                                        new Intl.NumberFormat('en-US', {
+                                            style: 'currency',
+                                            currency: 'USD',
+                                        }).format(value)
+                                    ) : type === "percentage" && value !== undefined && value !== null ? (
+                                        `${(value).toFixed(2)}%`
                                     ) : (
                                         value ?? "-"
                                     )}
