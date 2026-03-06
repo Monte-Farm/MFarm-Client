@@ -619,7 +619,7 @@ const Navdata = () => {
         },
         {
             id: 'pre-initiation',
-            label: 'Pre-iniciacion',
+            label: 'Destete',
             icon: 'mdi mdi-baby-carriage',
             link: '/#',
             roles: ['farm_manager', 'veterinarian', 'general_worker',],
@@ -674,34 +674,6 @@ const Navdata = () => {
             ]
         },
         {
-            id: 'exit',
-            label: 'Salida',
-            icon: 'bx bx-exit',
-            link: '/#',
-            roles: ['farm_manager', 'general_worker',],
-            click: function (e: any) {
-                e.preventDefault();
-                setIscurrentState('Exit')
-                setIsExit(!isExit)
-                updateIconSidebar(e);
-            },
-            stateVariables: isExit,
-            subItems: [
-                {
-                    id: "exitingGroups",
-                    label: "Grupos para salida",
-                    link: "/groups/view_exit_groups",
-                    roles: ['farm_manager', 'general_worker'],
-                    parentId: "exit",
-                    click: function (e: any) {
-                        e.preventDefault();
-                        setIsViewExitGroups(!isViewExitGroups)
-                    },
-                    stateVariables: isViewExitGroups,
-                },
-            ]
-        },
-        {
             id: 'replacement',
             label: 'Reemplazo',
             icon: 'mdi mdi-cat',
@@ -741,6 +713,34 @@ const Navdata = () => {
                 },
             ]
 
+        },
+        {
+            id: 'exit',
+            label: 'Salida',
+            icon: 'bx bx-exit',
+            link: '/#',
+            roles: ['farm_manager', 'general_worker',],
+            click: function (e: any) {
+                e.preventDefault();
+                setIscurrentState('Exit')
+                setIsExit(!isExit)
+                updateIconSidebar(e);
+            },
+            stateVariables: isExit,
+            subItems: [
+                {
+                    id: "exitingGroups",
+                    label: "Grupos para salida",
+                    link: "/groups/view_exit_groups",
+                    roles: ['farm_manager', 'general_worker'],
+                    parentId: "exit",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsViewExitGroups(!isViewExitGroups)
+                    },
+                    stateVariables: isViewExitGroups,
+                },
+            ]
         },
         {
             id: 'sale',

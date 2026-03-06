@@ -9,20 +9,25 @@ import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import { getLoggedinUser } from "helpers/api_helper";
 import CustomTable from "Components/Common/Tables/CustomTable";
+import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
 import PurchaseOrderDetails from "Components/Common/Details/PurchaseOrderDetails";
 
 const ViewPurchaseOrders = () => {
     document.title = 'Ver Ordenes de compra | Ordenes de compra';
     const configContext = useContext(ConfigContext)
     const userLogged = getLoggedinUser();
-
-    const history = useNavigate()
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [purchaseOrders, setPurchaseOrders] = useState([])
     const [modals, setModals] = useState({ createPurchaseOrder: false, purchaseOrderDetails: false });
     const [mainWarehouseId, setMainWarehouseId] = useState<string>('')
     const [loading, setLoading] = useState(true);
     const [selectedPurchaseOrder, setSelectedPurchaseOrder] = useState<string>('')
+    const [purchaseStatistics, setPurchaseStatistics] = useState({
+        totalOrders: 24,
+        totalProductsRequested: 156,
+        pendingOrders: 8,
+        averageProductsPerOrder: 6.5
+    })
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -31,7 +36,13 @@ const ViewPurchaseOrders = () => {
     const columnsTable: Column<any>[] = [
         { header: "No. de Orden", accessor: "code", isFilterable: true, type: 'text' },
         { header: "Fecha", accessor: "date", isFilterable: true, type: 'date' },
-        { header: 'Total de Orden', accessor: 'totalPrice', isFilterable: true, type: 'currency' },
+        {
+            header: 'Productos',
+            accessor: 'products',
+            isFilterable: true,
+            type: 'text',
+            render: (value, row) => <span>{row.products.length}</span>
+        },
         {
             header: 'Proveedor',
             accessor: 'supplier',
@@ -89,12 +100,23 @@ const ViewPurchaseOrders = () => {
         }
     };
 
+    const fetchPurchaseStatistics = async () => {
+        if (!configContext || !mainWarehouseId) return;
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/purchase_orders/purchase_statistics/${mainWarehouseId}`);
+            setPurchaseStatistics(response.data.data.statistics);
+        } catch (error) {
+            console.error('Error fetching purchase statistics:', error);
+        }
+    };
+
     useEffect(() => {
         fetchWarehouseId();
     }, []);
 
     useEffect(() => {
         fetchPurchaseOrdersData();
+        fetchPurchaseStatistics();
     }, [mainWarehouseId]);
 
     if (loading) {
@@ -107,6 +129,51 @@ const ViewPurchaseOrders = () => {
         <div className="page-content">
             <Container fluid>
                 <BreadCrumb title={"Ver Ordenes de Compra"} pageTitle={"Ordenes de Compra"} />
+
+                {/* KPIs Section */}
+                <div className="row">
+                    <div className="col-xl-3 col-md-6">
+                        <StatKpiCard
+                            title="Total de Órdenes del Mes"
+                            value={purchaseStatistics.totalOrders}
+                            icon={<i className="ri-file-list-3-line fs-20 text-primary"></i>}
+                            iconBgColor="#E8F5E9"
+                            animateValue={true}
+                            durationSeconds={1.5}
+                        />
+                    </div>
+                    <div className="col-xl-3 col-md-6">
+                        <StatKpiCard
+                            title="Total de Productos Solicitados"
+                            value={purchaseStatistics.totalProductsRequested}
+                            icon={<i className="ri-shopping-bag-line fs-20 text-info"></i>}
+                            iconBgColor="#E3F2FD"
+                            animateValue={true}
+                            durationSeconds={1.5}
+                        />
+                    </div>
+                    <div className="col-xl-3 col-md-6">
+                        <StatKpiCard
+                            title="Órdenes Pendientes"
+                            value={purchaseStatistics.pendingOrders}
+                            icon={<i className="ri-time-line fs-20 text-warning"></i>}
+                            iconBgColor="#FFF3E0"
+                            animateValue={true}
+                            durationSeconds={1.5}
+                        />
+                    </div>
+                    <div className="col-xl-3 col-md-6">
+                        <StatKpiCard
+                            title="Promedio de Productos por Orden"
+                            value={purchaseStatistics.averageProductsPerOrder}
+                            decimals={1}
+                            icon={<i className="ri-bar-chart-box-line fs-20 text-success"></i>}
+                            iconBgColor="#F3E5F5"
+                            animateValue={true}
+                            durationSeconds={1.5}
+                        />
+                    </div>
+                </div>
 
                 <Card className="rounded">
                     <CardHeader>

@@ -11,6 +11,9 @@ import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import ProductForm from "Components/Common/Forms/ProductForm";
 import CustomTable from "Components/Common/Tables/CustomTable";
+import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
+import DonutChartCard, { DonutDataItem, DonutLegendItem } from "Components/Common/Graphics/DonutChartCard";
+import { getProductCategoryLabel } from "common/enums/products.enums";
 import { FiInbox } from "react-icons/fi";
 
 
@@ -32,6 +35,18 @@ const ViewProducts = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ create: false, details: false, update: false, delete: false, activate: false });
     const [loading, setLoading] = useState<boolean>(true);
+    const [productStatistics, setProductStatistics] = useState({
+        totalProducts: 0,
+        activeProducts: 0,
+        inactiveProducts: 0,
+        activationRate: 0
+    });
+    const [chartData, setChartData] = useState({
+        statusData: [] as DonutDataItem[],
+        statusLegendItems: [] as DonutLegendItem[],
+        categoryData: [] as DonutDataItem[],
+        categoryLegendItems: [] as DonutLegendItem[]
+    });
 
     const columns: Column<any>[] = [
         {
@@ -48,52 +63,41 @@ const ViewProducts = () => {
             type: 'text',
             render: (value: string) => {
                 let color = "secondary";
-                let label = value;
+                let label = getProductCategoryLabel(value);
 
                 switch (value) {
                     case "nutrition":
                         color = "info";
-                        label = "Nutrición";
                         break;
                     case "medications":
                         color = "warning";
-                        label = "Medicamentos";
                         break;
                     case "vaccines":
                         color = "primary";
-                        label = "Vacunas";
                         break;
                     case "vitamins":
                         color = "success";
-                        label = "Vitaminas";
                         break;
                     case "minerals":
                         color = "success";
-                        label = "Minerales";
                         break;
                     case "supplies":
                         color = "success";
-                        label = "Insumos";
                         break;
                     case "hygiene_cleaning":
                         color = "success";
-                        label = "Higiene y desinfección";
                         break;
                     case "equipment_tools":
                         color = "success";
-                        label = "Equipamiento y herramientas";
                         break;
                     case "spare_parts":
                         color = "success";
-                        label = "Refacciones y repuestos";
                         break;
                     case "office_supplies":
                         color = "success";
-                        label = "Material de oficina";
                         break;
                     case "others":
                         color = "success";
-                        label = "Otros";
                         break;
                 }
 
@@ -142,20 +146,77 @@ const ViewProducts = () => {
         toggleModal(modal)
     }
 
-    const handleFetchProducts = async () => {
+    const fetchAllProductData = async () => {
+        if (!configContext) return;
         setLoading(true);
+
         try {
-            if (!configContext) return;
-            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/product`);
-            setProducts(response.data.data)
+            const [productsResponse, statisticsResponse, chartsResponse] = await Promise.all([
+                configContext.axiosHelper.get(`${configContext.apiUrl}/product`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/product/product_statistics`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/product/product_charts`)
+            ]);
+
+            setProducts(productsResponse.data.data);
+
+            setProductStatistics(statisticsResponse.data.data);
+
+            const chartDataResponse = chartsResponse.data.data;
+
+            const statusData: DonutDataItem[] = [
+                { id: 'active', label: 'Activos', value: chartDataResponse.statusData.active || 0, color: '#10b981' },
+                { id: 'inactive', label: 'Inactivos', value: chartDataResponse.statusData.inactive || 0, color: '#ef4444' }
+            ];
+
+            const totalProducts = (chartDataResponse.statusData.active || 0) + (chartDataResponse.statusData.inactive || 0);
+
+            const statusLegendItems: DonutLegendItem[] = [
+                {
+                    label: 'Activos',
+                    value: (chartDataResponse.statusData.active || 0).toString(),
+                    percentage: totalProducts > 0 ? `${(((chartDataResponse.statusData.active || 0) / totalProducts) * 100).toFixed(1)}%` : '0%'
+                },
+                {
+                    label: 'Inactivos',
+                    value: (chartDataResponse.statusData.inactive || 0).toString(),
+                    percentage: totalProducts > 0 ? `${(((chartDataResponse.statusData.inactive || 0) / totalProducts) * 100).toFixed(1)}%` : '0%'
+                }
+            ];
+
+            const categoryData: DonutDataItem[] = [];
+            const colors = ['#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#06b6d4', '#84cc16', '#f43f5e', '#a855f7', '#6b7280'];
+
+            if (chartDataResponse.categoryData) {
+                Object.entries(chartDataResponse.categoryData).forEach(([category, count], index) => {
+                    categoryData.push({
+                        id: category,
+                        label: getProductCategoryLabel(category),
+                        value: Number(count),
+                        color: colors[index % colors.length]
+                    });
+                });
+            }
+
+            const categoryLegendItems: DonutLegendItem[] = categoryData.map(item => ({
+                label: item.label,
+                value: item.value.toString(),
+                percentage: totalProducts > 0 ? `${((item.value / totalProducts) * 100).toFixed(1)}%` : '0%'
+            }));
+
+            setChartData({
+                statusData,
+                statusLegendItems,
+                categoryData,
+                categoryLegendItems
+            });
+
         } catch (error) {
-            console.error('Error fetching products:', error);
+            console.error('Error fetching product data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los productos, intentelo más tarde' });
         } finally {
             setLoading(false);
         }
     };
-
 
     const handleCreateProduct = async (data: ProductData) => {
         if (!configContext) return;
@@ -163,7 +224,7 @@ const ViewProducts = () => {
         try {
             await configContext.axiosHelper.create(`${configContext.apiUrl}/product/create_product`, data);
             setAlertConfig({ visible: true, color: 'success', message: 'Producto creado con éxito' });
-            handleFetchProducts();
+            fetchAllProductData();
         } catch (error) {
             console.error('Error creating product:', error);
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al crear el producto, intentelo más tarde' });
@@ -172,15 +233,14 @@ const ViewProducts = () => {
         }
     };
 
-
     const handleUpdateProduct = async (data: ProductData) => {
         if (!configContext) return;
 
         try {
-            await configContext.axiosHelper.put(`${configContext.apiUrl}/product/update_product/${data.id}`, data);
+            await configContext.axiosHelper.put(`${configContext.apiUrl}/product/update_product/${data._id}`, data);
             setAlertConfig({ visible: true, color: 'success', message: 'Producto actualizado con éxito' });
 
-            handleFetchProducts();
+            fetchAllProductData();
         } catch (error) {
             console.error('Error updating products:', error);
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al actualizar el producto, intentelo mas tarde' });
@@ -190,7 +250,6 @@ const ViewProducts = () => {
         }
     };
 
-
     const handleDeleteProduct = async (product_id: string) => {
         if (!configContext) return;
 
@@ -198,7 +257,7 @@ const ViewProducts = () => {
             await configContext.axiosHelper.delete(`${configContext.apiUrl}/product/delete_product/${product_id}`);
             setAlertConfig({ visible: true, color: 'success', message: 'Producto desactivado con éxito' });
 
-            handleFetchProducts();
+            fetchAllProductData();
         } catch (error) {
             console.error('Error deactivating products:', error);
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al desactivar el producto, intentelo mas tarde' });
@@ -213,7 +272,7 @@ const ViewProducts = () => {
         try {
             await configContext.axiosHelper.put(`${configContext.apiUrl}/product/activate_product/${product_id}`, {});
             setAlertConfig({ visible: true, color: 'success', message: 'Producto activado con éxito' });
-            handleFetchProducts();
+            fetchAllProductData();
         } catch (error) {
             console.error('Error ctivating products:', error);
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al sactivar el producto, intentelo mas tarde' });
@@ -224,7 +283,7 @@ const ViewProducts = () => {
     };
 
     useEffect(() => {
-        handleFetchProducts();
+        fetchAllProductData();
     }, [])
 
     if (loading) {
@@ -237,7 +296,74 @@ const ViewProducts = () => {
         <div className="page-content">
             <Container fluid>
                 <BreadCrumb title={"Catálogo de Productos"} pageTitle={"Almacén General"}></BreadCrumb>
-                <Card className="rounded" style={{ height: '75vh' }}>
+
+                {/* KPIs Section */}
+                <div className="row">
+                    <div className="col-xl-3 col-md-6">
+                        <StatKpiCard
+                            title="Total de Productos"
+                            value={productStatistics?.totalProducts}
+                            icon={<i className="ri-box-3-line fs-20 text-primary"></i>}
+                            iconBgColor="#E8F5E9"
+                            animateValue={true}
+                            durationSeconds={1.5}
+                        />
+                    </div>
+                    <div className="col-xl-3 col-md-6">
+                        <StatKpiCard
+                            title="Productos Activos"
+                            value={productStatistics?.activeProducts}
+                            icon={<i className="ri-checkbox-circle-line fs-20 text-success"></i>}
+                            iconBgColor="#E8F5E9"
+                            animateValue={true}
+                            durationSeconds={1.5}
+                        />
+                    </div>
+                    <div className="col-xl-3 col-md-6">
+                        <StatKpiCard
+                            title="Productos Inactivos"
+                            value={productStatistics?.inactiveProducts}
+                            icon={<i className="ri-close-circle-line fs-20 text-danger"></i>}
+                            iconBgColor="#FEE2E2"
+                            animateValue={true}
+                            durationSeconds={1.5}
+                        />
+                    </div>
+                    <div className="col-xl-3 col-md-6">
+                        <StatKpiCard
+                            title="Tasa de Activación"
+                            value={productStatistics?.activationRate}
+                            suffix="%"
+                            decimals={1}
+                            icon={<i className="ri-percent-line fs-20 text-info"></i>}
+                            iconBgColor="#E3F2FD"
+                            animateValue={true}
+                            durationSeconds={1.5}
+                        />
+                    </div>
+                </div>
+
+                {/* Charts Section */}
+                <div className="row mb-4">
+                    <div className="col-xl-6">
+                        <DonutChartCard
+                            title="Estado de Productos"
+                            data={chartData.statusData}
+                            legendItems={chartData.statusLegendItems}
+                            height={200}
+                        />
+                    </div>
+                    <div className="col-xl-6">
+                        <DonutChartCard
+                            title="Productos por Categoría"
+                            data={chartData.categoryData}
+                            legendItems={chartData.categoryLegendItems}
+                            height={200}
+                        />
+                    </div>
+                </div>
+
+                <Card className="rounded">
                     <CardHeader>
                         <div className="d-flex">
                             <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>

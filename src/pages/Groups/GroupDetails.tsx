@@ -336,7 +336,6 @@ const GroupDetails = () => {
                 <TabContent activeTab={activeTab} className="justified-tabs mt-3">
                     <TabPane tabId="1">
                         <div className="row g-3 align-items-stretch">
-
                             <div className="d-flex gap-2">
                                 <div className="bg-white p-3 rounded shadow-sm d-flex gap-3">
                                     <KPI title="Total activos" value={active?.total} icon={FaPiggyBank} bgColor="#F3F4F6" iconColor="#374151" />

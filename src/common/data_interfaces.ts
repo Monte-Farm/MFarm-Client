@@ -26,6 +26,8 @@ export interface IncomeData {
     emissionDate: Date | null;
     products: Array<Product>;
     totalPrice: number;
+    tax: number;
+    discount: number;
     incomeType: string;
     origin: Origin;
     documents: Array<string>;
@@ -66,16 +68,17 @@ export interface OrderData {
 export interface OutcomeData {
     code: string;
     date: Date | null;
+    warehouseDestiny?: string;
     products: Array<Product>;
-    outcomeType: string;
-    status: boolean;
-    warehouseDestiny: string;
-    warehouseOrigin: string;
     totalPrice: number;
+    outcomeType: string;
+    warehouseOrigin: string;
     description: string;
+    status: boolean;
 }
 
 export interface ProductData {
+    _id?: string;
     id: string;
     name: string;
     category: string;
@@ -158,10 +161,6 @@ export interface PurchaseOrderData {
     code: string;
     date: Date | null;
     products: Array<Product>;
-    subtotal: number;
-    tax: number;
-    discount: number;
-    totalPrice: number;
     supplier: string;
     status: boolean;
     warehouse: string;

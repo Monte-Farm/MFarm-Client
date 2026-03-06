@@ -35,20 +35,15 @@ const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
             accessor: 'id',
             isFilterable: true,
             type: 'text',
-            // render: (_, row) => (
-            //     <Button
-            //         className="text-underline"
-            //         color="link"
-            //         onClick={(e) => {
-            //             e.stopPropagation();
-            //             navigate('')
-            //         }}
-            //     >
-            //         {row.code} ↗
-            //     </Button>
-            // )
+            render: (_, row) => <span>{row?.id?.id}</span>
         },
-        { header: 'Producto', accessor: 'name', isFilterable: true, type: 'text' },
+        {
+            header: 'Producto',
+            accessor: 'id',
+            isFilterable: true,
+            type: 'text',
+            render: (_, row) => <span>{row?.id?.name}</span>
+        },
         {
             header: 'Cantidad',
             accessor: 'quantity',
@@ -58,15 +53,27 @@ const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
         },
         { header: 'Precio Unitario', accessor: 'price', type: 'currency' },
         {
+            header: 'Precio Total',
+            accessor: 'totalPrice',
+            type: 'text',
+            render: (_, row) => {
+                const totalPrice = (row.quantity || 0) * (row.price || 0);
+                return new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                }).format(totalPrice);
+            }
+        },
+        {
             header: 'Categoria',
             accessor: 'category',
             isFilterable: true,
             type: 'text',
-            render: (value: string) => {
+            render: (_, row) => {
                 let color = "secondary";
-                let label = value;
+                let label = row.id.category;
 
-                switch (value) {
+                switch (row.id.category) {
                     case "nutrition":
                         color = "info";
                         label = "Nutrición";
@@ -119,11 +126,14 @@ const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
     ];
 
     const outcomeAttributes: Attribute[] = [
-        { key: 'code', label: 'Codigo', type: 'text' },
+        { key: 'code', label: 'Código', type: 'text' },
         { key: 'date', label: 'Fecha', type: 'date' },
+        { key: 'warehouseOrigin.name', label: 'Almacén Origen', type: 'text' },
+        { key: 'warehouseDestiny.name', label: 'Almacén Destino', type: 'text' },
+        { key: 'description', label: 'Descripción', type: 'text' },
         {
             key: 'outcomeType',
-            label: 'Tipo de salida',
+            label: 'Tipo de Salida',
             type: 'text',
             render: (value: string) => {
                 let color = "secondary";
@@ -132,7 +142,7 @@ const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
                 switch (value) {
                     case "internal_transfer":
                         color = "info";
-                        label = "Tranferencia";
+                        label = "Transferencia Interna";
                         break;
                     case "purchase":
                         color = "warning";
@@ -140,10 +150,10 @@ const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
                         break;
                     case "warehouse_order":
                         color = "warning";
-                        label = "Pedido de almacen";
+                        label = "Pedido de Almacén";
                         break;
                     case "consumption":
-                        color = "warning";
+                        color = "danger";
                         label = "Consumo";
                         break;
                 }
@@ -151,7 +161,10 @@ const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
                 return <Badge color={color}>{label}</Badge>;
             },
         },
+        { key: 'totalPrice', label: 'Valor Total', type: 'currency' },
     ]
+
+
 
     const fetchData = async () => {
         if (!configContext || !userLogged) return;
@@ -162,8 +175,7 @@ const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
             const outcomeDetailsResponse = outcomeResponse.data.data;
             setOutcomeDetails(outcomeDetailsResponse)
 
-            const productsResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/product/find_products_by_array`, outcomeDetailsResponse.products);
-            setProducts(productsResponse.data.data);
+            setProducts(outcomeDetailsResponse.products)
         } catch (error) {
             console.error('Error fetching data: ', { error })
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
@@ -199,30 +211,28 @@ const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
 
     return (
         <>
-            <div className="d-flex gap-2 mb-4">
-                <Button className="farm-primary-button" onClick={handlePrintOutcome}>
-                    <i className="ri-download-line me-2"></i>
-                    Descargar Reporte
-                </Button>
-            </div>
-            <div className="d-flex gap-3">
-                <Card className="">
-                    <CardHeader className='bg-light'>
-                        <h5>Informacion de la salida</h5>
-                    </CardHeader>
-                    <CardBody className="pt-4">
-                        <ObjectDetails attributes={outcomeAttributes} object={outcomeDetails} />
-                    </CardBody>
-                </Card>
+            <div className="d-flex flex-column gap-3">
+                {/* Primera fila: Información general y detalles financieros */}
+                <div className="d-flex gap-3">
+                    <Card>
+                        <CardHeader className='bg-gradient bg-primary-subtle'>
+                            <h5 className="mb-0 text-primary">Información General</h5>
+                        </CardHeader>
+                        <CardBody className="pt-4">
+                            <ObjectDetails attributes={outcomeAttributes} object={outcomeDetails} />
+                        </CardBody>
+                    </Card>
 
-                <Card className="w-100">
-                    <CardHeader className='bg-light'>
-                        <h5>Productos de la salida</h5>
-                    </CardHeader>
-                    <CardBody className="p-0">
-                        <CustomTable columns={productsColumns} data={products} showPagination={true} rowsPerPage={5} showSearchAndFilter={false} />
-                    </CardBody>
-                </Card>
+                    {/* Segunda fila: Productos */}
+                    <Card className="w-100">
+                        <CardHeader className='bg-gradient bg-secondary-subtle'>
+                            <h5 className="mb-0 text-secondary">Productos de la Salida</h5>
+                        </CardHeader>
+                        <CardBody className="p-0">
+                            <CustomTable columns={productsColumns} data={products} showPagination={true} rowsPerPage={5} showSearchAndFilter={false} />
+                        </CardBody>
+                    </Card>
+                </div>
             </div>
 
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered>
@@ -232,7 +242,7 @@ const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
                 </ModalBody>
             </Modal>
 
-            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} />
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </>
     )
 }

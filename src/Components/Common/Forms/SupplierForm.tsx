@@ -4,6 +4,7 @@ import * as Yup from "yup";
 import { useFormik } from "formik";
 import { SupplierData } from "common/data_interfaces";
 import { ConfigContext } from "App";
+import { getSupplierTypeOptions } from "common/enums/suppliers.enums";
 
 interface SupplierFormProps {
   initialData?: SupplierData;
@@ -191,11 +192,11 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCa
               invalid={formik.touched.supplier_type && !!formik.errors.supplier_type}
             >
               <option value="">Seleccione un tipo</option>
-              <option value="Productos de limpieza">Productos de limpieza</option>
-              <option value="Alimentos y piensos">Alimentos y piensos</option>
-              <option value="Medicamentos y veterinaria">Medicamentos y veterinaria</option>
-              <option value="Equipamiento y herramientas">Equipamiento y herramientas</option>
-              <option value="Servicios">Servicios</option>
+              {getSupplierTypeOptions().map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </Input>
             {formik.touched.supplier_type && formik.errors.supplier_type && (
               <FormFeedback>{formik.errors.supplier_type}</FormFeedback>

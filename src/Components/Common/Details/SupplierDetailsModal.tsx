@@ -10,6 +10,7 @@ import ObjectDetails from "Components/Common/Details/ObjectDetails";
 import AlertMessage from "../Shared/AlertMesagge";
 import SuccessModal from "../Shared/SuccessModal";
 import ErrorModal from "../Shared/ErrorModal";
+import PurchaseOrderDetails from "./PurchaseOrderDetails";
 
 interface SupplierDetailsModalProps {
     supplierId: string;
@@ -18,10 +19,11 @@ interface SupplierDetailsModalProps {
 const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId }) => {
     const configContext = useContext(ConfigContext)
     const [supplierDetails, setSupplierDetails] = useState<SupplierData | undefined>(undefined);
-    const [supplierIncomes, setSupplierIncomes] = useState([]);
+    const [supplierPurchaseOrders, setSupplierPurchaseOrders] = useState<any[]>();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [loading, setLoading] = useState<boolean>(true);
-    const [modals, setModals] = useState({ update: false, delete: false, updateSuccess: false, updateError: false, deleteSuccess: false, deleteError: false });
+    const [modals, setModals] = useState({ update: false, delete: false, updateSuccess: false, updateError: false, deleteSuccess: false, deleteError: false, purchaseOrderDetails: false });
+    const [selectedPurchaseOrder, setSelectedPurchaseOrder] = useState<string>('');
 
     const supplierAttributes: Attribute[] = [
         { key: 'name', label: 'Nombre', type: 'text' },
@@ -33,12 +35,42 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId 
         { key: 'status', label: 'Estado', type: 'status' }
     ];
 
-    const incomesColumns: Column<any>[] = [
-        { header: 'Identificador', accessor: 'id', isFilterable: true, type: 'text' },
-        { header: 'Fecha de entrada', accessor: 'date', isFilterable: true, type: 'date' },
-        { header: 'Precio Total', accessor: 'totalPrice', type: 'currency' },
-        { header: 'Tipo de entrada', accessor: 'incomeType', isFilterable: true, type: 'text' },
-    ]
+    const purchaseOrderColumns: Column<any>[] = [
+        { header: "No. de Orden", accessor: "code", isFilterable: true, type: 'text' },
+        { header: "Fecha", accessor: "date", isFilterable: true, type: 'date' },
+        {
+            header: 'Productos',
+            accessor: 'products',
+            isFilterable: true,
+            type: 'text',
+            render: (value, row) => <span>{row.products.length}</span>
+        },
+        {
+            header: 'Estado',
+            accessor: 'status',
+            isFilterable: false,
+            type: 'text',
+            render: (_, row) => (
+                <span
+                    className={`badge ${row.status ? 'bg-warning text-dark' : 'bg-success'}`}
+                >
+                    {row.status ? 'No ingresada' : 'Ingresada'}
+                </span>
+            )
+        },
+        {
+            header: 'Acciones',
+            accessor: 'action',
+            render: (value: any, row: any) => (
+                <div className="d-flex gap-1">
+                    <Button className="farm-primary-button btn-icon" onClick={() => { setSelectedPurchaseOrder(row._id); toggleModal('purchaseOrderDetails') }}>
+                        <i className="ri-eye-fill align-middle" />
+                    </Button>
+                </div >
+            )
+        }
+    ];
+
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -52,8 +84,8 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId 
             const supplierResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/supplier/find_supplier_id/${supplierId}`);
             setSupplierDetails(supplierResponse.data.data);
 
-            const incomesResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/incomes/find_incomes/origin.id/${supplierId}/true`);
-            setSupplierIncomes(incomesResponse.data.data);
+            const purchaseOrderResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/purchase_orders/find_purchase_order_supplier/${supplierId}`);
+            setSupplierPurchaseOrders(purchaseOrderResponse.data.data);
         } catch (error) {
             console.error("Error fetching data:", { error })
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
@@ -108,27 +140,28 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId 
                 <Button className="farm-primary-button" onClick={() => toggleModal("update")}>
                     <i className="ri-pencil-line me-3"></i>Modificar Proveedor
                 </Button>
-                <Button className="farm-primary-button" onClick={() => window.open('https://workspace.google.com/intl/es-419_mx/gmail/', '_blank', 'noopener,noreferrer')}>
-                    <i className="ri-mail-line me-3"></i>Enviar Email
-                </Button>
 
             </div>
 
-            <div className="d-flex gap-3">
+            <div className="d-flex gap-3 w-100">
 
-                <Card className="rounded h-100">
-                    <CardHeader><h4>Información del proveedor</h4></CardHeader>
-                    <CardBody>
+                <Card className="h-100 w-100">
+                    <CardHeader className='bg-gradient bg-primary-subtle'>
+                        <h4 className="mb-0 text-primary">Información del proveedor</h4>
+                    </CardHeader>
+                    <CardBody style={{ overflowX: 'auto' }}>
                         <ObjectDetails attributes={supplierAttributes} object={supplierDetails || {}} />
                     </CardBody>
                 </Card>
 
 
                 <Card className="h-100 w-100">
-                    <CardHeader><h4>Historial de Altas | Compras</h4></CardHeader>
-                    <CardBody>
-                        {supplierIncomes && (
-                            <CustomTable columns={incomesColumns} data={supplierIncomes} showSearchAndFilter={true} rowClickable={false} rowsPerPage={5} showPagination={true} />
+                    <CardHeader className='bg-gradient bg-info-subtle'>
+                        <h4 className="mb-0 text-info">Ordenes de compra</h4>
+                    </CardHeader>
+                    <CardBody className="p-0">
+                        {supplierPurchaseOrders && (
+                            <CustomTable columns={purchaseOrderColumns} data={supplierPurchaseOrders} showSearchAndFilter={false} rowClickable={false} rowsPerPage={5} showPagination={true} />
                         )}
                     </CardBody>
                 </Card>
@@ -156,6 +189,13 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId 
             <SuccessModal isOpen={modals.deleteSuccess} onClose={() => { toggleModal('deleteSuccess'); handleGetSupplierDetails(); }} message={"Proveedor desactivado con exito"} />
             <ErrorModal isOpen={modals.updateError} onClose={() => { toggleModal('updateError') }} message={"Ha ocurrido un error al actualizar el proveedor, intentelo mas tarde"} />
             <ErrorModal isOpen={modals.deleteError} onClose={() => { toggleModal('deleteError') }} message={"Ha ocurrido un error al desactivar el proveedor, intentelo mas tarde"} />
+
+            <Modal size="xl" isOpen={modals.purchaseOrderDetails} toggle={() => toggleModal("purchaseOrderDetails")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("purchaseOrderDetails")}>Detalles de orden de compra</ModalHeader>
+                <ModalBody>
+                    <PurchaseOrderDetails purchaseId={selectedPurchaseOrder} />
+                </ModalBody>
+            </Modal>
         </div>
     );
 };

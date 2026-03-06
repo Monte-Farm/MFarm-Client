@@ -29,63 +29,59 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
     const [modals, setModals] = useState({ viewPDF: false });
 
     const purchaseOrderAttributes: Attribute[] = [
-        { key: 'code', label: 'No. de Orden', type: "text" },
+        { key: 'code', label: 'Código', type: 'text' },
         { key: 'date', label: 'Fecha', type: 'date' },
+        { key: 'supplier.name', label: 'Proveedor', type: 'text' },
         {
-            key: 'supplier',
-            label: 'Proveedor',
-            type: "text",
-            render: (value, object) => <span>{object.supplier.name}</span>
+            key: 'status',
+            label: 'Estado',
+            type: 'text',
+            render: (value: boolean) => (
+                <Badge color={value ? 'warning' : 'success'}>
+                    {value ? 'No ingresada' : 'Ingresada'}
+                </Badge>
+            ),
         },
-        { key: 'tax', label: 'Impuesto', type: "percentage" },
-        { key: 'discount', label: 'Descuento', type: "percentage" },
-        { key: 'subtotal', label: 'Subtotal', type: "currency" },
-        { key: 'totalPrice', label: 'Total', type: "currency" },
-    ];
+    ]
+
+    const supplierAttributes: Attribute[] = [
+        { key: 'id', label: 'Código', type: 'text' },
+        { key: 'name', label: 'Nombre', type: 'text' },
+        { key: 'address', label: 'Dirección', type: 'text' },
+        { key: 'phone_number', label: 'Teléfono', type: 'text' },
+        { key: 'email', label: 'Email', type: 'text' },
+        { key: 'rnc', label: 'RNC', type: 'text' },
+        { key: 'supplier_type', label: 'Tipo de Proveedor', type: 'text' },
+    ]
 
     const productColumns: Column<any>[] = [
         {
             header: 'Código',
-            accessor: 'id.id',
+            accessor: 'id',
             isFilterable: true,
             type: 'text',
-            render: (value, row) => <span>{row.id.id}</span>
+            render: (_, row) => <span>{row?.id?.id}</span>
         },
         {
             header: 'Producto',
-            accessor: 'name',
+            accessor: 'id',
             isFilterable: true,
             type: 'text',
-            render: (value, row) => <span>{row.id.name}</span>
+            render: (_, row) => <span>{row?.id?.name}</span>
         },
         {
             header: 'Cantidad',
             accessor: 'quantity',
             isFilterable: true,
             type: 'number',
-            render: (value, row) => <span>{row.quantity} {row.id.unit_measurement}</span>,
-            bgColor: '#e3f2fd',
-        },
-        { header: 'Precio Unitario', accessor: 'price', type: 'currency', bgColor: '#f3e5f5', },
-        {
-            header: 'Precio Total',
-            accessor: 'totalPrice',
-            type: 'currency',
-            render: (_, row) => {
-                const totalPrice = (row.quantity || 0) * (row.price || 0);
-                return new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                }).format(totalPrice);
-            },
-            bgColor: '#e8f5e8',
+            render: (_, row) => <span>{row.quantity} {row.id.unit_measurement}</span>
         },
         {
             header: 'Categoría',
             accessor: 'category',
             isFilterable: true,
             type: 'text',
-            render: (value, row) => {
+            render: (_, row) => {
                 let color = "secondary";
                 let label = row.id.category;
 
@@ -186,45 +182,51 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
     }
 
     return (
-        <div>
-            <div className="d-flex gap-3">
+        <>
+            <div className="d-flex flex-column gap-3">
+                {/* Primera fila: Información general y detalles del proveedor */}
+                <div className="d-flex gap-3">
+                    <Card>
+                        <CardHeader className='bg-gradient bg-primary-subtle'>
+                            <h5 className="mb-0 text-primary">Información General</h5>
+                        </CardHeader>
+                        <CardBody className="pt-4">
+                            <ObjectDetails attributes={purchaseOrderAttributes} object={purchaseOrderDetails ?? {}} />
+                        </CardBody>
+                    </Card>
+
+                    {purchaseOrderDetails?.supplier && (
+                        <Card className="flex-fill">
+                            <CardHeader className='bg-gradient bg-info-subtle'>
+                                <h5 className="mb-0 text-info">Detalles del Proveedor</h5>
+                            </CardHeader>
+                            <CardBody className="pt-4">
+                                <ObjectDetails attributes={supplierAttributes} object={purchaseOrderDetails.supplier as unknown as Record<string, any>} />
+                            </CardBody>
+                        </Card>
+                    )}
+                </div>
+
+                {/* Segunda fila: Productos */}
                 <Card>
-                    <CardHeader>
-                        <h5>Detalles de orden</h5>
+                    <CardHeader className='bg-gradient bg-secondary-subtle'>
+                        <h5 className="mb-0 text-secondary">Productos de la Orden</h5>
                     </CardHeader>
-                    <CardBody>
-                        <ObjectDetails attributes={purchaseOrderAttributes} object={purchaseOrderDetails ?? {}} />
-                    </CardBody>
-                </Card>
-
-                <Card className="w-100">
-                    <CardHeader>
-                        <div className="d-flex gap-2">
-                            <h5>Productos</h5>
-
-                            {/* <Button className="ms-auto farm-primary-button" onClick={handlePrintPurchaseOrder}>
-                                <i className="ri-download-line me-2"></i>
-                                Descargar Reporte
-                            </Button> */}
-                        </div>
-                    </CardHeader>
-
                     <CardBody className="p-0">
-                        <CustomTable columns={productColumns} data={products} rowClickable={false} showPagination={true} rowsPerPage={10} showSearchAndFilter={false} />
+                        <CustomTable columns={productColumns} data={products} rowClickable={false} showPagination={true} rowsPerPage={5} showSearchAndFilter={false} />
                     </CardBody>
                 </Card>
             </div>
 
-
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Orden de Compra </ModalHeader>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Orden de Compra</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>
             </Modal>
 
-            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} />
-        </div>
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
+        </>
     )
 }
 

@@ -9,11 +9,13 @@ import { Column } from "common/data/data_types";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import CustomTable from "Components/Common/Tables/CustomTable";
+import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
+import DonutChartCard, { DonutDataItem, DonutLegendItem } from "Components/Common/Graphics/DonutChartCard";
 import SupplierDetailsModal from "Components/Common/Details/SupplierDetailsModal";
+import { getSupplierTypeLabel } from "common/enums/suppliers.enums";
 
 const Suppliers = () => {
     document.title = 'Ver Proveedores | Almacén'
-    const history = useNavigate();
     const configContext = useContext(ConfigContext)
 
     const [suppliersData, setSuppliersData] = useState([]);
@@ -21,6 +23,18 @@ const Suppliers = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ create: false, update: false, delete: false, activate: false, details: false });
     const [loading, setLoading] = useState<boolean>(false)
+    const [supplierStatistics, setSupplierStatistics] = useState({
+        totalSuppliers: 0,
+        activeSuppliers: 0,
+        inactiveSuppliers: 0,
+        activationRate: 0
+    });
+    const [chartData, setChartData] = useState({
+        statusData: [] as DonutDataItem[],
+        statusLegendItems: [] as DonutLegendItem[],
+        categoryData: [] as DonutDataItem[],
+        categoryLegendItems: [] as DonutLegendItem[]
+    });
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -29,7 +43,13 @@ const Suppliers = () => {
     const supplierColumn: Column<any>[] = [
         { header: 'Código', accessor: 'id', isFilterable: true, type: 'text' },
         { header: 'Proveedor', accessor: 'name', isFilterable: true, type: 'text' },
-        { header: 'Categoría', accessor: 'supplier_type', isFilterable: true, type: 'text' },
+        {
+            header: 'Categoría',
+            accessor: 'supplier_type',
+            isFilterable: true,
+            type: 'text',
+            render: (value, row) => <span>{getSupplierTypeLabel(row.supplier_type)}</span>
+        },
         { header: 'Telefono', accessor: 'phone_number', type: 'text' },
         { header: 'Dirección', accessor: 'address', type: 'text' },
         {
@@ -68,20 +88,80 @@ const Suppliers = () => {
         }
     ]
 
-
-    const fetchSuppliersData = async () => {
-        setLoading(true)
+    const fetchAllSupplierData = async () => {
+        if (!configContext) return;
+        setLoading(true);
 
         try {
-            if (!configContext) return;
+            const [suppliersResponse, statisticsResponse, chartsResponse] = await Promise.all([
+                configContext.axiosHelper.get(`${configContext.apiUrl}/supplier`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/supplier/supplier_statistics`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/supplier/supplier_charts`)
+            ]);
 
-            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/supplier`);
-            setSuppliersData(response.data.data);
+            // Setear datos de proveedores
+            setSuppliersData(suppliersResponse.data.data);
+
+            // Setear estadísticas
+            setSupplierStatistics(statisticsResponse.data.data);
+
+            // Procesar y setear datos de gráficas
+            const chartDataResponse = chartsResponse.data.data;
+
+            // Transformar datos para gráfica de estado
+            const statusData: DonutDataItem[] = [
+                { id: 'active', label: 'Activos', value: chartDataResponse.statusData.active || 0, color: '#10b981' },
+                { id: 'inactive', label: 'Inactivos', value: chartDataResponse.statusData.inactive || 0, color: '#ef4444' }
+            ];
+
+            const totalSuppliers = (chartDataResponse.statusData.active || 0) + (chartDataResponse.statusData.inactive || 0);
+
+            const statusLegendItems: DonutLegendItem[] = [
+                {
+                    label: 'Activos',
+                    value: (chartDataResponse.statusData.active || 0).toString(),
+                    percentage: totalSuppliers > 0 ? `${(((chartDataResponse.statusData.active || 0) / totalSuppliers) * 100).toFixed(1)}%` : '0%'
+                },
+                {
+                    label: 'Inactivos',
+                    value: (chartDataResponse.statusData.inactive || 0).toString(),
+                    percentage: totalSuppliers > 0 ? `${(((chartDataResponse.statusData.inactive || 0) / totalSuppliers) * 100).toFixed(1)}%` : '0%'
+                }
+            ];
+
+            // Transformar datos para gráfica de categorías
+            const categoryData: DonutDataItem[] = [];
+            const colors = ['#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
+
+            if (chartDataResponse.categoryData) {
+                Object.entries(chartDataResponse.categoryData).forEach(([category, count], index) => {
+                    categoryData.push({
+                        id: category,
+                        label: getSupplierTypeLabel(category),
+                        value: Number(count),
+                        color: colors[index % colors.length]
+                    });
+                });
+            }
+
+            const categoryLegendItems: DonutLegendItem[] = categoryData.map(item => ({
+                label: item.label,
+                value: item.value.toString(),
+                percentage: totalSuppliers > 0 ? `${((item.value / totalSuppliers) * 100).toFixed(1)}%` : '0%'
+            }));
+
+            setChartData({
+                statusData,
+                statusLegendItems,
+                categoryData,
+                categoryLegendItems
+            });
+
         } catch (error) {
-            console.error('Error fetching suppliers data:', error);
+            console.error('Error fetching supplier data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: 'Error al obtener los datos de los proveedores.' });
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
     };
 
@@ -107,7 +187,7 @@ const Suppliers = () => {
         try {
             await configContext.axiosHelper.create(`${configContext.apiUrl}/supplier/create_supplier`, data);
             setAlertConfig({ visible: true, color: 'success', message: 'Proveedor registrado con éxito' })
-            fetchSuppliersData();
+            fetchAllSupplierData();
         } catch (error) {
             console.error('Error creating supplier:', error);
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al crear al proveedor, intentelo mas tarde' });
@@ -120,7 +200,7 @@ const Suppliers = () => {
         if (!configContext) return;
         try {
             await configContext.axiosHelper.put(`${configContext.apiUrl}/supplier/update_supplier/${data.id}`, data);
-            fetchSuppliersData();
+            fetchAllSupplierData();
             setAlertConfig({ visible: true, color: 'success', message: 'Proveedor actualizado con éxito' })
         } catch (error) {
             console.error('Error updating supplier:', error);
@@ -136,7 +216,7 @@ const Suppliers = () => {
 
         try {
             await configContext.axiosHelper.delete(`${configContext.apiUrl}/supplier/delete_supplier/${supplierId}`);
-            fetchSuppliersData();
+            fetchAllSupplierData();
             setAlertConfig({ visible: true, color: 'success', message: 'Proveedor desactivado con éxito' })
         } catch (error) {
             console.error('Error deactivating supplier:', error);
@@ -152,7 +232,7 @@ const Suppliers = () => {
 
         try {
             await configContext.axiosHelper.put(`${configContext.apiUrl}/supplier/activate_supplier/${supplierId}`, {});
-            fetchSuppliersData();
+            fetchAllSupplierData();
             setAlertConfig({ visible: true, color: 'success', message: 'Proveedor sactivado con éxito' })
         } catch (error) {
             console.error('Error activating supplier:', error);
@@ -163,9 +243,8 @@ const Suppliers = () => {
     };
 
     useEffect(() => {
-        fetchSuppliersData();
+        fetchAllSupplierData();
     }, [])
-
 
     if (loading) {
         return (
@@ -178,7 +257,73 @@ const Suppliers = () => {
             <Container fluid>
                 <BreadCrumb pageTitle="Ver Proveedores" title="Proveedores" ></BreadCrumb>
 
-                <Card className="rounded" style={{ height: '75vh' }}>
+                {/* KPIs Section */}
+                <div className="row ">
+                    <div className="col-xl-3 col-md-6">
+                        <StatKpiCard
+                            title="Total de Proveedores"
+                            value={supplierStatistics?.totalSuppliers}
+                            icon={<i className="ri-truck-line fs-20 text-primary"></i>}
+                            iconBgColor="#E8F5E9"
+                            animateValue={true}
+                            durationSeconds={1.5}
+                        />
+                    </div>
+                    <div className="col-xl-3 col-md-6">
+                        <StatKpiCard
+                            title="Proveedores Activos"
+                            value={supplierStatistics?.activeSuppliers}
+                            icon={<i className="ri-checkbox-circle-line fs-20 text-success"></i>}
+                            iconBgColor="#E8F5E9"
+                            animateValue={true}
+                            durationSeconds={1.5}
+                        />
+                    </div>
+                    <div className="col-xl-3 col-md-6">
+                        <StatKpiCard
+                            title="Proveedores Inactivos"
+                            value={supplierStatistics?.inactiveSuppliers}
+                            icon={<i className="ri-close-circle-line fs-20 text-danger"></i>}
+                            iconBgColor="#FEE2E2"
+                            animateValue={true}
+                            durationSeconds={1.5}
+                        />
+                    </div>
+                    <div className="col-xl-3 col-md-6">
+                        <StatKpiCard
+                            title="Tasa de Activación"
+                            value={supplierStatistics?.activationRate}
+                            suffix="%"
+                            decimals={1}
+                            icon={<i className="ri-percent-line fs-20 text-info"></i>}
+                            iconBgColor="#E3F2FD"
+                            animateValue={true}
+                            durationSeconds={1.5}
+                        />
+                    </div>
+                </div>
+
+                {/* Charts Section */}
+                <div className="row mb-4">
+                    <div className="col-xl-6">
+                        <DonutChartCard
+                            title="Estado de Proveedores"
+                            data={chartData.statusData}
+                            legendItems={chartData.statusLegendItems}
+                            height={200}
+                        />
+                    </div>
+                    <div className="col-xl-6">
+                        <DonutChartCard
+                            title="Proveedores por Categoría"
+                            data={chartData.categoryData}
+                            legendItems={chartData.categoryLegendItems}
+                            height={200}
+                        />
+                    </div>
+                </div>
+
+                <Card className="rounded">
                     <CardHeader>
                         <div className="d-flex gap-2">
                             <h4 className="me-auto">Proveedores</h4>
@@ -190,14 +335,7 @@ const Suppliers = () => {
                         </div>
                     </CardHeader>
 
-                    <CardBody
-                        className={
-                            suppliersData.length === 0
-                                ? "d-flex flex-column justify-content-center align-items-center text-center"
-                                : "d-flex flex-column flex-grow-1"
-                        }
-                        style={{ maxHeight: 'calc(80vh - 100px)', overflowY: 'auto' }}
-                    >
+                    <CardBody className={suppliersData.length === 0 ? "d-flex flex-column justify-content-center align-items-center text-center" : "d-flex flex-column flex-grow-1"}>
                         {suppliersData.length === 0 ? (
                             <>
                                 <i className="ri-truck-line text-muted mb-2" style={{ fontSize: "2rem" }} />
@@ -263,8 +401,8 @@ const Suppliers = () => {
                     </ModalFooter>
                 </Modal>
 
-                <Modal isOpen={modals.details} toggle={() => { toggleModal('details'); fetchSuppliersData(); }} size="xl" keyboard={false} backdrop='static' centered>
-                    <ModalHeader toggle={() => { toggleModal('details'); fetchSuppliersData(); }}>Detalles de proveedor</ModalHeader>
+                <Modal isOpen={modals.details} toggle={() => { toggleModal('details'); fetchAllSupplierData(); }} size="xxl" keyboard={false} backdrop='static' centered>
+                    <ModalHeader toggle={() => { toggleModal('details'); fetchAllSupplierData(); }}>Detalles de proveedor</ModalHeader>
                     <ModalBody>
                         <SupplierDetailsModal supplierId={selectedSupplier?._id} />
                     </ModalBody>

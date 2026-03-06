@@ -9,6 +9,8 @@ import AlertMessage from "Components/Common/Shared/AlertMesagge"
 import { getLoggedinUser } from "helpers/api_helper"
 import IncomeForm from "Components/Common/Forms/IncomeForm"
 import CustomTable from "Components/Common/Tables/CustomTable"
+import StatKpiCard from "Components/Common/Graphics/StatKpiCard"
+import DonutChartCard, { DonutDataItem, DonutLegendItem } from "Components/Common/Graphics/DonutChartCard"
 import IncomeDetails from "Components/Common/Details/IncomeDetailsModal"
 
 
@@ -23,6 +25,17 @@ const ViewIncomes = () => {
     const [modals, setModals] = useState({ createIncome: false, details: false });
     const [mainWarehouseId, setMainWarehouseId] = useState<string>('')
     const [selectedIncome, setSelectedIncome] = useState<any>({});
+    const [incomeStatistics, setIncomeStatistics] = useState({
+        totalValue: 0,
+        totalEntries: 0,
+        averageValuePerEntry: 0
+    });
+    const [chartData, setChartData] = useState({
+        entriesByType: [] as DonutDataItem[],
+        valueByType: [] as DonutDataItem[],
+        entriesLegendItems: [] as DonutLegendItem[],
+        valueLegendItems: [] as DonutLegendItem[]
+    });
 
     const columns: Column<any>[] = [
         { header: 'Identificador', accessor: 'id', isFilterable: true, type: 'text' },
@@ -52,7 +65,7 @@ const ViewIncomes = () => {
                 return <Badge color={color}>{text}</Badge>;
             },
         },
-        { header: 'Precio Total', accessor: 'totalPrice', type: 'currency' },
+        { header: 'Precio Total', accessor: 'totalPrice', type: 'currency', bgColor: '#E8F5E9' },
         {
             header: "Acciones",
             accessor: "action",
@@ -95,12 +108,87 @@ const ViewIncomes = () => {
         }
     };
 
+    const fetchIncomeStatistics = async () => {
+        if (!configContext || !mainWarehouseId) return;
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/incomes/income_statistics/${mainWarehouseId}`);
+            setIncomeStatistics(response.data.data.statistics);
+        } catch (error) {
+            console.error('Error fetching income statistics:', error);
+        }
+    };
+
+    const fetchIncomeChartData = async () => {
+        if (!configContext || !mainWarehouseId) return;
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/incomes/income_charts/${mainWarehouseId}`);
+            const chartDataResponse = response.data.data;
+            
+            // Transformar datos para las gráficas de dona - solo incluir tipos que tienen datos
+            const entriesByType: DonutDataItem[] = [];
+            const valueByType: DonutDataItem[] = [];
+
+            const typeConfig: Record<string, { label: string; color: string }> = {
+                purchase: { label: 'Compra', color: '#10b981' },
+                donacion: { label: 'Donación', color: '#f59e0b' },
+                internal_transfer: { label: 'Transferencia Interna', color: '#3b82f6' },
+                own_production: { label: 'Producción Propia', color: '#6b7280' }
+            };
+
+            if (chartDataResponse.entriesByType) {
+                Object.entries(chartDataResponse.entriesByType).forEach(([type, value]) => {
+                    const numericValue = Number(value);
+                    if (numericValue > 0 && typeConfig[type]) {
+                        entriesByType.push({
+                            id: type,
+                            label: typeConfig[type].label,
+                            value: numericValue,
+                            color: typeConfig[type].color
+                        });
+                    }
+                });
+            }
+
+            if (chartDataResponse.valueByType) {
+                Object.entries(chartDataResponse.valueByType).forEach(([type, value]) => {
+                    const numericValue = Number(value);
+                    if (numericValue > 0 && typeConfig[type]) {
+                        valueByType.push({
+                            id: type,
+                            label: typeConfig[type].label,
+                            value: numericValue,
+                            color: typeConfig[type].color
+                        });
+                    }
+                });
+            }
+
+            const entriesLegendItems = entriesByType.map(item => ({
+                label: item.label,
+                value: item.value,
+                percentage: `${((item.value / entriesByType.reduce((sum, i) => sum + i.value, 0)) * 100).toFixed(1)}%`
+            }));
+
+            const valueLegendItems = valueByType.map(item => ({
+                label: item.label,
+                value: `$${item.value.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                percentage: `${((item.value / valueByType.reduce((sum, i) => sum + i.value, 0)) * 100).toFixed(1)}%`
+            }));
+
+            setChartData({ entriesByType, valueByType, entriesLegendItems, valueLegendItems });
+        } catch (error) {
+            console.error('Error fetching income chart data:', error);
+        }
+    };
+
     useEffect(() => {
         fetchWarehouseId();
     }, []);
 
     useEffect(() => {
         handleFetchIncomes();
+        fetchIncomeStatistics();
+        fetchIncomeChartData();
     }, [mainWarehouseId])
 
 
@@ -115,7 +203,65 @@ const ViewIncomes = () => {
             <Container fluid>
                 <BreadCrumb title={"Ver Entradas"} pageTitle={"Entradas"} />
 
-                <Card style={{ height: '75vh' }}>
+                {/* KPIs Section */}
+                <div className="row">
+                    <div className="col-xl-3 col-md-6">
+                        <StatKpiCard
+                            title="Valor Total de Entradas"
+                            value={incomeStatistics.totalValue}
+                            prefix="$"
+                            decimals={2}
+                            icon={<i className="ri-money-dollar-circle-line fs-20 text-primary"></i>}
+                            iconBgColor="#E8F5E9"
+                            animateValue={true}
+                            durationSeconds={1.5}
+                        />
+                    </div>
+                    <div className="col-xl-3 col-md-6">
+                        <StatKpiCard
+                            title="Total de Entradas"
+                            value={incomeStatistics.totalEntries}
+                            icon={<i className="ri-file-list-3-line fs-20 text-info"></i>}
+                            iconBgColor="#E3F2FD"
+                            animateValue={true}
+                            durationSeconds={1.5}
+                        />
+                    </div>
+                    <div className="col-xl-3 col-md-6">
+                        <StatKpiCard
+                            title="Valor Promedio por Entrada"
+                            value={incomeStatistics.averageValuePerEntry}
+                            prefix="$"
+                            decimals={2}
+                            icon={<i className="ri-bar-chart-line fs-20 text-warning"></i>}
+                            iconBgColor="#FFF3E0"
+                            animateValue={true}
+                            durationSeconds={1.5}
+                        />
+                    </div>
+                </div>
+
+                {/* Charts Section */}
+                <div className="row mb-4">
+                    <div className="col-xl-6">
+                        <DonutChartCard
+                            title="Entradas por Tipo"
+                            data={chartData.entriesByType}
+                            legendItems={chartData.entriesLegendItems}
+                            height={200}
+                        />
+                    </div>
+                    <div className="col-xl-6">
+                        <DonutChartCard
+                            title="Valor de Entradas por Tipo"
+                            data={chartData.valueByType}
+                            legendItems={chartData.valueLegendItems}
+                            height={200}
+                        />
+                    </div>
+                </div>
+
+                <Card>
                     <CardHeader>
                         <div className="d-flex gap-2">
                             <h4 className="me-auto">Entradas</h4>

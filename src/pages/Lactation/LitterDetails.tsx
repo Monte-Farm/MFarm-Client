@@ -1,6 +1,5 @@
 import { ConfigContext } from "App";
 import KPI from "Components/Common/Graphics/Kpi";
-import KPIBox from "Components/Common/Graphics/KPIBox";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
@@ -14,7 +13,6 @@ import ObjectDetails from "Components/Common/Details/ObjectDetails";
 import { Attribute } from "common/data_interfaces";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import { Column } from "common/data/data_types";
-import { FiInbox } from "react-icons/fi";
 import LitterMedicalDetails from "Components/Common/Details/LitterMedicalDetails";
 import LitterEventsCard from "Components/Common/Shared/LitterEventsCard";
 import WeanLitterForm from "Components/Common/Forms/WeanLitterForm";

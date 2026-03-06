@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Button, Col, Row, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback, Nav, NavItem, NavLink, TabContent, TabPane, Card, CardBody, Spinner, Badge } from "reactstrap";
+import { Button, Col, Row, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback, Nav, NavItem, NavLink, TabContent, TabPane, Card, CardBody, Spinner, Badge, CardHeader } from "reactstrap";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import SupplierForm from "./SupplierForm";
@@ -20,6 +20,7 @@ import ProductForm from "./ProductForm";
 import CustomTable from "../Tables/CustomTable";
 import SelectableTable from "../Tables/SelectableTable";
 import SelectTable from "../Tables/SelectTable";
+import ObjectDetails from "../Details/ObjectDetails";
 
 interface IncomeFormProps {
     initialData?: IncomeData;
@@ -31,21 +32,72 @@ const incomeAttributes: Attribute[] = [
     { key: 'id', label: 'Identificador de entrada' },
     { key: 'date', label: 'Fecha de registro', type: 'date' },
     { key: 'emissionDate', label: 'Fecha de emisión', type: 'date' },
+    {
+        key: 'subtotal',
+        label: 'Subtotal',
+        type: 'currency',
+        render: (_, row) => {
+            const subtotal = row.products.reduce((sum: number, product: any) => sum + (product.quantity * (product.price || 0)), 0);
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+            }).format(subtotal);
+        }
+    },
+    { key: 'tax', label: 'Impuesto', type: 'percentage' },
+    { key: 'discount', label: 'Descuento', type: 'percentage' },
     { key: 'totalPrice', label: 'Precio Total', type: 'currency' },
-    { key: 'incomeType', label: 'Tipo de entrada' }
+    {
+        key: 'incomeType',
+        label: 'Tipo de entrada',
+        type: 'text',
+        render: (value: string) => {
+            let color = "secondary";
+            let label = value;
+
+            switch (value) {
+                case "purchase":
+                    color = "primary";
+                    label = "Compra";
+                    break;
+                case "donation":
+                    color = "success";
+                    label = "Donación";
+                    break;
+                case "internal_transfer":
+                    color = "info";
+                    label = "Transferencia interna";
+                    break;
+                case "own_production":
+                    color = "warning";
+                    label = "Producción propia";
+                    break;
+            }
+
+            return <Badge color={color}>{label}</Badge>;
+        }
+    }
 ];
 
 const purchaseOrderAttributes: Attribute[] = [
     { key: 'code', label: 'No. de Orden de Compra' },
     { key: 'date', label: 'Fecha', type: 'date' },
-    { key: 'tax', label: 'Impuesto (%)', type: 'percentage' },
-    { key: 'discount', label: 'Descuento (%)', type: 'percentage' },
-    { key: 'subtotal', label: 'Subtotal', type: 'currency' },
-    { key: 'totalPrice', label: 'Total', type: 'currency' },
+    {
+        key: 'supplier',
+        label: 'Proveedor',
+        type: 'text',
+        render: (_, row) => <span className="text-black">{row.supplier.name}</span>
+    },
 ];
 
 const productColumns: Column<any>[] = [
-    { header: 'Código', accessor: 'id', isFilterable: true, type: "text" },
+    {
+        header: 'Código',
+        accessor: 'code',
+        isFilterable: true,
+        type: "text",
+        render: (value, row) => <span>{row.code}</span>
+    },
     { header: 'Producto', accessor: 'name', isFilterable: true, type: "text" },
     {
         header: 'Cantidad',
@@ -55,6 +107,18 @@ const productColumns: Column<any>[] = [
         render: (_, row) => <span>{row.quantity} {row.unit_measurement}</span>
     },
     { header: 'Precio Unitario', accessor: 'price', type: "currency" },
+    {
+        header: 'Precio Total',
+        accessor: 'totalPrice',
+        type: 'currency',
+        render: (_, row) => {
+            const totalPrice = (row.quantity || 0) * (row.price || 0);
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+            }).format(totalPrice);
+        }
+    },
     {
         header: 'Categoria',
         accessor: 'category',
@@ -117,6 +181,7 @@ const productColumns: Column<any>[] = [
 ];
 
 const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }) => {
+    const configContext = useContext(ConfigContext)
     const userLogged = getLoggedinUser();
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
     const [suppliers, setSuppliers] = useState<any[]>([]);
@@ -125,11 +190,10 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
     const [products, setProducts] = useState([])
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [fileToUpload, setFileToUpload] = useState<File | null>(null)
-    const [selectedProducts, setSelectedProducts] = useState([])
-    const configContext = useContext(ConfigContext)
+    const [selectedProducts, setSelectedProducts] = useState<Array<any>>([])
     const [purchaseOrders, setPurchaseOrders] = useState([])
     const [selectedPurchaseOrder, setSelectedPurchaseOrder] = useState<PurchaseOrderData | null>(null)
-    const [selectedOrderProducts, setSelectecOrderProducts] = useState([])
+    const [selectedOrderProducts, setSelectecOrderProducts] = useState<Array<{ id: string; quantity: number; price: number }>>([])
     const [hasSelectedPurchaseOrder, setHasSelectedPurchaseOrder] = useState<boolean>(false);
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
@@ -157,7 +221,6 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
             type: "text",
             render: (_, row) => <span className="text-black">{row.supplier.name}</span>
         },
-        { header: 'Total', accessor: 'totalPrice', isFilterable: true, type: "currency" },
     ]
 
     const validationSchema = Yup.object({
@@ -176,6 +239,8 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
         date: Yup.string().required("Por favor, ingrese la fecha"),
         emissionDate: Yup.string().required("Por favor, ingrese la fecha"),
         totalPrice: Yup.number().min(0, "El precio total debe ser positivo").required("Por favor, ingrese el precio total"),
+        tax: Yup.number().min(0, "El impuesto debe ser positivo").required("Por favor, ingrese el impuesto"),
+        discount: Yup.number().min(0, "El descuento debe ser positivo").required("Por favor, ingrese el descuento"),
         incomeType: Yup.string().required("Por favor, seleccione el tipo de ingreso"),
         origin: Yup.object({
             id: Yup.string().required("Por favor, seleccione un proveedor"),
@@ -190,67 +255,35 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
 
-    const fetchWarehouseId = async () => {
+    const fetchAllInitialData = async () => {
         if (!configContext || !userLogged) return;
+
         try {
-            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/farm/get_main_warehouse/${userLogged.farm_assigned}`);
-            const warehouseId = response.data.data;
-            setMainWarehouseId(warehouseId)
+            const [warehouseResponse, nextIdResponse] = await Promise.all([
+                configContext.axiosHelper.get(`${configContext.apiUrl}/farm/get_main_warehouse/${userLogged.farm_assigned}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/incomes/income_next_id`)
+            ]);
+
+            const warehouseId = warehouseResponse.data.data;
+            setMainWarehouseId(warehouseId);
             formik.setFieldValue('warehouse', warehouseId);
-        } catch (error) {
-            console.error('Error fetching main warehouse ID:', error);
-        }
-    }
 
-    const fetchSuppliers = async () => {
-        try {
-            if (!configContext) return;
-
-            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/supplier/find_supplier_status/${true}`);
-            setSuppliers(response.data.data);
+            formik.setFieldValue('id', nextIdResponse.data.data);
         } catch (error) {
-            console.error('Error fetching data:', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
+            console.error('Error fetching initial data:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos iniciales, intentelo mas tarde' });
         }
     };
-
-
-    const fetchProducts = async () => {
-        try {
-            if (!configContext) return;
-
-            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/product`);
-            setProducts(response.data.data);
-        } catch (error) {
-            console.error('Error fetching data:', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
-        }
-    };
-
-
-    const fetchNextId = async () => {
-        try {
-            if (!initialData && configContext) {
-                const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/incomes/income_next_id`);
-                const nextId = response.data.data;
-                formik.setFieldValue('id', nextId);
-            }
-        } catch (error) {
-            console.error("Ha ocurrido un error obteniendo el id");
-        }
-    };
-
 
     const fetchPurchaseOrders = async () => {
         if (!configContext || !mainWarehouseId) return;
         try {
-            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/purchase_orders/find_not_purchased/${mainWarehouseId}`)
-            setPurchaseOrders(response.data.data)
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/purchase_orders/find_not_purchased/${mainWarehouseId}`);
+            setPurchaseOrders(response.data.data);
         } catch (error) {
-            console.error(error, 'Error obtaining the purchase orders')
+            console.error('Error obtaining the purchase orders:', error);
         }
-    }
-
+    };
 
     const formik = useFormik<IncomeData>({
         initialValues: initialData || {
@@ -260,7 +293,9 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
             emissionDate: null,
             products: [],
             totalPrice: 0,
-            incomeType: "",
+            tax: 0,
+            discount: 0,
+            incomeType: "purchase",
             origin: {
                 originType: 'Supplier',
                 id: ""
@@ -270,7 +305,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
             purchaseOrder: "",
             invoiceNumber: "",
             fiscalRecord: "",
-            currency: "",
+            currency: "MXN",
         },
         enableReinitialize: true,
         validationSchema,
@@ -294,11 +329,6 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
         },
     });
 
-    function handleSelectSingle(selectedSingle: any) {
-        setSelectecCurrency(selectedSingle)
-        formik.setFieldValue('currency', selectedSingle.value);
-    }
-
     const uploadFile = async (file: File) => {
         try {
             if (!configContext) return;
@@ -315,86 +345,65 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
         }
     }
 
-    const handleSupplierChange = (supplierId: string) => {
-        const supplier = suppliers.find((s) => s.id === supplierId) || null;
-        setSelectedSupplier(supplier);
-        formik.setFieldValue("origin.id", supplier._id);
-    };
-
-    const handleCreateSupplier = async (supplierData: SupplierData) => {
-        try {
-            if (!configContext) return;
-
-            const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/supplier/create_supplier`, supplierData);
-            const newSupplier = response.data.data;
-
-            await fetchSuppliers();
-            setSelectedSupplier(newSupplier);
-            formik.setFieldValue("origin.id", newSupplier._id);
-
-            setAlertConfig({ visible: true, color: 'success', message: 'Proveedor guardado con exito' })
-        } catch (error) {
-            console.error('Error fetching data:', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al guardar el proveedor, intentelo mas tarde' })
-        } finally {
-            toggleModal('createSupplier')
-        }
-    };
-
-    const handleCreateProduct = async (productData: ProductData) => {
-        try {
-            if (!configContext) return;
-
-            const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/product/create_product`, productData);
-
-            await fetchProducts();
-            setAlertConfig({ visible: true, color: 'success', message: 'Producto guardado con exito' })
-        } catch (error) {
-            console.error('Error fetching data:', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al guardar el producto, intentelo mas tarde' })
-        } finally {
-            toggleModal('createProduct')
-        }
-    };
-
     const handleProductSelect = (selectedProductsData: Array<{ id: string; quantity: number; price: number }>) => {
         formik.setFieldValue("products", selectedProductsData);
 
         const updatedSelectedProducts: any = selectedProductsData.map((selectedProduct) => {
-            const productData = products.find((p: any) => p.id === selectedProduct.id) as ProductData | undefined;
-
+            const productData = products.find((p: any) => p.id._id === selectedProduct.id) as any | undefined;
             return productData
-                ? { ...productData, ...selectedProduct }
+                ? { ...productData.id, code: productData.id.id, ...selectedProduct }
                 : selectedProduct;
         });
 
         setSelectedProducts(updatedSelectedProducts);
     };
 
-    const handleSupplierChangeByName = (supplierName: string) => {
-        const supplier = suppliers.find((s) => s.name === supplierName) || null;
-        setSelectedSupplier(supplier);
-        formik.setFieldValue("origin.id", supplier?._id);
+    const handleProductEdit = (updatedProducts: Array<{ id: string; quantity: number; price: number }>) => {
+        setSelectecOrderProducts(updatedProducts);
+        formik.setFieldValue("products", updatedProducts);
+
+        const updatedSelectedProducts = updatedProducts.map((updatedProduct) => {
+            const productData = products.find((p: any) => p.id._id === updatedProduct.id) as any | undefined;
+            return productData
+                ? { ...productData.id, code: productData.id.id, ...updatedProduct }
+                : updatedProduct;
+        });
+
+        setSelectedProducts(updatedSelectedProducts);
     };
 
     const clicPurchaseOrder = (row: any) => {
         setSelectedPurchaseOrder(row);
-        handleSupplierChangeByName(row.supplier.name);
-        formik.setFieldValue('purchaseOrder', row._id)
+        setProducts(row.products);
 
-        setSelectecOrderProducts(row.products);
-        formik.setFieldValue("products", row.products);
-        handleProductSelect(row.products)
+        formik.setFieldValue('purchaseOrder', row._id);
+        formik.setFieldValue('origin.id', row.supplier._id);
+
+        const processedProducts = row.products.map((product: any) => ({
+            id: product.id._id,
+            quantity: product.quantity,
+            price: 0
+        }));
+
+        setSelectecOrderProducts(processedProducts);
+        formik.setFieldValue("products", processedProducts);
+
+        const updatedSelectedProducts = processedProducts.map((selectedProduct: { id: string; quantity: number; price: number }) => {
+            const productData = row.products.find((p: any) => p.id._id === selectedProduct.id);
+            return productData
+                ? { ...productData.id, code: productData.id.id, ...selectedProduct }
+                : selectedProduct;
+        });
+
+        setSelectedProducts(updatedSelectedProducts);
 
         setHasSelectedPurchaseOrder(true);
-        toggleArrowTab(2)
+        toggleArrowTab(2);
     };
 
     useEffect(() => {
-        fetchWarehouseId();
-        fetchProducts();
-        fetchSuppliers();
-        fetchNextId();
+        fetchAllInitialData();
+        formik.setFieldValue('date', new Date())
     }, [])
 
     useEffect(() => {
@@ -402,15 +411,11 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
     }, [mainWarehouseId])
 
     useEffect(() => {
-        const supplier = suppliers.find((s) => s._id === formik.values.origin.id) || null;
-        setSelectedSupplier(supplier);
-    }, [formik.values.origin.id, suppliers]);
-
-    useEffect(() => {
         const subtotal = formik.values.products.reduce((sum, product) => sum + (product.quantity * (product.price ?? 0)), 0);
-        const totalWithTax = subtotal * 1;
+        const totalAfterDiscount = subtotal - (subtotal * (formik.values.discount / 100));
+        const totalWithTax = totalAfterDiscount + (totalAfterDiscount * (formik.values.tax / 100));
         formik.setFieldValue("totalPrice", parseFloat(totalWithTax.toFixed(2)));
-    }, [formik.values.products]);
+    }, [formik.values.products, formik.values.tax, formik.values.discount]);
 
     useEffect(() => {
         formik.validateForm();
@@ -491,26 +496,14 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
 
                 <TabContent activeTab={activeStep}>
                     <TabPane id="step-selectPurchaseOrder-tab" tabId={1}>
-                        <div className="d-flex gap-2 mb-4">
-                            <h4>Ordenes de Compra</h4>
-
-                            <Button className="farm-primary-button ms-auto" onClick={() => toggleModal('createPurchaseOrder')}>
-                                <i className="ri-add-line me-3" />
-                                Crear Orden de Compra
-                            </Button>
+                        <div className="d-flex gap-2 mb-1">
+                            <h5 className="text-muted">Ordenes de Compra</h5>
                         </div>
-                        <SelectableTable columns={purchaseOrdersColumns} data={purchaseOrders} onSelect={(rows: any[]) => rows?.[0] && clicPurchaseOrder(rows[0])} selectionMode="single" />
+                        <SelectableTable columns={purchaseOrdersColumns} data={purchaseOrders} onSelect={(rows: any[]) => rows?.[0] && clicPurchaseOrder(rows[0])} selectionMode="single" showSearchAndFilter={false} showPagination={false} />
                     </TabPane>
 
                     <TabPane id="step-incomeData-tab" tabId={2}>
                         <div>
-                            <Card style={{ backgroundColor: '#A3C293' }}>
-                                <CardBody className="pt-4">
-                                    {selectedPurchaseOrder && (
-                                        <ObjectDetailsHorizontal attributes={purchaseOrderAttributes} object={selectedPurchaseOrder} />
-                                    )}
-                                </CardBody>
-                            </Card>
                             <Row>
                                 <Col lg={6}>
                                     <div className="">
@@ -550,7 +543,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                             </Row>
 
                             <div className="d-flex gap-3 mt-4">
-                                <div className="w-25">
+                                <div className="w-100">
                                     <Label htmlFor="invoiceNumberInput" className="form-label">No.de Factura</Label>
                                     <Input
                                         type="text"
@@ -564,7 +557,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                     {formik.touched.invoiceNumber && formik.errors.invoiceNumber && <FormFeedback>{formik.errors.invoiceNumber}</FormFeedback>}
                                 </div>
 
-                                <div className="w-25">
+                                <div className="w-100">
                                     <Label htmlFor="emissionDateInput" className="form-label">Fecha de emisión de factura</Label>
                                     <DatePicker
                                         id="emissionDateInput"
@@ -580,7 +573,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                     )}
                                 </div>
 
-                                <div className="w-25">
+                                <div className="w-100">
                                     <Label htmlFor="fiscalRecordInput" className="form-label">Registro Fiscal</Label>
                                     <Input
                                         type="text"
@@ -593,103 +586,47 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                     />
                                     {formik.touched.fiscalRecord && formik.errors.fiscalRecord && <FormFeedback>{formik.errors.fiscalRecord}</FormFeedback>}
                                 </div>
-
-                                <div className="w-25">
-                                    <Label htmlFor="choices-single-default" className="form-label">Moneda</Label>
-                                    <Select
-                                        value={selectedCurrency}
-                                        onChange={(selectedSingle: any) => {
-                                            handleSelectSingle(selectedSingle);
-                                        }}
-                                        options={currencies}
-                                        onBlur={formik.handleBlur}
-                                        invalid={formik.touched.currency && !!formik.errors.currency}
-                                        placeholder={'Seleccione una moneda'}
-                                    />
-                                    {formik.touched.currency && formik.errors.currency && <FormFeedback>{formik.errors.currency}</FormFeedback>}
-                                </div>
-                            </div>
-
-
-                            {/* Tipo de Ingreso */}
-                            <div className="mt-4">
-                                <Label htmlFor="incomeTypeInput" className="form-label">Tipo de Ingreso</Label>
-                                <Input
-                                    type="select"
-                                    id="incomeTypeInput"
-                                    name="incomeType"
-                                    value={formik.values.incomeType}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    invalid={formik.touched.incomeType && !!formik.errors.incomeType}
-                                >
-                                    <option value="">Seleccione un tipo</option>
-                                    <option value="purchase">Compra</option>
-                                    <option value="donation">Donación</option>
-                                    <option value="internal_transfer">Transferencia interna</option>
-                                    <option value="own_production">Producción propia</option>
-                                </Input>
-                                {formik.touched.incomeType && formik.errors.incomeType && <FormFeedback>{formik.errors.incomeType}</FormFeedback>}
-                            </div>
-
-                            {/* Datos del proveedor */}
-                            <div className="d-flex mt-4">
-                                <h5 className="me-auto">Datos del Proveedor</h5>
-                                <Button className="h-50 mb-2 farm-primary-button" onClick={() => toggleModal('createSupplier')} disabled>
-                                    <i className="ri-add-line me-2"></i>
-                                    Nuevo Proveedor
-                                </Button>
-                            </div>
-
-                            <div className="border"></div>
-
-                            {/* Proveedor */}
-                            <div className="mt-3">
-                                <Label htmlFor="supplierInput" className="form-label">Proveedor</Label>
-                                <Input
-                                    type="select"
-                                    id="supplierInput"
-                                    name="origin.id"
-                                    value={formik.values.origin.id}
-                                    onChange={(e) => handleSupplierChange(e.target.value)}
-                                    onBlur={formik.handleBlur}
-                                    invalid={formik.touched.origin?.id && !!formik.errors.origin?.id}
-                                    disabled
-                                >
-                                    <option value=''>Seleccione un proveedor</option>
-                                    {suppliers.map((supplier) => (
-                                        <option key={supplier._id} value={supplier._id}>
-                                            {supplier.name}
-                                        </option>
-                                    ))}
-                                </Input>
-
-                                {formik.touched.origin?.id && formik.errors.origin?.id && <FormFeedback>{formik.errors.origin?.id}</FormFeedback>}
                             </div>
 
                             <div className="d-flex gap-3 mt-4">
-                                <div className="w-25">
-                                    <Label htmlFor="supplierRNC" className="form-label">RNC</Label>
-                                    <Input type="text" className="form-control" id="supplierRNC" value={selectedSupplier?.rnc} disabled></Input>
+                                <div className="w-50">
+                                    <Label htmlFor="taxInput" className="form-label">Impuesto (%)</Label>
+                                    <div className="input-group">
+                                        <Input
+                                            type="number"
+                                            id="taxInput"
+                                            name="tax"
+                                            value={formik.values.tax}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            invalid={formik.touched.tax && !!formik.errors.tax}
+                                            min={0}
+                                            step="0.01"
+                                        />
+                                        <span className="input-group-text">%</span>
+                                    </div>
+                                    {formik.touched.tax && formik.errors.tax && <FormFeedback>{formik.errors.tax}</FormFeedback>}
                                 </div>
 
-                                <div className="w-25">
-                                    <Label htmlFor="supplierAddress" className="form-label">Dirección</Label>
-                                    <Input type="text" className="form-control" id="supplierAddress" value={selectedSupplier?.address} disabled></Input>
+                                <div className="w-50">
+                                    <Label htmlFor="discountInput" className="form-label">Descuento (%)</Label>
+                                    <div className="input-group">
+                                        <Input
+                                            type="number"
+                                            id="discountInput"
+                                            name="discount"
+                                            value={formik.values.discount}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            invalid={formik.touched.discount && !!formik.errors.discount}
+                                            min={0}
+                                            step="0.01"
+                                        />
+                                        <span className="input-group-text">%</span>
+                                    </div>
+                                    {formik.touched.discount && formik.errors.discount && <FormFeedback>{formik.errors.discount}</FormFeedback>}
                                 </div>
-
-                                <div className="w-25">
-                                    <Label htmlFor="supplierPhoneNumber" className="form-label">Número Telefonico</Label>
-                                    <Input type="text" className="form-control" id="supplierPhoneNumber" value={selectedSupplier?.phone_number} disabled></Input>
-                                </div>
-
-                                <div className="w-25">
-                                    <Label htmlFor="supplierType" className="form-label">Tipo de Proveedor</Label>
-                                    <Input type="text" className="form-control" id="supplierType" value={selectedSupplier?.supplier_type} disabled></Input>
-                                </div>
-
                             </div>
-
 
                             <div className="d-flex mt-4">
                                 <Button
@@ -714,6 +651,10 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                         !formik.values.fiscalRecord ||
                                         !formik.values.currency ||
                                         !formik.values.invoiceNumber ||
+                                        formik.values.tax === null ||
+                                        formik.values.tax === undefined ||
+                                        formik.values.discount === null ||
+                                        formik.values.discount === undefined ||
                                         Object.keys(formik.errors).length > 0
                                     }
                                 >
@@ -727,55 +668,28 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
 
                     <TabPane id="step-products-tab" tabId={3}>
                         <div>
-                            {/* Productos */}
-                            <Row className="mb-3">
-                                <Col lg={6}>
-                                    <div className="">
-                                        <Label htmlFor="totalPriceInput" className="form-label">Precio Total</Label>
-                                        <div className="form-icon">
-                                            <Input
-                                                className="form-control form-control-icon"
-                                                type="number"
-                                                id="totalPriceInput"
-                                                name="totalPrice"
-                                                value={formik.values.totalPrice}
-                                                onChange={formik.handleChange}
-                                                onBlur={formik.handleBlur}
-                                                invalid={formik.touched.totalPrice && !!formik.errors.totalPrice}
-                                                disabled={true}
-                                            />
-                                            <i>$</i>
-                                        </div>
-                                        {formik.touched.totalPrice && formik.errors.totalPrice && <FormFeedback>{formik.errors.totalPrice}</FormFeedback>}
-                                    </div>
-                                </Col>
+                            <div className="w-100 mb-4">
+                                <Label htmlFor="documentsInput" className="form-label">Documentos</Label>
+                                <Input
+                                    type="file"
+                                    id="documentsInput"
+                                    accept="image/*, application/pdf"
+                                    onChange={(e) => {
+                                        if (e.target.files && e.target.files.length > 0) {
+                                            setFileToUpload(e.target.files[0]);
+                                        }
+                                    }}
+                                />
+                            </div>
 
-                                <Col lg={6}>
-                                    {/* Documentos */}
-                                    <div className="">
-                                        <Label htmlFor="documentsInput" className="form-label">Documentos</Label>
-                                        <Input
-                                            type="file"
-                                            id="documentsInput"
-                                            accept="image/*, application/pdf"
-                                            onChange={(e) => {
-                                                if (e.target.files && e.target.files.length > 0) {
-                                                    setFileToUpload(e.target.files[0]); // Guarda el archivo seleccionado
-                                                }
-                                            }}
-                                        />
-                                    </div>
-                                </Col>
-                            </Row>
-
-
+                            <Label className="">Productos para ingresar</Label>
                             {/* Tabla de productos */}
-                            <div className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(61vh - 100px)', overflowY: 'hidden' }}>
+                            <div className="border border-0 d-flex flex-column flex-grow-1">
                                 {hasSelectedPurchaseOrder ? (
                                     <PurchaseOrderProductsTable
                                         data={products}
                                         productsDelivered={selectedOrderProducts}
-                                        onProductEdit={handleProductSelect}
+                                        onProductEdit={handleProductEdit}
                                     />
                                 ) : (
                                     <SelectTable
@@ -814,25 +728,40 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                     </TabPane>
 
                     <TabPane id="step-summary-tab" tabId={4}>
-                        <Card style={{ backgroundColor: '#A3C293' }}>
-                            <CardBody className="pt-4">
-                                {selectedPurchaseOrder && (
-                                    <ObjectDetailsHorizontal attributes={purchaseOrderAttributes} object={selectedPurchaseOrder} />
-                                )}
-                            </CardBody>
-                        </Card>
-                        <Card style={{ backgroundColor: '#A3C293' }}>
-                            <CardBody className="pt-4">
-                                <ObjectDetailsHorizontal attributes={incomeAttributes} object={formik.values} />
-                            </CardBody>
-                        </Card>
+                        <div className="d-flex flex-column gap-1 w-100">
+                            <div className="d-flex gap-3">
+                                <Card className="w-50">
+                                    <CardHeader style={{ backgroundColor: '#f8f9fa' }}>
+                                        <h5>Orden de compra</h5>
+                                    </CardHeader>
+                                    <CardBody className="pt-4">
+                                        {selectedPurchaseOrder && (
+                                            <ObjectDetails attributes={purchaseOrderAttributes} object={selectedPurchaseOrder} />
+                                        )}
+                                    </CardBody>
+                                </Card>
 
+                                <Card className="w-50">
+                                    <CardHeader style={{ backgroundColor: '#f8f9fa' }}>
+                                        <h5>Entrada</h5>
+                                    </CardHeader>
+                                    <CardBody className="pt-4">
+                                        <ObjectDetails attributes={incomeAttributes} object={formik.values} />
+                                    </CardBody>
+                                </Card>
+                            </div>
 
-                        <Card style={{ height: '43vh' }}>
-                            <CardBody className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(62vh - 100px)', overflowY: 'auto' }}>
-                                <CustomTable columns={productColumns} data={selectedProducts} showSearchAndFilter={false} showPagination={false} />
-                            </CardBody>
-                        </Card>
+                            <div className="w-100">
+                                <Card >
+                                    <CardHeader style={{ backgroundColor: '#f8f9fa' }}>
+                                        <h5>Productos</h5>
+                                    </CardHeader>
+                                    <CardBody className="p-0">
+                                        <CustomTable columns={productColumns} data={selectedProducts} showSearchAndFilter={false} showPagination={false} />
+                                    </CardBody>
+                                </Card>
+                            </div>
+                        </div>
 
                         {/* Botones */}
                         <div className="d-flex mt-4 gap-2">
@@ -866,20 +795,6 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                     <Button color="danger" onClick={onCancel}>Sí, cancelar</Button>
                     <Button color="success" onClick={() => setCancelModalOpen(false)}>No, continuar</Button>
                 </ModalFooter>
-            </Modal>
-
-            <Modal size="lg" isOpen={modals.createSupplier} toggle={() => toggleModal("createSupplier")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("createSupplier")}>Nuevo Proveedor</ModalHeader>
-                <ModalBody>
-                    <SupplierForm onSubmit={handleCreateSupplier} onCancel={() => toggleModal("createSupplier", false)} />
-                </ModalBody>
-            </Modal>
-
-            <Modal size="lg" isOpen={modals.createProduct} toggle={() => toggleModal("createProduct")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("createProduct")}>Nuevo Producto</ModalHeader>
-                <ModalBody>
-                    <ProductForm onCancel={() => toggleModal("createProduct", false)} onSubmit={handleCreateProduct} />
-                </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.createPurchaseOrder} toggle={() => toggleModal("createPurchaseOrder")} backdrop='static' keyboard={false} centered>

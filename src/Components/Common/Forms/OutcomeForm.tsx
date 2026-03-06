@@ -1,10 +1,11 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Button, Card, CardBody, Col, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Nav, NavItem, NavLink, Row, Spinner, TabContent, TabPane } from 'reactstrap';
+import { Badge, Button, Card, CardBody, CardHeader, Col, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Nav, NavItem, NavLink, Row, Spinner, TabContent, TabPane } from 'reactstrap';
 import * as Yup from 'yup'
 import { useFormik } from 'formik';
 import SubwarehouseForm from './SubwarehouseForm';
 import { useNavigate } from 'react-router-dom';
 import { Attribute, OutcomeData, ProductData, SubwarehouseData } from 'common/data_interfaces';
+import { OUTCOME_TYPES, getOutcomeTypeLabel } from 'common/enums/outcomes.enums';
 import { ConfigContext } from 'App';
 import classnames from "classnames";
 import ObjectDetailsHorizontal from '../Details/ObjectDetailsHorizontal';
@@ -15,7 +16,10 @@ import SuccessModal from '../Shared/SuccessModal';
 import ErrorModal from '../Shared/ErrorModal';
 import { getLoggedinUser } from 'helpers/api_helper';
 import CustomTable from '../Tables/CustomTable';
+import SelectableTable from '../Tables/SelectableTable';
+import SelectableCustomTable from '../Tables/SelectableTable';
 import SelectTable from '../Tables/SelectTable';
+import ObjectDetails from '../Details/ObjectDetails';
 
 interface OutcomeFormProps {
     initialData?: OutcomeData;
@@ -23,26 +27,46 @@ interface OutcomeFormProps {
     onCancel: () => void;
 }
 
-const outcomeAttributes: Attribute[] = [
-    { key: 'code', label: 'Identificador' },
-    { key: 'date', label: 'Fecha', type: 'date' },
-    { key: 'warehouseDestiny', label: 'Almacén de destino' },
-    { key: 'outcomeType', label: 'Motivo de salida' },
-    { key: 'description', label: 'Descripción' },
-]
+const selectedProductColumns: Column<any>[] = [
+    { header: 'Código', accessor: 'code', isFilterable: false, type: 'text' },
+    { header: 'Producto', accessor: 'productName', isFilterable: false, type: 'text' },
+    { header: 'Cantidad', accessor: 'quantity', isFilterable: false, type: 'number', bgColor: '#e3f2fd' },
+    { header: 'Precio Unitario', accessor: 'price', isFilterable: false, type: 'currency', bgColor: '#f3e5f5' },
+    { header: 'Subtotal', accessor: 'subtotal', isFilterable: false, type: 'currency', bgColor: '#e8f5e8' },
+];
 
-const productColumns: Column<any>[] = [
-    { header: 'Código', accessor: 'id', isFilterable: true, type: 'text' },
-    { header: 'Producto', accessor: 'name', isFilterable: true, type: 'text' },
-    { header: 'Cantidad', accessor: 'quantity', isFilterable: true, type: 'number' },
-    { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true, type: 'text' },
-    { header: 'Precio Unitario', accessor: 'price', type: 'currency' },
-    { header: 'Categoría', accessor: 'category', isFilterable: true, type: 'text' },
+const getOutcomeAttributes = (values: any, selectedSubwarehouse: SubwarehouseData | null): Attribute[] => {
+    const attributes: Attribute[] = [
+        { key: 'code', label: 'Identificador' },
+        { key: 'date', label: 'Fecha', type: 'date' },
+        { key: 'outcomeType', label: 'Motivo de salida' },
+        { key: 'description', label: 'Descripción' },
+        { key: 'totalPrice', label: 'Valor total', type: 'currency' },
+    ];
+
+    if (values.outcomeType === OUTCOME_TYPES.TRANSFER && selectedSubwarehouse) {
+        attributes.splice(3, 0,
+            { key: 'warehouseDestinyName', label: 'Almacén de destino' }
+        );
+    }
+
+    return attributes;
+};
+
+const subwarehouseColumns: Column<any>[] = [
+    { header: 'Código', accessor: 'code', isFilterable: true, type: 'text' },
+    { header: 'Nombre', accessor: 'name', isFilterable: true, type: 'text' },
+    {
+        header: 'Responsable',
+        accessor: 'manager',
+        isFilterable: true,
+        type: 'text',
+        render: (value, row) => <span>{row?.manager?.name} {row?.manager?.lastname}</span>
+    },
 ];
 
 
 const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel }) => {
-    const history = useNavigate()
     const [modals, setModals] = useState({ createWarehouse: false, cancel: false, success: false, error: false });
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const configContext = useContext(ConfigContext);
@@ -50,11 +74,146 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
     const [subwarehouses, setSubwarehouses] = useState<any[]>([])
     const [selectedSubwarehouse, setSelectedSubwarehouse] = useState<SubwarehouseData | null>(null)
     const [products, setProducts] = useState([])
-    const [selectedProducts, setSelectedProducts] = useState([])
+    const [selectedProducts, setSelectedProducts] = useState<any[]>([])
+    const [productErrors, setProductErrors] = useState<Record<string, any>>({})
     const [mainWarehouseId, setMainWarehouseId] = useState<string>('')
-
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
+
+    const productColumns: Column<any>[] = [
+        {
+            header: 'Código',
+            accessor: 'id',
+            isFilterable: true,
+            type: 'text',
+            render: (value, row) => <span>{row?.product?.id}</span>
+        },
+        {
+            header: 'Producto',
+            accessor: 'name',
+            isFilterable: true,
+            type: 'text',
+            render: (value, row) => <span>{row?.product?.name}</span>
+        },
+        {
+            header: 'Cantidad disponible',
+            accessor: 'quantity',
+            isFilterable: true,
+            type: 'number',
+            render: (value, row) => <span>{row?.quantity} {row?.product?.unit_measurement}</span>
+        },
+        {
+            header: "Cantidad",
+            accessor: "quantity",
+            type: "number",
+            render: (value, row, isSelected) => {
+                const selected = selectedProducts.find((p: any) => p.id === row.id);
+                const realValue = selected?.quantity ?? "";
+                const maxQuantity = row?.quantity || 0;
+
+                return (
+                    <div className="input-group">
+                        <Input
+                            type="number"
+                            disabled={!isSelected}
+                            value={selected?.quantity === 0 ? "" : (selected?.quantity ?? "")}
+                            invalid={productErrors[row._id]?.quantity}
+                            max={maxQuantity}
+                            onChange={(e) => {
+                                const newValue = Math.min(Number(e.target.value), maxQuantity);
+                                const updatedProducts = selectedProducts.map((p: any) =>
+                                    p.id === row.id ? { ...p, quantity: newValue } : p
+                                );
+                                setSelectedProducts(updatedProducts);
+
+                                // Clear error for this field if value is valid
+                                if (newValue > 0) {
+                                    setProductErrors((prev: any) => {
+                                        const newErrors = { ...prev };
+                                        if (newErrors[row._id]) {
+                                            delete newErrors[row._id].quantity;
+                                            if (Object.keys(newErrors[row._id]).length === 0) {
+                                                delete newErrors[row._id];
+                                            }
+                                        }
+                                        return newErrors;
+                                    });
+                                }
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            aria-describedby="unit-addon"
+                        />
+                        <span className="input-group-text" id="unit-addon">{row?.product?.unit_measurement}</span>
+                    </div>
+                );
+            },
+        },
+        {
+            header: 'Precio promedio',
+            accessor: 'averagePrice',
+            isFilterable: true,
+            type: 'currency',
+        },
+        {
+            header: 'Categoria',
+            accessor: 'category',
+            isFilterable: true,
+            type: 'text',
+            render: (value, row) => {
+                let color = "secondary";
+                let label = row.product.category;
+
+                switch (row?.product?.category) {
+                    case "nutrition":
+                        color = "info";
+                        label = "Nutrición";
+                        break;
+                    case "medications":
+                        color = "warning";
+                        label = "Medicamentos";
+                        break;
+                    case "vaccines":
+                        color = "primary";
+                        label = "Vacunas";
+                        break;
+                    case "vitamins":
+                        color = "success";
+                        label = "Vitaminas";
+                        break;
+                    case "minerals":
+                        color = "success";
+                        label = "Minerales";
+                        break;
+                    case "supplies":
+                        color = "success";
+                        label = "Insumos";
+                        break;
+                    case "hygiene_cleaning":
+                        color = "success";
+                        label = "Higiene y desinfección";
+                        break;
+                    case "equipment_tools":
+                        color = "success";
+                        label = "Equipamiento y herramientas";
+                        break;
+                    case "spare_parts":
+                        color = "success";
+                        label = "Refacciones y repuestos";
+                        break;
+                    case "office_supplies":
+                        color = "success";
+                        label = "Material de oficina";
+                        break;
+                    case "others":
+                        color = "success";
+                        label = "Otros";
+                        break;
+                }
+
+                return <Badge color={color}>{label}</Badge>;
+            },
+        },
+    ];
 
     function toggleArrowTab(tab: any) {
         if (activeStep !== tab) {
@@ -102,39 +261,33 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
         },
         enableReinitialize: true,
         validationSchema,
+        validateOnChange: false,
         onSubmit: async (values, { setSubmitting, resetForm }) => {
             if (!configContext) return
             try {
                 setSubmitting(true);
-
-                let createIncome: boolean = true
-                if (values.outcomeType.toLowerCase() === 'waste') createIncome = false
+                let createIncome: boolean = false
+                if (values.outcomeType === OUTCOME_TYPES.TRANSFER) createIncome = true
                 await configContext.axiosHelper.create(`${configContext.apiUrl}/outcomes/create_outcome/${createIncome}/${values.outcomeType}`, values);
                 toggleModal('success')
             } catch (error) {
                 console.error("Error al enviar el formulario:", error);
+                toggleModal('error')
             } finally {
                 setSubmitting(false);
             }
         },
     });
 
-    const handleSubwarehouseChange = (subwarehouseId: string) => {
-        const subwarehouse = subwarehouses.find((s) => s._id === subwarehouseId) || null;
-        setSelectedSubwarehouse(subwarehouse);
-        formik.setFieldValue("warehouseDestiny", subwarehouseId);
-    };
-
-    const handleProductSelect = (selectedProductsData: Array<{ id: string; quantity: number; price: number }>) => {
-        formik.setFieldValue("products", selectedProductsData);
-
-        const updatedSelectedProducts: any = selectedProductsData.map((selectedProduct) => {
-            const productData = products.find((p: any) => p.id === selectedProduct.id) as ProductData | undefined;
-
-            return productData ? { ...productData, ...selectedProduct } : selectedProduct;
-        });
-
-        setSelectedProducts(updatedSelectedProducts);
+    const handleSubwarehouseSelect = (selectedSubwarehouses: any[]) => {
+        const selected = selectedSubwarehouses[0];
+        if (selected) {
+            setSelectedSubwarehouse(selected);
+            formik.setFieldValue("warehouseDestiny", selected._id);
+        } else {
+            setSelectedSubwarehouse(null);
+            formik.setFieldValue("warehouseDestiny", "");
+        }
     };
 
     const fetchWarehouseId = async () => {
@@ -151,14 +304,12 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
 
     const handleFetchsubwarehouses = async () => {
         if (!configContext || !mainWarehouseId) return;
-
         try {
-            const response = await configContext?.axiosHelper.get(`${configContext.apiUrl}/warehouse`);
-            const warehouses = response.data.data;
+            const response = await configContext?.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_farm_subwarehouses/${userLogged.farm_assigned}`);
+            const subwarehouses = response.data.data;
 
-            setSubwarehouses(
-                warehouses.filter((obj: any) => obj._id !== mainWarehouseId && obj.status !== false)
-            );
+            const subwarehousesWithId = subwarehouses.map((s: any) => ({ ...s, id: s._id }));
+            setSubwarehouses(subwarehousesWithId)
         } catch (error) {
             console.error(error);
         }
@@ -166,7 +317,6 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
 
     const fetchNextId = async () => {
         if (!configContext) return;
-
         try {
             const response = await configContext?.axiosHelper.get(`${configContext.apiUrl}/outcomes/outcome_next_id`);
             const nextId = response.data.data;
@@ -179,7 +329,6 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
 
     const handleFetchWarehouseProducts = async () => {
         if (!configContext || !mainWarehouseId) return;
-
         try {
             const response = await configContext?.axiosHelper.get(`${configContext.apiUrl}/warehouse/get_inventory/${mainWarehouseId}`);
             const products = response.data.data;
@@ -188,32 +337,12 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
             setProducts(productsWithExistences);
         } catch (error) {
             console.error(error);
-
         }
     };
 
-
-    // const handleCreateWarehouse = async (data: SubwarehouseData) => {
-    //     if (!configContext) return;
-
-    //     try {
-    //         const response = await configContext?.axiosHelper.create(`${configContext.apiUrl}/warehouse/create_warehouse`, data);
-
-    //         setAlertConfig({ visible: true, color: 'success', message: 'Subalmacen creado con exito' })
-    //         await handleFetchsubwarehouses();
-    //         const newWarehouse = response.data.data;
-    //         setSelectedSubwarehouse(newWarehouse);
-    //         formik.setFieldValue('warehouseDestiny', newWarehouse.id);
-    //     } catch (error) {
-    //         console.error('Error creating the subwarehouse', { error })
-    //         setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al agregar el nuevo subalmacén, intentelo más tarde' })
-    //     } finally {
-    //         toggleModal('createWarehouse', false);
-    //     }
-    // };
-
     useEffect(() => {
         fetchWarehouseId();
+        formik.setFieldValue('date', new Date())
     }, []);
 
     useEffect(() => {
@@ -221,6 +350,16 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
         handleFetchWarehouseProducts();
         fetchNextId();
     }, [mainWarehouseId])
+
+    useEffect(() => {
+        formik.setFieldValue('products', selectedProducts);
+
+        const totalPrice = selectedProducts.reduce((total, product) => {
+            return total + (product.quantity * product.price);
+        }, 0);
+
+        formik.setFieldValue('totalPrice', totalPrice);
+    }, [selectedProducts]);
 
     useEffect(() => {
         const subwarehouse = subwarehouses.find((s) => s.id === formik.values.warehouseDestiny) || null;
@@ -332,13 +471,11 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                                     invalid={formik.touched.outcomeType && !!formik.errors.outcomeType}
                                 >
                                     <option value="">Seleccione un motivo</option>
-                                    <option value="sale">Venta</option>
-                                    <option value="waste">Merma / Desperdicio</option>
-                                    <option value="internal_transfer">Transferencia interna</option>
-                                    <option value="inventory_adjustment">Ajuste de inventario</option>
-                                    <option value="donation">Donación</option>
-                                    <option value="consumption">Consumo interno</option>
-                                    <option value="supplier_return">Devolución a proveedor</option>
+                                    {Object.values(OUTCOME_TYPES).filter(type => type !== OUTCOME_TYPES.SALE).map((type) => (
+                                        <option key={type} value={type}>
+                                            {getOutcomeTypeLabel(type)}
+                                        </option>
+                                    ))}
                                 </Input>
                                 {formik.touched.outcomeType && formik.errors.outcomeType && <FormFeedback>{formik.errors.outcomeType}</FormFeedback>}
                             </div>
@@ -357,44 +494,21 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                                 {formik.touched.description && formik.errors.description && <FormFeedback>{formik.errors.description}</FormFeedback>}
                             </div>
 
-                            {(formik.values.outcomeType !== "waste" && formik.values.outcomeType !== 'waste') && (
+                            {formik.values.outcomeType === OUTCOME_TYPES.TRANSFER && (
                                 <div>
-                                    {/* Datos del subalmacen */}
-                                    <div className="d-flex mt-4">
-                                        <h5 className="me-auto">Datos del Subalmacén</h5>
-                                        <Button className="h-50 mb-2 farm-primary-button" onClick={() => toggleModal('createWarehouse')}>
-                                            <i className="ri-add-line me-2"></i>
-                                            Nuevo Subalmacén
-                                        </Button>
-                                    </div>
-
-                                    <div className="border"></div>
-
                                     <div className="mt-3">
-                                        <Label htmlFor="warehouseDestinyInput" className="form-label">Subalmacén</Label>
-                                        <Input
-                                            type="select"
-                                            id="warehouseDestinyInput"
-                                            name="warehouseDestiny"
-                                            value={formik.values.warehouseDestiny}
-                                            onChange={(e) => handleSubwarehouseChange(e.target.value)}
-                                            onBlur={formik.handleBlur}
-                                            invalid={formik.touched.warehouseDestiny && !!formik.errors.warehouseDestiny}
-                                        >
-                                            <option value=''>Seleccione un subalmacén</option>
-                                            {subwarehouses.map((subwarehouse) => (
-                                                <option key={subwarehouse._id} value={subwarehouse._id}>
-                                                    {subwarehouse.name}
-                                                </option>
-                                            ))}
-                                        </Input>
-
-                                        {formik.touched.warehouseDestiny && formik.errors.warehouseDestiny && <FormFeedback>{formik.errors.warehouseDestiny}</FormFeedback>}
-                                    </div>
-
-                                    <div className='mt-4'>
-                                        <Label htmlFor="warehouseManager" className="form-label">Responsable</Label>
-                                        <Input type="text" className="form-control" id="warehouseManager" value={selectedSubwarehouse?.manager} disabled></Input>
+                                        <Label className="form-label">Subalmacén</Label>
+                                        <div className="mt-2 border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(40vh - 100px)', overflowY: 'hidden' }}>
+                                            <SelectableTable
+                                                data={subwarehouses}
+                                                columns={subwarehouseColumns}
+                                                selectionMode="single"
+                                                showPagination={true}
+                                                onSelect={handleSubwarehouseSelect}
+                                                rowsPerPage={6}
+                                                showSearchAndFilter={false}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -409,7 +523,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                                         !formik.values.code ||
                                         !formik.values.date ||
                                         !formik.values.outcomeType ||
-                                        (formik.values.outcomeType !== "Merma" && !formik.values.warehouseDestiny) ||
+                                        (formik.values.outcomeType === OUTCOME_TYPES.TRANSFER && !formik.values.warehouseDestiny) ||
                                         !formik.values.description
                                     }
                                 >
@@ -423,7 +537,27 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                     <TabPane id='step-products-tab' tabId={2}>
                         <div>
                             <div className="mt-3 border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(70vh - 100px)', overflowY: 'hidden' }}>
-                                <SelectTable data={products} onProductSelect={handleProductSelect} showStock={true} showPagination={false} />
+                                <SelectableCustomTable
+                                    columns={productColumns}
+                                    data={products}
+                                    showPagination={true}
+                                    rowsPerPage={6}
+                                    onSelect={(rows) => {
+                                        setSelectedProducts(prev => {
+                                            const newRows = rows.map(r => {
+                                                const existing = prev.find(p => p.id === r.id);
+                                                if (existing) return existing;
+
+                                                return {
+                                                    id: r.id,
+                                                    quantity: 0,
+                                                    price: r.averagePrice || 0,
+                                                };
+                                            });
+                                            return newRows;
+                                        });
+                                    }}
+                                />
                             </div>
 
                             <div className="d-flex mt-4">
@@ -441,8 +575,8 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                                     className="btn btn-success btn-label right ms-auto nexttab nexttab ms-auto farm-secondary-button"
                                     onClick={() => toggleArrowTab(activeStep + 1)}
                                     disabled={
-                                        formik.values.products.length === 0 ||
-                                        formik.values.products.some(product => !product.quantity || product.quantity <= 0 || !product.price || product.price <= 0)
+                                        selectedProducts.length === 0 ||
+                                        selectedProducts.some(product => !product.quantity || product.quantity <= 0)
                                     }
                                 >
                                     <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
@@ -453,36 +587,61 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                     </TabPane>
 
                     <TabPane id='step-summary-tab' tabId={3}>
-                        <div>
-                            <Card style={{ backgroundColor: '#A3C293' }}>
+                        <div className='d-flex gap-3 w-100'>
+                            <Card className=''>
+                                <CardHeader style={{ backgroundColor: '#f0f4f8' }}>
+                                    <h5>Informacion de salida</h5>
+                                </CardHeader>
                                 <CardBody className="pt-4">
-                                    <ObjectDetailsHorizontal attributes={outcomeAttributes} object={formik.values} />
+                                    <ObjectDetails
+                                        attributes={getOutcomeAttributes(formik.values, selectedSubwarehouse)}
+                                        object={{
+                                            ...formik.values,
+                                            outcomeType: getOutcomeTypeLabel(formik.values.outcomeType),
+                                            warehouseDestinyName: selectedSubwarehouse?.name,
+                                            warehouseDestinyManager: selectedSubwarehouse?.manager || null
+                                        }}
+                                    />
                                 </CardBody>
                             </Card>
 
-                            <Card style={{ height: '49vh' }}>
-                                <CardBody className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(64vh - 100px)', overflowY: 'auto' }}>
-                                    <CustomTable columns={productColumns} data={selectedProducts} showSearchAndFilter={false} showPagination={false} />
+                            <Card className='w-100'>
+                                <CardHeader style={{ backgroundColor: '#e8f5e8' }}>
+                                    <h5>Productos Seleccionados</h5>
+                                </CardHeader>
+                                <CardBody className="border border-0 d-flex flex-column flex-grow-1 p-0">
+                                    <CustomTable
+                                        columns={selectedProductColumns}
+                                        data={selectedProducts.map(product => ({
+                                            ...product,
+                                            productName: (products as any[]).find(p => p.id === product.id)?.product?.name || 'N/A',
+                                            code: (products as any[]).find(p => p.id === product.id)?.product?.id || 'N/A',
+                                            subtotal: product.quantity * product.price
+                                        }))}
+                                        showSearchAndFilter={false}
+                                        showPagination={false}
+                                    />
                                 </CardBody>
                             </Card>
-
-                            <div className='d-flex mt-4 gap-2'>
-                                <Button
-                                    className="btn btn-light btn-label previestab farm-secondary-button"
-                                    onClick={() => {
-                                        toggleArrowTab(activeStep - 1);
-                                    }}
-                                >
-                                    <i className="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i>{" "}
-                                    Atras
-                                </Button>
-
-                                <Button className='farm-primary-button ms-auto' type='submit' disabled={formik.isSubmitting}>
-                                    {formik.isSubmitting ? <Spinner /> : "Guardar"}
-                                </Button>
-                            </div>
 
                         </div>
+
+                        <div className='d-flex mt-4 gap-2'>
+                            <Button
+                                className="btn btn-light btn-label previestab farm-secondary-button"
+                                onClick={() => {
+                                    toggleArrowTab(activeStep - 1);
+                                }}
+                            >
+                                <i className="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i>{" "}
+                                Atras
+                            </Button>
+
+                            <Button className='farm-primary-button ms-auto' type='submit' disabled={formik.isSubmitting}>
+                                {formik.isSubmitting ? <Spinner /> : "Guardar"}
+                            </Button>
+                        </div>
+
                     </TabPane>
                 </TabContent>
             </form>

@@ -9,7 +9,10 @@ import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import { getLoggedinUser } from "helpers/api_helper";
 import OutcomeForm from "Components/Common/Forms/OutcomeForm";
 import CustomTable from "Components/Common/Tables/CustomTable";
+import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
+import DonutChartCard, { DonutDataItem, DonutLegendItem } from "Components/Common/Graphics/DonutChartCard";
 import OutcomeDetails from "Components/Common/Details/OutcomeDetails";
+import { OUTCOME_TYPES, getOutcomeTypeLabel } from "common/enums/outcomes.enums";
 
 
 const ViewOutcomes = () => {
@@ -24,6 +27,17 @@ const ViewOutcomes = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' });
     const [mainWarehouseId, setMainWarehouseId] = useState<string>('')
     const [selectedOutcome, setSelectedOutcome] = useState<any>({});
+    const [outcomeStatistics, setOutcomeStatistics] = useState({
+        totalValue: 0,
+        totalOutcomes: 0,
+        averageValuePerOutcome: 0
+    });
+    const [chartData, setChartData] = useState({
+        outcomesByType: [] as DonutDataItem[],
+        valueByType: [] as DonutDataItem[],
+        outcomesLegendItems: [] as DonutLegendItem[],
+        valueLegendItems: [] as DonutLegendItem[]
+    });
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -39,17 +53,32 @@ const ViewOutcomes = () => {
             type: 'text',
             render: (_, row) => {
                 let color = 'secondary';
-                let text = 'N/A';
+                let label = getOutcomeTypeLabel(row.outcomeType);
 
                 switch (row.outcomeType) {
-                    case "purchase": color = "success"; text = "Compra"; break;
-                    case "donacion": color = "warning"; text = "Donacion"; break;
-                    case "internal_transfer": color = "info"; text = "Transferencia interna"; break;
-                    case "warehouse_order": color = "info"; text = "Pedido de almacen"; break;
-                    case "own_production": color = "secondary"; text = "Producción"; break;
-                    case "consumption": color = "secondary"; text = "Consumo"; break;
+                    case OUTCOME_TYPES.TRANSFER:
+                        color = "info";
+                        break;
+                    case OUTCOME_TYPES.SALE:
+                        color = "success";
+                        break;
+                    case OUTCOME_TYPES.LOSS:
+                        color = "danger";
+                        break;
+                    case OUTCOME_TYPES.ADJUSTMENT:
+                        color = "warning";
+                        break;
+                    case OUTCOME_TYPES.RETURN:
+                        color = "primary";
+                        break;
+                    case OUTCOME_TYPES.CONSUMPTION:
+                        color = "secondary";
+                        break;
+                    case OUTCOME_TYPES.WAREHOUSE_ORDER:
+                        color = "info";
+                        break;
                 }
-                return <Badge color={color}>{text}</Badge>;
+                return <Badge color={color}>{label}</Badge>;
             },
         },
         {
@@ -59,6 +88,7 @@ const ViewOutcomes = () => {
             type: 'text',
             render: (_, row) => <span>{row.warehouseDestiny?.name || "N/A"}</span>
         },
+        { header: 'Valor', accessor: 'totalPrice', isFilterable: true, type: 'currency' },
         {
             header: 'Acciones', accessor: 'actions',
             render: (value: any, row: any) => (
@@ -96,12 +126,94 @@ const ViewOutcomes = () => {
         }
     };
 
+    const fetchOutcomeStatistics = async () => {
+        if (!configContext || !mainWarehouseId) return;
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/outcomes/outcome_statistics/${mainWarehouseId}`);
+            setOutcomeStatistics(response.data.data.statistics);
+        } catch (error) {
+            console.error('Error fetching outcome statistics:', error);
+        }
+    };
+
+    const fetchOutcomeChartData = async () => {
+        if (!configContext || !mainWarehouseId) return;
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/outcomes/outcome_charts/${mainWarehouseId}`);
+            const chartDataResponse = response.data.data;
+
+            // Transformar datos para las gráficas de dona - solo incluir tipos que tienen datos
+            const outcomesByType: DonutDataItem[] = [];
+            const valueByType: DonutDataItem[] = [];
+
+            // Mapeo de tipos con sus colores y etiquetas (adaptado para outcomes)
+            const typeConfig: Record<string, { label: string; color: string }> = {
+                [OUTCOME_TYPES.TRANSFER]: { label: 'Transferencia', color: '#3b82f6' },
+                [OUTCOME_TYPES.SALE]: { label: 'Venta', color: '#10b981' },
+                [OUTCOME_TYPES.LOSS]: { label: 'Pérdida', color: '#ef4444' },
+                [OUTCOME_TYPES.ADJUSTMENT]: { label: 'Ajuste', color: '#f59e0b' },
+                [OUTCOME_TYPES.RETURN]: { label: 'Devolución', color: '#6366f1' },
+                [OUTCOME_TYPES.CONSUMPTION]: { label: 'Consumo', color: '#6b7280' },
+                [OUTCOME_TYPES.WAREHOUSE_ORDER]: { label: 'Orden de Almacén', color: '#8b5cf6' }
+            };
+
+            // Procesar entriesByType
+            if (chartDataResponse.outcomesByType) {
+                Object.entries(chartDataResponse.outcomesByType).forEach(([type, value]) => {
+                    const numericValue = Number(value);
+                    if (numericValue > 0 && typeConfig[type]) {
+                        outcomesByType.push({
+                            id: type,
+                            label: typeConfig[type].label,
+                            value: numericValue,
+                            color: typeConfig[type].color
+                        });
+                    }
+                });
+            }
+
+            // Procesar valueByType
+            if (chartDataResponse.valueByType) {
+                Object.entries(chartDataResponse.valueByType).forEach(([type, value]) => {
+                    const numericValue = Number(value);
+                    if (numericValue > 0 && typeConfig[type]) {
+                        valueByType.push({
+                            id: type,
+                            label: typeConfig[type].label,
+                            value: numericValue,
+                            color: typeConfig[type].color
+                        });
+                    }
+                });
+            }
+
+            // Crear legendItems para mostrar datos detallados
+            const outcomesLegendItems = outcomesByType.map(item => ({
+                label: item.label,
+                value: item.value,
+                percentage: `${((item.value / outcomesByType.reduce((sum, i) => sum + i.value, 0)) * 100).toFixed(1)}%`
+            }));
+
+            const valueLegendItems = valueByType.map(item => ({
+                label: item.label,
+                value: `$${item.value.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                percentage: `${((item.value / valueByType.reduce((sum, i) => sum + i.value, 0)) * 100).toFixed(1)}%`
+            }));
+
+            setChartData({ outcomesByType, valueByType, outcomesLegendItems, valueLegendItems });
+        } catch (error) {
+            console.error('Error fetching outcome chart data:', error);
+        }
+    };
+
     useEffect(() => {
         fetchWarehouseId();
     }, []);
 
     useEffect(() => {
         handleFetchOutcomes();
+        fetchOutcomeStatistics();
+        fetchOutcomeChartData();
     }, [mainWarehouseId])
 
     if (loading) {
@@ -115,7 +227,65 @@ const ViewOutcomes = () => {
             <Container fluid>
                 <BreadCrumb title={"Ver Salidas"} pageTitle={"Salidas"} />
 
-                <Card style={{ height: '75vh' }}>
+                {/* KPIs Section */}
+                <div className="row">
+                    <div className="col-xl-3 col-md-6">
+                        <StatKpiCard
+                            title="Valor Total de Salidas"
+                            value={outcomeStatistics.totalValue}
+                            prefix="$"
+                            decimals={2}
+                            icon={<i className="ri-money-dollar-circle-line fs-20 text-primary"></i>}
+                            iconBgColor="#E8F5E9"
+                            animateValue={true}
+                            durationSeconds={1.5}
+                        />
+                    </div>
+                    <div className="col-xl-3 col-md-6">
+                        <StatKpiCard
+                            title="Total de Salidas"
+                            value={outcomeStatistics.totalOutcomes}
+                            icon={<i className="ri-file-list-3-line fs-20 text-info"></i>}
+                            iconBgColor="#E3F2FD"
+                            animateValue={true}
+                            durationSeconds={1.5}
+                        />
+                    </div>
+                    <div className="col-xl-3 col-md-6">
+                        <StatKpiCard
+                            title="Valor Promedio por Salida"
+                            value={outcomeStatistics.averageValuePerOutcome}
+                            prefix="$"
+                            decimals={2}
+                            icon={<i className="ri-bar-chart-line fs-20 text-warning"></i>}
+                            iconBgColor="#FFF3E0"
+                            animateValue={true}
+                            durationSeconds={1.5}
+                        />
+                    </div>
+                </div>
+
+                {/* Charts Section */}
+                <div className="row mb-4">
+                    <div className="col-xl-6">
+                        <DonutChartCard
+                            title="Salidas por Tipo"
+                            data={chartData.outcomesByType}
+                            legendItems={chartData.outcomesLegendItems}
+                            height={200}
+                        />
+                    </div>
+                    <div className="col-xl-6">
+                        <DonutChartCard
+                            title="Valor de Salidas por Tipo"
+                            data={chartData.valueByType}
+                            legendItems={chartData.valueLegendItems}
+                            height={200}
+                        />
+                    </div>
+                </div>
+
+                <Card>
                     <CardHeader>
                         <div className="d-flex ">
                             <h4>Salidas</h4>

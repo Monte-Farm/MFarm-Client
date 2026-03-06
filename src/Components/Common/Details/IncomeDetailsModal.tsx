@@ -36,20 +36,15 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
             accessor: 'id',
             isFilterable: true,
             type: 'text',
-            // render: (_, row) => (
-            //     <Button
-            //         className="text-underline"
-            //         color="link"
-            //         onClick={(e) => {
-            //             e.stopPropagation();
-            //             navigate('')
-            //         }}
-            //     >
-            //         {row.code} ↗
-            //     </Button>
-            // )
+            render: (_, row) => <span>{row?.id?.id}</span>
         },
-        { header: 'Producto', accessor: 'name', isFilterable: true, type: 'text' },
+        { 
+            header: 'Producto', 
+            accessor: 'id', 
+            isFilterable: true, 
+            type: 'text',
+            render: (_, row) => <span>{row?.id?.name}</span>
+        },
         {
             header: 'Cantidad',
             accessor: 'quantity',
@@ -58,16 +53,28 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
             render: (_, row) => <span>{row.quantity} {row.unit_measurement}</span>
         },
         { header: 'Precio Unitario', accessor: 'price', type: 'currency' },
+        { 
+            header: 'Precio Total', 
+            accessor: 'totalPrice', 
+            type: 'text',
+            render: (_, row) => {
+            const totalPrice = (row.quantity || 0) * (row.price || 0);
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+            }).format(totalPrice);
+        }
+        },
         {
             header: 'Categoria',
             accessor: 'category',
             isFilterable: true,
             type: 'text',
-            render: (value: string) => {
+            render: (_, row) => {
                 let color = "secondary";
-                let label = value;
+                let label = row.id.category;
 
-                switch (value) {
+                switch (row.id.category) {
                     case "nutrition":
                         color = "info";
                         label = "Nutrición";
@@ -120,11 +127,14 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
     ];
 
     const incomeAttributes: Attribute[] = [
-        { key: 'id', label: 'Codigo', type: 'text' },
-        { key: 'date', label: 'Fecha', type: 'date' },
+        { key: 'id', label: 'Código', type: 'text' },
+        { key: 'date', label: 'Fecha de Registro', type: 'date' },
+        { key: 'emissionDate', label: 'Fecha de Emisión', type: 'date' },
+        { key: 'warehouse.name', label: 'Almacén', type: 'text', },
+        { key: 'origin.id.name', label: 'Proveedor', type: 'text', },
         {
             key: 'incomeType',
-            label: 'Tipo de entrada',
+            label: 'Tipo de Entrada',
             type: 'text',
             render: (value: string) => {
                 let color = "secondary";
@@ -133,7 +143,7 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
                 switch (value) {
                     case "internal_transfer":
                         color = "info";
-                        label = "Tranferencia";
+                        label = "Transferencia";
                         break;
                     case "purchase":
                         color = "warning";
@@ -141,12 +151,46 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
                         break;
                     case "warehouse_order":
                         color = "warning";
-                        label = "Pedido de almacen";
+                        label = "Pedido de Almacén";
                         break;
                 }
 
                 return <Badge color={color}>{label}</Badge>;
             },
+        },
+    ]
+
+    const financialAttributes: Attribute[] = [
+        { key: 'totalPrice', label: 'Total', type: 'currency' },
+        {
+            key: 'tax',
+            label: 'Impuesto',
+            type: 'text',
+            render: (value: number) => `${value}%`
+        },
+        {
+            key: 'discount',
+            label: 'Descuento',
+            type: 'text',
+            render: (value: number) => `${value}%`
+        },
+        { key: 'currency', label: 'Moneda', type: 'text' },
+        { key: 'invoiceNumber', label: 'Número de Factura', type: 'text' },
+        { key: 'fiscalRecord', label: 'Registro Fiscal', type: 'text' },
+    ]
+
+    const purchaseOrderAttributes: Attribute[] = [
+        { key: 'code', label: 'Código de Orden', type: 'text' },
+        { key: 'date', label: 'Fecha de Orden', type: 'date' },
+        {
+            key: 'status',
+            label: 'Estado',
+            type: 'text',
+            render: (value: boolean) => (
+                <Badge color={value ? 'success' : 'warning'}>
+                    {value ? 'Completada' : 'Pendiente'}
+                </Badge>
+            ),
         },
     ]
 
@@ -158,9 +202,7 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
             const incomeResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/incomes/find_incomes_id/${incomeId}`);
             const incomeDetailsResponse = incomeResponse.data.data;
             setIncomeDetails(incomeDetailsResponse)
-
-            const productsResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/product/find_products_by_array`, incomeDetailsResponse.products);
-            setProducts(productsResponse.data.data);
+            setProducts(incomeDetailsResponse.products)
         } catch (error) {
             console.error('Error fetching data: ', { error })
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
@@ -199,29 +241,66 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
     return (
         <>
             <div className="d-flex gap-2 mb-4">
-                <Button className="farm-primary-button" onClick={handlePrintIncome}>
-                    <i className="ri-download-line me-2"></i>
-                    Descargar Reporte
-                </Button>
             </div>
-            <div className="d-flex gap-3">
-                <Card className="">
-                    <CardHeader className='bg-light'>
-                        <h5>Informacion de la entrada</h5>
-                    </CardHeader>
-                    <CardBody className="pt-4">
-                        <ObjectDetails attributes={incomeAttributes} object={incomeDetails} />
-                    </CardBody>
-                </Card>
+            <div className="d-flex flex-column gap-3">
+                <div className="d-flex gap-3">
+                    <Card>
+                        <CardHeader className='bg-gradient bg-primary-subtle'>
+                            <h5 className="mb-0 text-primary">Información General</h5>
+                        </CardHeader>
+                        <CardBody className="pt-4">
+                            <ObjectDetails attributes={incomeAttributes} object={incomeDetails} />
+                        </CardBody>
+                    </Card>
 
-                <Card className="w-100">
-                    <CardHeader className='bg-light'>
-                        <h5>Productos de la entrada</h5>
+                    <Card className="flex-fill">
+                        <CardHeader className='bg-gradient bg-success-subtle'>
+                            <h5 className="mb-0 text-success">Detalles Financieros</h5>
+                        </CardHeader>
+                        <CardBody className="pt-4">
+                            <ObjectDetails attributes={financialAttributes} object={incomeDetails} />
+                        </CardBody>
+                    </Card>
+
+                    {incomeDetails.purchaseOrder && (
+                        <Card>
+                            <CardHeader className='bg-gradient bg-info-subtle'>
+                                <h5 className="mb-0 text-info">Orden de Compra</h5>
+                            </CardHeader>
+                            <CardBody className="pt-4">
+                                <ObjectDetails attributes={purchaseOrderAttributes} object={incomeDetails.purchaseOrder} />
+                            </CardBody>
+                        </Card>
+                    )}
+                </div>
+                
+                <Card>
+                    <CardHeader className='bg-gradient bg-secondary-subtle'>
+                        <h5 className="mb-0 text-secondary">Productos de la Entrada</h5>
                     </CardHeader>
                     <CardBody className="p-0">
                         <CustomTable columns={productsColumns} data={products} showPagination={true} rowsPerPage={5} showSearchAndFilter={false} />
                     </CardBody>
                 </Card>
+
+                {/* Quinta fila: Documentos (si existen) */}
+                {incomeDetails.documents && incomeDetails.documents.length > 0 && (
+                    <Card>
+                        <CardHeader className='bg-gradient bg-dark-subtle'>
+                            <h5 className="mb-0 text-dark">Documentos Adjuntos</h5>
+                        </CardHeader>
+                        <CardBody>
+                            <div className="d-flex flex-wrap gap-2">
+                                {incomeDetails.documents.map((doc: any, index: number) => (
+                                    <Badge key={index} color="info" className="p-2">
+                                        <i className="ri-file-line me-1"></i>
+                                        {doc.name || `Documento ${index + 1}`}
+                                    </Badge>
+                                ))}
+                            </div>
+                        </CardBody>
+                    </Card>
+                )}
             </div>
 
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered>

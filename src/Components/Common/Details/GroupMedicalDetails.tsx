@@ -81,13 +81,6 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId }) =>
                             }}
                         />
                     </div>
-
-                    <div className="flex-grow-1" style={{ height: "50%", minHeight: 0 }}>
-                        <AdministeredMedicationsCard
-                            medications={medications}
-                            onAdd={() => toggleModal("asignMedication")}
-                        />
-                    </div>
                 </div>
 
                 <div className="w-100 d-flex flex-column" style={{ minHeight: 0 }}>
@@ -97,17 +90,6 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId }) =>
                         onViewDetails={(id) => {
                             setSelectedMedicationPackage(id);
                             toggleModal("medicationPackageDetails");
-                        }}
-                    />
-                </div>
-
-                <div className="w-100 d-flex flex-column" style={{ minHeight: 0 }}>
-                    <VaccinationPlansCard
-                        plans={vaccinationPlans}
-                        onAdd={() => toggleModal("asignVaccinationPlan")}
-                        onViewDetails={(id) => {
-                            setSelectedVaccinationPlan(id);
-                            toggleModal("vaccinationPlanDetails");
                         }}
                     />
                 </div>
@@ -127,41 +109,12 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId }) =>
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.asignMedication} toggle={() => toggleModal("asignMedication")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("asignMedication")}>Asignar medicacion</ModalHeader>
-                <ModalBody>
-                    <AsignGroupMedicationForm groupId={groupId} onSave={() => { toggleModal('asignMedication'); fetchMedicalInfo(); }} />
-                </ModalBody>
-            </Modal>
-
             <Modal size="xl" isOpen={modals.medicationPackageDetails} toggle={() => toggleModal("medicationPackageDetails")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("medicationPackageDetails")}>Detalles de paquete de medicacion</ModalHeader>
                 <ModalBody>
                     <MedicationPackageDetails medicationPackageId={selectedMedicationPackage} />
                 </ModalBody>
             </Modal>
-
-            <Modal size="xl" isOpen={modals.asignVaccinationPlan} toggle={() => toggleModal("asignVaccinationPlan")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("asignVaccinationPlan")}>Asignar plan de vacunacion</ModalHeader>
-                <ModalBody>
-                    <AsignGroupVaccinationPlanForm groupId={groupId} onSave={() => { toggleModal('asignVaccinationPlan'); fetchMedicalInfo(); }} />
-                </ModalBody>
-            </Modal>
-
-            <Modal size="xl" isOpen={modals.vaccinationPlanDetails} toggle={() => toggleModal("vaccinationPlanDetails")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("vaccinationPlanDetails")}>Detalles del plan de vacunacion</ModalHeader>
-                <ModalBody>
-                    <VaccinationPlanDetails vaccinationPlanId={selectedVaccinationPlan} />
-                </ModalBody>
-            </Modal>
-
-            <Modal size="xl" isOpen={modals.healthEventDetails} toggle={() => toggleModal("healthEventDetails")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("healthEventDetails")}>Detalles de enfermedad</ModalHeader>
-                <ModalBody>
-
-                </ModalBody>
-            </Modal>
-
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </>

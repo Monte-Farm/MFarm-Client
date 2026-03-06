@@ -56,7 +56,6 @@ const ObjectDetails: React.FC<ObjectDetailsProps> = ({
                                 <td className="fw-medium fs-5">{label}</td>
                                 <td className="fs-5">
                                     {render ? (
-                                        // 👈 Si viene `render`, lo usamos
                                         render(value, object)
                                     ) : type === "status" ? (
                                         value === true ||

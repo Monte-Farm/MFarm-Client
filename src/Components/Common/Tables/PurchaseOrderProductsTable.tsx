@@ -18,10 +18,15 @@ const PurchaseOrderProductsTable: React.FC<PurchaseOrderProductsTableProps> = ({
         const initialValues = Object.fromEntries(
             productsDelivered.map(({ id, quantity, price }) => [id, { quantity: quantity.toString(), price: price.toString() }])
         );
-        setEditingValues(initialValues);
+        // Solo actualizar si los IDs cambian, no los valores
+        setEditingValues(prev => {
+            const prevIds = Object.keys(prev).sort().join(',');
+            const newIds = productsDelivered.map(p => p.id).sort().join(',');
+            return prevIds === newIds ? prev : initialValues;
+        });
     }, [productsDelivered]);
 
-    const handleInputChange = (id: string, field: "quantity", value: string) => {
+    const handleInputChange = (id: string, field: "quantity" | "price", value: string) => {
         const cleanedValue = value.replace(/^0+/, "") || "0";
         const parsedValue = Math.max(parseFloat(cleanedValue) || 0, 0);
 
@@ -37,9 +42,11 @@ const PurchaseOrderProductsTable: React.FC<PurchaseOrderProductsTableProps> = ({
     const sortedData = useMemo(() => {
         if (!sortConfig) return data;
         return [...data].sort((a, b) => {
+            const aValue = sortConfig.key === 'id' ? a.id.id : a[sortConfig.key];
+            const bValue = sortConfig.key === 'id' ? b.id.id : b[sortConfig.key];
             return sortConfig.direction === "asc"
-                ? String(a[sortConfig.key]).localeCompare(String(b[sortConfig.key]))
-                : String(b[sortConfig.key]).localeCompare(String(a[sortConfig.key]));
+                ? String(aValue).localeCompare(String(bValue))
+                : String(bValue).localeCompare(String(aValue));
         });
     }, [data, sortConfig]);
 
@@ -48,17 +55,18 @@ const PurchaseOrderProductsTable: React.FC<PurchaseOrderProductsTableProps> = ({
     };
 
     const filteredData = sortedData
-        .filter(product => productsDelivered.some(p => p.id === product.id)) // Filtra solo los productos que están en productsDelivered
+        .filter(product => productsDelivered.some(p => p.id === product.id._id)) // Filtra solo los productos que están en productsDelivered
         .filter(product => {
             const filter = filterText.toLowerCase();
-            return ["id", "name", "category", "unit_measurement"].some(key => product[key]?.toLowerCase().includes(filter));
+            return ["id.id", "id.name", "id.category", "id.unit_measurement"].some(key => {
+                const value = key.split('.').reduce((obj, k) => obj?.[k], product);
+                return value?.toLowerCase().includes(filter);
+            });
         });
 
     return (
         <div className="table-responsive">
-            <div className="d-flex justify-content-between mb-3">
-                <Input type="text" placeholder="Buscar..." value={filterText} onChange={e => setFilterText(e.target.value)} />
-            </div>
+
             <Table className="table-hover align-middle table-nowrap mb-0" striped style={{ overflowY: 'auto' }}>
                 <thead className="table-light sticky-top">
                     <tr>
@@ -78,38 +86,45 @@ const PurchaseOrderProductsTable: React.FC<PurchaseOrderProductsTableProps> = ({
                 </thead>
                 <tbody>
                     {filteredData.length > 0 ? (
-                        filteredData.map(({ id, name, category, unit_measurement }) => {
-                            const productDelivered = productsDelivered.find(p => p.id === id);
+                        filteredData.map((product) => {
+                            const { id: productInfo, quantity: requestedQuantity, price: requestedPrice } = product;
+                            const productDelivered = productsDelivered.find(p => p.id === productInfo._id);
                             return (
-                                <tr key={id}>
-                                    <td>{id}</td>
-                                    <td>{name}</td>
-                                    <td>{categoryLabels[category]}</td>
-                                    <td>{productDelivered?.quantity || "0"} {unit_measurement}</td>
+                                <tr key={productInfo._id}>
+                                    <td>{productInfo.id}</td>
+                                    <td>{productInfo.name}</td>
+                                    <td>{categoryLabels[productInfo.category]}</td>
+                                    <td>{requestedQuantity || "0"} {productInfo.unit_measurement}</td>
                                     <td>
                                         <div className="input-group">
                                             <Input
                                                 type="number"
-                                                value={editingValues[id]?.quantity || "0"}
-                                                onChange={e => handleInputChange(id, "quantity", e.target.value)}
+                                                value={editingValues[productInfo._id]?.quantity || "0"}
+                                                onChange={e => handleInputChange(productInfo._id, "quantity", e.target.value)}
                                                 min={0}
                                                 aria-describedby="unit-addon"
                                             />
-                                            <span className="input-group-text" id="unit-addon">{unit_measurement}</span>
+                                            <span className="input-group-text" id="unit-addon">{productInfo.unit_measurement}</span>
                                         </div>
                                     </td>
                                     <td>
-                                        {productDelivered?.price.toLocaleString("es-MX", {
-                                            style: "currency",
-                                            currency: "MXN", // Cambia a la moneda que necesites
-                                        })}
+                                        <div className="input-group">
+                                            <span className="input-group-text">$</span>
+                                            <Input
+                                                type="number"
+                                                value={editingValues[productInfo._id]?.price || "0"}
+                                                onChange={e => handleInputChange(productInfo._id, "price", e.target.value)}
+                                                min={0}
+                                                step="0.01"
+                                            />
+                                        </div>
                                     </td>
                                 </tr>
                             );
                         })
                     ) : (
                         <tr>
-                            <td colSpan={7} className="text-center">
+                            <td colSpan={6} className="text-center">
                                 No hay productos disponibles.
                             </td>
                         </tr>
