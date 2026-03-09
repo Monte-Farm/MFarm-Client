@@ -131,7 +131,7 @@ const ViewIncomes = () => {
             const typeConfig: Record<string, { label: string; color: string }> = {
                 purchase: { label: 'Compra', color: '#10b981' },
                 donacion: { label: 'Donación', color: '#f59e0b' },
-                internal_transfer: { label: 'Transferencia Interna', color: '#3b82f6' },
+                transfer: { label: 'Transferencia', color: '#3b82f6' },
                 own_production: { label: 'Producción Propia', color: '#6b7280' }
             };
 
@@ -185,10 +185,22 @@ const ViewIncomes = () => {
         fetchWarehouseId();
     }, []);
 
+    const fetchWarehouseData = async () => {
+        if (!mainWarehouseId || !configContext) return;
+        
+        try {
+            const [incomesResponse, statisticsResponse, chartDataResponse] = await Promise.all([
+                handleFetchIncomes(),
+                fetchIncomeStatistics(),
+                fetchIncomeChartData()
+            ]);
+        } catch (error) {
+            console.error('Error fetching warehouse data:', error);
+        }
+    };
+
     useEffect(() => {
-        handleFetchIncomes();
-        fetchIncomeStatistics();
-        fetchIncomeChartData();
+        fetchWarehouseData();
     }, [mainWarehouseId])
 
 
@@ -287,7 +299,7 @@ const ViewIncomes = () => {
             <Modal size="xl" isOpen={modals.createIncome} toggle={() => toggleModal("createIncome")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("createIncome")}>Nueva entrada</ModalHeader>
                 <ModalBody>
-                    <IncomeForm onSave={() => { toggleModal('createIncome'); handleFetchIncomes() }} onCancel={() => { }} />
+                    <IncomeForm onSave={() => { toggleModal('createIncome'); fetchWarehouseData() }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 

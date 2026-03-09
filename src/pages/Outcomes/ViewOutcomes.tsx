@@ -210,10 +210,22 @@ const ViewOutcomes = () => {
         fetchWarehouseId();
     }, []);
 
+    const fetchWarehouseData = async () => {
+        if (!mainWarehouseId || !configContext) return;
+        
+        try {
+            const [outcomesResponse, statisticsResponse, chartDataResponse] = await Promise.all([
+                handleFetchOutcomes(),
+                fetchOutcomeStatistics(),
+                fetchOutcomeChartData()
+            ]);
+        } catch (error) {
+            console.error('Error fetching warehouse data:', error);
+        }
+    };
+
     useEffect(() => {
-        handleFetchOutcomes();
-        fetchOutcomeStatistics();
-        fetchOutcomeChartData();
+        fetchWarehouseData();
     }, [mainWarehouseId])
 
     if (loading) {
@@ -312,7 +324,7 @@ const ViewOutcomes = () => {
             <Modal size="xl" isOpen={modals.createOutcome} toggle={() => toggleModal("createOutcome")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("createOutcome")}>Nueva salida</ModalHeader>
                 <ModalBody>
-                    <OutcomeForm onSave={() => { toggleModal('createOutcome'); handleFetchOutcomes(); }} onCancel={() => { }} />
+                    <OutcomeForm onSave={() => { toggleModal('createOutcome'); fetchWarehouseData(); }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 

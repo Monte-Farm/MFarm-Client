@@ -9,7 +9,8 @@ import classnames from "classnames";
 import ObjectDetailsHorizontal from '../Details/ObjectDetailsHorizontal';
 import { Column } from 'common/data/data_types';
 import DatePicker from 'react-flatpickr';
-import CreateOrderTable from '../Tables/CreateOrderTable';
+import SelectableTable from '../Tables/SelectableTable';
+import SelectableCustomTable from '../Tables/SelectableTable';
 import CustomTable from '../Tables/CustomTable';
 import { getLoggedinUser } from 'helpers/api_helper';
 import LoadingAnimation from '../Shared/LoadingAnimation';
@@ -25,81 +26,38 @@ interface OrderFormProps {
     onCancel: () => void;
 }
 
-const productsColumns: Column<any>[] = [
-    { header: 'Codigo', accessor: 'id', isFilterable: true, type: 'text' },
-    { header: 'Nombre', accessor: 'name', isFilterable: true, type: 'text' },
-    {
-        header: 'Cantidad Solicitada',
-        accessor: 'quantity',
-        isFilterable: true,
-        type: 'number',
+const selectedProductColumns: Column<any>[] = [
+    { header: 'Código', accessor: 'code', isFilterable: false, type: 'text' },
+    { header: 'Producto', accessor: 'productName', isFilterable: false, type: 'text' },
+    { 
+        header: 'Cantidad Solicitada', 
+        accessor: 'quantity', 
+        isFilterable: false, 
+        type: 'number', 
+        bgColor: '#e3f2fd',
         render: (_, row) => <span>{row.quantity} {row.unit_measurement}</span>
     },
-    {
-        header: 'Categoria',
-        accessor: 'category',
-        isFilterable: true,
-        type: 'text',
-        render: (value: string) => {
-            let color = "secondary";
-            let label = value;
-
-            switch (value) {
-                case "nutrition":
-                    color = "info";
-                    label = "Nutrición";
-                    break;
-                case "medications":
-                    color = "warning";
-                    label = "Medicamentos";
-                    break;
-                case "vaccines":
-                    color = "primary";
-                    label = "Vacunas";
-                    break;
-                case "vitamins":
-                    color = "success";
-                    label = "Vitaminas";
-                    break;
-                case "minerals":
-                    color = "success";
-                    label = "Minerales";
-                    break;
-                case "supplies":
-                    color = "success";
-                    label = "Insumos";
-                    break;
-                case "hygiene_cleaning":
-                    color = "success";
-                    label = "Higiene y desinfección";
-                    break;
-                case "equipment_tools":
-                    color = "success";
-                    label = "Equipamiento y herramientas";
-                    break;
-                case "spare_parts":
-                    color = "success";
-                    label = "Refacciones y repuestos";
-                    break;
-                case "office_supplies":
-                    color = "success";
-                    label = "Material de oficina";
-                    break;
-                case "others":
-                    color = "success";
-                    label = "Otros";
-                    break;
-            }
-
-            return <Badge color={color}>{label}</Badge>;
-        },
+    { 
+        header: 'Precio Promedio', 
+        accessor: 'price', 
+        isFilterable: false, 
+        type: 'currency', 
+        bgColor: '#f3e5f5' 
+    },
+    { 
+        header: 'Precio Total', 
+        accessor: 'totalPrice', 
+        isFilterable: false, 
+        type: 'currency', 
+        bgColor: '#e8f5e8' 
     },
     {
         header: 'Observaciones',
         accessor: 'observations',
-        isFilterable: true,
+        isFilterable: false,
         type: 'text',
-        render: (_, row) => row.observations === '' ? <span>Sin observaciones</span> : <span>{row.observations}</span>
+        bgColor: '#fff3e0',
+        render: (_, row) => row.observations === '' ? <span className="text-muted">Sin observaciones</span> : <span>{row.observations}</span>
     },
 ]
 
@@ -111,10 +69,168 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
     const [orderOrigin, setOrderOrigin] = useState<string>('')
     const [orderDestiny, setOrderDestiny] = useState<string>('')
     const [products, setProducts] = useState([])
-    const [selectedProducts, setSelectedProducts] = useState([])
+    const [selectedProducts, setSelectedProducts] = useState<any[]>([])
+    const [productErrors, setProductErrors] = useState<Record<string, any>>({})
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
     const [loading, setLoading] = useState<boolean>(true);
+
+    const productColumns: Column<any>[] = [
+        {
+            header: 'Código',
+            accessor: 'id',
+            isFilterable: true,
+            type: 'text',
+            render: (value, row) => <span>{row?.product?.id}</span>
+        },
+        {
+            header: 'Producto',
+            accessor: 'name',
+            isFilterable: true,
+            type: 'text',
+            render: (value, row) => <span>{row?.product?.name}</span>
+        },
+        {
+            header: 'Cantidad disponible',
+            accessor: 'quantity',
+            isFilterable: true,
+            type: 'number',
+            render: (value, row) => <span>{row?.quantity} {row?.product?.unit_measurement}</span>
+        },
+        {
+            header: "Cantidad solicitada",
+            accessor: "quantity",
+            type: "number",
+            render: (value, row, isSelected) => {
+                const selected = selectedProducts.find((p: any) => p.id === row.id);
+                const maxQuantity = row?.quantity || 0;
+
+                return (
+                    <div className="input-group">
+                        <Input
+                            type="number"
+                            disabled={!isSelected}
+                            value={selected?.quantity === 0 ? "" : (selected?.quantity ?? "")}
+                            invalid={productErrors[row._id]?.quantity}
+                            max={maxQuantity}
+                            onChange={(e) => {
+                                const newValue = Math.min(Number(e.target.value), maxQuantity);
+                                const updatedProducts = selectedProducts.map((p: any) =>
+                                    p.id === row.id ? { ...p, quantity: newValue } : p
+                                );
+                                setSelectedProducts(updatedProducts);
+
+                                if (newValue > 0) {
+                                    setProductErrors((prev: any) => {
+                                        const newErrors = { ...prev };
+                                        if (newErrors[row._id]) {
+                                            delete newErrors[row._id].quantity;
+                                            if (Object.keys(newErrors[row._id]).length === 0) {
+                                                delete newErrors[row._id];
+                                            }
+                                        }
+                                        return newErrors;
+                                    });
+                                }
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            aria-describedby="unit-addon"
+                        />
+                        <span className="input-group-text" id="unit-addon">{row?.product?.unit_measurement}</span>
+                    </div>
+                );
+            },
+        },
+        {
+            header: "Observaciones",
+            accessor: "observations",
+            type: "text",
+            render: (value, row, isSelected) => {
+                const selected = selectedProducts.find((p: any) => p.id === row.id);
+
+                return (
+                    <Input
+                        type="text"
+                        disabled={!isSelected}
+                        value={selected?.observations ?? ""}
+                        onChange={(e) => {
+                            const updatedProducts = selectedProducts.map((p: any) =>
+                                p.id === row.id ? { ...p, observations: e.target.value } : p
+                            );
+                            setSelectedProducts(updatedProducts);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        placeholder="Observaciones..."
+                    />
+                );
+            },
+        },
+        {
+            header: 'Precio promedio',
+            accessor: 'averagePrice',
+            isFilterable: true,
+            type: 'currency',
+        },
+        {
+            header: 'Categoría',
+            accessor: 'category',
+            isFilterable: true,
+            type: 'text',
+            render: (value, row) => {
+                let color = "secondary";
+                let label = row?.product?.category;
+
+                switch (row?.product?.category) {
+                    case "nutrition":
+                        color = "info";
+                        label = "Nutrición";
+                        break;
+                    case "medications":
+                        color = "warning";
+                        label = "Medicamentos";
+                        break;
+                    case "vaccines":
+                        color = "primary";
+                        label = "Vacunas";
+                        break;
+                    case "vitamins":
+                        color = "success";
+                        label = "Vitaminas";
+                        break;
+                    case "minerals":
+                        color = "success";
+                        label = "Minerales";
+                        break;
+                    case "supplies":
+                        color = "success";
+                        label = "Insumos";
+                        break;
+                    case "hygiene_cleaning":
+                        color = "success";
+                        label = "Higiene y desinfección";
+                        break;
+                    case "equipment_tools":
+                        color = "success";
+                        label = "Equipamiento y herramientas";
+                        break;
+                    case "spare_parts":
+                        color = "success";
+                        label = "Refacciones y repuestos";
+                        break;
+                    case "office_supplies":
+                        color = "success";
+                        label = "Material de oficina";
+                        break;
+                    case "others":
+                        color = "success";
+                        label = "Otros";
+                        break;
+                }
+
+                return <Badge color={color}>{label}</Badge>;
+            },
+        },
+    ];
 
     function toggleArrowTab(tab: any) {
         if (activeStep !== tab) {
@@ -207,20 +323,6 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
 
-    const handleProductSelect = (selectedProductsData: Array<{ id: string; quantity: number; price: number }>) => {
-        formik.setFieldValue("productsRequested", selectedProductsData);
-
-        const updatedSelectedProducts: any = selectedProductsData.map((selectedProduct) => {
-            const productData = products.find((p: any) => p.id === selectedProduct.id) as ProductData | undefined;
-
-            return productData
-                ? { ...productData, ...selectedProduct }
-                : selectedProduct;
-        });
-
-        setSelectedProducts(updatedSelectedProducts);
-    };
-
     const fetchData = async () => {
         if (!configContext || !userLogged) return;
         try {
@@ -270,18 +372,18 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
         }
     }
 
-    const checkProductsSelected = () => {
-        if (formik.values.productsRequested.length === 0) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Seleccione al menos 1 producto' })
-        } else {
-            toggleArrowTab(activeStep + 1)
-        }
-    }
-
     useEffect(() => {
         fetchData();
         formik.setFieldValue('date', new Date())
     }, [])
+
+    useEffect(() => {
+        const productsWithTotal = selectedProducts.map(product => ({
+            ...product,
+            totalPrice: product.quantity * product.price
+        }));
+        formik.setFieldValue('productsRequested', productsWithTotal);
+    }, [selectedProducts]);
 
     if (loading) {
         return (
@@ -381,48 +483,48 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
                             </div>
                         </div>
 
-                        <div className="mt-4">
-                            <Label htmlFor="userInput" className="form-label">¿Quién hace el pedido?</Label>
-                            <Input
-                                type="text"
-                                id="userInput"
-                                name="userDisplay"
-                                value={`${userLogged?.name} ${userLogged?.lastname}` || ''}
-                                disabled
-                            />
-                        </div>
+                        {/* Información del Pedido */}
+                        <Card className="mt-4" style={{ backgroundColor: '#f8f9fa', border: '1px solid #dee2e6' }}>
+                            <CardBody>
+                                <h6 className="mb-3 text-muted">Información del Pedido</h6>
+                                
+                                <div className="mb-3">
+                                    <div className="d-flex align-items-center">
+                                        <i className="ri-user-line fs-18 text-primary me-2"></i>
+                                        <div>
+                                            <small className="text-muted d-block">Solicitado por</small>
+                                            <span className="fw-medium">{userLogged?.name} {userLogged?.lastname}</span>
+                                        </div>
+                                    </div>
+                                </div>
 
-                        <div className='d-flex gap-3 mt-4'>
-                            <div className='w-50'>
-                                <Label>Pedido desde:</Label>
-                                <Input
-                                    type="text"
-                                    id="orderOriginInput"
-                                    name="orderOrigin"
-                                    value={orderOrigin || ''}
-                                    disabled
-                                />
-                            </div>
+                                <div className="d-flex align-items-center gap-3">
+                                    <div className="flex-grow-1">
+                                        <div className="d-flex align-items-center">
+                                            <i className="ri-store-2-line fs-18 text-success me-2"></i>
+                                            <div>
+                                                <small className="text-muted d-block">Almacén de origen</small>
+                                                <span className="fw-medium">{orderOrigin || 'Cargando...'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                            <div className='position-relative mt-3'>
-                                <i className=' ri-arrow-right-line position-absolute top-50 start-50 translate-middle'></i>
-                            </div>
+                                    <div className="d-flex align-items-center">
+                                        <i className="ri-arrow-right-line fs-20 text-muted"></i>
+                                    </div>
 
-                            <div className='w-50'>
-                                <Label>Pedido para:</Label>
-                                <Input
-                                    type="text"
-                                    id="orderDestinyInput"
-                                    name="orderDestiny"
-                                    value={orderDestiny || ''}
-                                    disabled
-                                />
-                                <Input type="hidden" name="orderDestiny" value={formik.values.orderDestiny} />
-                                {formik.touched.orderDestiny && formik.errors.orderDestiny && (
-                                    <FormFeedback>{formik.errors.orderDestiny}</FormFeedback>
-                                )}
-                            </div>
-                        </div>
+                                    <div className="flex-grow-1">
+                                        <div className="d-flex align-items-center">
+                                            <i className="ri-building-line fs-18 text-info me-2"></i>
+                                            <div>
+                                                <small className="text-muted d-block">Subalmacén destino</small>
+                                                <span className="fw-medium">{orderDestiny || 'Cargando...'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardBody>
+                        </Card>
 
                         <div className="d-flex mt-4">
                             <Button className="btn btn-success btn-label right ms-auto nexttab nexttab ms-auto farm-secondary-button" onClick={() => checkOrderData()}>
@@ -433,45 +535,91 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
                     </TabPane>
 
                     <TabPane id='step-products-tab' tabId={2}>
-                        <Label>Seleccion de productos para el pedido</Label>
-                        <div className="border border-0 d-flex flex-column flex-grow-1">
-                            <CreateOrderTable data={products} onProductSelect={handleProductSelect} showStock={true} showPagination={false} />
-                        </div>
+                        <div>
+                            <div className="mt-3 border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(70vh - 100px)', overflowY: 'hidden' }}>
+                                <SelectableCustomTable
+                                    columns={productColumns}
+                                    data={products}
+                                    showPagination={true}
+                                    rowsPerPage={6}
+                                    onSelect={(rows) => {
+                                        setSelectedProducts(prev => {
+                                            const newRows = rows.map(r => {
+                                                const existing = prev.find(p => p.id === r.id);
+                                                if (existing) return existing;
 
-                        <div className="d-flex mt-4">
-                            <Button className="btn btn-light btn-label previestab farm-secondary-button" onClick={() => toggleArrowTab(activeStep - 1)}>
-                                <i className="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i>{" "}
-                                Atras
-                            </Button>
+                                                return {
+                                                    id: r.id,
+                                                    quantity: 0,
+                                                    price: r.averagePrice || 0,
+                                                    observations: '',
+                                                };
+                                            });
+                                            return newRows;
+                                        });
+                                    }}
+                                />
+                            </div>
 
-                            <Button className="btn btn-success btn-label right ms-auto nexttab nexttab ms-auto farm-secondary-button" onClick={() => checkProductsSelected()}>
-                                <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
-                                Siguiente
-                            </Button>
+                            <div className="d-flex mt-4">
+                                <Button className="btn btn-light btn-label previestab farm-secondary-button" onClick={() => toggleArrowTab(activeStep - 1)}>
+                                    <i className="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i>{" "}
+                                    Atras
+                                </Button>
+
+                                <Button 
+                                    className="btn btn-success btn-label right ms-auto nexttab nexttab ms-auto farm-secondary-button" 
+                                    onClick={() => toggleArrowTab(activeStep + 1)}
+                                    disabled={
+                                        selectedProducts.length === 0 ||
+                                        selectedProducts.some(product => !product.quantity || product.quantity <= 0)
+                                    }
+                                >
+                                    <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
+                                    Siguiente
+                                </Button>
+                            </div>
                         </div>
                     </TabPane>
 
                     <TabPane id='step-summary-tab' tabId={3}>
-                        <div className='d-flex gap-3'>
-                            <Card>
-                                <CardHeader className='bg-light'>
-                                    <h5>Informacion del pedido</h5>
+                        <div className='d-flex gap-3 w-100'>
+                            <Card className=''>
+                                <CardHeader style={{ backgroundColor: '#f0f4f8' }}>
+                                    <h5>Información del pedido</h5>
                                 </CardHeader>
                                 <CardBody className="pt-4">
-                                    <ObjectDetails attributes={orderAttributes} object={formik.values} />
+                                    <ObjectDetails 
+                                        attributes={orderAttributes} 
+                                        object={{
+                                            ...formik.values,
+                                            orderOrigin: orderOrigin,
+                                            orderDestiny: orderDestiny
+                                        }} 
+                                    />
                                 </CardBody>
                             </Card>
 
                             <Card className='w-100'>
-                                <CardHeader className='bg-light'>
+                                <CardHeader style={{ backgroundColor: '#e8f5e8' }}>
                                     <h5>Productos seleccionados</h5>
                                 </CardHeader>
-                                <CardBody className="p-0">
-                                    <CustomTable columns={productsColumns} data={selectedProducts} showSearchAndFilter={false} showPagination={true} rowsPerPage={6} />
+                                <CardBody className="border border-0 d-flex flex-column flex-grow-1 p-0">
+                                    <CustomTable 
+                                        columns={selectedProductColumns} 
+                                        data={selectedProducts.map(product => ({
+                                            ...product,
+                                            productName: (products as any[]).find(p => p.id === product.id)?.product?.name || 'N/A',
+                                            code: (products as any[]).find(p => p.id === product.id)?.product?.id || 'N/A',
+                                            unit_measurement: (products as any[]).find(p => p.id === product.id)?.product?.unit_measurement || '',
+                                            totalPrice: product.quantity * product.price
+                                        }))}
+                                        showSearchAndFilter={false} 
+                                        showPagination={false}
+                                    />
                                 </CardBody>
                             </Card>
                         </div>
-
 
                         <div className='d-flex mt-4 gap-2'>
                             <Button

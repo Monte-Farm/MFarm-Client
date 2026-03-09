@@ -11,6 +11,23 @@ import { getLoggedinUser } from "helpers/api_helper";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import CustomTable from "Components/Common/Tables/CustomTable";
+import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
+import DonutChartCard, { DonutDataItem, DonutLegendItem } from "Components/Common/Graphics/DonutChartCard";
+
+const getSubwarehouseTypeLabel = (type: string) => {
+    switch (type) {
+        case "medical":
+            return "Medico";
+        case "feed":
+            return "Alimento";
+        case "cleaning":
+            return "Limpieza";
+        case "supplies":
+            return "Insumos";
+        default:
+            return type;
+    }
+};
 
 
 const ViewSubwarehouse = () => {
@@ -22,8 +39,19 @@ const ViewSubwarehouse = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ create: false, details: false, update: false, delete: false });
     const [subwarehouses, setSubwarehouses] = useState([])
-    const [selectedSubwarehouse, setSelectedSubwarehouse] = useState<SubwarehouseData>()
     const [loading, setLoading] = useState<boolean>(true);
+    const [subwarehouseStatistics, setSubwarehouseStatistics] = useState({
+        totalSubwarehouses: 0,
+        activeSubwarehouses: 0,
+        inactiveSubwarehouses: 0,
+        activationRate: 0
+    });
+    const [chartData, setChartData] = useState({
+        statusData: [] as DonutDataItem[],
+        statusLegendItems: [] as DonutLegendItem[],
+        typeData: [] as DonutDataItem[],
+        typeLegendItems: [] as DonutLegendItem[]
+    });
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -102,44 +130,74 @@ const ViewSubwarehouse = () => {
 
         try {
             setLoading(true)
-            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_farm_subwarehouses/${userLogged.farm_assigned}`);
-            const warehouses = response.data.data;
+            const [subwarehousesResponse, statisticsResponse, chartsResponse] = await Promise.all([
+                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_farm_subwarehouses/${userLogged.farm_assigned}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/farm_subwarehouse_statistics/${userLogged.farm_assigned}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/farm_subwarehouse_charts/${userLogged.farm_assigned}`)
+            ]);
+
+            const warehouses = subwarehousesResponse.data.data;
             setSubwarehouses(warehouses)
+
+            setSubwarehouseStatistics(statisticsResponse.data.data.data)
+
+            const chartsData = chartsResponse.data.data.data;
+
+            const statusData: DonutDataItem[] = [
+                { id: 'active', label: 'Activos', value: chartsData.statusData.active || 0, color: '#10b981' },
+                { id: 'inactive', label: 'Inactivos', value: chartsData.statusData.inactive || 0, color: '#ef4444' }
+            ];
+
+            const totalSubwarehouses = (chartsData.statusData.active || 0) + (chartsData.statusData.inactive || 0);
+
+            const statusLegendItems: DonutLegendItem[] = [
+                {
+                    label: 'Activos',
+                    value: (chartsData.statusData.active || 0).toString(),
+                    percentage: totalSubwarehouses > 0 ? `${(((chartsData.statusData.active || 0) / totalSubwarehouses) * 100).toFixed(1)}%` : '0%'
+                },
+                {
+                    label: 'Inactivos',
+                    value: (chartsData.statusData.inactive || 0).toString(),
+                    percentage: totalSubwarehouses > 0 ? `${(((chartsData.statusData.inactive || 0) / totalSubwarehouses) * 100).toFixed(1)}%` : '0%'
+                }
+            ];
+
+            const typeData: DonutDataItem[] = [];
+            const colors = ['#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#06b6d4', '#84cc16', '#f43f5e', '#a855f7', '#6b7280'];
+
+            if (chartsData.typeData) {
+                Object.entries(chartsData.typeData).forEach(([type, count], index) => {
+                    const countValue = Number(count);
+                    if (countValue > 0) { // Solo incluir tipos con datos
+                        typeData.push({
+                            id: type,
+                            label: getSubwarehouseTypeLabel(type),
+                            value: countValue,
+                            color: colors[index % colors.length]
+                        });
+                    }
+                });
+            }
+
+            const typeLegendItems: DonutLegendItem[] = typeData.map(item => ({
+                label: item.label,
+                value: item.value.toString(),
+                percentage: totalSubwarehouses > 0 ? `${((item.value / totalSubwarehouses) * 100).toFixed(1)}%` : '0%'
+            }));
+
+            setChartData({
+                statusData,
+                statusLegendItems,
+                typeData,
+                typeLegendItems
+            });
+
         } catch (error) {
             console.error('Error fetching subwarehouses:', error);
             setAlertConfig({ visible: true, color: 'danger', message: 'Error al obtener los datos de los subalmacenes.' });
         } finally {
             setLoading(false)
-        }
-    };
-
-    const handleCreateSubwarehouse = async (data: SubwarehouseData) => {
-        if (!configContext) return;
-
-        try {
-            await configContext.axiosHelper.create(`${configContext.apiUrl}/warehouse/create_warehouse`, data);
-            setAlertConfig({ visible: true, color: 'success', message: 'Subalmacén creado con éxito' });
-            fetchSubwarehouses();
-        } catch (error) {
-            console.error('Error creating subwarehouse:', error);
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al crear el subalmacen, intentelo mas tarde' });
-        } finally {
-            toggleModal('create', false);
-        }
-    };
-
-    const handleUpdateSubwarehouse = async (data: any) => {
-        if (!configContext) return;
-
-        try {
-            await configContext.axiosHelper.put(`${configContext.apiUrl}/warehouse/update_warehouse/${data._id}`, data);
-            setAlertConfig({ visible: true, color: 'success', message: 'Subalmacén actualizado con éxito' });
-            fetchSubwarehouses();
-        } catch (error) {
-            console.error('Error updating subwarehouse:', error);
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al actualizar el subalmacen, intentelo mas tarde' });
-        } finally {
-            toggleModal('update', false);
         }
     };
 
@@ -158,8 +216,73 @@ const ViewSubwarehouse = () => {
             <Container fluid>
                 <BreadCrumb title={"Subalmacénes"} pageTitle={"Ver Subalmacénes"}></BreadCrumb>
 
+                {/* KPIs Section */}
+                <div className="row">
+                    <div className="col-xl-3 col-md-6">
+                        <StatKpiCard
+                            title="Total de Subalmacenes"
+                            value={subwarehouseStatistics?.totalSubwarehouses}
+                            icon={<i className="ri-store-2-line fs-20 text-primary"></i>}
+                            iconBgColor="#E8F5E9"
+                            animateValue={true}
+                            durationSeconds={1.5}
+                        />
+                    </div>
+                    <div className="col-xl-3 col-md-6">
+                        <StatKpiCard
+                            title="Subalmacenes Activos"
+                            value={subwarehouseStatistics?.activeSubwarehouses}
+                            icon={<i className="ri-checkbox-circle-line fs-20 text-success"></i>}
+                            iconBgColor="#E8F5E9"
+                            animateValue={true}
+                            durationSeconds={1.5}
+                        />
+                    </div>
+                    <div className="col-xl-3 col-md-6">
+                        <StatKpiCard
+                            title="Subalmacenes Inactivos"
+                            value={subwarehouseStatistics?.inactiveSubwarehouses}
+                            icon={<i className="ri-close-circle-line fs-20 text-danger"></i>}
+                            iconBgColor="#FEE2E2"
+                            animateValue={true}
+                            durationSeconds={1.5}
+                        />
+                    </div>
+                    <div className="col-xl-3 col-md-6">
+                        <StatKpiCard
+                            title="Tasa de Activación"
+                            value={subwarehouseStatistics?.activationRate}
+                            suffix="%"
+                            decimals={1}
+                            icon={<i className="ri-percent-line fs-20 text-info"></i>}
+                            iconBgColor="#E3F2FD"
+                            animateValue={true}
+                            durationSeconds={1.5}
+                        />
+                    </div>
+                </div>
 
-                <Card style={{ minHeight: "calc(100vh - 220px)" }}>
+                {/* Charts Section */}
+                <div className="row mb-4">
+                    <div className="col-xl-6">
+                        <DonutChartCard
+                            title="Subalmacenes por Tipo"
+                            data={chartData.typeData}
+                            legendItems={chartData.typeLegendItems}
+                            height={200}
+                        />
+                    </div>
+                    <div className="col-xl-6">
+                        <DonutChartCard
+                            title="Estado de Subalmacenes"
+                            data={chartData.statusData}
+                            legendItems={chartData.statusLegendItems}
+                            height={200}
+                        />
+                    </div>
+                </div>
+
+                <Card>
                     <CardHeader>
                         <div className="d-flex">
                             <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>
