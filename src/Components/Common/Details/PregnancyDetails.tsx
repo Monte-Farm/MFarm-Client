@@ -5,12 +5,13 @@ import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, Progress } from "reactstrap";
+import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, Progress, Spinner } from "reactstrap";
 import pigSilhouette from '../../assets/images/pig_silhouette.png'
 import ObjectDetails from "Components/Common/Details/ObjectDetails";
 import { Attribute } from "common/data_interfaces";
 import AbortionForm from "../Forms/AbortionForm";
 import BirthForm from "../Forms/BirthForm";
+import PDFViewer from "Components/Common/Shared/PDFViewer";
 
 interface PregnancyDetailsProps {
     pregnancyId: string;
@@ -26,8 +27,10 @@ const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => 
     const [loading, setLoaging] = useState<boolean>(true)
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const navigate = useNavigate();
-    const [modals, setModals] = useState({ abortion: false, birth: false });
+    const [modals, setModals] = useState({ abortion: false, birth: false, viewPDF: false });
     const [allPregnancyData, setAllPregnancyData] = useState<any>({})
+    const [pdfLoading, setPdfLoading] = useState(false);
+    const [fileURL, setFileURL] = useState<string | null>(null);
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -161,6 +164,24 @@ const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => 
         }
     }
 
+    const handlePrintPregnancy = async () => {
+        if (!configContext) return;
+
+        try {
+            setPdfLoading(true);
+            const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/pregnancies/${pregnancyId}`);
+            const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(pdfBlob);
+            setFileURL(url);
+            toggleModal('viewPDF');
+        } catch (error) {
+            console.error('Error generating PDF: ', { error });
+            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+        } finally {
+            setPdfLoading(false);
+        }
+    };
+
     useEffect(() => {
         fetchData();
     }, [])
@@ -175,18 +196,36 @@ const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => 
     return (
         <div className="">
             <Card className="shadow-sm h-100">
-                <CardHeader className="d-flex bg-light fs-5">
+                <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
                     <h5>Progreso del embarazo</h5>
 
-                    <div className="ms-auto">
+                    <div className="d-flex gap-2">
+                        <Button 
+                            color="primary" 
+                            onClick={handlePrintPregnancy}
+                            disabled={pdfLoading}
+                        >
+                            {pdfLoading ? (
+                                <>
+                                    <Spinner className="me-2" size='sm' />
+                                    Generando...
+                                </>
+                            ) : (
+                                <>
+                                    <i className="ri-file-pdf-line me-2"></i>
+                                    Ver PDF
+                                </>
+                            )}
+                        </Button>
+                        
                         {pregnancyDetails.farrowing_status !== 'farrowed' && pregnancyDetails.farrowing_status !== 'abortion' && (
-                            <Button className="me-2" color="danger" onClick={() => toggleModal('abortion')}>
+                            <Button color="danger" onClick={() => toggleModal('abortion')}>
                                 <i className="bx bxs-skull me-2 align-middle fs-5" />
                                 Registrar perdida
                             </Button>
                         )}
 
-                        <Button className="ms-auto" onClick={() => toggleModal('birth')} disabled={pregnancyDetails.farrowing_status === 'farrowed' || pregnancyDetails.farrowing_status === 'pregnant' || pregnancyDetails.farrowing_status === 'abortion'}>
+                        <Button onClick={() => toggleModal('birth')} disabled={pregnancyDetails.farrowing_status === 'farrowed' || pregnancyDetails.farrowing_status === 'pregnant' || pregnancyDetails.farrowing_status === 'abortion'}>
                             <i className="bx bx-dna align-middle me-2 fs-5" />
                             Registrar parto
                         </Button>
@@ -302,6 +341,13 @@ const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => 
                 </ModalBody>
             </Modal>
 
+            {/* Modal PDF */}
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de embarazo</ModalHeader>
+                <ModalBody>
+                    {fileURL && <PDFViewer fileUrl={fileURL} />}
+                </ModalBody>
+            </Modal>
 
         </div>
     )

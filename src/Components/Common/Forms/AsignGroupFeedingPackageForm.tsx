@@ -35,7 +35,6 @@ const AsignGroupFeedingPackageForm: React.FC<AsignGroupFeedingPackageFormProps> 
     const [selectedFeedingPackage, setSelectedFeedingPackage] = useState<any>();
     const [feedingPackagesItems, setFeedingPackagesItems] = useState<any[]>();
     const [missingItems, setMissingItems] = useState([]);
-    const [feedingPackagePreview, setFeedingPackagePreview] = useState<any>();
     const [active, setActive] = useState<any>();
 
 
@@ -194,64 +193,21 @@ const AsignGroupFeedingPackageForm: React.FC<AsignGroupFeedingPackageFormProps> 
         { header: "Codigo", accessor: "id", type: "text", isFilterable: true },
         { header: "Producto", accessor: "name", type: "text", isFilterable: true },
         {
-            header: "Cantidad por cerdo",
+            header: "Promedio por cerdo",
             accessor: "quantity",
             type: "text",
             isFilterable: true,
-            render: (_, row) => {
-                const previewProduct = feedingPackagePreview?.products.find(
-                    (p: any) => p.code === row.id
-                );
-                return (<span>{previewProduct?.quantityPerAnimal} {previewProduct?.unitMeasurement}</span>);
-            }
+            render: (_, row) => <span>{row.avgPerPig} {row.unit_measurement}</span>,
+            bgColor: "#e3f2fd"
         },
         {
             header: "Cantidad total",
             accessor: "quantity",
             type: "text",
             isFilterable: true,
-            render: (_, row) => {
-                const previewProduct = feedingPackagePreview?.products.find(
-                    (p: any) => p.code === row.id
-                );
-                return (<span>{previewProduct?.totalQuantity} {previewProduct?.unitMeasurement}</span>);
-            }
+            render: (_, row) => <span>{row.totalQuantity} {row.unit_measurement}</span>,
+            bgColor: "#e8f5e8"
         },
-        {
-            header: "Promedio por cerdo",
-            accessor: "quantity",
-            type: "text",
-            isFilterable: true,
-            render: (_, row) => <span>{row.avgPerPig} {row.unit_measurement}</span>
-        },
-        {
-            header: "Precio unitario",
-            accessor: "unitPrice",
-            type: "text",
-            isFilterable: false,
-            render: (_, row) => {
-                const previewProduct = feedingPackagePreview?.products.find(
-                    (p: any) => p.code === row.id
-                );
-
-                if (!previewProduct || !previewProduct.hasPrice) {
-                    return (
-                        <span className="badge bg-warning text-dark">
-                            Sin precio
-                        </span>
-                    );
-                }
-
-                return (
-                    <span>
-                        {new Intl.NumberFormat('es-MX', {
-                            style: 'currency',
-                            currency: 'MXN'
-                        }).format(previewProduct.unitPrice)}
-                    </span>
-                );
-            }
-        }
     ]
 
     const feedingsPackagesAttributes: Attribute[] = [
@@ -388,18 +344,6 @@ const AsignGroupFeedingPackageForm: React.FC<AsignGroupFeedingPackageFormProps> 
         }
     }
 
-    const fetchPreviewData = async () => {
-        if (!selectedFeedingPackage || !configContext) return;
-        try {
-            const previewResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/feeding_package/preview_application/${selectedFeedingPackage._id}/${groupId}`)
-            const previewData = previewResponse.data.data
-            setFeedingPackagePreview(previewData)
-            return previewData
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
-    }
-
     const validationSchema = Yup.object({
         applicationDate: Yup.date().required('La fecha de aplicacion es obligatoria'),
         appliedBy: Yup.string().required('El area de destino es obligatoria'),
@@ -424,26 +368,7 @@ const AsignGroupFeedingPackageForm: React.FC<AsignGroupFeedingPackageFormProps> 
         onSubmit: async (values, { setSubmitting }) => {
             if (!configContext) return;
             try {
-                const feedingsWithCosts = values.feedings.map((m: any) => {
-                    const previewProduct = feedingPackagePreview?.products?.find(
-                        (p: any) => p.productId === m.feeding
-                    );
-
-                    return {
-                        ...m,
-                        unitPrice: previewProduct?.unitPrice ?? null,
-                        totalCost: previewProduct?.totalCost ?? null,
-                        hasPrice: previewProduct?.hasPrice ?? false
-                    };
-                });
-
-                const payload = {
-                    ...values,
-                    feedings: feedingsWithCosts,
-                    estimatedTotal: feedingPackagePreview?.estimatedTotal ?? 0,
-                };
-
-                const feedingResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/feeding_package/asign_group_feeding_package/${userLogged.farm_assigned}/${groupId}`, payload)
+                const feedingResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/feeding_package/asign_group_feeding_package/${userLogged.farm_assigned}/${groupId}`, values)
 
                 await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
                     event: `Paquete de alimentacion asignado al grupo ${groupDetails?.code}`
@@ -489,7 +414,6 @@ const AsignGroupFeedingPackageForm: React.FC<AsignGroupFeedingPackageFormProps> 
             formik.setFieldValue('periodicity', selectedFeedingPackage.periodicity)
             formik.setFieldValue('feedings', feedingsFull)
 
-            fetchPreviewData();
         }
     }, [selectedFeedingPackage])
 
@@ -634,12 +558,6 @@ const AsignGroupFeedingPackageForm: React.FC<AsignGroupFeedingPackageFormProps> 
                             <Card className="shadow-sm mb-3">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
                                     Información del paquete de alimentacion
-
-                                    {feedingPackagePreview?.hasMissingPrices && (
-                                        <span className="badge bg-warning text-dark">
-                                            Precios pendientes
-                                        </span>
-                                    )}
                                 </CardHeader>
                                 <CardBody>
                                     <ObjectDetails
@@ -652,22 +570,6 @@ const AsignGroupFeedingPackageForm: React.FC<AsignGroupFeedingPackageFormProps> 
                             <Card className="shadow-sm">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
                                     <h5 className="mb-0">Alimentos</h5>
-
-                                    {feedingPackagePreview && (
-                                        <div className="d-flex align-items-center gap-3">
-                                            <div className="text-end">
-                                                <div className="small text-muted">
-                                                    Total aproximado de aplicación
-                                                </div>
-                                                <div className="fw-bold">
-                                                    {new Intl.NumberFormat('es-MX', {
-                                                        style: 'currency',
-                                                        currency: 'MXN'
-                                                    }).format(feedingPackagePreview.estimatedTotal || 0)}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
                                 </CardHeader>
                                 <CardBody className="p-0 mb-3">
                                     <CustomTable

@@ -95,17 +95,6 @@ const FeedingPackagesCard = ({
                                     >
                                         <FiEye size={18} />
                                     </Button>
-
-                                    <Button
-                                        size="sm"
-                                        className=""
-                                        disabled={!p.isActive}
-                                        onClick={() =>
-                                            onDiscountStock(p.packageId?._id)
-                                        }
-                                    >
-                                        <i className="bx bx-trending-down fs-5" />
-                                    </Button>
                                 </div>
 
 

@@ -44,6 +44,8 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
     const [maleCount, setMaleCount] = useState<number | "">(0);
     const [femaleCount, setFemaleCount] = useState<number | "">(0);
     const [avgWeight, setAvgWeight] = useState<number | "">(0);
+    const [useIndividualWeight, setUseIndividualWeight] = useState<boolean>(false);
+    const [totalLitterWeight, setTotalLitterWeight] = useState<number | "">(0);
 
     const toggleAlerts = (alertName: keyof typeof alerts, state?: boolean) => {
         setAlerts((prev) => ({ ...prev, [alertName]: state ?? !prev[alertName] }));
@@ -262,8 +264,8 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
     const checkInseminationSelected = () => {
         toggleAlerts('inseminationEmpty', false)
 
-        if (formik.values.pregnancy === "" || formik.values.sow === "") {
-            toggleAlerts('inseminationEmpty')
+        if (!formik.values.pregnancy || !formik.values.sow) {
+            toggleAlerts('inseminationEmpty', true)
             return
         }
         toggleArrowTab(2)
@@ -366,6 +368,17 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
         formik.setFieldValue('born_alive', pigCount)
     }, [maleCount, femaleCount])
 
+    useEffect(() => {
+        if (!useIndividualWeight && totalLitterWeight && pigletsArray.length > 0) {
+            const averageWeight = Number(totalLitterWeight) / pigletsArray.length;
+            const newArray = pigletsArray.map(piglet => ({
+                ...piglet,
+                weight: Number(averageWeight.toFixed(2))
+            }));
+            setPigletsArray(newArray);
+        }
+    }, [totalLitterWeight, useIndividualWeight, pigletsArray.length])
+
     return (
         <>
             <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }}>
@@ -449,14 +462,8 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                 <i className="ri-arrow-right-line" />
                             </Button>
                         </div>
-                        {alerts.inseminationEmpty && (
-                            <Alert color='danger' className="d-flex align-items-center gap-2 shadow rounded-3 p-3 mt-3">
-                                <FiXCircle size={22} />
-                                <span className="flex-grow-1 text-black">Por favor, seleccione un embarazo</span>
 
-                                <Button close onClick={() => toggleAlerts('inseminationEmpty', false)} />
-                            </Alert>
-                        )}
+                        <AlertMessage color={"danger"} message={"Debe seleccionar una inseminación de la tabla para poder avanzar al siguiente paso"} visible={alerts.inseminationEmpty} onClose={() => toggleAlerts('inseminationEmpty', false)} autoClose={3000} absolutePosition={false} />
                     </TabPane>
 
                     <TabPane id="step-birthinfo-tab" tabId={2}>
@@ -563,140 +570,211 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                     </TabPane>
 
                     <TabPane id="step-litter-tab" tabId={3}>
-                        <div className="d-flex gap-2 mb-4">
-                            <div className="w-50">
-                                <Label htmlFor="femaleCount" className="form-label">Hembras vivas</Label>
-                                <Input
-                                    type="number"
-                                    id="femaleCount"
-                                    name="femaleCount"
-                                    value={femaleCount}
-                                    onChange={(e) => setFemaleCount(Number(e.target.value))}
-                                    onFocus={() => {
-                                        if (femaleCount === 0) setFemaleCount("");
-                                    }}
-                                    onBlur={() => {
-                                        if (femaleCount === "") setFemaleCount(0);
-                                    }}
-                                    placeholder="Ej: 0"
-                                />
-                            </div>
-
-                            <div className="w-50">
-                                <Label htmlFor="maleCount" className="form-label">Machos vivos</Label>
-                                <Input
-                                    type="number"
-                                    id="maleCount"
-                                    name="maleCount"
-                                    value={maleCount}
-                                    onChange={(e) => setMaleCount(Number(e.target.value))}
-                                    onFocus={() => {
-                                        if (maleCount === 0) setMaleCount("");
-                                    }}
-                                    onBlur={() => {
-                                        if (maleCount === "") setMaleCount(0);
-                                    }}
-                                    placeholder="Ej: 0"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="d-flex gap-2">
-                            <div className="w-50">
-                                <Label htmlFor="stillborn" className="form-label">Nacidos muertos</Label>
-                                <Input
-                                    type="number"
-                                    id="stillborn"
-                                    name="stillborn"
-                                    value={formik.values.stillborn}
-                                    onChange={formik.handleChange}
-                                    placeholder="Ej: 0"
-                                />
-                            </div>
-
-                            <div className="w-50">
-                                <Label htmlFor="mummies" className="form-label">Momias</Label>
-                                <Input
-                                    type="number"
-                                    id="mummies"
-                                    name="mummies"
-                                    value={formik.values.mummies}
-                                    onChange={formik.handleChange}
-                                    placeholder="Ej: 0"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="mt-3">
-                            <SimpleBar style={{ maxHeight: 400, paddingRight: 10 }}>
-                                {pigletsArray.map((piglet, index) => (
-                                    <div key={index} className="border rounded p-3 mb-2">
-                                        <p className="fw-bold">Lechón #{index + 1}</p>
-
-                                        <div className="d-flex gap-3">
-                                            <div className="w-50">
-                                                <label className="form-label">Sexo</label>
-                                                <select
-                                                    className="form-select"
-                                                    value={piglet.sex}
-                                                    onChange={(e) => {
-                                                        const newArray = [...pigletsArray];
-                                                        newArray[index].sex = e.target.value as 'male' | 'female';
-                                                        setPigletsArray(newArray);
-                                                    }}
-                                                    disabled
-                                                >
-                                                    <option value="">Seleccionar</option>
-                                                    <option value="male">Macho</option>
-                                                    <option value="female">Hembra</option>
-                                                </select>
-                                            </div>
-
-                                            <div className="w-50">
-                                                <label className="form-label">Peso (kg)</label>
-                                                <input
-                                                    type="number"
-                                                    step="0.01"
-                                                    className="form-control"
-                                                    value={pigletsArray[index].weight}
-                                                    onChange={(e) => {
-                                                        const value = e.target.value;
-
-                                                        const newArray = [...pigletsArray];
-
-                                                        if (value === '') {
-                                                            newArray[index].weight = '';
-                                                        } else {
-                                                            newArray[index].weight = Number(value);
-                                                        }
-
-                                                        setPigletsArray(newArray);
-                                                    }}
-                                                    onFocus={() => {
-                                                        const newArray = [...pigletsArray];
-
-                                                        if (newArray[index].weight === 0) {
-                                                            newArray[index].weight = '';
-                                                            setPigletsArray(newArray);
-                                                        }
-                                                    }}
-                                                    onBlur={() => {
-                                                        const newArray = [...pigletsArray];
-
-                                                        if (newArray[index].weight === '') {
-                                                            newArray[index].weight = 0;
-                                                            setPigletsArray(newArray);
-                                                        }
-                                                    }}
-                                                />
-
-                                            </div>
-                                        </div>
+                        <Card className="shadow-sm mb-3">
+                            <CardHeader className="bg-light">
+                                <h5 className="mb-0 text-primary">Información de la Camada</h5>
+                            </CardHeader>
+                            <CardBody>
+                                <div className="d-flex gap-2 mb-3">
+                                    <div className="w-50">
+                                        <Label htmlFor="femaleCount" className="form-label fw-semibold">
+                                            <i className="ri-women-line me-1 text-danger"></i>
+                                            Hembras vivas
+                                        </Label>
+                                        <Input
+                                            type="number"
+                                            id="femaleCount"
+                                            name="femaleCount"
+                                            value={femaleCount}
+                                            onChange={(e) => setFemaleCount(Number(e.target.value))}
+                                            onFocus={() => {
+                                                if (femaleCount === 0) setFemaleCount("");
+                                            }}
+                                            onBlur={() => {
+                                                if (femaleCount === "") setFemaleCount(0);
+                                            }}
+                                            placeholder="Ej: 5"
+                                            min="0"
+                                        />
                                     </div>
-                                ))}
-                            </SimpleBar>
-                        </div>
 
+                                    <div className="w-50">
+                                        <Label htmlFor="maleCount" className="form-label fw-semibold">
+                                            <i className="ri-men-line me-1 text-info"></i>
+                                            Machos vivos
+                                        </Label>
+                                        <Input
+                                            type="number"
+                                            id="maleCount"
+                                            name="maleCount"
+                                            value={maleCount}
+                                            onChange={(e) => setMaleCount(Number(e.target.value))}
+                                            onFocus={() => {
+                                                if (maleCount === 0) setMaleCount("");
+                                            }}
+                                            onBlur={() => {
+                                                if (maleCount === "") setMaleCount(0);
+                                            }}
+                                            placeholder="Ej: 6"
+                                            min="0"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="d-flex gap-2">
+                                    <div className="w-50">
+                                        <Label htmlFor="stillborn" className="form-label fw-semibold">
+                                            <i className="ri-close-circle-line me-1 text-secondary"></i>
+                                            Nacidos muertos
+                                        </Label>
+                                        <Input
+                                            type="number"
+                                            id="stillborn"
+                                            name="stillborn"
+                                            value={formik.values.stillborn}
+                                            onChange={formik.handleChange}
+                                            placeholder="Ej: 0"
+                                            min="0"
+                                        />
+                                    </div>
+
+                                    <div className="w-50">
+                                        <Label htmlFor="mummies" className="form-label fw-semibold">
+                                            <i className="ri-skull-line me-1 text-warning"></i>
+                                            Momias
+                                        </Label>
+                                        <Input
+                                            type="number"
+                                            id="mummies"
+                                            name="mummies"
+                                            value={formik.values.mummies}
+                                            onChange={formik.handleChange}
+                                            placeholder="Ej: 0"
+                                            min="0"
+                                        />
+                                    </div>
+                                </div>
+
+                                {(Number(maleCount) + Number(femaleCount)) > 0 && (
+                                    <div className="alert alert-info mt-3 mb-0">
+                                        <i className="ri-information-line me-2"></i>
+                                        <strong>Total de lechones vivos: {Number(maleCount) + Number(femaleCount)}</strong>
+                                    </div>
+                                )}
+                            </CardBody>
+                        </Card>
+
+                        {(Number(maleCount) + Number(femaleCount)) > 0 && (
+                            <Card className="shadow-sm mb-3">
+                                <CardHeader className="bg-light">
+                                    <h5 className="mb-0 text-primary">Registro de Peso</h5>
+                                </CardHeader>
+                                <CardBody>
+                                    <div className="form-check form-switch mb-3">
+                                        <Input
+                                            type="checkbox"
+                                            className="form-check-input"
+                                            id="useIndividualWeight"
+                                            checked={useIndividualWeight}
+                                            onChange={(e) => setUseIndividualWeight(e.target.checked)}
+                                        />
+                                        <Label className="form-check-label fw-semibold" htmlFor="useIndividualWeight">
+                                            Ingresar peso individual por lechón
+                                        </Label>
+                                    </div>
+
+                                    {!useIndividualWeight ? (
+                                        <div>
+                                            <Label htmlFor="totalLitterWeight" className="form-label fw-semibold">
+                                                <i className="ri-scales-3-line me-1 text-success"></i>
+                                                Peso total de la camada (kg)
+                                            </Label>
+                                            <Input
+                                                type="number"
+                                                step="0.01"
+                                                id="totalLitterWeight"
+                                                name="totalLitterWeight"
+                                                value={totalLitterWeight}
+                                                onChange={(e) => setTotalLitterWeight(e.target.value === '' ? '' : Number(e.target.value))}
+                                                onFocus={() => {
+                                                    if (totalLitterWeight === 0) setTotalLitterWeight("");
+                                                }}
+                                                onBlur={() => {
+                                                    if (totalLitterWeight === "") setTotalLitterWeight(0);
+                                                }}
+                                                placeholder="Ej: 15.5"
+                                                min="0"
+                                            />
+                                            {Number(totalLitterWeight) > 0 && (
+                                                <small className="text-muted d-block mt-2">
+                                                    <i className="ri-calculator-line me-1"></i>
+                                                    Peso promedio por lechón: <strong>{(Number(totalLitterWeight) / pigletsArray.length).toFixed(2)} kg</strong>
+                                                </small>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div>
+                                            <Label className="form-label fw-semibold mb-3">
+                                                <i className="ri-list-check me-1 text-primary"></i>
+                                                Peso individual de cada lechón
+                                            </Label>
+                                            <SimpleBar style={{ maxHeight: 400, paddingRight: 10 }}>
+                                                {pigletsArray.map((piglet, index) => (
+                                                    <div key={index} className="border rounded p-3 mb-2 bg-light">
+                                                        <div className="d-flex align-items-center justify-content-between mb-2">
+                                                            <span className="fw-bold">
+                                                                Lechón #{index + 1}
+                                                            </span>
+                                                            <Badge color={piglet.sex === 'male' ? "info" : "danger"}>
+                                                                {piglet.sex === 'male' ? "♂ Macho" : "♀ Hembra"}
+                                                            </Badge>
+                                                        </div>
+
+                                                        <div>
+                                                            <label className="form-label">Peso (kg)</label>
+                                                            <input
+                                                                type="number"
+                                                                step="0.01"
+                                                                className="form-control"
+                                                                value={pigletsArray[index].weight}
+                                                                onChange={(e) => {
+                                                                    const value = e.target.value;
+                                                                    const newArray = [...pigletsArray];
+
+                                                                    if (value === '') {
+                                                                        newArray[index].weight = '';
+                                                                    } else {
+                                                                        newArray[index].weight = Number(value);
+                                                                    }
+
+                                                                    setPigletsArray(newArray);
+                                                                }}
+                                                                onFocus={() => {
+                                                                    const newArray = [...pigletsArray];
+                                                                    if (newArray[index].weight === 0) {
+                                                                        newArray[index].weight = '';
+                                                                        setPigletsArray(newArray);
+                                                                    }
+                                                                }}
+                                                                onBlur={() => {
+                                                                    const newArray = [...pigletsArray];
+                                                                    if (newArray[index].weight === '') {
+                                                                        newArray[index].weight = 0;
+                                                                        setPigletsArray(newArray);
+                                                                    }
+                                                                }}
+                                                                placeholder="Ej: 1.2"
+                                                                min="0"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </SimpleBar>
+                                        </div>
+                                    )}
+                                </CardBody>
+                            </Card>
+                        )}
 
                         <div className="mt-4 d-flex">
                             <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
@@ -706,12 +784,11 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
 
                             <Button className="ms-auto" onClick={() => checkLitterData()}>
                                 Siguiente
-                                < i className="ri-arrow-right-line ms-2" />
+                                <i className="ri-arrow-right-line ms-2" />
                             </Button>
-
                         </div>
 
-                        <AlertMessage color={"danger"} message={"Debe registrar al menos 1 lechon"} visible={alerts.litterEmpty} onClose={() => toggleAlerts('litterEmpty')} autoClose={3000} absolutePosition={false} />
+                        <AlertMessage color={"danger"} message={"Debe registrar al menos 1 lechón vivo"} visible={alerts.litterEmpty} onClose={() => toggleAlerts('litterEmpty')} autoClose={3000} absolutePosition={false} />
                     </TabPane>
 
                     <TabPane id="step-summary-tab" tabId={4}>
@@ -735,23 +812,112 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                             </Card>
                         </div>
 
-                        <div className="d-flex gap-2">
-                            <Card className="w-100">
-                                <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
-                                    <span className="text-black">Información de la camada</span>
-                                </CardHeader>
-                                <CardBody className='flex-fill p-0'>
-                                    <SimpleBar style={{ maxHeight: 300 }}>
-                                        <CustomTable
-                                            columns={pigletsColumns}
-                                            data={pigletsArray}
-                                            showPagination={false}
-                                            showSearchAndFilter={false}
-                                        />
-                                    </SimpleBar>
-                                </CardBody>
-                            </Card>
-                        </div>
+                        <Card className="w-100 mt-3">
+                            <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
+                                <span className="text-black">Resumen de la Camada</span>
+                            </CardHeader>
+                            <CardBody>
+                                <div className="row g-3">
+                                    <div className="col-md-3">
+                                        <div className="border rounded p-3 text-center bg-light">
+                                            <div className="d-flex align-items-center justify-content-center mb-2">
+                                                <i className="ri-parent-line fs-4 text-primary me-2"></i>
+                                                <h6 className="mb-0 text-muted">Total Vivos</h6>
+                                            </div>
+                                            <h3 className="mb-0 text-primary fw-bold">{Number(maleCount) + Number(femaleCount)}</h3>
+                                        </div>
+                                    </div>
+
+                                    <div className="col-md-3">
+                                        <div className="border rounded p-3 text-center bg-light">
+                                            <div className="d-flex align-items-center justify-content-center mb-2">
+                                                <i className="ri-men-line fs-4 text-info me-2"></i>
+                                                <h6 className="mb-0 text-muted">Machos</h6>
+                                            </div>
+                                            <h3 className="mb-0 text-info fw-bold">{maleCount}</h3>
+                                        </div>
+                                    </div>
+
+                                    <div className="col-md-3">
+                                        <div className="border rounded p-3 text-center bg-light">
+                                            <div className="d-flex align-items-center justify-content-center mb-2">
+                                                <i className="ri-women-line fs-4 text-danger me-2"></i>
+                                                <h6 className="mb-0 text-muted">Hembras</h6>
+                                            </div>
+                                            <h3 className="mb-0 text-danger fw-bold">{femaleCount}</h3>
+                                        </div>
+                                    </div>
+
+                                    <div className="col-md-3">
+                                        <div className="border rounded p-3 text-center bg-light">
+                                            <div className="d-flex align-items-center justify-content-center mb-2">
+                                                <i className="ri-scales-3-line fs-4 text-success me-2"></i>
+                                                <h6 className="mb-0 text-muted">Peso Promedio</h6>
+                                            </div>
+                                            <h3 className="mb-0 text-success fw-bold">
+                                                {pigletsArray.length > 0 
+                                                    ? (pigletsArray.reduce((acc, p) => Number(acc) + Number(p.weight), 0) / pigletsArray.length).toFixed(2)
+                                                    : '0.00'
+                                                } kg
+                                            </h3>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="row g-3 mt-2">
+                                    <div className="col-md-4">
+                                        <div className="border rounded p-3 text-center">
+                                            <div className="d-flex align-items-center justify-content-center mb-2">
+                                                <i className="ri-close-circle-line fs-5 text-secondary me-2"></i>
+                                                <span className="text-muted">Nacidos Muertos</span>
+                                            </div>
+                                            <h4 className="mb-0 fw-bold">{formik.values.stillborn}</h4>
+                                        </div>
+                                    </div>
+
+                                    <div className="col-md-4">
+                                        <div className="border rounded p-3 text-center">
+                                            <div className="d-flex align-items-center justify-content-center mb-2">
+                                                <i className="ri-skull-line fs-5 text-warning me-2"></i>
+                                                <span className="text-muted">Momias</span>
+                                            </div>
+                                            <h4 className="mb-0 fw-bold">{formik.values.mummies}</h4>
+                                        </div>
+                                    </div>
+
+                                    <div className="col-md-4">
+                                        <div className="border rounded p-3 text-center">
+                                            <div className="d-flex align-items-center justify-content-center mb-2">
+                                                <i className="ri-calculator-line fs-5 text-primary me-2"></i>
+                                                <span className="text-muted">Peso Total</span>
+                                            </div>
+                                            <h4 className="mb-0 fw-bold">
+                                                {pigletsArray.reduce((acc, p) => Number(acc) + Number(p.weight), 0).toFixed(2)} kg
+                                            </h4>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {pigletsArray.length > 0 && (
+                                    <div className="mt-3">
+                                        <div className="d-flex justify-content-between align-items-center mb-2">
+                                            <small className="text-muted fw-semibold">Distribución de pesos:</small>
+                                            <small className="text-muted">{pigletsArray.length} lechones registrados</small>
+                                        </div>
+                                        <div className="d-flex gap-2 flex-wrap">
+                                            {pigletsArray.map((piglet, index) => (
+                                                <div key={index} className="badge bg-light text-dark border" style={{ fontSize: '0.85rem', padding: '0.4rem 0.6rem' }}>
+                                                    <span className={piglet.sex === 'male' ? 'text-info' : 'text-danger'}>
+                                                        {piglet.sex === 'male' ? '♂' : '♀'}
+                                                    </span>
+                                                    {' '}{Number(piglet.weight).toFixed(2)}kg
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </CardBody>
+                        </Card>
 
 
                         <div className="mt-4 d-flex">

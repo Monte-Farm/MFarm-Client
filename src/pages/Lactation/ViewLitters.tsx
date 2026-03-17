@@ -39,21 +39,33 @@ const ViewLitters = () => {
                 </Button>
             )
         },
-        { header: 'Machos', accessor: 'currentMale', type: 'text', isFilterable: true },
-        { header: 'Hembras', accessor: 'currentFemale', type: 'text', isFilterable: true },
-        {
-            header: 'Registrada por',
-            accessor: '',
-            type: 'text',
+        { 
+            header: 'Machos', 
+            accessor: 'currentMale', 
+            type: 'text', 
             isFilterable: true,
-            render: (_, row) => <span>{row.responsible.name} {row.responsible.lastname}</span>
+            bgColor: "#e3f2fd"
         },
-        { header: 'Peso promedio', accessor: 'averageWeight', type: 'text', isFilterable: true },
+        { 
+            header: 'Hembras', 
+            accessor: 'currentFemale', 
+            type: 'text', 
+            isFilterable: true,
+            bgColor: "#fce4ec"
+        },
+        { 
+            header: 'Peso promedio', 
+            accessor: 'averageWeight', 
+            type: 'text', 
+            isFilterable: true,
+            bgColor: "#e8f5e8"
+        },
         {
             header: 'Peso total',
             accessor: 'averageWeight',
             type: 'text',
             isFilterable: true,
+            bgColor: "#fff3e0",
             render: (_, row) => <span>{(row.averageWeight * (row.currentMale + row.currentFemale)).toFixed(2)}</span>
         },
         {

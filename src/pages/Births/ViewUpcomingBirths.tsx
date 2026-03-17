@@ -6,13 +6,14 @@ import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Badge, Button, ButtonGroup, Card, CardBody, CardHeader, CardSubtitle, Container, Input, Modal, ModalBody, ModalHeader, UncontrolledTooltip } from "reactstrap";
+import { Badge, Button, ButtonGroup, Card, CardBody, CardHeader, CardSubtitle, Container, Input, Modal, ModalBody, ModalHeader, UncontrolledTooltip, Spinner } from "reactstrap";
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import PregnancyDetails from "Components/Common/Details/PregnancyDetails";
 import AbortionForm from "Components/Common/Forms/AbortionForm";
 import BirthForm from "Components/Common/Forms/BirthForm";
 import CustomTable from "Components/Common/Tables/CustomTable";
+import PDFViewer from "Components/Common/Shared/PDFViewer";
 
 const ViewUpcomingBirths = () => {
     document.title = 'Proximos partos | Management system';
@@ -20,7 +21,7 @@ const ViewUpcomingBirths = () => {
     const userLogged = getLoggedinUser();
     const navigate = useNavigate();
     const [alertConfig, setAlertConfig] = useState({ visible: false, mesagge: '', color: '' })
-    const [modals, setModals] = useState({ birth: false, selectedBirth: false, pregnancyDetails: false, abortion: false })
+    const [modals, setModals] = useState({ birth: false, selectedBirth: false, pregnancyDetails: false, abortion: false, viewPDF: false })
     const [upcomingBirths, setUpcomingBirths] = useState<any[]>([])
     const [loading, setLoading] = useState<boolean>(true)
     const [selectedBirth, setSelectedBirth] = useState<any>({})
@@ -28,6 +29,8 @@ const ViewUpcomingBirths = () => {
     const [calendarData, setCalendarData] = useState<any[]>([])
     const [selectedPregnancyId, setSelectedPregnancyId] = useState<string>('')
     const [selectedPregnancyAbort, setSelectedPregnancyAbort] = useState<any>({})
+    const [pdfLoading, setPdfLoading] = useState(false);
+    const [fileURL, setFileURL] = useState<string | null>(null);
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -150,6 +153,29 @@ const ViewUpcomingBirths = () => {
         }
     }
 
+    const handleGeneratePDF = async () => {
+        if (!configContext) return;
+
+        try {
+            setPdfLoading(true);
+            
+            const response = await configContext.axiosHelper.getBlob(
+                `${configContext.apiUrl}/reports/upcoming-births?farm_id=${userLogged.farm_assigned}`
+            );
+            
+            const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(pdfBlob);
+            
+            setFileURL(url);
+            toggleModal('viewPDF');
+        } catch (error) {
+            console.error('Error generating PDF: ', { error });
+            setAlertConfig({ visible: true, color: 'danger', mesagge: 'Error al generar el PDF, intentelo más tarde' });
+        } finally {
+            setPdfLoading(false);
+        }
+    };
+
     useEffect(() => {
         fetchData();
     }, [])
@@ -179,10 +205,30 @@ const ViewUpcomingBirths = () => {
                             </Button>
                         </ButtonGroup>
 
-                        <Button className="ms-auto" onClick={() => toggleModal('birth')}>
-                            <i className="ri-add-line me-2" />
-                            Registrar parto
-                        </Button>
+                        <div className="d-flex gap-2">
+                            <Button 
+                                color="primary" 
+                                onClick={handleGeneratePDF}
+                                disabled={pdfLoading}
+                            >
+                                {pdfLoading ? (
+                                    <>
+                                        <Spinner className="me-2" size='sm' />
+                                        Generando...
+                                    </>
+                                ) : (
+                                    <>
+                                        <i className="ri-file-pdf-line me-2"></i>
+                                        Exportar PDF
+                                    </>
+                                )}
+                            </Button>
+                            
+                            <Button onClick={() => toggleModal('birth')}>
+                                <i className="ri-add-line me-2" />
+                                Registrar parto
+                            </Button>
+                        </div>
                     </CardHeader>
 
                     <CardBody>
@@ -238,6 +284,14 @@ const ViewUpcomingBirths = () => {
                 <ModalHeader toggle={() => toggleModal("abortion")}>Registrar perdida</ModalHeader>
                 <ModalBody>
                     <AbortionForm pregnancy={selectedPregnancyAbort} onSave={() => { toggleModal('abortion'); fetchData(); }} onCancel={() => { }} />
+                </ModalBody>
+            </Modal>
+
+            {/* Modal PDF */}
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de próximos partos</ModalHeader>
+                <ModalBody>
+                    {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>
             </Modal>
 

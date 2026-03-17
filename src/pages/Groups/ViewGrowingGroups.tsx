@@ -95,6 +95,27 @@ const ViewGrowingGroups = () => {
         },
         { header: 'Fecha de creación', accessor: 'creationDate', type: 'date', isFilterable: true },
         {
+            header: 'No. de hembras',
+            accessor: 'femaleCount',
+            type: 'text',
+            isFilterable: true,
+            bgColor: "#fce4ec"
+        },
+        {
+            header: 'No. de machos',
+            accessor: 'maleCount',
+            type: 'text',
+            isFilterable: true,
+            bgColor: "#e3f2fd"
+        },
+        {
+            header: 'Total',
+            accessor: 'pigCount',
+            type: 'text',
+            isFilterable: true,
+            bgColor: "#e8f5e8"
+        },
+        {
             header: 'Estado',
             accessor: 'status',
             type: 'text',
@@ -137,8 +158,6 @@ const ViewGrowingGroups = () => {
                 return <Badge color={color}>{text}</Badge>;
             },
         },
-        // { header: 'No. de hembras', accessor: 'femaleCount', type: 'text', isFilterable: true },
-        // { header: 'No. de machos', accessor: 'maleCount', type: 'text', isFilterable: true },
         {
             header: "Acciones",
             accessor: "action",

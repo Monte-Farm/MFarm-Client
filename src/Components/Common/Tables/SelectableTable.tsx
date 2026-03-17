@@ -188,7 +188,10 @@ function SelectableCustomTable<T extends { id: string }>(props: SelectableCustom
                                 <th
                                     key={idx}
                                     onClick={() => requestSort(col.accessor)}
-                                    style={{ cursor: "pointer" }}
+                                    style={{ 
+                                        cursor: "pointer",
+                                        ...(col.type === "currency" && { width: "1%", whiteSpace: "nowrap" })
+                                    }}
                                 >
                                     {col.header}{" "}
                                     {sortConfig?.key === col.accessor ? (
@@ -231,7 +234,10 @@ function SelectableCustomTable<T extends { id: string }>(props: SelectableCustom
                                             </Label>
                                         </td>
                                         {columns.map((col, cIdx) => (
-                                            <td key={cIdx}>
+                                            <td key={cIdx} style={{ 
+                                                textAlign: col.type === "currency" ? "right" : "left",
+                                                ...(col.type === "currency" && { whiteSpace: "nowrap" })
+                                            }}>
                                                 {col.render
                                                     ? col.render(
                                                           row[col.accessor],

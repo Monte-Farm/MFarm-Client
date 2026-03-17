@@ -387,6 +387,7 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
                     medicationPackagesHistory: [],
                     vaccinationPlansHistory: [],
                     healthEvents: [],
+                    isActive: true,
                 }
 
                 const groupResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/group/create_group`, sowsReplacementGroupData)
@@ -458,6 +459,7 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
                     medicationPackagesHistory: [],
                     vaccinationPlansHistory: [],
                     healthEvents: [],
+                    isActive: true,
                 }
 
                 const groupResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/group/create_group`, salePigsGroupData)

@@ -5,7 +5,7 @@ import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Badge, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalHeader, Row } from "reactstrap";
+import { Badge, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalHeader, Row, Spinner } from "reactstrap";
 import ObjectDetails from "Components/Common/Details/ObjectDetails";
 import { Attribute } from "common/data_interfaces";
 import { FiAlertCircle, FiXCircle } from "react-icons/fi";
@@ -13,6 +13,7 @@ import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
 import DiagnosisForm from "Components/Common/Forms/DiagnoseForm";
 import HeatForm from "Components/Common/Forms/HeatForm";
+import PDFViewer from "Components/Common/Shared/PDFViewer";
 
 const InseminationDetails = () => {
     document.title = 'Detalles de inseminación | System Management'
@@ -25,8 +26,10 @@ const InseminationDetails = () => {
     const [inseminationDetails, setInseminationDetails] = useState<any>({});
     const [sowDetails, setSowDetails] = useState<any>({})
     const [dosesDetails, setDosesDetails] = useState<any[]>([])
-    const [modals, setModals] = useState({ heat: false, diagnosis: false, abortionDetails: false })
+    const [modals, setModals] = useState({ heat: false, diagnosis: false, abortionDetails: false, viewPDF: false })
     const [abortionDetails, setAbortionDetails] = useState<any>({})
+    const [pdfLoading, setPdfLoading] = useState(false);
+    const [fileURL, setFileURL] = useState<string | null>(null);
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -134,6 +137,24 @@ const InseminationDetails = () => {
         }
     }
 
+    const handlePrintInsemination = async () => {
+        if (!configContext) return;
+
+        try {
+            setPdfLoading(true);
+            const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/inseminations/${insemination_id}`);
+            const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(pdfBlob);
+            setFileURL(url);
+            toggleModal('viewPDF');
+        } catch (error) {
+            console.error('Error generating PDF: ', { error });
+            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+        } finally {
+            setPdfLoading(false);
+        }
+    };
+
     useEffect(() => {
         fetchData();
     }, [])
@@ -149,10 +170,30 @@ const InseminationDetails = () => {
             <Container fluid>
                 <BreadCrumb title={"Detalles de inseminación"} pageTitle={"Inseminaciones"} />
 
-                <Button className="mb-4" onClick={() => navigate(-1)}>
-                    <i className="ri-arrow-left-line me-2" />
-                    Regresar
-                </Button>
+                <div className="mb-4 d-flex justify-content-between align-items-center">
+                    <Button onClick={() => navigate(-1)}>
+                        <i className="ri-arrow-left-line me-2" />
+                        Regresar
+                    </Button>
+
+                    <Button
+                        color="primary"
+                        onClick={handlePrintInsemination}
+                        disabled={pdfLoading}
+                    >
+                        {pdfLoading ? (
+                            <>
+                                <Spinner className="me-2" size='sm' />
+                                Generando...
+                            </>
+                        ) : (
+                            <>
+                                <i className="ri-file-pdf-line me-2"></i>
+                                Ver PDF
+                            </>
+                        )}
+                    </Button>
+                </div>
 
                 <div style={{ height: 'calc(100vh - 200px)', minHeight: '600px' }}>
                     <Row className="h-100 g-3">
@@ -429,6 +470,14 @@ const InseminationDetails = () => {
                     </Row>
                 </div>
             </Container>
+
+            {/* Modal PDF */}
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de inseminación</ModalHeader>
+                <ModalBody>
+                    {fileURL && <PDFViewer fileUrl={fileURL} />}
+                </ModalBody>
+            </Modal>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
 

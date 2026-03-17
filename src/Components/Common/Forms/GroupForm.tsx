@@ -261,6 +261,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
             feedingPackagesHistory: [],
             medicationPackagesHistory: [],
             vaccinationPlansHistory: [],
+            isActive: true,
         },
         enableReinitialize: true,
         validationSchema,

@@ -6,13 +6,14 @@ import { getLoggedinUser } from "helpers/api_helper"
 import { useContext, useEffect, useMemo, useState } from "react"
 import { Badge, Button, Card, CardBody, CardHeader, Container, Input, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap"
 import { Column } from "common/data/data_types"
-import UserCards from "Components/Common/Lists/UserCards"
+import CustomTable from "Components/Common/Tables/CustomTable"
 import { roleLabels } from "common/role_labels"
 import { useNavigate } from "react-router-dom"
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation"
 import AlertMessage from "Components/Common/Shared/AlertMesagge"
 import UserForm from "Components/Common/Forms/UserForm"
 import UserDetailsModal from "Components/Common/Details/UserDetails"
+import defaultProfile from '../../assets/images/default-profile-mage.jpg'
 
 const ViewUsers = () => {
     document.title = 'Ver Usuarios | Usuarios'
@@ -24,17 +25,31 @@ const ViewUsers = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ details: false, create: false, update: false, delete: false });
     const [loading, setLoading] = useState<boolean>(true)
-    const [searchTerm, setSearchTerm] = useState('');
     const navigate = useNavigate();
 
     const columns: Column<any>[] = [
-        { header: 'Usuario', accessor: 'username', isFilterable: true, type: 'text' },
+        {
+            header: 'Imagen', accessor: 'profile_image', render: (_, row) => (
+                <img 
+                    src={row.profile_image || defaultProfile} 
+                    alt="Imagen de Perfil" 
+                    style={{ 
+                        height: "50px", 
+                        width: "50px", 
+                        borderRadius: "50%", 
+                        objectFit: "cover" 
+                    }} 
+                />
+            ),
+        },
+        { header: 'Usuario', accessor: 'username', isFilterable: true, type: 'text', bgColor: '#E3F2FD' },
         { header: 'Nombre', accessor: 'name', isFilterable: true, type: 'text' },
         { header: 'Apellido', accessor: 'lastname', isFilterable: true, type: 'text' },
         {
             header: 'Rol',
             accessor: 'role',
             isFilterable: true,
+            bgColor: '#E8F5E9',
             render: (value: string) => roleLabels[value] || value,
         },
         {
@@ -45,6 +60,31 @@ const ViewUsers = () => {
                 <Badge color={value ? 'success' : 'danger'}>
                     {value ? 'Activo' : 'Inactivo'}
                 </Badge>
+            ),
+        },
+        {
+            header: "Acciones",
+            accessor: "action",
+            render: (_, row: any) => (
+                <div className="d-flex gap-1">
+                    <Button
+                        className="btn-icon"
+                        color="primary"
+                        onClick={() => { setSelecteduser(row); toggleModal('details') }}
+                        title="Ver detalles"
+                    >
+                        <i className="ri-eye-fill align-middle"></i>
+                    </Button>
+                    <Button
+                        className="btn-icon"
+                        color="secondary"
+                        onClick={() => handleClicModal("update", row)}
+                        disabled={row.status === false}
+                        title="Editar usuario"
+                    >
+                        <i className="ri-pencil-fill align-middle"></i>
+                    </Button>
+                </div>
             ),
         },
     ];
@@ -95,17 +135,6 @@ const ViewUsers = () => {
         }
     };
 
-    const filteredUsers = useMemo(() => {
-        if (!searchTerm) return users;
-        const lowerSearch = searchTerm.toLowerCase();
-        return users.filter(user =>
-            columns.some(col => {
-                const value = (user as any)[col.accessor];
-                if (value === undefined || value === null) return false;
-                return value.toString().toLowerCase().includes(lowerSearch);
-            })
-        );
-    }, [searchTerm, users, columns]);
 
     useEffect(() => {
         handleFetchUsers();
@@ -125,46 +154,31 @@ const ViewUsers = () => {
 
                 <Card style={{ minHeight: "calc(100vh - 220px)" }}>
                     <CardHeader>
-                        <div className="d-flex gap-3">
-                            <Input
-                                placeholder="Buscar usuario..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="fs-5"
-                            />
-
+                        <div className="d-flex justify-content-between align-items-center">
+                            <h5 className="mb-0">Usuarios Registrados</h5>
                             <Button
-                                className="ms-auto farm-primary-button"
+                                className="farm-primary-button"
                                 onClick={() => toggleModal("create")}
-                                style={{ width: "200px" }}
                             >
-                                <i className="ri-add-line me-3" />
+                                <i className="ri-add-line me-2" />
                                 Registrar Usuario
                             </Button>
                         </div>
                     </CardHeader>
 
-                    <CardBody
-                        className={
-                            filteredUsers.length === 0
-                                ? "d-flex flex-column justify-content-center align-items-center text-center"
-                                : "d-flex flex-column flex-grow-1"
-                        }
-                        style={{ maxHeight: "calc(80vh - 100px)", overflowY: "auto" }}
-                    >
-                        {filteredUsers.length === 0 ? (
+                    <CardBody className={users.length === 0 ? 'd-flex justify-content-center align-items-center' : ''}>
+                        {users.length === 0 ? (
                             <>
                                 <i className="ri-user-unfollow-line text-muted mb-2" style={{ fontSize: "2rem" }} />
                                 <span className="fs-5 text-muted">Aún no hay usuarios registrados</span>
                             </>
                         ) : (
-                            <UserCards
-                                columns={columns}
-                                data={filteredUsers}
-                                onDetailsClick={(user) => { setSelecteduser(user); toggleModal('details') }}
-                                onCardClick={(user) => { setSelecteduser(user); toggleModal('details') }}
-                                onEditClick={(user) => handleClicModal("update", user)}
-                                imageAccessor="profile_image"
+                            <CustomTable 
+                                columns={columns} 
+                                data={users} 
+                                showSearchAndFilter={true} 
+                                showPagination={true} 
+                                rowsPerPage={10}
                             />
                         )}
                     </CardBody>

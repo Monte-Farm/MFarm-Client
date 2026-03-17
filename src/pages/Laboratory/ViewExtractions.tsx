@@ -2,7 +2,7 @@ import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb"
 import { getLoggedinUser } from "helpers/api_helper"
 import { useContext, useEffect, useState } from "react";
-import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, UncontrolledTooltip } from "reactstrap"
+import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, UncontrolledTooltip, Spinner } from "reactstrap"
 import { FiCheckCircle, FiAlertCircle, FiInfo, FiInbox } from "react-icons/fi";
 import { ExtractionData } from "common/data_interfaces";
 import { Column } from "common/data/data_types";
@@ -16,6 +16,8 @@ import BoarVolumeRadar from "Components/Common/Graphics/BoarVolumeRadar";
 import ExtractionForm from "Components/Common/Forms/ExtractionForm";
 import ExtractionDetails from "Components/Common/Details/ExtractionDetails";
 import CustomTable from "Components/Common/Tables/CustomTable";
+import PDFViewer from "Components/Common/Shared/PDFViewer";
+import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector";
 
 const ViewExtractions = () => {
     document.title = 'Ver extracciones | Management System'
@@ -24,9 +26,11 @@ const ViewExtractions = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [extractions, setExtractions] = useState<ExtractionData[] | null>(null)
-    const [modals, setModals] = useState({ create: false, update: false, viewPDF: false, pigDetails: false, extractionDetails: false });
+    const [modals, setModals] = useState({ create: false, update: false, viewPDF: false, pigDetails: false, extractionDetails: false, dateRange: false });
     const [stats, setStats] = useState<any>({})
     const [selectedExtraction, setSelectedExtraction] = useState<any>({})
+    const [pdfLoading, setPdfLoading] = useState(false);
+    const [fileURL, setFileURL] = useState<string>('');
 
     const extractionsColumns: Column<any>[] = [
         { header: 'Lote', accessor: 'batch', type: 'text', isFilterable: true },
@@ -83,6 +87,30 @@ const ViewExtractions = () => {
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
+    };
+
+    const handleGeneratePDF = async (startDate: string, endDate: string) => {
+        if (!configContext) return;
+
+        try {
+            setPdfLoading(true);
+            toggleModal('dateRange', false);
+            
+            const response = await configContext.axiosHelper.getBlob(
+                `${configContext.apiUrl}/reports/extractions/range?start_date=${startDate}&end_date=${endDate}&farm_id=${userLoggged.farm_assigned}`
+            );
+            
+            const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(pdfBlob);
+            
+            setFileURL(url);
+            toggleModal('viewPDF');
+        } catch (error) {
+            console.error('Error generating PDF: ', { error });
+            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+        } finally {
+            setPdfLoading(false);
+        }
     };
 
     const fetchData = async () => {
@@ -205,12 +233,31 @@ const ViewExtractions = () => {
                 </div>
 
                 <Card>
-                    <CardHeader className="d-flex">
+                    <CardHeader className="d-flex justify-content-between align-items-center">
                         <h4>Extracciones</h4>
-                        <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>
-                            <i className="ri-add-line me-2" />
-                            Nueva extracción
-                        </Button>
+                        <div className="d-flex gap-2">
+                            <Button 
+                                color="secondary" 
+                                onClick={() => toggleModal('dateRange')}
+                                disabled={pdfLoading}
+                            >
+                                {pdfLoading ? (
+                                    <>
+                                        <Spinner className="me-2" size='sm' />
+                                        Generando...
+                                    </>
+                                ) : (
+                                    <>
+                                        <i className="ri-file-pdf-line me-2"></i>
+                                        Exportar PDF
+                                    </>
+                                )}
+                            </Button>
+                            <Button className="farm-primary-button" onClick={() => toggleModal('create')}>
+                                <i className="ri-add-line me-2" />
+                                Nueva extracción
+                            </Button>
+                        </div>
                     </CardHeader>
 
                     <CardBody style={{ display: "flex", flexDirection: "column", height: "100%" }}>
@@ -251,6 +298,24 @@ const ViewExtractions = () => {
                 </ModalBody>
             </Modal>
 
+            {/* Modal para seleccionar rango de fechas */}
+            <Modal size="md" isOpen={modals.dateRange} toggle={() => toggleModal("dateRange")} centered>
+                <ModalHeader toggle={() => toggleModal("dateRange")}>Seleccionar rango de fechas</ModalHeader>
+                <ReportDateRangeSelector
+                    onGenerate={handleGeneratePDF}
+                    onCancel={() => toggleModal("dateRange")}
+                    loading={pdfLoading}
+                    generateButtonText="Generar PDF"
+                />
+            </Modal>
+
+            {/* Modal PDF */}
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de extracciones</ModalHeader>
+                <ModalBody>
+                    {fileURL && <PDFViewer fileUrl={fileURL} />}
+                </ModalBody>
+            </Modal>
 
             {alertConfig.visible && (
                 <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />

@@ -1,14 +1,12 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Badge, Button, Card, CardBody, CardHeader, Col, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Nav, NavItem, NavLink, Row, Spinner, TabContent, TabPane } from 'reactstrap';
+import { Badge, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from 'reactstrap';
 import * as Yup from 'yup'
 import { useFormik } from 'formik';
 import SubwarehouseForm from './SubwarehouseForm';
-import { useNavigate } from 'react-router-dom';
-import { Attribute, OutcomeData, ProductData, SubwarehouseData } from 'common/data_interfaces';
+import { Attribute, OutcomeData, SubwarehouseData } from 'common/data_interfaces';
 import { OUTCOME_TYPES, getOutcomeTypeLabel } from 'common/enums/outcomes.enums';
 import { ConfigContext } from 'App';
 import classnames from "classnames";
-import ObjectDetailsHorizontal from '../Details/ObjectDetailsHorizontal';
 import { Column } from 'common/data/data_types';
 import DatePicker from 'react-flatpickr';
 import AlertMessage from '../Shared/AlertMesagge';
@@ -18,7 +16,6 @@ import { getLoggedinUser } from 'helpers/api_helper';
 import CustomTable from '../Tables/CustomTable';
 import SelectableTable from '../Tables/SelectableTable';
 import SelectableCustomTable from '../Tables/SelectableTable';
-import SelectTable from '../Tables/SelectTable';
 import ObjectDetails from '../Details/ObjectDetails';
 
 interface OutcomeFormProps {

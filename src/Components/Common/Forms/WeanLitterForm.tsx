@@ -34,6 +34,8 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
     const [compatibleGroups, setCompatibleGroups] = useState<any[]>([]);
     const [newGroup, setNewGroup] = useState<boolean>(false);
     const [selectedCompatibleGroup, setSelectecCompatibleGroup] = useState<any | null>(null)
+    const [useIndividualWeight, setUseIndividualWeight] = useState<boolean>(false);
+    const [totalLitterWeight, setTotalLitterWeight] = useState<string>('');
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -162,7 +164,12 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
                 </Badge>
             ),
         },
-        { header: 'Peso', accessor: 'weight', type: 'text' },
+        {
+            header: 'Peso',
+            accessor: 'weight',
+            type: 'text',
+            render: (value: string) => `${parseFloat(value).toFixed(2)} kg`
+        },
     ]
 
     const litterAttributes: Attribute[] = [
@@ -316,6 +323,7 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
                     medicationPackagesHistory: [],
                     vaccinationPlansHistory: [],
                     healthEvents: [],
+                    isActive: true,
                 }
 
                 const groupResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/group/create_group`, groupData)
@@ -403,6 +411,21 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
         setPigletsArray([...malePiglets, ...femalePiglets])
     }, [litter])
 
+    // Calcular peso promedio cuando se usa peso total
+    useEffect(() => {
+        if (!useIndividualWeight && totalLitterWeight && pigletsArray.length > 0) {
+            const totalWeight = Number(totalLitterWeight);
+            const averageWeight = totalWeight / pigletsArray.length;
+
+            const updatedPiglets = pigletsArray.map(piglet => ({
+                ...piglet,
+                weight: averageWeight
+            }));
+
+            setPigletsArray(updatedPiglets);
+        }
+    }, [totalLitterWeight, useIndividualWeight, pigletsArray.length]);
+
     if (loading) {
         return (
             <LoadingAnimation absolutePosition={false} />
@@ -468,82 +491,133 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
                     <Label>
                         <h5>Peso de los lechones al destetar</h5>
                     </Label>
-                    <div className="mt-3">
-                        <SimpleBar style={{ maxHeight: 400, paddingRight: 10 }}>
-                            {pigletsArray.map((piglet, index) => (
-                                <div key={index} className="border rounded p-3 mb-2">
-                                    <p className="fw-bold">Lechón #{index + 1}</p>
 
-                                    <div className="d-flex gap-3">
-                                        <div className="w-50">
-                                            <label className="form-label">Sexo</label>
-                                            <select
-                                                className="form-select"
-                                                value={piglet.sex}
-                                                onChange={(e) => {
-                                                    const newArray = [...pigletsArray];
-                                                    newArray[index].sex = e.target.value as 'male' | 'female';
-                                                    setPigletsArray(newArray);
-                                                }}
-                                                disabled
-                                            >
-                                                <option value="">Seleccionar</option>
-                                                <option value="male">Macho</option>
-                                                <option value="female">Hembra</option>
-                                            </select>
-                                        </div>
+                    {/* Toggle para modo de peso */}
+                    <div className="card border-2 border-primary bg-primary-subtle mb-3" role="button" onClick={() => setUseIndividualWeight(!useIndividualWeight)}>
+                        <div className="card-body d-flex align-items-center gap-3">
+                            <Input
+                                className="form-check-input mt-0"
+                                type="checkbox"
+                                checked={useIndividualWeight}
+                                readOnly
+                            />
+                            <FaQuestionCircle className="text-primary" size={20} />
+                            <div>
+                                <div className="fw-semibold">
+                                    Ingresar peso individual de cada lechón
+                                </div>
+                                <div className="small text-muted">
+                                    {useIndividualWeight
+                                        ? "Ingresa el peso de cada lechón individualmente"
+                                        : "Ingresa el peso total de la camada y se asignará el peso promedio a cada lechón"}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                                        <div className="w-50">
-                                            <label className="form-label">Peso (kg)</label>
-                                            <input
-                                                type="number"
-                                                step="0.01"
-                                                className="form-control"
-                                                value={pigletsArray[index].weight}
-                                                onChange={(e) => {
-                                                    const value = e.target.value;
-
-                                                    const newArray = [...pigletsArray];
-
-                                                    if (value === '') {
-                                                        newArray[index].weight = '';
-                                                    } else {
-                                                        newArray[index].weight = Number(value);
-                                                    }
-
-                                                    setPigletsArray(newArray);
-                                                }}
-                                                onFocus={() => {
-                                                    const newArray = [...pigletsArray];
-
-                                                    if (newArray[index].weight === 0) {
-                                                        newArray[index].weight = '';
-                                                        setPigletsArray(newArray);
-                                                    }
-                                                }}
-                                                onBlur={() => {
-                                                    const newArray = [...pigletsArray];
-
-                                                    if (newArray[index].weight === '') {
-                                                        newArray[index].weight = 0;
-                                                        setPigletsArray(newArray);
-                                                    }
-                                                }}
-                                            />
-
+                    {/* Modo: Peso total de la camada */}
+                    {!useIndividualWeight && (
+                        <div className="card border-secondary-subtle mb-3">
+                            <div className="card-body">
+                                <div className="row">
+                                    <div className="col-md-6">
+                                        <label className="form-label fw-semibold">Peso total de la camada (kg)</label>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            className="form-control"
+                                            value={totalLitterWeight}
+                                            onChange={(e) => setTotalLitterWeight(e.target.value)}
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                    <div className="col-md-6">
+                                        <div className="mt-4">
+                                            <div className="d-flex align-items-center gap-2">
+                                                <i className="ri-calculator-line text-primary"></i>
+                                                <span className="text-muted">Peso promedio por lechón:</span>
+                                                <span className="fw-bold text-primary">
+                                                    {totalLitterWeight && pigletsArray.length > 0
+                                                        ? (Number(totalLitterWeight) / pigletsArray.length).toFixed(2)
+                                                        : '0.00'
+                                                    } kg
+                                                </span>
+                                            </div>
+                                            <div className="d-flex align-items-center gap-2 mt-1">
+                                                <i className="ri-group-line text-info"></i>
+                                                <span className="text-muted">Total de lechones:</span>
+                                                <span className="fw-bold text-info">{pigletsArray.length}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            ))}
-                        </SimpleBar>
-                    </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Modo: Peso individual */}
+                    {useIndividualWeight && (
+                        <div className="mt-3">
+                            <SimpleBar style={{ maxHeight: 400, paddingRight: 10 }}>
+                                {pigletsArray.map((piglet, index) => (
+                                    <div key={index} className="border rounded p-3 mb-2">
+                                        <div className="d-flex justify-content-between align-items-center mb-2">
+                                            <p className="fw-bold mb-0">Lechón #{index + 1}</p>
+                                            <Badge color={piglet.sex === 'male' ? "info" : "danger"}>
+                                                {piglet.sex === 'male' ? "♂ Macho" : "♀ Hembra"}
+                                            </Badge>
+                                        </div>
+
+                                        <div className="row">
+                                            <div className="col-12">
+                                                <label className="form-label">Peso (kg)</label>
+                                                <input
+                                                    type="number"
+                                                    step="0.01"
+                                                    className="form-control"
+                                                    value={pigletsArray[index].weight}
+                                                    onChange={(e) => {
+                                                        const value = e.target.value;
+                                                        const newArray = [...pigletsArray];
+
+                                                        if (value === '') {
+                                                            newArray[index].weight = '';
+                                                        } else {
+                                                            newArray[index].weight = Number(value);
+                                                        }
+
+                                                        setPigletsArray(newArray);
+                                                    }}
+                                                    onFocus={() => {
+                                                        const newArray = [...pigletsArray];
+
+                                                        if (newArray[index].weight === 0) {
+                                                            newArray[index].weight = '';
+                                                            setPigletsArray(newArray);
+                                                        }
+                                                    }}
+                                                    onBlur={() => {
+                                                        const newArray = [...pigletsArray];
+
+                                                        if (newArray[index].weight === '') {
+                                                            newArray[index].weight = 0;
+                                                            setPigletsArray(newArray);
+                                                        }
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </SimpleBar>
+                        </div>
+                    )}
 
                     <div className="mt-4 d-flex">
                         <Button className="ms-auto" onClick={() => setActiveStep(activeStep + 1)}>
                             Siguiente
                             < i className="ri-arrow-right-line ms-2" />
                         </Button>
-
                     </div>
                 </TabPane>
 
@@ -654,14 +728,87 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
                                 <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
                                     <span className="text-black">Peso de los lechones</span>
                                 </CardHeader>
-                                <CardBody className='flex-fill p-0'>
-                                    <SimpleBar style={{ maxHeight: 400 }}>
-                                        <CustomTable
-                                            columns={pigletsColumns}
-                                            data={pigletsArray}
-                                            showPagination={false}
-                                            showSearchAndFilter={false}
-                                        />
+                                <CardBody className='p-3'>
+                                    {/* Estadísticas principales */}
+                                    <div className="row g-2 mb-3">
+                                        <div className="col-6">
+                                            <div className="border rounded p-2 text-center bg-light">
+                                                <div className="d-flex align-items-center justify-content-center mb-1">
+                                                    <i className="ri-parent-line fs-5 text-primary me-1"></i>
+                                                    <span className="text-muted fw-semibold">Total</span>
+                                                </div>
+                                                <h4 className="mb-0 text-primary fw-bold">{pigletsArray.length}</h4>
+                                            </div>
+                                        </div>
+                                        <div className="col-6">
+                                            <div className="border rounded p-2 text-center bg-light">
+                                                <div className="d-flex align-items-center justify-content-center mb-1">
+                                                    <i className="ri-scales-3-line fs-5 text-success me-1"></i>
+                                                    <span className="text-muted fw-semibold">Peso Promedio</span>
+                                                </div>
+                                                <h4 className="mb-0 text-success fw-bold">
+                                                    {pigletsArray.length > 0
+                                                        ? (pigletsArray.reduce((acc, p) => acc + Number(p.weight), 0) / pigletsArray.length).toFixed(2)
+                                                        : '0.00'
+                                                    } kg
+                                                </h4>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="row g-2 mb-3">
+                                        <div className="col-6">
+                                            <div className="border rounded p-2 text-center">
+                                                <div className="d-flex align-items-center justify-content-center mb-1">
+                                                    <i className="ri-men-line fs-5 text-info me-1"></i>
+                                                    <span className="text-muted fw-semibold">Machos</span>
+                                                </div>
+                                                <h4 className="mb-0 text-info fw-bold">
+                                                    {pigletsArray.filter(p => p.sex === 'male').length}
+                                                </h4>
+                                            </div>
+                                        </div>
+                                        <div className="col-6">
+                                            <div className="border rounded p-2 text-center">
+                                                <div className="d-flex align-items-center justify-content-center mb-1">
+                                                    <i className="ri-women-line fs-5 text-danger me-1"></i>
+                                                    <span className="text-muted fw-semibold">Hembras</span>
+                                                </div>
+                                                <h4 className="mb-0 text-danger fw-bold">
+                                                    {pigletsArray.filter(p => p.sex === 'female').length}
+                                                </h4>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Tabla detallada compacta */}
+                                    <div>
+                                        <span className="text-muted fw-semibold d-block mb-2">Detalles individuales:</span>
+                                    </div>
+
+                                    <SimpleBar style={{ maxHeight: 200 }}>
+                                        <table className="table table-sm table-hover">
+                                            <thead className="table-light">
+                                                <tr>
+                                                    <th className="text-center">#</th>
+                                                    <th className="text-center">Sexo</th>
+                                                    <th className="text-center">Peso</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {pigletsArray.map((piglet, index) => (
+                                                    <tr key={index}>
+                                                        <td className="text-center">{index + 1}</td>
+                                                        <td className="text-center">
+                                                            <Badge color={piglet.sex === 'male' ? "info" : "danger"} style={{ fontSize: '0.7rem' }}>
+                                                                {piglet.sex === 'male' ? "♂" : "♀"}
+                                                            </Badge>
+                                                        </td>
+                                                        <td className="text-center">{parseFloat(String(piglet.weight)).toFixed(2)}kg</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
                                     </SimpleBar>
                                 </CardBody>
                             </Card>

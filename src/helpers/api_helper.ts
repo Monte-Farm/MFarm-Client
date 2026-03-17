@@ -34,6 +34,13 @@ class APIClient {
     });
   };
 
+  getBlob = (url: string, config?: AxiosRequestConfig): Promise<AxiosResponse> => {
+    return axios.get(url, {
+      ...config,
+      responseType: 'blob',
+    });
+  };
+
 
   /**
    * Posts the given data to the URL

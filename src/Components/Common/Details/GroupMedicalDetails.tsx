@@ -7,6 +7,7 @@ import { Button, Card, CardBody, CardHeader, Modal, ModalBody, ModalHeader } fro
 import { FiAlertCircle, FiEye } from "react-icons/fi";
 import MedicationPackageDetails from "./MedicationPackageDetails";
 import VaccinationPlanDetails from "./VaccinationPlanDetails";
+import HealthEventDetails from "./HealthEventDetails";
 import AsignGroupMedicationPackageForm from "../Forms/AsignGroupMedicationPackageForm";
 import AsignGroupVaccinationPlanForm from "../Forms/AsignGroupVaccinationPlanForm";
 import AsignGroupMedicationForm from "../Forms/AsignGroupMedicationForm";
@@ -39,6 +40,15 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId }) =>
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
 
+    const handleResolveEvent = async (eventId: string, endDate: Date) => {
+        if (!configContext || !userLogged) return;
+        await configContext.axiosHelper.put(`${configContext.apiUrl}/group/resolve_health_event/${groupId}`, {
+            eventId,
+            endDate,
+        });
+        await fetchMedicalInfo();
+    };
+
     const fetchMedicalInfo = async () => {
         if (!configContext || !userLogged) return;
         try {
@@ -48,7 +58,8 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId }) =>
             setMedicationPackages(medicalData.medicationPackagesHistory);
             setVaccinationPlans(medicalData.vaccinationPlansHistory)
             setMedications(medicalData.medications)
-            setHealthEvents(medicalData.healthEvents)
+            const reversedHealthEvents = [...medicalData.healthEvents].reverse();
+            setHealthEvents(reversedHealthEvents)
         } catch (error) {
             console.error('Error fetching data: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: 'Error al obtener la informacion medica, intentelo mas tarde' });
@@ -79,6 +90,7 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId }) =>
                                 setSelectedSickness(id);
                                 toggleModal("healthEventDetails");
                             }}
+                            onResolve={handleResolveEvent}
                         />
                     </div>
                 </div>
@@ -113,6 +125,13 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId }) =>
                 <ModalHeader toggle={() => toggleModal("medicationPackageDetails")}>Detalles de paquete de medicacion</ModalHeader>
                 <ModalBody>
                     <MedicationPackageDetails medicationPackageId={selectedMedicationPackage} />
+                </ModalBody>
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.healthEventDetails} toggle={() => toggleModal("healthEventDetails")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("healthEventDetails")}>Detalles del evento sanitario</ModalHeader>
+                <ModalBody>
+                    <HealthEventDetails eventId={selectedSickness} groupId={groupId} />
                 </ModalBody>
             </Modal>
 

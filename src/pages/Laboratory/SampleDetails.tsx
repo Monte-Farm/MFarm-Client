@@ -12,8 +12,9 @@ import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { FiAlertCircle } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
-import { Badge, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalFooter, ModalHeader, Row, UncontrolledTooltip } from "reactstrap";
+import { Badge, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalFooter, ModalHeader, Row, UncontrolledTooltip, Spinner } from "reactstrap";
 import SimpleBar from "simplebar-react";
+import PDFViewer from "Components/Common/Shared/PDFViewer";
 
 const SampleDetails = () => {
     document.title = 'Detalles de genetica liquida | System Management'
@@ -28,8 +29,10 @@ const SampleDetails = () => {
     const [technicianDetails, setTecnicianDetails] = useState<any>({});
     const [dosesDetails, setDosesDetails] = useState<any[]>([]);
     const [discardDetails, setDiscardDetails] = useState<{ userId: string, discardResponsible: string, discardDate: string, discardReason: string }>()
-    const [modals, setModals] = useState({ extractionDetails: false, discardDose: false });
+    const [modals, setModals] = useState({ extractionDetails: false, discardDose: false, viewPDF: false });
     const [selectedDose, setSelectedDose] = useState<any>({});
+    const [pdfLoading, setPdfLoading] = useState(false);
+    const [fileURL, setFileURL] = useState<string | null>(null);
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -208,6 +211,24 @@ const SampleDetails = () => {
         }
     }
 
+    const handlePrintSample = async () => {
+        if (!configContext) return;
+
+        try {
+            setPdfLoading(true);
+            const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/semen_samples/${sample_id}`);
+            const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(pdfBlob);
+            setFileURL(url);
+            toggleModal('viewPDF');
+        } catch (error) {
+            console.error('Error generating PDF: ', { error });
+            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+        } finally {
+            setPdfLoading(false);
+        }
+    };
+
     const fetchData = async () => {
         if (!configContext || !userLoggged || !sample_id) return;
         try {
@@ -262,10 +283,28 @@ const SampleDetails = () => {
             <Container fluid>
                 <BreadCrumb title={"Detalles de lote"} pageTitle={"Genetica liquida"} />
 
-                <div className="mb-4">
+                <div className="mb-4 d-flex justify-content-between align-items-center">
                     <Button onClick={() => navigate(-1)}>
                         <i className="ri-arrow-left-line me-3"></i>
                         Regresar
+                    </Button>
+
+                    <Button
+                        color="primary"
+                        onClick={handlePrintSample}
+                        disabled={pdfLoading}
+                    >
+                        {pdfLoading ? (
+                            <>
+                                <Spinner className="me-2" size='sm' />
+                                Generando...
+                            </>
+                        ) : (
+                            <>
+                                <i className="ri-file-pdf-line me-2"></i>
+                                Ver PDF
+                            </>
+                        )}
                     </Button>
                 </div>
 
@@ -288,6 +327,7 @@ const SampleDetails = () => {
                             <Card className="shadow-md h-100">
                                 <CardHeader className="d-flex justify-content-between align-items-center" style={{ backgroundColor: 'lightsteelblue' }}>
                                     <h5>Informacion del lote</h5>
+
                                 </CardHeader>
                                 <CardBody>
                                     <ObjectDetails attributes={sampleAttributes} object={sampleDetails} />
@@ -367,6 +407,14 @@ const SampleDetails = () => {
                         </Button>
                     </div>
                 </ModalFooter>
+            </Modal>
+
+            {/* Modal PDF */}
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de muestra de semen</ModalHeader>
+                <ModalBody>
+                    {fileURL && <PDFViewer fileUrl={fileURL} />}
+                </ModalBody>
             </Modal>
 
             {alerConfig.visible && (

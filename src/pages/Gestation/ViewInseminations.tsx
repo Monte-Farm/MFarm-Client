@@ -2,7 +2,7 @@ import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
-import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, UncontrolledTooltip } from "reactstrap";
+import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, UncontrolledTooltip, Spinner } from "reactstrap";
 import { FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo, FiPlayCircle, FiActivity, FiInbox } from "react-icons/fi";
 import { Column } from "common/data/data_types";
 import InseminationFilters from "Components/Common/Tables/InseminationFilters";
@@ -19,6 +19,8 @@ import DiagnosisForm from "Components/Common/Forms/DiagnoseForm";
 import HeatForm from "Components/Common/Forms/HeatForm";
 import InseminationForm from "Components/Common/Forms/InseminationForm";
 import CustomTable from "Components/Common/Tables/CustomTable";
+import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector";
+import PDFViewer from "Components/Common/Shared/PDFViewer";
 
 const ViewInseminations = () => {
     document.title = "Ver inseminaciones | Management System"
@@ -27,7 +29,7 @@ const ViewInseminations = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState<boolean>(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ create: false, update: false, viewPDF: false, diagnosis: false, heat: false, pigDetails: false });
+    const [modals, setModals] = useState({ create: false, update: false, viewPDF: false, diagnosis: false, heat: false, pigDetails: false, dateRange: false });
     const [inseminations, setInseminations] = useState<any[]>([])
     const [possiblesPregnancies, setPossiblesPregnancies] = useState<any[]>([])
     const [possiblesPregnanciesCount, setPossiblesPregnanciesCount] = useState<number>(0)
@@ -35,6 +37,8 @@ const ViewInseminations = () => {
     const [filteredInseminations, setFilteredInseminations] = useState<any[]>([]);
     const [selectedPigId, setSelectedPigId] = useState<string>('')
     const [inseminationsStats, setInseminationsStats] = useState<any>({})
+    const [pdfLoading, setPdfLoading] = useState(false);
+    const [fileURL, setFileURL] = useState<string | null>(null);
 
     const inseminationsColumns: Column<any>[] = [
         {
@@ -182,6 +186,30 @@ const ViewInseminations = () => {
         setInseminationsStats(data)
     };
 
+    const handleGeneratePDF = async (startDate: string, endDate: string) => {
+        if (!configContext) return;
+
+        try {
+            setPdfLoading(true);
+            toggleModal('dateRange', false);
+            
+            const response = await configContext.axiosHelper.getBlob(
+                `${configContext.apiUrl}/reports/inseminations/range?start_date=${startDate}&end_date=${endDate}&farm_id=${userLoggged.farm_assigned}`
+            );
+            
+            const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(pdfBlob);
+            
+            setFileURL(url);
+            toggleModal('viewPDF');
+        } catch (error) {
+            console.error('Error generating PDF: ', { error });
+            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+        } finally {
+            setPdfLoading(false);
+        }
+    };
+
 
     useEffect(() => {
         const loadData = async () => {
@@ -277,12 +305,31 @@ const ViewInseminations = () => {
                 </div>
 
                 <Card style={{}}>
-                    <CardHeader className="d-flex">
+                    <CardHeader className="d-flex justify-content-between align-items-center">
                         <h4>Inseminaciones</h4>
-                        <Button className="ms-auto farm-primary-button" onClick={() => toggleModal("create")}>
-                            <i className="ri-add-line me-2" />
-                            Registrar inseminación
-                        </Button>
+                        <div className="d-flex gap-2">
+                            <Button 
+                                color="primary" 
+                                onClick={() => toggleModal("dateRange")}
+                                disabled={pdfLoading}
+                            >
+                                {pdfLoading ? (
+                                    <>
+                                        <Spinner className="me-2" size='sm' />
+                                        Generando...
+                                    </>
+                                ) : (
+                                    <>
+                                        <i className="ri-file-pdf-line me-2"></i>
+                                        Exportar PDF
+                                    </>
+                                )}
+                            </Button>
+                            <Button className="farm-primary-button" onClick={() => toggleModal("create")}>
+                                <i className="ri-add-line me-2" />
+                                Registrar inseminación
+                            </Button>
+                        </div>
                     </CardHeader>
 
                     <CardBody style={{ display: "flex", flexDirection: "column", height: "100%" }}>
@@ -349,6 +396,25 @@ const ViewInseminations = () => {
                 <ModalHeader toggle={() => toggleModal("pigDetails")}>Detalles del verraco</ModalHeader>
                 <ModalBody>
                     <PigDetailsModal pigId={selectedPigId} showAllDetailsButton={true} />
+                </ModalBody>
+            </Modal>
+
+            {/* Modal para seleccionar rango de fechas */}
+            <Modal size="md" isOpen={modals.dateRange} toggle={() => toggleModal("dateRange")} centered>
+                <ModalHeader toggle={() => toggleModal("dateRange")}>Seleccionar rango de fechas</ModalHeader>
+                <ReportDateRangeSelector
+                    onGenerate={handleGeneratePDF}
+                    onCancel={() => toggleModal("dateRange")}
+                    loading={pdfLoading}
+                    generateButtonText="Generar PDF"
+                />
+            </Modal>
+
+            {/* Modal PDF */}
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de inseminaciones</ModalHeader>
+                <ModalBody>
+                    {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>
             </Modal>
 

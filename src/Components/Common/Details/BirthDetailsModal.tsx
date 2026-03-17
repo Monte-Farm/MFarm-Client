@@ -189,11 +189,6 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
 
     return (
         <>
-            <div className="d-flex gap-3">
-                <KPI title="Nacidos vivos" value={birthDetails.born_alive} icon={FaHeart} bgColor="#E6F9F0" iconColor="#28A745" />
-                <KPI title="Nacidos muertos" value={birthDetails.stillborn} icon={FaSkull} bgColor="#FDECEA" iconColor="#DC3545" />
-                <KPI title="Momias" value={birthDetails.mummies} icon={FaExclamationTriangle} bgColor="#FFF4E5" iconColor="#FD7E14" />
-            </div>
 
             <div className="d-flex gap-3 align-items-stretch">
                 <div className="w-100 d-flex flex-column">
@@ -238,8 +233,109 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
                                 Información ↗
                             </Button>
                         </CardHeader>
-                        <CardBody className="p-0">
-                            <CustomTable columns={pigletsColumns} data={litterDetails.piglets} showSearchAndFilter={false} showPagination rowsPerPage={7} />
+                        <CardBody className="p-2">
+                            {/* Estadísticas principales */}
+                            <div className="row g-3 mb-3">
+                                <div className="col-md-4">
+                                    <div className="border rounded p-2 text-center bg-light">
+                                        <div className="d-flex align-items-center justify-content-center mb-1">
+                                            <i className="ri-parent-line fs-5 text-primary me-1"></i>
+                                            <small className="text-muted">Total Vivos</small>
+                                        </div>
+                                        <h4 className="mb-0 text-primary fw-bold">{litterDetails?.currentMale + litterDetails?.currentFemale}</h4>
+                                    </div>
+                                </div>
+
+                                <div className="col-md-4">
+                                    <div className="border rounded p-2 text-center bg-light">
+                                        <div className="d-flex align-items-center justify-content-center mb-1">
+                                            <i className="ri-men-line fs-5 text-info me-1"></i>
+                                            <small className="text-muted">Machos</small>
+                                        </div>
+                                        <h4 className="mb-0 text-info fw-bold">{litterDetails?.currentMale}</h4>
+                                    </div>
+                                </div>
+
+                                <div className="col-md-4">
+                                    <div className="border rounded p-2 text-center bg-light">
+                                        <div className="d-flex align-items-center justify-content-center mb-1">
+                                            <i className="ri-women-line fs-5 text-danger me-1"></i>
+                                            <small className="text-muted">Hembras</small>
+                                        </div>
+                                        <h4 className="mb-0 text-danger fw-bold">{litterDetails?.currentFemale}</h4>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Información adicional */}
+                            <div className="row g-3 mb-3">
+                                <div className="col-md-6">
+                                    <div className="border rounded p-2 text-center">
+                                        <div className="d-flex align-items-center justify-content-center mb-1">
+                                            <i className="ri-scales-3-line fs-5 text-success me-1"></i>
+                                            <small className="text-muted">Peso Promedio</small>
+                                        </div>
+                                        <h4 className="mb-0 text-success fw-bold">
+                                            {litterDetails?.piglets?.length > 0 
+                                                ? (litterDetails?.piglets?.reduce((acc: number, p: any) => acc + Number(p.weight), 0) / litterDetails?.piglets?.length).toFixed(2)
+                                                : '0.00'
+                                            } kg
+                                        </h4>
+                                    </div>
+                                </div>
+
+                                <div className="col-md-6">
+                                    <div className="border rounded p-2 text-center">
+                                        <div className="d-flex align-items-center justify-content-center mb-1">
+                                            <i className="ri-calculator-line fs-5 text-primary me-1"></i>
+                                            <small className="text-muted">Peso Total</small>
+                                        </div>
+                                        <h4 className="mb-0 text-primary fw-bold">
+                                            {litterDetails?.piglets?.reduce((acc: number, p: any) => acc + Number(p.weight), 0).toFixed(2)} kg
+                                        </h4>
+                                    </div>
+                                </div>
+                            </div>
+
+                            
+                            {/* Tabla detallada (opcional, más pequeña) */}
+                            {litterDetails?.piglets?.length > 0 && (
+                                <div className="mt-3">
+                                    <small className="text-muted fw-semibold d-block mb-2">Detalles individuales:</small>
+                                    <SimpleBar style={{ maxHeight: 200 }}>
+                                        <div className="table-responsive">
+                                            <table className="table table-sm table-hover">
+                                                <thead className="table-light">
+                                                    <tr>
+                                                        <th className="text-center">#</th>
+                                                        <th className="text-center">Sexo</th>
+                                                        <th className="text-center">Peso (kg)</th>
+                                                        <th className="text-center">Estado</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {litterDetails?.piglets?.map((piglet: any, index: number) => (
+                                                        <tr key={index}>
+                                                            <td className="text-center">{index + 1}</td>
+                                                            <td className="text-center">
+                                                                <Badge color={piglet.sex === 'male' ? "info" : "danger"} style={{ fontSize: '0.75rem' }}>
+                                                                    {piglet.sex === 'male' ? "♂" : "♀"}
+                                                                </Badge>
+                                                            </td>
+                                                            <td className="text-center">{Number(piglet.weight).toFixed(2)}</td>
+                                                            <td className="text-center">
+                                                                <Badge color={piglet.status === 'alive' ? "success" : "danger"} style={{ fontSize: '0.75rem' }}>
+                                                                    {piglet.status === 'alive' ? "Vivo" : "Muerto"}
+                                                                </Badge>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </SimpleBar>
+                                </div>
+                            )}
                         </CardBody>
                     </Card>
                 </div >

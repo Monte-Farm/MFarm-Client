@@ -1,4 +1,5 @@
 import { Attribute, ProductData, PurchaseOrderData, SupplierData } from "common/data_interfaces";
+import { SUPPLIER_TYPES, getSupplierTypeLabel } from "common/enums/suppliers.enums";
 import classnames from "classnames";
 import { useContext, useEffect, useState } from "react";
 import { Badge, Button, Card, CardBody, CardHeader, Col, FormFeedback, Input, Label, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Row, Spinner, TabContent, TabPane } from "reactstrap";
@@ -102,7 +103,39 @@ const supplierColumns: Column<any>[] = [
     { header: 'RNC', accessor: 'rnc', isFilterable: true, type: "text" },
     { header: 'Dirección', accessor: 'address', isFilterable: true, type: "text" },
     { header: 'Teléfono', accessor: 'phone_number', isFilterable: true, type: "text" },
-    { header: 'Tipo de Proveedor', accessor: 'supplier_type', isFilterable: true, type: "text" },
+    {
+        header: 'Tipo de Proveedor',
+        accessor: 'supplier_type',
+        isFilterable: true,
+        type: "text",
+        render: (value: string) => {
+            let color = "secondary";
+            let label = getSupplierTypeLabel(value);
+
+            switch (value) {
+                case SUPPLIER_TYPES.CLEANING_PRODUCTS:
+                    color = "info";
+                    break;
+                case SUPPLIER_TYPES.FOOD_AND_FEED:
+                    color = "success";
+                    break;
+                case SUPPLIER_TYPES.MEDICINES_AND_VETERINARY:
+                    color = "warning";
+                    break;
+                case SUPPLIER_TYPES.EQUIPMENT_AND_TOOLS:
+                    color = "primary";
+                    break;
+                case SUPPLIER_TYPES.SERVICES:
+                    color = "secondary";
+                    break;
+                default:
+                    color = "secondary";
+                    break;
+            }
+
+            return <Badge color={color}>{label}</Badge>;
+        },
+    },
 ];
 
 const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSave, onCancel }) => {

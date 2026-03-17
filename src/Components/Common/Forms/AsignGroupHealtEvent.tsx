@@ -56,115 +56,26 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
 
-    const groupAttributes: Attribute[] = [
-        { label: 'Codigo', key: 'code', type: 'text' },
-        { label: 'Nombre', key: 'name', type: 'text' },
-        {
-            label: 'Area',
-            key: 'area',
-            type: 'text',
-            render: (value, object) => {
-                let color = "secondary";
-                let text = "Desconocido";
-
-                switch (object.area) {
-                    case "gestation":
-                        color = "info";
-                        text = "Gestación";
-                        break;
-                    case "farrowing":
-                        color = "primary";
-                        text = "Paridera";
-                        break;
-                    case "maternity":
-                        color = "primary";
-                        text = "Maternidad";
-                        break;
-                    case "weaning":
-                        color = "success";
-                        text = "Destete";
-                        break;
-                    case "nursery":
-                        color = "warning";
-                        text = "Preceba / Levante inicial";
-                        break;
-                    case "fattening":
-                        color = "dark";
-                        text = "Ceba / Engorda";
-                        break;
-                    case "replacement":
-                        color = "secondary";
-                        text = "Reemplazo / Recría";
-                        break;
-                    case "boars":
-                        color = "info";
-                        text = "Área de verracos";
-                        break;
-                    case "quarantine":
-                        color = "danger";
-                        text = "Cuarentena / Aislamiento";
-                        break;
-                    case "hospital":
-                        color = "danger";
-                        text = "Hospital / Enfermería";
-                        break;
-                    case "shipping":
-                        color = "secondary";
-                        text = "Corrales de venta / embarque";
-                        break;
-                }
-
-                return <Badge color={color}>{text}</Badge>;
-            },
-        },
-        {
-            label: 'Etapa',
-            key: 'stage',
-            type: 'text',
-            render: (value, object) => {
-                let color = "secondary";
-                let label = object.stage;
-
-                switch (object.stage) {
-                    case "piglet":
-                        color = "info";
-                        label = "Lechón";
-                        break;
-                    case "weaning":
-                        color = "warning";
-                        label = "Destete";
-                        break;
-                    case "fattening":
-                        color = "primary";
-                        label = "Engorda";
-                        break;
-                    case "breeder":
-                        color = "success";
-                        label = "Reproductor";
-                        break;
-                }
-
-                return <Badge color={color}>{label}</Badge>;
-            },
-        },
-        { label: 'Cerdos', key: 'pigCount', type: 'text' },
-        { label: 'Fecha de creacion', key: 'creationDate', type: 'date' },
-        { label: 'Observaciones', key: 'observations', type: 'text' },
-    ]
-
     const selectedMedicationsColumns: Column<any>[] = [
         { header: "Codigo", accessor: "code", type: "text", isFilterable: true },
         { header: "Producto", accessor: "name", type: "text", isFilterable: true },
         {
-            header: "Dosis",
+            header: "Dosis por cerdo",
             accessor: "dose",
             type: "text",
             isFilterable: true,
-            render: (_, row) => <span>{row.dose} {row.unit_measurement}</span>
+            render: (_, row) => <span>{row.quantityPerPig} {row.unit_measurement}</span>
+        },
+        {
+            header: "Dosis total",
+            accessor: "totalQuantity",
+            type: "text",
+            isFilterable: true,
+            render: (_, row) => <span>{row.totalQuantity} {row.unit_measurement}</span>
         },
         {
             header: "Administracion",
-            accessor: "administration_route",
+            accessor: "administrationRoute",
             type: "text",
             isFilterable: true,
             render: (value: string) => {
@@ -205,8 +116,6 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { header: 'Inicio', accessor: 'startDate', type: 'date', },
-        { header: 'Fin', accessor: 'endDate', type: 'date', },
     ]
 
     const columns: Column<any>[] = [
@@ -255,7 +164,8 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                             invalid={treatmentErrors[row._id]?.quantityPerPig}
                             onChange={(e) => {
                                 const newValue = e.target.value === "" ? 0 : Number(e.target.value);
-                                const totalQuantityValue = Number(newValue * (groupDetails?.pigCount ?? 0))
+                                const affectedCount = formik.values.scope.affectedCount ?? 0;
+                                const totalQuantityValue = Number(newValue * affectedCount);
                                 setTreatmentSelected(prev =>
                                     prev.map(f => f.medication === row._id ? { ...f, quantityPerPig: newValue, totalQuantity: totalQuantityValue } : f)
                                 );
@@ -275,17 +185,17 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
             type: "text",
             render: (value, row, isSelected) => {
                 const selected = treatmentSelected.find(m => m.medication === row._id);
-                const realValue = selected?.administration_route ?? "";
+                const realValue = selected?.administrationRoute ?? "";
                 return (
                     <Input
                         type="select"
                         disabled={!isSelected}
                         value={realValue}
-                        invalid={treatmentErrors[row._id]?.administration_route}
+                        invalid={treatmentErrors[row._id]?.administrationRoute}
                         onChange={(e) => {
                             const newValue = e.target.value;
                             setTreatmentSelected(prev =>
-                                prev.map(m => m.medication === row._id ? { ...m, administration_route: newValue } : m)
+                                prev.map(m => m.medication === row._id ? { ...m, administrationRoute: newValue } : m)
                             );
                         }}
                         onClick={(e) => e.stopPropagation()}
@@ -299,60 +209,6 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                         <option value="topical">Tópica</option>
                         <option value="rectal">Rectal</option>
                     </Input>
-                );
-            }
-        },
-        {
-            header: "Fecha de inicio",
-            accessor: "startDate",
-            type: "text",
-            render: (value, row, isSelected) => {
-                const selected = treatmentSelected.find(m => m.medication === row._id);
-                const realValue = selected?.startDate ?? null;
-                return (
-                    <DatePicker
-                        id="startDate"
-                        className={`form-control ${treatmentErrors[row._id]?.startDate ? 'is-invalid' : ''}`}
-                        value={realValue ?? undefined}
-                        onChange={(date: Date[]) => {
-                            if (date[0]) {
-                                setTreatmentSelected(prev =>
-                                    prev.map(m => m.medication === row._id ? { ...m, startDate: date[0] } : m)
-                                );
-                            }
-                        }}
-                        options={{ dateFormat: 'd/m/Y' }}
-                        disabled={!isSelected}
-                        onClick={(e) => e.stopPropagation()}
-                        placeholder="Seleccione"
-                    />
-                );
-            }
-        },
-        {
-            header: "Fecha de fin",
-            accessor: "endDate",
-            type: "text",
-            render: (value, row, isSelected) => {
-                const selected = treatmentSelected.find(m => m.medication === row._id);
-                const realValue = selected?.endDate ?? null;
-                return (
-                    <DatePicker
-                        id="endDate"
-                        className={`form-control ${treatmentErrors[row._id]?.endDate ? 'is-invalid' : ''}`}
-                        value={realValue ?? undefined}
-                        onChange={(date: Date[]) => {
-                            if (date[0]) {
-                                setTreatmentSelected(prev =>
-                                    prev.map(m => m.medication === row._id ? { ...m, endDate: date[0] } : m)
-                                );
-                            }
-                        }}
-                        options={{ dateFormat: 'd/m/Y' }}
-                        disabled={!isSelected}
-                        onClick={(e) => e.stopPropagation()}
-                        placeholder="Seleccione"
-                    />
                 );
             }
         },
@@ -469,22 +325,25 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
         name: Yup.string().required('El nombre de la enfermedad es obligatoria'),
         status: Yup.string().required('El estado de la enfermedad es obligatorio'),
         startDate: Yup.date().required('La fecha de inicio de la enfermedad es obligatoria'),
+        endDate: Yup.date().when('status', {
+            is: 'resolved',
+            then: (schema) => schema.required('La fecha de término es obligatoria cuando el evento está resuelto'),
+            otherwise: (schema) => schema.nullable()
+        }),
         severity: Yup.string().required('La severidad de la informacion es obligatoria'),
         scope: Yup.object().shape({
             affectedCount: Yup.number()
                 .min(1, 'Debe indicar al menos 1 cerdo')
                 .max(groupDetails?.pigCount || 0, `No puede superar los ${groupDetails?.pigCount} cerdos del grupo`)
                 .required('Requerido'),
-            type: Yup.string()
+            type: Yup.string().required('El tipo de evento es obligatorio')
         })
     })
 
     const treatmentValidation = Yup.object({
         medication: Yup.string().required(),
         quantityPerPig: Yup.number().moreThan(0, "Cantidad inválida").required("Cantidad requerida"),
-        administration_route: Yup.string().required("Vía requerida").notOneOf([""], "Debe seleccionar una vía"),
-        startDate: Yup.date().required('Fecha requerida'),
-        endDate: Yup.date().required('Fecha requerida'),
+        administrationRoute: Yup.string().required("Vía requerida").notOneOf([""], "Debe seleccionar una vía"),
     });
 
     const formik = useFormik<GroupHealthEvents>({
@@ -501,7 +360,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
             symptoms: [],
             treatments: [],
             observations: '',
-            is_active: true,
+            isActive: true,
             detectedBy: userLogged._id,
         },
         enableReinitialize: true,
@@ -535,6 +394,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
             name: true,
             status: true,
             startDate: true,
+            endDate: true,
             severity: true,
             scope: {
                 type: true,
@@ -546,7 +406,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
             await validationSchema.validate(formik.values, { abortEarly: false });
             toggleArrowTab(activeStep + 1);
         } catch (error) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, llene todos los datos' })
+            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, complete todos los campos obligatorios' })
         }
     }
 
@@ -618,7 +478,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                             aria-controls="step-packageSelect-tab"
                             disabled
                         >
-                            Informacion de enfermedad
+                            Informacion de evento
                         </NavLink>
                     </NavItem>
 
@@ -666,166 +526,225 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
 
             <TabContent activeTab={activeStep}>
                 <TabPane tabId={1}>
-                    <div className="d-flex gap-3">
-                        <div className="w-100">
-                            <Label className="form-label">Evento</Label>
-                            <Input
-                                type="text"
-                                name="name"
-                                value={formik.values.name}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                invalid={formik.touched.name && !!formik.errors.name}
-                            />
-                            {formik.touched.name && formik.errors.name && (
-                                <FormFeedback>{formik.errors.name}</FormFeedback>
-                            )}
-                        </div>
-
-                        <div className="w-100">
-                            <Label htmlFor="severityInput" className="form-label">Severidad</Label>
-                            <Input
-                                type="select"
-                                id="severityInput"
-                                name="severity"
-                                value={formik.values.severity}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                invalid={formik.touched.severity && !!formik.errors.severity}
-                            >
-                                <option value="">Seleccione un estado</option>
-                                <option value="low">Baja</option>
-                                <option value="medium">Media</option>
-                                <option value="high">Alta</option>
-                            </Input>
-                            {formik.touched.severity && formik.errors.severity && (
-                                <FormFeedback>{formik.errors.severity}</FormFeedback>
-                            )}
-                        </div>
-
-                        <div className="w-100">
-                            <Label htmlFor="startDate" className="form-label">Fecha de inicio</Label>
-                            <DatePicker
-                                id="startDate"
-                                className={`form-control ${formik.touched.startDate && formik.errors.startDate ? 'is-invalid' : ''}`}
-                                value={formik.values.startDate ?? undefined}
-                                onChange={(date: Date[]) => {
-                                    if (date[0]) formik.setFieldValue('startDate', date[0]);
-                                }}
-                                options={{ dateFormat: 'd/m/Y' }}
-                            />
-                            {formik.touched.startDate && formik.errors.startDate && (
-                                <FormFeedback className="d-block">{formik.errors.startDate as string}</FormFeedback>
-                            )}
-                        </div>
+                    <div className="mb-3">
+                        <h5 className="mb-1">Información del evento sanitario</h5>
+                        <small className="text-muted">
+                            Complete la información básica del evento. La fecha de término solo es necesaria si el evento ya está resuelto.
+                        </small>
                     </div>
 
-                    <div className="d-flex gap-3 mt-4">
-                        <div className="w-50">
-                            <Label htmlFor="typeInput" className="form-label">Tipo de evento</Label>
-                            <Input
-                                type="select"
-                                id="typeInput"
-                                name="scope.type"
-                                value={formik.values.scope.type}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                invalid={formik.touched.scope?.type && !!formik.errors.scope?.type}
-                            >
-                                <option value="">Seleccione un estado</option>
-                                <option value="partial">Parcial</option>
-                                <option value="total">Total</option>
-                            </Input>
-                            {formik.touched.scope?.type && formik.errors.scope?.type && (
-                                <FormFeedback>{formik.errors.scope.type}</FormFeedback>
+                    <Card className="shadow-sm">
+                        <CardBody>
+                            <div className="row g-3">
+                                <div className="col-md-6">
+                                    <Label className="form-label fw-semibold">
+                                        Nombre del evento <span className="text-danger">*</span>
+                                    </Label>
+                                    <Input
+                                        type="text"
+                                        name="name"
+                                        placeholder="Ej: Gripe porcina, Diarrea, etc."
+                                        value={formik.values.name}
+                                        onChange={formik.handleChange}
+                                        onBlur={formik.handleBlur}
+                                        invalid={formik.touched.name && !!formik.errors.name}
+                                    />
+                                    {formik.touched.name && formik.errors.name && (
+                                        <FormFeedback>{formik.errors.name}</FormFeedback>
+                                    )}
+                                </div>
+
+                                <div className="col-md-3">
+                                    <Label htmlFor="severityInput" className="form-label fw-semibold">
+                                        Severidad <span className="text-danger">*</span>
+                                    </Label>
+                                    <Input
+                                        type="select"
+                                        id="severityInput"
+                                        name="severity"
+                                        value={formik.values.severity}
+                                        onChange={formik.handleChange}
+                                        onBlur={formik.handleBlur}
+                                        invalid={formik.touched.severity && !!formik.errors.severity}
+                                    >
+                                        <option value="">Seleccione...</option>
+                                        <option value="low">Baja</option>
+                                        <option value="medium">Media</option>
+                                        <option value="high">Alta</option>
+                                    </Input>
+                                    {formik.touched.severity && formik.errors.severity && (
+                                        <FormFeedback>{formik.errors.severity}</FormFeedback>
+                                    )}
+                                </div>
+
+                                <div className="col-md-3">
+                                    <Label htmlFor="startDate" className="form-label fw-semibold">
+                                        Fecha de inicio <span className="text-danger">*</span>
+                                    </Label>
+                                    <DatePicker
+                                        id="startDate"
+                                        className={`form-control ${formik.touched.startDate && formik.errors.startDate ? 'is-invalid' : ''}`}
+                                        value={formik.values.startDate ?? undefined}
+                                        onChange={(date: Date[]) => {
+                                            if (date[0]) formik.setFieldValue('startDate', date[0]);
+                                        }}
+                                        options={{ dateFormat: 'd/m/Y' }}
+                                        placeholder="Seleccione fecha"
+                                    />
+                                    {formik.touched.startDate && formik.errors.startDate && (
+                                        <FormFeedback className="d-block">{formik.errors.startDate as string}</FormFeedback>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="row g-3 mt-2">
+                                <div className="col-md-4">
+                                    <Label htmlFor="typeInput" className="form-label fw-semibold">
+                                        Tipo de evento <span className="text-danger">*</span>
+                                    </Label>
+                                    <Input
+                                        type="select"
+                                        id="typeInput"
+                                        name="scope.type"
+                                        value={formik.values.scope.type}
+                                        onChange={formik.handleChange}
+                                        onBlur={formik.handleBlur}
+                                        invalid={formik.touched.scope?.type && !!formik.errors.scope?.type}
+                                    >
+                                        <option value="">Seleccione...</option>
+                                        <option value="partial">Parcial (algunos cerdos)</option>
+                                        <option value="total">Total (todo el grupo)</option>
+                                    </Input>
+                                    {formik.touched.scope?.type && formik.errors.scope?.type && (
+                                        <FormFeedback>{formik.errors.scope.type}</FormFeedback>
+                                    )}
+                                </div>
+
+                                <div className="col-md-4">
+                                    <Label className="form-label fw-semibold">
+                                        Cerdos afectados <span className="text-danger">*</span>
+                                    </Label>
+                                    <Input
+                                        type="number"
+                                        name="scope.affectedCount"
+                                        placeholder="Número de cerdos"
+                                        value={formik.values.scope.affectedCount === 0 ? '' : formik.values.scope.affectedCount}
+                                        onChange={(e) => {
+                                            const value = e.target.value === '' ? 0 : Number(e.target.value);
+                                            const maxPigs = groupDetails?.pigCount ?? 0;
+                                            const finalValue = value > maxPigs ? maxPigs : value;
+                                            formik.setFieldValue('scope.affectedCount', finalValue);
+                                        }}
+                                        onFocus={(e) => {
+                                            if (formik.values.scope.affectedCount === 0) {
+                                                e.target.select();
+                                            }
+                                        }}
+                                        onBlur={formik.handleBlur}
+                                        invalid={formik.touched.scope?.affectedCount && !!formik.errors.scope?.affectedCount}
+                                        disabled={formik.values.scope.type === 'total'}
+                                        min={1}
+                                        max={groupDetails?.pigCount}
+                                    />
+                                    {formik.touched.scope?.affectedCount && formik.errors.scope?.affectedCount && (
+                                        <FormFeedback>{formik.errors.scope.affectedCount}</FormFeedback>
+                                    )}
+                                    {formik.values.scope.type === 'total' && (
+                                        <small className="text-muted d-block mt-1">
+                                            <i className="ri-information-line" /> Se asignará a todos los cerdos del grupo
+                                        </small>
+                                    )}
+                                    {formik.values.scope.type === 'partial' && groupDetails?.pigCount && (
+                                        <small className="text-muted d-block mt-1">
+                                            <i className="ri-information-line" /> Máximo: {groupDetails.pigCount} cerdos
+                                        </small>
+                                    )}
+                                </div>
+
+                                <div className="col-md-4">
+                                    <Label htmlFor="statusInput" className="form-label fw-semibold">
+                                        Estado <span className="text-danger">*</span>
+                                    </Label>
+                                    <Input
+                                        type="select"
+                                        id="statusInput"
+                                        name="status"
+                                        value={formik.values.status}
+                                        onChange={(e) => {
+                                            formik.handleChange(e);
+                                            if (e.target.value !== 'resolved') {
+                                                formik.setFieldValue('endDate', null);
+                                            }
+                                        }}
+                                        onBlur={formik.handleBlur}
+                                        invalid={formik.touched.status && !!formik.errors.status}
+                                    >
+                                        <option value="">Seleccione...</option>
+                                        <option value="active">Activo</option>
+                                        <option value="controlled">Controlado</option>
+                                        <option value="resolved">Resuelto</option>
+                                    </Input>
+                                    {formik.touched.status && formik.errors.status && (
+                                        <FormFeedback>{formik.errors.status}</FormFeedback>
+                                    )}
+                                </div>
+                            </div>
+
+                            {formik.values.status === 'resolved' && (
+                                <div className="w-100 mt-2">
+                                    <Label htmlFor="endDate" className="form-label fw-semibold">
+                                        Fecha de término <span className="text-danger">*</span>
+                                    </Label>
+                                    <DatePicker
+                                        id="endDate"
+                                        className={`form-control ${formik.touched.endDate && formik.errors.endDate ? 'is-invalid' : ''}`}
+                                        value={formik.values.endDate ?? undefined}
+                                        onChange={(date: Date[]) => {
+                                            if (date[0]) formik.setFieldValue('endDate', date[0]);
+                                        }}
+                                        options={{ dateFormat: 'd/m/Y' }}
+                                        placeholder="Seleccione fecha"
+                                    />
+                                    {formik.touched.endDate && formik.errors.endDate && (
+                                        <FormFeedback className="d-block">{formik.errors.endDate as string}</FormFeedback>
+                                    )}
+                                    <small className="text-muted d-block mt-1">
+                                        <i className="ri-information-line" /> Fecha en que el evento fue resuelto
+                                    </small>
+                                </div>
                             )}
-                        </div>
 
-                        <div className="w-50">
-                            <Label className="form-label">Afectados</Label>
-                            <Input
-                                type="number"
-                                name="scope.affectedCount"
-                                value={formik.values.scope.affectedCount}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                invalid={formik.touched.scope?.affectedCount && !!formik.errors.scope?.affectedCount}
-                                disabled={formik.values.scope.type === 'total'}
-                                max={groupDetails?.pigCount}
-                            />
-                            {formik.touched.scope?.affectedCount && formik.errors.scope?.affectedCount && (
-                                <FormFeedback>{formik.errors.scope.affectedCount}</FormFeedback>
-                            )}
-                        </div>
-                    </div>
+                            <div className="row g-3 mt-2">
+                                <div className="col-md-6">
+                                    <Label htmlFor="user" className="form-label fw-semibold">Detectada por</Label>
+                                    <Input
+                                        type="text"
+                                        id="user"
+                                        name="user"
+                                        value={'' + userLogged.name + ' ' + userLogged.lastname}
+                                        disabled
+                                    />
+                                </div>
 
-                    <div className="d-flex gap-3 mt-4">
-                        <div className="w-50">
-                            <Label htmlFor="statusInput" className="form-label">Estado</Label>
-                            <Input
-                                type="select"
-                                id="statusInput"
-                                name="status"
-                                value={formik.values.status}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                invalid={formik.touched.status && !!formik.errors.status}
-                            >
-                                <option value="">Seleccione un estado</option>
-                                <option value="active">Activo</option>
-                                <option value="controlled">Controlado</option>
-                                <option value="resolved">Resuelto</option>
-                            </Input>
-                            {formik.touched.status && formik.errors.status && (
-                                <FormFeedback>{formik.errors.status}</FormFeedback>
-                            )}
-                        </div>
-
-                        <div className="w-50">
-                            <Label htmlFor="endDate" className="form-label">Fecha de termino</Label>
-                            <DatePicker
-                                id="endDate"
-                                className={`form-control ${formik.touched.endDate && formik.errors.endDate ? 'is-invalid' : ''}`}
-                                value={formik.values.endDate ?? undefined}
-                                onChange={(date: Date[]) => {
-                                    if (date[0]) formik.setFieldValue('endDate', date[0]);
-                                }}
-                                options={{ dateFormat: 'd/m/Y' }}
-                            />
-                            {formik.touched.endDate && formik.errors.endDate && (
-                                <FormFeedback className="d-block">{formik.errors.endDate as string}</FormFeedback>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="d-flex gap-3 mt-4">
-                        <div className="w-50">
-                            <Label htmlFor="user" className="form-label">Detectada por</Label>
-                            <Input
-                                type="text"
-                                id="user"
-                                name="user"
-                                value={'' + userLogged.name + ' ' + userLogged.lastname}
-                                disabled
-                            />
-                        </div>
-
-                        <div className="w-50">
-                            <Label className="form-label">Observaciones</Label>
-                            <Input
-                                type="text"
-                                name="observations"
-                                value={formik.values.observations}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                invalid={formik.touched.observations && !!formik.errors.observations}
-                            />
-                            {formik.touched.observations && formik.errors.observations && (
-                                <FormFeedback>{formik.errors.observations}</FormFeedback>
-                            )}
-                        </div>
-                    </div>
-
+                                <div className="col-md-6">
+                                    <Label className="form-label fw-semibold">Observaciones</Label>
+                                    <Input
+                                        type="textarea"
+                                        name="observations"
+                                        rows={1}
+                                        placeholder="Información adicional sobre el evento..."
+                                        value={formik.values.observations}
+                                        onChange={formik.handleChange}
+                                        onBlur={formik.handleBlur}
+                                        invalid={formik.touched.observations && !!formik.errors.observations}
+                                    />
+                                    {formik.touched.observations && formik.errors.observations && (
+                                        <FormFeedback>{formik.errors.observations}</FormFeedback>
+                                    )}
+                                </div>
+                            </div>
+                        </CardBody>
+                    </Card>
 
                     <div className="d-flex justify-content-between mt-4">
                         <Button className="btn btn-primary ms-auto" onClick={() => checkSicknessData()}>
@@ -874,9 +793,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                                         medication: r._id,
                                         quantityPerPig: 0,
                                         totalQuantity: 0,
-                                        startDate: null,
-                                        endDate: null,
-                                        administration_route: "",
+                                        administrationRoute: "",
                                         appliedBy: userLogged._id,
                                     };
                                 });
@@ -907,25 +824,11 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
 
                 <TabPane tabId={4}>
                     <div className="d-flex gap-3 align-items-stretch" style={{ minHeight: "60vh" }}>
-                        <div style={{ minWidth: 320 }}>
-                            <Card className="shadow-sm h-100">
-                                <CardHeader className="bg-light fw-bold fs-5">
-                                    Información del cerdo
-                                </CardHeader>
-                                <CardBody>
-                                    <ObjectDetails
-                                        attributes={groupAttributes}
-                                        object={groupDetails ?? {}}
-                                    />
-                                </CardBody>
-                            </Card>
-                        </div>
-
                         <div className="d-flex flex-column flex-grow-1 gap-3">
                             <div className="d-flex gap-3 align-items-stretch" style={{ flex: 1 }}>
                                 <Card className="shadow-sm w-50 h-100">
                                     <CardHeader className="bg-light fw-bold fs-5">
-                                        Información de enfermedad
+                                        Información de evento
                                     </CardHeader>
                                     <CardBody>
                                         <ObjectDetails
@@ -984,19 +887,12 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                     </div>
 
                     <div className="mt-4 d-flex">
-                        <Button
-                            className="btn-danger"
-                            onClick={() => toggleArrowTab(activeStep - 1)}
-                        >
+                        <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                             <i className="ri-arrow-left-line me-2" />
                             Atrás
                         </Button>
 
-                        <Button
-                            className="ms-auto btn-success"
-                            onClick={() => formik.handleSubmit()}
-                            disabled={formik.isSubmitting}
-                        >
+                        <Button className="ms-auto btn-success" onClick={() => formik.handleSubmit()} disabled={formik.isSubmitting}>
                             {formik.isSubmitting ? (
                                 <Spinner size="sm" />
                             ) : (

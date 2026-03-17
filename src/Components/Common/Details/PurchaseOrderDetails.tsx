@@ -1,9 +1,10 @@
 import { ConfigContext } from "App";
 import { Attribute, PurchaseOrderData } from "common/data_interfaces";
+import { SUPPLIER_TYPES, getSupplierTypeLabel } from "common/enums/suppliers.enums";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader } from "reactstrap";
+import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, Spinner } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import ObjectDetailsHorizontal from "Components/Common/Details/ObjectDetailsHorizontal";
 import { Column } from "common/data/data_types";
@@ -25,6 +26,7 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
     const [purchaseOrderDetails, setPurchaseOrderDetails] = useState<PurchaseOrderData>();
     const [products, setProducts] = useState([])
     const [loading, setLoading] = useState<boolean>(true);
+    const [pdfLoading, setPdfLoading] = useState<boolean>(false);
     const [fileURL, setFileURL] = useState<string>('')
     const [modals, setModals] = useState({ viewPDF: false });
 
@@ -51,7 +53,38 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
         { key: 'phone_number', label: 'Teléfono', type: 'text' },
         { key: 'email', label: 'Email', type: 'text' },
         { key: 'rnc', label: 'RNC', type: 'text' },
-        { key: 'supplier_type', label: 'Tipo de Proveedor', type: 'text' },
+        {
+            key: 'supplier_type',
+            label: 'Tipo de Proveedor',
+            type: 'text',
+            render: (value: string) => {
+                let color = "secondary";
+                let label = getSupplierTypeLabel(value);
+
+                switch (value) {
+                    case SUPPLIER_TYPES.CLEANING_PRODUCTS:
+                        color = "info";
+                        break;
+                    case SUPPLIER_TYPES.FOOD_AND_FEED:
+                        color = "success";
+                        break;
+                    case SUPPLIER_TYPES.MEDICINES_AND_VETERINARY:
+                        color = "warning";
+                        break;
+                    case SUPPLIER_TYPES.EQUIPMENT_AND_TOOLS:
+                        color = "primary";
+                        break;
+                    case SUPPLIER_TYPES.SERVICES:
+                        color = "secondary";
+                        break;
+                    default:
+                        color = "secondary";
+                        break;
+                }
+
+                return <Badge color={color}>{label}</Badge>;
+            },
+        },
     ]
 
     const productColumns: Column<any>[] = [
@@ -159,15 +192,24 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
 
     const handlePrintPurchaseOrder = async () => {
         if (!configContext) return;
-        try {
-            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/reports/generate_purchase_order_report/${purchaseId}`, { responseType: 'blob' });
 
-            const url = window.URL.createObjectURL(new Blob([response.data]));
+        try {
+            setPdfLoading(true);
+            
+            // Usar axiosHelper.getBlob para mantener consistencia
+            const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/purchase_orders/${purchaseId}`);
+            
+            // Crear blob con tipo MIME explícito para PDF
+            const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(pdfBlob);
+            
             setFileURL(url);
-            toggleModal('viewPDF')
+            toggleModal('viewPDF');
         } catch (error) {
             console.error('Error generating report:', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrio un error al generar el reporte, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' })
+        } finally {
+            setPdfLoading(false);
         }
     };
 
@@ -183,6 +225,25 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
 
     return (
         <>
+            <div className="d-flex gap-2 mb-4">
+                <Button 
+                    color="primary" 
+                    onClick={handlePrintPurchaseOrder}
+                    disabled={pdfLoading}
+                >
+                    {pdfLoading ? (
+                        <>
+                            <Spinner className="me-2" size='sm' />
+                            Generando PDF
+                        </>
+                    ) : (
+                        <>
+                            <i className="ri-file-pdf-line me-2"></i>
+                            Ver PDF
+                        </>
+                    )}
+                </Button>
+            </div>
             <div className="d-flex flex-column gap-3">
                 {/* Primera fila: Información general y detalles del proveedor */}
                 <div className="d-flex gap-3">

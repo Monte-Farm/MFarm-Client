@@ -7,7 +7,7 @@ import PregnancyDetails from "Components/Common/Details/PregnancyDetails";
 import { useContext, useEffect, useState } from "react";
 import { FiAlertCircle } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, UncontrolledTooltip } from "reactstrap";
+import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, UncontrolledTooltip, Spinner } from "reactstrap";
 import BirthDetails from "Components/Common/Details/BirthDetailsModal";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import KPI from "Components/Common/Graphics/Kpi";
@@ -16,6 +16,8 @@ import LineChartCard from "Components/Common/Graphics/LineChartCard";
 import BasicBarChart from "Components/Common/Graphics/BasicBarChart";
 import { ResponsiveBar } from "@nivo/bar";
 import BasicPieChart from "Components/Common/Graphics/BasicPieChart";
+import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector";
+import PDFViewer from "Components/Common/Shared/PDFViewer";
 
 const ViewBirths = () => {
     document.title = 'Partos registrados | Management System'
@@ -25,9 +27,11 @@ const ViewBirths = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' });
     const [births, setBirths] = useState<any[]>([]);
-    const [modals, setModals] = useState({ pregnancyDetails: false, birthDetails: false })
+    const [modals, setModals] = useState({ pregnancyDetails: false, birthDetails: false, dateRange: false, viewPDF: false })
     const [selectedBirth, setSelectedBirth] = useState<any>({})
     const [birthStats, setBirthStats] = useState<any>({})
+    const [pdfLoading, setPdfLoading] = useState(false);
+    const [fileURL, setFileURL] = useState<string | null>(null);
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -160,6 +164,30 @@ const ViewBirths = () => {
         }
     }
 
+    const handleGeneratePDF = async (startDate: string, endDate: string) => {
+        if (!configContext) return;
+
+        try {
+            setPdfLoading(true);
+            toggleModal('dateRange', false);
+
+            const response = await configContext.axiosHelper.getBlob(
+                `${configContext.apiUrl}/reports/farrowed-births?start_date=${startDate}&end_date=${endDate}&farm_id=${userLogged.farm_assigned}`
+            );
+
+            const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(pdfBlob);
+
+            setFileURL(url);
+            toggleModal('viewPDF');
+        } catch (error) {
+            console.error('Error generating PDF: ', { error });
+            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+        } finally {
+            setPdfLoading(false);
+        }
+    };
+
     useEffect(() => {
         fetchData();
     }, [])
@@ -177,9 +205,10 @@ const ViewBirths = () => {
 
                 <div className="d-flex gap-3 flex-wrap">
                     <KPI title="Partos totales" value={birthStats?.operationalKpis?.[0]?.totalBirths ?? 0} icon={FaPiggyBank} bgColor="#e8f0fe" iconColor="#0d6efd" />
-                    <KPI title="Tasa de mortalidad" value={birthStats?.operationalKpis?.[0]?.mortalityRate.toFixed(2) ?? 0} icon={FaSkullCrossbones} bgColor="#fdecea" iconColor="#dc3545" />
-                    <KPI title="Tasa de nacidos muertos" value={birthStats?.operationalKpis?.[0]?.stillbornRate ?? 0} icon={FaBabyCarriage} bgColor="#fff3cd" iconColor="#ff8800" />
-                    <KPI title="Tasa de momias" value={birthStats?.operationalKpis?.[0]?.mummiesRate ?? 0} icon={FaBiohazard} bgColor="#f8d7da" iconColor="#b02a37" />
+                    <KPI title="Tasa de mortalidad" value={`${(birthStats?.operationalKpis?.[0]?.mortalityRate.toFixed(2) ?? 0)}%`} icon={FaSkullCrossbones} bgColor="#fdecea" iconColor="#dc3545" />
+                    <KPI title="Tasa de nacidos muertos" value={`${(birthStats?.operationalKpis?.[0]?.stillbornRate.toFixed(2) ?? 0)}%`} icon={FaBabyCarriage} bgColor="#fff3cd" iconColor="#ff8800" />
+                    <KPI title="Tasa de momias" value={`${(birthStats?.operationalKpis?.[0]?.mummiesRate.toFixed(2) ?? 0)}%`} icon={FaBiohazard} bgColor="#f8d7da" iconColor="#b02a37" />
+                    <KPI title="Cerdos nacidos muertos y momias" value={((birthStats?.birthStats?.[0]?.totalStillborn ?? 0) + (birthStats?.birthStats?.[0]?.totalMummies ?? 0))} icon={FaExclamationTriangle} bgColor="#f3e5f5" iconColor="#9c27b0" />
                     <KPI title="Promedio de nacidos vivos" value={birthStats?.operationalKpis?.[0]?.avgBornAlivePerBirth.toFixed(2) ?? 0} icon={FaBaby} bgColor="#e6f7e6" iconColor="#28a745" />
                 </div>
 
@@ -222,8 +251,25 @@ const ViewBirths = () => {
 
 
                 <Card>
-                    <CardHeader className="d-flex">
+                    <CardHeader className="d-flex justify-content-between align-items-center">
                         <h5>Partos registrados</h5>
+                        <Button
+                            color="primary"
+                            onClick={() => toggleModal("dateRange")}
+                            disabled={pdfLoading}
+                        >
+                            {pdfLoading ? (
+                                <>
+                                    <Spinner className="me-2" size='sm' />
+                                    Generando...
+                                </>
+                            ) : (
+                                <>
+                                    <i className="ri-file-pdf-line me-2"></i>
+                                    Exportar PDF
+                                </>
+                            )}
+                        </Button>
                     </CardHeader>
                     <CardBody className={births.length === 0 ? 'd-flex justify-content-center align-items-center' : ''}>
                         {births.length === 0 ? (
@@ -255,6 +301,25 @@ const ViewBirths = () => {
                 </ModalHeader>
                 <ModalBody>
                     <BirthDetails birthId={selectedBirth._id} />
+                </ModalBody>
+            </Modal>
+
+            {/* Modal para seleccionar rango de fechas */}
+            <Modal size="md" isOpen={modals.dateRange} toggle={() => toggleModal("dateRange")} centered>
+                <ModalHeader toggle={() => toggleModal("dateRange")}>Seleccionar rango de fechas</ModalHeader>
+                <ReportDateRangeSelector
+                    onGenerate={handleGeneratePDF}
+                    onCancel={() => toggleModal("dateRange")}
+                    loading={pdfLoading}
+                    generateButtonText="Generar PDF"
+                />
+            </Modal>
+
+            {/* Modal PDF */}
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de partos registrados</ModalHeader>
+                <ModalBody>
+                    {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>
             </Modal>
 

@@ -18,6 +18,8 @@ import LitterEventsCard from "Components/Common/Shared/LitterEventsCard";
 import WeanLitterForm from "Components/Common/Forms/WeanLitterForm";
 import WeaningProgress from "Components/Common/Shared/WeaningProgress";
 import LitterFeedingDetails from "Components/Common/Details/LitterFeedingDetails";
+import SimpleBar from "simplebar-react";
+import "simplebar-react/dist/simplebar.min.css";
 
 const LitterDetails = () => {
     const { litter_id } = useParams();
@@ -180,18 +182,8 @@ const LitterDetails = () => {
 
                 <TabContent activeTab={activeTab} className="justified-tabs mt-3">
                     <TabPane tabId="1">
-                        <div className="d-flex gap-3">
-                            <div className="d-flex gap-3 h-100">
-                                <KPI title="Machos" value={litterDetails.currentMale} icon={FaMars} bgColor="#E0F2FF" iconColor="#007BFF" />
-                                <KPI title="Hembras" value={litterDetails.currentFemale} icon={FaVenus} bgColor="#FFE0F0" iconColor="#FF007B" />
-                                <KPI title="Lechones totales" value={litterDetails.currentMale + litterDetails.currentFemale} icon={FaPiggyBank} bgColor="#EFE8FF" iconColor="#7B2FFF" />
-                                <KPI title="Peso promedio" value={`${litterDetails?.averageWeight?.toFixed(2)} kg`} icon={FaWeightHanging} bgColor="#E6F4EA" iconColor="#2E7D32" />
-                            </div>
-
-                            <div className="w-100 h-100">
-                                <WeaningProgress birthDate={litterDetails?.birthDate} litterStatus={litterDetails?.status} />
-                            </div>
-
+                        <div className="w-100 mb-3">
+                            <WeaningProgress birthDate={litterDetails?.birthDate} litterStatus={litterDetails?.status} />
                         </div>
 
 
@@ -229,8 +221,90 @@ const LitterDetails = () => {
                                     <CardHeader className="bg-white border-bottom">
                                         <h5 className="mb-0 text-dark fw-semibold">Lechones</h5>
                                     </CardHeader>
-                                    <CardBody className="overflow-auto p-0">
-                                        <CustomTable columns={pigletsColumns} data={litterDetails?.piglets} showSearchAndFilter={false} showPagination rowsPerPage={9} />
+                                    <CardBody className="p-3">
+                                        {/* Estadísticas de lechones */}
+                                        <div className="row g-2 mb-3">
+                                            <div className="col-6">
+                                                <div className="border rounded p-2 text-center bg-light">
+                                                    <div className="d-flex align-items-center justify-content-center mb-1">
+                                                        <i className="ri-men-line fs-5 text-info me-1"></i>
+                                                        <span className="text-muted fw-semibold">Machos</span>
+                                                    </div>
+                                                    <h4 className="mb-0 text-info fw-bold">{litterDetails?.currentMale}</h4>
+                                                </div>
+                                            </div>
+                                            <div className="col-6">
+                                                <div className="border rounded p-2 text-center bg-light">
+                                                    <div className="d-flex align-items-center justify-content-center mb-1">
+                                                        <i className="ri-women-line fs-5 text-danger me-1"></i>
+                                                        <span className="text-muted fw-semibold">Hembras</span>
+                                                    </div>
+                                                    <h4 className="mb-0 text-danger fw-bold">{litterDetails?.currentFemale}</h4>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="row g-2 mb-3">
+                                            <div className="col-6">
+                                                <div className="border rounded p-2 text-center">
+                                                    <div className="d-flex align-items-center justify-content-center mb-1">
+                                                        <i className="ri-scales-3-line fs-5 text-success me-1"></i>
+                                                        <span className="text-muted fw-semibold">Peso Promedio</span>
+                                                    </div>
+                                                    <h4 className="mb-0 text-success fw-bold">
+                                                        {litterDetails?.piglets?.length > 0
+                                                            ? (litterDetails?.piglets?.reduce((acc: number, p: any) => acc + Number(p.weight), 0) / litterDetails?.piglets?.length).toFixed(2)
+                                                            : '0.00'
+                                                        } kg
+                                                    </h4>
+                                                </div>
+                                            </div>
+                                            <div className="col-6">
+                                                <div className="border rounded p-2 text-center">
+                                                    <div className="d-flex align-items-center justify-content-center mb-1">
+                                                        <i className="ri-calculator-line fs-5 text-primary me-1"></i>
+                                                        <span className="text-muted fw-semibold">Peso Total</span>
+                                                    </div>
+                                                    <h4 className="mb-0 text-primary fw-bold">
+                                                        {litterDetails?.piglets?.reduce((acc: number, p: any) => acc + Number(p.weight), 0).toFixed(2)} kg
+                                                    </h4>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Tabla detallada con scroll */}
+                                        <div className="text-muted fw-semibold mb-2">Detalles de lechones:</div>
+                                        
+                                        <SimpleBar style={{ maxHeight: '400px' }}>
+                                            <table className="table table-hover table-sm">
+                                                <thead className="table-light">
+                                                    <tr>
+                                                        <th className="text-center">#</th>
+                                                        <th className="text-center">Sexo</th>
+                                                        <th className="text-center">Peso</th>
+                                                        <th className="text-center">Estado</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {litterDetails?.piglets?.map((piglet: any, index: number) => (
+                                                        <tr key={index}>
+                                                            <td className="text-center">{index + 1}</td>
+                                                            <td className="text-center">
+                                                                <Badge color={piglet.sex === 'male' ? "info" : "danger"}>
+                                                                    {piglet.sex === 'male' ? "♂" : "♀"}
+                                                                </Badge>
+                                                            </td>
+                                                            <td className="text-center">{Number(piglet.weight).toFixed(2)}kg</td>
+                                                            <td className="text-center">
+                                                                <Badge color={piglet.status === 'alive' ? "success" : "danger"}>
+                                                                    {piglet.status === 'alive' ? "Vivo" : "Muerto"}
+                                                                </Badge>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </SimpleBar>
                                     </CardBody>
                                 </Card>
                             </div>

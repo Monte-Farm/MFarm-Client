@@ -33,67 +33,28 @@ const ViewWeanedGroups = () => {
 
     const groupsColumns: Column<any>[] = [
         { header: 'Codigo', accessor: 'code', type: 'text', isFilterable: true },
-        { header: 'Nombre', accessor: 'name', type: 'text', isFilterable: true },
+        { header: 'Fecha de creación', accessor: 'creationDate', type: 'date', isFilterable: true },
         {
-            header: 'Área',
-            accessor: 'area',
+            header: 'Hembras',
+            accessor: 'femaleCount',
             type: 'text',
             isFilterable: true,
-            render: (_, row) => {
-                let color = "secondary";
-                let text = "Desconocido";
-
-                switch (row.area) {
-                    case "gestation":
-                        color = "info";
-                        text = "Gestación";
-                        break;
-                    case "farrowing":
-                        color = "primary";
-                        text = "Paridera";
-                        break;
-                    case "maternity":
-                        color = "primary";
-                        text = "Maternidad";
-                        break;
-                    case "weaning":
-                        color = "success";
-                        text = "Destete";
-                        break;
-                    case "nursery":
-                        color = "warning";
-                        text = "Preceba / Levante inicial";
-                        break;
-                    case "fattening":
-                        color = "dark";
-                        text = "Ceba / Engorda";
-                        break;
-                    case "replacement":
-                        color = "secondary";
-                        text = "Reemplazo / Recría";
-                        break;
-                    case "boars":
-                        color = "info";
-                        text = "Área de verracos";
-                        break;
-                    case "quarantine":
-                        color = "danger";
-                        text = "Cuarentena / Aislamiento";
-                        break;
-                    case "hospital":
-                        color = "danger";
-                        text = "Hospital / Enfermería";
-                        break;
-                    case "shipping":
-                        color = "secondary";
-                        text = "Corrales de venta / embarque";
-                        break;
-                }
-
-                return <Badge color={color}>{text}</Badge>;
-            },
+            bgColor: "#fce4ec"
         },
-        { header: 'Fecha de creación', accessor: 'creationDate', type: 'date', isFilterable: true },
+        {
+            header: 'Machos',
+            accessor: 'maleCount',
+            type: 'text',
+            isFilterable: true,
+            bgColor: "#e3f2fd"
+        },
+        {
+            header: 'Total',
+            accessor: 'pigCount',
+            type: 'text',
+            isFilterable: true,
+            bgColor: "#e8f5e8"
+        },
         {
             header: 'Estado',
             accessor: 'status',
@@ -121,8 +82,6 @@ const ViewWeanedGroups = () => {
                 return <Badge color={color}>{text}</Badge>;
             },
         },
-        // { header: 'No. de hembras', accessor: 'femaleCount', type: 'text', isFilterable: true },
-        // { header: 'No. de machos', accessor: 'maleCount', type: 'text', isFilterable: true },
         {
             header: "Acciones",
             accessor: "action",

@@ -185,7 +185,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
                 }
 
             } catch (err: any) {
-
+                handleError(err, 'Error al registrar la muestra. Por favor, inténtelo nuevamente.');
             } finally {
                 setSubmitting(false);
             }
@@ -193,14 +193,15 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
     })
 
     const checkExtractionSelected = () => {
-        if (formik.values.extraction_id === "") {
-            setAlertExtractionEmpty(true)
+        if (formik.values.extraction_id === "" || !formik.values.extraction_id) {
+            setAlertExtractionEmpty(true);
             setTimeout(() => {
-                setAlertExtractionEmpty(false)
+                setAlertExtractionEmpty(false);
             }, 4000);
-            return
+            return false;
         }
-        toggleArrowTab(2)
+        toggleArrowTab(2);
+        return true;
     }
 
     const checkSampleData = async () => {
@@ -225,8 +226,12 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
         try {
             await validationSchema.validate(formik.values, { abortEarly: false });
             toggleArrowTab(3);
-        } catch (err) {
-
+        } catch (err: any) {
+            if (err.errors && err.errors.length > 0) {
+                showAlert('danger', `Por favor complete los campos requeridos: ${err.errors.slice(0, 2).join(', ')}`);
+            } else {
+                showAlert('danger', 'Por favor complete todos los campos requeridos antes de continuar');
+            }
         }
     };
 
@@ -247,6 +252,8 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
 
     useEffect(() => {
         const selected = extractions.find(e => e._id === formik.values.extraction_id);
+        setSelectedExtraction(selected || null);
+        
         if (!selected) {
             formik.setFieldValue('doses', []);
             return;
@@ -312,7 +319,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
                 }}
             >
                 <div className="step-arrow-nav mb-4">
-                    <Nav className="nav-pills custom-nav nav-justified">
+                    <Nav className="nav-pills custom-nav nav-justified disabled">
                         <NavItem>
                             <NavLink
                                 href='#'
@@ -404,266 +411,295 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
                     </TabPane>
 
                     <TabPane id="step-extractioninfo-tab" tabId={2}>
-                        <div className="d-flex gap-2">
-                            <div className="mt-4 w-50">
-                                <Label htmlFor="date" className="form-label">Fecha de expiración</Label>
-                                <DatePicker
-                                    id="date"
-                                    className={`form-control ${formik.touched.expiration_date && formik.errors.expiration_date ? 'is-invalid' : ''}`}
-                                    value={formik.values.expiration_date ?? undefined}
-                                    onChange={(date: Date[]) => {
-                                        if (date[0]) formik.setFieldValue('expiration_date', date[0]);
-                                    }}
-                                    options={{ dateFormat: 'd/m/Y' }}
-                                />
-                                {formik.touched.expiration_date && formik.errors.expiration_date && (
-                                    <FormFeedback className="d-block">{formik.errors.expiration_date as string}</FormFeedback>
-                                )}
+                        {/* Sección 1: Configuración de Dosis */}
+                        <div className="card shadow-sm border-0 rounded-3 mb-4">
+                            <div className="card-header bg-light">
+                                <h6 className="mb-0 text-primary fw-bold">
+                                    <i className="ri-settings-3-line me-2 text-primary"></i>
+                                    Configuración de Dosis
+                                </h6>
                             </div>
+                            <div className="card-body">
+                                <div className="row g-3">
+                                    <div className="col-md-4">
+                                        <Label htmlFor="date" className="form-label">Fecha de expiración</Label>
+                                        <DatePicker
+                                            id="date"
+                                            className={`form-control ${formik.touched.expiration_date && formik.errors.expiration_date ? 'is-invalid' : ''}`}
+                                            value={formik.values.expiration_date ?? undefined}
+                                            onChange={(date: Date[]) => {
+                                                if (date[0]) formik.setFieldValue('expiration_date', date[0]);
+                                            }}
+                                            options={{ dateFormat: 'd/m/Y' }}
+                                        />
+                                        {formik.touched.expiration_date && formik.errors.expiration_date && (
+                                            <FormFeedback className="d-block">{formik.errors.expiration_date as string}</FormFeedback>
+                                        )}
+                                    </div>
 
-                            <div className="mt-4 w-50">
-                                <Label htmlFor="dose_size" className="form-label">Tamaño de dosis</Label>
-                                <Input
-                                    type="number"
-                                    id="dose_size"
-                                    name="dose_size"
-                                    value={doseSize}
-                                    onChange={(e) => setDoseSize(Number(e.target.value))}
-                                    placeholder="Ej: 10"
-                                    min={1}
-                                />
-                            </div>
+                                    <div className="col-md-4">
+                                        <Label htmlFor="dose_size" className="form-label">Tamaño de dosis</Label>
+                                        <Input
+                                            type="number"
+                                            id="dose_size"
+                                            name="dose_size"
+                                            value={doseSize}
+                                            onChange={(e) => setDoseSize(Number(e.target.value))}
+                                            onFocus={(e) => e.target.select()}
+                                            placeholder="Ej: 10"
+                                            min={1}
+                                        />
+                                    </div>
 
-                            <div className="mt-4 w-50">
-                                <Label htmlFor="alert_days_before_expiration" className="form-label">Alerta de expiración</Label>
-                                <div className="input-group">
-                                    <Input
-                                        className="form-control"
-                                        type="number"
-                                        id="alert_days_before_expiration"
-                                        name="alert_days_before_expiration"
-                                        value={formik.values.alert_hours_before_expiration}
-                                        onChange={formik.handleChange}
-                                        onBlur={formik.handleBlur}
-                                        invalid={formik.touched.alert_hours_before_expiration && !!formik.errors.alert_hours_before_expiration}
-                                        min={0}
-                                    />
-                                    <span className="input-group-text">horas antes</span>
-                                    {formik.touched.alert_hours_before_expiration && formik.errors.alert_hours_before_expiration && (
-                                        <FormFeedback>{formik.errors.alert_hours_before_expiration}</FormFeedback>
-                                    )}
+                                    <div className="col-md-4">
+                                        <Label htmlFor="alert_hours_before_expiration" className="form-label">Alerta de expiración</Label>
+                                        <div className="input-group">
+                                            <Input
+                                                className="form-control"
+                                                type="number"
+                                                id="alert_hours_before_expiration"
+                                                name="alert_hours_before_expiration"
+                                                value={formik.values.alert_hours_before_expiration}
+                                                onChange={formik.handleChange}
+                                                onBlur={formik.handleBlur}
+                                                onFocus={(e) => e.target.select()}
+                                                invalid={formik.touched.alert_hours_before_expiration && !!formik.errors.alert_hours_before_expiration}
+                                                min={0}
+                                            />
+                                            <span className="input-group-text">horas antes</span>
+                                            {formik.touched.alert_hours_before_expiration && formik.errors.alert_hours_before_expiration && (
+                                                <FormFeedback>{formik.errors.alert_hours_before_expiration}</FormFeedback>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-
                         </div>
 
-                        <div className="d-flex gap-2">
-                            {/* Concentración */}
-                            <div className="mt-4 w-100">
-                                <Label htmlFor="concentration_million" className="form-label">Concentración (millones)</Label>
-                                <Input
-                                    type="number"
-                                    id="concentration_million"
-                                    name="concentration_million"
-                                    value={formik.values.concentration_million}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    invalid={formik.touched.concentration_million && !!formik.errors.concentration_million}
-                                    placeholder="Ej: 250"
-                                />
-                                {formik.touched.concentration_million && formik.errors.concentration_million && (
-                                    <FormFeedback>{formik.errors.concentration_million}</FormFeedback>
-                                )}
+                        {/* Sección 2: Análisis de Semen */}
+                        <div className="card shadow-sm border-0 rounded-3 mb-4">
+                            <div className="card-header bg-light">
+                                <h6 className="mb-0 text-success fw-bold">
+                                    <i className="ri-test-tube-line me-2 text-success"></i>
+                                    Análisis de Semen
+                                </h6>
                             </div>
+                            <div className="card-body">
+                                <div className="row g-3">
+                                    <div className="col-md-4">
+                                        <Label htmlFor="concentration_million" className="form-label">Concentración (millones)</Label>
+                                        <Input
+                                            type="number"
+                                            id="concentration_million"
+                                            name="concentration_million"
+                                            value={formik.values.concentration_million}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            onFocus={(e) => e.target.select()}
+                                            invalid={formik.touched.concentration_million && !!formik.errors.concentration_million}
+                                            placeholder="Ej: 250"
+                                        />
+                                        {formik.touched.concentration_million && formik.errors.concentration_million && (
+                                            <FormFeedback>{formik.errors.concentration_million}</FormFeedback>
+                                        )}
+                                    </div>
 
-                            {/* Motilidad */}
-                            <div className="mt-4 w-100">
-                                <Label htmlFor="motility_percent" className="form-label">Motilidad (%)</Label>
-                                <Input
-                                    type="number"
-                                    id="motility_percent"
-                                    name="motility_percent"
-                                    value={formik.values.motility_percent}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    invalid={formik.touched.motility_percent && !!formik.errors.motility_percent}
-                                    placeholder="Ej: 80"
-                                />
-                                {formik.touched.motility_percent && formik.errors.motility_percent && (
-                                    <FormFeedback>{formik.errors.motility_percent}</FormFeedback>
-                                )}
-                            </div>
+                                    <div className="col-md-4">
+                                        <Label htmlFor="motility_percent" className="form-label">Motilidad (%)</Label>
+                                        <Input
+                                            type="number"
+                                            id="motility_percent"
+                                            name="motility_percent"
+                                            value={formik.values.motility_percent}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            onFocus={(e) => e.target.select()}
+                                            invalid={formik.touched.motility_percent && !!formik.errors.motility_percent}
+                                            placeholder="Ej: 80"
+                                        />
+                                        {formik.touched.motility_percent && formik.errors.motility_percent && (
+                                            <FormFeedback>{formik.errors.motility_percent}</FormFeedback>
+                                        )}
+                                    </div>
 
-                            {/* Vitalidad */}
-                            <div className="mt-4 w-100">
-                                <Label htmlFor="vitality_percent" className="form-label">Vitalidad (%)</Label>
-                                <Input
-                                    type="number"
-                                    id="vitality_percent"
-                                    name="vitality_percent"
-                                    value={formik.values.vitality_percent}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    invalid={formik.touched.vitality_percent && !!formik.errors.vitality_percent}
-                                    placeholder="Ej: 85"
-                                />
-                                {formik.touched.vitality_percent && formik.errors.vitality_percent && (
-                                    <FormFeedback>{formik.errors.vitality_percent}</FormFeedback>
-                                )}
-                            </div>
+                                    <div className="col-md-4">
+                                        <Label htmlFor="vitality_percent" className="form-label">Vitalidad (%)</Label>
+                                        <Input
+                                            type="number"
+                                            id="vitality_percent"
+                                            name="vitality_percent"
+                                            value={formik.values.vitality_percent}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            onFocus={(e) => e.target.select()}
+                                            invalid={formik.touched.vitality_percent && !!formik.errors.vitality_percent}
+                                            placeholder="Ej: 85"
+                                        />
+                                        {formik.touched.vitality_percent && formik.errors.vitality_percent && (
+                                            <FormFeedback>{formik.errors.vitality_percent}</FormFeedback>
+                                        )}
+                                    </div>
 
-                            {/* Anomalías */}
-                            <div className="mt-4 w-100">
-                                <Label htmlFor="abnormal_percent" className="form-label">Anomalías (%)</Label>
-                                <Input
-                                    type="number"
-                                    id="abnormal_percent"
-                                    name="abnormal_percent"
-                                    value={formik.values.abnormal_percent}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    invalid={formik.touched.abnormal_percent && !!formik.errors.abnormal_percent}
-                                    placeholder="Ej: 5"
-                                />
-                                {formik.touched.abnormal_percent && formik.errors.abnormal_percent && (
-                                    <FormFeedback>{formik.errors.abnormal_percent}</FormFeedback>
-                                )}
-                            </div>
+                                    <div className="col-md-4">
+                                        <Label htmlFor="abnormal_percent" className="form-label">Anomalías (%)</Label>
+                                        <Input
+                                            type="number"
+                                            id="abnormal_percent"
+                                            name="abnormal_percent"
+                                            value={formik.values.abnormal_percent}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            onFocus={(e) => e.target.select()}
+                                            invalid={formik.touched.abnormal_percent && !!formik.errors.abnormal_percent}
+                                            placeholder="Ej: 5"
+                                        />
+                                        {formik.touched.abnormal_percent && formik.errors.abnormal_percent && (
+                                            <FormFeedback>{formik.errors.abnormal_percent}</FormFeedback>
+                                        )}
+                                    </div>
 
-                            {/* pH */}
-                            <div className="mt-4 w-100">
-                                <Label htmlFor="pH" className="form-label">pH</Label>
-                                <Input
-                                    type="number"
-                                    id="pH"
-                                    name="pH"
-                                    value={formik.values.pH}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    invalid={formik.touched.pH && !!formik.errors.pH}
-                                    placeholder="Ej: 7.2"
-                                />
-                                {formik.touched.pH && formik.errors.pH && (
-                                    <FormFeedback>{formik.errors.pH}</FormFeedback>
-                                )}
-                            </div>
+                                    <div className="col-md-4">
+                                        <Label htmlFor="pH" className="form-label">pH</Label>
+                                        <Input
+                                            type="number"
+                                            id="pH"
+                                            name="pH"
+                                            value={formik.values.pH}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            onFocus={(e) => e.target.select()}
+                                            invalid={formik.touched.pH && !!formik.errors.pH}
+                                            placeholder="Ej: 7.2"
+                                        />
+                                        {formik.touched.pH && formik.errors.pH && (
+                                            <FormFeedback>{formik.errors.pH}</FormFeedback>
+                                        )}
+                                    </div>
 
-                            {/* Temperatura */}
-                            <div className="mt-4 w-100">
-                                <Label htmlFor="temperature" className="form-label">Temperatura (°C)</Label>
-                                <Input
-                                    type="number"
-                                    id="temperature"
-                                    name="temperature"
-                                    value={formik.values.temperature}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    invalid={formik.touched.temperature && !!formik.errors.temperature}
-                                    placeholder="Ej: 37"
-                                />
-                                {formik.touched.temperature && formik.errors.temperature && (
-                                    <FormFeedback>{formik.errors.temperature}</FormFeedback>
-                                )}
-                            </div>
-
-                        </div>
-
-                        <div className="d-flex gap-2">
-
-                            {/* Diluyente */}
-                            <div className="mt-4 w-50">
-                                <Label htmlFor="diluent_type" className="form-label">Tipo de diluyente</Label>
-                                <Input
-                                    type="text"
-                                    id="diluent_type"
-                                    name="diluent.type"
-                                    value={formik.values.diluent.type}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    invalid={formik.touched.diluent?.type && !!formik.errors.diluent?.type}
-                                    placeholder="Ej: Extender X"
-                                />
-                                {formik.touched.diluent?.type && formik.errors.diluent?.type && (
-                                    <FormFeedback>{formik.errors.diluent.type}</FormFeedback>
-                                )}
-                            </div>
-
-                            <div className="mt-4 w-50">
-                                <Label htmlFor="diluent_lot" className="form-label">Lote de diluyente</Label>
-                                <Input
-                                    type="text"
-                                    id="diluent_lot"
-                                    name="diluent.lot"
-                                    value={formik.values.diluent.lot}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    invalid={formik.touched.diluent?.lot && !!formik.errors.diluent?.lot}
-                                    placeholder="Ej: D-001"
-                                />
-                                {formik.touched.diluent?.lot && formik.errors.diluent?.lot && (
-                                    <FormFeedback>{formik.errors.diluent.lot}</FormFeedback>
-                                )}
-                            </div>
-
-                            <div className="mt-4 w-50">
-                                <Label htmlFor="diluent_final_volume" className="form-label">Volumen de diluyente ({selectedExtraction?.unit_measurement})</Label>
-                                <Input
-                                    type="number"
-                                    id="diluent_final_concentration"
-                                    name="diluent.volume"
-                                    value={formik.values.diluent.volume}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    invalid={formik.touched.diluent?.volume && !!formik.errors.diluent?.volume}
-                                    placeholder="Ej: 1.5"
-                                />
-                                {formik.touched.diluent?.volume && formik.errors.diluent?.volume && (
-                                    <FormFeedback>{formik.errors.diluent.volume}</FormFeedback>
-                                )}
+                                    <div className="col-md-4">
+                                        <Label htmlFor="temperature" className="form-label">Temperatura (°C)</Label>
+                                        <Input
+                                            type="number"
+                                            id="temperature"
+                                            name="temperature"
+                                            value={formik.values.temperature}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            onFocus={(e) => e.target.select()}
+                                            invalid={formik.touched.temperature && !!formik.errors.temperature}
+                                            placeholder="Ej: 37"
+                                        />
+                                        {formik.touched.temperature && formik.errors.temperature && (
+                                            <FormFeedback>{formik.errors.temperature}</FormFeedback>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="d-flex gap-2">
-                            {/* Método de conservación */}
-                            <div className="mt-4 w-50">
-                                <Label htmlFor="conservation_method" className="form-label">Método de conservación</Label>
-                                <Input
-                                    type="select"
-                                    id="conservation_method"
-                                    name="conservation_method"
-                                    value={formik.values.conservation_method}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    invalid={formik.touched.conservation_method && !!formik.errors.conservation_method}
-                                >
-                                    <option value="">Seleccione un método</option>
-                                    <option value="Refrigeración">Refrigeración</option>
-                                    <option value="Congelación">Congelación</option>
-                                    <option value="Extender">Extender</option>
-                                    <option value="Inmersión en nitrógeno líquido">Inmersión en nitrógeno líquido</option>
-                                    <option value="Otro">Otro</option>
-                                </Input>
-                                {formik.touched.conservation_method && formik.errors.conservation_method && (
-                                    <FormFeedback>{formik.errors.conservation_method}</FormFeedback>
-                                )}
+                        {/* Sección 3: Dilución y Conservación */}
+                        <div className="card shadow-sm border-0 rounded-3 mb-4">
+                            <div className="card-header bg-light">
+                                <h6 className="mb-0 text-info fw-bold">
+                                    <i className="ri-flask-line me-2 text-info"></i>
+                                    Dilución y Conservación
+                                </h6>
                             </div>
+                            <div className="card-body">
+                                <div className="row g-3">
+                                    <div className="col-md-4">
+                                        <Label htmlFor="diluent_type" className="form-label">Tipo de diluyente</Label>
+                                        <Input
+                                            type="text"
+                                            id="diluent_type"
+                                            name="diluent.type"
+                                            value={formik.values.diluent.type}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            invalid={formik.touched.diluent?.type && !!formik.errors.diluent?.type}
+                                            placeholder="Ej: Extender X"
+                                        />
+                                        {formik.touched.diluent?.type && formik.errors.diluent?.type && (
+                                            <FormFeedback>{formik.errors.diluent.type}</FormFeedback>
+                                        )}
+                                    </div>
 
-                            {/* Post-dilution motility */}
-                            <div className="mt-4 w-50">
-                                <Label htmlFor="post_dilution_motility" className="form-label">Motilidad post-dilución (%)</Label>
-                                <Input
-                                    type="number"
-                                    id="post_dilution_motility"
-                                    name="post_dilution_motility"
-                                    value={formik.values.post_dilution_motility || ''}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    invalid={formik.touched.post_dilution_motility && !!formik.errors.post_dilution_motility}
-                                    placeholder="Opcional"
-                                />
-                                {formik.touched.post_dilution_motility && formik.errors.post_dilution_motility && (
-                                    <FormFeedback>{formik.errors.post_dilution_motility}</FormFeedback>
-                                )}
+                                    <div className="col-md-4">
+                                        <Label htmlFor="diluent_lot" className="form-label">Lote de diluyente</Label>
+                                        <Input
+                                            type="text"
+                                            id="diluent_lot"
+                                            name="diluent.lot"
+                                            value={formik.values.diluent.lot}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            invalid={formik.touched.diluent?.lot && !!formik.errors.diluent?.lot}
+                                            placeholder="Ej: D-001"
+                                        />
+                                        {formik.touched.diluent?.lot && formik.errors.diluent?.lot && (
+                                            <FormFeedback>{formik.errors.diluent.lot}</FormFeedback>
+                                        )}
+                                    </div>
+
+                                    <div className="col-md-4">
+                                        <Label htmlFor="diluent_final_volume" className="form-label">Volumen de diluyente ({selectedExtraction?.unit_measurement})</Label>
+                                        <Input
+                                            type="number"
+                                            id="diluent_final_concentration"
+                                            name="diluent.volume"
+                                            value={formik.values.diluent.volume}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            onFocus={(e) => e.target.select()}
+                                            invalid={formik.touched.diluent?.volume && !!formik.errors.diluent?.volume}
+                                            placeholder="Ej: 1.5"
+                                        />
+                                        {formik.touched.diluent?.volume && formik.errors.diluent?.volume && (
+                                            <FormFeedback>{formik.errors.diluent.volume}</FormFeedback>
+                                        )}
+                                    </div>
+
+                                    <div className="col-md-6">
+                                        <Label htmlFor="conservation_method" className="form-label">Método de conservación</Label>
+                                        <Input
+                                            type="select"
+                                            id="conservation_method"
+                                            name="conservation_method"
+                                            value={formik.values.conservation_method}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            invalid={formik.touched.conservation_method && !!formik.errors.conservation_method}
+                                        >
+                                            <option value="">Seleccione un método</option>
+                                            <option value="Refrigeración">Refrigeración</option>
+                                            <option value="Congelación">Congelación</option>
+                                            <option value="Extender">Extender</option>
+                                            <option value="Inmersión en nitrógeno líquido">Inmersión en nitrógeno líquido</option>
+                                            <option value="Otro">Otro</option>
+                                        </Input>
+                                        {formik.touched.conservation_method && formik.errors.conservation_method && (
+                                            <FormFeedback>{formik.errors.conservation_method}</FormFeedback>
+                                        )}
+                                    </div>
+
+                                    <div className="col-md-6">
+                                        <Label htmlFor="post_dilution_motility" className="form-label">Motilidad post-dilución (%)</Label>
+                                        <Input
+                                            type="number"
+                                            id="post_dilution_motility"
+                                            name="post_dilution_motility"
+                                            value={formik.values.post_dilution_motility || ''}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            onFocus={(e) => e.target.select()}
+                                            invalid={formik.touched.post_dilution_motility && !!formik.errors.post_dilution_motility}
+                                            placeholder="Opcional"
+                                        />
+                                        {formik.touched.post_dilution_motility && formik.errors.post_dilution_motility && (
+                                            <FormFeedback>{formik.errors.post_dilution_motility}</FormFeedback>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -752,131 +788,164 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
                     </TabPane>
 
                     <TabPane id="step-summary-tab" tabId={4}>
-                        <div className="row g-4 mt-4">
-
-                            {/* Datos de la extracción */}
-                            <div className="col-md-6">
-                                <div className="card shadow-sm border-0 rounded-3 h-100">
-                                    <div className="card-header bg-primary text-white fs-5 d-flex align-items-center justify-content-center">
-                                        Datos de la extracción
-                                    </div>
-                                    <div className="card-body">
-                                        {(() => {
-                                            const selectedExtraction = extractions.find(e => e._id === formik.values.extraction_id);
-                                            if (!selectedExtraction) return <p className="text-muted text-center">No se seleccionó una extracción</p>;
-                                            return (
-                                                <ul className="list-group list-group-flush fs-5">
-                                                    <li className="list-group-item d-flex justify-content-between">
-                                                        <span className="text-black"><strong>Lote:</strong></span>
-                                                        <span className="text-black">{selectedExtraction.batch}</span>
-                                                    </li>
-                                                    <li className="list-group-item d-flex justify-content-between">
-                                                        <span className="text-black"><strong>Fecha:</strong></span>
-                                                        <span className="text-black">{selectedExtraction.date ? new Date(selectedExtraction.date).toLocaleDateString() : "-"}</span>
-                                                    </li>
-                                                    <li className="list-group-item d-flex justify-content-between">
-                                                        <span className="text-black"><strong>Ubicación:</strong></span>
-                                                        <span className="text-black">{selectedExtraction.extraction_location}</span>
-                                                    </li>
-                                                    <li className="list-group-item d-flex justify-content-between">
-                                                        <span className="text-black"><strong>Técnico:</strong></span>
-                                                        <span className="text-black">{selectedExtraction.technician ? `${selectedExtraction.technician.name} ${selectedExtraction.technician.lastname}` : "-"}</span>
-                                                    </li>
-                                                    <li className="list-group-item d-flex justify-content-between">
-                                                        <span className="text-black"><strong>Volumen:</strong></span>
-                                                        <span className="text-black">{selectedExtraction.volume} {selectedExtraction.unit_measurement}</span>
-                                                    </li>
-                                                </ul>
-                                            );
-                                        })()}
-                                    </div>
-                                </div>
+                        <div className="card shadow-sm border-0 rounded-3">
+                            <div className="card-header bg-gradient text-white">
+                                <h5 className="mb-0 text-center">
+                                    <i className="ri-file-list-3-line me-2"></i>
+                                    Resumen del Registro de Muestra de Semen
+                                </h5>
                             </div>
-
-                            {/* Información de la muestra */}
-                            <div className="col-md-6">
-                                <div className="card shadow-sm border-0 rounded-3 h-100">
-                                    <div className="card-header bg-success text-white fs-5 d-flex align-items-center justify-content-center">
-                                        Información de la muestra
-                                    </div>
-                                    <div className="card-body">
-                                        <ul className="list-group list-group-flush fs-5">
-                                            <li className="list-group-item d-flex justify-content-between">
-                                                <span className="text-black"><strong>Concentración (millones):</strong></span>
-                                                <span className="text-black">{formik.values.concentration_million}</span>
-                                            </li>
-                                            <li className="list-group-item d-flex justify-content-between">
-                                                <span className="text-black"><strong>Motilidad (%):</strong></span>
-                                                <span className="text-black">{formik.values.motility_percent}</span>
-                                            </li>
-                                            <li className="list-group-item d-flex justify-content-between">
-                                                <span className="text-black"><strong>Vitalidad (%):</strong></span>
-                                                <span className="text-black">{formik.values.vitality_percent}</span>
-                                            </li>
-                                            <li className="list-group-item d-flex justify-content-between">
-                                                <span className="text-black"><strong>Anomalías (%):</strong></span>
-                                                <span className="text-black">{formik.values.abnormal_percent}</span>
-                                            </li>
-                                            <li className="list-group-item d-flex justify-content-between">
-                                                <span className="text-black"><strong>pH:</strong></span>
-                                                <span className="text-black">{formik.values.pH}</span>
-                                            </li>
-                                            <li className="list-group-item d-flex justify-content-between">
-                                                <span className="text-black"><strong>Temperatura (°C):</strong></span>
-                                                <span className="text-black">{formik.values.temperature}</span>
-                                            </li>
-                                            <li className="list-group-item d-flex justify-content-between">
-                                                <span className="text-black"><strong>Diluyente:</strong></span>
-                                                <span className="text-black">{formik.values.diluent.type} (Lote: {formik.values.diluent.lot}, Cantidad.: {formik.values.diluent.volume})</span>
-                                            </li>
-                                            <li className="list-group-item d-flex justify-content-between">
-                                                <span className="text-black"><strong>Método de conservación:</strong></span>
-                                                <span className="text-black">{formik.values.conservation_method}</span>
-                                            </li>
-                                            <li className="list-group-item d-flex justify-content-between">
-                                                <span className="text-black"><strong>Fecha de expiración:</strong></span>
-                                                <span className="text-black">{formik.values.expiration_date ? new Date(formik.values.expiration_date).toLocaleDateString() : "-"}</span>
-                                            </li>
-                                            <li className="list-group-item d-flex justify-content-between">
-                                                <span className="text-black"><strong>Motilidad post-dilución (%):</strong></span>
-                                                <span className="text-black">{formik.values.post_dilution_motility || "-"}</span>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Dosis */}
-                            <div className="col-12">
-                                <div className="card shadow-sm border-0 rounded-3 h-100">
-                                    <div className="card-header bg-info text-white fs-5 d-flex align-items-center justify-content-center">
-                                        Dosis
-                                    </div>
-                                    <div className="card-body" style={{ maxHeight: "200px", overflowY: "auto" }}>
-                                        {formik.values.doses.length === 0 ? (
-                                            <p className="text-muted text-center fs-5">No se han generado dosis</p>
-                                        ) : (
-                                            <ul className="list-group list-group-flush fs-6">
-                                                {formik.values.doses.map((dose, idx) => (
-                                                    <li key={idx} className="list-group-item d-flex justify-content-between">
-                                                        <div>
-                                                            <span className="text-black fs-5"><strong>{dose.code}</strong></span>
-                                                            <div className="text-muted fs-6">
-                                                                Semen: {dose.semen_volume} {dose.unit_measurement} |
-                                                                Diluyente: {dose.diluent_volume} {dose.unit_measurement}
-                                                            </div>
+                            <div className="card-body p-3">
+                                <div className="row g-3">
+                                    {/* Datos de extracción - Compacto */}
+                                    <div className="col-lg-4">
+                                        <div className="border rounded-2 p-3 bg-light h-100 d-flex flex-column">
+                                            <h6 className="text-primary fw-bold mb-3">
+                                                <i className="ri-drop-line me-2"></i>Datos Extracción
+                                            </h6>
+                                            {(() => {
+                                                const selectedExtraction = extractions.find(e => e._id === formik.values.extraction_id);
+                                                if (!selectedExtraction) return <p className="text-muted">No seleccionada</p>;
+                                                return (
+                                                    <div className="flex-grow-1">
+                                                        <div className="d-flex justify-content-between mb-2">
+                                                            <span className="text-muted">Lote:</span>
+                                                            <span className="fw-semibold">{selectedExtraction.batch}</span>
                                                         </div>
-                                                        <span className="text-black fw-bold fs-5">
-                                                            Total: {dose.total_volume} {dose.unit_measurement}
-                                                        </span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        )}
+                                                        <div className="d-flex justify-content-between mb-2">
+                                                            <span className="text-muted">Fecha:</span>
+                                                            <span>{selectedExtraction.date ? new Date(selectedExtraction.date).toLocaleDateString() : "-"}</span>
+                                                        </div>
+                                                        <div className="d-flex justify-content-between mb-2">
+                                                            <span className="text-muted">Verraco:</span>
+                                                            <span className="fw-semibold">{selectedExtraction.boar?.code || "-"}</span>
+                                                        </div>
+                                                        <div className="d-flex justify-content-between mb-2">
+                                                            <span className="text-muted">Técnico:</span>
+                                                            <span>{selectedExtraction.technician ? `${selectedExtraction.technician.name} ${selectedExtraction.technician.lastname}` : "-"}</span>
+                                                        </div>
+                                                        <div className="d-flex justify-content-between">
+                                                            <span className="text-muted">Volumen:</span>
+                                                            <span className="fw-semibold">{selectedExtraction.volume} {selectedExtraction.unit_measurement}</span>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })()}
+                                        </div>
+                                    </div>
+
+                                    {/* Análisis de muestra - Compacto */}
+                                    <div className="col-lg-4">
+                                        <div className="border rounded-2 p-3 bg-light h-100 d-flex flex-column">
+                                            <h6 className="text-success fw-bold mb-3">
+                                                <i className="ri-test-tube-line me-2"></i>Análisis Semen
+                                            </h6>
+                                            <div className="flex-grow-1">
+                                                <div className="row g-2">
+                                                    <div className="col-6">
+                                                        <div className="d-flex justify-content-between">
+                                                            <span className="text-muted">Conc:</span>
+                                                            <span className="fw-semibold">{formik.values.concentration_million}M</span>
+                                                        </div>
+                                                        <div className="d-flex justify-content-between">
+                                                            <span className="text-muted">Motilidad:</span>
+                                                            <span className="fw-semibold">{formik.values.motility_percent}%</span>
+                                                        </div>
+                                                        <div className="d-flex justify-content-between">
+                                                            <span className="text-muted">Vitalidad:</span>
+                                                            <span className="fw-semibold">{formik.values.vitality_percent}%</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-6">
+                                                        <div className="d-flex justify-content-between">
+                                                            <span className="text-muted">Anomalías:</span>
+                                                            <span className="fw-semibold">{formik.values.abnormal_percent}%</span>
+                                                        </div>
+                                                        <div className="d-flex justify-content-between">
+                                                            <span className="text-muted">pH:</span>
+                                                            <span className="fw-semibold">{formik.values.pH}</span>
+                                                        </div>
+                                                        <div className="d-flex justify-content-between">
+                                                            <span className="text-muted">Temp:</span>
+                                                            <span className="fw-semibold">{formik.values.temperature}°C</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Dilución y conservación - Compacto */}
+                                    <div className="col-lg-4">
+                                        <div className="border rounded-2 p-3 bg-light h-100 d-flex flex-column">
+                                            <h6 className="text-info fw-bold mb-3">
+                                                <i className="ri-flask-line me-2"></i>Dilución & Conservación
+                                            </h6>
+                                            <div className="flex-grow-1">
+                                                <div className="d-flex justify-content-between mb-2">
+                                                    <span className="text-muted">Diluyente:</span>
+                                                    <span className="fw-semibold">{formik.values.diluent.type}</span>
+                                                </div>
+                                                <div className="d-flex justify-content-between mb-2">
+                                                    <span className="text-muted">Lote:</span>
+                                                    <span>{formik.values.diluent.lot}</span>
+                                                </div>
+                                                <div className="d-flex justify-content-between mb-2">
+                                                    <span className="text-muted">Vol. Diluyente:</span>
+                                                    <span className="fw-semibold">{formik.values.diluent.volume} {selectedExtraction?.unit_measurement}</span>
+                                                </div>
+                                                <div className="d-flex justify-content-between mb-2">
+                                                    <span className="text-muted">Método:</span>
+                                                    <span>{formik.values.conservation_method}</span>
+                                                </div>
+                                                <div className="d-flex justify-content-between mb-2">
+                                                    <span className="text-muted">Expira:</span>
+                                                    <span className="fw-semibold">{formik.values.expiration_date ? new Date(formik.values.expiration_date).toLocaleDateString() : "-"}</span>
+                                                </div>
+                                                <div className="d-flex justify-content-between">
+                                                    <span className="text-muted">Mot. Post:</span>
+                                                    <span>{formik.values.post_dilution_motility || "-"}%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Dosis - Compacto */}
+                                    <div className="col-12">
+                                        <div className="border rounded-2 p-3 bg-light">
+                                            <h6 className="text-warning fw-bold mb-3">
+                                                <i className="ri-vial-line me-2"></i>Dosis Generadas ({formik.values.doses.length})
+                                            </h6>
+                                            {formik.values.doses.length === 0 ? (
+                                                <p className="text-muted text-center mb-0">No se han generado dosis</p>
+                                            ) : (
+                                                <div className="table-responsive" style={{ maxHeight: "150px" }}>
+                                                    <table className="table table-hover mb-0">
+                                                        <thead className="sticky-top bg-light">
+                                                            <tr>
+                                                                <th>Código</th>
+                                                                <th>Semen</th>
+                                                                <th>Diluyente</th>
+                                                                <th className="text-end">Total</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {formik.values.doses.map((dose, idx) => (
+                                                                <tr key={idx}>
+                                                                    <td className="fw-semibold">{dose.code}</td>
+                                                                    <td>{dose.semen_volume} {dose.unit_measurement}</td>
+                                                                    <td>{dose.diluent_volume} {dose.unit_measurement}</td>
+                                                                    <td className="text-end fw-bold text-primary">{dose.total_volume} {dose.unit_measurement}</td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-
                         </div>
 
                         <div className="mt-4 d-flex">

@@ -1,10 +1,11 @@
 import { ConfigContext } from "App";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
-import { Button, Col, Container, Row, Card, CardBody, CardHeader, Badge } from "reactstrap";
+import { Button, Col, Container, Row, Card, CardBody, CardHeader, Badge, Spinner, Modal, ModalBody, ModalHeader } from "reactstrap";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import ObjectDetails from "./ObjectDetails";
+import PDFViewer from "../Shared/PDFViewer";
 import { Attribute } from "common/data_interfaces";
 import { useNavigate } from "react-router-dom";
 
@@ -18,9 +19,12 @@ const ExtractionDetails: React.FC<ExtractionDetailsProps> = ({ extractionId }) =
     const userLoggged = getLoggedinUser();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+    const [pdfLoading, setPdfLoading] = useState(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "", });
     const [extractionDetails, setExtractionDetails] = useState<any>({});
     const [boarDetails, setBoarDetails] = useState<any>({});
+    const [modals, setModals] = useState({ viewPDF: false });
+    const [fileURL, setFileURL] = useState<string>('');
 
     const ExtractionAttributes: Attribute[] = [
         { key: "batch", label: "Lote", type: "text" },
@@ -88,6 +92,33 @@ const ExtractionDetails: React.FC<ExtractionDetailsProps> = ({ extractionId }) =
         { key: "observations", label: "Observaciones", type: "text" },
     ];
 
+    const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
+        setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
+    };
+
+    const handlePrintExtraction = async () => {
+        if (!configContext) return;
+
+        try {
+            setPdfLoading(true);
+            
+            // Usar axiosHelper.getBlob para mantener consistencia
+            const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/extractions/${extractionId}`);
+            
+            // Crear blob con tipo MIME explícito para PDF
+            const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(pdfBlob);
+            
+            setFileURL(url);
+            toggleModal('viewPDF');
+        } catch (error) {
+            console.error('Error generating report: ', { error })
+            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' })
+        } finally {
+            setPdfLoading(false);
+        }
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             if (!configContext || !userLoggged) return;
@@ -117,15 +148,25 @@ const ExtractionDetails: React.FC<ExtractionDetailsProps> = ({ extractionId }) =
 
     return (
         <div className="mt-2">
-            {/* <div className="d-flex justify-content-between align-items-center mb-4">
-                <h4 className="mb-0 fw-bold text-primary">
-                    Detalles de la extracción
-                </h4>
-
-                <Button color="primary" size="md">
-                    Ver muestras
+            <div className="d-flex gap-2 mb-4">
+                <Button 
+                    color="primary" 
+                    onClick={handlePrintExtraction}
+                    disabled={pdfLoading}
+                >
+                    {pdfLoading ? (
+                        <>
+                            <Spinner className="me-2" size='sm' />
+                            Generando PDF
+                        </>
+                    ) : (
+                        <>
+                            <i className="ri-file-pdf-line me-2"></i>
+                            Ver PDF
+                        </>
+                    )}
                 </Button>
-            </div> */}
+            </div>
 
             {extractionDetails?.technician && (
                 <Card className="mb-4 shadow-sm bg-light">
@@ -185,6 +226,14 @@ const ExtractionDetails: React.FC<ExtractionDetailsProps> = ({ extractionId }) =
                     }
                 />
             )}
+
+            {/* Modal PDF */}
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de extracción</ModalHeader>
+                <ModalBody>
+                    {fileURL && <PDFViewer fileUrl={fileURL} />}
+                </ModalBody>
+            </Modal>
         </div>
     );
 };

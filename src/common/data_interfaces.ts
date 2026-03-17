@@ -422,13 +422,11 @@ export interface GroupHealthEvents {
         medication: string;
         quantityPerPig: number;
         totalQuantity?: number;
-        startDate?: Date | null;
-        endDate?: Date | null;
-        administration_route: string;
+        administrationRoute: string;
         appliedBy: string;
     }[];
     observations?: string;
-    is_active?: boolean;
+    isActive?: boolean;
     detectedBy: string;
 }[];
 
@@ -466,6 +464,7 @@ export interface GroupData {
     medicationPackagesHistory?: GroupMedicationPackagesHistory[];
     vaccinationPlansHistory?: GroupVaccinationPlansHistory[];
     healthEvents?: GroupHealthEvents[];
+    isActive: boolean
 }
 
 
