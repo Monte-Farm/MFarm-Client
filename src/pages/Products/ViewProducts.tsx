@@ -10,7 +10,7 @@ import { Column } from "common/data/data_types";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import ProductForm from "Components/Common/Forms/ProductForm";
-import CustomTable from "Components/Common/Tables/CustomTable";
+import SelectableCustomTable from "Components/Common/Tables/SelectableTable";
 import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
 import DonutChartCard, { DonutDataItem, DonutLegendItem } from "Components/Common/Graphics/DonutChartCard";
 import { getProductCategoryLabel } from "common/enums/products.enums";
@@ -32,8 +32,9 @@ const ViewProducts = () => {
 
     const [products, setProducts] = useState([])
     const [selectedProduct, setSelectedProduct] = useState<ProductData>()
+    const [selectedProducts, setSelectedProducts] = useState<ProductData[]>([]);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ create: false, details: false, update: false, delete: false, activate: false });
+    const [modals, setModals] = useState({ create: false, details: false, update: false, delete: false, activate: false, bulkDelete: false, bulkActivate: false });
     const [loading, setLoading] = useState<boolean>(true);
     const [productStatistics, setProductStatistics] = useState({
         totalProducts: 0,
@@ -116,26 +117,34 @@ const ViewProducts = () => {
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
                     {row.status === true ? (
-                        <Button className="farm-secondary-button btn-icon" onClick={() => handleClicModal('delete', row)}>
+                        <Button className="farm-secondary-button btn-icon" onClick={(e) => { e.stopPropagation(); handleClicModal('delete', row); }}>
                             <i className="ri-forbid-line align-middle"></i>
                         </Button>
                     ) : (
-                        <Button className="farm-secondary-button btn-icon" onClick={() => handleClicModal('activate', row)}>
+                        <Button className="farm-secondary-button btn-icon" onClick={(e) => { e.stopPropagation(); handleClicModal('activate', row); }}>
                             <i className="ri-check-fill align-middle"></i>
                         </Button>
                     )}
 
-                    <Button className="farm-primary-button btn-icon" disabled={row.status !== true} onClick={() => handleClicModal('update', row)}>
+                    <Button className="farm-primary-button btn-icon" disabled={row.status !== true} onClick={(e) => { e.stopPropagation(); handleClicModal('update', row); }}>
                         <i className="ri-pencil-fill align-middle"></i>
                     </Button>
 
-                    <Button className="farm-primary-button btn-icon" onClick={() => handleClicModal('details', row)}>
+                    <Button className="farm-primary-button btn-icon" onClick={(e) => { e.stopPropagation(); handleClicModal('details', row); }}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
                 </div>
             ),
         },
     ];
+
+    const handleSelectionChange = (selected: ProductData[]) => {
+        setSelectedProducts(selected);
+    };
+
+    // Funciones para determinar si hay productos activos/inactivos seleccionados
+    const hasActiveProducts = selectedProducts.some(p => p.status === true);
+    const hasInactiveProducts = selectedProducts.some(p => p.status === false);
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -163,37 +172,41 @@ const ViewProducts = () => {
 
             const chartDataResponse = chartsResponse.data.data;
 
-            const statusData: DonutDataItem[] = [
-                { id: 'active', label: 'Activos', value: chartDataResponse.statusData.active || 0, color: '#10b981' },
-                { id: 'inactive', label: 'Inactivos', value: chartDataResponse.statusData.inactive || 0, color: '#ef4444' }
-            ];
+            // Filter status data to only include non-zero values
+            const statusData: DonutDataItem[] = [];
+            const activeCount = chartDataResponse.statusData.active || 0;
+            const inactiveCount = chartDataResponse.statusData.inactive || 0;
 
-            const totalProducts = (chartDataResponse.statusData.active || 0) + (chartDataResponse.statusData.inactive || 0);
+            if (activeCount > 0) {
+                statusData.push({ id: 'active', label: 'Activos', value: activeCount, color: '#10b981' });
+            }
+            if (inactiveCount > 0) {
+                statusData.push({ id: 'inactive', label: 'Inactivos', value: inactiveCount, color: '#ef4444' });
+            }
 
-            const statusLegendItems: DonutLegendItem[] = [
-                {
-                    label: 'Activos',
-                    value: (chartDataResponse.statusData.active || 0).toString(),
-                    percentage: totalProducts > 0 ? `${(((chartDataResponse.statusData.active || 0) / totalProducts) * 100).toFixed(1)}%` : '0%'
-                },
-                {
-                    label: 'Inactivos',
-                    value: (chartDataResponse.statusData.inactive || 0).toString(),
-                    percentage: totalProducts > 0 ? `${(((chartDataResponse.statusData.inactive || 0) / totalProducts) * 100).toFixed(1)}%` : '0%'
-                }
-            ];
+            const totalProducts = activeCount + inactiveCount;
 
+            const statusLegendItems: DonutLegendItem[] = statusData.map(item => ({
+                label: item.label,
+                value: item.value.toString(),
+                percentage: totalProducts > 0 ? `${((item.value / totalProducts) * 100).toFixed(1)}%` : '0%'
+            }));
+
+            // Filter category data to only include non-zero values
             const categoryData: DonutDataItem[] = [];
             const colors = ['#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#06b6d4', '#84cc16', '#f43f5e', '#a855f7', '#6b7280'];
 
             if (chartDataResponse.categoryData) {
                 Object.entries(chartDataResponse.categoryData).forEach(([category, count], index) => {
-                    categoryData.push({
-                        id: category,
-                        label: getProductCategoryLabel(category),
-                        value: Number(count),
-                        color: colors[index % colors.length]
-                    });
+                    const numericCount = Number(count);
+                    if (numericCount > 0) {
+                        categoryData.push({
+                            id: category,
+                            label: getProductCategoryLabel(category),
+                            value: numericCount,
+                            color: colors[index % colors.length]
+                        });
+                    }
                 });
             }
 
@@ -282,6 +295,47 @@ const ViewProducts = () => {
         }
     };
 
+    // Funciones para acciones masivas
+    const handleBulkDeactivate = async () => {
+        if (!configContext) return;
+        
+        const activeProductIds = selectedProducts
+            .filter(p => p.status === true)
+            .map(p => p._id);
+
+        try {
+            await configContext.axiosHelper.delete(`${configContext.apiUrl}/product/delete_products`, { data: { productIds: activeProductIds } });
+            setAlertConfig({ visible: true, color: 'success', message: `${activeProductIds.length} productos desactivados con éxito` });
+            fetchAllProductData();
+            setSelectedProducts([]);
+        } catch (error) {
+            console.error('Error bulk deactivating products:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al desactivar los productos, intentelo más tarde' });
+        } finally {
+            toggleModal('bulkDelete');
+        }
+    };
+
+    const handleBulkActivate = async () => {
+        if (!configContext) return;
+        
+        const inactiveProductIds = selectedProducts
+            .filter(p => p.status === false)
+            .map(p => p._id);
+
+        try {
+            await configContext.axiosHelper.put(`${configContext.apiUrl}/product/activate_products`, { productIds: inactiveProductIds });
+            setAlertConfig({ visible: true, color: 'success', message: `${inactiveProductIds.length} productos activados con éxito` });
+            fetchAllProductData();
+            setSelectedProducts([]);
+        } catch (error) {
+            console.error('Error bulk activating products:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al activar los productos, intentelo más tarde' });
+        } finally {
+            toggleModal('bulkActivate');
+        }
+    };
+
     useEffect(() => {
         fetchAllProductData();
     }, [])
@@ -365,8 +419,35 @@ const ViewProducts = () => {
 
                 <Card className="rounded">
                     <CardHeader>
-                        <div className="d-flex">
-                            <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>
+                        <div className="d-flex justify-content-between align-items-center">
+                            {selectedProducts.length > 0 && (
+                                <div className="d-flex align-items-center gap-2">
+                                    <span className="text-muted">
+                                        {selectedProducts.length} {selectedProducts.length === 1 ? 'producto seleccionado' : 'productos seleccionados'}
+                                    </span>
+                                    <div className="btn-group" role="group">
+                                        <Button 
+                                            className="farm-secondary-button btn-sm" 
+                                            disabled={!hasActiveProducts}
+                                            title={!hasActiveProducts ? "No hay productos activos seleccionados" : undefined}
+                                            onClick={() => toggleModal('bulkDelete')}
+                                        >
+                                            <i className="ri-forbid-line me-1"></i>
+                                            Desactivar
+                                        </Button>
+                                        <Button 
+                                            className="farm-secondary-button btn-sm" 
+                                            disabled={!hasInactiveProducts}
+                                            title={!hasInactiveProducts ? "No hay productos inactivos seleccionados" : undefined}
+                                            onClick={() => toggleModal('bulkActivate')}
+                                        >
+                                            <i className="ri-check-line me-1"></i>
+                                            Activar
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+                            <Button className="farm-primary-button ms-auto" onClick={() => toggleModal('create')}>
                                 <i className="ri-add-line me-2  " />
                                 Agregar Producto
                             </Button>
@@ -379,7 +460,13 @@ const ViewProducts = () => {
                                 <span className="fs-5 text-muted">Aún no hay productos registrados en el inventario</span>
                             </>
                         ) : (
-                            <CustomTable columns={columns} data={products} showPagination={false} />
+                            <SelectableCustomTable 
+                                columns={columns} 
+                                data={products} 
+                                showPagination={false}
+                                onSelect={handleSelectionChange}
+                                selectionOnlyOnCheckbox={true}
+                            />
                         )}
                     </CardBody>
                 </Card>
@@ -436,6 +523,40 @@ const ViewProducts = () => {
                             handleActivateProduct(selectedProduct.id)
                         }
                     }}>Confirmar</Button>
+                </ModalFooter>
+            </Modal>
+
+            {/* Modal Bulk Deactivate */}
+            <Modal isOpen={modals.bulkDelete} toggle={() => toggleModal("bulkDelete")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("bulkDelete")}>Desactivar Productos</ModalHeader>
+                <ModalBody>
+                    ¿Desea desactivar {selectedProducts.filter(p => p.status === true).length} productos seleccionados?
+                    <div className="mt-2">
+                        <small className="text-muted">
+                            Esta acción desactivará los productos y no podrán ser utilizados en el sistema.
+                        </small>
+                    </div>
+                </ModalBody>
+                <ModalFooter>
+                    <Button className="farm-secondary-button" onClick={() => toggleModal("bulkDelete", false)}>Cancelar</Button>
+                    <Button className="farm-primary-button" onClick={handleBulkDeactivate}>Confirmar</Button>
+                </ModalFooter>
+            </Modal>
+
+            {/* Modal Bulk Activate */}
+            <Modal isOpen={modals.bulkActivate} toggle={() => toggleModal("bulkActivate")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("bulkActivate")}>Activar Productos</ModalHeader>
+                <ModalBody>
+                    ¿Desea activar {selectedProducts.filter(p => p.status === false).length} productos seleccionados?
+                    <div className="mt-2">
+                        <small className="text-muted">
+                            Esta acción activará los productos y podrán ser utilizados en el sistema.
+                        </small>
+                    </div>
+                </ModalBody>
+                <ModalFooter>
+                    <Button className="farm-secondary-button" onClick={() => toggleModal("bulkActivate", false)}>Cancelar</Button>
+                    <Button className="farm-primary-button" onClick={handleBulkActivate}>Confirmar</Button>
                 </ModalFooter>
             </Modal>
 

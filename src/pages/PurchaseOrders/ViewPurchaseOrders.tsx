@@ -144,7 +144,7 @@ const ViewPurchaseOrders = () => {
                     </div>
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
-                            title="Total de Productos Solicitados"
+                            title="Total de Unidades Solicitados"
                             value={purchaseStatistics.totalProductsRequested}
                             icon={<i className="ri-shopping-bag-line fs-20 text-info"></i>}
                             iconBgColor="#E3F2FD"
@@ -164,7 +164,7 @@ const ViewPurchaseOrders = () => {
                     </div>
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
-                            title="Promedio de Productos por Orden"
+                            title="Promedio de Unidades por Orden"
                             value={purchaseStatistics.averageProductsPerOrder}
                             decimals={1}
                             icon={<i className="ri-bar-chart-box-line fs-20 text-success"></i>}

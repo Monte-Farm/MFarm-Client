@@ -3,7 +3,8 @@ import { ConfigContext } from "App";
 import { FarmData } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState, useMemo } from "react";
-import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Input, Modal, ModalBody, ModalHeader } from "reactstrap";
+import { Badge, Button, Card, CardBody, CardHeader, Container, Input, Modal, ModalBody, ModalHeader } from "reactstrap";
+import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import FarmCards from "Components/Common/Lists/FarmCards";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { useNavigate } from "react-router-dom";
@@ -165,11 +166,7 @@ const ViewFarms = () => {
                 </ModalBody>
             </Modal>
 
-            {alertConfig.visible && (
-                <Alert color={alertConfig.color} className="position-fixed bottom-0 start-50 translate-middle-x p-3">
-                    {alertConfig.message}
-                </Alert>
-            )}
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </div>
     );
 }

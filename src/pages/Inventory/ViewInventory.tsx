@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { Button, Container, Alert, Card, CardHeader, CardBody, Modal, ModalBody, ModalHeader, Badge } from "reactstrap";
+import { Button, Container, Alert, Card, CardHeader, CardBody, Modal, ModalBody, ModalHeader, Badge, Spinner } from "reactstrap";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useNavigate } from "react-router-dom";
 import { IncomeData, ProductData } from "common/data_interfaces";
@@ -26,6 +26,7 @@ const ViewInventory = () => {
   const [modals, setModals] = useState({ viewPDF: false, createIncome: false });
   const [fileURL, setFileURL] = useState<string>('')
   const [mainWarehouseId, setMainWarehouseId] = useState<string>('')
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
     setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -176,17 +177,21 @@ const ViewInventory = () => {
 
 
   const handlePrintInventory = async () => {
-    if (!configContext) return;
+    if (!configContext || !mainWarehouseId) return;
 
     try {
-      const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/reports/generate_inventory_report/AG001`, { responseType: 'blob' });
+      setPdfLoading(true);
+      const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/warehouse_inventory/${mainWarehouseId}`);
 
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(pdfBlob);
       setFileURL(url);
-      toggleModal('viewPDF')
+      toggleModal('viewPDF');
     } catch (error) {
       console.error('Error generating inventory report:', error);
       setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el reporte de inventario.' });
+    } finally {
+      setPdfLoading(false);
     }
   };
 
@@ -264,7 +269,24 @@ const ViewInventory = () => {
             <div className="d-flex gap-2 justify-content-between">
               <h4 className="">Productos</h4>
 
-              <div>
+              <div className="d-flex gap-2">
+                <Button 
+                  color="primary" 
+                  onClick={handlePrintInventory}
+                  disabled={pdfLoading}
+                >
+                  {pdfLoading ? (
+                    <>
+                      <Spinner className="me-2" size='sm' />
+                      Generando...
+                    </>
+                  ) : (
+                    <>
+                      <i className="ri-file-pdf-line me-2"></i>
+                      Reporte de Inventario
+                    </>
+                  )}
+                </Button>
                 <Button className="" onClick={() => toggleModal('createIncome')}>
                   <i className="ri-add-line pe-2" />
                   Nueva Entrada

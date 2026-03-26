@@ -1,5 +1,6 @@
 import React, { useContext, useState } from "react";
-import { Alert, Card, Col, Container, Row } from "reactstrap";
+import { Card, Col, Container, Row } from "reactstrap";
+import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import loginImage from "../../assets/images/portada.png";
 import LoginForm from "../../Components/Common/Velzon/Login";
 import axios, { AxiosError, AxiosResponse } from "axios";
@@ -83,11 +84,12 @@ const CoverSignIn = () => {
                                                 </div>
                                             </div>
 
-                                            {showDisabledAlert && (
-                                                <Alert color="danger" className="text-center mx-3 rounded">
-                                                    Este usuario ha sido desactivado, pongase en contacto con el administrador
-                                                </Alert>
-                                            )}
+                                            <AlertMessage 
+                                                color="danger" 
+                                                message="Este usuario ha sido desactivado, pongase en contacto con el administrador" 
+                                                visible={showDisabledAlert} 
+                                                onClose={() => setShowDisabledAlert(false)} 
+                                            />
                                         </Col>
                                     </Row>
                                 </Card>

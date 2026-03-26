@@ -6,7 +6,7 @@ import { getLoggedinUser } from "helpers/api_helper"
 import { useContext, useEffect, useMemo, useState } from "react"
 import { Badge, Button, Card, CardBody, CardHeader, Container, Input, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap"
 import { Column } from "common/data/data_types"
-import CustomTable from "Components/Common/Tables/CustomTable"
+import SelectableCustomTable from "Components/Common/Tables/SelectableTable"
 import { roleLabels } from "common/role_labels"
 import { useNavigate } from "react-router-dom"
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation"
@@ -22,23 +22,24 @@ const ViewUsers = () => {
 
     const [users, setUsers] = useState([]);
     const [selectedUser, setSelecteduser] = useState<any>()
+    const [selectedUsers, setSelectedUsers] = useState<UserData[]>([]);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ details: false, create: false, update: false, delete: false });
+    const [modals, setModals] = useState({ details: false, create: false, update: false, delete: false, bulkDelete: false, bulkActivate: false });
     const [loading, setLoading] = useState<boolean>(true)
     const navigate = useNavigate();
 
     const columns: Column<any>[] = [
         {
             header: 'Imagen', accessor: 'profile_image', render: (_, row) => (
-                <img 
-                    src={row.profile_image || defaultProfile} 
-                    alt="Imagen de Perfil" 
-                    style={{ 
-                        height: "50px", 
-                        width: "50px", 
-                        borderRadius: "50%", 
-                        objectFit: "cover" 
-                    }} 
+                <img
+                    src={row.profile_image || defaultProfile}
+                    alt="Imagen de Perfil"
+                    style={{
+                        height: "50px",
+                        width: "50px",
+                        borderRadius: "50%",
+                        objectFit: "cover"
+                    }}
                 />
             ),
         },
@@ -70,7 +71,7 @@ const ViewUsers = () => {
                     <Button
                         className="btn-icon"
                         color="primary"
-                        onClick={() => { setSelecteduser(row); toggleModal('details') }}
+                        onClick={(e) => { e.stopPropagation(); setSelecteduser(row); toggleModal('details'); }}
                         title="Ver detalles"
                     >
                         <i className="ri-eye-fill align-middle"></i>
@@ -78,7 +79,7 @@ const ViewUsers = () => {
                     <Button
                         className="btn-icon"
                         color="secondary"
-                        onClick={() => handleClicModal("update", row)}
+                        onClick={(e) => { e.stopPropagation(); handleClicModal("update", row); }}
                         disabled={row.status === false}
                         title="Editar usuario"
                     >
@@ -88,6 +89,13 @@ const ViewUsers = () => {
             ),
         },
     ];
+
+    const handleSelectionChange = (selected: UserData[]) => {
+        setSelectedUsers(selected);
+    };
+
+    const hasActiveUsers = selectedUsers.some(u => u.status === true);
+    const hasInactiveUsers = selectedUsers.some(u => u.status === false);
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -100,7 +108,7 @@ const ViewUsers = () => {
 
     const handleFetchUsers = async () => {
         if (!configContext || !userLogged) return;
-
+        setLoading(true)
         try {
             let response = null;
             let users = [];
@@ -110,13 +118,20 @@ const ViewUsers = () => {
             if (isSuperAdmin) {
                 response = await configContext.axiosHelper.get(`${configContext.apiUrl}/user/find_by_role/farm_manager`);
                 users = response.data.data;
-                setUsers(users.filter((obj: any) => obj.username !== userLogged.username));
+                const usersWithId = users.map((user: any) => ({
+                    ...user,
+                    id: user._id // Usar _id como id para la tabla
+                }));
+                setUsers(usersWithId.filter((obj: any) => obj.username !== userLogged.username));
             } else {
                 response = await configContext.axiosHelper.get(`${configContext.apiUrl}/user`);
                 users = response.data.data;
-
+                const usersWithId = users.map((user: any) => ({
+                    ...user,
+                    id: user._id // Usar _id como id para la tabla
+                }));
                 setUsers(
-                    users.filter((obj: any) => {
+                    usersWithId.filter((obj: any) => {
                         const userRoles = Array.isArray(obj.role) ? obj.role : [];
                         return (
                             obj.username !== userLogged.username &&
@@ -135,11 +150,49 @@ const ViewUsers = () => {
         }
     };
 
+    const handleBulkDeactivate = async () => {
+        if (!configContext) return;
+
+        const activeUserIds = selectedUsers
+            .filter(u => u.status === true)
+            .map(u => u._id);
+
+        try {
+            await configContext.axiosHelper.delete(`${configContext.apiUrl}/user/delete_users`, { data: { userIds: activeUserIds } });
+            setAlertConfig({ visible: true, color: 'success', message: `${activeUserIds.length} usuarios desactivados con éxito` });
+            handleFetchUsers();
+            setSelectedUsers([]);
+        } catch (error) {
+            console.error('Error bulk deactivating users:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al desactivar los usuarios, intentelo más tarde' });
+        } finally {
+            toggleModal('bulkDelete');
+        }
+    };
+
+    const handleBulkActivate = async () => {
+        if (!configContext) return;
+
+        const inactiveUserIds = selectedUsers
+            .filter(u => u.status === false)
+            .map(u => u._id);
+
+        try {
+            await configContext.axiosHelper.put(`${configContext.apiUrl}/user/activate_users`, { userIds: inactiveUserIds });
+            setAlertConfig({ visible: true, color: 'success', message: `${inactiveUserIds.length} usuarios activados con éxito` });
+            handleFetchUsers();
+            setSelectedUsers([]);
+        } catch (error) {
+            console.error('Error bulk activating users:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al activar los usuarios, intentelo más tarde' });
+        } finally {
+            toggleModal('bulkActivate');
+        }
+    };
 
     useEffect(() => {
         handleFetchUsers();
     }, [])
-
 
     if (loading) {
         return (
@@ -152,14 +205,37 @@ const ViewUsers = () => {
             <Container fluid>
                 <BreadCrumb title={"Usuarios Registrados"} pageTitle={"Usuarios"} />
 
-                <Card style={{ minHeight: "calc(100vh - 220px)" }}>
+                <Card>
                     <CardHeader>
                         <div className="d-flex justify-content-between align-items-center">
-                            <h5 className="mb-0">Usuarios Registrados</h5>
-                            <Button
-                                className="farm-primary-button"
-                                onClick={() => toggleModal("create")}
-                            >
+                            {selectedUsers.length > 0 && (
+                                <div className="d-flex align-items-center gap-2">
+                                    <span className="text-muted">
+                                        {selectedUsers.length} {selectedUsers.length === 1 ? 'usuario seleccionado' : 'usuarios seleccionados'}
+                                    </span>
+                                    <div className="btn-group" role="group">
+                                        <Button
+                                            className="farm-secondary-button btn-sm"
+                                            disabled={!hasActiveUsers}
+                                            title={!hasActiveUsers ? "No hay usuarios activos seleccionados" : undefined}
+                                            onClick={() => toggleModal('bulkDelete')}
+                                        >
+                                            <i className="ri-forbid-line me-1"></i>
+                                            Desactivar
+                                        </Button>
+                                        <Button
+                                            className="farm-secondary-button btn-sm"
+                                            disabled={!hasInactiveUsers}
+                                            title={!hasInactiveUsers ? "No hay usuarios inactivos seleccionados" : undefined}
+                                            onClick={() => toggleModal('bulkActivate')}
+                                        >
+                                            <i className="ri-check-line me-1"></i>
+                                            Activar
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+                            <Button className="farm-primary-button ms-auto" onClick={() => toggleModal("create")}>
                                 <i className="ri-add-line me-2" />
                                 Registrar Usuario
                             </Button>
@@ -173,12 +249,13 @@ const ViewUsers = () => {
                                 <span className="fs-5 text-muted">Aún no hay usuarios registrados</span>
                             </>
                         ) : (
-                            <CustomTable 
-                                columns={columns} 
-                                data={users} 
-                                showSearchAndFilter={true} 
-                                showPagination={true} 
+                            <SelectableCustomTable
+                                columns={columns}
+                                data={users}
+                                showPagination={true}
                                 rowsPerPage={10}
+                                onSelect={handleSelectionChange}
+                                selectionOnlyOnCheckbox={true}
                             />
                         )}
                     </CardBody>
@@ -206,6 +283,40 @@ const ViewUsers = () => {
                     <ModalBody>
                         <UserForm initialData={selectedUser} isUsernameDisable={true} onSave={() => { toggleModal('update'); handleFetchUsers(); }} onCancel={() => toggleModal('update', false)} currentUserRole={userLogged.role} />
                     </ModalBody>
+                </Modal>
+
+                {/* Modal Bulk Deactivate */}
+                <Modal isOpen={modals.bulkDelete} toggle={() => toggleModal("bulkDelete")} backdrop='static' keyboard={false} centered>
+                    <ModalHeader toggle={() => toggleModal("bulkDelete")}>Desactivar Usuarios</ModalHeader>
+                    <ModalBody>
+                        ¿Desea desactivar {selectedUsers.filter(u => u.status === true).length} usuarios seleccionados?
+                        <div className="mt-2">
+                            <small className="text-muted">
+                                Esta acción desactivará los usuarios y no podrán acceder al sistema.
+                            </small>
+                        </div>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button className="farm-secondary-button" onClick={() => toggleModal("bulkDelete", false)}>Cancelar</Button>
+                        <Button className="farm-primary-button" onClick={handleBulkDeactivate}>Confirmar</Button>
+                    </ModalFooter>
+                </Modal>
+
+                {/* Modal Bulk Activate */}
+                <Modal isOpen={modals.bulkActivate} toggle={() => toggleModal("bulkActivate")} backdrop='static' keyboard={false} centered>
+                    <ModalHeader toggle={() => toggleModal("bulkActivate")}>Activar Usuarios</ModalHeader>
+                    <ModalBody>
+                        ¿Desea activar {selectedUsers.filter(u => u.status === false).length} usuarios seleccionados?
+                        <div className="mt-2">
+                            <small className="text-muted">
+                                Esta acción activará los usuarios y podrán acceder al sistema.
+                            </small>
+                        </div>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button className="farm-secondary-button" onClick={() => toggleModal("bulkActivate", false)}>Cancelar</Button>
+                        <Button className="farm-primary-button" onClick={handleBulkActivate}>Confirmar</Button>
+                    </ModalFooter>
                 </Modal>
             </Container>
 

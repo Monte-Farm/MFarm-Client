@@ -3,7 +3,10 @@ import { Column } from "common/data/data_types";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb"
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
-import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, UncontrolledTooltip } from "reactstrap"
+import { Badge, Button, Card, CardBody, CardHeader, Container, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, UncontrolledTooltip, Spinner } from "reactstrap"
+import DatePicker from "react-flatpickr";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 import PigDetailsModal from "Components/Common/Details/DetailsPigModal";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import PregnancyDetails from "../../Components/Common/Details/PregnancyDetails";
@@ -16,7 +19,8 @@ import { transformPregnancyStatsForChart } from "Components/Hooks/transformPregn
 import { ResponsiveLine } from "@nivo/line";
 import LineChartCard from "Components/Common/Graphics/LineChartCard";
 import AbortionForm from "Components/Common/Forms/AbortionForm";
-import CustomTable from "Components/Common/Tables/CustomTable";
+import SelectableCustomTable from "Components/Common/Tables/SelectableTable";
+import PDFViewer from "Components/Common/Shared/PDFViewer";
 
 type PeriodKey = "day" | "week" | "month" | "year";
 const ViewPregnancies = () => {
@@ -25,11 +29,14 @@ const ViewPregnancies = () => {
     const configContext = useContext(ConfigContext);
     const [loading, setLoading] = useState<boolean>(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ create: false, update: false, viewPDF: false, abortion: false, pigDetails: false, pregnancyDetails: false });
+    const [modals, setModals] = useState({ create: false, update: false, viewPDF: false, abortion: false, pigDetails: false, pregnancyDetails: false, bulkAbortion: false, reportPDF: false });
     const [pregnancies, setPregnancies] = useState<any[]>([])
     const [selectedPregnancy, setSelectedPregnancy] = useState<any>({})
+    const [selectedPregnancies, setSelectedPregnancies] = useState<any[]>([])
     const [selectedPigId, setSelectedPigId] = useState<any>({})
     const [pregnancyStats, setPregnancyStats] = useState<any>({})
+    const [fileURL, setFileURL] = useState<string>('')
+    const [pdfLoading, setPdfLoading] = useState(false);
 
     const inseminationsColumns: Column<any>[] = [
         {
@@ -38,12 +45,12 @@ const ViewPregnancies = () => {
             type: "text",
             render: (_, row) => (
                 <Button
-                    className="text-underline fs-5"
+                    className="text-underline"
                     color="link"
                     onClick={(e) => {
                         e.stopPropagation();
-                        setSelectedPigId(row?.sow?._id)
-                        toggleModal('pigDetails')
+                        setSelectedPigId(row?.sow?._id);
+                        toggleModal('pigDetails');
                     }}
                 >
                     {row.sow?.code} ↗
@@ -81,14 +88,14 @@ const ViewPregnancies = () => {
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button id={`diagnose-button-${row._id}`} className="farm-secondary-button btn-icon" onClick={() => { setSelectedPregnancy(row); toggleModal('abortion'); }} disabled={row.farrowing_status === 'farrowed' || row.abortions.length !== 0}>
+                    <Button id={`diagnose-button-${row._id}`} className="farm-secondary-button btn-icon" onClick={(e) => { e.stopPropagation(); setSelectedPregnancy(row); toggleModal('abortion'); }} disabled={row.farrowing_status === 'farrowed' || row.abortions.length !== 0}>
                         <i className="bx bxs-skull align-middle"></i>
                     </Button>
                     <UncontrolledTooltip target={`diagnose-button-${row._id}`}>
                         Registrar perdida
                     </UncontrolledTooltip>
 
-                    <Button id={`view-button-${row._id}`} className="farm-primary-button btn-icon" onClick={() => { setSelectedPregnancy(row); toggleModal('pregnancyDetails') }}>
+                    <Button id={`view-button-${row._id}`} className="farm-primary-button btn-icon" onClick={(e) => { e.stopPropagation(); setSelectedPregnancy(row); toggleModal('pregnancyDetails'); }}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
                     <UncontrolledTooltip target={`view-button-${row._id}`}>
@@ -103,6 +110,90 @@ const ViewPregnancies = () => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
 
+    const handleSelectionChange = (selected: any[]) => {
+        setSelectedPregnancies(selected);
+    };
+
+    const hasValidPregnancies = selectedPregnancies.some(preg => 
+        preg.farrowing_status !== 'farrowed' && preg.abortions.length === 0
+    );
+
+    const bulkAbortionValidationSchema = Yup.object({
+        probable_cause: Yup.string().required('La causa probable es obligatoria'),
+        date: Yup.date().required('La fecha es obligatoria'),
+    });
+
+    const bulkAbortionFormik = useFormik({
+        initialValues: {
+            probable_cause: '',
+            date: null as Date | null,
+            notes: '',
+            responsible: userLoggged?._id || '',
+        },
+        enableReinitialize: true,
+        validationSchema: bulkAbortionValidationSchema,
+        onSubmit: async (values, { setSubmitting }) => {
+            if (!configContext) return;
+            
+            const validPregnancyIds = selectedPregnancies
+                .filter(preg => preg.farrowing_status !== 'farrowed' && preg.abortions.length === 0)
+                .map(preg => preg._id);
+
+            try {
+                setSubmitting(true);
+                
+                // 1. Registrar abortos masivos
+                await configContext.axiosHelper.create(`${configContext.apiUrl}/pregnancies/register_bulk_abortion`, {
+                    pregnancyIds: validPregnancyIds,
+                    probable_cause: values.probable_cause,
+                    date: values.date,
+                    notes: values.notes,
+                    responsible: values.responsible
+                });
+
+                // 2. Registrar en el historial del usuario
+                await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLoggged._id}`, {
+                    event: `Pérdida masiva de ${validPregnancyIds.length} embarazos registrada`
+                });
+
+                setAlertConfig({ visible: true, color: 'success', message: `Pérdida registrada en ${validPregnancyIds.length} embarazos con éxito` });
+                fetchData();
+                setSelectedPregnancies([]);
+                bulkAbortionFormik.resetForm();
+            } catch (error) {
+                console.error('Error bulk registering abortion:', error);
+                setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al registrar la pérdida masiva, intentelo más tarde' });
+            } finally {
+                setSubmitting(false);
+                toggleModal('bulkAbortion');
+            }
+        },
+    });
+
+    const handleOpenBulkAbortionForm = () => {
+        bulkAbortionFormik.setFieldValue('date', new Date());
+        toggleModal('bulkAbortion');
+    };
+
+    const handleGenerateReport = async () => {
+        if (!configContext || !userLoggged) return;
+
+        try {
+            setPdfLoading(true);
+            const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/active_pregnancies/${userLoggged.farm_assigned}`);
+
+            const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(pdfBlob);
+            setFileURL(url);
+            toggleModal('reportPDF');
+        } catch (error) {
+            console.error('Error generating pregnancies report:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el reporte de embarazos.' });
+        } finally {
+            setPdfLoading(false);
+        }
+    };
+
     const fetchData = async () => {
         if (!configContext || !userLoggged) return
         try {
@@ -112,7 +203,8 @@ const ViewPregnancies = () => {
                 await configContext.axiosHelper.get(`${configContext.apiUrl}/pregnancies/get_stats/${userLoggged.farm_assigned}`)
             ])
 
-            setPregnancies(pregnanciesResponse.data.data)
+            const pregnanciesWithId = pregnanciesResponse.data.data.map((preg: any) => ({ ...preg, id: preg._id }));
+            setPregnancies(pregnanciesWithId)
             setPregnancyStats(statsResponse.data.data)
         } catch (error) {
             console.error('An error has ocurred:', { error })
@@ -202,19 +294,57 @@ const ViewPregnancies = () => {
                 </div>
 
                 <Card>
-                    <CardHeader className="d-flex">
-                        <h4>Embarazos activos</h4>
+                    <CardHeader className="d-flex justify-content-between align-items-center">
+                        <div className="d-flex align-items-center gap-3 flex-grow-1">
+                            {selectedPregnancies.length > 0 && (
+                                <div className="d-flex align-items-center gap-2">
+                                    <span className="text-muted">
+                                        {selectedPregnancies.length} {selectedPregnancies.length === 1 ? 'embarazo seleccionado' : 'embarazos seleccionados'}
+                                    </span>
+                                    <div className="btn-group" role="group">
+                                        <Button
+                                            className="farm-danger-button btn-sm"
+                                            disabled={!hasValidPregnancies}
+                                            title={!hasValidPregnancies ? "No hay embarazos válidos para registrar pérdida" : undefined}
+                                            onClick={handleOpenBulkAbortionForm}
+                                        >
+                                            <i className="bx bxs-skull me-1"></i>
+                                            Registrar Pérdida
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                        <Button 
+                            color="primary" 
+                            onClick={handleGenerateReport}
+                            disabled={pdfLoading}
+                        >
+                            {pdfLoading ? (
+                                <>
+                                    <Spinner className="me-2" size='sm' />
+                                    Generando...
+                                </>
+                            ) : (
+                                <>
+                                    <i className="ri-file-pdf-line me-2"></i>
+                                    Reporte de Embarazos Activos
+                                </>
+                            )}
+                        </Button>
                     </CardHeader>
 
-                    <CardBody style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+                    <CardBody className="p-0">
                         {pregnancies && pregnancies.length > 0 ? (
                             <div style={{ flex: 1 }}>
-                                <CustomTable
+                                <SelectableCustomTable
                                     columns={inseminationsColumns}
                                     data={pregnancies}
                                     showPagination={true}
                                     showSearchAndFilter={false}
                                     rowsPerPage={7}
+                                    onSelect={handleSelectionChange}
+                                    selectionOnlyOnCheckbox={true}
                                 />
                             </div>
                         ) : (
@@ -243,6 +373,89 @@ const ViewPregnancies = () => {
                 </ModalBody>
             </Modal>
 
+            {/* Modal Bulk Abortion Form */}
+            <Modal isOpen={modals.bulkAbortion} toggle={() => toggleModal("bulkAbortion")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("bulkAbortion")}>
+                    Registrar Pérdida en {selectedPregnancies.filter(preg => preg.farrowing_status !== 'farrowed' && preg.abortions.length === 0).length} Embarazos
+                </ModalHeader>
+                <ModalBody>
+                    <form onSubmit={bulkAbortionFormik.handleSubmit}>
+                        <div className="mb-3">
+                            <small className="text-muted">
+                                Esta acción registrará la pérdida en los embarazos válidos seleccionados.
+                            </small>
+                        </div>
+
+                        <div className="mt-4">
+                            <Label htmlFor="probable_cause" className="form-label">Causa probable</Label>
+                            <Input
+                                type="text"
+                                id="probable_cause"
+                                name="probable_cause"
+                                value={bulkAbortionFormik.values.probable_cause}
+                                onChange={bulkAbortionFormik.handleChange}
+                                onBlur={bulkAbortionFormik.handleBlur}
+                                invalid={bulkAbortionFormik.touched.probable_cause && !!bulkAbortionFormik.errors.probable_cause}
+                                placeholder="Ej: Estrés, enfermedad, condiciones ambientales"
+                            />
+                            {bulkAbortionFormik.touched.probable_cause && bulkAbortionFormik.errors.probable_cause && (
+                                <FormFeedback>{bulkAbortionFormik.errors.probable_cause}</FormFeedback>
+                            )}
+                        </div>
+
+                        <div className="d-flex gap-2 mt-4">
+                            <div className="w-50">
+                                <Label htmlFor="date" className="form-label">Fecha de pérdida</Label>
+                                <DatePicker
+                                    id="date"
+                                    className={`form-control ${bulkAbortionFormik.touched.date && bulkAbortionFormik.errors.date ? 'is-invalid' : ''}`}
+                                    value={bulkAbortionFormik.values.date ?? undefined}
+                                    onChange={(date: Date[]) => { if (date[0]) bulkAbortionFormik.setFieldValue('date', date[0]); }}
+                                    options={{ dateFormat: 'd/m/Y' }}
+                                />
+                                {bulkAbortionFormik.touched.date && bulkAbortionFormik.errors.date && (
+                                    <FormFeedback className="d-block">{bulkAbortionFormik.errors.date as string}</FormFeedback>
+                                )}
+                            </div>
+
+                            <div className="w-50">
+                                <Label htmlFor="responsible" className="form-label">Responsable</Label>
+                                <Input
+                                    type="text"
+                                    id="responsible"
+                                    name="responsible"
+                                    value={`${userLoggged?.name} ${userLoggged?.lastname}`}
+                                    disabled
+                                />
+                            </div>
+                        </div>
+
+                        <div className="mt-4">
+                            <Label htmlFor="notes" className="form-label">Notas</Label>
+                            <Input
+                                type="text"
+                                id="notes"
+                                name="notes"
+                                value={bulkAbortionFormik.values.notes}
+                                onChange={bulkAbortionFormik.handleChange}
+                                onBlur={bulkAbortionFormik.handleBlur}
+                                invalid={bulkAbortionFormik.touched.notes && !!bulkAbortionFormik.errors.notes}
+                                placeholder="Ej: Pérdida masiva por condiciones climáticas"
+                            />
+                            {bulkAbortionFormik.touched.notes && bulkAbortionFormik.errors.notes && (
+                                <FormFeedback>{bulkAbortionFormik.errors.notes}</FormFeedback>
+                            )}
+                        </div>
+                    </form>
+                </ModalBody>
+                <ModalFooter>
+                    <Button className="farm-secondary-button" onClick={() => toggleModal("bulkAbortion", false)}>Cancelar</Button>
+                    <Button className="farm-danger-button" onClick={() => bulkAbortionFormik.handleSubmit()} disabled={bulkAbortionFormik.isSubmitting}>
+                        {bulkAbortionFormik.isSubmitting ? <Spinner size="sm" /> : 'Confirmar Pérdida'}
+                    </Button>
+                </ModalFooter>
+            </Modal>
+
             <Modal size="xl" isOpen={modals.pregnancyDetails} toggle={() => { toggleModal("pregnancyDetails"); fetchData() }} centered>
                 <ModalHeader toggle={() => { toggleModal("pregnancyDetails"); fetchData() }}>Detalles de embarazo</ModalHeader>
                 <ModalBody>
@@ -250,6 +463,12 @@ const ViewPregnancies = () => {
                 </ModalBody>
             </Modal>
 
+            <Modal size="xl" isOpen={modals.reportPDF} toggle={() => toggleModal("reportPDF")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("reportPDF")}>Reporte de Embarazos Activos</ModalHeader>
+                <ModalBody>
+                    {fileURL && <PDFViewer fileUrl={fileURL} />}
+                </ModalBody>
+            </Modal>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </div>

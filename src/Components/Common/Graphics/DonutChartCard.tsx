@@ -1,6 +1,7 @@
 import { ResponsivePie } from '@nivo/pie';
 import { Card, CardBody, CardHeader } from 'reactstrap';
 import { RiArrowUpLine, RiArrowDownLine } from 'react-icons/ri';
+import { FiInbox } from 'react-icons/fi';
 
 export interface DonutDataItem {
     id: string;
@@ -44,6 +45,25 @@ const DonutChartCard = ({
     className = '',
     headerBgColor = '#f8f9fa',
 }: DonutChartCardProps) => {
+    // Check if there's data to display
+    const hasData = data && data.length > 0;
+
+    if (!hasData) {
+        return (
+            <Card className={`h-100 ${className}`}>
+                <CardHeader style={{ backgroundColor: headerBgColor }}>
+                    <h6 className="mb-0 text-muted">{title}</h6>
+                </CardHeader>
+                <CardBody style={{ height: `${height}px`, display: "flex", justifyContent: "center", alignItems: "center" }}>
+                    <div style={{ textAlign: "center", color: "#9ca3af" }}>
+                        <FiInbox size={48} style={{ marginBottom: 10 }} />
+                        <div>No hay datos disponibles</div>
+                    </div>
+                </CardBody>
+            </Card>
+        );
+    }
+
     return (
         <Card className={`h-100 ${className}`}>
             <CardHeader style={{ backgroundColor: headerBgColor }}>

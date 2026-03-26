@@ -395,8 +395,8 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
                                     onBlur={formik.handleBlur}
                                     invalid={formik.touched.sex && !!formik.errors.sex}
                                 >
-                                    <option value="macho">Macho</option>
-                                    <option value="hembra">Hembra</option>
+                                    <option value="male">Macho</option>
+                                    <option value="female">Hembra</option>
                                 </Input>
                                 {formik.touched.sex && formik.errors.sex && (
                                     <FormFeedback>{formik.errors.sex}</FormFeedback>

@@ -19,9 +19,10 @@ import VaccinationPlansCard from "../Shared/VaccinationPlansCard";
 
 interface GroupMedicalDetailsProps {
     groupId: string
+    onUpdate?: () => void
 }
 
-const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId }) => {
+const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId, onUpdate }) => {
     const configContext = useContext(ConfigContext);
     const userLogged = getLoggedinUser();
     const [loading, setLoading] = useState<boolean>(true)
@@ -47,6 +48,7 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId }) =>
             endDate,
         });
         await fetchMedicalInfo();
+        onUpdate?.();
     };
 
     const fetchMedicalInfo = async () => {
@@ -110,14 +112,14 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId }) =>
             <Modal size="xl" isOpen={modals.registerHealthEvent} toggle={() => toggleModal("registerHealthEvent")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("registerHealthEvent")}>Registar evento sanitario</ModalHeader>
                 <ModalBody>
-                    <GroupHealthEventForm groupId={groupId} onSave={() => { toggleModal('registerHealthEvent'); fetchMedicalInfo(); }} />
+                    <GroupHealthEventForm groupId={groupId} onSave={() => { toggleModal('registerHealthEvent'); fetchMedicalInfo(); onUpdate?.(); }} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.asignMedicationPackage} toggle={() => toggleModal("asignMedicationPackage")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("asignMedicationPackage")}>Asignar paquete de medicacion</ModalHeader>
                 <ModalBody>
-                    <AsignGroupMedicationPackageForm groupId={groupId} onSave={() => { toggleModal('asignMedicationPackage'); fetchMedicalInfo(); }} />
+                    <AsignGroupMedicationPackageForm groupId={groupId} onSave={() => { toggleModal('asignMedicationPackage'); fetchMedicalInfo(); onUpdate?.(); }} />
                 </ModalBody>
             </Modal>
 

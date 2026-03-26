@@ -71,28 +71,12 @@ const LitterMedicalDetails: React.FC<LitterMedicalDetailsProps> = ({ litterId })
         <>
             <div className="d-flex gap-3 align-items-stretch" style={{ height: "700px" }}>
 
-                <AdministeredMedicationsCard
-                    medications={medications}
-                    onAdd={() => toggleModal("asignMedication")}
-                    status={litter.status}
-                />
-
                 <MedicationPackagesCard
                     packages={medicationPackages}
                     onAdd={() => toggleModal("asignMedicationPackage")}
                     onViewDetails={(id) => {
                         setSelectedMedicationPackage(id);
                         toggleModal("medicationPackageDetails");
-                    }}
-                    status={litter.status}
-                />
-
-                <VaccinationPlansCard
-                    plans={vaccinationPlans}
-                    onAdd={() => toggleModal("asignVaccinationPlan")}
-                    onViewDetails={(id) => {
-                        setSelectedVaccinationPlan(id);
-                        toggleModal("vaccinationPlanDetails");
                     }}
                     status={litter.status}
                 />

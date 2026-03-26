@@ -39,6 +39,7 @@ export interface IncomeData {
 }
 
 export interface SupplierData {
+    _id?: string;
     id: string;
     name: string;
     address: string;
@@ -103,6 +104,7 @@ export interface SubwarehouseData {
 }
 
 export interface SupplierData {
+    _id?: string;
     id: string;
     name: string;
     address: string;
@@ -438,7 +440,7 @@ export interface GroupData {
     area: string;
     creationDate: Date | null;
     stage: | 'general' | 'lactation' | 'weaning' | 'fattening' | 'gestation' | 'breeder' | 'exit' | 'sale' | "";
-    status?: 'weaning' | 'ready_to_grow' | 'grow_overdue' | 'growing' | 'ready_to_exit' | 'exit_overdue' | 'exit' | 'replacement' | 'sale' | 'sold'
+    status?: 'weaning' | 'ready_to_grow' | 'grow_overdue' | 'growing' | 'ready_for_sale' | 'replacement' | 'sale' | 'sold'
     groupMode: 'linked' | 'count' | '';
     pigsInGroup?: string[];
     pigCount?: number;
@@ -465,6 +467,7 @@ export interface GroupData {
     vaccinationPlansHistory?: GroupVaccinationPlansHistory[];
     healthEvents?: GroupHealthEvents[];
     isActive: boolean
+    isReadyForReplacement?: boolean;
 }
 
 
@@ -484,6 +487,8 @@ export interface ExtractionData {
 }
 
 export interface SemenSample {
+    _id?: string;
+    id?: string;
     extraction_id: string
     concentration_million: number;
     motility_percent: number;

@@ -99,9 +99,15 @@ const productColumns: Column<any>[] = [
         accessor: 'quantity',
         isFilterable: true,
         type: "number",
-        render: (_, row) => <span>{row.quantity} {row.unit_measurement}</span>
+        render: (_, row) => <span>{row.quantity} {row.unit_measurement}</span>,
+        bgColor: '#f0f0ff'
     },
-    { header: 'Precio Unitario', accessor: 'price', type: "currency" },
+    { 
+        header: 'Precio Unitario', 
+        accessor: 'price', 
+        type: "currency",
+        bgColor: '#e6f0ff'
+    },
     {
         header: 'Precio Total',
         accessor: 'totalPrice',
@@ -112,7 +118,8 @@ const productColumns: Column<any>[] = [
                 style: 'currency',
                 currency: 'USD',
             }).format(totalPrice);
-        }
+        },
+        bgColor: '#e6ffe6'
     },
     {
         header: 'Categoria',
@@ -233,17 +240,10 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
             }),
         date: Yup.string().required("Por favor, ingrese la fecha"),
         emissionDate: Yup.string().required("Por favor, ingrese la fecha"),
-        totalPrice: Yup.number().min(0, "El precio total debe ser positivo").required("Por favor, ingrese el precio total"),
         tax: Yup.number().min(0, "El impuesto debe ser positivo").required("Por favor, ingrese el impuesto"),
         discount: Yup.number().min(0, "El descuento debe ser positivo").required("Por favor, ingrese el descuento"),
-        incomeType: Yup.string().required("Por favor, seleccione el tipo de ingreso"),
-        origin: Yup.object({
-            id: Yup.string().required("Por favor, seleccione un proveedor"),
-        }),
-        documents: Yup.array().of(Yup.string()).required("Por favor, agregue al menos un documento"),
         invoiceNumber: Yup.string().required("Por favor, ingrese el número de factura"),
         fiscalRecord: Yup.string().required('Por favor, ingrese el registro fiscal'),
-        currency: Yup.string().required('Por favor, seleccione la moneda')
     });
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
@@ -377,13 +377,14 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
         const processedProducts = row.products.map((product: any) => ({
             id: product.id._id,
             quantity: product.quantity,
-            price: 0
+            price: product.unitPrice || 0,
+            totalPrice: product.totalPrice || 0
         }));
 
         setSelectecOrderProducts(processedProducts);
         formik.setFieldValue("products", processedProducts);
 
-        const updatedSelectedProducts = processedProducts.map((selectedProduct: { id: string; quantity: number; price: number }) => {
+        const updatedSelectedProducts = processedProducts.map((selectedProduct: { id: string; quantity: number; price: number; totalPrice: number }) => {
             const productData = row.products.find((p: any) => p.id._id === selectedProduct.id);
             return productData
                 ? { ...productData.id, code: productData.id.id, ...selectedProduct }
@@ -418,7 +419,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
 
     return (
         <>
-            <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }} className="form-steps">
+            <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }} className="form-steps" noValidate>
                 <div className="step-arrow-nav mb-4">
                     <Nav className="nav-pills custom-nav nav-justified">
                         <NavItem>
@@ -726,8 +727,8 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                         <div className="d-flex flex-column gap-1 w-100">
                             <div className="d-flex gap-3">
                                 <Card className="w-50">
-                                    <CardHeader style={{ backgroundColor: '#f8f9fa' }}>
-                                        <h5>Orden de compra</h5>
+                                    <CardHeader className='bg-gradient' style={{ backgroundColor: '#e3f2fd' }}>
+                                        <h5 className="mb-0 text-primary">Orden de compra</h5>
                                     </CardHeader>
                                     <CardBody className="pt-4">
                                         {selectedPurchaseOrder && (
@@ -737,8 +738,8 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                 </Card>
 
                                 <Card className="w-50">
-                                    <CardHeader style={{ backgroundColor: '#f8f9fa' }}>
-                                        <h5>Entrada</h5>
+                                    <CardHeader className='bg-gradient' style={{ backgroundColor: '#e8f5e9' }}>
+                                        <h5 className="mb-0 text-success">Entrada</h5>
                                     </CardHeader>
                                     <CardBody className="pt-4">
                                         <ObjectDetails attributes={incomeAttributes} object={formik.values} />
@@ -748,8 +749,8 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
 
                             <div className="w-100">
                                 <Card >
-                                    <CardHeader style={{ backgroundColor: '#f8f9fa' }}>
-                                        <h5>Productos</h5>
+                                    <CardHeader className='bg-gradient' style={{ backgroundColor: '#f3e5f5' }}>
+                                        <h5 className="mb-0 text-purple">Productos</h5>
                                     </CardHeader>
                                     <CardBody className="p-0">
                                         <CustomTable columns={productColumns} data={selectedProducts} showSearchAndFilter={false} showPagination={false} />

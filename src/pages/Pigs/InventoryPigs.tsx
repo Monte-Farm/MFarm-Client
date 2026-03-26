@@ -11,7 +11,8 @@ import PigFilters, { PigFiltersState } from "Components/Common/Filters/PigFilter
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState, useMemo } from "react";
 import { FaArrowDown, FaArrowUp, FaBalanceScale, FaChartLine, FaPiggyBank, FaKeyboard, FaListUl } from "react-icons/fa";
-import { Badge, Card, CardBody, CardHeader, Container, Alert, Button, Modal, ModalHeader, ModalBody, Spinner } from "reactstrap";
+import { Badge, Card, CardBody, CardHeader, Container, Button, Modal, ModalHeader, ModalBody, Spinner } from "reactstrap";
+import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import SinglePigForm from "Components/Common/Forms/SinglePigForm";
 import BatchPigForm from "Components/Common/Forms/BatchPigForm";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
@@ -268,12 +269,7 @@ const InventoryPigs = () => {
             <Container fluid>
                 <BreadCrumb title={'Inventario de cerdos'} pageTitle={'Cerdos'} />
 
-                {/* Alerta de errores */}
-                {alertConfig.visible && (
-                    <Alert color={alertConfig.color} className="mb-3" toggle={() => setAlertConfig({ visible: false, color: '', message: '' })}>
-                        {alertConfig.message}
-                    </Alert>
-                )}
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
 
                 <div className="d-flex gap-3">
                     <KPI title="Total de cerdos" value={pigStats?.generalStats[0]?.total ?? 0} icon={FaPiggyBank} bgColor="#EFF6FF" iconColor="#2563EB" />

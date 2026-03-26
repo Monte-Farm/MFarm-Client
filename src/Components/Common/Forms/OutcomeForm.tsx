@@ -118,9 +118,13 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                             max={maxQuantity}
                             onChange={(e) => {
                                 const newValue = Math.min(Number(e.target.value), maxQuantity);
-                                const updatedProducts = selectedProducts.map((p: any) =>
-                                    p.id === row.id ? { ...p, quantity: newValue } : p
-                                );
+                                const updatedProducts = selectedProducts.map((p: any) => {
+                                    if (p.id === row.id) {
+                                        const totalPrice = newValue * (p.price || 0);
+                                        return { ...p, quantity: newValue, totalPrice };
+                                    }
+                                    return p;
+                                });
                                 setSelectedProducts(updatedProducts);
 
                                 // Clear error for this field if value is valid
@@ -549,6 +553,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                                                     id: r.id,
                                                     quantity: 0,
                                                     price: r.averagePrice || 0,
+                                                    totalPrice: 0,
                                                 };
                                             });
                                             return newRows;

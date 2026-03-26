@@ -3,7 +3,8 @@ import { OrderData, OutcomeData } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Alert, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader } from "reactstrap";
+import { Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader } from "reactstrap";
+import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import ErrorModal from "Components/Common/Shared/ErrorModal";
 import SuccessModal from "Components/Common/Shared/SuccessModal";
@@ -158,11 +159,7 @@ const CompleteOrder = () => {
                 </ModalBody>
             </Modal>
 
-            {alertConfig.visible && (
-                <Alert color={alertConfig.color} className="position-fixed bottom-0 start-50 translate-middle-x p-3">
-                    {alertConfig.message}
-                </Alert>
-            )}
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </div>
     )
 }

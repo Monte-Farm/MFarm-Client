@@ -131,21 +131,37 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
                 let text = "Desconocido";
 
                 switch (row?.status) {
+                    case "weaning":
+                        color = "info";
+                        text = "En destete";
+                        break;
+                    case "ready_to_grow":
+                        color = "primary";
+                        text = "Listo para crecimiento";
+                        break;
+                    case "grow_overdue":
+                        color = "warning";
+                        text = "Retradado en crecimiento";
+                        break;
                     case "growing":
                         color = "success";
                         text = "En crecimiento y ceba";
                         break;
-                    case "ready_to_exit":
-                        color = "warning";
-                        text = "Listo para salida";
-                        break;
-                    case "exit_overdue":
-                        color = "dark";
-                        text = "Retrasado para salida";
-                        break;
                     case "replacement":
                         color = "secondary";
                         text = "Reemplazo";
+                        break;
+                    case "ready_for_sale":
+                        color = "success";
+                        text = "Listo para venta";
+                        break;
+                    case "sale":
+                        color = "success";
+                        text = "En venta";
+                        break;
+                    case "sold":
+                        color = "success";
+                        text = "Vendido";
                         break;
                 }
 
@@ -288,6 +304,12 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
                     userId: userLogged._id,
                 });
             }
+
+            await configContext.axiosHelper.put(`${configContext.apiUrl}/group/update_replacement_flag/${groupId}`,
+                {
+                    "isReady": false,
+                    "userId": userLogged._id
+                });
         } catch (error) {
             console.error('Error processing replacement group:', { error });
             throw error;

@@ -18,6 +18,7 @@ import ExtractionDetails from "Components/Common/Details/ExtractionDetails";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
 import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector";
+import SemenSampleForm from "Components/Common/Forms/SemenSampleForm";
 
 const ViewExtractions = () => {
     document.title = 'Ver extracciones | Management System'
@@ -26,7 +27,7 @@ const ViewExtractions = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [extractions, setExtractions] = useState<ExtractionData[] | null>(null)
-    const [modals, setModals] = useState({ create: false, update: false, viewPDF: false, pigDetails: false, extractionDetails: false, dateRange: false });
+    const [modals, setModals] = useState({ create: false, update: false, viewPDF: false, pigDetails: false, extractionDetails: false, dateRange: false, registerSample: false });
     const [stats, setStats] = useState<any>({})
     const [selectedExtraction, setSelectedExtraction] = useState<any>({})
     const [pdfLoading, setPdfLoading] = useState(false);
@@ -74,6 +75,22 @@ const ViewExtractions = () => {
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
+                    <Button 
+                        id={`register-sample-button-${row._id}`} 
+                        className="farm-secondary-button btn-icon" 
+                        onClick={(e) => { 
+                            e.stopPropagation(); 
+                            setSelectedExtraction(row); 
+                            toggleModal('registerSample') 
+                        }} 
+                        disabled={row.is_sample_registered}
+                    >
+                        <i className="ri-test-tube-line align-middle"></i>
+                    </Button>
+                    <UncontrolledTooltip target={`register-sample-button-${row._id}`}>
+                        {row.is_sample_registered ? 'Muestra ya registrada' : 'Registrar muestra'}
+                    </UncontrolledTooltip>
+
                     <Button id={`details-button-${row._id}`} className="farm-primary-button btn-icon" onClick={(e) => { e.stopPropagation(); setSelectedExtraction(row); toggleModal('extractionDetails') }} >
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
@@ -314,6 +331,18 @@ const ViewExtractions = () => {
                 <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de extracciones</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
+                </ModalBody>
+            </Modal>
+
+            {/* Modal para registrar muestra */}
+            <Modal size="xl" isOpen={modals.registerSample} toggle={() => toggleModal("registerSample")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("registerSample")}>Registrar muestra</ModalHeader>
+                <ModalBody>
+                    <SemenSampleForm 
+                        preselectedExtraction={selectedExtraction} 
+                        onSave={() => { toggleModal('registerSample'); fetchData(); }} 
+                        onCancel={() => toggleModal('registerSample')} 
+                    />
                 </ModalBody>
             </Modal>
 

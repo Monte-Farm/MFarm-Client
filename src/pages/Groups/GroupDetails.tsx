@@ -60,6 +60,7 @@ const GroupDetails = () => {
     const [weightDistribution, setWeightDistribution] = useState<any>();
     const [active, setActive] = useState<any>();
     const [mortality, setMortality] = useState<any>();
+    const [refreshKey, setRefreshKey] = useState<number>(0);
 
     const toggleTab = (tab: string) => {
         if (activeTab !== tab) setActiveTab(tab);
@@ -68,10 +69,6 @@ const GroupDetails = () => {
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
-
-    const hasPigs = (groupData?.pigCount ?? 0) > 0;
-    const isLinkedMode = groupData?.groupMode === "linked";
-    const isCountMode = groupData?.groupMode === "count";
 
     const groupAttibutes: Attribute[] = [
         { key: "code", label: "Codigo", type: "text" },
@@ -156,32 +153,28 @@ const GroupDetails = () => {
                         text = "Listo para crecimiento";
                         break;
                     case "grow_overdue":
-                        color = "primary";
+                        color = "warning";
                         text = "Retradado en crecimiento";
                         break;
                     case "growing":
                         color = "success";
                         text = "En crecimiento y ceba";
                         break;
-                    case "ready_to_exit":
-                        color = "warning";
-                        text = "Listo para salida";
-                        break;
-                    case "exit_overdue":
-                        color = "dark";
-                        text = "Retrasado para salida";
-                        break;
-                    case "exit":
-                        color = "warning";
-                        text = "Salida";
-                        break;
                     case "replacement":
                         color = "secondary";
                         text = "Reemplazo";
                         break;
-                    case "exit_processed":
+                    case "ready_for_sale":
                         color = "success";
-                        text = "Salida Procesada";
+                        text = "Listo para venta";
+                        break;
+                    case "sale":
+                        color = "success";
+                        text = "En venta";
+                        break;
+                    case "sold":
+                        color = "success";
+                        text = "Vendido";
                         break;
                 }
 
@@ -374,16 +367,19 @@ const GroupDetails = () => {
                                             </Button>
                                         )}
 
-                                        {['growing', 'ready_to_exit', 'exit_overdue'].includes(groupData.status) && (
+                                        {['growing', 'ready_for_sale',].includes(groupData.status) && (
                                             <div className="d-flex gap-2">
-                                                <Button color="warning" disabled={!['ready_to_exit', 'exit_overdue'].includes(groupData.status)} onClick={() => toggleModal('processSale')}>
-                                                    <i className="ri-money-dollar-circle-line me-2" />
-                                                    Procesar venta
-                                                </Button>
-                                                <Button color="info" disabled={!['ready_to_exit', 'exit_overdue'].includes(groupData.status)} onClick={() => toggleModal('processReplacement')}>
+
+                                                <Button color="info" disabled={!groupData.isReadyForReplacement} onClick={() => toggleModal('processReplacement')}>
                                                     <i className="ri-refresh-line me-2" />
                                                     Procesar reemplazo
                                                 </Button>
+
+                                                <Button color="warning" disabled={!['ready_for_sale'].includes(groupData.status)} onClick={() => toggleModal('processSale')}>
+                                                    <i className="ri-money-dollar-circle-line me-2" />
+                                                    Procesar venta
+                                                </Button>
+
                                             </div>
                                         )}
                                     </CardHeader>
@@ -424,11 +420,11 @@ const GroupDetails = () => {
                     </TabPane>
 
                     <TabPane tabId="2">
-                        <GroupFeedingDetails groupId={group_id ?? ""} />
+                        <GroupFeedingDetails key={`feeding-${refreshKey}`} groupId={group_id ?? ""} onUpdate={fetchData} />
                     </TabPane>
 
                     <TabPane tabId="3">
-                        <GroupMedicalDetails groupId={group_id ?? ""} />
+                        <GroupMedicalDetails key={`medical-${refreshKey}`} groupId={group_id ?? ""} onUpdate={fetchData} />
                     </TabPane>
 
                     <TabPane tabId="4">
@@ -452,42 +448,42 @@ const GroupDetails = () => {
             <Modal size="xl" isOpen={modals.changeStage} toggle={() => toggleModal("changeStage")} centered backdrop={'static'} keyboard={false}>
                 <ModalHeader toggle={() => toggleModal("changeStage")}>Cambiar de etapa</ModalHeader>
                 <ModalBody>
-                    <ChangeStageGroup groupId={groupData._id} onSave={() => { toggleModal('changeStage'); fetchData() }} />
+                    <ChangeStageGroup groupId={groupData._id} onSave={() => { toggleModal('changeStage'); fetchData(); setRefreshKey(prev => prev + 1); }} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.processSale} toggle={() => toggleModal("processSale")} centered backdrop={'static'} keyboard={false}>
                 <ModalHeader toggle={() => toggleModal("processSale")}>Procesar venta de cerdos</ModalHeader>
                 <ModalBody>
-                    <ProcessPigSaleForm groupId={groupData._id} onSave={() => { toggleModal('processSale'); fetchData() }} />
+                    <ProcessPigSaleForm groupId={groupData._id} onSave={() => { toggleModal('processSale'); fetchData(); setRefreshKey(prev => prev + 1); }} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.processReplacement} toggle={() => toggleModal("processReplacement")} centered backdrop={'static'} keyboard={false}>
                 <ModalHeader toggle={() => toggleModal("processReplacement")}>Procesar reemplazo de cerdos</ModalHeader>
                 <ModalBody>
-                    <ProcessPigReplacementForm groupId={groupData._id} onSave={() => { toggleModal('processReplacement'); fetchData() }} />
+                    <ProcessPigReplacementForm groupId={groupData._id} onSave={() => { toggleModal('processReplacement'); fetchData(); setRefreshKey(prev => prev + 1); }} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.transfer} toggle={() => toggleModal("transfer")} centered backdrop={'static'} keyboard={false}>
                 <ModalHeader toggle={() => toggleModal("transfer")}>Trasferir cerdos</ModalHeader>
                 <ModalBody>
-                    <GroupTransferForm groupId={group_id ?? ''} onSave={() => { toggleModal('transfer'); fetchData(); }} stage={groupData.stage} />
+                    <GroupTransferForm groupId={group_id ?? ''} onSave={() => { toggleModal('transfer'); fetchData(); setRefreshKey(prev => prev + 1); }} stage={groupData.stage} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.discard} toggle={() => toggleModal("discard")} centered backdrop={'static'} keyboard={false}>
                 <ModalHeader toggle={() => toggleModal("discard")}>Retirar cerdos</ModalHeader>
                 <ModalBody>
-                    <GroupWithDrawForm groupId={group_id ?? ''} onSave={() => { fetchData(); toggleModal('discard') }} />
+                    <GroupWithDrawForm groupId={group_id ?? ''} onSave={() => { fetchData(); toggleModal('discard'); setRefreshKey(prev => prev + 1); }} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.registerDeath} toggle={() => toggleModal("registerDeath")} centered backdrop={'static'} keyboard={false}>
                 <ModalHeader toggle={() => toggleModal("registerDeath")}>Registrar muerte</ModalHeader>
                 <ModalBody>
-                    <DiscardPigInGroupForm groupId={group_id ?? ''} onSave={() => { fetchData(); toggleModal('registerDeath') }} onCancel={() => { }} />
+                    <DiscardPigInGroupForm groupId={group_id ?? ''} onSave={() => { fetchData(); toggleModal('registerDeath'); setRefreshKey(prev => prev + 1); }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 

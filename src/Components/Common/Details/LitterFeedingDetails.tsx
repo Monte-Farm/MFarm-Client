@@ -172,19 +172,6 @@ const GroupFeedingDetails: React.FC<LitterFeedingDetailsProps> = ({ litterId }) 
     return (
         <>
             <div className="d-flex gap-3 align-items-stretch" style={{ height: "600px" }}>
-                <AdministeredFeedingsCard
-                    feedings={feedings}
-                    onAdd={() => toggleModal("asignFeeding")}
-                    onDiscountStock={(id) => {
-                        setSelectedFeeding(id);
-                        toggleModal("discountFeedingStock");
-                    }}
-                    onUnassign={(id) => {
-                        setSelectedFeeding(id);
-                        toggleModal("unasignFeeding");
-                    }}
-                />
-
                 <FeedingPackagesCard
                     packages={feedingPackages}
                     onAdd={() => toggleModal("asignFeedingPackage")}

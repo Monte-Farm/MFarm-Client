@@ -163,25 +163,29 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
                         color = "primary";
                         text = "Listo para crecimiento";
                         break;
-                    case "":
-                        color = "grow_overdue";
+                    case "grow_overdue":
+                        color = "warning";
                         text = "Retradado en crecimiento";
                         break;
                     case "growing":
                         color = "success";
                         text = "En crecimiento y ceba";
                         break;
-                    case "ready_to_exit":
-                        color = "warning";
-                        text = "Listo para salida";
-                        break;
-                    case "exit_overdue":
-                        color = "dark";
-                        text = "Retrasado para salida";
-                        break;
                     case "replacement":
                         color = "secondary";
                         text = "Reemplazo";
+                        break;
+                    case "ready_for_sale":
+                        color = "success";
+                        text = "Listo para venta";
+                        break;
+                    case "sale":
+                        color = "success";
+                        text = "En venta";
+                        break;
+                    case "sold":
+                        color = "success";
+                        text = "Vendido";
                         break;
                 }
 
@@ -247,11 +251,11 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
                 status: 'growing',
                 userId: userLogged._id
             }
-        } else if (['ready_to_exit', 'exit_overdue'].includes(group.status)) {
+        } else if (['ready_for_sale'].includes(group.status)) {
             return {
-                area: 'exit',
-                stage: 'exit',
-                status: 'exit',
+                area: 'shipping',
+                stage: 'sale',
+                status: 'sale',
                 userId: userLogged._id
             }
         }
@@ -300,12 +304,12 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
         if (!useIndividualWeight && totalGroupWeight && pigsArray.length > 0) {
             const totalWeight = Number(totalGroupWeight);
             const averageWeight = totalWeight / pigsArray.length;
-            
+
             const updatedPigs = pigsArray.map(pig => ({
                 ...pig,
                 newWeight: averageWeight
             }));
-            
+
             setPigsArray(updatedPigs);
         }
     }, [totalGroupWeight, useIndividualWeight, pigsArray.length]);
@@ -599,7 +603,7 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
                                                     <span className="text-muted fw-semibold">Peso Promedio</span>
                                                 </div>
                                                 <h4 className="mb-0 text-success fw-bold">
-                                                    {pigsArray.length > 0 
+                                                    {pigsArray.length > 0
                                                         ? (pigsArray.reduce((acc, p) => acc + Number(p.newWeight), 0) / pigsArray.length).toFixed(2)
                                                         : '0.00'
                                                     } kg
@@ -610,7 +614,7 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
 
                                     {/* Tabla de cerdos con scroll */}
                                     <div className="text-muted fw-semibold mb-2">Detalles de cerdos:</div>
-                                    
+
                                     <SimpleBar style={{ maxHeight: '300px' }}>
                                         <table className="table table-hover table-sm">
                                             <thead className="table-light">

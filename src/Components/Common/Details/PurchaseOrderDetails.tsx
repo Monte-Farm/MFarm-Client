@@ -1,12 +1,8 @@
 import { ConfigContext } from "App";
 import { Attribute, PurchaseOrderData } from "common/data_interfaces";
 import { SUPPLIER_TYPES, getSupplierTypeLabel } from "common/enums/suppliers.enums";
-import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, Spinner } from "reactstrap";
-import LoadingGif from '../../assets/images/loading-gif.gif'
-import ObjectDetailsHorizontal from "Components/Common/Details/ObjectDetailsHorizontal";
+import { Badge, Button, Card, CardBody, CardHeader, Col, Modal, ModalBody, ModalHeader, Row, Spinner } from "reactstrap";
 import { Column } from "common/data/data_types";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
@@ -107,7 +103,20 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
             accessor: 'quantity',
             isFilterable: true,
             type: 'number',
-            render: (_, row) => <span>{row.quantity} {row.id.unit_measurement}</span>
+            render: (_, row) => <span>{row.quantity} {row.id.unit_measurement}</span>,
+            bgColor: '#f0f0ff'
+        },
+        {
+            header: 'Precio Unitario',
+            accessor: 'unitPrice',
+            type: 'currency',
+            bgColor: '#e6f0ff'
+        },
+        {
+            header: 'Precio Total',
+            accessor: 'totalPrice',
+            type: 'currency',
+            bgColor: '#e6ffe6'
         },
         {
             header: 'Categoría',
@@ -195,14 +204,14 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
 
         try {
             setPdfLoading(true);
-            
+
             // Usar axiosHelper.getBlob para mantener consistencia
             const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/purchase_orders/${purchaseId}`);
-            
+
             // Crear blob con tipo MIME explícito para PDF
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
             const url = window.URL.createObjectURL(pdfBlob);
-            
+
             setFileURL(url);
             toggleModal('viewPDF');
         } catch (error) {
@@ -226,8 +235,8 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
     return (
         <>
             <div className="d-flex gap-2 mb-4">
-                <Button 
-                    color="primary" 
+                <Button
+                    color="primary"
                     onClick={handlePrintPurchaseOrder}
                     disabled={pdfLoading}
                 >
@@ -270,11 +279,25 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
 
                 {/* Segunda fila: Productos */}
                 <Card>
-                    <CardHeader className='bg-gradient bg-secondary-subtle'>
+                    <CardHeader className='bg-gradient bg-secondary-subtle d-flex justify-content-between align-items-center'>
                         <h5 className="mb-0 text-secondary">Productos de la Orden</h5>
+
+                        <div className="d-flex justify-content-between align-items-center p-3 rounded" style={{ backgroundColor: '#f0f8ff' }}>
+                            <h5 className="mb-0 me-2 fw-bold">Total:</h5>
+                            <h4 className="mb-0 text-primary fw-bold">
+                                {new Intl.NumberFormat('en-US', {
+                                    style: 'currency',
+                                    currency: 'USD',
+                                }).format(
+                                    products.reduce((sum: number, product: any) => sum + (product.totalPrice || 0), 0)
+                                )}
+                            </h4>
+                        </div>
+
                     </CardHeader>
-                    <CardBody className="p-0">
+                    <CardBody className="p-0 pb-2">
                         <CustomTable columns={productColumns} data={products} rowClickable={false} showPagination={true} rowsPerPage={5} showSearchAndFilter={false} />
+
                     </CardBody>
                 </Card>
             </div>

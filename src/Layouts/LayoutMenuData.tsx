@@ -744,18 +744,6 @@ const Navdata = () => {
                     },
                     stateVariables: isMedicationPackage,
                 },
-                {
-                    id: "vaccinationPlans",
-                    label: "Planes de vacunacion",
-                    link: "/medication/view_vaccination_plans",
-                    roles: ['farm_manager', 'veterinarian',],
-                    parentId: "medication",
-                    click: function (e: any) {
-                        e.preventDefault();
-                        setIsVaccinationPlans(!isVaccinationPlans)
-                    },
-                    stateVariables: isVaccinationPlans,
-                },
             ]
         },
         {

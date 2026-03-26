@@ -82,28 +82,6 @@ const LitterDetails = () => {
         { key: 'breed', label: 'Raza', type: 'text' },
     ]
 
-    const pigletsColumns: Column<any>[] = [
-        {
-            header: 'Sexo',
-            accessor: 'sex',
-            render: (value: string) => (
-                <Badge color={value === 'male' ? "info" : "danger"}>
-                    {value === 'male' ? "♂ Macho" : "♀ Hembra"}
-                </Badge>
-            ),
-        },
-        { header: 'Peso', accessor: 'weight', type: 'text', isFilterable: true },
-        {
-            header: 'Estado',
-            accessor: 'status',
-            render: (value: string) => (
-                <Badge color={value === 'alive' ? "info" : "danger"}>
-                    {value === 'alive' ? "Vivo" : "Muerto"}
-                </Badge>
-            ),
-        },
-    ]
-
     const toggleTab = (tab: string) => {
         if (activeTab !== tab) setActiveTab(tab);
     };

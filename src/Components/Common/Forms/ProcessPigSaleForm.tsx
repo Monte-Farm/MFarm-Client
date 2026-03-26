@@ -129,21 +129,37 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
                 let text = "Desconocido";
 
                 switch (row?.status) {
+                    case "weaning":
+                        color = "info";
+                        text = "En destete";
+                        break;
+                    case "ready_to_grow":
+                        color = "primary";
+                        text = "Listo para crecimiento";
+                        break;
+                    case "grow_overdue":
+                        color = "warning";
+                        text = "Retradado en crecimiento";
+                        break;
                     case "growing":
                         color = "success";
                         text = "En crecimiento y ceba";
                         break;
-                    case "ready_to_exit":
-                        color = "warning";
-                        text = "Listo para salida";
+                    case "replacement":
+                        color = "secondary";
+                        text = "Reemplazo";
                         break;
-                    case "exit_overdue":
-                        color = "dark";
-                        text = "Retrasado para salida";
+                    case "ready_for_sale":
+                        color = "success";
+                        text = "Listo para venta";
                         break;
                     case "sale":
-                        color = "warning";
-                        text = "Venta";
+                        color = "success";
+                        text = "En venta";
+                        break;
+                    case "sold":
+                        color = "success";
+                        text = "Vendido";
                         break;
                 }
 
@@ -311,7 +327,7 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
             await configContext.axiosHelper.put(`${configContext.apiUrl}/group/change_stage/${groupId}`, {
                 area: 'shipping',
                 stage: 'sale',
-                status: 'sale_processed',
+                status: 'sale',
                 userId: userLogged._id
             });
 

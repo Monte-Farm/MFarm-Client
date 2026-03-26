@@ -206,17 +206,18 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCa
 
         {/* RNC */}
         <div className="mt-4">
-          <Label htmlFor="rncInput" className="form-label">RNC</Label>
+          <Label htmlFor="rncInput" className="form-label">ID Fiscal</Label>
           <Input
             type="text"
             id="rncInput"
             className="form-control"
             name="rnc"
-            placeholder="Ingrese el RNC"
+            placeholder="Ingrese el ID Fiscal"
             value={formik.values.rnc}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             invalid={formik.touched.rnc && !!formik.errors.rnc}
+            disabled={isCodeDisabled}
           />
           {formik.touched.rnc && formik.errors.rnc && <FormFeedback>{formik.errors.rnc}</FormFeedback>}
         </div>

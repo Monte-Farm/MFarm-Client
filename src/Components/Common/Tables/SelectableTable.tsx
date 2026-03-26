@@ -21,6 +21,7 @@ type SelectableCustomTableProps<T> = {
     disabled?: boolean;
     resetSelectionTrigger?: any;
     onChangeRow?: (updatedRow: T) => void; // NUEVO opcional
+    selectionOnlyOnCheckbox?: boolean; // NUEVO: para controlar si la selección solo funciona con checkbox
 };
 
 const formatValue = (value: any, type?: ColumnType) => {
@@ -55,6 +56,7 @@ function SelectableCustomTable<T extends { id: string }>(props: SelectableCustom
         disabled = false,
         resetSelectionTrigger,
         onChangeRow,
+        selectionOnlyOnCheckbox = false,
     } = props;
 
     const [filterText, setFilterText] = useState<string>("");
@@ -174,13 +176,14 @@ function SelectableCustomTable<T extends { id: string }>(props: SelectableCustom
                 <Table className={`table-hover align-middle table-nowrap mb-0 ${className}`}>
                     <thead className="table-light sticky-top">
                         <tr>
-                            <th style={{ width: 50 }}>
+                            <th style={{ width: selectionOnlyOnCheckbox ? 60 : 50 }}>
                                 {selectionMode === "multiple" && paginatedData.length > 0 && (
                                     <Input
                                         type="checkbox"
                                         checked={selectedIds.size === paginatedData.length}
                                         onChange={toggleSelectAll}
                                         disabled={disabled}
+                                        style={selectionOnlyOnCheckbox ? { transform: 'scale(1.2)' } : {}}
                                     />
                                 )}
                             </th>
@@ -190,6 +193,7 @@ function SelectableCustomTable<T extends { id: string }>(props: SelectableCustom
                                     onClick={() => requestSort(col.accessor)}
                                     style={{ 
                                         cursor: "pointer",
+                                        backgroundColor: col.bgColor,
                                         ...(col.type === "currency" && { width: "1%", whiteSpace: "nowrap" })
                                     }}
                                 >
@@ -211,9 +215,9 @@ function SelectableCustomTable<T extends { id: string }>(props: SelectableCustom
                                     <tr
                                         key={row.id}
                                         className={isSelected ? "table-primary" : ""}
-                                        style={{ cursor: rowClickable ? "pointer" : "default" }}
+                                        style={{ cursor: (rowClickable || !selectionOnlyOnCheckbox) ? "pointer" : "default" }}
                                         onClick={() => {
-                                            if (!disabled && (rowClickable || selectionMode))
+                                            if (!disabled && !selectionOnlyOnCheckbox && (rowClickable || selectionMode))
                                                 handleSelectionChange(row, !isSelected);
                                             if (!disabled && rowClickable && onRowClick)
                                                 onRowClick(row);
@@ -230,11 +234,13 @@ function SelectableCustomTable<T extends { id: string }>(props: SelectableCustom
                                                         handleSelectionChange(row, e.target.checked);
                                                     }}
                                                     disabled={disabled}
+                                                    style={selectionOnlyOnCheckbox ? { transform: 'scale(1.2)' } : {}}
                                                 />
                                             </Label>
                                         </td>
                                         {columns.map((col, cIdx) => (
                                             <td key={cIdx} style={{ 
+                                                backgroundColor: col.bgColor,
                                                 textAlign: col.type === "currency" ? "right" : "left",
                                                 ...(col.type === "currency" && { whiteSpace: "nowrap" })
                                             }}>

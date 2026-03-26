@@ -15,7 +15,6 @@ import ObjectDetails from "../Details/ObjectDetails";
 import CustomTable from "../Tables/CustomTable";
 import ErrorModal from "../Shared/ErrorModal";
 import SuccessModal from "../Shared/SuccessModal";
-import MissingStockModal from "../Shared/MissingStockModal";
 
 interface AsignLitterFeedingPackageFormProps {
     litterId: string
@@ -29,13 +28,11 @@ const AsignLitterFeedingPackageForm: React.FC<AsignLitterFeedingPackageFormProps
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
     const [loading, setLoading] = useState<boolean>(false);
-    const [modals, setModals] = useState({ feedingPackageDetails: false, success: false, error: false, missingStock: false });
+    const [modals, setModals] = useState({ feedingPackageDetails: false, success: false, error: false });
     const [feedingPackages, setFeedingPackages] = useState<any[]>([]);
     const [litterDetails, setLitterDetails] = useState<Litter>()
     const [selectedFeedingPackage, setSelectedFeedingPackage] = useState<any>();
     const [feedingPackagesItems, setFeedingPackagesItems] = useState<any[]>();
-    const [missingItems, setMissingItems] = useState([]);
-    const [feedingPackagePreview, setFeedingPackagePreview] = useState<any>();
     const [active, setActive] = useState<any>();
 
     function toggleArrowTab(tab: number) {
@@ -133,57 +130,21 @@ const AsignLitterFeedingPackageForm: React.FC<AsignLitterFeedingPackageFormProps
         { header: "Codigo", accessor: "id", type: "text", isFilterable: true },
         { header: "Producto", accessor: "name", type: "text", isFilterable: true },
         {
-            header: "Cantidad por cerdo",
+            header: "Promedio por cerdo",
             accessor: "quantity",
             type: "text",
             isFilterable: true,
-            render: (_, row) => {
-                const previewProduct = feedingPackagePreview?.products.find(
-                    (p: any) => p.code === row.id
-                );
-                return (<span>{previewProduct?.quantityPerAnimal} {previewProduct?.unitMeasurement}</span>);
-            }
+            render: (_, row) => <span>{row.avgPerPig} {row.unit_measurement}</span>,
+            bgColor: "#e3f2fd"
         },
         {
             header: "Cantidad total",
             accessor: "quantity",
             type: "text",
             isFilterable: true,
-            render: (_, row) => {
-                const previewProduct = feedingPackagePreview?.products.find(
-                    (p: any) => p.code === row.id
-                );
-                return (<span>{previewProduct?.totalQuantity} {previewProduct?.unitMeasurement}</span>);
-            }
+            render: (_, row) => <span>{row.totalQuantity} {row.unit_measurement}</span>,
+            bgColor: "#e8f5e8"
         },
-        {
-            header: "Precio unitario",
-            accessor: "unitPrice",
-            type: "text",
-            isFilterable: false,
-            render: (_, row) => {
-                const previewProduct = feedingPackagePreview?.products.find(
-                    (p: any) => p.code === row.id
-                );
-
-                if (!previewProduct || !previewProduct.hasPrice) {
-                    return (
-                        <span className="badge bg-warning text-dark">
-                            Sin precio
-                        </span>
-                    );
-                }
-
-                return (
-                    <span>
-                        {new Intl.NumberFormat('es-MX', {
-                            style: 'currency',
-                            currency: 'MXN'
-                        }).format(previewProduct.unitPrice)}
-                    </span>
-                );
-            }
-        }
     ]
 
     const feedingsPackagesAttributes: Attribute[] = [
@@ -317,17 +278,6 @@ const AsignLitterFeedingPackageForm: React.FC<AsignLitterFeedingPackageFormProps
         }
     }
 
-    const fetchPreviewData = async () => {
-        if (!selectedFeedingPackage || !configContext) return;
-        try {
-            const previewResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/feeding_package/preview_litter_application/${selectedFeedingPackage._id}/${litterId}`)
-            const previewData = previewResponse.data.data
-            setFeedingPackagePreview(previewData)
-            return previewData
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
-    }
 
     const validationSchema = Yup.object({
         applicationDate: Yup.date().required('La fecha de aplicacion es obligatoria'),
@@ -353,26 +303,7 @@ const AsignLitterFeedingPackageForm: React.FC<AsignLitterFeedingPackageFormProps
         onSubmit: async (values, { setSubmitting }) => {
             if (!configContext) return;
             try {
-                const feedingsWithCosts = values.feedings.map((m: any) => {
-                    const previewProduct = feedingPackagePreview?.products?.find(
-                        (p: any) => p.productId === m.feeding
-                    );
-
-                    return {
-                        ...m,
-                        unitPrice: previewProduct?.unitPrice ?? null,
-                        totalCost: previewProduct?.totalCost ?? null,
-                        hasPrice: previewProduct?.hasPrice ?? false
-                    };
-                });
-
-                const payload = {
-                    ...values,
-                    feedings: feedingsWithCosts,
-                    estimatedTotal: feedingPackagePreview?.estimatedTotal ?? 0,
-                };
-
-                const feedingResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/feeding_package/asign_litter_feeding_package/${userLogged.farm_assigned}/${litterId}`, payload)
+                const feedingResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/feeding_package/asign_litter_feeding_package/${userLogged.farm_assigned}/${litterId}`, values)
 
                 await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
                     event: `Paquete de alimentacion asignado a la camada ${litterDetails?.code}`
@@ -381,11 +312,6 @@ const AsignLitterFeedingPackageForm: React.FC<AsignLitterFeedingPackageFormProps
                 toggleModal('success', true)
             } catch (error: any) {
                 console.error('Error saving the information: ', { error })
-                if (error.response?.status === 400 && error.response?.data?.missing) {
-                    setMissingItems(error.response.data.missing);
-                    toggleModal('missingStock');
-                    return;
-                }
                 toggleModal('error')
             }
         }
@@ -418,7 +344,6 @@ const AsignLitterFeedingPackageForm: React.FC<AsignLitterFeedingPackageFormProps
             formik.setFieldValue('periodicity', selectedFeedingPackage.periodicity)
             formik.setFieldValue('feedings', feedingsFull)
 
-            fetchPreviewData();
         }
     }, [selectedFeedingPackage])
 
@@ -563,12 +488,6 @@ const AsignLitterFeedingPackageForm: React.FC<AsignLitterFeedingPackageFormProps
                             <Card className="shadow-sm mb-3">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
                                     Información del paquete de alimentacion
-
-                                    {feedingPackagePreview?.hasMissingPrices && (
-                                        <span className="badge bg-warning text-dark">
-                                            Precios pendientes
-                                        </span>
-                                    )}
                                 </CardHeader>
                                 <CardBody>
                                     <ObjectDetails
@@ -581,22 +500,6 @@ const AsignLitterFeedingPackageForm: React.FC<AsignLitterFeedingPackageFormProps
                             <Card className="shadow-sm">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
                                     <h5 className="mb-0">Alimentos</h5>
-
-                                    {feedingPackagePreview && (
-                                        <div className="d-flex align-items-center gap-3">
-                                            <div className="text-end">
-                                                <div className="small text-muted">
-                                                    Total aproximado de aplicación
-                                                </div>
-                                                <div className="fw-bold">
-                                                    {new Intl.NumberFormat('es-MX', {
-                                                        style: 'currency',
-                                                        currency: 'MXN'
-                                                    }).format(feedingPackagePreview.estimatedTotal || 0)}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
                                 </CardHeader>
                                 <CardBody className="p-0 mb-3">
                                     <CustomTable
@@ -638,7 +541,6 @@ const AsignLitterFeedingPackageForm: React.FC<AsignLitterFeedingPackageFormProps
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} autoClose={3000} />
             <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message={"Ha ocurrido un error, intentelo mas tarde"} />
             <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={"Paquete de alimentacion asignado correctamente"} />
-            <MissingStockModal isOpen={modals.missingStock} onClose={() => toggleModal('missingStock', false)} missingItems={missingItems} />
         </>
     )
 }

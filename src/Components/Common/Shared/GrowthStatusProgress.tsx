@@ -5,8 +5,7 @@ import {
     FaTruckLoading,
     FaSyncAlt,
     FaCheck,
-    FaDollarSign,
-    FaSkull
+    FaDollarSign
 } from "react-icons/fa";
 
 interface GrowthStatusProgressProps {
@@ -15,20 +14,17 @@ interface GrowthStatusProgressProps {
     | "ready_to_grow"
     | "grow_overdue"
     | "growing"
-    | "ready_to_exit"
-    | "exit_overdue"
-    | "exit"
+    | "ready_for_sale"
     | "replacement"
-    | "sold"
-    | "deceased"
-    | "exit_processed";
+    | "sale"
+    | "sold";
     title?: string;
 }
 
 const baseSteps = [
     { key: "weaning", label: "Destete", icon: FaBaby },
     { key: "growing", label: "Crecimiento", icon: FaChartLine },
-    { key: "exit", label: "Salida", icon: FaTruckLoading }
+    { key: "sale", label: "En venta", icon: FaTruckLoading }
 ];
 
 const finalStagesMap: Record<
@@ -44,16 +40,6 @@ const finalStagesMap: Record<
         key: "sold",
         label: "Venta",
         icon: FaDollarSign
-    },
-    deceased: {
-        key: "deceased",
-        label: "Baja",
-        icon: FaSkull
-    },
-    exit_processed: {
-        key: "exit_processed",
-        label: "Salida Procesada",
-        icon: FaCheck
     }
 };
 
@@ -67,22 +53,17 @@ const GrowthStatusProgress: React.FC<GrowthStatusProgressProps> = ({ status, tit
             grow_overdue: 0,
 
             growing: 1,
-            ready_to_exit: 1,
-            exit_overdue: 1,
+            ready_for_sale: 1,
 
-            exit: 2,
+            sale: 2,
 
             replacement: 3,
-            sold: 3,
-            deceased: 3,
-            exit_processed: 3
+            sold: 3
         };
 
         const hasFinalStage = [
             "replacement",
-            "sold",
-            "deceased",
-            "exit_processed"
+            "sold"
         ].includes(status);
 
         const dynamicSteps = hasFinalStage

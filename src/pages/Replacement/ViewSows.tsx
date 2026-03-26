@@ -162,7 +162,7 @@ const ViewSows = () => {
             setLoading(true)
             const [pigsResponse, statsResponse] = await Promise.all([
                 configContext.axiosHelper.get(`${configContext.apiUrl}/pig/find_sows/${userLogged.farm_assigned}`),
-                configContext.axiosHelper.get(`${configContext.apiUrl}/pig/get_breeder_stats/${userLogged.farm_assigned}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/pig/get_breeder_stats/${userLogged.farm_assigned}?sex=female`),
             ])
 
             setPigs(pigsResponse.data.data)

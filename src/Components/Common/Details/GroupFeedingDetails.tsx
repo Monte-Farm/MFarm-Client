@@ -19,9 +19,10 @@ import FeedingPackagesCard from "../Shared/FeedingPackagesCard";
 
 interface GroupFeedingDetailsProps {
     groupId: string
+    onUpdate?: () => void
 }
 
-const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId }) => {
+const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId, onUpdate }) => {
     const configContext = useContext(ConfigContext);
     const userLogged = getLoggedinUser();
     const [loading, setLoading] = useState<boolean>(true)
@@ -81,6 +82,7 @@ const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId }) =>
             });
 
             toggleModal('success', true)
+            onUpdate?.();
         } catch (error: any) {
             console.error('Error saving the information: ', { error })
             if (error.response?.status === 400 && error.response?.data?.missing) {
@@ -100,6 +102,7 @@ const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId }) =>
             setLoading(true)
             const packageResponse = await configContext.axiosHelper.put(`${configContext.apiUrl}/group/unasign_feeding_package/${groupId}/${selectedFeedingPackage}`, {})
             toggleModal('unasignPackageSuccess')
+            onUpdate?.();
         } catch (error) {
             console.error('Error: ', { error });
             toggleModal('unasignPackageError')
@@ -141,7 +144,7 @@ const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId }) =>
             <Modal size="xl" isOpen={modals.asignFeedingPackage} toggle={() => toggleModal("asignFeedingPackage")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("asignFeedingPackage")}>Asignar paquete de alimentacion</ModalHeader>
                 <ModalBody>
-                    <AsignGroupFeedingPackageForm groupId={groupId} onSave={() => { toggleModal('asignFeedingPackage'); fetchFeedingInfo(); }} />
+                    <AsignGroupFeedingPackageForm groupId={groupId} onSave={() => { toggleModal('asignFeedingPackage'); fetchFeedingInfo(); onUpdate?.(); }} />
                 </ModalBody>
             </Modal>
 

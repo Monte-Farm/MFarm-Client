@@ -4,7 +4,8 @@ import BreadCrumb from "Components/Common/Shared/BreadCrumb"
 import ObjectDetailsHorizontal from "Components/Common/Details/ObjectDetailsHorizontal"
 import { useContext, useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import { Alert, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalHeader, Row, Spinner } from "reactstrap"
+import { Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalHeader, Row, Spinner } from "reactstrap"
+import AlertMessage from "Components/Common/Shared/AlertMesagge"
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Column } from "common/data/data_types"
 import CustomTable from "Components/Common/Tables/CustomTable"
@@ -181,11 +182,7 @@ const OrderDetails = () => {
                 </Modal>
 
 
-                {alertConfig.visible && (
-                    <Alert color={alertConfig.color} className="position-fixed bottom-0 start-50 translate-middle-x p-3">
-                        {alertConfig.message}
-                    </Alert>
-                )}
+                <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
             </Container>
         </div>
     );

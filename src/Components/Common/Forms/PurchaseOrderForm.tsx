@@ -94,7 +94,20 @@ const summaryProductColumns: Column<any>[] = [
         header: 'Cantidad',
         accessor: 'quantity',
         type: 'number',
-        render: (value: number, row: any) => `${value} ${row.unit_measurement || ''}`
+        render: (value: number, row: any) => `${value} ${row.unit_measurement || ''}`,
+        bgColor: '#f0f0ff'
+    },
+    { 
+        header: 'Precio Unitario', 
+        accessor: 'unitPrice', 
+        type: 'currency',
+        bgColor: '#e6f0ff'
+    },
+    {
+        header: 'Precio Total',
+        accessor: 'totalPrice',
+        type: 'currency',
+        bgColor: '#e6ffe6'
     },
 ];
 
@@ -183,9 +196,13 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                             invalid={productErrors[row._id]?.quantity}
                             onChange={(e) => {
                                 const newValue = e.target.value === "" ? 0 : Number(e.target.value);
-                                const updatedProducts = selectedProducts.map(p =>
-                                    p.id === row._id ? { ...p, quantity: newValue } : p
-                                );
+                                const updatedProducts = selectedProducts.map(p => {
+                                    if (p.id === row._id) {
+                                        const totalPrice = newValue * (p.unitPrice || 0);
+                                        return { ...p, quantity: newValue, totalPrice };
+                                    }
+                                    return p;
+                                });
                                 setSelectedProducts(updatedProducts);
 
                                 // Clear error for this field if value is valid
@@ -210,6 +227,99 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
 
                 );
             },
+        },
+        {
+            header: 'Precio Unitario',
+            accessor: 'price',
+            type: 'number',
+            render: (value, row, isSelected) => {
+                const selected = selectedProducts.find(p => p.id === row._id);
+
+                return (
+                    <div className="input-group">
+                        <span className="input-group-text">$</span>
+                        <Input
+                            type="number"
+                            step="0.01"
+                            disabled={!isSelected}
+                            value={selected?.unitPrice === 0 ? "" : (selected?.unitPrice ?? "")}
+                            invalid={productErrors[row._id]?.unitPrice}
+                            onChange={(e) => {
+                                const newValue = e.target.value === "" ? 0 : Number(e.target.value);
+                                const updatedProducts = selectedProducts.map(p => {
+                                    if (p.id === row._id) {
+                                        const totalPrice = (p.quantity || 0) * newValue;
+                                        return { ...p, unitPrice: newValue, totalPrice };
+                                    }
+                                    return p;
+                                });
+                                setSelectedProducts(updatedProducts);
+
+                                if (newValue > 0) {
+                                    setProductErrors(prev => {
+                                        const newErrors = { ...prev };
+                                        if (newErrors[row._id]) {
+                                            delete newErrors[row._id].unitPrice;
+                                            if (Object.keys(newErrors[row._id]).length === 0) {
+                                                delete newErrors[row._id];
+                                            }
+                                        }
+                                        return newErrors;
+                                    });
+                                }
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                    </div>
+                );
+            },
+        },
+        {
+            header: 'Precio Total',
+            accessor: 'totalPrice',
+            type: 'number',
+            render: (value, row, isSelected) => {
+                const selected = selectedProducts.find(p => p.id === row._id);
+
+                return (
+                    <div className="input-group">
+                        <span className="input-group-text">$</span>
+                        <Input
+                            type="number"
+                            step="0.01"
+                            disabled={!isSelected}
+                            value={selected?.totalPrice === 0 ? "" : (selected?.totalPrice ?? "")}
+                            invalid={productErrors[row._id]?.totalPrice}
+                            onChange={(e) => {
+                                const newValue = e.target.value === "" ? 0 : Number(e.target.value);
+                                const updatedProducts = selectedProducts.map(p => {
+                                    if (p.id === row._id) {
+                                        // Calcular precio unitario basado en el precio total
+                                        const unitPrice = (p.quantity && p.quantity > 0) ? newValue / p.quantity : 0;
+                                        return { ...p, totalPrice: newValue, unitPrice };
+                                    }
+                                    return p;
+                                });
+                                setSelectedProducts(updatedProducts);
+
+                                if (newValue > 0) {
+                                    setProductErrors(prev => {
+                                        const newErrors = { ...prev };
+                                        if (newErrors[row._id]) {
+                                            delete newErrors[row._id].totalPrice;
+                                            if (Object.keys(newErrors[row._id]).length === 0) {
+                                                delete newErrors[row._id];
+                                            }
+                                        }
+                                        return newErrors;
+                                    });
+                                }
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                    </div>
+                );
+            }
         },
         {
             header: 'Categoria',
@@ -345,6 +455,12 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                 errors[product.id] = {
                     ...errors[product.id],
                     quantity: "La cantidad es requerida"
+                };
+            }
+            if (product.unitPrice === 0 || product.unitPrice === "" || !product.unitPrice) {
+                errors[product.id] = {
+                    ...errors[product.id],
+                    unitPrice: "El precio es requerido"
                 };
             }
         });
@@ -555,6 +671,8 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                                             return {
                                                 id: r._id,
                                                 quantity: 0,
+                                                unitPrice: 0,
+                                                totalPrice: 0,
                                             };
                                         });
                                         return newRows;
@@ -611,16 +729,34 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                                             const fullProductData = products.find((p: any) => p._id === selectedProduct.id);
                                             return {
                                                 ...(fullProductData || {}),
-                                                price: selectedProduct.price,
+                                                unitPrice: selectedProduct.unitPrice,
                                                 quantity: selectedProduct.quantity,
-                                                subtotal: selectedProduct.price * selectedProduct.quantity,
-                                                total: selectedProduct.price * selectedProduct.quantity,
+                                                totalPrice: selectedProduct.totalPrice,
                                             };
                                         })}
                                         showSearchAndFilter={false}
                                         showPagination={true}
                                         rowsPerPage={10}
                                     />
+                                    
+                                    {/* Total General */}
+                                    <div className="p-3 border-top">
+                                        <Row className="justify-content-end">
+                                            <Col sm={6} md={4}>
+                                                <div className="d-flex justify-content-between align-items-center p-3 rounded" style={{ backgroundColor: '#f0f8ff' }}>
+                                                    <h5 className="mb-0 fw-bold">Total General:</h5>
+                                                    <h4 className="mb-0 text-primary fw-bold">
+                                                        {new Intl.NumberFormat('en-US', {
+                                                            style: 'currency',
+                                                            currency: 'USD',
+                                                        }).format(
+                                                            selectedProducts.reduce((sum, product) => sum + (product.totalPrice || 0), 0)
+                                                        )}
+                                                    </h4>
+                                                </div>
+                                            </Col>
+                                        </Row>
+                                    </div>
                                 </CardBody>
                             </Card>
 

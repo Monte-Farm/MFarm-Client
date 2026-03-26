@@ -17,21 +17,20 @@ import SelectableTable from "../Tables/SelectableTable";
 
 interface SemenSampleFormProps {
     initialData?: SemenSample;
+    preselectedExtraction?: ExtractionData;
     onSave: () => void;
     onCancel: () => void;
 }
 
-
-
-const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, onCancel }) => {
+const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselectedExtraction, onSave, onCancel }) => {
     const configContext = useContext(ConfigContext);
     const userLogged = getLoggedinUser();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [loading, setLoading] = useState<boolean>(false)
     const [successModalOpen, setSuccessModalOpen] = useState<boolean>(false)
     const [extractions, setExtractions] = useState<any[]>([])
-    const [activeStep, setActiveStep] = useState<number>(1);
-    const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
+    const [activeStep, setActiveStep] = useState<number>(preselectedExtraction ? 2 : 1);
+    const [passedarrowSteps, setPassedarrowSteps] = useState(preselectedExtraction ? [1, 2] : [1]);
     const [alertExtractionEmpty, setAlertExtractionEmpty] = useState<boolean>(false)
     const [doseSize, setDoseSize] = useState<number>(0);
     const [selectedExtraction, setSelectedExtraction] = useState<ExtractionData | null>(null)
@@ -145,7 +144,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
 
     const formik = useFormik<SemenSample>({
         initialValues: initialData || {
-            extraction_id: '',
+            extraction_id: preselectedExtraction?._id || '',
             concentration_million: 0,
             motility_percent: 0,
             vitality_percent: 0,
@@ -238,9 +237,13 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
     const fetchExtractions = async () => {
         if (!configContext || !userLogged) return;
         try {
-            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/extraction/find_by_sample_not_registered/${userLogged.farm_assigned}`)
-            const extractionsWithId = response.data.data.map((b: any) => ({ ...b, id: b._id }));
-            setExtractions(extractionsWithId)
+            if (preselectedExtraction) {
+                setExtractions([{ ...preselectedExtraction, id: preselectedExtraction._id }]);
+            } else {
+                const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/extraction/find_by_sample_not_registered/${userLogged.farm_assigned}`)
+                const extractionsWithId = response.data.data.map((b: any) => ({ ...b, id: b._id }));
+                setExtractions(extractionsWithId)
+            }
         } catch (error) {
             handleError(error, 'Ha ocurrido un error al obtener los datos, intentelo mas tarde')
         }
@@ -320,22 +323,24 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
             >
                 <div className="step-arrow-nav mb-4">
                     <Nav className="nav-pills custom-nav nav-justified disabled">
-                        <NavItem>
-                            <NavLink
-                                href='#'
-                                id="step-extractionselect-tab"
-                                className={classnames({
-                                    active: activeStep === 1,
-                                    done: activeStep > 1,
-                                })}
-                                onClick={() => toggleArrowTab(1)}
-                                aria-selected={activeStep === 1}
-                                aria-controls="step-extractionselect-tab"
-                                disabled
-                            >
-                                Selección de extracción
-                            </NavLink>
-                        </NavItem>
+                        {!preselectedExtraction && (
+                            <NavItem>
+                                <NavLink
+                                    href='#'
+                                    id="step-extractionselect-tab"
+                                    className={classnames({
+                                        active: activeStep === 1,
+                                        done: activeStep > 1,
+                                    })}
+                                    onClick={() => toggleArrowTab(1)}
+                                    aria-selected={activeStep === 1}
+                                    aria-controls="step-extractionselect-tab"
+                                    disabled
+                                >
+                                    Selección de extracción
+                                </NavLink>
+                            </NavItem>
+                        )}
 
                         <NavItem>
                             <NavLink
@@ -392,23 +397,25 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, onSave, 
 
 
                 <TabContent activeTab={activeStep}>
-                    <TabPane id="step-extractionselect-tab" tabId={1}>
-                        <SelectableTable data={extractions} columns={extractionsColumns} selectionMode="single" showPagination={true} rowsPerPage={15} onSelect={(rows) => formik.setFieldValue('extraction_id', rows[0]?._id)} />
-                        <div className="mt-4 d-flex">
-                            <Button className="ms-auto" onClick={() => checkExtractionSelected()}>
-                                Siguiente
-                                <i className="ri-arrow-right-line" />
-                            </Button>
-                        </div>
-                        {alertExtractionEmpty && (
-                            <Alert color='danger' className="d-flex align-items-center gap-2 shadow rounded-3 p-3 mt-3">
-                                <FiXCircle size={22} />
-                                <span className="flex-grow-1 text-black">Por favor, seleccione una extracción</span>
+                    {!preselectedExtraction && (
+                        <TabPane id="step-extractionselect-tab" tabId={1}>
+                            <SelectableTable data={extractions} columns={extractionsColumns} selectionMode="single" showPagination={true} rowsPerPage={15} onSelect={(rows) => formik.setFieldValue('extraction_id', rows[0]?._id)} />
+                            <div className="mt-4 d-flex">
+                                <Button className="ms-auto" onClick={() => checkExtractionSelected()}>
+                                    Siguiente
+                                    <i className="ri-arrow-right-line" />
+                                </Button>
+                            </div>
+                            {alertExtractionEmpty && (
+                                <Alert color='danger' className="d-flex align-items-center gap-2 shadow rounded-3 p-3 mt-3">
+                                    <FiXCircle size={22} />
+                                    <span className="flex-grow-1 text-black">Por favor, seleccione una extracción</span>
 
-                                <Button close onClick={() => setAlertExtractionEmpty(false)} />
-                            </Alert>
-                        )}
-                    </TabPane>
+                                    <Button close onClick={() => setAlertExtractionEmpty(false)} />
+                                </Alert>
+                            )}
+                        </TabPane>
+                    )}
 
                     <TabPane id="step-extractioninfo-tab" tabId={2}>
                         {/* Sección 1: Configuración de Dosis */}

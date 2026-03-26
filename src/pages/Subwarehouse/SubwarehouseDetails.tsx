@@ -3,7 +3,7 @@ import { Attribute, SubwarehouseData } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Badge, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
+import { Badge, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Row, TabContent, TabPane, Spinner } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import classnames from "classnames";
 import { Column } from "common/data/data_types";
@@ -15,6 +15,7 @@ import DonutChartCard, { DonutDataItem, DonutLegendItem } from "Components/Commo
 import IncomeDetails from "Components/Common/Details/IncomeDetailsModal";
 import OutcomeDetails from "Components/Common/Details/OutcomeDetails";
 import { OUTCOME_TYPES, getOutcomeTypeLabel } from "common/enums/outcomes.enums";
+import PDFViewer from "Components/Common/Shared/PDFViewer";
 
 const subwarehouseAttributes: Attribute[] = [
     { key: 'name', label: 'Nombre', type: 'text' },
@@ -57,9 +58,11 @@ const SubwarehouseDetails = () => {
         outcomesLegendItems: [] as DonutLegendItem[],
         valueLegendItems: [] as DonutLegendItem[]
     });
-    const [modals, setModals] = useState({ incomeDetails: false, outcomeDetails: false });
+    const [modals, setModals] = useState({ incomeDetails: false, outcomeDetails: false, viewPDF: false });
     const [selectedIncome, setSelectedIncome] = useState<any>({});
     const [selectedOutcome, setSelectedOutcome] = useState<any>({});
+    const [fileURL, setFileURL] = useState<string>('')
+    const [pdfLoading, setPdfLoading] = useState(false);
 
     function toggleArrowTab(tab: string) {
         if (activeStep !== tab) {
@@ -438,40 +441,28 @@ const SubwarehouseDetails = () => {
     };
 
     const handlePrintInventory = async () => {
-        if (!configContext) return;
+        if (!configContext || !id_subwarehouse) return;
 
         try {
+            setPdfLoading(true);
+            const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/warehouse_inventory/${id_subwarehouse}`);
 
-            const response = await configContext.axiosHelper.get(
-                `${configContext.apiUrl}/reports/generate_inventory_report/${id_subwarehouse}`,
-                { responseType: 'blob' }
-            );
-
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', 'inventario.pdf');
-            document.body.appendChild(link);
-            link.click();
-
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
+            const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(pdfBlob);
+            setFileURL(url);
+            toggleModal('viewPDF');
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al generar el reporte, inténtelo más tarde.');
+            console.error('Error generating inventory report:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el reporte de inventario.' });
+        } finally {
+            setPdfLoading(false);
         }
     };
 
 
+
     const handleClicProductDetails = (row: any) => {
         history(`/warehouse/inventory/product_details?warehouse=${id_subwarehouse}&product=${row.id}`)
-    }
-
-    const handleClicIncomeDetails = (row: any) => {
-        history(`/warehouse/incomes/income_details/${row.id}`)
-    }
-
-    const handleClicOutcomeDetails = (row: any) => {
-        history(`/warehouse/outcomes/outcome_details/${row.id}`)
     }
 
     const handleReturn = () => {
@@ -610,9 +601,22 @@ const SubwarehouseDetails = () => {
                                 <div className="d-flex gap-2 justify-content-between">
                                     <h4 className="">Productos</h4>
                                     <div>
-                                        <Button className="farm-primary-button" onClick={handlePrintInventory}>
-                                            <i className="ri-printer-line pe-2" />
-                                            Imprimir Inventario
+                                        <Button
+                                            className="farm-primary-button"
+                                            onClick={handlePrintInventory}
+                                            disabled={pdfLoading}
+                                        >
+                                            {pdfLoading ? (
+                                                <>
+                                                    <Spinner className="me-2" size='sm' />
+                                                    Generando...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <i className="ri-file-pdf-line pe-2" />
+                                                    Reporte de Inventario
+                                                </>
+                                            )}
                                         </Button>
                                     </div>
                                 </div>
@@ -795,6 +799,13 @@ const SubwarehouseDetails = () => {
                 </TabContent>
 
             </Container>
+
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Inventario</ModalHeader>
+                <ModalBody>
+                    {fileURL && <PDFViewer fileUrl={fileURL} />}
+                </ModalBody>
+            </Modal>
 
             <Modal size="xl" isOpen={modals.incomeDetails} toggle={() => toggleModal("incomeDetails")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("incomeDetails")}>Detalles de entrada</ModalHeader>

@@ -1,7 +1,7 @@
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useState, useEffect, useContext } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom"
-import { Button, Card, CardBody, CardHeader, Col, Container, Nav, NavItem, NavLink, Row, TabContent, TabPane, Alert, Badge } from "reactstrap"
+import { Button, Card, CardBody, CardHeader, Col, Container, Nav, NavItem, NavLink, Row, TabContent, TabPane, Alert, Badge, Spinner, Modal, ModalHeader, ModalBody } from "reactstrap"
 import classnames from "classnames";
 import ObjectDetails from "Components/Common/Details/ObjectDetails";
 import { Attribute } from "common/data_interfaces";
@@ -17,6 +17,7 @@ import { transformQuantityData, transformPriceData, combinePriceSeries } from '.
 import CustomTable from "Components/Common/Tables/CustomTable";
 import { Column } from "common/data/data_types";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
+import PDFViewer from "Components/Common/Shared/PDFViewer";
 
 const productAttributes: Attribute[] = [
     { key: 'id', label: 'Código', type: 'text' },
@@ -96,6 +97,9 @@ const ProductDetails = () => {
     const [movements, setMovements] = useState<any>(null);
     const [movementsSummary, setMovementsSummary] = useState<any>(null);
     const [movementsCharts, setMovementsCharts] = useState<any>(null);
+    const [pdfLoading, setPdfLoading] = useState(false);
+    const [fileURL, setFileURL] = useState<string | null>(null);
+    const [showPDFModal, setShowPDFModal] = useState(false);
     // Calcular variación de precio
     const calculatePriceVariation = () => {
         const lastPrice = productStatistics?.lastPrice || 0;
@@ -231,6 +235,25 @@ const ProductDetails = () => {
         }
     };
 
+    const handlePrintProduct = async () => {
+        if (!configContext || !warehouseId || !productId) return;
+
+        try {
+            setPdfLoading(true);
+            const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/product_inventory/${warehouseId}/${productId}`);
+            
+            const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(pdfBlob);
+            
+            setFileURL(url);
+            setShowPDFModal(true);
+        } catch (error) {
+            console.error('Error generating product inventory PDF: ', { error });
+            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF del inventario del producto' });
+        } finally {
+            setPdfLoading(false);
+        }
+    };
 
     const fetchData = async () => {
         if (!configContext || !productId || !warehouseId) return;
@@ -274,6 +297,23 @@ const ProductDetails = () => {
                             Regresar
                         </Button>
                     </div>
+                    <Button 
+                        color="primary" 
+                        onClick={handlePrintProduct}
+                        disabled={pdfLoading}
+                    >
+                        {pdfLoading ? (
+                            <>
+                                <Spinner className="me-2" size='sm' />
+                                Generando...
+                            </>
+                        ) : (
+                            <>
+                                <i className="ri-file-pdf-line me-2"></i>
+                                Imprimir Reporte
+                            </>
+                        )}
+                    </Button>
                 </div>
 
                 <div className="p-3 bg-white rounded">
@@ -551,6 +591,14 @@ const ProductDetails = () => {
                         </div>
                     </TabPane>
                 </TabContent>
+
+                {/* Modal PDF */}
+                <Modal size="xl" isOpen={showPDFModal} toggle={() => setShowPDFModal(!showPDFModal)} backdrop='static' keyboard={false} centered>
+                    <ModalHeader toggle={() => setShowPDFModal(!showPDFModal)}>Reporte de Inventario del Producto</ModalHeader>
+                    <ModalBody>
+                        {fileURL && <PDFViewer fileUrl={fileURL} />}
+                    </ModalBody>
+                </Modal>
 
                 <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
 

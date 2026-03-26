@@ -166,34 +166,6 @@ const AsignGroupMedicationPackageForm: React.FC<AsignGroupMedicationPackageFormP
             },
 
         },
-        {
-            header: "Precio unitario",
-            accessor: "unitPrice",
-            type: "text",
-            isFilterable: false,
-            render: (_, row) => {
-                const previewProduct = medicationPackagePreview?.products.find(
-                    (p: any) => p.code === row.id
-                );
-
-                if (!previewProduct || !previewProduct.hasPrice) {
-                    return (
-                        <span className="badge bg-warning text-dark">
-                            Sin precio
-                        </span>
-                    );
-                }
-
-                return (
-                    <span>
-                        {new Intl.NumberFormat('es-MX', {
-                            style: 'currency',
-                            currency: 'MXN'
-                        }).format(previewProduct.unitPrice)}
-                    </span>
-                );
-            }
-        }
     ]
 
     const medicationPackagesAttributes: Attribute[] = [
@@ -624,12 +596,6 @@ const AsignGroupMedicationPackageForm: React.FC<AsignGroupMedicationPackageFormP
                             <Card className="shadow-sm mb-3">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
                                     Información de paquete de medicamentos
-
-                                    {medicationPackagePreview?.hasMissingPrices && (
-                                        <span className="badge bg-warning text-dark">
-                                            Precios pendientes
-                                        </span>
-                                    )}
                                 </CardHeader>
                                 <CardBody>
                                     <ObjectDetails
@@ -642,22 +608,6 @@ const AsignGroupMedicationPackageForm: React.FC<AsignGroupMedicationPackageFormP
                             <Card className="shadow-sm">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
                                     <h5 className="mb-0">Medicamentos</h5>
-
-                                    {medicationPackagePreview && (
-                                        <div className="d-flex align-items-center gap-3">
-                                            <div className="text-end">
-                                                <div className="small text-muted">
-                                                    Total aproximado de aplicación
-                                                </div>
-                                                <div className="fw-bold">
-                                                    {new Intl.NumberFormat('es-MX', {
-                                                        style: 'currency',
-                                                        currency: 'MXN'
-                                                    }).format(medicationPackagePreview.estimatedTotal || 0)}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
                                 </CardHeader>
                                 <CardBody className="p-0 mb-3">
                                     <CustomTable

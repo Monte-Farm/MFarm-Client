@@ -258,25 +258,21 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
                         color = "success";
                         text = "En crecimiento y ceba";
                         break;
-                    case "ready_to_exit":
-                        color = "warning";
-                        text = "Listo para salida";
-                        break;
-                    case "exit_overdue":
-                        color = "dark";
-                        text = "Retrasado para salida";
-                        break;
                     case "replacement":
                         color = "secondary";
                         text = "Reemplazo";
                         break;
-                    case "exit":
-                        color = "secondary";
-                        text = "Salida";
-                        break;
-                    case "exit_processed":
+                    case "ready_for_sale":
                         color = "success";
-                        text = "Salida procesada";
+                        text = "Listo para venta";
+                        break;
+                    case "sale":
+                        color = "success";
+                        text = "En venta";
+                        break;
+                    case "sold":
+                        color = "success";
+                        text = "Vendido";
                         break;
                 }
 
