@@ -324,11 +324,18 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
                     vaccinationPlansHistory: [],
                     healthEvents: [],
                     isActive: true,
+                    litterIds: [litterId]
                 }
 
                 const groupResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/group/create_group`, groupData)
             } else if (!newGroup && selectedCompatibleGroup) {
-                const transferedResponse = await configContext.axiosHelper.put(`${configContext.apiUrl}/group/transfer_all_pigs/${selectedCompatibleGroup._id}/${userLogged._id}`, pigletsIds);
+                await configContext.axiosHelper.put(
+                    `${configContext.apiUrl}/group/transfer_all_pigs/${selectedCompatibleGroup._id}/${userLogged._id}`,
+                    {
+                        pigIds: pigletsIds,
+                        litterIds: [litterId]
+                    }
+                );
             }
 
 

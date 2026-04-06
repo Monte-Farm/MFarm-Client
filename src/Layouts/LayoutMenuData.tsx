@@ -77,6 +77,7 @@ const Navdata = () => {
     //Feeding
     const [isFeeding, setIsFeeding] = useState<boolean>(false)
     const [isFeedingPackage, setIsFeedingPackage] = useState<boolean>(false)
+    const [isFeedingConsumption, setIsFeedingConsumption] = useState<boolean>(false)
 
     //Lactation
     const [isLactation, setIsLactation] = useState<boolean>(false)
@@ -106,6 +107,7 @@ const Navdata = () => {
     //Sale
     const [isSale, setIsSale] = useState<boolean>(false);
     const [isSaleGroups, setIsSaleGroups] = useState<boolean>(false);
+    const [isSoldGroups, setIsSoldGroups] = useState<boolean>(false);
 
     const [iscurrentState, setIscurrentState] = useState('Home');
 
@@ -716,6 +718,18 @@ const Navdata = () => {
                     },
                     stateVariables: isSaleGroups,
                 },
+                {
+                    id: "soldGroups",
+                    label: "Grupos vendidos",
+                    link: "/sale/view_sold_groups",
+                    roles: ['farm_manager', 'general_worker'],
+                    parentId: "sale",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsSoldGroups(!isSoldGroups)
+                    },
+                    stateVariables: isSoldGroups,
+                },
             ]
         },
         {
@@ -771,6 +785,18 @@ const Navdata = () => {
                         setIsFeedingPackage(!isFeedingPackage)
                     },
                     stateVariables: isFeedingPackage,
+                },
+                {
+                    id: "feedingConsumption",
+                    label: "Consumo de alimentacion",
+                    link: "/feeding/view_feeding_consumption",
+                    roles: ['farm_manager', 'veterinarian',],
+                    parentId: "feeding",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsFeedingConsumption(!isFeedingConsumption)
+                    },
+                    stateVariables: isFeedingConsumption,
                 },
             ]
         },

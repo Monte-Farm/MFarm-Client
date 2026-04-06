@@ -7,6 +7,7 @@ interface Props {
     onViewDetails: (id: string) => void;
     onDiscountStock: (id: string) => void;
     onUnassign: (id: string) => void;
+    disabled?: boolean;
 }
 
 const STAGE_LABELS: Record<string, string> = {
@@ -35,6 +36,7 @@ const FeedingPackagesCard = ({
     onViewDetails,
     onDiscountStock,
     onUnassign,
+    disabled = false,
 }: Props) => {
     const hasPackages = packages && packages.length > 0;
 
@@ -45,7 +47,7 @@ const FeedingPackagesCard = ({
                     Paquetes de alimentación administrados
                 </h5>
 
-                <Button size="sm" color="primary" onClick={onAdd}>
+                <Button size="sm" color="primary" onClick={onAdd} disabled={disabled}>
                     Asignar paquete
                 </Button>
             </CardHeader>

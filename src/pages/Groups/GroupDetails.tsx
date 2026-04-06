@@ -39,8 +39,8 @@ import GroupTransferForm from "Components/Common/Forms/GroupTransferForm";
 import GroupWithDrawForm from "Components/Common/Forms/GroupWithdrawForm";
 import DiscardPigInGroupForm from "Components/Common/Forms/DiscardPigInGroupForm";
 import GrowthStatusProgress from "Components/Common/Shared/GrowthStatusProgress";
-import ProcessPigSaleForm from "Components/Common/Forms/ProcessPigSaleForm";
 import ProcessPigReplacementForm from "Components/Common/Forms/ProcessPigReplacementForm";
+import SellPigsForm from "Components/Common/Forms/SellPigsForm";
 
 const GroupDetails = () => {
     document.title = "Detalles de grupo | Management System";
@@ -52,8 +52,8 @@ const GroupDetails = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [groupData, setGroupData] = useState<any>({});
-    const [activeTab, setActiveTab] = useState("1");
-    const [modals, setModals] = useState({ changeStage: false, registerDeath: false, discard: false, transfer: false, processSale: false, processReplacement: false });
+    const [activeTab, setActiveTab] = useState("0");
+    const [modals, setModals] = useState({ changeStage: false, registerDeath: false, discard: false, transfer: false, processSale: false, processReplacement: false, sellPigs: false });
     const [lastWeighted, setLastWeigthed] = useState<any>({})
     const [growthRate, setGrowthRate] = useState<number>(0);
     const [averageAge, setAverageaAge] = useState<any>()
@@ -61,6 +61,7 @@ const GroupDetails = () => {
     const [active, setActive] = useState<any>();
     const [mortality, setMortality] = useState<any>();
     const [refreshKey, setRefreshKey] = useState<number>(0);
+    const [groupMetrics, setGroupMetrics] = useState<any>({});
 
     const toggleTab = (tab: string) => {
         if (activeTab !== tab) setActiveTab(tab);
@@ -231,7 +232,7 @@ const GroupDetails = () => {
         if (!configContext || !userLogged) return;
         try {
 
-            const [groupResponse, lastWeightResponse, growthResponse, averageAgeResponse, weightResponse, activeResponse, mortalityResponse] = await Promise.all([
+            const [groupResponse, lastWeightResponse, growthResponse, averageAgeResponse, weightResponse, activeResponse, mortalityResponse, metricsResponse] = await Promise.all([
                 configContext.axiosHelper.get(`${configContext.apiUrl}/group/find_by_id/${group_id}`),
                 configContext.axiosHelper.get(`${configContext.apiUrl}/weighing/group_latest/${group_id}`),
                 configContext.axiosHelper.get(`${configContext.apiUrl}/weighing/growth_rate/${group_id}`, { isGroup: true }),
@@ -239,6 +240,7 @@ const GroupDetails = () => {
                 configContext.axiosHelper.get(`${configContext.apiUrl}/group/weight_distribution/${group_id}`),
                 configContext.axiosHelper.get(`${configContext.apiUrl}/group/active_counts/${group_id}`),
                 configContext.axiosHelper.get(`${configContext.apiUrl}/group/mortality/${group_id}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/group/group_metrics/${group_id}`),
             ])
 
             setGroupData(groupResponse.data.data);
@@ -248,6 +250,7 @@ const GroupDetails = () => {
             setWeightDistribution(weightResponse.data.data)
             setActive(activeResponse.data.data)
             setMortality(mortalityResponse.data.data)
+            setGroupMetrics(metricsResponse.data.data)
         } catch (error) {
             console.error("Error fetching data: ", { error });
             setAlertConfig({
@@ -291,6 +294,15 @@ const GroupDetails = () => {
                         <NavItem>
                             <NavLink
                                 style={{ cursor: "pointer" }}
+                                className={classnames({ active: activeTab === "0" })}
+                                onClick={() => toggleTab("0")}
+                            >
+                                Nueva Tab
+                            </NavLink>
+                        </NavItem>
+                        <NavItem>
+                            <NavLink
+                                style={{ cursor: "pointer" }}
                                 className={classnames({ active: activeTab === "1" })}
                                 onClick={() => toggleTab("1")}
                             >
@@ -328,6 +340,376 @@ const GroupDetails = () => {
                 </div>
 
                 <TabContent activeTab={activeTab} className="justified-tabs mt-3">
+                    <TabPane tabId="0">
+                        <div className="p-4">
+                            {/* Header Section */}
+                            <div className="row mb-4">
+                                <div className="col-12">
+                                    <div className="d-flex align-items-center justify-content-between mb-3">
+                                        <div>
+                                            <h2 className="mb-1 fw-bold text-dark">
+                                                <i className="ri-dashboard-3-line me-2 text-primary" />
+                                                Dashboard de Métricas
+                                            </h2>
+                                            <p className="text-muted mb-0">Análisis completo del rendimiento del grupo</p>
+                                        </div>
+                                        <div className="text-end">
+                                            <div className="badge bg-primary-subtle text-primary px-3 py-2 fs-6">
+                                                <i className="ri-refresh-line me-1" />
+                                                Actualizado en tiempo real
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Key Metrics Overview */}
+                            <div className="row g-3 mb-4">
+                                <div className="col-12">
+                                    <div className="bg-white border-0 shadow-lg rounded-3 p-4">
+                                        <div className="row align-items-center">
+                                            <div className="col-md-3">
+                                                <div className="text-center p-3 rounded bg-primary bg-opacity-10">
+                                                    <div className="display-6 fw-bold mb-2 text-primary">{groupMetrics?.groupInfo?.code || '-'}</div>
+                                                    <div className="small text-muted fw-medium">CÓDIGO DE GRUPO</div>
+                                                </div>
+                                            </div>
+                                            <div className="col-md-3">
+                                                <div className="text-center p-3 rounded bg-success bg-opacity-10">
+                                                    <div className="display-6 fw-bold mb-2 text-success">{groupMetrics?.groupInfo?.pigCount || 0}</div>
+                                                    <div className="small text-muted fw-medium">CERDOS ACTIVOS</div>
+                                                </div>
+                                            </div>
+                                            <div className="col-md-3">
+                                                <div className="text-center p-3 rounded bg-info bg-opacity-10">
+                                                    <div className="display-6 fw-bold mb-2 text-info">{groupMetrics?.survivalMetrics?.survivalRate || 0}%</div>
+                                                    <div className="small text-muted fw-medium">TASA DE SUPERVIVENCIA</div>
+                                                </div>
+                                            </div>
+                                            <div className="col-md-3">
+                                                <div className="text-center p-3 rounded bg-warning bg-opacity-10">
+                                                    <div className="display-6 fw-bold mb-2 text-warning">${groupMetrics?.costBreakdown?.total?.toFixed(2) || 0}</div>
+                                                    <div className="small text-muted fw-medium">COSTO TOTAL</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Main Dashboard Grid */}
+                            <div className="row g-4">
+                                {/* Left Column - Performance Metrics */}
+                                <div className="col-12 col-xl-8">
+                                    <div className="row g-3">
+                                        {/* Weight Performance Card */}
+                                        <div className="col-12">
+                                            <div className="card border-0 shadow-sm h-100">
+                                                <div className="card-header bg-gradient-success text-white border-0 py-3">
+                                                    <div className="d-flex align-items-center justify-content-between">
+                                                        <div className="d-flex align-items-center">
+                                                            <i className="ri-scales-3-line fs-4 me-2" />
+                                                            <h5 className="mb-0 fw-semibold">Análisis de Peso</h5>
+                                                        </div>
+                                                        <div className="badge bg-white text-success fs-6">
+                                                            <i className="ri-line-chart-line me-1" />
+                                                            Rendimiento
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="card-body">
+                                                    <div className="row mb-4">
+                                                        <div className="col-6 col-md-3">
+                                                            <div className="text-center p-3 rounded bg-light">
+                                                                <div className="h3 text-primary fw-bold mb-1">{groupMetrics?.weightMetrics?.totalWeight?.toFixed(1) || 0} <small className="fs-6">kg</small></div>
+                                                                <div className="small text-muted">Peso Total</div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-6 col-md-3">
+                                                            <div className="text-center p-3 rounded bg-light">
+                                                                <div className="h3 text-info fw-bold mb-1">{groupMetrics?.weightMetrics?.averageWeight?.toFixed(2) || 0} <small className="fs-6">kg</small></div>
+                                                                <div className="small text-muted">Peso Promedio</div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-6 col-md-3">
+                                                            <div className="text-center p-3 rounded bg-light">
+                                                                <div className="h3 text-success fw-bold mb-1">{groupMetrics?.weightMetrics?.uniformity || 0}%</div>
+                                                                <div className="small text-muted">Uniformidad</div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-6 col-md-3">
+                                                            <div className="text-center p-3 rounded bg-light">
+                                                                <div className="h3 text-warning fw-bold mb-1">±{groupMetrics?.weightMetrics?.weightVariance?.toFixed(2) || 0}</div>
+                                                                <div className="small text-muted">Varianza</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="border-top pt-3">
+                                                        <div className="row">
+                                                            <div className="col-6">
+                                                                <div className="d-flex align-items-center justify-content-between p-2 rounded bg-light">
+                                                                    <span className="text-muted fw-medium">Peso Mínimo:</span>
+                                                                    <span className="fw-bold text-primary">{groupMetrics?.weightMetrics?.minWeight?.toFixed(2) || 0} kg</span>
+                                                                </div>
+                                                            </div>
+                                                            <div className="col-6">
+                                                                <div className="d-flex align-items-center justify-content-between p-2 rounded bg-light">
+                                                                    <span className="text-muted fw-medium">Peso Máximo:</span>
+                                                                    <span className="fw-bold text-primary">{groupMetrics?.weightMetrics?.maxWeight?.toFixed(2) || 0} kg</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Feed Efficiency Card */}
+                                        <div className="col-12">
+                                            <div className="card border-0 shadow-sm h-100">
+                                                <div className="card-header bg-gradient-warning text-white border-0 py-3">
+                                                    <div className="d-flex align-items-center justify-content-between">
+                                                        <div className="d-flex align-items-center">
+                                                            <i className="ri-restaurant-line fs-4 me-2" />
+                                                            <h5 className="mb-0 fw-semibold">Eficiencia Alimenticia</h5>
+                                                        </div>
+                                                        <div className="badge bg-white text-warning fs-6">
+                                                            <i className="ri-calculator-line me-1" />
+                                                            Optimización
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="card-body">
+                                                    <div className="row mb-4">
+                                                        <div className="col-6 col-md-3">
+                                                            <div className="text-center p-3 rounded bg-light">
+                                                                <div className="h3 text-primary fw-bold mb-1">{groupMetrics?.feedEfficiency?.estimatedFeedKg || 0} <small className="fs-6">kg</small></div>
+                                                                <div className="small text-muted">Alimento Estimado</div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-6 col-md-3">
+                                                            <div className="text-center p-3 rounded bg-light">
+                                                                <div className="h3 text-info fw-bold mb-1">{groupMetrics?.feedEfficiency?.totalWeightGainKg?.toFixed(1) || 0} <small className="fs-6">kg</small></div>
+                                                                <div className="small text-muted">Ganancia Total</div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-6 col-md-3">
+                                                            <div className="text-center p-3 rounded bg-light">
+                                                                <div className="h3 text-success fw-bold mb-1">{groupMetrics?.feedEfficiency?.fcr?.toFixed(2) || 0}</div>
+                                                                <div className="small text-muted">FCR</div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-6 col-md-3">
+                                                            <div className="text-center p-3 rounded bg-light">
+                                                                <div className="h3 text-warning fw-bold mb-1">${groupMetrics?.feedEfficiency?.feedCostPerKgGain?.toFixed(2) || 0}</div>
+                                                                <div className="small text-muted">Costo/kg Ganado</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="alert alert-warning border-0 mb-0">
+                                                        <div className="d-flex align-items-center justify-content-between">
+                                                            <div>
+                                                                <i className="ri-money-dollar-circle-line me-2" />
+                                                                <strong>Costo Total de Alimentación:</strong>
+                                                            </div>
+                                                            <span className="h4 mb-0 text-warning fw-bold">${groupMetrics?.feedEfficiency?.feedCostTotal?.toFixed(2) || 0}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Right Column - Status & Costs */}
+                                <div className="col-12 col-xl-4">
+                                    <div className="row g-3">
+                                        {/* Survival Status Card */}
+                                        <div className="col-12">
+                                            <div className="card border-0 shadow-sm h-100">
+                                                <div className="card-header bg-gradient-info text-white border-0 py-3">
+                                                    <div className="d-flex align-items-center justify-content-between">
+                                                        <div className="d-flex align-items-center">
+                                                            <i className="ri-heart-pulse-line fs-4 me-2" />
+                                                            <h5 className="mb-0 fw-semibold">Estado de Salud</h5>
+                                                        </div>
+                                                        <div className="badge bg-white text-info fs-6">
+                                                            <i className="ri-shield-check-line me-1" />
+                                                            Vital
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="card-body">
+                                                    <div className="text-center mb-4">
+                                                        <div className="position-relative d-inline-block">
+                                                            <div className="display-3 fw-bold text-success mb-2">
+                                                                {groupMetrics?.survivalMetrics?.survivalRate || 0}%
+                                                            </div>
+                                                            <div className="badge bg-success-subtle text-success position-absolute top-0 start-100 translate-middle">
+                                                                <i className="ri-arrow-up-line" />
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-muted">Tasa de Supervivencia</div>
+                                                    </div>
+                                                    <div className="row mb-3">
+                                                        <div className="col-6">
+                                                            <div className="text-center p-3 rounded bg-light">
+                                                                <div className="h5 text-primary fw-bold mb-1">{groupMetrics?.survivalMetrics?.initialPigCount || 0}</div>
+                                                                <div className="small text-muted">Iniciales</div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-6">
+                                                            <div className="text-center p-3 rounded bg-light">
+                                                                <div className="h5 text-info fw-bold mb-1">{groupMetrics?.survivalMetrics?.currentPigCount || 0}</div>
+                                                                <div className="small text-muted">Actuales</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="border-top pt-3">
+                                                        <div className="d-flex align-items-center justify-content-between">
+                                                            <span className="text-muted fw-medium">Mortalidad:</span>
+                                                            <Badge color={groupMetrics?.survivalMetrics?.mortality > 0 ? "danger" : "success"} className="fs-6">
+                                                                <i className={`ri-${groupMetrics?.survivalMetrics?.mortality > 0 ? 'alert' : 'check'}-line me-1`} />
+                                                                {groupMetrics?.survivalMetrics?.mortality || 0} ({groupMetrics?.survivalMetrics?.mortalityRate || 0}%)
+                                                            </Badge>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Cost Analysis Card */}
+                                        <div className="col-12">
+                                            <div className="card border-0 shadow-sm h-100">
+                                                <div className="card-header bg-gradient-danger text-white border-0 py-3">
+                                                    <div className="d-flex align-items-center justify-content-between">
+                                                        <div className="d-flex align-items-center">
+                                                            <i className="ri-money-dollar-circle-line fs-4 me-2" />
+                                                            <h5 className="mb-0 fw-semibold">Análisis de Costos</h5>
+                                                        </div>
+                                                        <div className="badge bg-white text-danger fs-6">
+                                                            <i className="ri-funds-line me-1" />
+                                                            Finanzas
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="card-body">
+                                                    <div className="text-center mb-4">
+                                                        <div className="display-4 fw-bold text-danger mb-2">
+                                                            ${groupMetrics?.costBreakdown?.total?.toFixed(2) || 0}
+                                                        </div>
+                                                        <div className="text-muted">Costo Total Operativo</div>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <div className="d-flex align-items-center justify-content-between p-2 rounded bg-light">
+                                                            <div className="d-flex align-items-center">
+                                                                <i className="ri-restaurant-line text-primary me-2" />
+                                                                <span className="text-muted fw-medium">Alimento:</span>
+                                                            </div>
+                                                            <div className="text-end">
+                                                                <strong className="text-primary">${groupMetrics?.costBreakdown?.feed?.toFixed(2) || 0}</strong>
+                                                                <Badge color="primary" className="ms-2">
+                                                                    {groupMetrics?.costBreakdown?.feedPercentage || 0}%
+                                                                </Badge>
+                                                            </div>
+                                                        </div>
+                                                        <div className="d-flex align-items-center justify-content-between p-2 rounded bg-light">
+                                                            <div className="d-flex align-items-center">
+                                                                <i className="ri-medicine-bottle-line text-info me-2" />
+                                                                <span className="text-muted fw-medium">Medicación:</span>
+                                                            </div>
+                                                            <div className="text-end">
+                                                                <strong className="text-info">${groupMetrics?.costBreakdown?.medication?.toFixed(2) || 0}</strong>
+                                                                <Badge color="info" className="ms-2">
+                                                                    {groupMetrics?.costBreakdown?.medicationPercentage || 0}%
+                                                                </Badge>
+                                                            </div>
+                                                        </div>
+                                                        <div className="d-flex align-items-center justify-content-between p-2 rounded bg-light">
+                                                            <div className="d-flex align-items-center">
+                                                                <i className="ri-shield-star-line text-success me-2" />
+                                                                <span className="text-muted fw-medium">Vacunas:</span>
+                                                            </div>
+                                                            <div className="text-end">
+                                                                <strong className="text-success">${groupMetrics?.costBreakdown?.vaccines?.toFixed(2) || 0}</strong>
+                                                                <Badge color="success" className="ms-2">
+                                                                    {groupMetrics?.costBreakdown?.vaccinePercentage || 0}%
+                                                                </Badge>
+                                                            </div>
+                                                        </div>
+                                                        <div className="d-flex align-items-center justify-content-between p-2 rounded bg-light">
+                                                            <div className="d-flex align-items-center">
+                                                                <i className="ri-more-line text-warning me-2" />
+                                                                <span className="text-muted fw-medium">Otros:</span>
+                                                            </div>
+                                                            <div className="text-end">
+                                                                <strong className="text-warning">${groupMetrics?.costBreakdown?.other?.toFixed(2) || 0}</strong>
+                                                                <Badge color="warning" className="ms-2">
+                                                                    {groupMetrics?.costBreakdown?.otherPercentage || 0}%
+                                                                </Badge>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Time Metrics Card */}
+                                        <div className="col-12">
+                                            <div className="card border-0 shadow-sm h-100">
+                                                <div className="card-header bg-gradient-secondary text-white border-0 py-3">
+                                                    <div className="d-flex align-items-center justify-content-between">
+                                                        <div className="d-flex align-items-center">
+                                                            <i className="ri-time-line fs-4 me-2" />
+                                                            <h5 className="mb-0 fw-semibold">Métricas de Tiempo</h5>
+                                                        </div>
+                                                        <div className="badge bg-white text-secondary fs-6">
+                                                            <i className="ri-calendar-line me-1" />
+                                                            Cronología
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="card-body">
+                                                    <div className="text-center mb-4">
+                                                        <div className="display-4 fw-bold text-secondary mb-2">
+                                                            {groupMetrics?.timeMetrics?.daysInProduction || 0}
+                                                        </div>
+                                                        <div className="text-muted">Días en Producción</div>
+                                                    </div>
+                                                    <div className="space-y-3">
+                                                        <div className="d-flex align-items-center justify-content-between p-3 rounded bg-light">
+                                                            <div className="d-flex align-items-center">
+                                                                <i className="ri-money-dollar-circle-line text-primary me-2" />
+                                                                <span className="text-muted fw-medium">Costo por Día:</span>
+                                                            </div>
+                                                            <strong className="text-primary fs-5">${groupMetrics?.timeMetrics?.costPerDay?.toFixed(2) || 0}</strong>
+                                                        </div>
+                                                        <div className="d-flex align-items-center justify-content-between p-3 rounded bg-light">
+                                                            <div className="d-flex align-items-center">
+                                                                <i className="ri-calendar-event-line text-info me-2" />
+                                                                <span className="text-muted fw-medium">Fecha Inicio:</span>
+                                                            </div>
+                                                            <strong className="text-info">{new Date(groupMetrics?.timeMetrics?.startDate || '').toLocaleDateString()}</strong>
+                                                        </div>
+                                                        <div className="d-flex align-items-center justify-content-between p-3 rounded bg-light">
+                                                            <div className="d-flex align-items-center">
+                                                                <i className="ri-flag-line text-success me-2" />
+                                                                <span className="text-muted fw-medium">Etapa Actual:</span>
+                                                            </div>
+                                                            <Badge color="success" className="fs-6">
+                                                                {groupMetrics?.groupInfo?.stage || '-'}
+                                                            </Badge>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </TabPane>
+
                     <TabPane tabId="1">
                         <div className="row g-3 align-items-stretch">
                             <div className="d-flex gap-2">
@@ -361,7 +743,7 @@ const GroupDetails = () => {
                                         <h5 className="mb-0 text-uppercase text-muted">Información General</h5>
 
                                         {['weaning', 'ready_to_grow', 'grow_overdue'].includes(groupData.status) && (
-                                            <Button color="success" disabled={!['ready_to_grow', 'grow_overdue'].includes(groupData.status)} onClick={() => toggleModal('changeStage')}>
+                                            <Button color="success" disabled={groupData.status === 'sold' || !['ready_to_grow', 'grow_overdue'].includes(groupData.status)} onClick={() => toggleModal('changeStage')}>
                                                 <i className="mdi mdi-chart-line-variant me-2" />
                                                 Cambiar a crecimiento
                                             </Button>
@@ -370,17 +752,24 @@ const GroupDetails = () => {
                                         {['growing', 'ready_for_sale',].includes(groupData.status) && (
                                             <div className="d-flex gap-2">
 
-                                                <Button color="info" disabled={!groupData.isReadyForReplacement} onClick={() => toggleModal('processReplacement')}>
+                                                <Button color="info" disabled={groupData.status === 'sold' || !groupData.isReadyForReplacement} onClick={() => toggleModal('processReplacement')}>
                                                     <i className="ri-refresh-line me-2" />
                                                     Procesar reemplazo
                                                 </Button>
 
-                                                <Button color="warning" disabled={!['ready_for_sale'].includes(groupData.status)} onClick={() => toggleModal('processSale')}>
+                                                <Button color="warning" disabled={groupData.status === 'sold' || !['ready_for_sale'].includes(groupData.status)} onClick={() => toggleModal('changeStage')}>
                                                     <i className="ri-money-dollar-circle-line me-2" />
                                                     Procesar venta
                                                 </Button>
 
                                             </div>
+                                        )}
+
+                                        {groupData.status === 'sale' && groupData.stage === 'sale' && (
+                                            <Button color="success" onClick={() => toggleModal('sellPigs')}>
+                                                <i className="ri-shopping-cart-line me-2" />
+                                                Vender
+                                            </Button>
                                         )}
                                     </CardHeader>
                                     <CardBody>
@@ -394,13 +783,13 @@ const GroupDetails = () => {
                                         <h5 className="mb-0 fw-bold text-uppercase text-muted">Cerdos en el grupo</h5>
 
                                         <div className="d-flex gap-2">
-                                            <Button color="danger" onClick={() => toggleModal('discard')}>
+                                            <Button color="danger" onClick={() => toggleModal('discard')} disabled={groupData.status === 'sold'}>
                                                 <i className="ri-upload-2-line align-middle" />
                                             </Button>
-                                            <Button color="warning" onClick={() => toggleModal('transfer')}>
+                                            <Button color="warning" onClick={() => toggleModal('transfer')} disabled={groupData.status === 'sold'}>
                                                 <i className="ri-arrow-left-right-line align-middle" />
                                             </Button>
-                                            <Button color="dark" onClick={() => toggleModal('registerDeath')}>
+                                            <Button color="dark" onClick={() => toggleModal('registerDeath')} disabled={groupData.status === 'sold'}>
                                                 <FaSkullCrossbones color="white" />
                                             </Button>
                                         </div>
@@ -420,11 +809,11 @@ const GroupDetails = () => {
                     </TabPane>
 
                     <TabPane tabId="2">
-                        <GroupFeedingDetails key={`feeding-${refreshKey}`} groupId={group_id ?? ""} onUpdate={fetchData} />
+                        <GroupFeedingDetails key={`feeding-${refreshKey}`} groupId={group_id ?? ""} onUpdate={fetchData} isGroupSold={groupData.status === 'sold'} />
                     </TabPane>
 
                     <TabPane tabId="3">
-                        <GroupMedicalDetails key={`medical-${refreshKey}`} groupId={group_id ?? ""} onUpdate={fetchData} />
+                        <GroupMedicalDetails key={`medical-${refreshKey}`} groupId={group_id ?? ""} onUpdate={fetchData} isGroupSold={groupData.status === 'sold'} />
                     </TabPane>
 
                     <TabPane tabId="4">
@@ -452,12 +841,6 @@ const GroupDetails = () => {
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.processSale} toggle={() => toggleModal("processSale")} centered backdrop={'static'} keyboard={false}>
-                <ModalHeader toggle={() => toggleModal("processSale")}>Procesar venta de cerdos</ModalHeader>
-                <ModalBody>
-                    <ProcessPigSaleForm groupId={groupData._id} onSave={() => { toggleModal('processSale'); fetchData(); setRefreshKey(prev => prev + 1); }} />
-                </ModalBody>
-            </Modal>
 
             <Modal size="xl" isOpen={modals.processReplacement} toggle={() => toggleModal("processReplacement")} centered backdrop={'static'} keyboard={false}>
                 <ModalHeader toggle={() => toggleModal("processReplacement")}>Procesar reemplazo de cerdos</ModalHeader>
@@ -484,6 +867,13 @@ const GroupDetails = () => {
                 <ModalHeader toggle={() => toggleModal("registerDeath")}>Registrar muerte</ModalHeader>
                 <ModalBody>
                     <DiscardPigInGroupForm groupId={group_id ?? ''} onSave={() => { fetchData(); toggleModal('registerDeath'); setRefreshKey(prev => prev + 1); }} onCancel={() => { }} />
+                </ModalBody>
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.sellPigs} toggle={() => toggleModal("sellPigs")} centered backdrop={'static'} keyboard={false}>
+                <ModalHeader toggle={() => toggleModal("sellPigs")}>Vender cerdos</ModalHeader>
+                <ModalBody>
+                    <SellPigsForm groupId={groupData._id} onSave={() => { toggleModal('sellPigs'); fetchData(); setRefreshKey(prev => prev + 1); }} />
                 </ModalBody>
             </Modal>
 

@@ -71,6 +71,8 @@ import ViewBoars from "pages/Replacement/ViewBoars";
 import ViewExitGroups from "pages/Groups/ViewExitGroups";
 import ViewSowsGroups from "pages/Groups/ViewSowsGroups";
 import ViewSaleGroups from "pages/Groups/ViewSaleGroups";
+import ViewSoldGroups from "pages/Groups/ViewSoldGroups";
+import ViewFeedingConsumption from "pages/Feeding/ViewFeedingConsumption";
 
 
 
@@ -160,6 +162,7 @@ const authProtectedRoutes = [
 
   //Feeding
   { path: "/feeding/view_feeding_packages", component: <ViewFeedingPackages /> },
+  { path: "/feeding/view_feeding_consumption", component: <ViewFeedingConsumption /> },
 
   //Lactation
   { path: '/lactation/view_litters', component: <ViewLitters /> },
@@ -171,6 +174,7 @@ const authProtectedRoutes = [
 
   //Sale
   { path: '/sale/view_sale_groups', component: <ViewSaleGroups /> },
+  { path: '/sale/view_sold_groups', component: <ViewSoldGroups /> },
 
 
 

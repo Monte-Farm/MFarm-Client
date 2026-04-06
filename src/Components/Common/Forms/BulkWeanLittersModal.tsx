@@ -93,7 +93,7 @@ const BulkWeanLittersModal: React.FC<BulkWeanLittersModalProps> = ({
 
     const fetchCompatibleGroups = async () => {
         if (!configContext || !userLogged) return;
-        
+
         try {
             // Buscar grupos compatibles basados en la fecha de nacimiento más antigua
             const oldestBirthDate = selectedLitters.reduce((oldest, litter) => {
@@ -107,7 +107,7 @@ const BulkWeanLittersModal: React.FC<BulkWeanLittersModalProps> = ({
                 );
                 const groupsWithId = groupsResponse.data.data.map((g: any) => ({ ...g, id: g._id }));
                 setCompatibleGroups(groupsWithId);
-                
+
                 if (groupsWithId.length === 0) {
                     setCreateNewGroup(true);
                 }
@@ -121,7 +121,7 @@ const BulkWeanLittersModal: React.FC<BulkWeanLittersModalProps> = ({
         if (!configContext || !userLogged) return;
 
         // Filtrar solo camadas listas para destetar
-        const readyLitters = selectedLitters.filter(litter => 
+        const readyLitters = selectedLitters.filter(litter =>
             litter.status === 'ready_to_wean' || litter.status === 'wean_overdue'
         );
 
@@ -259,18 +259,18 @@ const BulkWeanLittersModal: React.FC<BulkWeanLittersModalProps> = ({
                     medicationPackagesHistory: [],
                     vaccinationPlansHistory: [],
                     healthEvents: [],
-                    isActive: true
+                    isActive: true,
+                    litterIds: readyLitters.map(litter => litter._id)
                 };
 
-                await configContext.axiosHelper.create(
-                    `${configContext.apiUrl}/group/create_group`,
-                    groupData
-                );
+                await configContext.axiosHelper.create(`${configContext.apiUrl}/group/create_group`, groupData);
             } else if (!createNewGroup && selectedGroup) {
-                // Transferir todos los lechones al grupo existente
                 await configContext.axiosHelper.put(
                     `${configContext.apiUrl}/group/transfer_all_pigs/${selectedGroup._id}/${userLogged._id}`,
-                    allPigletsIds
+                    {
+                        pigIds: allPigletsIds,
+                        litterIds: readyLitters.map(litter => litter._id)
+                    }
                 );
             }
 
@@ -318,10 +318,10 @@ const BulkWeanLittersModal: React.FC<BulkWeanLittersModalProps> = ({
 
     const calculateTotals = () => {
         // Filtrar solo camadas listas para destetar
-        const readyLitters = selectedLitters.filter(litter => 
+        const readyLitters = selectedLitters.filter(litter =>
             litter.status === 'ready_to_wean' || litter.status === 'wean_overdue'
         );
-        
+
         const totalPiglets = readyLitters.reduce((sum, litter) => sum + litter.currentMale + litter.currentFemale, 0);
         const totalWeight = Object.values(litterWeights).reduce((sum, weight) => sum + (Number(weight) || 0), 0);
         const avgWeight = totalPiglets > 0 ? totalWeight / totalPiglets : 0;
@@ -330,7 +330,7 @@ const BulkWeanLittersModal: React.FC<BulkWeanLittersModalProps> = ({
     };
 
     const checkWeightsBeforeNext = () => {
-        const readyLitters = selectedLitters.filter(litter => 
+        const readyLitters = selectedLitters.filter(litter =>
             litter.status === 'ready_to_wean' || litter.status === 'wean_overdue'
         );
         const missingWeights = readyLitters.filter(litter => !litterWeights[litter._id] || Number(litterWeights[litter._id]) <= 0);
@@ -396,7 +396,7 @@ const BulkWeanLittersModal: React.FC<BulkWeanLittersModalProps> = ({
                         <TabPane tabId={1}>
                             <div className="mb-3">
                                 <Label className="form-label fw-semibold">Ingresa el peso total de cada camada:</Label>
-                                
+
                                 <div className="border rounded p-3 mb-3" style={{ maxHeight: '400px', overflowY: 'auto' }}>
                                     {readyLitters.map((litter, index) => (
                                         <div key={litter._id} className="row align-items-center mb-3 pb-3 border-bottom">
@@ -478,12 +478,12 @@ const BulkWeanLittersModal: React.FC<BulkWeanLittersModalProps> = ({
                                     </div>
                                 ) : (
                                     <>
-                                        <div className={`card border-2 mb-3 ${createNewGroup ? "border-primary bg-primary-subtle" : "border-secondary-subtle"}`} 
-                                             role="button" 
-                                             onClick={() => {
-                                                 setCreateNewGroup(!createNewGroup);
-                                                 if (!createNewGroup) setSelectedGroup(null);
-                                             }}>
+                                        <div className={`card border-2 mb-3 ${createNewGroup ? "border-primary bg-primary-subtle" : "border-secondary-subtle"}`}
+                                            role="button"
+                                            onClick={() => {
+                                                setCreateNewGroup(!createNewGroup);
+                                                if (!createNewGroup) setSelectedGroup(null);
+                                            }}>
                                             <div className="card-body d-flex align-items-center gap-3">
                                                 <Input
                                                     className="form-check-input mt-0"
@@ -540,9 +540,9 @@ const BulkWeanLittersModal: React.FC<BulkWeanLittersModalProps> = ({
                                     <i className="ri-arrow-left-line me-1" />
                                     Atrás
                                 </Button>
-                                <Button 
-                                    color="success" 
-                                    onClick={handleWeanLitters} 
+                                <Button
+                                    color="success"
+                                    onClick={handleWeanLitters}
                                     disabled={isSubmitting}
                                 >
                                     {isSubmitting ? (

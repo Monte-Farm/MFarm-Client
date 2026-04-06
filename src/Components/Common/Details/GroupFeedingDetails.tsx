@@ -20,9 +20,10 @@ import FeedingPackagesCard from "../Shared/FeedingPackagesCard";
 interface GroupFeedingDetailsProps {
     groupId: string
     onUpdate?: () => void
+    isGroupSold?: boolean
 }
 
-const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId, onUpdate }) => {
+const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId, onUpdate, isGroupSold = false }) => {
     const configContext = useContext(ConfigContext);
     const userLogged = getLoggedinUser();
     const [loading, setLoading] = useState<boolean>(true)
@@ -138,6 +139,7 @@ const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId, onUp
                         setSelectedFeedingPackage(id);
                         toggleModal("unasignGroupPackage");
                     }}
+                    disabled={isGroupSold}
                 />
             </div>
 

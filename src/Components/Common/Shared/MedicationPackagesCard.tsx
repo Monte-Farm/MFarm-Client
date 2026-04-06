@@ -11,6 +11,7 @@ interface Props {
     packages: any[];
     onAdd: () => void;
     onViewDetails: (id: string) => void;
+    disabled?: boolean;
     status?: string;
 }
 
@@ -26,6 +27,7 @@ const MedicationPackagesCard = ({
     packages,
     onAdd,
     onViewDetails,
+    disabled = false,
     status
 }: Props) => {
     const hasData = packages && packages.length > 0;
@@ -37,7 +39,7 @@ const MedicationPackagesCard = ({
                     Paquetes de medicación administrados
                 </h5>
 
-                <Button size="sm" color="primary" onClick={onAdd} disabled={status === 'weaned'}>
+                <Button size="sm" color="primary" onClick={onAdd} disabled={disabled}>
                     Administrar paquete
                 </Button>
             </CardHeader>

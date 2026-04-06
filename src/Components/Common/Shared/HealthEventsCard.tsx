@@ -9,6 +9,7 @@ interface Props {
     onAdd: () => void;
     onViewDetails: (id: string) => void;
     onResolve: (eventId: string, endDate: Date) => Promise<void>;
+    disabled?: boolean;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
@@ -31,7 +32,7 @@ const SYMPTOM_LABELS: Record<string, string> = {
     lethargy: "Letargo",
 };
 
-const HealthEventsCard = ({ events, onAdd, onViewDetails, onResolve }: Props) => {
+const HealthEventsCard = ({ events, onAdd, onViewDetails, onResolve, disabled = false }: Props) => {
     const hasEvents = events && events.length > 0;
     const [resolveModal, setResolveModal] = useState<{ open: boolean; event: any | null }>({ open: false, event: null });
     const [resolving, setResolving] = useState(false);
@@ -58,7 +59,7 @@ const HealthEventsCard = ({ events, onAdd, onViewDetails, onResolve }: Props) =>
                 <CardHeader className="bg-white d-flex justify-content-between align-items-center border-bottom">
                     <h5 className="mb-0 fw-semibold">Eventos sanitarios</h5>
 
-                    <Button size="sm" color="primary" onClick={onAdd}>
+                    <Button size="sm" color="primary" onClick={onAdd} disabled={disabled}>
                         Registrar evento
                     </Button>
                 </CardHeader>

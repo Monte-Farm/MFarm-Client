@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Row } from "reactstrap";
+import { Button } from "reactstrap";
 
 interface PaginationProps {
   data: any[];
@@ -15,75 +15,64 @@ const Pagination: React.FC<PaginationProps> = ({
   currentPage,
   setCurrentPage,
   perPageData,
-  prevText = "Atras",
+  prevText = "Anterior",
   nextText = "Siguiente",
 }) => {
   const totalPages = Math.ceil(data.length / perPageData);
-  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+  const indexOfLastItem = currentPage * perPageData;
+  const indexOfFirstItem = indexOfLastItem - perPageData;
 
-  const handlePrevPage = (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handlePrevPage = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
     }
   };
 
-  const handleNextPage = (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
     }
   };
 
   useEffect(() => {
-    if (currentPage > totalPages) {
+    if (currentPage > totalPages && totalPages > 0) {
       setCurrentPage(totalPages);
     }
-  }, [totalPages]);
+  }, [totalPages, currentPage, setCurrentPage]);
+
+  if (totalPages <= 1) {
+    return null;
+  }
 
   return (
-    <Row className="g-0 justify-content-center mb-0">
-      <div className="col-sm-auto">
-        <ul className="pagination-block pagination pagination-separated justify-content-center justify-content-sm-end mb-sm-0">
-          {/* Botón "Previous" */}
-          <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
-            <button
-              type="button"
-              className="page-link farm-primary-button"
-              onClick={handlePrevPage}
-              disabled={currentPage === 1}
-            >
-              {prevText}
-            </button>
-          </li>
-
-          {/* Números de página */}
-          {pageNumbers.map((num) => (
-            <li key={num} className={`page-item ${currentPage === num ? "active" : ""}`}>
-              <button
-                type="button"
-                className="page-link farm-secondary-button"
-                onClick={() => setCurrentPage(num)}
-              >
-                {num}
-              </button>
-            </li>
-          ))}
-
-          {/* Botón "Next" */}
-          <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
-            <button
-              type="button"
-              className="page-link farm-primary-button"
-              onClick={handleNextPage}
-              disabled={currentPage === totalPages}
-            >
-              {nextText}
-            </button>
-          </li>
-        </ul>
+    <div className="d-flex justify-content-between align-items-center p-3 border-top">
+      <div className="text-muted small">
+        Mostrando {indexOfFirstItem + 1} a {Math.min(indexOfLastItem, data.length)} de {data.length}
       </div>
-    </Row>
+      <div className="d-flex gap-2 align-items-center">
+        <Button
+          size="sm"
+          color="secondary"
+          onClick={handlePrevPage}
+          disabled={currentPage === 1}
+        >
+          <i className="ri-arrow-left-s-line me-1" />
+          {prevText}
+        </Button>
+        <span className="text-muted small">
+          Página {currentPage} de {totalPages}
+        </span>
+        <Button
+          size="sm"
+          color="secondary"
+          onClick={handleNextPage}
+          disabled={currentPage === totalPages}
+        >
+          {nextText}
+          <i className="ri-arrow-right-s-line ms-1" />
+        </Button>
+      </div>
+    </div>
   );
 };
 

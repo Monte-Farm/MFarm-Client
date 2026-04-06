@@ -468,6 +468,7 @@ export interface GroupData {
     healthEvents?: GroupHealthEvents[];
     isActive: boolean
     isReadyForReplacement?: boolean;
+    litterIds?: string[];
 }
 
 

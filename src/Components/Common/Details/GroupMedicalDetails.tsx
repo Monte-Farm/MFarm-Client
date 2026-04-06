@@ -20,9 +20,10 @@ import VaccinationPlansCard from "../Shared/VaccinationPlansCard";
 interface GroupMedicalDetailsProps {
     groupId: string
     onUpdate?: () => void
+    isGroupSold?: boolean
 }
 
-const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId, onUpdate }) => {
+const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId, onUpdate, isGroupSold = false }) => {
     const configContext = useContext(ConfigContext);
     const userLogged = getLoggedinUser();
     const [loading, setLoading] = useState<boolean>(true)
@@ -93,6 +94,7 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId, onUp
                                 toggleModal("healthEventDetails");
                             }}
                             onResolve={handleResolveEvent}
+                            disabled={isGroupSold}
                         />
                     </div>
                 </div>
@@ -105,6 +107,7 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId, onUp
                             setSelectedMedicationPackage(id);
                             toggleModal("medicationPackageDetails");
                         }}
+                        disabled={isGroupSold}
                     />
                 </div>
             </div>

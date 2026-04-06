@@ -70,20 +70,20 @@ const ViewUsers = () => {
                 <div className="d-flex gap-1">
                     <Button
                         className="btn-icon"
-                        color="primary"
-                        onClick={(e) => { e.stopPropagation(); setSelecteduser(row); toggleModal('details'); }}
-                        title="Ver detalles"
-                    >
-                        <i className="ri-eye-fill align-middle"></i>
-                    </Button>
-                    <Button
-                        className="btn-icon"
                         color="secondary"
                         onClick={(e) => { e.stopPropagation(); handleClicModal("update", row); }}
                         disabled={row.status === false}
                         title="Editar usuario"
                     >
                         <i className="ri-pencil-fill align-middle"></i>
+                    </Button>
+                    <Button
+                        className="btn-icon"
+                        color="primary"
+                        onClick={(e) => { e.stopPropagation(); setSelecteduser(row); toggleModal('details'); }}
+                        title="Ver detalles"
+                    >
+                        <i className="ri-eye-fill align-middle"></i>
                     </Button>
                 </div>
             ),
@@ -120,7 +120,7 @@ const ViewUsers = () => {
                 users = response.data.data;
                 const usersWithId = users.map((user: any) => ({
                     ...user,
-                    id: user._id // Usar _id como id para la tabla
+                    id: user._id
                 }));
                 setUsers(usersWithId.filter((obj: any) => obj.username !== userLogged.username));
             } else {
@@ -128,7 +128,7 @@ const ViewUsers = () => {
                 users = response.data.data;
                 const usersWithId = users.map((user: any) => ({
                     ...user,
-                    id: user._id // Usar _id como id para la tabla
+                    id: user._id
                 }));
                 setUsers(
                     usersWithId.filter((obj: any) => {
