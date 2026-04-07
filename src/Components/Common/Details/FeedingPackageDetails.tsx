@@ -23,6 +23,7 @@ const FeedingPackageDetails: React.FC<FeedingPackageDetailsProps> = ({ feedingPa
     const [loading, setLoading] = useState<boolean>(true);
     const [feedingPackageDetails, setFeedingPackageDetails] = useState<any>({});
     const [feedingsItems, setFeedingsItems] = useState<any[]>([]);
+    const [currentPrices, setCurrentPrices] = useState<Record<string, number>>({});
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const [modals, setModals] = useState({ deactivateFeedingPackage: false, activateFeedingPackage: false, deactivationSuccess: false, activationSuccess: false, deactivationError: false, activationError: false });
     const [isSubmitting, setSubmitting] = useState<boolean>(false);
@@ -151,35 +152,9 @@ const FeedingPackageDetails: React.FC<FeedingPackageDetailsProps> = ({ feedingPa
             type: "text",
             isFilterable: true,
             render: (_, row) => row.feeding.name,
-
         },
         {
-            header: 'Categoria',
-            accessor: 'category',
-            render: (_, row) => {
-                let color = "secondary";
-                let label = 'Desconocido';
-
-                switch (row.feeding?.category) {
-                    case "nutrition":
-                        color = "info";
-                        label = "Nutricion";
-                        break;
-                    case "vitamins":
-                        color = "primary";
-                        label = "Vitaminas";
-                        break;
-                    case "minerals":
-                        color = "primary";
-                        label = "Minerales";
-                        break;
-                }
-
-                return <Badge color={color}>{label}</Badge>;
-            },
-        },
-        {
-            header: "Cantidad",
+            header: "Cantidad por cerdo",
             accessor: "quantity",
             type: "text",
             isFilterable: true,
@@ -195,13 +170,21 @@ const FeedingPackageDetails: React.FC<FeedingPackageDetailsProps> = ({ feedingPa
         if (!configContext || !userLogged || !feedingPackageId) return;
         try {
             setLoading(true);
-            const [feedingResponse] = await Promise.all([
-                configContext.axiosHelper.get(`${configContext.apiUrl}/feeding_package/find_by_id/${feedingPackageId}`)
-            ])
+            const feedingResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/feeding_package/find_by_id/${feedingPackageId}`);
             const feedingData = feedingResponse.data.data;
             setFeedingPackageDetails(feedingData);
-            setFeedingsItems(feedingData.feedings)
-            setLoading(false)
+            setFeedingsItems(feedingData.feedings);
+
+            const productIds = feedingData.feedings.map((item: any) => item.feeding._id || item.feeding.id);
+            const pricesResponse = await configContext.axiosHelper.create(
+                `${configContext.apiUrl}/warehouse/average_prices/${userLogged.farm_assigned}`,
+                { productIds }
+            );
+            const pricesMap: Record<string, number> = {};
+            for (const p of pricesResponse.data.data) {
+                pricesMap[p.productId] = p.averagePrice;
+            }
+            setCurrentPrices(pricesMap);
         } catch (error) {
             console.error('Error fetching data:', error)
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al cargar los datos, intentelo mas tarde' })
@@ -280,22 +263,84 @@ const FeedingPackageDetails: React.FC<FeedingPackageDetailsProps> = ({ feedingPa
                 ) : null}
 
             </div>
-            <div className="d-flex gap-3">
-                <Card className="w-25">
-                    <CardHeader className="bg-light">
-                        <h5>Informacion del paquete</h5>
+            <div className="d-flex gap-3 align-items-start">
+                <Card className="border-primary border-opacity-25 flex-shrink-0" style={{ width: '320px' }}>
+                    <CardHeader className="bg-primary bg-opacity-10">
+                        <h5 className="mb-0 text-primary">
+                            <i className="ri-file-list-3-line me-2" />
+                            Informacion del paquete
+                        </h5>
                     </CardHeader>
                     <CardBody>
                         <ObjectDetails attributes={feedingAttributes} object={feedingPackageDetails} />
                     </CardBody>
                 </Card>
 
-                <Card className="w-75">
-                    <CardHeader className="bg-light">
-                        <h5>Alimentos del paquete</h5>
+                <Card className="flex-fill border-success border-opacity-25">
+                    <CardHeader className="bg-success bg-opacity-10">
+                        <h5 className="mb-0 text-success">
+                            <i className="ri-leaf-line me-2" />
+                            Alimentos del paquete
+                        </h5>
                     </CardHeader>
                     <CardBody className="p-0">
                         <CustomTable columns={feedingsColumns} data={feedingsItems} showSearchAndFilter={false} showPagination={true} rowsPerPage={5} />
+
+                        <div className="border-top">
+                            <div className="d-flex gap-3 px-4 py-3">
+                                <div className="flex-fill bg-success bg-opacity-10 rounded px-4 py-3 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div className="text-muted small mb-1">
+                                            <i className="ri-history-line me-1" />
+                                            Costo por cerdo al momento del registro
+                                        </div>
+                                        <div className="fs-4 fw-bold text-success">
+                                            ${feedingsItems.reduce((total, item) => {
+                                                return total + (item.quantity ?? 0) * (item.averagePrice ?? 0);
+                                            }, 0).toFixed(2)}
+                                        </div>
+                                        <div className="d-flex align-items-center gap-1 mt-1">
+                                            <i className="ri-information-line text-warning small" />
+                                            <small className="text-muted">
+                                                Registrado el {feedingPackageDetails.creation_date
+                                                    ? new Date(feedingPackageDetails.creation_date).toLocaleDateString('es-MX')
+                                                    : '—'}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <i className="ri-money-dollar-circle-line fs-1 text-success opacity-50" />
+                                </div>
+
+                                <div className="flex-fill bg-primary bg-opacity-10 rounded px-4 py-3 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div className="text-muted small mb-1">
+                                            <i className="ri-refresh-line me-1" />
+                                            Costo por cerdo a precio actual
+                                        </div>
+                                        {Object.keys(currentPrices).length > 0 ? (
+                                            <>
+                                                <div className="fs-4 fw-bold text-primary">
+                                                    ${feedingsItems.reduce((total, item) => {
+                                                        const productId = item.feeding?._id || item.feeding?.id;
+                                                        const price = currentPrices[productId] ?? 0;
+                                                        return total + (item.quantity ?? 0) * price;
+                                                    }, 0).toFixed(2)}
+                                                </div>
+                                                <div className="d-flex align-items-center gap-1 mt-1">
+                                                    <i className="ri-information-line text-warning small" />
+                                                    <small className="text-muted">
+                                                        Precio promedio a día de hoy ({new Date().toLocaleDateString('es-MX')})
+                                                    </small>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="fs-4 fw-bold text-muted">—</div>
+                                        )}
+                                    </div>
+                                    <i className="ri-money-dollar-circle-line fs-1 text-primary opacity-50" />
+                                </div>
+                            </div>
+                        </div>
                     </CardBody>
                 </Card>
             </div>

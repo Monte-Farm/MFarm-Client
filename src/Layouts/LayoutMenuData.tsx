@@ -108,6 +108,7 @@ const Navdata = () => {
     const [isSale, setIsSale] = useState<boolean>(false);
     const [isSaleGroups, setIsSaleGroups] = useState<boolean>(false);
     const [isSoldGroups, setIsSoldGroups] = useState<boolean>(false);
+    const [isPigSales, setIsPigSales] = useState<boolean>(false);
 
     const [iscurrentState, setIscurrentState] = useState('Home');
 
@@ -729,6 +730,18 @@ const Navdata = () => {
                         setIsSoldGroups(!isSoldGroups)
                     },
                     stateVariables: isSoldGroups,
+                },
+                {
+                    id: "pigSales",
+                    label: "Ventas registradas",
+                    link: "/sale/view_pig_sales",
+                    roles: ['farm_manager', 'general_worker'],
+                    parentId: "sale",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsPigSales(!isPigSales)
+                    },
+                    stateVariables: isPigSales,
                 },
             ]
         },

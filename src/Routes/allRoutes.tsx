@@ -72,6 +72,7 @@ import ViewExitGroups from "pages/Groups/ViewExitGroups";
 import ViewSowsGroups from "pages/Groups/ViewSowsGroups";
 import ViewSaleGroups from "pages/Groups/ViewSaleGroups";
 import ViewSoldGroups from "pages/Groups/ViewSoldGroups";
+import ViewPigSales from "pages/Sales/ViewPigSales";
 import ViewFeedingConsumption from "pages/Feeding/ViewFeedingConsumption";
 
 
@@ -175,6 +176,7 @@ const authProtectedRoutes = [
   //Sale
   { path: '/sale/view_sale_groups', component: <ViewSaleGroups /> },
   { path: '/sale/view_sold_groups', component: <ViewSoldGroups /> },
+  { path: '/sale/view_pig_sales', component: <ViewPigSales /> },
 
 
 

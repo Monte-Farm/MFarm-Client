@@ -23,6 +23,7 @@ const MedicationPackageDetails: React.FC<MedicationPackageDetailsProps> = ({ med
     const [loading, setLoading] = useState<boolean>(true);
     const [medicationPackageDetails, setMedicationPackageDetails] = useState<any>({});
     const [medicationsItems, setMedicationsItems] = useState<any[]>([]);
+    const [currentPrices, setCurrentPrices] = useState<Record<string, number>>({});
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const [modals, setModals] = useState({ deactivateMedicationPackage: false, activateMedicationPackage: false, deactivationSuccess: false, activationSuccess: false, deactivationError: false, activationError: false });
     const [isSubmitting, setSubmitting] = useState<boolean>(false);
@@ -116,6 +117,14 @@ const MedicationPackageDetails: React.FC<MedicationPackageDetailsProps> = ({ med
                         color = "primary";
                         label = "Vacunas";
                         break;
+                    case "vitamins":
+                        color = "primary";
+                        label = "Vitaminas";
+                        break;
+                    case "minerals":
+                        color = "primary";
+                        label = "Minerales";
+                        break;
                 }
 
                 return <Badge color={color}>{label}</Badge>;
@@ -181,13 +190,21 @@ const MedicationPackageDetails: React.FC<MedicationPackageDetailsProps> = ({ med
         if (!configContext || !userLogged) return;
         try {
             setLoading(true);
-            const [medicationResponse] = await Promise.all([
-                configContext.axiosHelper.get(`${configContext.apiUrl}/medication_package/find_by_id/${medicationPackageId}`)
-            ])
+            const medicationResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/medication_package/find_by_id/${medicationPackageId}`);
             const medicationData = medicationResponse.data.data;
             setMedicationPackageDetails(medicationData);
-            setMedicationsItems(medicationData.medications)
-            setLoading(false)
+            setMedicationsItems(medicationData.medications);
+
+            const productIds = medicationData.medications.map((item: any) => item.medication._id || item.medication.id);
+            const pricesResponse = await configContext.axiosHelper.create(
+                `${configContext.apiUrl}/warehouse/average_prices/${userLogged.farm_assigned}`,
+                { productIds }
+            );
+            const pricesMap: Record<string, number> = {};
+            for (const p of pricesResponse.data.data) {
+                pricesMap[p.productId] = p.averagePrice;
+            }
+            setCurrentPrices(pricesMap);
         } catch (error) {
             console.error('Error fetching data:', error)
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al cargar los datos, intentelo mas tarde' })
@@ -266,22 +283,84 @@ const MedicationPackageDetails: React.FC<MedicationPackageDetailsProps> = ({ med
                 ) : null}
 
             </div>
-            <div className="d-flex gap-3">
-                <Card className="w-25">
-                    <CardHeader className="bg-light">
-                        <h5>Informacion del paquete</h5>
+            <div className="d-flex gap-3 align-items-start">
+                <Card className="border-primary border-opacity-25 flex-shrink-0" style={{ width: '320px' }}>
+                    <CardHeader className="bg-primary bg-opacity-10">
+                        <h5 className="mb-0 text-primary">
+                            <i className="ri-file-list-3-line me-2" />
+                            Informacion del paquete
+                        </h5>
                     </CardHeader>
                     <CardBody>
                         <ObjectDetails attributes={medicationAttributes} object={medicationPackageDetails} />
                     </CardBody>
                 </Card>
 
-                <Card className="w-75">
-                    <CardHeader className="bg-light">
-                        <h5>Medicamentos del paquete</h5>
+                <Card className="flex-fill border-success border-opacity-25">
+                    <CardHeader className="bg-success bg-opacity-10">
+                        <h5 className="mb-0 text-success">
+                            <i className="ri-medicine-bottle-line me-2" />
+                            Medicamentos del paquete
+                        </h5>
                     </CardHeader>
                     <CardBody className="p-0">
                         <CustomTable columns={medicationsColumns} data={medicationsItems} showSearchAndFilter={false} showPagination={true} rowsPerPage={5} />
+
+                        <div className="border-top">
+                            <div className="d-flex gap-3 px-4 py-3">
+                                <div className="flex-fill bg-success bg-opacity-10 rounded px-4 py-3 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div className="text-muted small mb-1">
+                                            <i className="ri-history-line me-1" />
+                                            Costo por cerdo al momento del registro
+                                        </div>
+                                        <div className="fs-4 fw-bold text-success">
+                                            ${medicationsItems.reduce((total, item) => {
+                                                return total + (item.quantity ?? 0) * (item.averagePrice ?? 0);
+                                            }, 0).toFixed(2)}
+                                        </div>
+                                        <div className="d-flex align-items-center gap-1 mt-1">
+                                            <i className="ri-information-line text-warning small" />
+                                            <small className="text-muted">
+                                                Registrado el {medicationPackageDetails.creation_date
+                                                    ? new Date(medicationPackageDetails.creation_date).toLocaleDateString('es-MX')
+                                                    : '—'}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <i className="ri-money-dollar-circle-line fs-1 text-success opacity-50" />
+                                </div>
+
+                                <div className="flex-fill bg-primary bg-opacity-10 rounded px-4 py-3 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div className="text-muted small mb-1">
+                                            <i className="ri-refresh-line me-1" />
+                                            Costo por cerdo a precio actual
+                                        </div>
+                                        {Object.keys(currentPrices).length > 0 ? (
+                                            <>
+                                                <div className="fs-4 fw-bold text-primary">
+                                                    ${medicationsItems.reduce((total, item) => {
+                                                        const productId = item.medication?._id || item.medication?.id;
+                                                        const price = currentPrices[productId] ?? 0;
+                                                        return total + (item.quantity ?? 0) * price;
+                                                    }, 0).toFixed(2)}
+                                                </div>
+                                                <div className="d-flex align-items-center gap-1 mt-1">
+                                                    <i className="ri-information-line text-warning small" />
+                                                    <small className="text-muted">
+                                                        Precio promedio a día de hoy ({new Date().toLocaleDateString('es-MX')})
+                                                    </small>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="fs-4 fw-bold text-muted">—</div>
+                                        )}
+                                    </div>
+                                    <i className="ri-money-dollar-circle-line fs-1 text-primary opacity-50" />
+                                </div>
+                            </div>
+                        </div>
                     </CardBody>
                 </Card>
             </div>

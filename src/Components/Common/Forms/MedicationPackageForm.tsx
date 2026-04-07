@@ -79,12 +79,18 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
             },
         },
         {
-            header: "Cantidad",
+            header: "Precio Promedio",
+            accessor: "averagePrice",
+            render: (_, row) => (
+                <span>${(row.averagePrice ?? 0).toFixed(2)} / {row.unit_measurement}</span>
+            ),
+        },
+        {
+            header: "Cantidad por cerdo",
             accessor: "quantity",
             type: "number",
-            render: (value, row, isSelected) => {
-                const selected = medicationsSelected.find(m => m.medication === row._id);
-                const realValue = selected?.quantity ?? "";
+            render: (_, row, isSelected) => {
+                const selected = medicationsSelected.find(m => m.medication === row.id);
 
                 return (
                     <div className="input-group">
@@ -92,11 +98,11 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                             type="number"
                             disabled={!isSelected}
                             value={selected?.quantity === 0 ? "" : (selected?.quantity ?? "")}
-                            invalid={medicationErrors[row._id]?.quantity}
+                            invalid={medicationErrors[row.id]?.quantity}
                             onChange={(e) => {
                                 const newValue = e.target.value === "" ? 0 : Number(e.target.value);
                                 setMedicationsSelected(prev =>
-                                    prev.map(m => m.medication === row._id ? { ...m, quantity: newValue } : m)
+                                    prev.map(m => m.medication === row.id ? { ...m, quantity: newValue } : m)
                                 );
                             }}
                             onClick={(e) => e.stopPropagation()}
@@ -104,7 +110,6 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                         />
                         <span className="input-group-text" id="unit-addon">{row.unit_measurement}</span>
                     </div>
-
                 );
             },
         },
@@ -113,18 +118,18 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
             accessor: "administration_route",
             type: "text",
             render: (value, row, isSelected) => {
-                const selected = medicationsSelected.find(m => m.medication === row._id);
+                const selected = medicationsSelected.find(m => m.medication === row.id);
                 const realValue = selected?.administration_route ?? "";
                 return (
                     <Input
                         type="select"
                         disabled={!isSelected}
                         value={realValue}
-                        invalid={medicationErrors[row._id]?.administration_route}
+                        invalid={medicationErrors[row.id]?.administration_route}
                         onChange={(e) => {
                             const newValue = e.target.value;
                             setMedicationsSelected(prev =>
-                                prev.map(m => m.medication === row._id ? { ...m, administration_route: newValue } : m)
+                                prev.map(m => m.medication === row.id ? { ...m, administration_route: newValue } : m)
                             );
                         }}
                         onClick={(e) => e.stopPropagation()}
@@ -144,36 +149,32 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
     ];
 
     const selectedMedicationsColumns: Column<any>[] = [
-        {
-            header: 'Imagen', accessor: 'image', render: (_, row) => (
-                <img src={row.image || noImageUrl} alt="Imagen del Producto" style={{ height: "70px" }} />
-            ),
-        },
         { header: "Codigo", accessor: "code", type: "text", isFilterable: true },
         { header: "Producto", accessor: "name", type: "text", isFilterable: true },
-        // {
-        //     header: 'Categoria',
-        //     accessor: 'category',
-        //     render: (value: string) => {
-        //         let color = "secondary";
-        //         let label = value;
-
-        //         switch (value) {
-        //             case "medications":
-        //                 color = "info";
-        //                 label = "Medicamentos";
-        //                 break;
-        //             case "vaccines":
-        //                 color = "primary";
-        //                 label = "Vacunas";
-        //                 break;
-        //         }
-
-        //         return <Badge color={color}>{label}</Badge>;
-        //     },
-        // },
-        { header: "Unidad M.", accessor: "unit_measurement", type: "text", isFilterable: true },
-        { header: "Cantidad", accessor: "quantity", type: "text", isFilterable: true },
+        {
+            header: "C. por cerdo",
+            accessor: "quantity",
+            type: "text",
+            isFilterable: true,
+            render: (_: any, row: any) => (
+                <span>{row.quantity} {row.unit_measurement}</span>
+            ),
+        },
+        {
+            header: "Precio Promedio",
+            accessor: "averagePrice",
+            render: (_: any, row: any) => (
+                <span>${(row.averagePrice ?? 0).toFixed(2)} / {row.unit_measurement}</span>
+            ),
+        },
+        {
+            header: "Costo por cerdo",
+            accessor: "costPerPig",
+            render: (_: any, row: any) => {
+                const cost = (row.quantity ?? 0) * (row.averagePrice ?? 0);
+                return <span>${cost.toFixed(2)}</span>;
+            },
+        },
         {
             header: "Via de administracion",
             accessor: "administration_route",
@@ -313,7 +314,13 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
             try {
                 const values = {
                     ...formik.values,
-                    medications: medicationsSelected
+                    medications: medicationsSelected.map(ms => {
+                        const product = products.find(p => p._id === ms.medication);
+                        return {
+                            ...ms,
+                            averagePrice: ms.averagePrice ?? product?.averagePrice ?? 0,
+                        };
+                    })
                 }
                 const medicationResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/medication_package/create`, values)
 
@@ -338,12 +345,11 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
 
             const [codeResponse, productsResponse] = await Promise.all([
                 configContext.axiosHelper.get(`${configContext.apiUrl}/medication_package/next_medication_code`),
-                configContext.axiosHelper.get(`${configContext.apiUrl}/product/find_medication_products`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/medication_products/${userLogged.farm_assigned}`),
             ])
 
             formik.setFieldValue('code', codeResponse.data.data)
-            const productsWithId = productsResponse.data.data.map((b: any) => ({ ...b, code: b.id, id: b._id }));
-            setProducts(productsWithId)
+            setProducts(productsResponse.data.data)
         } catch (error) {
             console.error('Error fetching information: ', { error })
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
@@ -586,13 +592,14 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                         onSelect={(rows) => {
                             setMedicationsSelected(prev => {
                                 const newRows = rows.map(r => {
-                                    const existing = prev.find(p => p.medication === r._id);
+                                    const existing = prev.find(p => p.medication === r.id);
                                     if (existing) return existing;
 
                                     return {
-                                        medication: r._id,
+                                        medication: r.id,
                                         quantity: 0,
                                         administration_route: "",
+                                        averagePrice: r.averagePrice ?? 0,
                                     };
                                 });
                                 return newRows;
@@ -600,12 +607,35 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                         }}
                     />
 
-                    <div className="d-flex justify-content-between mt-4">
+                    <Card className="mt-3 border-0 bg-light">
+                        <CardBody className="py-3 px-4">
+                            <div className="d-flex justify-content-between align-items-center">
+                                <div className="d-flex align-items-center gap-2 text-muted">
+                                    <i className="ri-money-dollar-circle-line fs-4 text-primary" />
+                                    <span className="fw-semibold">Costo total por cerdo</span>
+                                    {medicationsSelected.length === 0 && (
+                                        <small className="text-muted">(seleccione productos y llene las cantidades)</small>
+                                    )}
+                                </div>
+                                <span className="fs-4 fw-bold text-primary">
+                                    ${medicationsSelected.reduce((total, ms) => {
+                                        const product = products.find(p => p._id === ms.medication);
+                                        return total + (ms.quantity ?? 0) * (ms.averagePrice ?? product?.averagePrice ?? 0);
+                                    }, 0).toFixed(2)}
+                                </span>
+                            </div>
+                            <div className="d-flex align-items-center gap-1 mt-2">
+                                <i className="ri-information-line text-warning" />
+                                <small className="text-muted">Este costo se calcula con el precio promedio actual del inventario. Puede variar en el futuro conforme cambien los precios.</small>
+                            </div>
+                        </CardBody>
+                    </Card>
+
+                    <div className="d-flex justify-content-between mt-3">
                         <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                             <i className="ri-arrow-left-line me-2" />
                             Atrás
                         </Button>
-
 
                         <Button
                             className="btn btn-primary ms-auto"
@@ -623,28 +653,52 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
 
                 <TabPane id="step-summary-tab" tabId={3}>
                     <div className="d-flex gap-3">
-                        <Card className="">
-                            <CardHeader>
-                                <h5>Informacion del paquete de medicacion</h5>
+                        <Card className="border-primary border-opacity-25">
+                            <CardHeader className="bg-primary bg-opacity-10">
+                                <h5 className="mb-0 text-primary">
+                                    <i className="ri-file-list-3-line me-2" />
+                                    Información del paquete
+                                </h5>
                             </CardHeader>
                             <CardBody>
                                 <ObjectDetails attributes={medicationAttributes} object={formik.values} />
                             </CardBody>
                         </Card>
 
-                        <Card className="w-100">
-                            <CardHeader>
-                                <h5>Medicamentos seleccionados</h5>
+                        <Card className="w-100 border-success border-opacity-25">
+                            <CardHeader className="bg-success bg-opacity-10">
+                                <h5 className="mb-0 text-success">
+                                    <i className="ri-medicine-bottle-line me-2" />
+                                    Medicamentos seleccionados
+                                </h5>
                             </CardHeader>
                             <CardBody className="p-0">
                                 <CustomTable
                                     columns={selectedMedicationsColumns}
                                     data={medicationsSelected.map(ms => ({
-                                        ...products.find(p => p._id === ms.medication),
+                                        ...products.find(p => p.id === ms.medication),
                                         ...ms
                                     }))}
                                     showSearchAndFilter={false}
                                 />
+                                <div className="px-4 py-3 bg-success bg-opacity-10 border-top">
+                                    <div className="d-flex justify-content-between align-items-center">
+                                        <div className="d-flex align-items-center gap-2">
+                                            <i className="ri-money-dollar-circle-line fs-4 text-success" />
+                                            <span className="fw-semibold text-success fs-6">Costo total por cerdo</span>
+                                        </div>
+                                        <span className="fs-4 fw-bold text-success">
+                                            ${medicationsSelected.reduce((total, ms) => {
+                                                const product = products.find(p => p._id === ms.medication);
+                                                return total + (ms.quantity ?? 0) * (ms.averagePrice ?? product?.averagePrice ?? 0);
+                                            }, 0).toFixed(2)}
+                                        </span>
+                                    </div>
+                                    <div className="d-flex align-items-center gap-1 mt-1">
+                                        <i className="ri-information-line text-warning" />
+                                        <small className="text-muted">Calculado con precios promedio al día de hoy ({new Date().toLocaleDateString('es-MX')}). Este costo puede variar en el futuro.</small>
+                                    </div>
+                                </div>
                             </CardBody>
                         </Card>
                     </div>

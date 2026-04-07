@@ -84,12 +84,18 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
             },
         },
         {
-            header: "Cantidad",
+            header: "Precio Promedio",
+            accessor: "averagePrice",
+            render: (value, row) => (
+                <span>${(row.averagePrice ?? 0).toFixed(2)} / {row.unit_measurement}</span>
+            ),
+        },
+        {
+            header: "Cantidad por cerdo",
             accessor: "quantity",
             type: "number",
-            render: (value, row, isSelected) => {
-                const selected = feedingsSelected.find(f => f.feeding === row._id);
-                const realValue = selected?.quantity ?? "";
+            render: (_, row, isSelected) => {
+                const selected = feedingsSelected.find(f => f.feeding === row.id);
 
                 return (
                     <div className="input-group">
@@ -97,11 +103,11 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
                             type="number"
                             disabled={!isSelected}
                             value={selected?.quantity === 0 ? "" : (selected?.quantity ?? "")}
-                            invalid={feedingErrors[row._id]?.quantity}
+                            invalid={feedingErrors[row.id]?.quantity}
                             onChange={(e) => {
                                 const newValue = e.target.value === "" ? 0 : Number(e.target.value);
                                 setFeedingsSelected(prev =>
-                                    prev.map(f => f.feeding === row._id ? { ...f, quantity: newValue } : f)
+                                    prev.map(f => f.feeding === row.id ? { ...f, quantity: newValue } : f)
                                 );
                             }}
                             onClick={(e) => e.stopPropagation()}
@@ -123,29 +129,21 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
         },
         { header: "Codigo", accessor: "code", type: "text", isFilterable: true },
         { header: "Producto", accessor: "name", type: "text", isFilterable: true },
-        // {
-        //     header: 'Categoria',
-        //     accessor: 'category',
-        //     render: (value: string) => {
-        //         let color = "secondary";
-        //         let label = value;
-
-        //         switch (value) {
-        //             case "medications":
-        //                 color = "info";
-        //                 label = "Medicamentos";
-        //                 break;
-        //             case "vaccines":
-        //                 color = "primary";
-        //                 label = "Vacunas";
-        //                 break;
-        //         }
-
-        //         return <Badge color={color}>{label}</Badge>;
-        //     },
-        // },
-        { header: "Unidad M.", accessor: "unit_measurement", type: "text", isFilterable: true },
-        { header: "Cantidad", accessor: "quantity", type: "text", isFilterable: true },
+        {
+            header: "Cantidad",
+            accessor: "quantity",
+            type: "text",
+            isFilterable: true,
+            render: (_, row) => <span>{row.quantity} {row.unit_measurement}</span>
+        },
+        {
+            header: "Costo",
+            accessor: "costPerPig",
+            render: (_: any, row: any) => {
+                const cost = (row.quantity ?? 0) * (row.averagePrice ?? 0);
+                return <span>${cost.toFixed(2)}</span>;
+            },
+        },
     ]
 
     const feedingAttributes: Attribute[] = [
@@ -240,7 +238,13 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
             try {
                 const values = {
                     ...formik.values,
-                    feedings: feedingsSelected
+                    feedings: feedingsSelected.map(ms => {
+                        const product = products.find(p => p.id === ms.feeding);
+                        return {
+                            ...ms,
+                            averagePrice: ms.averagePrice ?? product?.averagePrice ?? 0,
+                        };
+                    })
                 }
                 const feedingResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/feeding_package/create`, values)
 
@@ -265,12 +269,11 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
 
             const [codeResponse, productsResponse] = await Promise.all([
                 configContext.axiosHelper.get(`${configContext.apiUrl}/feeding_package/next_feeding_code`),
-                configContext.axiosHelper.get(`${configContext.apiUrl}/product/find_feeding_products`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/feeding_products/${userLogged.farm_assigned}`),
             ])
 
             formik.setFieldValue('code', codeResponse.data.data)
-            const productsWithId = productsResponse.data.data.map((b: any) => ({ ...b, code: b.id, id: b._id }));
-            setProducts(productsWithId)
+            setProducts(productsResponse.data.data)
         } catch (error) {
             console.error('Error fetching information: ', { error })
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
@@ -553,12 +556,13 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
                         onSelect={(rows) => {
                             setFeedingsSelected(prev => {
                                 const newRows = rows.map(r => {
-                                    const existing = prev.find(p => p.feeding === r._id);
+                                    const existing = prev.find(p => p.feeding === r.id);
                                     if (existing) return existing;
 
                                     return {
-                                        feeding: r._id,
+                                        feeding: r.id,
                                         quantity: 0,
+                                        averagePrice: r.averagePrice ?? 0,
                                     };
                                 });
                                 return newRows;
@@ -566,12 +570,35 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
                         }}
                     />
 
-                    <div className="d-flex justify-content-between mt-4">
+                    <Card className="mt-3 border-0 bg-light">
+                        <CardBody className="py-3 px-4">
+                            <div className="d-flex justify-content-between align-items-center">
+                                <div className="d-flex align-items-center gap-2 text-muted">
+                                    <i className="ri-money-dollar-circle-line fs-4 text-primary" />
+                                    <span className="fw-semibold">Costo total por cerdo</span>
+                                    {feedingsSelected.length === 0 && (
+                                        <small className="text-muted">(seleccione productos y llene las cantidades)</small>
+                                    )}
+                                </div>
+                                <span className="fs-4 fw-bold text-primary">
+                                    ${feedingsSelected.reduce((total, ms) => {
+                                        const product = products.find(p => p.id === ms.feeding);
+                                        return total + (ms.quantity ?? 0) * (product?.averagePrice ?? 0);
+                                    }, 0).toFixed(2)}
+                                </span>
+                            </div>
+                            <div className="d-flex align-items-center gap-1 mt-2">
+                                <i className="ri-information-line text-warning" />
+                                <small className="text-muted">Este costo se calcula con el precio promedio actual del inventario. Puede variar en el futuro conforme cambien los precios.</small>
+                            </div>
+                        </CardBody>
+                    </Card>
+
+                    <div className="d-flex justify-content-between mt-3">
                         <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                             <i className="ri-arrow-left-line me-2" />
                             Atrás
                         </Button>
-
 
                         <Button
                             className="btn btn-primary ms-auto"
@@ -589,29 +616,53 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
 
                 <TabPane id="step-summary-tab" tabId={3}>
                     <div className="d-flex gap-3">
-                        <Card className="">
-                            <CardHeader>
-                                <h5>Informacion del paquete de alimentacion</h5>
+                        <Card className="border-primary border-opacity-25">
+                            <CardHeader className="bg-primary bg-opacity-10">
+                                <h5 className="mb-0 text-primary">
+                                    <i className="ri-file-list-3-line me-2" />
+                                    Información del paquete
+                                </h5>
                             </CardHeader>
                             <CardBody>
                                 <ObjectDetails attributes={feedingAttributes} object={formik.values} />
                             </CardBody>
                         </Card>
 
-                        <Card className="w-100">
-                            <CardHeader>
-                                <h5>Alimentos seleccionados</h5>
+                        <Card className="w-100 border-success border-opacity-25">
+                            <CardHeader className="bg-success bg-opacity-10">
+                                <h5 className="mb-0 text-success">
+                                    <i className="ri-leaf-line me-2" />
+                                    Alimentos seleccionados
+                                </h5>
                             </CardHeader>
                             <CardBody className="p-0">
                                 <CustomTable
                                     columns={selectedFeedingsColumns}
                                     data={feedingsSelected.map(ms => ({
-                                        ...products.find(p => p._id === ms.feeding),
+                                        ...products.find(p => p.id === ms.feeding),
                                         ...ms
                                     }))}
                                     showSearchAndFilter={false}
                                 />
                             </CardBody>
+                            <div className="px-4 py-3 bg-success bg-opacity-10 border-top">
+                                <div className="d-flex justify-content-between align-items-center">
+                                    <div className="d-flex align-items-center gap-2">
+                                        <i className="ri-money-dollar-circle-line fs-4 text-success" />
+                                        <span className="fw-semibold text-success fs-6">Costo total por cerdo</span>
+                                    </div>
+                                    <span className="fs-4 fw-bold text-success">
+                                        ${feedingsSelected.reduce((total, ms) => {
+                                            const product = products.find(p => p.id === ms.feeding);
+                                            return total + (ms.quantity ?? 0) * (product?.averagePrice ?? 0);
+                                        }, 0).toFixed(2)}
+                                    </span>
+                                </div>
+                                <div className="d-flex align-items-center gap-1 mt-1">
+                                    <i className="ri-information-line text-warning" />
+                                    <small className="text-muted">Calculado con precios promedio al día de hoy ({new Date().toLocaleDateString('es-MX')}). Este costo puede variar en el futuro.</small>
+                                </div>
+                            </div>
                         </Card>
                     </div>
 
