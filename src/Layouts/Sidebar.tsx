@@ -1,10 +1,7 @@
 import React, { useEffect } from "react";
-import { Link } from "react-router-dom";
 import SimpleBar from "simplebar-react";
 import VerticalLayout from "./VerticalLayouts";
-import TwoColumnLayout from "./TwoColumnLayout";
 import { Container } from "reactstrap";
-import HorizontalLayout from "./HorizontalLayout";
 import { getLoggedinUser } from "helpers/api_helper";
 import systemLogo from '../assets/images/system-logo.png'
 
@@ -56,33 +53,15 @@ const Sidebar = ({ layoutType }: any) => {
             <i className="ri-record-circle-line"></i>
           </button>
         </div>
-        {layoutType === "horizontal" ? (
-          <div id="scrollbar">
-            <Container fluid>
-              <div id="two-column-menu"></div>
-              <ul className="navbar-nav" id="navbar-nav">
-                <HorizontalLayout />
-              </ul>
-            </Container>
-          </div>
-        ) : layoutType === 'twocolumn' ? (
-          <React.Fragment>
-            <TwoColumnLayout layoutType={layoutType} />
-            <div className="sidebar-background"></div>
-          </React.Fragment>
-        ) : (
-          <React.Fragment>
-            <SimpleBar id="scrollbar" className="h-100">
-              <Container fluid>
-                <div id="two-column-menu"></div>
-                <ul className="navbar-nav" id="navbar-nav">
-                  <VerticalLayout layoutType={layoutType} />
-                </ul>
-              </Container>
-            </SimpleBar>
-            <div className="sidebar-background"></div>
-          </React.Fragment>
-        )}
+        <SimpleBar id="scrollbar" className="h-100">
+          <Container fluid>
+            <div id="two-column-menu"></div>
+            <ul className="navbar-nav" id="navbar-nav">
+              <VerticalLayout layoutType={layoutType} />
+            </ul>
+          </Container>
+        </SimpleBar>
+        <div className="sidebar-background"></div>
       </div>
       <div className="vertical-overlay"></div>
     </React.Fragment>

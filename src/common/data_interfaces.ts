@@ -2,6 +2,8 @@ interface Product {
     id: string;
     quantity: number;
     price?: number;
+    unitPrice?: number;
+    totalPrice?: number;
 }
 
 interface Origin {
@@ -74,6 +76,8 @@ export interface OutcomeData {
     totalPrice: number;
     outcomeType: string;
     warehouseOrigin: string;
+    groupId?: string;
+    litterId?: string;
     description: string;
     status: boolean;
 }
@@ -547,7 +551,6 @@ export interface InseminationData {
         notes?: string;
         responsible: string;
     }[];
-    farrowind_status?: string;
 }
 
 export interface MedicationPackage {
@@ -641,7 +644,7 @@ export interface Litter {
     currentMale: number;
     currentFemale: number;
     averageWeight: number;
-    status: 'active' | 'weaned' | '';
+    status: 'active' | 'ready_to_wean' | 'weaned' | 'wean_overdue' | '';
     piglets: PigletSnapshot[];
     observations?: string;
     responsible: string;

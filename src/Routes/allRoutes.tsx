@@ -66,7 +66,6 @@ import InventoryPigs from "pages/Pigs/InventoryPigs";
 import ViewWeanedGroups from "pages/Groups/ViewWeanedGroups";
 import ViewGrowingGroups from "pages/Groups/ViewGrowingGroups";
 import ViewFinishingGroups from "pages/Groups/ViewFinishingGroups";
-import ViewSows from "pages/Replacement/ViewSows";
 import ViewBoars from "pages/Replacement/ViewBoars";
 import ViewExitGroups from "pages/Groups/ViewExitGroups";
 import ViewSowsGroups from "pages/Groups/ViewSowsGroups";
