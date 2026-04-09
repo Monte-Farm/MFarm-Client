@@ -38,6 +38,10 @@ const EVENT_CONFIG: Record<
         label: 'Tratamiento grupal',
         icon: <FiActivity />
     },
+    DISCARD: {
+        label: 'Descarte',
+        icon: <FiAlertTriangle />
+    },
     OBSERVATION: {
         label: 'Observación',
         icon: <FiMessageSquare />
@@ -85,7 +89,7 @@ const LitterEventsCard = ({ events }: Props) => {
                                     new Date(a.date ?? 0).getTime()
                             )
                             .map((event, index) => {
-                                const config = EVENT_CONFIG[event.type];
+                                const config = EVENT_CONFIG[event.type] ?? { label: event.type, icon: <FiActivity /> };
 
                                 return (
                                     <div

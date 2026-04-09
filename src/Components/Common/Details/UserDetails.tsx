@@ -3,7 +3,7 @@ import { Attribute, UserData } from "common/data_interfaces";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useState, useEffect } from "react";
 import LoadingAnimation from "../Shared/LoadingAnimation";
-import { Badge, Button, Card, CardBody, CardHeader, Col, Modal, ModalBody, ModalFooter, ModalHeader, Row } from "reactstrap";
+import { Badge, Button, Card, CardBody, CardHeader, Col, Modal, ModalBody, ModalFooter, ModalHeader, Row, Spinner } from "reactstrap";
 import SimpleBar from "simplebar-react";
 import UserForm from "../Forms/UserForm";
 import UserHistoryItem from "../Lists/UserHistoryItem";
@@ -12,6 +12,7 @@ import { userRoles } from "common/user_roles";
 import defaultImageProfila from '../../../assets/images/default-profile-mage.jpg'
 import ErrorModal from "../Shared/ErrorModal";
 import SuccessModal from "../Shared/SuccessModal";
+import PDFViewer from "../Shared/PDFViewer";
 
 interface UserDetailsProps {
     userId: string
@@ -22,7 +23,9 @@ const UserDetailsModal: React.FC<UserDetailsProps> = ({ userId }) => {
     const configContext = useContext(ConfigContext);
     const [userDetails, setUserDetails] = useState<UserData | null>(null)
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [modals, setModals] = useState({ details: false, create: false, update: false, deactivate: false, activate: false, success: false, error: false });
+    const [modals, setModals] = useState({ details: false, create: false, update: false, deactivate: false, activate: false, success: false, error: false, viewPDF: false });
+    const [pdfLoading, setPdfLoading] = useState(false);
+    const [fileURL, setFileURL] = useState<string | null>(null);
 
     const roleLabelsMap: Record<string, string> = Object.fromEntries(
         userRoles.map(r => [r.value, r.label])
@@ -119,6 +122,24 @@ const UserDetailsModal: React.FC<UserDetailsProps> = ({ userId }) => {
         }
     };
 
+    const handleGenerateReport = async () => {
+        if (!configContext) return;
+
+        try {
+            setPdfLoading(true);
+            const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/users/${userId}?orientation=portrait&format=A4`);
+            const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(pdfBlob);
+            setFileURL(url);
+            toggleModal('viewPDF');
+        } catch (error) {
+            console.error('Error generating report:', { error });
+            toggleModal('error');
+        } finally {
+            setPdfLoading(false);
+        }
+    };
+
     useEffect(() => {
         fetchUserDetails();
     }, [])
@@ -132,6 +153,24 @@ const UserDetailsModal: React.FC<UserDetailsProps> = ({ userId }) => {
     return (
         <div>
             <div className="d-flex mb-3 gap-2">
+                <Button
+                    color="primary"
+                    onClick={handleGenerateReport}
+                    disabled={pdfLoading}
+                >
+                    {pdfLoading ? (
+                        <>
+                            <Spinner className="me-2" size='sm' />
+                            Generando PDF
+                        </>
+                    ) : (
+                        <>
+                            <i className="ri-file-pdf-line me-2"></i>
+                            Ver PDF
+                        </>
+                    )}
+                </Button>
+
                 {userDetails?.status === true ? (
                     <Button className="farm-secondary-button ms-auto" onClick={() => toggleModal("deactivate")}>
                         <i className="ri-delete-bin-line me-3"></i>Desactivar usuario
@@ -227,6 +266,13 @@ const UserDetailsModal: React.FC<UserDetailsProps> = ({ userId }) => {
                         Activar
                     </Button>
                 </ModalFooter>
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Usuario</ModalHeader>
+                <ModalBody>
+                    {fileURL && <PDFViewer fileUrl={fileURL} />}
+                </ModalBody>
             </Modal>
 
             <SuccessModal isOpen={modals.success} onClose={() => { toggleModal('success'); fetchUserDetails() }} message={userDetails?.status === true ? 'Usuario desactivado con exito' : 'Usuario activado con exito'} />

@@ -54,41 +54,51 @@ const ProfileDropdown = () => {
                     </span>
                 </DropdownToggle>
 
-                <DropdownMenu className="dropdown-menu-end">
-                    <DropdownItem className='p-0'>
-                        <Link to="/profile" className="dropdown-item">
-                            <i className="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i>
-                            <span className="align-middle text-black">Perfil</span>
-                        </Link>
-                    </DropdownItem>
+                <DropdownMenu className="dropdown-menu-end" style={{ minWidth: '220px', padding: '0' }}>
+                    {/* Header con info del usuario */}
+                    <div className="px-3 py-3 text-center border-bottom">
+                        <img
+                            className="rounded-circle mb-2"
+                            src={userLogged.profile_image || defaultProfileImage}
+                            alt="Avatar"
+                            style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                        />
+                        <h6 className="mb-1">{userLogged.name} {userLogged.lastname}</h6>
+                        <div className="d-flex gap-1 justify-content-center flex-wrap">
+                            {roleLabels.map((label: any, i: number) => (
+                                <span key={i} className="badge bg-success-subtle text-success" style={{ fontSize: '10px' }}>
+                                    {label}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
 
-                    <div className="dropdown-divider"></div>
+                    <div className="py-1">
+                        {(userLogged.role.includes('Superadmin') || userLogged.role.includes('farm_manager')) && (
+                            <DropdownItem className='p-0'>
+                                <Link to="/users/view_users" className="dropdown-item d-flex align-items-center py-2">
+                                    <i className="ri-user-line fs-18 me-2 text-primary"></i>
+                                    <span>Usuarios</span>
+                                </Link>
+                            </DropdownItem>
+                        )}
 
-                    {userLogged.role === 'Superadmin' && (
                         <DropdownItem className='p-0'>
-                            <Link to="/pages-profile-settings" className="dropdown-item">
-                                <i className="mdi mdi-cog-outline text-muted fs-16 align-middle me-1"></i>
-                                <span className="align-middle text-black">Ajustes generales</span>
+                            <Link to="/settings" className="dropdown-item d-flex align-items-center py-2">
+                                <i className="mdi mdi-cog-outline fs-18 me-2 text-primary"></i>
+                                <span>Configuración</span>
                             </Link>
                         </DropdownItem>
-                    )}
+                    </div>
 
-                    {userLogged.role === 'farm_manager' && (
+                    <div className="border-top py-1">
                         <DropdownItem className='p-0'>
-                            <Link to="/pages-profile-settings" className="dropdown-item">
-                                <i className="mdi mdi-cog-outline text-muted fs-16 align-middle me-1"></i>
-                                <span className="align-middle text-black">Ajustes de granja</span>
+                            <Link onClick={() => toggleModal('logout')} className="dropdown-item d-flex align-items-center py-2" to={''}>
+                                <i className="mdi mdi-logout fs-18 me-2 text-danger"></i>
+                                <span className="text-danger">Cerrar Sesión</span>
                             </Link>
                         </DropdownItem>
-                    )}
-
-
-                    <DropdownItem className='p-0'>
-                        <Link onClick={() => toggleModal('logout')} className="dropdown-item" to={''}>
-                            <i className="mdi mdi-logout text-muted fs-16 align-middle me-1"></i>
-                            <span className="align-middle text-black">Cerrar Sesión</span>
-                        </Link>
-                    </DropdownItem>
+                    </div>
                 </DropdownMenu>
             </Dropdown>
 

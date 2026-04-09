@@ -10,6 +10,7 @@ interface BasicBarChartProps {
     xLegend?: string;
     yLegend?: string;
     height?: number | string;
+    colors?: any;
 }
 
 const BasicBarChart = ({
@@ -20,11 +21,12 @@ const BasicBarChart = ({
     xLegend = "Categoría",
     yLegend = "Valor",
     height = 300,
+    colors,
 }: BasicBarChartProps) => {
     const hasData = data && data.length > 0;
 
     return (
-        <Card className="w-100">
+        <Card className="w-100 h-100">
             <CardHeader>
                 <h5 className="mb-0">{title}</h5>
             </CardHeader>
@@ -38,6 +40,7 @@ const BasicBarChart = ({
                         groupMode="grouped"
                         margin={{ top: 50, right: 30, bottom: 60, left: 60 }}
                         padding={0.3}
+                        {...(colors ? { colors } : {})}
                         axisBottom={{
                             legend: `${xLegend}`,
                             legendOffset: 32,

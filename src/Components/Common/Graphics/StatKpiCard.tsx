@@ -44,7 +44,7 @@ const StatKpiCard: React.FC<StatKpiCardProps> = ({
     const trendText = typeof trendPercent === "number" ? `${Math.abs(trendPercent).toFixed(2)}%` : null;
 
     return (
-        <Card className={`border-0 shadow-sm ${className}`} style={{ borderRadius: "5px" }}>
+        <Card className={`border-0 shadow-sm h-100 ${className}`} style={{ borderRadius: "5px" }}>
             <CardBody className="p-3 p-md-4">
                 <div className="d-flex align-items-start justify-content-between">
                     <div className="text-muted fw-semibold" style={{ fontSize: "14px" }}>

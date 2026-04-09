@@ -1,17 +1,19 @@
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
-import BasicPieChart from "Components/Common/Graphics/BasicPieChart";
-import KPI from "Components/Common/Graphics/Kpi";
-import LineChartCard from "Components/Common/Graphics/LineChartCard";
+import DonutChartCard, { DonutDataItem, DonutLegendItem } from "Components/Common/Graphics/DonutChartCard";
+import BasicBarChart from "Components/Common/Graphics/BasicBarChart";
+import BasicLineChartCard from "Components/Common/Graphics/BasicLineChartCard";
+import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
-import StatCard from "Components/Common/Shared/StatCard";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import PigFilters, { PigFiltersState } from "Components/Common/Filters/PigFilters";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState, useMemo } from "react";
-import { FaArrowDown, FaArrowUp, FaBalanceScale, FaChartLine, FaPiggyBank, FaKeyboard, FaListUl } from "react-icons/fa";
-import { Badge, Card, CardBody, CardHeader, Container, Button, Modal, ModalHeader, ModalBody, Spinner } from "reactstrap";
+import { FaKeyboard, FaListUl } from "react-icons/fa";
+import { RiScales2Line, RiArrowUpLine, RiArrowDownLine } from "react-icons/ri";
+import { GiPig } from "react-icons/gi";
+import { Badge, Card, CardBody, CardHeader, Container, Row, Col, Button, Modal, ModalHeader, ModalBody, Spinner } from "reactstrap";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import SinglePigForm from "Components/Common/Forms/SinglePigForm";
 import BatchPigForm from "Components/Common/Forms/BatchPigForm";
@@ -264,65 +266,168 @@ const InventoryPigs = () => {
         )
     }
 
+    const stageLabel = (stage: string) => {
+        switch (stage) {
+            case "piglet": return "Lechón";
+            case "weaning": return "Destete";
+            case "fattening": return "Engorda";
+            case "breeder": return "Reproductor";
+            default: return stage;
+        }
+    };
+
+    const stageColors: Record<string, string> = {
+        piglet: "#38bdf8",
+        weaning: "#fbbf24",
+        fattening: "#818cf8",
+        breeder: "#34d399",
+    };
+
+    const generalStats = pigStats?.generalStats[0];
+    const monthlyComparison = pigStats?.monthlyComparison?.[0];
+    const trendPercent = monthlyComparison?.percentageChange ?? 0;
+
+    // Donut data for inventory by stage
+    const stageDonutData: DonutDataItem[] = (pigStats?.inventoryByStage ?? []).map((s: StageStats) => ({
+        id: stageLabel(s.stage),
+        label: stageLabel(s.stage),
+        value: s.count,
+        color: stageColors[s.stage] || "#94a3b8",
+    }));
+
+    const stageLegendItems: DonutLegendItem[] = (pigStats?.inventoryByStage ?? []).map((s: StageStats) => {
+        const total = generalStats?.total || 1;
+        return {
+            label: stageLabel(s.stage),
+            value: s.count,
+            percentage: `${((s.count / total) * 100).toFixed(1)}%`,
+        };
+    });
+
+    // Bar data for avg weight by stage
+    const weightBarData = (pigStats?.avgWeightByStage ?? []).map((s: StageStats) => ({
+        stage: stageLabel(s.stage),
+        "Peso promedio": Number((s.avgWeight || 0).toFixed(1)),
+    }));
+
+    // Line chart data for inventory over time
+    const inventoryByDay = pigStats?.inventoryByDay ?? [];
+    const lineChartData = inventoryByDay.length > 0
+        ? [{
+            id: "Inventario",
+            data: inventoryByDay.map((d: any) => ({
+                x: d._id,
+                y: d.count,
+            })),
+        }]
+        : [];
+
     return (
         <div className="page-content">
             <Container fluid>
                 <BreadCrumb title={'Inventario de cerdos'} pageTitle={'Cerdos'} />
 
-            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
+                <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
 
-                <div className="d-flex gap-3">
-                    <KPI title="Total de cerdos" value={pigStats?.generalStats[0]?.total ?? 0} icon={FaPiggyBank} bgColor="#EFF6FF" iconColor="#2563EB" />
-                    <KPI title="Peso promedio" value={pigStats?.generalStats[0]?.avgWeight ?? 0} icon={FaBalanceScale} bgColor="#E0F2FE" iconColor="#0284C7" />
-                    <KPI title="Peso mínimo" value={pigStats?.generalStats[0]?.minWeight ?? 0} icon={FaArrowDown} bgColor="#FEF3C7" iconColor="#D97706" />
-                    <KPI title="Peso máximo" value={pigStats?.generalStats[0]?.maxWeight ?? 0} icon={FaArrowUp} bgColor="#ECFDF5" iconColor="#16A34A" />
-                </div>
+                {/* KPI Cards */}
+                <Row className="g-3 mb-3" style={{ minHeight: "140px" }}>
+                    <Col xs={12} sm={6} xl={3} className="d-flex">
+                        <StatKpiCard
+                            title="Total de cerdos"
+                            value={generalStats?.total ?? 0}
+                            icon={<GiPig size={22} color="#2563EB" />}
+                            iconBgColor="#EFF6FF"
+                            animateValue
+                            trendPercent={trendPercent}
+                            trendLabel="vs. mes anterior"
+                            trendVariant={trendPercent >= 0 ? "success" : "danger"}
+                            className="w-100"
+                        />
+                    </Col>
+                    <Col xs={12} sm={6} xl={3} className="d-flex">
+                        <StatKpiCard
+                            title="Peso promedio"
+                            value={generalStats?.avgWeight ?? 0}
+                            suffix=" kg"
+                            icon={<RiScales2Line size={22} color="#0284C7" />}
+                            iconBgColor="#E0F2FE"
+                            animateValue
+                            decimals={1}
+                            className="w-100"
+                        />
+                    </Col>
+                    <Col xs={12} sm={6} xl={3} className="d-flex">
+                        <StatKpiCard
+                            title="Peso mínimo"
+                            value={generalStats?.minWeight ?? 0}
+                            suffix=" kg"
+                            icon={<RiArrowDownLine size={22} color="#D97706" />}
+                            iconBgColor="#FEF3C7"
+                            animateValue
+                            decimals={1}
+                            className="w-100"
+                        />
+                    </Col>
+                    <Col xs={12} sm={6} xl={3} className="d-flex">
+                        <StatKpiCard
+                            title="Peso máximo"
+                            value={generalStats?.maxWeight ?? 0}
+                            suffix=" kg"
+                            icon={<RiArrowUpLine size={22} color="#16A34A" />}
+                            iconBgColor="#ECFDF5"
+                            animateValue
+                            decimals={1}
+                            className="w-100"
+                        />
+                    </Col>
+                </Row>
 
-                <div className="d-flex gap-3">
-                    {pigStats?.inventoryByStage && pigStats.inventoryByStage.length > 0 ? (
-                        <>
-                            <BasicPieChart title={"Cerdos por etapa"}
-                                data={pigStats.inventoryByStage.map((s: StageStats) => ({
-                                    id: (() => {
-                                        switch (s.stage) {
-                                            case "piglet": return "Lechón";
-                                            case "weaning": return "Destete";
-                                            case "fattening": return "Engorda";
-                                            case "breeder": return "Reproductor";
-                                            default: return s.stage;
-                                        }
-                                    })(),
-                                    value: s.count,
-                                }))}
-                            />
+                {/* Charts row */}
+                <Row className="g-3 mb-3" style={{ minHeight: "420px" }}>
+                    <Col xs={12} lg={4} className="d-flex">
+                        <DonutChartCard
+                            title="Distribución por etapa"
+                            data={stageDonutData}
+                            legendItems={stageLegendItems}
+                            height={260}
+                            className="w-100"
+                        />
+                    </Col>
+                    <Col xs={12} lg={4} className="d-flex">
+                        <BasicBarChart
+                            title="Peso promedio por etapa"
+                            data={weightBarData}
+                            indexBy="stage"
+                            keys={["Peso promedio"]}
+                            xLegend="Etapa"
+                            yLegend="Kg"
+                            height={320}
+                            colors={({ index }: { index: number }) => {
+                                const stages = pigStats?.avgWeightByStage ?? [];
+                                return stageColors[stages[index]?.stage] || "#94a3b8";
+                            }}
+                        />
+                    </Col>
+                    <Col xs={12} lg={4} className="d-flex">
+                        <BasicLineChartCard
+                            title="Inventario en el tiempo"
+                            data={lineChartData}
+                            yLabel="Cerdos"
+                            xLabel="Fecha"
+                            height={320}
+                            color="#6366f1"
+                            enableArea
+                            areaOpacity={0.15}
+                            curve="monotoneX"
+                            emptyMessage="No hay datos de tendencia disponibles"
+                        />
+                    </Col>
+                </Row>
 
-                            <BasicPieChart title={"Peso promedio por etapa"}
-                                data={pigStats.avgWeightByStage?.map((s: StageStats) => ({
-                                    id: (() => {
-                                        switch (s.stage) {
-                                            case "piglet": return "Lechón";
-                                            case "weaning": return "Destete";
-                                            case "fattening": return "Engorda";
-                                            case "breeder": return "Reproductor";
-                                            default: return s.stage;
-                                        }
-                                    })(),
-                                    value: s.avgWeight || 0,
-                                })) || []}
-                            />
-                        </>
-                    ) : (
-                        <Card className="flex-grow-1">
-                            <CardBody className="text-center">
-                                <h5 className="text-muted">No hay datos por etapa disponibles</h5>
-                            </CardBody>
-                        </Card>
-                    )}
-                </div>
-
-                <Card className="">
+                {/* Table */}
+                <Card>
                     <CardHeader className="d-flex justify-content-between align-items-center">
-                        <h5>Cerdos en el inventario</h5>
+                        <h5 className="mb-0">Cerdos en el inventario</h5>
                         <div className="d-flex gap-2">
                             <Button
                                 color="primary"
@@ -347,8 +452,7 @@ const InventoryPigs = () => {
                             </Button>
                         </div>
                     </CardHeader>
-                    <CardBody className="">
-                        {/* Filtros */}
+                    <CardBody>
                         <div className="mb-3">
                             <PigFilters
                                 searchTerm={searchTerm}
@@ -363,7 +467,7 @@ const InventoryPigs = () => {
                         </div>
 
                         {filteredPigs.length > 0 ? (
-                            <CustomTable columns={pigsInventoryColumns} data={filteredPigs} showPagination={true} rowsPerPage={10} showSearchAndFilter={false} />
+                            <CustomTable columns={pigsInventoryColumns} data={filteredPigs} showPagination={true} rowsPerPage={10} showSearchAndFilter={false} fontSize={13} />
                         ) : (
                             <div className="text-center py-4">
                                 <h5 className="text-muted">

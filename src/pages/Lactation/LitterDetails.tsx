@@ -1,25 +1,21 @@
 import { ConfigContext } from "App";
-import KPI from "Components/Common/Graphics/Kpi";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
-import { FaMars, FaPiggyBank, FaVenus, FaWeightHanging } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, TabContent, TabPane } from "reactstrap";
 import classnames from "classnames";
 import ObjectDetails from "Components/Common/Details/ObjectDetails";
 import { Attribute } from "common/data_interfaces";
-import CustomTable from "Components/Common/Tables/CustomTable";
-import { Column } from "common/data/data_types";
 import LitterMedicalDetails from "Components/Common/Details/LitterMedicalDetails";
 import LitterEventsCard from "Components/Common/Shared/LitterEventsCard";
 import WeanLitterForm from "Components/Common/Forms/WeanLitterForm";
+import DiscardPigletsForm from "Components/Common/Forms/DiscardPigletsForm";
 import WeaningProgress from "Components/Common/Shared/WeaningProgress";
 import LitterFeedingDetails from "Components/Common/Details/LitterFeedingDetails";
 import SimpleBar from "simplebar-react";
-import "simplebar-react/dist/simplebar.min.css";
 
 const LitterDetails = () => {
     const { litter_id } = useParams();
@@ -30,7 +26,7 @@ const LitterDetails = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const [litterDetails, setLitterDetails] = useState<any>({})
     const [activeTab, setActiveTab] = useState("1");
-    const [modals, setModals] = useState({ weanLitter: false });
+    const [modals, setModals] = useState({ weanLitter: false, discardPiglets: false });
 
     const litterAttributes: Attribute[] = [
         { key: 'code', label: 'Codigo', type: 'text' },
@@ -196,8 +192,12 @@ const LitterDetails = () => {
 
                             <div className="col-12 col-lg-4 d-flex flex-column">
                                 <Card className="flex-fill">
-                                    <CardHeader className="bg-white border-bottom">
+                                    <CardHeader className="bg-white border-bottom d-flex justify-content-between align-items-center">
                                         <h5 className="mb-0 text-dark fw-semibold">Lechones</h5>
+                                        <Button color="danger" size="sm" onClick={() => toggleModal('discardPiglets')} disabled={litterDetails.status === 'weaned'}>
+                                            <i className="ri-close-circle-line me-1" />
+                                            Descartar lechones
+                                        </Button>
                                     </CardHeader>
                                     <CardBody className="p-3">
                                         {/* Estadísticas de lechones */}
@@ -252,7 +252,7 @@ const LitterDetails = () => {
 
                                         {/* Tabla detallada con scroll */}
                                         <div className="text-muted fw-semibold mb-2">Detalles de lechones:</div>
-                                        
+
                                         <SimpleBar style={{ maxHeight: '400px' }}>
                                             <table className="table table-hover table-sm">
                                                 <thead className="table-light">
@@ -307,6 +307,17 @@ const LitterDetails = () => {
                 <ModalHeader toggle={() => toggleModal("weanLitter")}>Destetar camada </ModalHeader>
                 <ModalBody>
                     <WeanLitterForm litterId={litter_id ?? ''} onSave={() => { toggleModal('weanLitter'); fetchData(); }} />
+                </ModalBody>
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.discardPiglets} toggle={() => toggleModal("discardPiglets")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("discardPiglets")}>Descartar lechones</ModalHeader>
+                <ModalBody>
+                    <DiscardPigletsForm
+                        litterId={litter_id ?? ''}
+                        piglets={litterDetails?.piglets ?? []}
+                        onSave={() => { toggleModal('discardPiglets'); fetchData(); }}
+                    />
                 </ModalBody>
             </Modal>
 

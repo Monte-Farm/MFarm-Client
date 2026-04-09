@@ -4,7 +4,7 @@ import { useContext, useEffect, useState } from "react";
 import {
     Badge, Button, Card, CardBody, CardHeader, Col, Input, Label,
     Modal, ModalBody, ModalFooter, ModalHeader, Nav, NavItem, NavLink,
-    Row, Spinner, TabContent, TabPane, Table
+    Row, Spinner, TabContent, TabPane
 } from "reactstrap";
 import LoadingAnimation from "../Shared/LoadingAnimation";
 import classnames from "classnames";
@@ -105,9 +105,22 @@ type SelectionMode = "group" | "individual";
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
 const stageLabel: Record<string, string> = {
-    general: "General", lactation: "Lactancia", weaning: "Destete",
-    fattening: "Engorda", gestation: "Gestación", breeder: "Reproductor",
+    general: "General", piglet: "Lechón", lactation: "Lactancia",
+    weaning: "Destete", growing: "Crecimiento", fattening: "Engorda",
+    gestation: "Gestación", breeder: "Reproductor",
     exit: "Salida", sale: "Venta",
+};
+
+const stageColor: Record<string, string> = {
+    general: "#6c757d", piglet: "#e83e8c", lactation: "#f1b44c",
+    weaning: "#50a5f1", growing: "#2ab57d", fattening: "#ff6f61",
+    gestation: "#a855f7", breeder: "#556ee6",
+    exit: "#74788d", sale: "#34c38f",
+};
+
+const sexConfig: Record<string, { label: string; icon: string; className: string; bg: string }> = {
+    male: { label: "Macho", icon: "ri-men-line", className: "text-info", bg: "rgba(80,165,241,.12)" },
+    female: { label: "Hembra", icon: "ri-women-line", className: "text-danger", bg: "rgba(232,62,140,.12)" },
 };
 
 const getROIColor = (roi: number) => {
@@ -185,18 +198,33 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
 
     // ─── Data fetching ────────────────────────────────────────────────────────
 
+    const fetchNextCode = async () => {
+        if (!configContext) return;
+        try {
+            const res = await configContext.axiosHelper.get(
+                `${configContext.apiUrl}/finances/pig_sales/next_code`
+            );
+            const code = res.data?.data?.code || "";
+            setNextSaleCode(code);
+            setFormData(prev => ({ ...prev, code }));
+        } catch {
+            // silently fail — user can still type a code manually
+        }
+    };
+
     const fetchClassicData = async () => {
         if (!configContext || !groupId) return;
         try {
             setLoading(true);
-            const res = await configContext.axiosHelper.get(
-                `${configContext.apiUrl}/finances/pig_sales/sale_form_data/${groupId}`
-            );
+            const [res] = await Promise.all([
+                configContext.axiosHelper.get(
+                    `${configContext.apiUrl}/finances/pig_sales/sale_form_data/${groupId}`
+                ),
+                fetchNextCode(),
+            ]);
             const data = res.data.data;
             setSuggestedPricePerKg(data.suggestedPricePerKg);
             setGlobalPricePerKg(data.suggestedPricePerKg);
-            setNextSaleCode(data.nextSaleCode);
-            setFormData(prev => ({ ...prev, code: data.nextSaleCode }));
             const pigs: SelectedPig[] = data.pigs.map((p: any) => ({
                 id: p.id,
                 pigId: p.id,
@@ -222,13 +250,11 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
         try {
             setLoading(true);
             const farmId = userLogged.farm_assigned;
-            const [groupsRes, codeRes] = await Promise.all([
+            const [groupsRes] = await Promise.all([
                 configContext.axiosHelper.get(
                     `${configContext.apiUrl}/group/find_by_farm/${farmId}`
                 ),
-                configContext.axiosHelper.get(
-                    `${configContext.apiUrl}/finances/pig_sales/sale_form_data/next_code`
-                ).catch(() => ({ data: { data: { nextSaleCode: "" } } })),
+                fetchNextCode(),
             ]);
 
             const groups: AvailableGroup[] = (groupsRes.data.data || [])
@@ -243,9 +269,6 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                     suggestedPricePerKg: 0,
                 }));
             setAvailableGroups(groups);
-            const code = codeRes.data?.data?.nextSaleCode || "";
-            setNextSaleCode(code);
-            setFormData(prev => ({ ...prev, code }));
         } catch {
             toggleModal("error");
         } finally {
@@ -527,6 +550,7 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                         address: formData.buyer.address || undefined,
                         fiscalId: formData.buyer.fiscalId || undefined,
                     },
+                    totalWeight: previewData.summary.totalWeight,
                     totalAmount: previewData.summary.totalAmount,
                     paymentMethod: formData.paymentMethod,
                     paymentStatus: formData.paymentStatus,
@@ -603,17 +627,22 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
 
     return (
         <>
-            {/* Step indicator */}
+            {/* ── Step indicator ── */}
             <div className="step-arrow-nav mb-4">
                 <Nav className="nav-pills custom-nav nav-justified">
-                    {["Selección y Precios", "Información de Venta", "Preview y Confirmación"].map((label, i) => (
+                    {[
+                        { icon: "ri-list-check-2", label: "Selección" },
+                        { icon: "ri-file-text-line", label: "Detalles" },
+                        { icon: "ri-eye-line", label: "Confirmación" },
+                    ].map((step, i) => (
                         <NavItem key={i}>
                             <NavLink
                                 href="#"
                                 className={classnames({ active: activeStep === i + 1, done: activeStep > i + 1 })}
                                 disabled
                             >
-                                {label}
+                                <i className={`${step.icon} me-2`} />
+                                {step.label}
                             </NavLink>
                         </NavItem>
                     ))}
@@ -622,224 +651,209 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
 
             <TabContent activeTab={activeStep}>
 
-                {/* ── STEP 1 ── */}
+                {/* ══════════════════════ STEP 1 ══════════════════════ */}
                 <TabPane tabId={1}>
-                    <div className="d-flex align-items-center mb-4">
+
+                    {/* ── Header + mode toggle ── */}
+                    <div className="d-flex align-items-start justify-content-between mb-4">
                         <div>
-                            <h5 className="fw-bold mb-1 text-dark">Selección y Precios</h5>
-                            <p className="text-muted small mb-0">
+                            <h5 className="fw-bold mb-1">
+                                {isClassicMode ? "Venta de grupo" : "Nueva venta"}
+                            </h5>
+                            <p className="text-muted mb-0" style={{ fontSize: 13 }}>
                                 {isClassicMode
-                                    ? "Define el precio y revisa los cerdos del grupo."
-                                    : "Elige cómo quieres seleccionar los cerdos a vender."}
+                                    ? "Ajusta precios y pesos antes de continuar."
+                                    : "Selecciona los cerdos que deseas vender."}
                             </p>
                         </div>
                         {!isClassicMode && (
-                            <div className="d-flex gap-2 p-1 bg-light rounded ms-auto">
-                                <Button
-                                    color={selectionMode === "group" ? "primary" : "light"}
-                                    size="sm"
-                                    className="px-4"
-                                    onClick={() => setSelectionMode("group")}
-                                >
-                                    <i className="ri-group-line me-2" />
-                                    Por Grupo
-                                </Button>
-                                <Button
-                                    color={selectionMode === "individual" ? "primary" : "light"}
-                                    size="sm"
-                                    className="px-4"
-                                    onClick={() => setSelectionMode("individual")}
-                                >
-                                    <i className="ri-user-line me-2" />
-                                    Individual
-                                </Button>
+                            <div
+                                className="d-flex p-1 rounded-pill"
+                                style={{ background: "#f0f0f0" }}
+                            >
+                                {([
+                                    { key: "group" as SelectionMode, icon: "ri-folder-line", label: "Por grupo" },
+                                    { key: "individual" as SelectionMode, icon: "ri-user-search-line", label: "Individual" },
+                                ]).map(opt => (
+                                    <button
+                                        key={opt.key}
+                                        type="button"
+                                        className={classnames(
+                                            "btn btn-sm border-0 rounded-pill px-3 d-flex align-items-center gap-1",
+                                            selectionMode === opt.key
+                                                ? "bg-white shadow-sm fw-semibold text-dark"
+                                                : "text-muted"
+                                        )}
+                                        style={{ transition: "all .2s" }}
+                                        onClick={() => setSelectionMode(opt.key)}
+                                    >
+                                        <i className={opt.icon} />
+                                        <span style={{ fontSize: 13 }}>{opt.label}</span>
+                                    </button>
+                                ))}
                             </div>
                         )}
                     </div>
 
-                    {/* Error banner */}
+                    {/* ── Error banner ── */}
                     {Object.keys(errors).length > 0 && (
-                        <div className="alert alert-danger d-flex align-items-center gap-2 mb-3">
-                            <FaExclamationTriangle />
-                            <div>{Object.values(errors).map((e, i) => <div key={i}>{e}</div>)}</div>
+                        <div className="alert alert-danger border-0 d-flex align-items-start gap-2 mb-3" style={{ borderRadius: 10 }}>
+                            <FaExclamationTriangle className="mt-1 flex-shrink-0" />
+                            <div className="small">{Object.values(errors).map((e, i) => <div key={i}>{e}</div>)}</div>
                         </div>
                     )}
 
-                    {/* ── CLASSIC MODE ── */}
-                    {isClassicMode && (
-                        <>
-                            <Card className="mb-3">
-                                <CardBody>
-                                    <Row>
-                                        <Col md={6}>
-                                            <Label className="form-label fw-semibold">Precio por kilogramo ($)</Label>
-                                            <Input
-                                                type="number" step="0.01"
-                                                value={globalPricePerKg}
-                                                onChange={e => handleGlobalPriceChange(e.target.value)}
-                                                placeholder="0.00"
-                                            />
-                                            <div className="text-muted small mt-1">
-                                                Precio sugerido:{" "}
-                                                <span className="fw-bold text-success">${suggestedPricePerKg.toFixed(2)}/kg</span>
-                                            </div>
-                                        </Col>
-                                        <Col md={6} className="d-flex align-items-center">
-                                            <div className="w-100">
-                                                <div className="d-flex justify-content-between text-muted small mb-1">
-                                                    <span>Total cerdos</span>
-                                                    <span className="fw-bold text-primary">{totals.totalPigs}</span>
+                    {/* ── Pricing bar (shared by all modes) ── */}
+                    <Card className="mb-3 border-0 shadow-sm" style={{ borderRadius: 12 }}>
+                        <CardBody className="py-3">
+                            <Row className="align-items-center g-3">
+                                <Col md={isClassicMode ? 4 : 3}>
+                                    <Label className="form-label text-muted small text-uppercase mb-1" style={{ fontSize: 11, letterSpacing: ".5px" }}>
+                                        Precio / kg
+                                    </Label>
+                                    <div className="input-group">
+                                        <span className="input-group-text bg-light border-end-0" style={{ borderRadius: "8px 0 0 8px" }}>$</span>
+                                        <Input
+                                            type="number" step="0.01"
+                                            value={globalPricePerKg}
+                                            onChange={e => handleGlobalPriceChange(e.target.value)}
+                                            placeholder="0.00"
+                                            className="border-start-0"
+                                            style={{ borderRadius: "0 8px 8px 0" }}
+                                        />
+                                    </div>
+                                    {isClassicMode && suggestedPricePerKg > 0 && (
+                                        <button
+                                            type="button"
+                                            className="btn btn-link btn-sm p-0 mt-1 text-decoration-none"
+                                            style={{ fontSize: 12 }}
+                                            onClick={() => handleGlobalPriceChange(suggestedPricePerKg.toString())}
+                                        >
+                                            <i className="ri-magic-line me-1" />
+                                            Usar sugerido: <span className="fw-bold text-success">${suggestedPricePerKg.toFixed(2)}</span>
+                                        </button>
+                                    )}
+                                </Col>
+                                <Col>
+                                    <div className="d-flex align-items-center justify-content-end gap-4">
+                                        {[
+                                            { label: "Cerdos", value: totals.totalPigs.toString(), color: "#556ee6" },
+                                            { label: "Peso total", value: `${totals.totalWeight.toFixed(1)} kg`, color: "#50a5f1" },
+                                            { label: "Subtotal", value: `$${totals.subtotal.toFixed(2)}`, color: "#34c38f" },
+                                        ].map(metric => (
+                                            <div key={metric.label} className="text-end">
+                                                <div className="text-muted text-uppercase" style={{ fontSize: 10, letterSpacing: ".5px" }}>
+                                                    {metric.label}
                                                 </div>
-                                                <div className="d-flex justify-content-between text-muted small">
-                                                    <span>Peso total</span>
-                                                    <span className="fw-bold text-info">{totals.totalWeight.toFixed(2)} kg</span>
+                                                <div className="fw-bold" style={{ fontSize: 18, color: metric.color }}>
+                                                    {metric.value}
                                                 </div>
                                             </div>
-                                        </Col>
-                                    </Row>
-                                </CardBody>
-                            </Card>
+                                        ))}
+                                    </div>
+                                </Col>
+                            </Row>
+                        </CardBody>
+                    </Card>
 
-                            <SelectableCustomTable
-                                columns={classicPigColumns}
-                                data={selectedPigs}
-                                selectionMode="multiple"
-                                onSelect={rows => setSelectedPigs(prev =>
-                                    prev.map(p => ({ ...p, selected: rows.some((r: any) => r.pigId === p.pigId) }))
-                                )}
-                                showSearchAndFilter={false}
-                            />
-                        </>
+                    {/* ══ CLASSIC MODE ══ */}
+                    {isClassicMode && (
+                        <SelectableCustomTable
+                            columns={classicPigColumns}
+                            data={selectedPigs}
+                            selectionMode="multiple"
+                            onSelect={rows => setSelectedPigs(prev =>
+                                prev.map(p => ({ ...p, selected: rows.some((r: any) => r.pigId === p.pigId) }))
+                            )}
+                            showSearchAndFilter={false}
+                        />
                     )}
 
-                    {/* ── FREE MODE ── */}
+                    {/* ══ FREE MODE ══ */}
                     {!isClassicMode && (
                         <>
-
-                            {/* Global price — visible in both free modes */}
-                            <Card className="mb-3 border-0 bg-light">
-                                <CardBody className="py-2">
-                                    <Row className="align-items-center">
-                                        <Col md={4}>
-                                            <Label className="form-label fw-semibold mb-1">Precio por kg ($)</Label>
-                                            <Input
-                                                type="number" step="0.01"
-                                                value={globalPricePerKg}
-                                                onChange={e => handleGlobalPriceChange(e.target.value)}
-                                                placeholder="0.00"
-                                            />
-                                        </Col>
-                                        <Col md={8} className="d-flex align-items-center justify-content-end gap-4">
-                                            <div className="text-center">
-                                                <div className="text-muted small">Cerdos</div>
-                                                <div className="fs-5 fw-bold text-primary">{totals.totalPigs}</div>
-                                            </div>
-                                            <div className="text-center">
-                                                <div className="text-muted small">Peso total</div>
-                                                <div className="fs-5 fw-bold text-info">{totals.totalWeight.toFixed(1)} kg</div>
-                                            </div>
-                                            <div className="text-center">
-                                                <div className="text-muted small">Subtotal</div>
-                                                <div className="fs-5 fw-bold text-success">${totals.subtotal.toFixed(2)}</div>
-                                            </div>
-                                        </Col>
-                                    </Row>
-                                </CardBody>
-                            </Card>
-
-                            {/* ── SUB-MODE: GROUP ── */}
+                            {/* ── Group sub-mode ── */}
                             {selectionMode === "group" && (
                                 <>
-                                    <div className="mb-3">
-                                        <p className="text-muted small mb-0">
-                                            Selecciona uno o varios grupos. Puedes revisar y ajustar los cerdos de cada grupo antes de añadirlos.
-                                        </p>
-                                    </div>
-
                                     {availableGroups.length === 0 ? (
                                         <div className="text-center text-muted py-5">
-                                            <i className="ri-inbox-line fs-1 d-block mb-2 opacity-25" />
-                                            No hay grupos activos disponibles
+                                            <i className="ri-inbox-line d-block mb-2" style={{ fontSize: 40, opacity: .2 }} />
+                                            <span className="small">No hay grupos activos disponibles</span>
                                         </div>
                                     ) : (
-                                        <div className="d-flex flex-column gap-2">
+                                        <Row className="g-3">
                                             {availableGroups.map(group => {
                                                 const addedCount = selectedPigs.filter(p => p.groupId === group._id).length;
                                                 const isAdded = addedCount > 0;
                                                 return (
-                                                    <Card
-                                                        key={group._id}
-                                                        className={classnames("mb-0 border", {
-                                                            "border-primary": isAdded,
-                                                            "border-light": !isAdded,
-                                                        })}
-                                                    >
-                                                        <CardBody className="py-2">
-                                                            <div className="d-flex align-items-center justify-content-between gap-3">
-                                                                <div className="d-flex align-items-center gap-3 flex-grow-1">
-                                                                    {/* Status indicator */}
-                                                                    <div
-                                                                        className={classnames("rounded-circle flex-shrink-0", {
-                                                                            "bg-primary": isAdded,
-                                                                            "bg-light border": !isAdded,
-                                                                        })}
-                                                                        style={{ width: 12, height: 12 }}
-                                                                    />
-                                                                    <div>
-                                                                        <div className="fw-semibold">{group.name}</div>
-                                                                        <div className="d-flex gap-3 text-muted small">
-                                                                            <span>
-                                                                                <i className="ri-hashtag me-1" />{group.code}
-                                                                            </span>
-                                                                            <span>
-                                                                                <i className="ri-price-tag-3-line me-1" />{stageLabel[group.stage] || group.stage}
-                                                                            </span>
-                                                                            <span>
-                                                                                <i className="ri-group-line me-1" />{group.pigCount} cerdos
-                                                                            </span>
-                                                                            <span>
-                                                                                <i className="ri-scales-3-line me-1" />{group.avgWeight.toFixed(1)} kg prom.
-                                                                            </span>
+                                                    <Col md={6} key={group._id}>
+                                                        <Card
+                                                            className={classnames("mb-0 h-100 border", {
+                                                                "border-primary shadow-sm": isAdded,
+                                                            })}
+                                                            style={{
+                                                                borderRadius: 12,
+                                                                cursor: "pointer",
+                                                                transition: "all .15s",
+                                                            }}
+                                                            onClick={() => openGroupModal(group)}
+                                                        >
+                                                            <CardBody className="p-3">
+                                                                <div className="d-flex align-items-start justify-content-between mb-2">
+                                                                    <div className="d-flex align-items-center gap-2">
+                                                                        <div
+                                                                            className={classnames(
+                                                                                "d-flex align-items-center justify-content-center rounded-circle flex-shrink-0",
+                                                                                isAdded ? "bg-primary bg-opacity-10 text-primary" : "bg-light text-muted"
+                                                                            )}
+                                                                            style={{ width: 36, height: 36 }}
+                                                                        >
+                                                                            <i className={isAdded ? "ri-checkbox-circle-fill" : "ri-folder-line"} style={{ fontSize: 18 }} />
+                                                                        </div>
+                                                                        <div>
+                                                                            <div className="fw-semibold" style={{ fontSize: 14 }}>{group.name}</div>
+                                                                            <span className="text-muted" style={{ fontSize: 12 }}>{group.code}</span>
                                                                         </div>
                                                                     </div>
-                                                                </div>
-                                                                <div className="d-flex align-items-center gap-2 flex-shrink-0">
                                                                     {isAdded && (
-                                                                        <Badge color="primary" className="me-1">
-                                                                            {addedCount} seleccionado{addedCount !== 1 ? "s" : ""}
+                                                                        <Badge color="primary" pill className="px-2" style={{ fontSize: 11 }}>
+                                                                            {addedCount} sel.
                                                                         </Badge>
                                                                     )}
-                                                                    <Button
-                                                                        size="sm"
-                                                                        color={isAdded ? "secondary" : "primary"}
-                                                                        onClick={() => openGroupModal(group)}
-                                                                    >
-                                                                        <i className={classnames("me-1", {
-                                                                            "ri-edit-line": isAdded,
-                                                                            "ri-add-line": !isAdded,
-                                                                        })} />
-                                                                        {isAdded ? "Editar" : "Agregar"}
-                                                                    </Button>
-                                                                    {isAdded && (
-                                                                        <Button
-                                                                            size="sm" color="danger"
-                                                                            onClick={() => removeGroup(group._id)}
-                                                                        >
-                                                                            <i className="ri-close-line" />
-                                                                        </Button>
-                                                                    )}
                                                                 </div>
-                                                            </div>
-                                                        </CardBody>
-                                                    </Card>
+                                                                <div className="d-flex gap-3 flex-wrap" style={{ fontSize: 12 }}>
+                                                                    <span className="text-muted">
+                                                                        <i className="ri-price-tag-3-line me-1" />{stageLabel[group.stage] || group.stage}
+                                                                    </span>
+                                                                    <span className="text-muted">
+                                                                        <i className="ri-group-line me-1" />{group.pigCount} cerdos
+                                                                    </span>
+                                                                    <span className="text-muted">
+                                                                        <i className="ri-scales-3-line me-1" />{group.avgWeight.toFixed(1)} kg prom.
+                                                                    </span>
+                                                                </div>
+                                                                {isAdded && (
+                                                                    <div className="mt-2 pt-2 border-top d-flex justify-content-end">
+                                                                        <Button
+                                                                            size="sm" color="soft-danger" className="px-2 py-0"
+                                                                            style={{ fontSize: 11 }}
+                                                                            onClick={e => { e.stopPropagation(); removeGroup(group._id); }}
+                                                                        >
+                                                                            <i className="ri-close-line me-1" />Quitar
+                                                                        </Button>
+                                                                    </div>
+                                                                )}
+                                                            </CardBody>
+                                                        </Card>
+                                                    </Col>
                                                 );
                                             })}
-                                        </div>
+                                        </Row>
                                     )}
                                 </>
                             )}
 
-                            {/* ── SUB-MODE: INDIVIDUAL ── */}
+                            {/* ── Individual sub-mode ── */}
                             {selectionMode === "individual" && (
                                 <>
                                     <div className="mb-3">
@@ -879,48 +893,100 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                         </>
                     )}
 
+                    {/* ── Navigation ── */}
                     <div className="mt-4 d-flex justify-content-end">
-                        <Button color="primary" onClick={handleNext}>
-                            Siguiente <i className="ri-arrow-right-line ms-2" />
+                        <Button color="primary" className="px-4" style={{ borderRadius: 8 }} onClick={handleNext}>
+                            Continuar <i className="ri-arrow-right-s-line ms-1" />
                         </Button>
                     </div>
                 </TabPane>
 
-                {/* ── STEP 2 ── */}
+                {/* ══════════════════════ STEP 2 ══════════════════════ */}
                 <TabPane tabId={2}>
                     <div className="mb-4">
-                        <h5 className="fw-bold mb-1 text-dark">Información de Venta</h5>
-                        <p className="text-muted small">Completa los datos del comprador y detalles de pago.</p>
+                        <h5 className="fw-bold mb-1">Detalles de la venta</h5>
+                        <p className="text-muted mb-0" style={{ fontSize: 13 }}>
+                            Completa la información del comprador y condiciones de pago.
+                        </p>
                     </div>
 
                     {Object.keys(errors).length > 0 && (
-                        <div className="alert alert-danger d-flex align-items-center gap-2 mb-3">
-                            <FaExclamationTriangle />
-                            <div>{Object.values(errors).map((e, i) => <div key={i}>{e}</div>)}</div>
+                        <div className="alert alert-danger border-0 d-flex align-items-start gap-2 mb-3" style={{ borderRadius: 10 }}>
+                            <FaExclamationTriangle className="mt-1 flex-shrink-0" />
+                            <div className="small">{Object.values(errors).map((e, i) => <div key={i}>{e}</div>)}</div>
                         </div>
                     )}
 
-                    <Card className="mb-3">
-                        <CardHeader className="bg-light">
-                            <h6 className="mb-0 fw-bold">Datos del Comprador</h6>
-                        </CardHeader>
+                    {/* ── Sale info strip ── */}
+                    <Card className="mb-4 border-0 shadow-sm" style={{ borderRadius: 12 }}>
+                        <CardBody className="py-3">
+                            <Row className="align-items-center g-3">
+                                <Col md={4}>
+                                    <Label className="form-label text-muted small text-uppercase mb-1" style={{ fontSize: 11, letterSpacing: ".5px" }}>
+                                        Código de venta
+                                    </Label>
+                                    <Input
+                                        type="text"
+                                        value={formData.code}
+                                        onChange={e => setFormData(p => ({ ...p, code: e.target.value }))}
+                                        className="fw-semibold"
+                                        style={{ borderRadius: 8 }}
+                                    />
+                                </Col>
+                                <Col md={4}>
+                                    <Label className="form-label text-muted small text-uppercase mb-1" style={{ fontSize: 11, letterSpacing: ".5px" }}>
+                                        Fecha de venta
+                                    </Label>
+                                    <Input
+                                        type="date"
+                                        value={formData.saleDate}
+                                        onChange={e => setFormData(p => ({ ...p, saleDate: e.target.value }))}
+                                        style={{ borderRadius: 8 }}
+                                    />
+                                </Col>
+                                <Col md={4} className="d-flex align-items-end justify-content-end">
+                                    <div className="text-end">
+                                        <div className="text-muted text-uppercase" style={{ fontSize: 10, letterSpacing: ".5px" }}>Resumen</div>
+                                        <span className="fw-bold" style={{ fontSize: 15, color: "#556ee6" }}>
+                                            {totals.totalPigs} cerdos
+                                        </span>
+                                        <span className="text-muted mx-2">&middot;</span>
+                                        <span className="fw-bold" style={{ fontSize: 15, color: "#34c38f" }}>
+                                            ${totals.subtotal.toFixed(2)}
+                                        </span>
+                                    </div>
+                                </Col>
+                            </Row>
+                        </CardBody>
+                    </Card>
+
+                    {/* ── Buyer section ── */}
+                    <h6 className="fw-bold text-uppercase text-muted mb-3" style={{ fontSize: 11, letterSpacing: "1px" }}>
+                        <i className="ri-user-3-line me-2" />Comprador
+                    </h6>
+                    <Card className="mb-4 border-0 shadow-sm" style={{ borderRadius: 12 }}>
                         <CardBody>
-                            <Row>
-                                <Col md={6} className="mb-3">
-                                    <Label className="form-label">Nombre <span className="text-danger">*</span></Label>
+                            <Row className="g-3">
+                                <Col md={6}>
+                                    <Label className="form-label small mb-1">
+                                        Nombre <span className="text-danger">*</span>
+                                    </Label>
                                     <Input
                                         type="text"
                                         value={formData.buyer.name}
                                         onChange={e => setFormData(p => ({ ...p, buyer: { ...p.buyer, name: e.target.value } }))}
-                                        placeholder="Nombre del comprador"
+                                        placeholder="Nombre completo o razón social"
+                                        invalid={!!errors.buyerName}
+                                        style={{ borderRadius: 8 }}
                                     />
                                 </Col>
-                                <Col md={6} className="mb-3">
-                                    <Label className="form-label">Tipo</Label>
+                                <Col md={6}>
+                                    <Label className="form-label small mb-1">Tipo de comprador</Label>
                                     <Input
                                         type="select"
                                         value={formData.buyer.type}
                                         onChange={e => setFormData(p => ({ ...p, buyer: { ...p.buyer, type: e.target.value } }))}
+                                        style={{ borderRadius: 8 }}
                                     >
                                         <option value="individual">Individual</option>
                                         <option value="company">Empresa</option>
@@ -928,40 +994,56 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                                         <option value="other">Otro</option>
                                     </Input>
                                 </Col>
-                                <Col md={6} className="mb-3">
-                                    <Label className="form-label">Contacto</Label>
+                                <Col md={4}>
+                                    <Label className="form-label small mb-1">Contacto</Label>
                                     <Input
                                         type="text"
                                         value={formData.buyer.contact}
                                         onChange={e => setFormData(p => ({ ...p, buyer: { ...p.buyer, contact: e.target.value } }))}
                                         placeholder="Teléfono o email"
+                                        style={{ borderRadius: 8 }}
                                     />
                                 </Col>
-                                <Col md={6} className="mb-3">
-                                    <Label className="form-label">RFC / Identificación Fiscal</Label>
+                                <Col md={4}>
+                                    <Label className="form-label small mb-1">Dirección</Label>
+                                    <Input
+                                        type="text"
+                                        value={formData.buyer.address}
+                                        onChange={e => setFormData(p => ({ ...p, buyer: { ...p.buyer, address: e.target.value } }))}
+                                        placeholder="Dirección (opcional)"
+                                        style={{ borderRadius: 8 }}
+                                    />
+                                </Col>
+                                <Col md={4}>
+                                    <Label className="form-label small mb-1">RFC</Label>
                                     <Input
                                         type="text"
                                         value={formData.buyer.fiscalId}
                                         onChange={e => setFormData(p => ({ ...p, buyer: { ...p.buyer, fiscalId: e.target.value } }))}
-                                        placeholder="RFC"
+                                        placeholder="Identificación fiscal"
+                                        style={{ borderRadius: 8 }}
                                     />
                                 </Col>
                             </Row>
                         </CardBody>
                     </Card>
 
-                    <Card className="mb-3">
-                        <CardHeader className="bg-light">
-                            <h6 className="mb-0 fw-bold">Información de Pago</h6>
-                        </CardHeader>
+                    {/* ── Payment section ── */}
+                    <h6 className="fw-bold text-uppercase text-muted mb-3" style={{ fontSize: 11, letterSpacing: "1px" }}>
+                        <i className="ri-bank-card-line me-2" />Pago
+                    </h6>
+                    <Card className="mb-4 border-0 shadow-sm" style={{ borderRadius: 12 }}>
                         <CardBody>
-                            <Row>
-                                <Col md={6} className="mb-3">
-                                    <Label className="form-label">Método de Pago <span className="text-danger">*</span></Label>
+                            <Row className="g-3">
+                                <Col md={6}>
+                                    <Label className="form-label small mb-1">
+                                        Método de pago <span className="text-danger">*</span>
+                                    </Label>
                                     <Input
                                         type="select"
                                         value={formData.paymentMethod}
                                         onChange={e => setFormData(p => ({ ...p, paymentMethod: e.target.value }))}
+                                        style={{ borderRadius: 8 }}
                                     >
                                         <option value="cash">Efectivo</option>
                                         <option value="transfer">Transferencia</option>
@@ -970,12 +1052,13 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                                         <option value="other">Otro</option>
                                     </Input>
                                 </Col>
-                                <Col md={6} className="mb-3">
-                                    <Label className="form-label">Estado de Pago</Label>
+                                <Col md={6}>
+                                    <Label className="form-label small mb-1">Estado del pago</Label>
                                     <Input
                                         type="select"
                                         value={formData.paymentStatus}
                                         onChange={e => setFormData(p => ({ ...p, paymentStatus: e.target.value }))}
+                                        style={{ borderRadius: 8 }}
                                     >
                                         <option value="pending">Pendiente</option>
                                         <option value="partial">Parcial</option>
@@ -986,69 +1069,94 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                         </CardBody>
                     </Card>
 
-                    <Card className="mb-3">
-                        <CardHeader className="bg-light d-flex justify-content-between align-items-center">
-                            <h6 className="mb-0 fw-bold">Costos Adicionales</h6>
-                            <Button size="sm" color="primary" onClick={addCost}>
-                                <i className="ri-add-line me-1" />Agregar
-                            </Button>
-                        </CardHeader>
-                        <CardBody>
-                            {additionalCosts.length === 0 ? (
-                                <div className="text-center text-muted py-3 small">
-                                    <i className="ri-information-line fs-5 d-block mb-1" />
-                                    No hay costos adicionales
-                                </div>
-                            ) : (
-                                <div className="d-flex flex-column gap-2">
-                                    {additionalCosts.map((cost, idx) => (
-                                        <div key={idx} className="d-flex gap-2 align-items-center">
+                    {/* ── Additional costs ── */}
+                    <div className="d-flex align-items-center justify-content-between mb-3">
+                        <h6 className="fw-bold text-uppercase text-muted mb-0" style={{ fontSize: 11, letterSpacing: "1px" }}>
+                            <i className="ri-money-dollar-circle-line me-2" />Costos adicionales
+                        </h6>
+                        <Button
+                            size="sm" color="soft-primary"
+                            className="rounded-pill px-3"
+                            style={{ fontSize: 12 }}
+                            onClick={addCost}
+                        >
+                            <i className="ri-add-line me-1" />Agregar costo
+                        </Button>
+                    </div>
+                    {additionalCosts.length === 0 ? (
+                        <div
+                            className="text-center text-muted py-4 mb-4 border border-dashed rounded-3"
+                            style={{ borderColor: "#dee2e6", background: "#fafbfc" }}
+                        >
+                            <i className="ri-price-tag-3-line d-block mb-1" style={{ fontSize: 24, opacity: .3 }} />
+                            <span className="small">Sin costos adicionales. Haz clic en "Agregar costo" para incluir transporte, comisiones, etc.</span>
+                        </div>
+                    ) : (
+                        <Card className="mb-4 border-0 shadow-sm" style={{ borderRadius: 12 }}>
+                            <CardBody className="pb-2">
+                                {additionalCosts.map((cost, idx) => (
+                                    <div key={idx} className="d-flex gap-2 align-items-center mb-2">
+                                        <Input
+                                            type="text" placeholder="Ej: Transporte, Comisión..."
+                                            value={cost.concept}
+                                            onChange={e => updateCost(idx, "concept", e.target.value)}
+                                            className="flex-grow-1"
+                                            style={{ borderRadius: 8 }}
+                                        />
+                                        <div className="input-group flex-shrink-0" style={{ width: 160 }}>
+                                            <span className="input-group-text bg-light" style={{ borderRadius: "8px 0 0 8px" }}>$</span>
                                             <Input
-                                                type="text" placeholder="Concepto"
-                                                value={cost.concept}
-                                                onChange={e => updateCost(idx, "concept", e.target.value)}
-                                                className="flex-grow-1"
+                                                type="number" step="0.01" placeholder="0.00"
+                                                value={cost.amount}
+                                                onChange={e => updateCost(idx, "amount", Number(e.target.value))}
+                                                style={{ borderRadius: "0 8px 8px 0" }}
                                             />
-                                            <div className="input-group" style={{ width: 150 }}>
-                                                <span className="input-group-text">$</span>
-                                                <Input
-                                                    type="number" step="0.01" placeholder="0.00"
-                                                    value={cost.amount}
-                                                    onChange={e => updateCost(idx, "amount", Number(e.target.value))}
-                                                />
-                                            </div>
-                                            <Button size="sm" color="danger" onClick={() => removeCost(idx)}>
-                                                <i className="ri-delete-bin-line" />
-                                            </Button>
                                         </div>
-                                    ))}
-                                </div>
-                            )}
-                        </CardBody>
-                    </Card>
+                                        <button
+                                            type="button"
+                                            className="btn btn-sm text-muted px-2"
+                                            onClick={() => removeCost(idx)}
+                                            title="Eliminar"
+                                        >
+                                            <i className="ri-delete-bin-line" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </CardBody>
+                        </Card>
+                    )}
 
-                    <Card className="mb-3">
-                        <CardHeader className="bg-light">
-                            <h6 className="mb-0 fw-bold">Notas</h6>
-                        </CardHeader>
+                    {/* ── Notes ── */}
+                    <h6 className="fw-bold text-uppercase text-muted mb-3" style={{ fontSize: 11, letterSpacing: "1px" }}>
+                        <i className="ri-sticky-note-line me-2" />Notas
+                    </h6>
+                    <Card className="mb-4 border-0 shadow-sm" style={{ borderRadius: 12 }}>
                         <CardBody>
                             <Input
                                 type="textarea" rows={3}
                                 value={formData.notes}
                                 onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))}
                                 placeholder="Observaciones adicionales sobre la venta..."
+                                style={{ borderRadius: 8 }}
                             />
                         </CardBody>
                     </Card>
 
-                    <div className="mt-4 d-flex justify-content-between">
-                        <Button color="light" onClick={handleBack}>
-                            <i className="ri-arrow-left-line me-2" />Atrás
+                    {/* ── Navigation ── */}
+                    <div className="d-flex justify-content-between align-items-center pt-2">
+                        <Button color="light" className="px-3" style={{ borderRadius: 8 }} onClick={handleBack}>
+                            <i className="ri-arrow-left-s-line me-1" />Atrás
                         </Button>
-                        <Button color="warning" onClick={handleViewPreview} disabled={loadingPreview}>
+                        <Button
+                            color="primary"
+                            className="px-4"
+                            style={{ borderRadius: 8 }}
+                            onClick={handleViewPreview}
+                            disabled={loadingPreview}
+                        >
                             {loadingPreview
                                 ? <><Spinner size="sm" className="me-2" />Calculando...</>
-                                : <><i className="ri-eye-line me-2" />Ver Preview</>}
+                                : <>Ver preview <i className="ri-arrow-right-s-line ms-1" /></>}
                         </Button>
                     </div>
                 </TabPane>
@@ -1165,20 +1273,57 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
 
             {/* ── GROUP PIGS MODAL ── */}
             <Modal isOpen={groupModalOpen} toggle={() => setGroupModalOpen(false)} size="lg" centered scrollable>
-                <ModalHeader toggle={() => setGroupModalOpen(false)}>
-                    Cerdos del grupo: <span className="text-primary ms-1">{focusedGroup?.name}</span>
-                </ModalHeader>
-                <ModalBody>
+                {/* ── Custom header ── */}
+                <div className="px-4 pt-4 pb-0 d-flex align-items-start justify-content-between">
+                    <div className="d-flex align-items-center gap-3">
+                        <div
+                            className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0 bg-primary bg-opacity-10 text-primary"
+                            style={{ width: 44, height: 44 }}
+                        >
+                            <i className="ri-folder-open-line" style={{ fontSize: 20 }} />
+                        </div>
+                        <div>
+                            <h6 className="fw-bold mb-0" style={{ fontSize: 16 }}>{focusedGroup?.name}</h6>
+                            <div className="d-flex gap-3 mt-1" style={{ fontSize: 12 }}>
+                                <span className="text-muted"><i className="ri-hashtag me-1" />{focusedGroup?.code}</span>
+                                <span className="text-muted"><i className="ri-price-tag-3-line me-1" />{stageLabel[focusedGroup?.stage || ""] || focusedGroup?.stage}</span>
+                                <span className="text-muted"><i className="ri-group-line me-1" />{groupModalPigs.length} cerdos</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        className="btn btn-sm text-muted p-1"
+                        onClick={() => setGroupModalOpen(false)}
+                        style={{ lineHeight: 1 }}
+                    >
+                        <i className="ri-close-line" style={{ fontSize: 20 }} />
+                    </button>
+                </div>
+
+                <ModalBody className="px-4 pt-3">
                     {loadingGroupPigs ? (
-                        <div className="text-center py-5"><Spinner color="primary" /></div>
+                        <div className="text-center py-5">
+                            <Spinner color="primary" />
+                            <div className="text-muted small mt-2">Cargando cerdos...</div>
+                        </div>
                     ) : (
                         <>
+                            {/* ── Toolbar ── */}
                             <div className="d-flex justify-content-between align-items-center mb-3">
-                                <p className="text-muted small mb-0">
-                                    Selecciona los cerdos que deseas incluir en la venta.
-                                </p>
-                                <Button
-                                    size="sm" color="light"
+                                <div
+                                    className="d-flex align-items-center gap-2 px-3 py-2 rounded-3"
+                                    style={{ background: "#f8f9fa", fontSize: 13 }}
+                                >
+                                    <i className="ri-checkbox-multiple-line text-primary" />
+                                    <span className="text-muted">
+                                        <span className="fw-bold text-dark">{groupModalSelectedIds.size}</span> de {groupModalPigs.length} seleccionados
+                                    </span>
+                                </div>
+                                <button
+                                    type="button"
+                                    className="btn btn-sm btn-soft-primary rounded-pill px-3"
+                                    style={{ fontSize: 12 }}
                                     onClick={() => {
                                         const allSelected = groupModalSelectedIds.size === groupModalPigs.length;
                                         setGroupModalSelectedIds(
@@ -1186,67 +1331,142 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                                         );
                                     }}
                                 >
+                                    <i className={classnames("me-1", {
+                                        "ri-checkbox-line": groupModalSelectedIds.size !== groupModalPigs.length,
+                                        "ri-checkbox-indeterminate-line": groupModalSelectedIds.size === groupModalPigs.length,
+                                    })} />
                                     {groupModalSelectedIds.size === groupModalPigs.length ? "Deseleccionar todos" : "Seleccionar todos"}
-                                </Button>
+                                </button>
                             </div>
-                            <Table hover responsive size="sm">
-                                <thead className="table-light">
-                                    <tr>
-                                        <th style={{ width: 40 }}></th>
-                                        <th>Código</th>
-                                        <th>Peso actual</th>
-                                        <th>Etapa</th>
-                                        <th>Sexo</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {groupModalPigs.map(pig => {
-                                        const isChecked = groupModalSelectedIds.has(pig._id);
-                                        return (
-                                            <tr
-                                                key={pig._id}
-                                                onClick={() => setGroupModalSelectedIds(prev => {
-                                                    const next = new Set(prev);
-                                                    isChecked ? next.delete(pig._id) : next.add(pig._id);
-                                                    return next;
-                                                })}
-                                                className={classnames("cursor-pointer", { "table-primary": isChecked })}
-                                                style={{ cursor: "pointer" }}
+
+                            {/* ── Pig list ── */}
+                            <div className="d-flex flex-column gap-2" style={{ maxHeight: 380, overflowY: "auto" }}>
+                                {groupModalPigs.map(pig => {
+                                    const isChecked = groupModalSelectedIds.has(pig._id);
+                                    return (
+                                        <div
+                                            key={pig._id}
+                                            className={classnames(
+                                                "d-flex align-items-center gap-3 p-3 rounded-3 border",
+                                                isChecked ? "border-primary" : "border-light"
+                                            )}
+                                            style={{
+                                                cursor: "pointer",
+                                                transition: "all .15s",
+                                                background: isChecked ? "rgba(85,110,230,.04)" : "#fff",
+                                            }}
+                                            onClick={() => setGroupModalSelectedIds(prev => {
+                                                const next = new Set(prev);
+                                                isChecked ? next.delete(pig._id) : next.add(pig._id);
+                                                return next;
+                                            })}
+                                        >
+                                            {/* Checkbox */}
+                                            <div
+                                                className="d-flex align-items-center justify-content-center flex-shrink-0 rounded"
+                                                style={{
+                                                    width: 22, height: 22,
+                                                    border: isChecked ? "none" : "2px solid #d0d5dd",
+                                                    background: isChecked ? "#556ee6" : "#fff",
+                                                    transition: "all .15s",
+                                                    borderRadius: 6,
+                                                }}
                                             >
-                                                <td>
-                                                    <Input
-                                                        type="checkbox"
-                                                        checked={isChecked}
-                                                        onChange={() => { }}
-                                                        className="form-check-input"
-                                                    />
-                                                </td>
-                                                <td className="fw-semibold">{pig.code}</td>
-                                                <td>{pig.currentWeight.toFixed(1)} kg</td>
-                                                <td><Badge color="secondary">{stageLabel[pig.currentStage] || pig.currentStage}</Badge></td>
-                                                <td>{pig.sex === "male" ? "Macho" : pig.sex === "female" ? "Hembra" : "—"}</td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </Table>
+                                                {isChecked && <i className="ri-check-line text-white" style={{ fontSize: 14 }} />}
+                                            </div>
+
+                                            {/* Pig info */}
+                                            <div className="flex-grow-1">
+                                                <div className="d-flex align-items-center gap-2">
+                                                    <span className="fw-semibold" style={{ fontSize: 14 }}>{pig.code}</span>
+                                                    <Badge
+                                                        color=""
+                                                        className="px-2"
+                                                        style={{
+                                                            fontSize: 10,
+                                                            background: `${stageColor[pig.currentStage] || "#6c757d"}18`,
+                                                            color: stageColor[pig.currentStage] || "#6c757d",
+                                                            borderRadius: 4,
+                                                        }}
+                                                    >
+                                                        {stageLabel[pig.currentStage] || pig.currentStage}
+                                                    </Badge>
+                                                    {pig.sex && sexConfig[pig.sex] && (
+                                                        <span
+                                                            className={`d-inline-flex align-items-center gap-1 px-2 rounded-pill ${sexConfig[pig.sex].className}`}
+                                                            style={{ fontSize: 11, background: sexConfig[pig.sex].bg }}
+                                                        >
+                                                            <i className={sexConfig[pig.sex].icon} style={{ fontSize: 13 }} />
+                                                            {sexConfig[pig.sex].label}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="d-flex gap-3 mt-1" style={{ fontSize: 12 }}>
+                                                    {pig.age > 0 && (
+                                                        <span className="text-muted">
+                                                            <i className="ri-calendar-line me-1" />{pig.age} días
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Weight highlight */}
+                                            <div
+                                                className="text-center flex-shrink-0 rounded-3 px-3 py-1"
+                                                style={{
+                                                    background: isChecked ? "rgba(85,110,230,.1)" : "#f5f5f5",
+                                                    minWidth: 72,
+                                                }}
+                                            >
+                                                <div className="fw-bold" style={{ fontSize: 18, color: isChecked ? "#556ee6" : "#343a40" }}>
+                                                    {pig.currentWeight.toFixed(1)}
+                                                </div>
+                                                <div className="text-uppercase fw-semibold" style={{ fontSize: 9, color: "#999", letterSpacing: ".5px" }}>kg</div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </>
                     )}
                 </ModalBody>
-                <ModalFooter>
-                    <div className="me-auto text-muted small">
-                        {groupModalSelectedIds.size} de {groupModalPigs.length} seleccionado{groupModalSelectedIds.size !== 1 ? "s" : ""}
+
+                {/* ── Footer ── */}
+                <div className="px-4 py-3 d-flex align-items-center justify-content-between border-top">
+                    {groupModalSelectedIds.size > 0 && (
+                        <div style={{ fontSize: 13 }}>
+                            <span className="text-muted">Peso total:</span>{" "}
+                            <span className="fw-bold" style={{ color: "#50a5f1" }}>
+                                {groupModalPigs
+                                    .filter(p => groupModalSelectedIds.has(p._id))
+                                    .reduce((sum, p) => sum + p.currentWeight, 0)
+                                    .toFixed(1)} kg
+                            </span>
+                        </div>
+                    )}
+                    {groupModalSelectedIds.size === 0 && (
+                        <div className="text-muted small">Selecciona al menos un cerdo</div>
+                    )}
+                    <div className="d-flex gap-2">
+                        <Button
+                            color="light"
+                            style={{ borderRadius: 8 }}
+                            onClick={() => setGroupModalOpen(false)}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            color="primary"
+                            className="px-4"
+                            style={{ borderRadius: 8 }}
+                            onClick={confirmGroupSelection}
+                            disabled={groupModalSelectedIds.size === 0}
+                        >
+                            <i className="ri-check-line me-1" />
+                            Confirmar ({groupModalSelectedIds.size})
+                        </Button>
                     </div>
-                    <Button color="light" onClick={() => setGroupModalOpen(false)}>Cancelar</Button>
-                    <Button
-                        color="primary"
-                        onClick={confirmGroupSelection}
-                        disabled={groupModalSelectedIds.size === 0}
-                    >
-                        <i className="ri-check-line me-1" />
-                        Confirmar selección
-                    </Button>
-                </ModalFooter>
+                </div>
             </Modal>
 
             {/* ── CONFIRMATION MODAL ── */}

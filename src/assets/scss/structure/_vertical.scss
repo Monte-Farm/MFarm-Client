@@ -882,6 +882,7 @@
     text-transform: uppercase;
     color: var(--#{$prefix}vertical-menu-title-color);
     font-weight: $font-weight-semibold;
+    margin-top: 12px;
 
     span {
         padding: 12px 20px;

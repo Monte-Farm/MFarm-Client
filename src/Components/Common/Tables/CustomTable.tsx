@@ -14,6 +14,7 @@ type CustomTableProps<T> = {
   onRowClick?: (row: T) => void;
   rowsPerPage?: number;
   showPagination?: boolean;
+  fontSize?: number;
 };
 
 const formatValue = (value: any, type?: ColumnType) => {
@@ -42,6 +43,7 @@ const CustomTable = <T,>({
   onRowClick,
   rowsPerPage = 10,
   showPagination = true,
+  fontSize,
 }: CustomTableProps<T>) => {
 
   const [filterText, setFilterText] = useState<string>("");
@@ -106,7 +108,7 @@ const CustomTable = <T,>({
       )}
 
       <SimpleBar style={{ maxHeight: showPagination ? "none" : "60vh" }}>
-        <Table className={`table-hover align-middle table-nowrap mb-0 ${className} fs-5`}>
+        <Table className={`table-hover align-middle table-nowrap mb-0 ${className}${fontSize ? '' : ' fs-5'}`} style={fontSize ? { fontSize: `${fontSize}px` } : undefined}>
           <thead className="table-light sticky-top">
             <tr>
               {columns.map((col, index) => (

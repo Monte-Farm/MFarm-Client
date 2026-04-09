@@ -502,7 +502,7 @@ const Suppliers = () => {
                     </ModalFooter>
                 </Modal>
 
-                <Modal isOpen={modals.details} toggle={() => { toggleModal('details'); fetchAllSupplierData(); }} size="xxl" keyboard={false} backdrop='static' centered>
+                <Modal isOpen={modals.details} toggle={() => { toggleModal('details'); fetchAllSupplierData(); }} size="xl" keyboard={false} backdrop='static' centered>
                     <ModalHeader toggle={() => { toggleModal('details'); fetchAllSupplierData(); }}>Detalles de proveedor</ModalHeader>
                     <ModalBody>
                         <SupplierDetailsModal supplierId={selectedSupplier?._id} />

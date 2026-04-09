@@ -36,29 +36,29 @@ $vertical-menu-dropdown-box-shadow:               0 2px 4px rgba(15, 34, 58, 0.1
 //sidebar dark 
 $dark-vertical-menu-bg:                           $primary;
 $dark-vertical-menu-border:                       $primary;
-$dark-vertical-menu-item-color:                   #abb9e8;
+$dark-vertical-menu-item-color:                   rgba($white, .7);
 $dark-vertical-menu-item-bg:                      rgba($white, .15);
 $dark-vertical-menu-item-hover-color:             $white;
 $dark-vertical-menu-item-active-color:            $white;
 $dark-vertical-menu-item-active-bg:               rgba($white, .15);
-$dark-vertical-menu-sub-item-color:               #abb9e8;
+$dark-vertical-menu-sub-item-color:               rgba($white, .7);
 $dark-vertical-menu-sub-item-hover-color:         $white;
 $dark-vertical-menu-sub-item-active-color:        $white;
-$dark-vertical-menu-title-color:                  #838fb9;
+$dark-vertical-menu-title-color:                  #e0e0e0;
 $dark-vertical-menu-box-shadow:                   0 2px 4px rgba(15,34,58,0.12);
 $dark-vertical-menu-dropdown-box-shadow:          0 2px 4px rgba(15,34,58,0.12);
 $dark-twocolumn-menu-iconview-bg:                 lighten($primary, 2%);
 
 //sidebar gradient
-$vertical-menu-item-color-gradient:               rgba($white, .5);
+$vertical-menu-item-color-gradient:               rgba($white, .7);
 $vertical-menu-item-bg-gradient:                  rgba($white, .15);
 $vertical-menu-item-hover-color-gradient:         $white;
 $vertical-menu-item-active-color-gradient:        $white;
 $vertical-menu-item-active-bg-gradient:           rgba($white, .15);
-$vertical-menu-sub-item-color-gradient:           rgba($white, .5);
+$vertical-menu-sub-item-color-gradient:           rgba($white, .7);
 $vertical-menu-sub-item-hover-color-gradient:     $white;
 $vertical-menu-sub-item-active-color-gradient:    $white;
-$vertical-menu-title-color-gradient:              rgba($white, .5);
+$vertical-menu-title-color-gradient:              rgba($white, .85);
 $vertical-menu-box-shadow-gradient:               0 2px 4px rgba(15,34,58,0.12);
 $vertical-menu-dropdown-box-shadow-gradient:      0 2px 4px rgba(15,34,58,0.12);
 

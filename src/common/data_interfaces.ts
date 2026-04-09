@@ -627,7 +627,7 @@ export interface PigletSnapshot {
 }
 
 export interface LitterEvent {
-    type: 'MORTALITY_SUMMARY' | 'AVERAGE_WEIGHT' | 'WEANING' | 'LOCATION_CHANGE' | 'GROUP_TREATMENT' | 'OBSERVATION' | '';
+    type: 'MORTALITY_SUMMARY' | 'AVERAGE_WEIGHT' | 'WEANING' | 'LOCATION_CHANGE' | 'GROUP_TREATMENT' | 'OBSERVATION' | 'DISCARD' | '';
     date: Date | null;
     data: string;
     registeredBy: string;

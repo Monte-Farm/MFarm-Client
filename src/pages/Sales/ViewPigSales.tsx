@@ -8,6 +8,7 @@ import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import { getLoggedinUser } from "helpers/api_helper";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import SellPigsFormV2 from "Components/Common/Forms/SellPigsFormV2";
+import SaleDetails from "Components/Common/Details/SaleDetails";
 
 const paymentMethodLabel: Record<string, string> = {
     cash: "Efectivo",
@@ -37,7 +38,8 @@ const ViewPigSales = () => {
 
     const [sales, setSales] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
-    const [modals, setModals] = useState({ newSale: false });
+    const [modals, setModals] = useState({ newSale: false, details: false });
+    const [selectedSaleId, setSelectedSaleId] = useState<string | null>(null);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
 
     const toggleModal = (name: keyof typeof modals, state?: boolean) =>
@@ -66,6 +68,7 @@ const ViewPigSales = () => {
             header: "Cerdos",
             accessor: "pigs",
             type: "text",
+            bgColor: "#e3f2fd",
             render: (_, row) => (
                 <span className="fw-semibold text-primary">
                     {row.pigs?.length ?? row.group?.pigCount ?? "—"}
@@ -76,14 +79,16 @@ const ViewPigSales = () => {
             header: "Peso total",
             accessor: "totalWeight",
             type: "text",
+            bgColor: "#e8f5e9",
             render: (_, row) => (
-                <span>{row.group?.totalWeight != null ? `${row.group.totalWeight.toFixed(2)} kg` : "—"}</span>
+                <span>{row.totalWeight != null ? `${row.totalWeight.toFixed(2)} kg` : "—"}</span>
             ),
         },
         {
             header: "Monto total",
             accessor: "totalAmount",
             type: "currency",
+            bgColor: "#e0f2f1",
         },
         {
             header: "Método de pago",
@@ -99,6 +104,21 @@ const ViewPigSales = () => {
                 <Badge color={paymentStatusColor[v] || "secondary"}>
                     {paymentStatusLabel[v] || v}
                 </Badge>
+            ),
+        },
+        {
+            header: "Acciones",
+            accessor: "action",
+            render: (_: any, row: any) => (
+                <Button
+                    className="farm-primary-button btn-icon"
+                    onClick={() => {
+                        setSelectedSaleId(row._id);
+                        toggleModal("details");
+                    }}
+                >
+                    <i className="ri-eye-fill align-middle"></i>
+                </Button>
             ),
         },
     ];
@@ -161,6 +181,13 @@ const ViewPigSales = () => {
                     <SellPigsFormV2
                         onSave={() => { toggleModal("newSale"); fetchSales(); }}
                     />
+                </ModalBody>
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.details} toggle={() => { toggleModal("details"); setSelectedSaleId(null); }} centered scrollable>
+                <ModalHeader toggle={() => { toggleModal("details"); setSelectedSaleId(null); }}>Detalles de la venta</ModalHeader>
+                <ModalBody>
+                    {selectedSaleId && <SaleDetails saleId={selectedSaleId} />}
                 </ModalBody>
             </Modal>
 

@@ -132,7 +132,7 @@ const BasicLineChartCard: React.FC<BasicLineChartCardProps> = ({
 
     if (loading) {
         return (
-            <Card className={`w-100 ${className}`}>
+            <Card className={`w-100 h-100 ${className}`}>
                 <CardHeader style={{ backgroundColor: headerBgColor }}>
                     <h6 className="mb-0 text-muted">{title}</h6>
                 </CardHeader>
@@ -145,7 +145,7 @@ const BasicLineChartCard: React.FC<BasicLineChartCardProps> = ({
 
     if (error) {
         return (
-            <Card className={`w-100 ${className}`}>
+            <Card className={`w-100 h-100 ${className}`}>
                 <CardHeader style={{ backgroundColor: headerBgColor }}>
                     <h6 className="mb-0 text-muted">{title}</h6>
                 </CardHeader>
@@ -161,7 +161,7 @@ const BasicLineChartCard: React.FC<BasicLineChartCardProps> = ({
 
     if (!hasData) {
         return (
-            <Card className={`w-100 ${className}`}>
+            <Card className={`w-100 h-100 ${className}`}>
                 <CardHeader style={{ backgroundColor: headerBgColor }}>
                     <h6 className="mb-0 text-muted">{title}</h6>
                 </CardHeader>
@@ -176,7 +176,7 @@ const BasicLineChartCard: React.FC<BasicLineChartCardProps> = ({
     }
 
     return (
-        <Card className={`w-100 ${className}`}>
+        <Card className={`w-100 h-100 ${className}`}>
             <CardHeader style={{ backgroundColor: headerBgColor }} className="d-flex align-items-center justify-content-between">
                 <h6 className="mb-0 text-muted">{title}</h6>
                 {showLegend && (

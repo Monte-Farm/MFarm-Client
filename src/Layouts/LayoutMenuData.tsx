@@ -1,7 +1,4 @@
 import { getLoggedinUser } from "helpers/api_helper";
-import ViewGroups from "pages/Groups/ViewGroups";
-import DiscardedPigs from "pages/Pigs/DiscardedPigs";
-import ViewPigs from "pages/Pigs/ViewPigs";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -14,7 +11,6 @@ const Navdata = () => {
     const [isWarehouse, setIsWarehouse] = useState<boolean>(false);
     const [isSubwarehouse, setIsSubwarehouse] = useState<boolean>(false);
     const [isOrders, setIsOrders] = useState<boolean>(false)
-    const [isUsers, setIsUsers] = useState<boolean>(false);
     const [isSubwarehouseInventory, setIsSubwarehouseInventory] = useState<boolean>(false)
     const [isSubwarehouseIncomes, setIsSubwarehouseIncomes] = useState<boolean>(false);
     const [isSubwarehouseOutcomes, setIsSubwarehouseOutcomes] = useState<boolean>(false);
@@ -27,31 +23,13 @@ const Navdata = () => {
     const [isOutcomes, setIsOutcomes] = useState<boolean>(false)
     const [isInventory, setIsInventory] = useState<boolean>(false)
     const [isProducts, setIsProducts] = useState<boolean>(false)
-    const [isWarehouseConfiguration, setIsWarehouseConfiguration] = useState<boolean>(false)
-
-    // Subwarehouese
-    const [isViewSubwarehouses, setIsViewSubwarehouses] = useState<boolean>(false)
-    const [isCreateSubwarehouseOutcome, setIsCreateSubwarehouseOutcome] = useState<boolean>(false)
-    const [isViewSubwarehouseOutcomes, setIsViewSubwarehouseOutcomes] = useState<boolean>(false)
+    const [isPurchaseOrders, setIsPurchaseOrders] = useState<boolean>(false)
 
     //Suppliers
     const [isSuppliers, setIsSuppliers] = useState<boolean>(false)
-    const [isViewSuppliers, setIsViewSuppliers] = useState<boolean>(false)
-    const [isSuppliersConfiguration, setIsSuppliersConfiguration] = useState<boolean>(false)
-
-    //Purchase Orders
-    const [isPurchaseOrders, setIsPurchaseOrders] = useState<boolean>(false)
-    const [isViewPurchaseOrders, setIsViewPurchaseOrders] = useState<boolean>(false)
-    const [isCreatePurchaseOrders, setIsCreatePurchaseOrders] = useState<boolean>(false)
 
     //Orders
-    const [isCreateOrder, setIsCreateOrder] = useState<boolean>(false)
     const [isPendingOrders, setIsPendingOrders] = useState<boolean>(false)
-    const [isCompletedOrders, setIsCompletedOrders] = useState<boolean>(false)
-
-    //Users
-    const [isViewUsers, setIsViewUsers] = useState<boolean>(false)
-    const [isUserConfiguration, setIsUserConfiguration] = useState<boolean>(false)
 
     //Pigs
     const [isPigs, setIsPigs] = useState<boolean>(false)
@@ -59,20 +37,15 @@ const Navdata = () => {
     const [isDiscardedPigs, setIsDiscardedPigs] = useState<boolean>(false)
     const [isInventoryPigs, setIsInventoryPigs] = useState<boolean>(false)
 
-    //Groups
-    const [isViewGroups, setIsViewGroups] = useState<boolean>(false)
-
     //Reproduction
     const [isReproduction, setIsReproduction] = useState<boolean>(false)
     const [isLaboratory, setIsLaboratory] = useState<boolean>(false)
-    const [isExtraction, setIsExtraction] = useState<boolean>(false)
     const [isGestation, setIsGestation] = useState<boolean>(false)
     const [isBirths, setIsBirths] = useState<boolean>(false)
 
     //Medication
     const [isMedication, setIsMedication] = useState<boolean>(false)
     const [isMedicationPackage, setIsMedicationPackage] = useState<boolean>(false)
-    const [isVaccinationPlans, setIsVaccinationPlans] = useState<boolean>(false)
 
     //Feeding
     const [isFeeding, setIsFeeding] = useState<boolean>(false)
@@ -91,14 +64,6 @@ const Navdata = () => {
     const [isGrowing, setIsGrowing] = useState<boolean>(false)
     const [isViewGrowingGroups, setIsViewGrowingGroups] = useState<boolean>(false)
 
-    //Finishing - Ceba
-    const [isFinishing, setIsFinishing] = useState<boolean>(false)
-    const [isViewFinishingGroups, setIsViewFinishingGroups] = useState<boolean>(false)
-
-    //Exit
-    const [isExit, setIsExit] = useState<boolean>(false)
-    const [isViewExitGroups, setIsViewExitGroups] = useState<boolean>(false)
-
     //Replacement
     const [isReplacement, setIsReplacement] = useState<boolean>(false);
     const [isSows, setIsSows] = useState<boolean>(false);
@@ -106,8 +71,6 @@ const Navdata = () => {
 
     //Sale
     const [isSale, setIsSale] = useState<boolean>(false);
-    const [isSaleGroups, setIsSaleGroups] = useState<boolean>(false);
-    const [isSoldGroups, setIsSoldGroups] = useState<boolean>(false);
     const [isPigSales, setIsPigSales] = useState<boolean>(false);
 
     const [iscurrentState, setIscurrentState] = useState('Home');
@@ -144,9 +107,6 @@ const Navdata = () => {
         if (iscurrentState !== 'Orders') {
             setIsOrders(false)
         }
-        if (iscurrentState !== 'Users') {
-            setIsUsers(false);
-        }
         if (iscurrentState !== 'SubwarehouseInventory') {
             setIsSubwarehouseInventory(false)
         }
@@ -180,14 +140,8 @@ const Navdata = () => {
         if (iscurrentState !== 'Growing') {
             setIsGrowing(false)
         }
-        if (iscurrentState !== 'Finishing') {
-            setIsFinishing(false)
-        }
         if (iscurrentState !== 'Replacement') {
             setIsReplacement(false)
-        }
-        if (iscurrentState !== 'Exit') {
-            setIsExit(false)
         }
         if (iscurrentState !== 'Sale') {
             setIsSale(false)
@@ -199,7 +153,6 @@ const Navdata = () => {
         isHome,
         isWarehouse,
         isOrders,
-        isUsers,
         isSubwarehouseInventory,
         isSubwarehouseIncomes,
         isSubwarehouseOutcomes,
@@ -210,14 +163,13 @@ const Navdata = () => {
         isLactation,
         isPreinitiation,
         isGrowing,
-        isFinishing,
         isReplacement,
-        isExit,
         isSale,
     ]);
 
     const menuItems: any = [
 
+        // ===================== INICIO =====================
         {
             id: "home",
             label: "Inicio",
@@ -228,6 +180,14 @@ const Navdata = () => {
                 e.preventDefault();
                 setIscurrentState('Home');
             }
+        },
+
+        // ===================== ADMINISTRACIÓN =====================
+        {
+            id: "header-admin",
+            label: "Administración",
+            isHeader: true,
+            roles: ["Superadmin", 'farm_manager', 'warehouse_manager', 'subwarehouse_manager', 'general_worker'],
         },
         {
             id: "farms",
@@ -343,7 +303,7 @@ const Navdata = () => {
             },
         },
 
-        //Opcines de almacen para subwarehouseManager
+        // Opciones de almacén para subwarehouse_manager
         {
             id: "subwarehouseInventory",
             label: "Inventario",
@@ -407,22 +367,42 @@ const Navdata = () => {
                 },
             ]
         },
-
         {
-            id: 'users',
-            label: 'Usuarios',
-            icon: ' ri-user-line',
-            link: "/users/view_users",
-            roles: ["Superadmin", 'farm_manager'],
-            stateVariables: isUsers,
+            id: 'sale',
+            label: 'Venta',
+            icon: 'ri-money-dollar-circle-line',
+            link: '/#',
+            roles: ['farm_manager', 'general_worker',],
             click: function (e: any) {
                 e.preventDefault();
-                setIsUsers(!isUsers)
-                setIscurrentState('Users');
+                setIscurrentState('Sale')
+                setIsSale(!isSale)
                 updateIconSidebar(e);
             },
+            stateVariables: isSale,
+            subItems: [
+                {
+                    id: "pigSales",
+                    label: "Ventas registradas",
+                    link: "/sale/view_pig_sales",
+                    roles: ['farm_manager', 'general_worker'],
+                    parentId: "sale",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsPigSales(!isPigSales)
+                    },
+                    stateVariables: isPigSales,
+                },
+            ]
         },
 
+        // ===================== OPERACIÓN =====================
+        {
+            id: "header-operation",
+            label: "Operación",
+            isHeader: true,
+            roles: ['farm_manager', 'general_worker', 'reproduction_technician', 'veterinarian'],
+        },
         {
             id: 'pigs',
             label: 'Cerdos',
@@ -457,13 +437,52 @@ const Navdata = () => {
                     parentId: "pigs",
                     click: function (e: any) {
                         e.preventDefault();
-                        setIsDiscardedPigs(!DiscardedPigs)
+                        setIsDiscardedPigs(!isDiscardedPigs)
                     },
                     stateVariables: isViewPigs,
                 },
             ]
         },
-
+        {
+            id: 'replacement',
+            label: 'Reemplazo',
+            icon: 'mdi mdi-cat',
+            link: '/#',
+            roles: ['farm_manager', 'reproduction_technician', 'general_worker', 'veterinarian',],
+            click: function (e: any) {
+                e.preventDefault();
+                setIscurrentState('Replacement')
+                setIsReplacement(!isReplacement)
+                updateIconSidebar(e);
+            },
+            stateVariables: isReplacement,
+            subItems: [
+                {
+                    id: "sows",
+                    label: "Cerdas",
+                    link: "/replacement/view_sows",
+                    roles: ['farm_manager', 'reproduction_technician', 'general_worker', 'veterinarian',],
+                    parentId: "replacement",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsSows(!isSows)
+                    },
+                    stateVariables: isSows,
+                },
+                {
+                    id: "boars",
+                    label: "Berracos",
+                    link: "/replacement/view_boars",
+                    roles: ['farm_manager', 'reproduction_technician', 'general_worker', 'veterinarian',],
+                    parentId: "replacement",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsBoars(!isBoars)
+                    },
+                    stateVariables: isBoars,
+                },
+            ]
+        },
         {
             id: 'reproduction',
             label: 'Reproducción',
@@ -563,7 +582,6 @@ const Navdata = () => {
                             roles: ['farm_manager', 'reproduction_technician'],
                             parentId: "births"
                         },
-
                     ]
                 }
             ]
@@ -652,98 +670,13 @@ const Navdata = () => {
                 },
             ]
         },
-        {
-            id: 'replacement',
-            label: 'Reemplazo',
-            icon: 'mdi mdi-cat',
-            link: '/#',
-            roles: ['farm_manager', 'reproduction_technician', 'general_worker', 'veterinarian',],
-            click: function (e: any) {
-                e.preventDefault();
-                setIscurrentState('Replacement')
-                setIsReplacement(!isReplacement)
-                updateIconSidebar(e);
-            },
-            stateVariables: isReplacement,
-            subItems: [
-                {
-                    id: "sows",
-                    label: "Cerdas",
-                    link: "/replacement/view_sows",
-                    roles: ['farm_manager', 'reproduction_technician', 'general_worker', 'veterinarian',],
-                    parentId: "replacement",
-                    click: function (e: any) {
-                        e.preventDefault();
-                        setIsSows(!isSows)
-                    },
-                    stateVariables: isSows,
-                },
-                {
-                    id: "boars",
-                    label: "Berracos",
-                    link: "/replacement/view_boars",
-                    roles: ['farm_manager', 'reproduction_technician', 'general_worker', 'veterinarian',],
-                    parentId: "replacement",
-                    click: function (e: any) {
-                        e.preventDefault();
-                        setIsBoars(!isBoars)
-                    },
-                    stateVariables: isBoars,
-                },
-            ]
 
-        },
+        // ===================== SALUD Y NUTRICIÓN =====================
         {
-            id: 'sale',
-            label: 'Venta',
-            icon: 'ri-money-dollar-circle-line',
-            link: '/#',
-            roles: ['farm_manager', 'general_worker',],
-            click: function (e: any) {
-                e.preventDefault();
-                setIscurrentState('Sale')
-                setIsSale(!isSale)
-                updateIconSidebar(e);
-            },
-            stateVariables: isSale,
-            subItems: [
-                {
-                    id: "saleGroups",
-                    label: "Grupos para venta",
-                    link: "/sale/view_sale_groups",
-                    roles: ['farm_manager', 'general_worker'],
-                    parentId: "sale",
-                    click: function (e: any) {
-                        e.preventDefault();
-                        setIsSaleGroups(!isSaleGroups)
-                    },
-                    stateVariables: isSaleGroups,
-                },
-                {
-                    id: "soldGroups",
-                    label: "Grupos vendidos",
-                    link: "/sale/view_sold_groups",
-                    roles: ['farm_manager', 'general_worker'],
-                    parentId: "sale",
-                    click: function (e: any) {
-                        e.preventDefault();
-                        setIsSoldGroups(!isSoldGroups)
-                    },
-                    stateVariables: isSoldGroups,
-                },
-                {
-                    id: "pigSales",
-                    label: "Ventas registradas",
-                    link: "/sale/view_pig_sales",
-                    roles: ['farm_manager', 'general_worker'],
-                    parentId: "sale",
-                    click: function (e: any) {
-                        e.preventDefault();
-                        setIsPigSales(!isPigSales)
-                    },
-                    stateVariables: isPigSales,
-                },
-            ]
+            id: "header-health",
+            label: "Salud y Nutrición",
+            isHeader: true,
+            roles: ['farm_manager', 'veterinarian'],
         },
         {
             id: 'medication',
@@ -775,7 +708,7 @@ const Navdata = () => {
         },
         {
             id: 'feeding',
-            label: 'Alimentacion',
+            label: 'Alimentación',
             icon: 'ri-plant-line',
             link: '/#',
             roles: ['farm_manager', 'veterinarian',],
@@ -789,7 +722,7 @@ const Navdata = () => {
             subItems: [
                 {
                     id: "feedingPackages",
-                    label: "Paquetes de alimentacion",
+                    label: "Paquetes de alimentación",
                     link: "/feeding/view_feeding_packages",
                     roles: ['farm_manager', 'veterinarian',],
                     parentId: "feeding",
@@ -801,7 +734,7 @@ const Navdata = () => {
                 },
                 {
                     id: "feedingConsumption",
-                    label: "Consumo de alimentacion",
+                    label: "Consumo de alimentación",
                     link: "/feeding/view_feeding_consumption",
                     roles: ['farm_manager', 'veterinarian',],
                     parentId: "feeding",
