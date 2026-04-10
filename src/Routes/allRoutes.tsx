@@ -74,6 +74,35 @@ import ViewSoldGroups from "pages/Groups/ViewSoldGroups";
 import ViewPigSales from "pages/Sales/ViewPigSales";
 import ViewFeedingConsumption from "pages/Feeding/ViewFeedingConsumption";
 
+//Reports - Production
+import InseminationsBirthsReport from "pages/Reports/Production/InseminationsBirthsReport";
+import GroupsReport from "pages/Reports/Production/GroupsReport";
+import MortalityReport from "pages/Reports/Production/MortalityReport";
+import FeedWeightReport from "pages/Reports/Production/FeedWeightReport";
+import ReproductiveReport from "pages/Reports/Production/ReproductiveReport";
+
+//Reports - Inventory
+import InventoryMovementsReport from "pages/Reports/Inventory/InventoryMovementsReport";
+import FeedConsumptionReport from "pages/Reports/Inventory/FeedConsumptionReport";
+import InventoryAlertsReport from "pages/Reports/Inventory/InventoryAlertsReport";
+import InventoryValuationReport from "pages/Reports/Inventory/InventoryValuationReport";
+
+//Reports - Finance
+import PurchasesReport from "pages/Reports/Finance/PurchasesReport";
+import CostAnalysisReport from "pages/Reports/Finance/CostAnalysisReport";
+import ProfitabilityReport from "pages/Reports/Finance/ProfitabilityReport";
+import OperationsClosingReport from "pages/Reports/Finance/OperationsClosingReport";
+import CashFlowReport from "pages/Reports/Finance/CashFlowReport";
+import SupplierStatementReport from "pages/Reports/Finance/SupplierStatementReport";
+
+//Reports - Sales
+import SalesReport from "pages/Reports/Sales/SalesReport";
+import ClientsReport from "pages/Reports/Sales/ClientsReport";
+
+//Reports - Catalogs, Traceability, Audit
+import CatalogsReport from "pages/Reports/Catalogs/CatalogsReport";
+import GroupTraceabilityReport from "pages/Reports/Traceability/GroupTraceabilityReport";
+import AuditReport from "pages/Reports/Audit/AuditReport";
 
 
 const authProtectedRoutes = [
@@ -177,6 +206,35 @@ const authProtectedRoutes = [
   { path: '/sale/view_sold_groups', component: <ViewSoldGroups /> },
   { path: '/sale/view_pig_sales', component: <ViewPigSales /> },
 
+  //Reports - Production
+  { path: '/reports/production/inseminations-births', component: <InseminationsBirthsReport /> },
+  { path: '/reports/production/groups', component: <GroupsReport /> },
+  { path: '/reports/production/mortality', component: <MortalityReport /> },
+  { path: '/reports/production/feed-weight', component: <FeedWeightReport /> },
+  { path: '/reports/production/reproductive', component: <ReproductiveReport /> },
+
+  //Reports - Inventory
+  { path: '/reports/inventory/movements', component: <InventoryMovementsReport /> },
+  { path: '/reports/inventory/feed-consumption', component: <FeedConsumptionReport /> },
+  { path: '/reports/inventory/alerts', component: <InventoryAlertsReport /> },
+  { path: '/reports/inventory/valuation', component: <InventoryValuationReport /> },
+
+  //Reports - Finance
+  { path: '/reports/finance/purchases', component: <PurchasesReport /> },
+  { path: '/reports/finance/costs', component: <CostAnalysisReport /> },
+  { path: '/reports/finance/profitability', component: <ProfitabilityReport /> },
+  { path: '/reports/finance/operations-closing', component: <OperationsClosingReport /> },
+  { path: '/reports/finance/cash-flow', component: <CashFlowReport /> },
+  { path: '/reports/finance/supplier-statement', component: <SupplierStatementReport /> },
+
+  //Reports - Sales
+  { path: '/reports/sales/overview', component: <SalesReport /> },
+  { path: '/reports/sales/clients', component: <ClientsReport /> },
+
+  //Reports - Catalogs, Traceability, Audit
+  { path: '/reports/catalogs', component: <CatalogsReport /> },
+  { path: '/reports/traceability', component: <GroupTraceabilityReport /> },
+  { path: '/reports/audit', component: <AuditReport /> },
 
 
   // this route should be at the end of all other routes

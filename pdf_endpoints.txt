@@ -1,0 +1,308 @@
+================================================================================
+                    ENDPOINTS DE REPORTES PDF - MFarm
+================================================================================
+Este archivo contiene todos los endpoints necesarios para generar reportes PDF.
+Cada entrada incluye: ruta del endpoint, datos que se envian y datos que debe
+retornar el backend en formato PDF.
+
+================================================================================
+PRODUCCION
+================================================================================
+
+2. Reporte de Inseminaciones y Partos
+   GET /reports/production/inseminations-births/pdf/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&orientation=portrait&format=A4
+   Recibe:
+     - farm_id (param): string
+     - start_date (query): string (YYYY-MM-DD)
+     - end_date (query): string (YYYY-MM-DD)
+     - orientation (query): string (portrait|landscape)
+     - format (query): string (A4)
+   Debe retornar (PDF con):
+     - Tabla de inseminaciones: fecha, cerda, berraco/muestra, tecnico, resultado
+     - Tabla de partos: fecha, cerda, nacidos vivos, nacidos muertos, momificados
+     - Resumen: total inseminaciones, total partos, efectividad
+
+3. Reporte de Grupos
+   GET /reports/production/groups/pdf/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&orientation=landscape&format=A4&group_id=optional
+   Recibe:
+     - farm_id (param): string
+     - start_date (query): string (YYYY-MM-DD)
+     - end_date (query): string (YYYY-MM-DD)
+     - orientation (query): string (portrait|landscape)
+     - format (query): string (A4)
+     - group_id (query, opcional): string
+   Debe retornar (PDF con):
+     - Tabla de grupos: nombre, etapa, cantidad cerdos, peso promedio,
+       fecha entrada, dias en etapa
+     - Movimientos por grupo: fecha, tipo movimiento, cantidad, origen, destino
+     - Resumen productivo: entradas, salidas, muertes, peso, consumo
+
+4. Reporte de Mortalidad
+   GET /reports/production/mortality/pdf/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&orientation=portrait&format=A4
+   Recibe:
+     - farm_id (param): string
+     - start_date (query): string (YYYY-MM-DD)
+     - end_date (query): string (YYYY-MM-DD)
+     - orientation (query): string (portrait|landscape)
+     - format (query): string (A4)
+   Debe retornar (PDF con):
+     - Tabla mortalidad por etapa: etapa, muertes, total animales, tasa %
+     - Tabla mortalidad por grupo: grupo, muertes, total, tasa %
+     - Tabla mortalidad por causa: causa, cantidad, porcentaje
+     - Grafica de tendencia de mortalidad por mes
+
+5. Reporte de Conversion Alimenticia y Peso
+   GET /reports/production/feed-weight/pdf/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&orientation=landscape&format=A4
+   Recibe:
+     - farm_id (param): string
+     - start_date (query): string (YYYY-MM-DD)
+     - end_date (query): string (YYYY-MM-DD)
+     - orientation (query): string (portrait|landscape)
+     - format (query): string (A4)
+   Debe retornar (PDF con):
+     - Tabla FCR por grupo: grupo, alimento consumido, peso ganado, FCR
+     - Tabla ADG por grupo: grupo, peso inicial, peso actual, dias, ADG
+     - Tabla peso promedio por grupo
+     - Dias promedio en cada etapa
+
+6. Reporte de Rendimiento Reproductivo
+   GET /reports/production/reproductive/pdf/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&orientation=portrait&format=A4
+   Recibe:
+     - farm_id (param): string
+     - start_date (query): string (YYYY-MM-DD)
+     - end_date (query): string (YYYY-MM-DD)
+     - orientation (query): string (portrait|landscape)
+     - format (query): string (A4)
+   Debe retornar (PDF con):
+     - Efectividad de inseminacion: inseminaciones, exitosas, tasa %
+     - Intervalo destete-celo promedio
+     - Partos por hembra (promedio y por cerda)
+     - Nacidos vivos vs muertos por parto
+     - Lechones destetados por cerda
+
+================================================================================
+INVENTARIO
+================================================================================
+
+7. Reporte de Movimientos e Inventario
+   GET /reports/inventory/movements/pdf/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&orientation=landscape&format=A4
+   Recibe:
+     - farm_id (param): string
+     - start_date (query): string (YYYY-MM-DD)
+     - end_date (query): string (YYYY-MM-DD)
+     - orientation (query): string (portrait|landscape)
+     - format (query): string (A4)
+   Debe retornar (PDF con):
+     - Tabla de movimientos: fecha, producto, tipo, cantidad, almacen, usuario
+     - Tabla de inventario por almacen: producto, categoria, stock actual, ultimo movimiento
+     - Resumen: total movimientos, entradas, salidas, cambio neto
+
+8. Reporte de Consumo de Alimento
+   GET /reports/inventory/feed-consumption/pdf/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&orientation=landscape&format=A4
+   Recibe:
+     - farm_id (param): string
+     - start_date (query): string (YYYY-MM-DD)
+     - end_date (query): string (YYYY-MM-DD)
+     - orientation (query): string (portrait|landscape)
+     - format (query): string (A4)
+   Debe retornar (PDF con):
+     - Tabla consumo por grupo: grupo, etapa, cerdos, total consumido, promedio por cerdo
+     - Tabla consumo por fase: fase, producto, total consumido, grupos, promedio por grupo
+     - Tabla consumo por dia: fecha, total consumido, grupos activos
+     - Resumen: total consumido, promedio diario, promedio por cerdo
+
+9. Reporte de Alertas y Analisis de Inventario
+   GET /reports/inventory/alerts/pdf/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&orientation=portrait&format=A4
+   Recibe:
+     - farm_id (param): string
+     - start_date (query): string (YYYY-MM-DD)
+     - end_date (query): string (YYYY-MM-DD)
+     - orientation (query): string (portrait|landscape)
+     - format (query): string (A4)
+   Debe retornar (PDF con):
+     - Tabla rotacion: producto, almacen, entradas, salidas, indice rotacion
+     - Tabla sin movimiento: producto, almacen, stock, dias sin movimiento
+     - Tabla mermas: producto, esperado, real, merma, merma %
+
+10. Reporte de Valoracion de Inventario
+   GET /reports/inventory/valuation/pdf/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&orientation=landscape&format=A4
+   Recibe:
+     - farm_id (param): string
+     - start_date (query): string (YYYY-MM-DD)
+     - end_date (query): string (YYYY-MM-DD)
+     - orientation (query): string (portrait|landscape)
+     - format (query): string (A4)
+   Debe retornar (PDF con):
+     - Tabla valoracion: producto, categoria, almacen, stock, costo promedio, valor total
+     - Tabla costos: producto, costo promedio, min, max, ultimo, variacion %
+     - Resumen: valor total inventario, productos, costo promedio
+
+================================================================================
+COMPRAS Y FINANZAS
+================================================================================
+
+11. Reporte de Compras y Cuentas por Pagar
+   GET /reports/finance/purchases/pdf/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&orientation=landscape&format=A4
+   Recibe:
+     - farm_id (param): string
+     - start_date (query): string (YYYY-MM-DD)
+     - end_date (query): string (YYYY-MM-DD)
+     - orientation (query): string (portrait|landscape)
+     - format (query): string (A4)
+   Debe retornar (PDF con):
+     - Tabla compras: fecha, proveedor, producto, cantidad, precio unitario, total, factura
+     - Tabla fluctuacion precios: producto, precio actual, anterior, variacion, variacion %
+     - Resumen: total gastado, compras, promedio por compra, proveedores
+
+12. Reporte de Analisis de Costos
+   GET /reports/finance/costs/pdf/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&orientation=landscape&format=A4
+   Recibe:
+     - farm_id (param): string
+     - start_date (query): string (YYYY-MM-DD)
+     - end_date (query): string (YYYY-MM-DD)
+     - orientation (query): string (portrait|landscape)
+     - format (query): string (A4)
+   Debe retornar (PDF con):
+     - Tabla costos por grupo: grupo, etapa, cerdos, alimento, medicamento, otros, total, costo/cerdo
+     - Tabla costos por cerdo: cerdo, grupo, alimento, medicamento, otros, total, peso, costo/kg
+     - Tabla costos por tipo: tipo, total, porcentaje, registros
+     - Resumen: costo total, costo/grupo, costo/cerdo, costo/kg
+
+13. Reporte de Rentabilidad
+   GET /reports/finance/profitability/pdf/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&orientation=landscape&format=A4
+   Recibe:
+     - farm_id (param): string
+     - start_date (query): string (YYYY-MM-DD)
+     - end_date (query): string (YYYY-MM-DD)
+     - orientation (query): string (portrait|landscape)
+     - format (query): string (A4)
+   Debe retornar (PDF con):
+     - Tabla costo vs ingreso por mes: mes, costo, ingreso, utilidad, margen %
+     - Tabla utilidad por grupo: grupo, costo, ingreso, utilidad, margen, utilidad/cerdo
+     - Tabla utilidad por venta: fecha, comprador, cerdos, peso, ingreso, costo, utilidad, margen
+     - Tabla margen por cliente: cliente, ventas, ingreso, costo, utilidad, margen promedio
+     - Resumen: ingreso total, costo total, utilidad, margen general
+
+================================================================================
+VENTAS
+================================================================================
+
+14. Reporte de Ventas
+   GET /reports/sales/overview/pdf/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&orientation=landscape&format=A4
+   Recibe:
+     - farm_id (param): string
+     - start_date (query): string (YYYY-MM-DD)
+     - end_date (query): string (YYYY-MM-DD)
+     - orientation (query): string (portrait|landscape)
+     - format (query): string (A4)
+   Debe retornar (PDF con):
+     - Tabla ventas: fecha, codigo, comprador, cerdos, peso, precio/kg, monto, metodo, estado
+     - Tabla ventas por cliente: cliente, ventas, cerdos, peso, monto, prom $/kg, prom $/cerdo
+     - Tabla ventas por periodo: periodo, ventas, cerdos, peso, monto, prom $/kg
+     - Resumen: total ventas, ingreso total, cerdos vendidos, peso vendido, precio prom/cerdo, precio prom/kg
+
+15. Reporte de Analisis de Clientes
+   GET /reports/sales/clients/pdf/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&orientation=landscape&format=A4
+   Recibe:
+     - farm_id (param): string
+     - start_date (query): string (YYYY-MM-DD)
+     - end_date (query): string (YYYY-MM-DD)
+     - orientation (query): string (portrait|landscape)
+     - format (query): string (A4)
+   Debe retornar (PDF con):
+     - Tabla clientes rentables: cliente, ventas, cerdos, peso, ingreso, utilidad, margen %, prom $/kg
+     - Tabla frecuencia: cliente, ventas, primera compra, ultima compra, dias entre compras, prom por compra, ingreso total
+     - Resumen: total clientes, activos, cliente principal, ingreso promedio por cliente
+
+================================================================================
+FINANZAS - CONTABLES
+================================================================================
+
+19. Cierre de Operacion
+   GET /reports/finance/operations-closing/pdf/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&orientation=portrait&format=A4
+   Recibe:
+     - farm_id (param): string
+     - start_date (query): string (YYYY-MM-DD)
+     - end_date (query): string (YYYY-MM-DD)
+     - orientation (query): string (portrait|landscape)
+     - format (query): string (A4)
+   Debe retornar (PDF con):
+     - Tabla ingresos por ventas: tipo, cerdos, peso, precio/kg, monto
+     - Tabla desglose de costos agrupado por categoria: descripcion, monto
+     - Resumen resultado operativo: ingresos - costos = resultado, margen %
+
+20. Flujo de Caja
+   GET /reports/finance/cash-flow/pdf/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&orientation=portrait&format=A4
+   Recibe:
+     - farm_id (param): string
+     - start_date (query): string (YYYY-MM-DD)
+     - end_date (query): string (YYYY-MM-DD)
+     - orientation (query): string (portrait|landscape)
+     - format (query): string (A4)
+   Debe retornar (PDF con):
+     - Tabla resumen por periodo: periodo, entradas, salidas, flujo neto
+     - Tabla movimientos detallados: fecha, tipo, descripcion, referencia, entrada, salida
+     - Resumen: total entradas, total salidas, flujo neto
+
+21. Estado de Cuenta por Proveedor
+   GET /reports/finance/supplier-statement/pdf/:supplier_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&orientation=portrait&format=A4
+   Recibe:
+     - supplier_id (param): string
+     - start_date (query): string (YYYY-MM-DD)
+     - end_date (query): string (YYYY-MM-DD)
+     - orientation (query): string (portrait|landscape)
+     - format (query): string (A4)
+   Debe retornar (PDF con):
+     - Info proveedor: nombre, total compras, total gastado, productos
+     - Tabla resumen por producto: producto, cantidad, compras, precio prom, total
+     - Tabla detalle compras: fecha, producto, cantidad, precio unit, total, factura
+
+================================================================================
+CATALOGOS
+================================================================================
+
+16. Reporte de Catalogos
+   GET /reports/catalogs/pdf/:farm_id?orientation=portrait&format=A4
+   Recibe:
+     - farm_id (param): string
+     - orientation (query): string (portrait|landscape)
+     - format (query): string (A4)
+   (No requiere fechas)
+   Debe retornar (PDF con):
+     - Tabla proveedores: nombre, contacto, telefono, email, compras, total gastado, ultima compra, estado
+     - Tabla clientes: nombre, contacto, telefono, email, ventas, total ingreso, ultima venta, estado
+     - Resumen: total proveedores, activos, total clientes, activos
+
+================================================================================
+TRAZABILIDAD
+================================================================================
+
+17. Reporte de Trazabilidad por Grupo
+   GET /reports/traceability/group/pdf/:group_id?orientation=portrait&format=A4
+   Recibe:
+     - group_id (param): string
+     - orientation (query): string (portrait|landscape)
+     - format (query): string (A4)
+   (No requiere fechas, es el historial completo del grupo)
+   Debe retornar (PDF con):
+     - Info del grupo: nombre, etapa, cerdos, peso promedio, fecha entrada
+     - KPIs: alimento consumido, medicaciones, muertes, ventas
+     - Tabla timeline: fecha, tipo evento, descripcion, detalles, usuario
+
+================================================================================
+AUDITORIA
+================================================================================
+
+18. Reporte de Auditoria
+   GET /reports/audit/pdf/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&orientation=landscape&format=A4
+   Recibe:
+     - farm_id (param): string
+     - start_date (query): string (YYYY-MM-DD)
+     - end_date (query): string (YYYY-MM-DD)
+     - orientation (query): string (portrait|landscape)
+     - format (query): string (A4)
+   Debe retornar (PDF con):
+     - Tabla historial de movimientos: fecha, usuario, accion, modulo, descripcion, detalles
+     - Tabla ajustes de inventario: fecha, producto, almacen, stock anterior, nuevo, diferencia, motivo, usuario
+     - Tabla cambios de precio: fecha, producto, precio anterior, nuevo, variacion, variacion %, usuario
+     - Resumen: total acciones, usuarios, ajustes, cambios de precio

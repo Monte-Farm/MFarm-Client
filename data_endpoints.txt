@@ -1,0 +1,1236 @@
+================================================================================
+          ENDPOINTS DE DATOS PARA REPORTES - MFarm (Produccion)
+================================================================================
+Cada endpoint recibe parametros via query string y retorna JSON.
+Formato de respuesta: { success: true, data: { ... } }
+
+================================================================================
+2. INSEMINACIONES Y PARTOS
+================================================================================
+GET /reports/production/inseminations-births/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+
+RECIBE:
+  - farm_id (param): string
+  - start_date (query): string (YYYY-MM-DD)
+  - end_date (query): string (YYYY-MM-DD)
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "totalInseminations": number,       // Total de inseminaciones en el periodo
+      "successfulInseminations": number,  // Inseminaciones exitosas
+      "effectivenessRate": number,        // Tasa de efectividad en % (ej: 85.3)
+      "totalBirths": number,             // Total de partos
+      "avgBornAlive": number,            // Promedio nacidos vivos por parto (ej: 12.1)
+      "avgBornDead": number,             // Promedio nacidos muertos por parto (ej: 0.8)
+      "totalBornAlive": number,          // Suma total de nacidos vivos
+      "totalBornDead": number            // Suma total de nacidos muertos
+    },
+    "inseminations": [
+      {
+        "_id": string,                   // ID del registro
+        "date": string,                  // Fecha ISO (ej: "2026-03-15T00:00:00.000Z")
+        "sowIdentifier": string,         // Identificador de la cerda (ej: "C-0045")
+        "boarOrSample": string,          // Berraco o muestra usada (ej: "B-012" o "M-2026-001")
+        "technician": string,            // Nombre del tecnico que realizo la inseminacion
+        "result": string,                // "success" | "pending" | "failed"
+        "observations": string           // Texto libre de observaciones
+      }
+    ],
+    "births": [
+      {
+        "_id": string,
+        "date": string,                  // Fecha ISO
+        "sowIdentifier": string,         // Identificador de la cerda
+        "bornAlive": number,             // Lechones nacidos vivos
+        "bornDead": number,              // Lechones nacidos muertos
+        "mummified": number,             // Lechones momificados
+        "totalBorn": number,             // Total nacidos (vivos + muertos + momificados)
+        "observations": string
+      }
+    ],
+    "monthlyData": [
+      {
+        "month": string,                 // "Ene 2026", "Feb 2026", etc.
+        "bornAlive": number,             // Total nacidos vivos ese mes
+        "bornDead": number               // Total nacidos muertos ese mes
+      }
+    ]
+  }
+}
+
+
+================================================================================
+3. REPORTE DE GRUPOS
+================================================================================
+GET /reports/production/groups/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+
+RECIBE:
+  - farm_id (param): string
+  - start_date (query): string (YYYY-MM-DD)
+  - end_date (query): string (YYYY-MM-DD)
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "totalGroups": number,             // Grupos activos
+      "totalPigs": number,               // Total de cerdos en todos los grupos
+      "avgPigsPerGroup": number,         // Promedio de cerdos por grupo (ej: 25.3)
+      "totalMovements": number,          // Total de movimientos en el periodo
+      "avgDaysInStage": number,          // Promedio de dias en etapa actual
+      "totalDeaths": number              // Total de muertes en los grupos
+    },
+    "groups": [
+      {
+        "_id": string,
+        "name": string,                  // Nombre del grupo (ej: "G-2026-001")
+        "stage": string,                 // "lactation" | "weaning" | "growing" | "finishing" | "sold"
+        "pigCount": number,              // Cerdos actuales en el grupo
+        "avgWeight": number,             // Peso promedio en kg (ej: 45.3)
+        "entryDate": string,             // Fecha ISO de entrada a la etapa
+        "daysInStage": number            // Dias transcurridos en la etapa actual
+      }
+    ],
+    "movements": [
+      {
+        "_id": string,
+        "date": string,                  // Fecha ISO del movimiento
+        "groupName": string,             // Nombre del grupo
+        "movementType": string,          // "entry" | "exit" | "transfer" | "death" | "sale"
+        "quantity": number,              // Cantidad de cerdos movidos
+        "origin": string,                // Origen del movimiento (ej: "Lactancia", "Destete")
+        "destination": string,           // Destino (ej: "Crecimiento", "Venta")
+        "observations": string
+      }
+    ],
+    "summaries": [
+      {
+        "_id": string,
+        "groupName": string,
+        "entries": number,               // Total entradas en el periodo
+        "exits": number,                 // Total salidas
+        "deaths": number,                // Total muertes
+        "currentCount": number,          // Conteo actual
+        "avgWeight": number,             // Peso promedio actual en kg
+        "totalFeedConsumed": number      // Alimento total consumido en kg
+      }
+    ],
+    "groupsByStage": [
+      {
+        "stage": string,                 // "lactation" | "weaning" | "growing" | "finishing" | "sold"
+        "groupCount": number,            // Cantidad de grupos en esa etapa
+        "pigCount": number               // Cantidad de cerdos en esa etapa
+      }
+    ]
+  }
+}
+
+
+================================================================================
+4. REPORTE DE MORTALIDAD
+================================================================================
+GET /reports/production/mortality/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+
+RECIBE:
+  - farm_id (param): string
+  - start_date (query): string (YYYY-MM-DD)
+  - end_date (query): string (YYYY-MM-DD)
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "totalDeaths": number,             // Total de muertes en el periodo
+      "overallRate": number,             // Tasa de mortalidad general en % (ej: 3.45)
+      "highestStage": string,            // Nombre de la etapa con mayor tasa (ej: "Lactancia")
+      "highestStageRate": number,        // Tasa de esa etapa en % (ej: 5.2)
+      "deadPigletsByArea": number,       // Lechones muertos (lactancia + destete)
+      "avgDeathsPerMonth": number        // Promedio de muertes por mes (ej: 8.5)
+    },
+    "byStage": [
+      {
+        "stage": string,                 // Clave interna (ej: "lactation")
+        "stageLabel": string,            // Nombre legible (ej: "Lactancia")
+        "deaths": number,                // Muertes en esa etapa
+        "totalAnimals": number,          // Total de animales que pasaron por esa etapa
+        "rate": number                   // Tasa en % (ej: 4.20)
+      }
+    ],
+    "byGroup": [
+      {
+        "groupName": string,             // Nombre del grupo
+        "deaths": number,                // Muertes en ese grupo
+        "totalAnimals": number,          // Total animales del grupo
+        "rate": number,                  // Tasa en % (ej: 2.50)
+        "accumulatedDeaths": number      // Muertes acumuladas historicas del grupo
+      }
+    ],
+    "byCause": [
+      {
+        "cause": string,                 // Causa de muerte (ej: "Enfermedad respiratoria", "Aplastamiento", "Diarrea", "Desconocida")
+        "count": number,                 // Cantidad de muertes por esa causa
+        "percentage": number             // Porcentaje del total (ej: 35.5)
+      }
+    ],
+    "monthlyTrend": [
+      {
+        "month": string,                 // "Ene 2026", "Feb 2026", etc.
+        "deaths": number,                // Muertes ese mes
+        "rate": number                   // Tasa de mortalidad del mes en %
+      }
+    ]
+  }
+}
+
+
+================================================================================
+5. CONVERSION ALIMENTICIA Y PESO
+================================================================================
+GET /reports/production/feed-weight/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+
+RECIBE:
+  - farm_id (param): string
+  - start_date (query): string (YYYY-MM-DD)
+  - end_date (query): string (YYYY-MM-DD)
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "avgFcr": number,                  // FCR promedio general (ej: 2.85)
+      "bestFcr": number,                 // Mejor FCR entre todos los grupos (ej: 2.10)
+      "avgAdg": number,                  // ADG promedio en kg/dia (ej: 0.750)
+      "bestAdg": number,                 // Mejor ADG (ej: 0.920)
+      "avgWeight": number,               // Peso promedio general en kg (ej: 65.4)
+      "totalFeedConsumed": number        // Total de alimento consumido en kg
+    },
+    "fcrByGroup": [
+      {
+        "groupName": string,             // Nombre del grupo
+        "feedConsumed": number,          // Alimento consumido total en kg
+        "weightGained": number,          // Peso ganado total en kg
+        "fcr": number,                   // FCR = feedConsumed / weightGained (ej: 2.85)
+        "stage": string                  // Etapa actual del grupo (legible: "Crecimiento")
+      }
+    ],
+    "adgByGroup": [
+      {
+        "groupName": string,
+        "initialWeight": number,         // Peso promedio al inicio en kg
+        "currentWeight": number,         // Peso promedio actual en kg
+        "days": number,                  // Dias transcurridos
+        "adg": number                    // ADG = (currentWeight - initialWeight) / days (ej: 0.780)
+      }
+    ],
+    "weightByGroup": [
+      {
+        "groupName": string,
+        "stage": string,                 // Etapa legible (ej: "Engorda")
+        "pigCount": number,
+        "avgWeight": number,             // Peso promedio en kg
+        "minWeight": number,             // Peso minimo en kg
+        "maxWeight": number              // Peso maximo en kg
+      }
+    ],
+    "daysInStage": [
+      {
+        "stage": string,                 // Clave interna (ej: "weaning")
+        "stageLabel": string,            // Nombre legible (ej: "Destete")
+        "avgDays": number,               // Promedio de dias en esa etapa
+        "minDays": number,               // Minimo de dias
+        "maxDays": number,               // Maximo de dias
+        "targetDays": number             // Objetivo de dias (parametro de la granja, ej: 21)
+      }
+    ],
+    "monthlyTrend": [
+      {
+        "month": string,                 // "Ene 2026", "Feb 2026", etc.
+        "avgWeight": number,             // Peso promedio general del mes en kg
+        "avgFcr": number                 // FCR promedio del mes
+      }
+    ]
+  }
+}
+
+
+================================================================================
+6. RENDIMIENTO REPRODUCTIVO
+================================================================================
+GET /reports/production/reproductive/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+
+RECIBE:
+  - farm_id (param): string
+  - start_date (query): string (YYYY-MM-DD)
+  - end_date (query): string (YYYY-MM-DD)
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "inseminationEffectiveness": number,  // Efectividad general en % (ej: 87.5)
+      "avgWeaningHeatInterval": number,     // Intervalo destete-celo promedio en dias (ej: 5.8)
+      "avgBirthsPerSow": number,            // Partos promedio por cerda (ej: 2.3)
+      "avgBornAlivePerBirth": number,       // Nacidos vivos promedio por parto (ej: 12.1)
+      "avgBornDeadPerBirth": number,        // Nacidos muertos promedio por parto (ej: 0.8)
+      "avgWeanedPerSow": number,            // Destetados promedio por cerda (ej: 10.5)
+      "totalInseminations": number,         // Total inseminaciones en el periodo
+      "totalBirths": number                 // Total partos en el periodo
+    },
+    "inseminationEffectiveness": [
+      {
+        "month": string,                 // "Ene 2026", "Feb 2026", etc.
+        "total": number,                 // Inseminaciones del mes
+        "successful": number,            // Inseminaciones exitosas del mes
+        "rate": number                   // Tasa de efectividad en % (ej: 88.2)
+      }
+    ],
+    "weaningIntervals": [
+      {
+        "sowIdentifier": string,         // Identificador de la cerda (ej: "C-0045")
+        "lastWeaningDate": string,       // Fecha ISO del ultimo destete
+        "heatDate": string,              // Fecha ISO del celo post-destete
+        "intervalDays": number           // Dias entre destete y celo (ej: 5)
+      }
+    ],
+    "birthsPerSow": [
+      {
+        "sowIdentifier": string,
+        "totalBirths": number,           // Total partos de esa cerda en el periodo
+        "avgBornAlive": number,          // Promedio nacidos vivos (ej: 12.5)
+        "avgBornDead": number,           // Promedio nacidos muertos (ej: 0.5)
+        "totalBornAlive": number,        // Suma total nacidos vivos
+        "totalWeanedPiglets": number     // Total de lechones destetados
+      }
+    ],
+    "bornAliveVsDead": [
+      {
+        "month": string,                 // "Ene 2026", "Feb 2026", etc.
+        "bornAlive": number,             // Total nacidos vivos ese mes
+        "bornDead": number,              // Total nacidos muertos ese mes
+        "mummified": number,             // Total momificados ese mes
+        "total": number                  // Suma total ese mes
+      }
+    ]
+  }
+}
+
+
+================================================================================
+================================================================================
+          ENDPOINTS DE DATOS PARA REPORTES - MFarm (Inventario)
+================================================================================
+
+================================================================================
+7. MOVIMIENTOS E INVENTARIO
+================================================================================
+GET /reports/inventory/movements/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+
+RECIBE:
+  - farm_id (param): string
+  - start_date (query): string (YYYY-MM-DD)
+  - end_date (query): string (YYYY-MM-DD)
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "totalMovements": number,          // Total de movimientos en el periodo
+      "totalIncomes": number,            // Total de entradas
+      "totalOutcomes": number,           // Total de salidas
+      "uniqueProducts": number,          // Productos distintos con movimiento
+      "totalWarehouses": number,         // Almacenes activos
+      "netChange": number                // Cambio neto (entradas - salidas), puede ser negativo
+    },
+    "movements": [
+      {
+        "_id": string,
+        "date": string,                  // Fecha ISO
+        "productName": string,           // Nombre del producto
+        "movementType": string,          // "income" | "outcome" | "transfer" | "adjustment"
+        "quantity": number,              // Cantidad movida
+        "unit": string,                  // Unidad (ej: "kg", "L", "pza")
+        "warehouse": string,             // Nombre del almacen
+        "user": string,                  // Nombre del usuario que registro
+        "observations": string
+      }
+    ],
+    "stock": [
+      {
+        "_id": string,
+        "productName": string,
+        "category": string,              // Categoria del producto (ej: "Alimento", "Medicamento")
+        "warehouse": string,
+        "currentStock": number,
+        "unit": string,
+        "lastMovementDate": string       // Fecha ISO del ultimo movimiento
+      }
+    ],
+    "movementsByType": [
+      {
+        "type": string,                  // "income" | "outcome" | "transfer" | "adjustment"
+        "count": number                  // Cantidad de movimientos de ese tipo
+      }
+    ]
+  }
+}
+
+
+================================================================================
+8. CONSUMO DE ALIMENTO
+================================================================================
+GET /reports/inventory/feed-consumption/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+
+RECIBE:
+  - farm_id (param): string
+  - start_date (query): string (YYYY-MM-DD)
+  - end_date (query): string (YYYY-MM-DD)
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "totalConsumed": number,           // Total consumido en kg
+      "avgPerDay": number,               // Promedio diario en kg (ej: 250.5)
+      "avgPerPig": number,               // Promedio por cerdo en kg (ej: 2.35)
+      "avgPerGroup": number,             // Promedio por grupo en kg (ej: 45.8)
+      "groupsWithConsumption": number,   // Grupos que tuvieron consumo
+      "mostConsumedProduct": string      // Nombre del producto mas consumido
+    },
+    "byGroup": [
+      {
+        "groupName": string,
+        "stage": string,                 // Etapa legible (ej: "Crecimiento")
+        "pigCount": number,
+        "totalConsumed": number,         // Total consumido por el grupo en kg
+        "avgPerPig": number,             // Promedio por cerdo (ej: 2.35)
+        "unit": string                   // "kg"
+      }
+    ],
+    "byPhase": [
+      {
+        "phase": string,                 // Fase de alimentacion (ej: "Inicio", "Crecimiento", "Finalizacion")
+        "productName": string,           // Nombre del producto/receta
+        "totalConsumed": number,
+        "groupCount": number,            // Grupos en esa fase
+        "avgPerGroup": number,
+        "unit": string
+      }
+    ],
+    "byDay": [
+      {
+        "date": string,                  // Fecha ISO
+        "totalConsumed": number,
+        "groupsActive": number,          // Grupos que consumieron ese dia
+        "avgPerGroup": number,
+        "unit": string
+      }
+    ],
+    "dailyTrend": [
+      {
+        "date": string,                  // Fecha corta (ej: "01 Abr", "02 Abr")
+        "totalConsumed": number
+      }
+    ]
+  }
+}
+
+
+================================================================================
+9. ALERTAS Y ANALISIS DE INVENTARIO
+================================================================================
+GET /reports/inventory/alerts/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+
+RECIBE:
+  - farm_id (param): string
+  - start_date (query): string (YYYY-MM-DD)
+  - end_date (query): string (YYYY-MM-DD)
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "avgRotationIndex": number,        // Indice de rotacion promedio (ej: 3.5)
+      "staleProductCount": number,       // Productos sin movimiento en 30+ dias
+      "totalShrinkage": number,          // Merma total en kg
+      "shrinkagePercent": number         // Porcentaje de merma general (ej: 1.5)
+    },
+    "rotation": [
+      {
+        "productName": string,
+        "warehouse": string,
+        "totalIn": number,               // Total entradas en el periodo
+        "totalOut": number,              // Total salidas en el periodo
+        "avgStock": number,              // Stock promedio del periodo
+        "rotationIndex": number,         // totalOut / avgStock (ej: 4.2)
+        "unit": string
+      }
+    ],
+    "staleProducts": [
+      {
+        "productName": string,
+        "warehouse": string,
+        "currentStock": number,
+        "unit": string,
+        "lastMovementDate": string,      // Fecha ISO del ultimo movimiento
+        "daysSinceLastMovement": number  // Dias desde el ultimo movimiento
+      }
+    ],
+    "shrinkage": [
+      {
+        "productName": string,
+        "warehouse": string,
+        "expectedStock": number,         // Stock esperado segun entradas-salidas
+        "actualStock": number,           // Stock real contado
+        "shrinkage": number,             // expectedStock - actualStock
+        "shrinkagePercent": number,      // (shrinkage / expectedStock) * 100
+        "unit": string
+      }
+    ],
+    "productCount": number               // Total de productos analizados
+  }
+}
+
+
+================================================================================
+10. VALORACION DE INVENTARIO
+================================================================================
+GET /reports/inventory/valuation/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+
+RECIBE:
+  - farm_id (param): string
+  - start_date (query): string (YYYY-MM-DD)
+  - end_date (query): string (YYYY-MM-DD)
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "totalInventoryValue": number,     // Valor total del inventario en $ (ej: 125000.50)
+      "totalProducts": number,           // Total de productos valorados
+      "avgCostPerProduct": number,       // Costo promedio por producto en $
+      "highestValueProduct": string,     // Nombre del producto de mayor valor
+      "highestValueAmount": number,      // Valor del producto de mayor valor en $
+      "totalCategories": number          // Total de categorias
+    },
+    "valuation": [
+      {
+        "productName": string,
+        "category": string,              // Categoria (ej: "Alimento", "Medicamento", "Insumo")
+        "warehouse": string,
+        "currentStock": number,
+        "unit": string,
+        "avgCost": number,               // Costo promedio unitario en $
+        "totalValue": number             // currentStock * avgCost en $
+      }
+    ],
+    "costs": [
+      {
+        "productName": string,
+        "category": string,
+        "avgCost": number,               // Costo promedio en $
+        "minCost": number,               // Costo minimo registrado en $
+        "maxCost": number,               // Costo maximo registrado en $
+        "lastCost": number,              // Ultimo costo de compra en $
+        "unit": string,
+        "priceVariation": number         // Variacion % respecto al costo anterior (ej: 5.2 o -3.1)
+      }
+    ],
+    "valueByCategory": [
+      {
+        "category": string,              // Nombre de la categoria
+        "totalValue": number             // Valor total de esa categoria en $
+      }
+    ]
+  }
+}
+
+
+================================================================================
+================================================================================
+          ENDPOINTS DE DATOS PARA REPORTES - MFarm (Compras y Finanzas)
+================================================================================
+
+================================================================================
+11. COMPRAS Y CUENTAS POR PAGAR
+================================================================================
+GET /reports/finance/purchases/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+
+RECIBE:
+  - farm_id (param): string
+  - start_date (query): string (YYYY-MM-DD)
+  - end_date (query): string (YYYY-MM-DD)
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "totalPurchases": number,          // Total de compras en el periodo
+      "totalSpent": number,              // Monto total gastado en $
+      "avgPurchaseAmount": number,       // Monto promedio por compra en $
+      "suppliersCount": number           // Proveedores distintos
+    },
+    "purchases": [
+      {
+        "_id": string,
+        "date": string,                  // Fecha ISO
+        "supplier": string,              // Nombre del proveedor
+        "productName": string,
+        "quantity": number,
+        "unit": string,                  // "kg", "L", "pza"
+        "unitPrice": number,             // Precio unitario en $
+        "totalAmount": number,           // quantity * unitPrice en $
+        "invoiceNumber": string          // Numero de factura
+      }
+    ],
+    "priceChanges": [
+      {
+        "productName": string,
+        "category": string,
+        "currentPrice": number,          // Precio actual en $
+        "previousPrice": number,         // Precio anterior en $
+        "variation": number,             // currentPrice - previousPrice (puede ser negativo)
+        "variationPercent": number,      // ((current - previous) / previous) * 100
+        "unit": string
+      }
+    ],
+    "monthlySpending": [
+      {
+        "month": string,                 // "Ene 2026", "Feb 2026"
+        "totalSpent": number,            // Total gastado ese mes en $
+        "purchaseCount": number          // Numero de compras ese mes
+      }
+    ]
+  }
+}
+
+
+================================================================================
+12. ANALISIS DE COSTOS
+================================================================================
+GET /reports/finance/costs/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+
+RECIBE:
+  - farm_id (param): string
+  - start_date (query): string (YYYY-MM-DD)
+  - end_date (query): string (YYYY-MM-DD)
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "totalCost": number,               // Costo total en $
+      "avgCostPerGroup": number,         // Costo promedio por grupo en $
+      "avgCostPerPig": number,           // Costo promedio por cerdo en $
+      "avgCostPerKg": number,            // Costo promedio por kg producido en $
+      "feedCostPercent": number,         // % del costo total que es alimento (ej: 65.3)
+      "medicationCostPercent": number    // % del costo total que es medicamento (ej: 12.5)
+    },
+    "byGroup": [
+      {
+        "groupName": string,
+        "stage": string,                 // Etapa legible (ej: "Crecimiento")
+        "pigCount": number,
+        "feedCost": number,              // Costo de alimento en $
+        "medicationCost": number,        // Costo de medicamento en $
+        "otherCost": number,             // Otros costos en $
+        "totalCost": number,             // Suma total en $
+        "costPerPig": number             // totalCost / pigCount en $
+      }
+    ],
+    "byPig": [
+      {
+        "pigIdentifier": string,         // Identificador del cerdo (ej: "C-0045")
+        "groupName": string,
+        "feedCost": number,
+        "medicationCost": number,
+        "otherCost": number,
+        "totalCost": number,
+        "currentWeight": number,         // Peso actual en kg
+        "costPerKg": number              // totalCost / currentWeight en $
+      }
+    ],
+    "byType": [
+      {
+        "type": string,                  // "Alimento", "Medicamento", "Insumo", "Mano de obra", etc.
+        "totalCost": number,
+        "percentage": number,            // % del costo total
+        "itemCount": number              // Registros de ese tipo
+      }
+    ]
+  }
+}
+
+
+================================================================================
+13. RENTABILIDAD
+================================================================================
+GET /reports/finance/profitability/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+
+RECIBE:
+  - farm_id (param): string
+  - start_date (query): string (YYYY-MM-DD)
+  - end_date (query): string (YYYY-MM-DD)
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "totalIncome": number,             // Ingreso total por ventas en $
+      "totalCost": number,               // Costo total en $
+      "totalProfit": number,             // totalIncome - totalCost en $ (puede ser negativo)
+      "overallMargin": number,           // (totalProfit / totalIncome) * 100 en %
+      "bestGroupMargin": number,         // Mejor margen de un grupo en %
+      "bestGroupName": string            // Nombre del grupo con mejor margen
+    },
+    "costVsIncome": [
+      {
+        "month": string,                 // "Ene 2026", "Feb 2026"
+        "totalCost": number,             // Costo total del mes en $
+        "totalIncome": number,           // Ingreso total del mes en $
+        "profit": number,                // income - cost en $
+        "margin": number                 // (profit / income) * 100 en %
+      }
+    ],
+    "byGroup": [
+      {
+        "groupName": string,
+        "stage": string,
+        "totalCost": number,
+        "totalIncome": number,
+        "profit": number,
+        "margin": number,                // % de margen
+        "pigCount": number,
+        "profitPerPig": number           // profit / pigCount en $
+      }
+    ],
+    "bySale": [
+      {
+        "_id": string,
+        "saleDate": string,              // Fecha ISO
+        "buyer": string,                 // Nombre del comprador
+        "pigCount": number,
+        "totalWeight": number,           // Peso total en kg
+        "totalIncome": number,           // Monto de la venta en $
+        "totalCost": number,             // Costo de los cerdos vendidos en $
+        "profit": number,
+        "margin": number                 // %
+      }
+    ],
+    "byClient": [
+      {
+        "clientName": string,
+        "totalSales": number,            // Numero de ventas al cliente
+        "totalIncome": number,           // Ingreso total del cliente en $
+        "totalCost": number,             // Costo total asociado en $
+        "profit": number,
+        "margin": number,                // Margen total %
+        "avgMargin": number              // Margen promedio por venta %
+      }
+    ]
+  }
+}
+
+
+================================================================================
+================================================================================
+          ENDPOINTS DE DATOS PARA REPORTES - MFarm (Ventas)
+================================================================================
+
+================================================================================
+14. REPORTE DE VENTAS
+================================================================================
+GET /reports/sales/overview/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+
+RECIBE:
+  - farm_id (param): string
+  - start_date (query): string (YYYY-MM-DD)
+  - end_date (query): string (YYYY-MM-DD)
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "totalSales": number,              // Numero de ventas en el periodo
+      "totalRevenue": number,            // Ingreso total en $
+      "totalPigsSold": number,           // Total de cerdos vendidos
+      "totalWeightSold": number,         // Peso total vendido en kg
+      "avgPricePerPig": number,          // Precio promedio por cerdo en $
+      "avgPricePerKg": number            // Precio promedio por kg en $
+    },
+    "sales": [
+      {
+        "_id": string,
+        "saleDate": string,              // Fecha ISO
+        "code": string,                  // Codigo de la venta (ej: "V-2026-001")
+        "buyer": string,                 // Nombre del comprador
+        "pigCount": number,
+        "totalWeight": number,           // Peso total en kg
+        "pricePerKg": number,            // Precio por kg en $
+        "totalAmount": number,           // Monto total en $
+        "paymentMethod": string,         // "cash" | "transfer" | "check" | "credit" | "other"
+        "paymentStatus": string          // "pending" | "partial" | "completed"
+      }
+    ],
+    "byClient": [
+      {
+        "clientName": string,
+        "totalSales": number,
+        "totalPigs": number,
+        "totalWeight": number,           // kg
+        "totalAmount": number,           // $
+        "avgPricePerKg": number,         // $
+        "avgPricePerPig": number         // $
+      }
+    ],
+    "byPeriod": [
+      {
+        "period": string,                // "Semana 1 Abr", "Semana 2 Abr" o "Ene 2026", "Feb 2026"
+        "salesCount": number,
+        "totalPigs": number,
+        "totalWeight": number,           // kg
+        "totalAmount": number,           // $
+        "avgPricePerKg": number          // $
+      }
+    ],
+    "monthlyTrend": [
+      {
+        "month": string,                 // "Ene 2026", "Feb 2026"
+        "totalAmount": number,           // Ingreso del mes en $
+        "pigCount": number               // Cerdos vendidos ese mes
+      }
+    ]
+  }
+}
+
+
+================================================================================
+15. ANALISIS DE CLIENTES
+================================================================================
+GET /reports/sales/clients/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+
+RECIBE:
+  - farm_id (param): string
+  - start_date (query): string (YYYY-MM-DD)
+  - end_date (query): string (YYYY-MM-DD)
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "totalClients": number,            // Total clientes con al menos 1 compra
+      "activeClients": number,           // Clientes activos en el periodo
+      "topClientName": string,           // Nombre del cliente con mayor ingreso
+      "topClientRevenue": number,        // Ingreso del cliente principal en $
+      "avgRevenuePerClient": number,     // Ingreso promedio por cliente en $
+      "avgSalesPerClient": number        // Ventas promedio por cliente (ej: 2.5)
+    },
+    "topClients": [
+      {
+        "clientName": string,
+        "totalSales": number,
+        "totalPigs": number,
+        "totalWeight": number,           // kg
+        "totalRevenue": number,          // Ingreso total en $
+        "totalProfit": number,           // Utilidad total en $
+        "margin": number,                // Margen % (ej: 25.3)
+        "avgPricePerKg": number          // $
+      }
+    ],
+    "frequency": [
+      {
+        "clientName": string,
+        "totalSales": number,
+        "firstPurchaseDate": string,     // Fecha ISO de primera compra
+        "lastPurchaseDate": string,      // Fecha ISO de ultima compra
+        "avgDaysBetweenPurchases": number, // Dias promedio entre compras
+        "avgPurchaseAmount": number,     // Monto promedio por compra en $
+        "totalRevenue": number           // Ingreso total en $
+      }
+    ]
+  }
+}
+
+
+================================================================================
+================================================================================
+     ENDPOINTS DE DATOS PARA REPORTES - MFarm (Finanzas - Contables)
+================================================================================
+
+================================================================================
+20. CIERRE DE OPERACION
+================================================================================
+GET /reports/finance/operations-closing/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+
+RECIBE:
+  - farm_id (param): string
+  - start_date (query): string (YYYY-MM-DD)
+  - end_date (query): string (YYYY-MM-DD)
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "totalIncome": number,             // Ingreso total por ventas en $
+      "totalCosts": number,              // Costos totales (compras) en $
+      "operatingResult": number,         // totalIncome - totalCosts (puede ser negativo)
+      "operatingMargin": number,         // (operatingResult / totalIncome) * 100 en %
+      "totalKgSold": number,             // Kilos totales vendidos
+      "totalPigsSold": number            // Cerdos totales vendidos
+    },
+    "costBreakdown": [
+      {
+        "category": string,              // Categoria: "Alimento", "Medicamento", "Insumo", "Transporte", etc.
+        "description": string,           // Descripcion del gasto (ej: "Compra Maiz", "NUPEC")
+        "amount": number                 // Monto en $
+      }
+    ],
+    "salesSummary": [
+      {
+        "type": string,                  // Tipo de venta: "Cerdos", "Cerdas", "Berracos"
+        "pigCount": number,
+        "totalWeight": number,           // kg
+        "totalAmount": number,           // $
+        "avgPricePerKg": number          // $
+      }
+    ],
+    "monthlySummary": [
+      {
+        "month": string,                 // "Ene 2026", "Feb 2026"
+        "income": number,                // Ingreso del mes en $
+        "costs": number,                 // Costos del mes en $
+        "result": number                 // income - costs en $
+      }
+    ]
+  }
+}
+
+
+================================================================================
+21. FLUJO DE CAJA
+================================================================================
+GET /reports/finance/cash-flow/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+
+RECIBE:
+  - farm_id (param): string
+  - start_date (query): string (YYYY-MM-DD)
+  - end_date (query): string (YYYY-MM-DD)
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "totalInflows": number,            // Total entradas en $
+      "totalOutflows": number,           // Total salidas en $
+      "netCashFlow": number,             // totalInflows - totalOutflows (puede ser negativo)
+      "avgMonthlyInflow": number,        // Promedio mensual de entradas en $
+      "avgMonthlyOutflow": number,       // Promedio mensual de salidas en $
+      "inflowTransactions": number,      // Numero de transacciones de entrada
+      "outflowTransactions": number      // Numero de transacciones de salida
+    },
+    "entries": [
+      {
+        "_id": string,
+        "date": string,                  // Fecha ISO
+        "type": string,                  // "sale_payment" | "purchase_payment"
+        "description": string,           // Descripcion (ej: "Venta V-2026-001", "Compra a Proveedor X")
+        "reference": string,             // Referencia (codigo venta, factura, etc.)
+        "inflow": number,                // Monto de entrada en $ (0 si es salida)
+        "outflow": number                // Monto de salida en $ (0 si es entrada)
+      }
+    ],
+    "periods": [
+      {
+        "period": string,                // "Ene 2026", "Feb 2026" o "Semana 1", etc.
+        "totalInflows": number,
+        "totalOutflows": number,
+        "netFlow": number                // inflows - outflows
+      }
+    ]
+  }
+}
+
+
+================================================================================
+22. ESTADO DE CUENTA POR PROVEEDOR - LISTADO DE PROVEEDORES
+================================================================================
+GET /reports/finance/supplier-statement/suppliers/:farm_id
+
+RECIBE:
+  - farm_id (param): string
+
+RETORNA:
+{
+  "data": [
+    {
+      "_id": string,
+      "name": string                     // Nombre del proveedor
+    }
+  ]
+}
+
+
+================================================================================
+23. ESTADO DE CUENTA POR PROVEEDOR - DETALLE
+================================================================================
+GET /reports/finance/supplier-statement/:supplier_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+
+RECIBE:
+  - supplier_id (param): string
+  - start_date (query): string (YYYY-MM-DD)
+  - end_date (query): string (YYYY-MM-DD)
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "supplierName": string,
+      "totalPurchases": number,          // Numero de compras
+      "totalSpent": number,              // Total gastado en $
+      "avgPurchaseAmount": number,       // Promedio por compra en $
+      "uniqueProducts": number,          // Productos distintos comprados
+      "firstPurchaseDate": string,       // Fecha ISO primera compra
+      "lastPurchaseDate": string         // Fecha ISO ultima compra
+    },
+    "purchases": [
+      {
+        "_id": string,
+        "date": string,
+        "productName": string,
+        "quantity": number,
+        "unit": string,
+        "unitPrice": number,             // $
+        "totalAmount": number,           // $
+        "invoiceNumber": string
+      }
+    ],
+    "products": [
+      {
+        "productName": string,
+        "totalQuantity": number,
+        "unit": string,
+        "totalSpent": number,            // $
+        "avgPrice": number,              // Precio promedio en $
+        "purchaseCount": number
+      }
+    ]
+  }
+}
+
+
+================================================================================
+================================================================================
+          ENDPOINTS DE DATOS PARA REPORTES - MFarm (Catalogos)
+================================================================================
+
+================================================================================
+16. CATALOGOS
+================================================================================
+GET /reports/catalogs/:farm_id
+
+RECIBE:
+  - farm_id (param): string
+  (No requiere fechas, es un listado actual)
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "totalSuppliers": number,          // Total de proveedores
+      "activeSuppliers": number,         // Proveedores activos
+      "totalClients": number,            // Total de clientes
+      "activeClients": number            // Clientes activos
+    },
+    "suppliers": [
+      {
+        "_id": string,
+        "name": string,
+        "contact": string,               // Nombre de contacto
+        "phone": string,
+        "email": string,
+        "address": string,
+        "totalPurchases": number,        // Compras realizadas a este proveedor
+        "totalSpent": number,            // Total gastado en $
+        "lastPurchaseDate": string,      // Fecha ISO de ultima compra
+        "status": boolean                // true = activo
+      }
+    ],
+    "clients": [
+      {
+        "_id": string,
+        "name": string,
+        "contact": string,
+        "phone": string,
+        "email": string,
+        "address": string,
+        "totalSales": number,            // Ventas realizadas a este cliente
+        "totalRevenue": number,          // Ingreso total en $
+        "lastSaleDate": string,          // Fecha ISO de ultima venta
+        "status": boolean
+      }
+    ]
+  }
+}
+
+
+================================================================================
+================================================================================
+          ENDPOINTS DE DATOS PARA REPORTES - MFarm (Trazabilidad)
+================================================================================
+
+================================================================================
+17. LISTADO DE GRUPOS (para selector)
+================================================================================
+GET /reports/traceability/groups/:farm_id
+
+RECIBE:
+  - farm_id (param): string
+
+RETORNA:
+{
+  "data": [
+    {
+      "_id": string,
+      "name": string,                    // Nombre del grupo (ej: "G-2026-001")
+      "stage": string                    // Etapa legible (ej: "Crecimiento")
+    }
+  ]
+}
+
+
+================================================================================
+18. TRAZABILIDAD POR GRUPO
+================================================================================
+GET /reports/traceability/group/:group_id
+
+RECIBE:
+  - group_id (param): string
+
+RETORNA:
+{
+  "data": {
+    "groupInfo": {
+      "name": string,
+      "stage": string,                   // Etapa legible
+      "pigCount": number,
+      "entryDate": string,               // Fecha ISO de entrada
+      "avgWeight": number,               // Peso promedio en kg
+      "totalFeedConsumed": number,       // Alimento consumido total en kg
+      "totalMedications": number,        // Numero de medicaciones aplicadas
+      "totalDeaths": number,             // Muertes totales
+      "totalSales": number               // Ventas totales
+    },
+    "timeline": [
+      {
+        "_id": string,
+        "date": string,                  // Fecha ISO del evento
+        "eventType": string,             // "creation" | "movement" | "feeding" | "medication" | "vaccination" | "weighing" | "death" | "sale" | "health_event" | "stage_change"
+        "description": string,           // Descripcion corta del evento
+        "details": string,               // Detalles adicionales
+        "user": string                   // Usuario que registro el evento
+      }
+    ]
+  }
+}
+
+
+================================================================================
+================================================================================
+          ENDPOINTS DE DATOS PARA REPORTES - MFarm (Auditoria)
+================================================================================
+
+================================================================================
+19. AUDITORIA
+================================================================================
+GET /reports/audit/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+
+RECIBE:
+  - farm_id (param): string
+  - start_date (query): string (YYYY-MM-DD)
+  - end_date (query): string (YYYY-MM-DD)
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "totalActions": number,            // Total de acciones registradas
+      "totalUsers": number,              // Usuarios distintos que realizaron acciones
+      "totalAdjustments": number,        // Total de ajustes de inventario
+      "totalPriceChanges": number,       // Total de cambios de precio
+      "mostActiveUser": string,          // Nombre del usuario mas activo
+      "mostActiveModule": string         // Modulo con mas acciones (ej: "Inventario")
+    },
+    "activities": [
+      {
+        "_id": string,
+        "date": string,                  // Fecha ISO
+        "user": string,                  // Nombre del usuario
+        "action": string,                // "create" | "update" | "delete" | "login" | "export"
+        "module": string,                // Modulo (ej: "Inventario", "Cerdos", "Ventas", "Alimentacion")
+        "description": string,           // Descripcion de la accion
+        "details": string                // Detalles adicionales (ej: "Cambio peso de 50kg a 55kg")
+      }
+    ],
+    "adjustments": [
+      {
+        "_id": string,
+        "date": string,
+        "productName": string,
+        "warehouse": string,
+        "previousStock": number,         // Stock antes del ajuste
+        "newStock": number,              // Stock despues del ajuste
+        "difference": number,            // newStock - previousStock (puede ser negativo)
+        "unit": string,
+        "reason": string,                // Motivo del ajuste
+        "user": string
+      }
+    ],
+    "priceChanges": [
+      {
+        "_id": string,
+        "date": string,
+        "productName": string,
+        "previousPrice": number,         // Precio anterior en $
+        "newPrice": number,              // Precio nuevo en $
+        "variation": number,             // newPrice - previousPrice
+        "variationPercent": number,      // ((new - previous) / previous) * 100
+        "user": string
+      }
+    ],
+    "actionsByModule": [
+      {
+        "module": string,                // Nombre del modulo
+        "count": number                  // Acciones en ese modulo
+      }
+    ]
+  }
+}
+
+
+================================================================================
+NOTAS GENERALES
+================================================================================
+- Produccion: GET /reports/production/{reporte}/:farm_id
+- Inventario: GET /reports/inventory/{reporte}/:farm_id
+- Finanzas: GET /reports/finance/{reporte}/:farm_id
+- Ventas: GET /reports/sales/{reporte}/:farm_id
+- Catalogos: GET /reports/catalogs/:farm_id (sin fechas)
+- Trazabilidad: GET /reports/traceability/group/:group_id (sin fechas)
+- Auditoria: GET /reports/audit/:farm_id
+- Los query params start_date y end_date son obligatorios (formato YYYY-MM-DD)
+- El formato de mes para las tendencias es "Mmm YYYY" (ej: "Ene 2026", "Feb 2026")
+- Las tasas y porcentajes se envian como numeros (no strings), ej: 85.3 no "85.3%"
+- Los pesos siempre en kg
+- Los valores monetarios siempre en numero (sin simbolo $)
+- Las claves de etapa (stage) deben coincidir con:
+    "lactation", "weaning", "growing", "finishing", "gestation", "replacement", "sold"
+- Las claves de resultado de inseminacion:
+    "success", "pending", "failed"
+- Las claves de tipo de movimiento de cerdos:
+    "entry", "exit", "transfer", "death", "sale"
+- Las claves de tipo de movimiento de inventario:
+    "income", "outcome", "transfer", "adjustment"
+- Las claves de estado de stock:
+    "critical", "low", "normal"
+- El campo _id es el ObjectId de MongoDB como string

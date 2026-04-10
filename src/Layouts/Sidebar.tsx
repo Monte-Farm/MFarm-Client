@@ -53,7 +53,7 @@ const Sidebar = ({ layoutType }: any) => {
             <i className="ri-record-circle-line"></i>
           </button>
         </div>
-        <SimpleBar id="scrollbar" className="h-100">
+        <SimpleBar id="scrollbar" style={{ maxHeight: "calc(100vh - 200px)" }}>
           <Container fluid>
             <div id="two-column-menu"></div>
             <ul className="navbar-nav" id="navbar-nav">

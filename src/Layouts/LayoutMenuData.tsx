@@ -73,6 +73,13 @@ const Navdata = () => {
     const [isSale, setIsSale] = useState<boolean>(false);
     const [isPigSales, setIsPigSales] = useState<boolean>(false);
 
+    //Reports
+    const [isReports, setIsReports] = useState<boolean>(false);
+    const [isProductionReports, setIsProductionReports] = useState<boolean>(false);
+    const [isInventoryReports, setIsInventoryReports] = useState<boolean>(false);
+    const [isFinanceReports, setIsFinanceReports] = useState<boolean>(false);
+    const [isSalesReports, setIsSalesReports] = useState<boolean>(false);
+
     const [iscurrentState, setIscurrentState] = useState('Home');
 
     function updateIconSidebar(e: any) {
@@ -146,6 +153,9 @@ const Navdata = () => {
         if (iscurrentState !== 'Sale') {
             setIsSale(false)
         }
+        if (iscurrentState !== 'Reports') {
+            setIsReports(false)
+        }
     }, [
         history,
         iscurrentState,
@@ -165,6 +175,7 @@ const Navdata = () => {
         isGrowing,
         isReplacement,
         isSale,
+        isReports,
     ]);
 
     const menuItems: any = [
@@ -743,6 +754,230 @@ const Navdata = () => {
                         setIsFeedingConsumption(!isFeedingConsumption)
                     },
                     stateVariables: isFeedingConsumption,
+                },
+            ]
+        },
+
+        // ===================== REPORTES =====================
+        {
+            id: "header-reports",
+            label: "Reportes",
+            isHeader: true,
+            roles: ["Superadmin", 'farm_manager'],
+        },
+        {
+            id: 'reports',
+            label: 'Reportes',
+            icon: 'ri-bar-chart-box-line',
+            link: '/#',
+            roles: ['Superadmin', 'farm_manager'],
+            click: function (e: any) {
+                e.preventDefault();
+                setIscurrentState('Reports')
+                setIsReports(!isReports)
+                updateIconSidebar(e);
+            },
+            stateVariables: isReports,
+            subItems: [
+                {
+                    id: "productionReports",
+                    label: "Produccion",
+                    link: "/#",
+                    roles: ['Superadmin', 'farm_manager'],
+                    parentId: "reports",
+                    isChildItem: true,
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsProductionReports(!isProductionReports)
+                    },
+                    stateVariables: isProductionReports,
+                    childItems: [
+                        {
+                            id: 1,
+                            label: "Inseminaciones y Partos",
+                            link: "/reports/production/inseminations-births",
+                            roles: ['Superadmin', 'farm_manager'],
+                            parentId: "productionReports"
+                        },
+                        {
+                            id: 3,
+                            label: "Grupos",
+                            link: "/reports/production/groups",
+                            roles: ['Superadmin', 'farm_manager'],
+                            parentId: "productionReports"
+                        },
+                        {
+                            id: 4,
+                            label: "Mortalidad",
+                            link: "/reports/production/mortality",
+                            roles: ['Superadmin', 'farm_manager'],
+                            parentId: "productionReports"
+                        },
+                        {
+                            id: 5,
+                            label: "Conversion y Peso",
+                            link: "/reports/production/feed-weight",
+                            roles: ['Superadmin', 'farm_manager'],
+                            parentId: "productionReports"
+                        },
+                        {
+                            id: 6,
+                            label: "Rendimiento Reproductivo",
+                            link: "/reports/production/reproductive",
+                            roles: ['Superadmin', 'farm_manager'],
+                            parentId: "productionReports"
+                        },
+                    ]
+                },
+                {
+                    id: "inventoryReports",
+                    label: "Inventario",
+                    link: "/#",
+                    roles: ['Superadmin', 'farm_manager', 'warehouse_manager'],
+                    parentId: "reports",
+                    isChildItem: true,
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsInventoryReports(!isInventoryReports)
+                    },
+                    stateVariables: isInventoryReports,
+                    childItems: [
+                        {
+                            id: 1,
+                            label: "Movimientos e Inventario",
+                            link: "/reports/inventory/movements",
+                            roles: ['Superadmin', 'farm_manager', 'warehouse_manager'],
+                            parentId: "inventoryReports"
+                        },
+                        {
+                            id: 2,
+                            label: "Consumo de Alimento",
+                            link: "/reports/inventory/feed-consumption",
+                            roles: ['Superadmin', 'farm_manager', 'warehouse_manager'],
+                            parentId: "inventoryReports"
+                        },
+                        {
+                            id: 3,
+                            label: "Analisis de Inventario",
+                            link: "/reports/inventory/alerts",
+                            roles: ['Superadmin', 'farm_manager', 'warehouse_manager'],
+                            parentId: "inventoryReports"
+                        },
+                        {
+                            id: 4,
+                            label: "Valoracion de Inventario",
+                            link: "/reports/inventory/valuation",
+                            roles: ['Superadmin', 'farm_manager', 'warehouse_manager'],
+                            parentId: "inventoryReports"
+                        },
+                    ]
+                },
+                {
+                    id: "financeReports",
+                    label: "Finanzas",
+                    link: "/#",
+                    roles: ['Superadmin', 'farm_manager'],
+                    parentId: "reports",
+                    isChildItem: true,
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsFinanceReports(!isFinanceReports)
+                    },
+                    stateVariables: isFinanceReports,
+                    childItems: [
+                        {
+                            id: 1,
+                            label: "Compras y Precios",
+                            link: "/reports/finance/purchases",
+                            roles: ['Superadmin', 'farm_manager'],
+                            parentId: "financeReports"
+                        },
+                        {
+                            id: 2,
+                            label: "Analisis de Costos",
+                            link: "/reports/finance/costs",
+                            roles: ['Superadmin', 'farm_manager'],
+                            parentId: "financeReports"
+                        },
+                        {
+                            id: 3,
+                            label: "Rentabilidad",
+                            link: "/reports/finance/profitability",
+                            roles: ['Superadmin', 'farm_manager'],
+                            parentId: "financeReports"
+                        },
+                        {
+                            id: 4,
+                            label: "Cierre de Operacion",
+                            link: "/reports/finance/operations-closing",
+                            roles: ['Superadmin', 'farm_manager'],
+                            parentId: "financeReports"
+                        },
+                        {
+                            id: 5,
+                            label: "Flujo de Caja",
+                            link: "/reports/finance/cash-flow",
+                            roles: ['Superadmin', 'farm_manager'],
+                            parentId: "financeReports"
+                        },
+                        {
+                            id: 6,
+                            label: "Estado de Cuenta Proveedor",
+                            link: "/reports/finance/supplier-statement",
+                            roles: ['Superadmin', 'farm_manager'],
+                            parentId: "financeReports"
+                        },
+                    ]
+                },
+                {
+                    id: "salesReports",
+                    label: "Ventas",
+                    link: "/#",
+                    roles: ['Superadmin', 'farm_manager'],
+                    parentId: "reports",
+                    isChildItem: true,
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsSalesReports(!isSalesReports)
+                    },
+                    stateVariables: isSalesReports,
+                    childItems: [
+                        {
+                            id: 1,
+                            label: "Reporte de Ventas",
+                            link: "/reports/sales/overview",
+                            roles: ['Superadmin', 'farm_manager'],
+                            parentId: "salesReports"
+                        },
+                        {
+                            id: 2,
+                            label: "Analisis de Clientes",
+                            link: "/reports/sales/clients",
+                            roles: ['Superadmin', 'farm_manager'],
+                            parentId: "salesReports"
+                        },
+                    ]
+                },
+                {
+                    id: "catalogsReport",
+                    label: "Catalogos",
+                    link: "/reports/catalogs",
+                    roles: ['Superadmin', 'farm_manager'],
+                    parentId: "reports",
+                },
+                {
+                    id: "traceabilityReport",
+                    label: "Trazabilidad",
+                    link: "/reports/traceability",
+                    roles: ['Superadmin', 'farm_manager'],
+                    parentId: "reports",
+                },
+                {
+                    id: "auditReport",
+                    label: "Auditoria",
+                    link: "/reports/audit",
+                    roles: ['Superadmin', 'farm_manager'],
+                    parentId: "reports",
                 },
             ]
         },

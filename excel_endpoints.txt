@@ -1,0 +1,209 @@
+================================================================================
+              ENDPOINTS DE REPORTES EXCEL - MFarm
+================================================================================
+Estos endpoints generan archivos Excel (.xlsx) formateados desde el backend.
+El frontend descarga el blob y lo guarda como .xlsx usando file-saver.
+
+Respuesta: Blob con Content-Type application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+
+================================================================================
+1. CIERRE DE OPERACION - EXCEL
+================================================================================
+GET /reports/finance/operations-closing/excel/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+
+Recibe:
+  - farm_id (param): string
+  - start_date (query): string (YYYY-MM-DD)
+  - end_date (query): string (YYYY-MM-DD)
+
+Debe retornar (Excel con 3 hojas):
+
+HOJA 1: "Resultado Operativo"
+  - Fila 1: Titulo "GRANJA K DE BELO" (centrado, negrita, fuente grande)
+  - Fila 2: "CIERRE OPERACION - {Mes} {Año}" (centrado)
+  - Fila 3: "Periodo: {fecha_inicio} al {fecha_fin}"
+  - Fila 5-11: Tabla resumen
+      | Concepto             | Valor      |
+      |----------------------|------------|
+      | Total Ingresos       | $X,XXX.XX  | (texto verde, negrita)
+      | Total Costos         | $X,XXX.XX  | (texto rojo, negrita)
+      | Resultado Operativo  | $X,XXX.XX  | (verde si positivo, rojo si negativo, negrita, fuente mas grande)
+      | Margen Operativo     | XX.X%      |
+      | Cerdos Vendidos      | XXX        |
+      | Kilos Vendidos       | X,XXX kg   |
+
+HOJA 2: "Ingresos por Ventas"
+  - Fila 1: Titulo "INGRESOS POR VENTAS" (negrita)
+  - Fila 2: "Periodo: {fecha_inicio} al {fecha_fin}"
+  - Fila 4+: Tabla con TODAS las ventas individuales y totales por tipo:
+
+      | Fecha      | Codigo     | Comprador      | Tipo     | Cerdos | Peso (kg) | Precio/kg | Monto Total |
+      |------------|------------|----------------|----------|--------|-----------|-----------|-------------|
+      |            |            |                | CERDOS   |        |           |           |             | (fila subtitulo: negrita, fondo azul claro)
+      | 05/01/2026 | V-2026-001 | Juan Perez     | Cerdos   | 15     | 1,350.0   | $65.00    | $87,750.00  |
+      | 12/01/2026 | V-2026-003 | Maria Lopez    | Cerdos   | 20     | 1,800.0   | $63.50    | $114,300.00 |
+      | 18/01/2026 | V-2026-005 | Pedro Garcia   | Cerdos   | 10     | 950.0     | $66.00    | $62,700.00  |
+      |            |            |                |Subtotal  | 45     | 4,100.0   | $64.57    | $264,750.00 | (fila subtotal: negrita, fondo gris claro)
+      |            |            |                |          |        |           |           |             |
+      |            |            |                | CERDAS   |        |           |           |             | (fila subtitulo: negrita, fondo azul claro)
+      | 08/01/2026 | V-2026-002 | Juan Perez     | Cerdas   | 5      | 875.0     | $55.00    | $48,125.00  |
+      | 22/01/2026 | V-2026-006 | Carlos Ruiz    | Cerdas   | 3      | 510.0     | $52.00    | $26,520.00  |
+      |            |            |                |Subtotal  | 8      | 1,385.0   | $53.93    | $74,645.00  | (fila subtotal: negrita, fondo gris claro)
+      |            |            |                |          |        |           |           |             |
+      |            |            |                | BERRACOS |        |           |           |             | (fila subtitulo: negrita, fondo azul claro)
+      | 15/01/2026 | V-2026-004 | Maria Lopez    | Berracos | 2      | 400.0     | $70.00    | $28,000.00  |
+      |            |            |                |Subtotal  | 2      | 400.0     | $70.00    | $28,000.00  | (fila subtotal: negrita, fondo gris claro)
+      |------------|------------|----------------|----------|--------|-----------|-----------|-------------|
+      |            |            |                | TOTAL    | 55     | 5,885.0   |           | $367,395.00 | (fila total: negrita grande, fondo verde claro, borde superior doble)
+
+  - Formato de moneda en columnas Precio/kg y Monto Total
+  - Formato numerico con separador de miles en Peso
+
+HOJA 3: "Desglose de Costos"
+  - Fila 1: Titulo "DESGLOSE DE COSTOS" (negrita)
+  - Fila 2: "Periodo: {fecha_inicio} al {fecha_fin}"
+  - Fila 4+: Tabla con TODOS los costos individuales agrupados por categoria con subtotales:
+
+      | Fecha      | Descripcion                    | Proveedor        | Producto       | Cantidad | Unidad | Precio Unit. | Monto       |
+      |------------|--------------------------------|------------------|----------------|----------|--------|--------------|-------------|
+      |            | ALIMENTO                       |                  |                |          |        |              |             | (fila categoria: negrita, fondo naranja claro)
+      | 02/01/2026 | Compra Maiz                    | Proveedor Maiz   | Maiz           | 2,000    | kg     | $12.50       | $25,000.00  |
+      | 02/01/2026 | Compra Soya                    | Proveedor Soya   | Soya           | 800      | kg     | $18.00       | $14,400.00  |
+      | 05/01/2026 | Compra Maiz                    | Proveedor Maiz   | Maiz           | 1,500    | kg     | $12.80       | $19,200.00  |
+      | 10/01/2026 | NUPEC                          | NUPEC SA         | NUPEC Pre-Init | 500      | kg     | $22.00       | $11,000.00  |
+      | 15/01/2026 | Afrecho                        | Proveedor Local  | Afrecho        | 1,000    | kg     | $8.00        | $8,000.00   |
+      | 20/01/2026 | Compra Soya                    | Proveedor Soya   | Soya           | 600      | kg     | $18.50       | $11,100.00  |
+      |            | Subtotal Alimento              |                  |                |          |        |              | $88,700.00  | (fila subtotal: negrita, fondo gris claro)
+      |            |                                |                  |                |          |        |              |             |
+      |            | MEDICAMENTO                    |                  |                |          |        |              |             | (fila categoria: negrita, fondo naranja claro)
+      | 03/01/2026 | Compra Antibioticos            | FarmaVet         | Amoxicilina    | 50       | dosis  | $35.00       | $1,750.00   |
+      | 12/01/2026 | Compra Vitaminas               | FarmaVet         | Complejo B     | 100      | mL     | $12.00       | $1,200.00   |
+      | 18/01/2026 | Compra Desparasitante          | AgroMed          | Ivermectina    | 30       | dosis  | $28.00       | $840.00     |
+      |            | Subtotal Medicamento           |                  |                |          |        |              | $3,790.00   | (fila subtotal: negrita, fondo gris claro)
+      |            |                                |                  |                |          |        |              |             |
+      |            | INSUMO                         |                  |                |          |        |              |             | (fila categoria: negrita, fondo naranja claro)
+      | 04/01/2026 | Compra Grasa                   | Insumos Agro     | Grasa Indust.  | 200      | kg     | $15.00       | $3,000.00   |
+      | 08/01/2026 | Compra Sal                     | Proveedor Local  | Sal Mineral    | 100      | kg     | $10.00       | $1,000.00   |
+      | 14/01/2026 | Compra Semen                   | Genetica Porcina | Semen Berraco  | 10       | dosis  | $350.00      | $3,500.00   |
+      |            | Subtotal Insumo                |                  |                |          |        |              | $7,500.00   | (fila subtotal: negrita, fondo gris claro)
+      |            |                                |                  |                |          |        |              |             |
+      |            | TRANSPORTE                     |                  |                |          |        |              |             | (fila categoria: negrita, fondo naranja claro)
+      | 02/01/2026 | Transporte Maiz y Soya         | Transportes MR   |                |          |        |              | $3,000.00   |
+      | 15/01/2026 | Transporte Camion Cerdos       | Transportes MR   |                |          |        |              | $5,000.00   |
+      |            | Subtotal Transporte            |                  |                |          |        |              | $8,000.00   | (fila subtotal: negrita, fondo gris claro)
+      |------------|--------------------------------|------------------|----------------|----------|--------|--------------|-------------|
+      |            | TOTAL COSTOS                   |                  |                |          |        |              | $107,990.00 | (fila total: negrita grande, fondo rojo claro, borde superior doble)
+
+  - Cada compra individual aparece como una fila con fecha, descripcion, proveedor, producto, cantidad, unidad, precio unitario y monto
+  - Agrupados por categoria con subtotales
+  - Fila de total general al final
+  - Formato de moneda en Precio Unit. y Monto
+  - Formato numerico con separador de miles en Cantidad
+
+
+================================================================================
+2. FLUJO DE CAJA - EXCEL
+================================================================================
+GET /reports/finance/cash-flow/excel/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+
+Recibe:
+  - farm_id (param): string
+  - start_date (query): string (YYYY-MM-DD)
+  - end_date (query): string (YYYY-MM-DD)
+
+Debe retornar (Excel con 3 hojas):
+
+HOJA 1: "Resumen"
+  - Fila 1: Titulo "GRANJA K DE BELO" (centrado, negrita, fuente grande)
+  - Fila 2: "FLUJO DE CAJA" (centrado)
+  - Fila 3: "Periodo: {fecha_inicio} al {fecha_fin}"
+  - Fila 5-12: Tabla resumen
+      | Concepto                  | Valor       |
+      |---------------------------|-------------|
+      | Total Entradas            | $X,XXX.XX   | (texto verde, negrita)
+      | Total Salidas             | $X,XXX.XX   | (texto rojo, negrita)
+      | Flujo Neto                | $X,XXX.XX   | (verde o rojo segun signo, negrita, fuente mas grande)
+      | Transacciones de Entrada  | XXX         |
+      | Transacciones de Salida   | XXX         |
+      | Promedio Entrada / Mes    | $X,XXX.XX   |
+      | Promedio Salida / Mes     | $X,XXX.XX   |
+
+HOJA 2: "Resumen por Periodo"
+  - Fila 1: Titulo "RESUMEN POR PERIODO" (negrita)
+  - Fila 2: "Periodo: {fecha_inicio} al {fecha_fin}"
+  - Fila 4+: Tabla con desglose mensual y totales:
+
+      | Periodo   | Entradas    | Salidas     | Flujo Neto  |
+      |-----------|-------------|-------------|-------------|
+      | Ene 2026  | $150,000.00 | $107,990.00 | $42,010.00  |
+      | Feb 2026  | $180,500.00 | $95,300.00  | $85,200.00  |
+      | Mar 2026  | $120,000.00 | $130,500.00 | -$10,500.00 | (rojo si negativo)
+      | Abr 2026  | $200,000.00 | $88,000.00  | $112,000.00 |
+      |-----------|-------------|-------------|-------------|
+      | TOTAL     | $650,500.00 | $421,790.00 | $228,710.00 | (fila total: negrita, fondo azul claro, borde superior doble)
+
+  - Columna Entradas: fondo verde muy claro
+  - Columna Salidas: fondo rojo muy claro
+  - Flujo Neto: verde si positivo, rojo si negativo
+  - Formato de moneda en todas las columnas numericas
+
+HOJA 3: "Movimientos Detallados"
+  - Fila 1: Titulo "MOVIMIENTOS DETALLADOS" (negrita)
+  - Fila 2: "Periodo: {fecha_inicio} al {fecha_fin}"
+  - Fila 4+: Tabla con TODOS los movimientos individuales agrupados por tipo:
+
+      | Fecha      | Tipo             | Descripcion                    | Referencia  | Entrada     | Salida      | Saldo Acum. |
+      |------------|------------------|--------------------------------|-------------|-------------|-------------|-------------|
+      |            | ENTRADAS         |                                |             |             |             |             | (fila subtitulo: negrita, fondo verde claro)
+      | 05/01/2026 | Pago de venta    | Venta a Juan Perez - 15 cerdos | V-2026-001  | $87,750.00  |             |             |
+      | 08/01/2026 | Pago de venta    | Venta a Juan Perez - 5 cerdas  | V-2026-002  | $48,125.00  |             |             |
+      | 12/01/2026 | Pago de venta    | Venta a Maria Lopez - 20 cerdos| V-2026-003  | $114,300.00 |             |             |
+      | 15/01/2026 | Pago de venta    | Venta a Maria Lopez - 2 berrac.| V-2026-004  | $28,000.00  |             |             |
+      | 18/01/2026 | Pago de venta    | Venta a Pedro Garcia - 10 cerd.| V-2026-005  | $62,700.00  |             |             |
+      | 22/01/2026 | Pago de venta    | Venta a Carlos Ruiz - 3 cerdas | V-2026-006  | $26,520.00  |             |             |
+      |            | Subtotal Entradas|                                |             | $367,395.00 |             |             | (fila subtotal: negrita, fondo gris claro)
+      |            |                  |                                |             |             |             |             |
+      |            | SALIDAS          |                                |             |             |             |             | (fila subtitulo: negrita, fondo rojo claro)
+      | 02/01/2026 | Pago a proveedor | Compra Maiz - Proveedor Maiz   | FAC-001     |             | $25,000.00  |             |
+      | 02/01/2026 | Pago a proveedor | Compra Soya - Proveedor Soya   | FAC-002     |             | $14,400.00  |             |
+      | 02/01/2026 | Pago a proveedor | Transporte - Transportes MR    | FAC-003     |             | $3,000.00   |             |
+      | 03/01/2026 | Pago a proveedor | Antibioticos - FarmaVet        | FAC-004     |             | $1,750.00   |             |
+      | 04/01/2026 | Pago a proveedor | Grasa - Insumos Agro           | FAC-005     |             | $3,000.00   |             |
+      | 05/01/2026 | Pago a proveedor | Compra Maiz - Proveedor Maiz   | FAC-006     |             | $19,200.00  |             |
+      | 08/01/2026 | Pago a proveedor | Sal Mineral - Proveedor Local  | FAC-007     |             | $1,000.00   |             |
+      | 10/01/2026 | Pago a proveedor | NUPEC - NUPEC SA               | FAC-008     |             | $11,000.00  |             |
+      | 12/01/2026 | Pago a proveedor | Vitaminas - FarmaVet           | FAC-009     |             | $1,200.00   |             |
+      | 14/01/2026 | Pago a proveedor | Semen - Genetica Porcina       | FAC-010     |             | $3,500.00   |             |
+      | 15/01/2026 | Pago a proveedor | Transporte Cerdos - Trans. MR  | FAC-011     |             | $5,000.00   |             |
+      | 15/01/2026 | Pago a proveedor | Afrecho - Proveedor Local      | FAC-012     |             | $8,000.00   |             |
+      | 18/01/2026 | Pago a proveedor | Desparasitante - AgroMed       | FAC-013     |             | $840.00     |             |
+      | 20/01/2026 | Pago a proveedor | Compra Soya - Proveedor Soya   | FAC-014     |             | $11,100.00  |             |
+      |            | Subtotal Salidas |                                |             |             | $107,990.00 |             | (fila subtotal: negrita, fondo gris claro)
+      |------------|------------------|--------------------------------|-------------|-------------|-------------|-------------|
+      |            | TOTAL            |                                |             | $367,395.00 | $107,990.00 | $259,405.00 | (fila total: negrita grande, borde superior doble)
+      |            | FLUJO NETO       |                                |             |             |             | $259,405.00 | (verde o rojo segun signo, negrita, fuente grande)
+
+  - Cada movimiento individual en su propia fila
+  - Agrupados por tipo (Entradas primero, Salidas despues)
+  - Subtotales por tipo
+  - Fila total general al final con saldo acumulado
+  - Formato de moneda en Entrada, Salida y Saldo Acum.
+  - Ordenados por fecha dentro de cada grupo
+
+
+================================================================================
+NOTAS DE FORMATO
+================================================================================
+- Todos los montos con formato de moneda ($X,XXX.XX) y separador de miles
+- Cantidades con separador de miles
+- Encabezados de tabla: fondo azul oscuro, texto blanco, negrita
+- Filas de categoria/subtitulo: fondo de color segun contexto, negrita
+- Filas de subtotal: fondo gris claro, negrita
+- Fila de total general: fondo de color, negrita, fuente mas grande, borde superior doble
+- Valores negativos en rojo
+- Anchos de columna automaticos ajustados al contenido
+- Bordes en todas las celdas de la tabla
+- Respuesta: Content-Type application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+- Content-Disposition header con nombre sugerido:
+    Cierre_Operacion_{mes}_{año}.xlsx
+    Flujo_Caja_{fecha_inicio}_{fecha_fin}.xlsx
