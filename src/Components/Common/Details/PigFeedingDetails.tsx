@@ -3,9 +3,13 @@ import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import LoadingAnimation from "../Shared/LoadingAnimation";
 import AlertMessage from "../Shared/AlertMesagge";
-import { Button, Card, CardBody, CardHeader, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from "reactstrap";
+import { Button, Card, CardBody, CardHeader, Col, Modal, ModalBody, ModalFooter, ModalHeader, Row, Spinner } from "reactstrap";
 import { FiAlertCircle, FiCheckCircle, FiEye } from "react-icons/fi";
+import { RiRestaurantLine, RiCalendarCheckLine, RiCalendarEventLine, RiScales3Line, RiExchangeLine } from "react-icons/ri";
 import FeedingPackageDetails from "./FeedingPackageDetails";
+import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
+import BasicLineChartCard from "Components/Common/Graphics/BasicLineChartCard";
+import DonutChartCard from "Components/Common/Graphics/DonutChartCard";
 
 import SingleFeedingForm from "../Forms/AsignFeedingForm";
 import SuccessModal from "../Shared/SuccessModal";
@@ -40,6 +44,7 @@ const PigFeedingDetails: React.FC<PigFeedingDetailsProps> = ({ pigId }) => {
     });
     const [feedingPackages, setFeedingPackages] = useState<any[]>([]);
     const [feedings, setFeedings] = useState<any[]>([]);
+    const [feedingStats, setFeedingStats] = useState<any | null>(null);
     const [selectedFeedingPackage, setSelectedFeedingPackage] = useState<string>("")
     const [selectedFeeding, setSelectedFeeding] = useState<string>("")
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -53,11 +58,15 @@ const PigFeedingDetails: React.FC<PigFeedingDetailsProps> = ({ pigId }) => {
         if (!configContext || !userLogged) return;
         try {
             setLoading(true)
-            const feedingResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/pig/get_feeding_info/${pigId}`)
+            const [feedingResponse, statsResponse] = await Promise.all([
+                configContext.axiosHelper.get(`${configContext.apiUrl}/pig/get_feeding_info/${pigId}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/pig/feeding_stats/${pigId}`),
+            ]);
             const feedingData = feedingResponse.data.data;
 
             setFeedingPackages(feedingData.feedingPackagesHistory);
             setFeedings(feedingData.feedings);
+            setFeedingStats(statsResponse.data.data);
         } catch (error) {
             console.error('Error fetching data: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: 'Error al obtener la informacion medica, intentelo mas tarde' });
@@ -165,98 +174,88 @@ const PigFeedingDetails: React.FC<PigFeedingDetailsProps> = ({ pigId }) => {
     }
     return (
         <>
-            <div className="d-flex gap-3 align-items-stretch" style={{ height: "600px" }}>
+            {feedingStats && (
+                <>
+                    {/* KPIs */}
+                    <Row className="g-3 mb-3">
+                        <Col md={6} lg>
+                            <StatKpiCard
+                                title="Alimento Consumido"
+                                value={feedingStats.kpis?.totalConsumed || 0}
+                                suffix="kg"
+                                icon={<RiRestaurantLine size={20} style={{ color: '#f59e0b' }} />}
+                                animateValue={true}
+                                decimals={1}
+                            />
+                        </Col>
+                        <Col md={6} lg>
+                            <StatKpiCard
+                                title="Consumo Diario Promedio"
+                                value={feedingStats.kpis?.avgPerDay || 0}
+                                suffix="kg/día"
+                                icon={<RiScales3Line size={20} style={{ color: '#0ea5e9' }} />}
+                                animateValue={true}
+                                decimals={2}
+                            />
+                        </Col>
+                        <Col md={6} lg>
+                            <StatKpiCard
+                                title="Conversión Alimenticia"
+                                value={feedingStats.kpis?.feedConversionRatio || 0}
+                                suffix="kg/kg"
+                                icon={<RiExchangeLine size={20} style={{ color: '#ef4444' }} />}
+                                animateValue={true}
+                                decimals={2}
+                            />
+                        </Col>
+                    </Row>
 
-                <Card className="w-50 h-100 flex-grow-1">
-                    <CardHeader className="bg-light d-flex justify-content-between">
-                        <h5>Alimentos administrados</h5>
+                    {/* Gráficas */}
+                    <Row className="g-3 mb-3">
+                        <Col lg={8}>
+                            <BasicLineChartCard
+                                title="Consumo Acumulado"
+                                data={[{
+                                    id: 'Alimento (kg)',
+                                    color: '#f59e0b',
+                                    data: (feedingStats.cumulativeConsumption || []).map((p: any) => ({ x: p.date, y: p.value })),
+                                }]}
+                                yLabel="Kg acumulados"
+                                xLabel="Fecha"
+                                height={280}
+                                curve="natural"
+                                pointSize={5}
+                                strokeWidth={2}
+                                enableGrid={true}
+                                enablePoints={true}
+                                enableArea={true}
+                                showLegend={false}
+                                headerBgColor="#ffffff"
+                                className="border-0 shadow-sm h-100"
+                            />
+                        </Col>
+                        <Col lg={4}>
+                            <DonutChartCard
+                                title="Distribución por Tipo"
+                                data={feedingStats.distributionByType || []}
+                                legendItems={(feedingStats.distributionByType || []).map((d: any) => ({
+                                    label: d.label,
+                                    value: `${d.value} kg`,
+                                    percentage: feedingStats.kpis?.totalConsumed
+                                        ? `${((d.value / feedingStats.kpis.totalConsumed) * 100).toFixed(1)}%`
+                                        : '0%',
+                                }))}
+                                className="h-100 border-0 shadow-sm"
+                                headerBgColor="#ffffff"
+                            />
+                        </Col>
+                    </Row>
+                </>
+            )}
 
-                        <Button className="" size="sm" onClick={() => toggleModal('asignFeeding')}>
-                            <i className="" />
-                            Administrar alimentos
-                        </Button>
-                    </CardHeader>
-                    <CardBody className={feedings.length === 0 ? 'd-flex justify-content-center align-items-center' : ''} style={{ overflowY: 'auto' }}>
-                        {feedings.length === 0 ? (
-                            <>
-                                <FiAlertCircle className="text-muted" size={22} />
-                                <span className="fs-5 text-black text-muted text-center rounded-5 ms-2">
-                                    No hay alimentos administrados
-                                </span>
-                            </>
-                        ) : (
-                            <div className="d-flex flex-column gap-2">
+            <div style={{ height: "600px" }}>
 
-                                {feedings.map((f, index) => {
-                                    const date = new Date(f.applicationDate).toLocaleString("es-MX", {
-                                        dateStyle: "short",
-                                        timeStyle: "short",
-                                    });
-
-                                    const periodicityLabels: Record<string, string> = {
-                                        once_day: '1 vez al dia',
-                                        twice_day: '2 veces al dia',
-                                        three_times_day: '3 veces al dia',
-                                        ad_libitum: 'Libre acceso',
-                                        weekly: '1 vez a la semana',
-                                        biweekly: '2 veces a la semana',
-                                        montly: 'Mensual',
-                                        specific_days: 'Dias especificos',
-                                        by_event: 'Por evento',
-                                    }
-
-                                    return (
-                                        <div key={index} className="p-3 border rounded shadow-sm d-flex flex-column position-relative bg-light">
-                                            <Button className="btn position-absolute" size="sm" style={{ top: "10px", right: "10px", borderRadius: "4px", }} onClick={() => { setSelectedFeeding(f._id); toggleModal('discountFeedingStock') }} disabled={!f.is_active}>
-                                                <i className="bx bx-trending-down" />
-                                            </Button>
-
-                                            {f.is_active === true ? (
-                                                <Button className="btn position-absolute btn-danger" size="sm" style={{ top: "10px", right: "44px", borderRadius: "4px", }} onClick={() => { setSelectedFeeding(f._id); toggleModal('unasignFeeding') }}>
-                                                    <i className="ri-forbid-line" />
-                                                </Button>
-                                            ) : null}
-
-                                            <strong className="fs-5 mb-2">
-                                                {f.feeding.name}
-                                            </strong>
-
-                                            <div className="d-flex justify-content-between flex-wrap fs-6 mb-2">
-                                                <span>
-                                                    <strong className="text-muted">Cantidad</strong> {f.quantity} {f.unit_measurement}
-                                                </span>
-
-                                                <span>
-                                                    <strong className="text-muted">Periodicidad: </strong>{periodicityLabels[f.periodicity] ?? f.periodicity}
-                                                </span>
-                                            </div>
-
-                                            <div className="fs-6 d-flex justify-content-between">
-                                                <div>
-                                                    <strong className="text-muted">Aplicado por:</strong>{" "}
-                                                    {f.appliedBy ? `${f.appliedBy.name} ${f.appliedBy.lastname}` : "Desconocido"}
-                                                </div>
-
-                                                <div className="">
-                                                    <strong className="text-muted">Fecha:</strong> {date}
-                                                </div>
-
-                                            </div>
-
-                                            {f.observations && f.observations.trim() !== "" && (
-                                                <div className="mt-2 fs-6">
-                                                    <strong className="text-muted">Notas:</strong> {f.observations}
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </CardBody>
-                </Card>
-
-                <Card className="w-50 h-100 flex-grow-1">
+                <Card className="w-100 h-100">
                     <CardHeader className="bg-light d-flex justify-content-between">
                         <h5>Paquetes de alimentacion administrados</h5>
 

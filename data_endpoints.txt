@@ -1234,3 +1234,908 @@ NOTAS GENERALES
 - Las claves de estado de stock:
     "critical", "low", "normal"
 - El campo _id es el ObjectId de MongoDB como string
+
+
+================================================================================
+================================================================================
+     ENDPOINTS PROPUESTOS PARA DASHBOARD HOME (por rol) - PENDIENTES
+================================================================================
+
+================================================================================
+24. DASHBOARD SUPERADMIN / FARM_MANAGER (resumen ejecutivo)
+================================================================================
+GET /dashboard/executive/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+
+PROPOSITO:
+  Entregar en una sola llamada los KPIs y datos agregados que consume el
+  dashboard del home para Superadmin y farm_manager. Evita que el home
+  dispare 6+ requests en paralelo a los endpoints de reportes.
+
+RECIBE:
+  - farm_id (param): string
+  - start_date (query): string (YYYY-MM-DD)
+  - end_date (query): string (YYYY-MM-DD)
+
+RETORNA:
+{
+  "data": {
+    "finance": {
+      "totalIncome": number,             // $
+      "totalCosts": number,              // $
+      "operatingResult": number,         // $
+      "operatingMargin": number          // %
+    },
+    "production": {
+      "totalActivePigs": number,
+      "totalActiveGroups": number,
+      "mortalityRate": number,           // %
+      "avgFcr": number,
+      "avgAdg": number                   // kg/dia
+    },
+    "groupsByStage": [
+      {
+        "stage": string,                 // clave interna
+        "stageLabel": string,            // legible
+        "groupCount": number,
+        "pigCount": number
+      }
+    ],
+    "costVsIncomeMonthly": [
+      {
+        "month": string,                 // "Ene 2026"
+        "totalCost": number,
+        "totalIncome": number,
+        "profit": number,
+        "margin": number                 // %
+      }
+    ],
+    "topClients": [
+      {
+        "clientName": string,
+        "totalRevenue": number,
+        "margin": number                 // %
+      }
+    ],
+    "inventoryAlerts": {
+      "staleProductCount": number,
+      "criticalStockCount": number,
+      "shrinkagePercent": number
+    }
+  }
+}
+
+
+================================================================================
+25. DASHBOARD WAREHOUSE_MANAGER
+================================================================================
+GET /dashboard/warehouse/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+
+RECIBE:
+  - farm_id (param): string
+  - start_date (query): string (YYYY-MM-DD)
+  - end_date (query): string (YYYY-MM-DD)
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "totalInventoryValue": number,     // $
+      "totalProducts": number,
+      "totalMovements": number,
+      "shrinkagePercent": number,        // %
+      "pendingPurchaseOrders": number,
+      "criticalStockCount": number
+    },
+    "criticalStock": [
+      {
+        "productName": string,
+        "warehouse": string,
+        "currentStock": number,
+        "unit": string,
+        "status": string                 // "critical" | "low"
+      }
+    ],
+    "staleProducts": [
+      {
+        "productName": string,
+        "warehouse": string,
+        "currentStock": number,
+        "unit": string,
+        "daysSinceLastMovement": number
+      }
+    ],
+    "recentMovements": [
+      {
+        "_id": string,
+        "date": string,                  // ISO
+        "productName": string,
+        "movementType": string,          // "income" | "outcome" | "transfer" | "adjustment"
+        "quantity": number,
+        "unit": string,
+        "warehouse": string
+      }
+    ],
+    "monthlySpending": [
+      {
+        "month": string,                 // "Ene 2026"
+        "totalSpent": number,
+        "purchaseCount": number
+      }
+    ],
+    "valueByCategory": [
+      {
+        "category": string,
+        "totalValue": number             // $
+      }
+    ]
+  }
+}
+
+
+================================================================================
+26. DASHBOARD SUBWAREHOUSE_MANAGER
+================================================================================
+GET /dashboard/subwarehouse/:subwarehouse_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+
+NOTA: el subalmacen se infiere del usuario logueado o se pasa el _id del
+subalmacen asignado. Si un usuario administra varios subalmacenes, el front
+hara una llamada por cada uno o se puede aceptar lista de ids.
+
+RECIBE:
+  - subwarehouse_id (param): string
+  - start_date (query): string (YYYY-MM-DD)
+  - end_date (query): string (YYYY-MM-DD)
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "subwarehouseName": string,
+      "totalProducts": number,
+      "totalMovements": number,          // en el periodo
+      "pendingDistributions": number,    // ordenes recibidas pendientes
+      "criticalStockCount": number
+    },
+    "criticalStock": [
+      {
+        "productName": string,
+        "currentStock": number,
+        "unit": string,
+        "status": string                 // "critical" | "low"
+      }
+    ],
+    "recentMovements": [
+      {
+        "_id": string,
+        "date": string,
+        "productName": string,
+        "movementType": string,
+        "quantity": number,
+        "unit": string
+      }
+    ]
+  }
+}
+
+
+================================================================================
+27. DASHBOARD REPRODUCTION_TECHNICIAN
+================================================================================
+GET /dashboard/reproduction/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+
+RECIBE:
+  - farm_id (param): string
+  - start_date (query): string (YYYY-MM-DD)
+  - end_date (query): string (YYYY-MM-DD)
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "inseminationEffectiveness": number,  // %
+      "avgWeaningHeatInterval": number,     // dias
+      "avgBornAlivePerBirth": number,
+      "avgWeanedPerSow": number,
+      "pendingInseminations": number,       // con resultado "pending"
+      "upcomingBirths": number              // partos estimados proximos 7 dias
+    },
+    "upcomingBirthsList": [
+      {
+        "sowIdentifier": string,
+        "estimatedBirthDate": string,       // ISO
+        "daysToBirth": number               // puede ser negativo si esta retrasada
+      }
+    ],
+    "recentInseminations": [
+      {
+        "_id": string,
+        "date": string,
+        "sowIdentifier": string,
+        "boarOrSample": string,
+        "result": string                    // "success" | "pending" | "failed"
+      }
+    ],
+    "monthlyEffectiveness": [
+      {
+        "month": string,                    // "Ene 2026"
+        "total": number,
+        "successful": number,
+        "rate": number                      // %
+      }
+    ],
+    "bornAliveVsDead": [
+      {
+        "month": string,
+        "bornAlive": number,
+        "bornDead": number,
+        "mummified": number
+      }
+    ]
+  }
+}
+
+
+================================================================================
+28. DASHBOARD VETERINARIAN
+================================================================================
+GET /dashboard/veterinary/:farm_id?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+
+RECIBE:
+  - farm_id (param): string
+  - start_date (query): string (YYYY-MM-DD)
+  - end_date (query): string (YYYY-MM-DD)
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "mortalityRate": number,              // %
+      "totalDeaths": number,
+      "medicationsApplied": number,         // en el periodo
+      "vaccinationsApplied": number,        // en el periodo
+      "groupsWithHealthAlerts": number
+    },
+    "deathsByCause": [
+      {
+        "cause": string,
+        "count": number,
+        "percentage": number
+      }
+    ],
+    "deathsByStage": [
+      {
+        "stage": string,
+        "stageLabel": string,
+        "deaths": number,
+        "rate": number                      // %
+      }
+    ],
+    "recentTreatments": [
+      {
+        "_id": string,
+        "date": string,
+        "groupName": string,
+        "treatmentType": string,            // "medication" | "vaccination"
+        "productName": string,
+        "pigCount": number
+      }
+    ],
+    "feedConsumptionByGroup": [
+      {
+        "groupName": string,
+        "stage": string,
+        "pigCount": number,
+        "avgPerPig": number,                // kg
+        "unit": string
+      }
+    ]
+  }
+}
+
+
+================================================================================
+29. DASHBOARD GENERAL_WORKER
+================================================================================
+GET /dashboard/worker/:farm_id?user_id=XXX&start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+
+RECIBE:
+  - farm_id (param): string
+  - user_id (query): string   // id del usuario logueado para filtrar su actividad
+  - start_date (query): string (YYYY-MM-DD)
+  - end_date (query): string (YYYY-MM-DD)
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "totalActivePigs": number,
+      "totalActiveGroups": number,
+      "myActionsToday": number              // acciones registradas por el usuario hoy
+    },
+    "groupsByStage": [
+      {
+        "stage": string,
+        "stageLabel": string,
+        "groupCount": number,
+        "pigCount": number
+      }
+    ],
+    "recentPigMovements": [
+      {
+        "_id": string,
+        "date": string,
+        "groupName": string,
+        "movementType": string,             // "entry" | "exit" | "transfer" | "death" | "sale"
+        "quantity": number,
+        "origin": string,
+        "destination": string
+      }
+    ]
+  }
+}
+
+
+====================================================================
+ENDPOINT: GET /pig/general_info/:pig_id
+PROPÓSITO: Información general de un cerdo para la tab "Información General" en PigDetails.
+====================================================================
+
+RECIBE:
+  - pig_id (param): string
+
+RETORNA:
+{
+  "data": {
+    "basicInfo": {
+      "_id": string,
+      "code": string,                        // Identificador del cerdo (ej: "CD-0045")
+      "breed": string,                       // Raza (ej: "Yorkshire")
+      "sex": string,                         // "male" | "female"
+      "birthdate": string,                   // ISO date (YYYY-MM-DD)
+      "ageInDays": number,                   // Edad en días (ej: 308)
+      "ageLabel": string,                    // Edad legible (ej: "10 meses, 4 días")
+      "status": string,                      // "alive" | "sold" | "slaughtered" | "dead" | "discarded"
+      "currentStage": string,                // "piglet" | "weaning" | "fattening" | "breeder"
+      "weight": number,                      // Peso actual en kg
+      "observations": string | null          // Características físicas u observaciones
+    },
+    "origin": {
+      "origin": string,                      // "nacido" | "comprado" | "donado" | "otro"
+      "originDetail": string | null,         // Detalle del origen (ej: "Parto de cerda #R-023")
+      "sourceFarm": string | null,           // Nombre granja procedencia (si fue comprado/donado)
+      "arrivalDate": string,                 // ISO date: fecha de llegada o nacimiento
+      "daysInFarm": number                   // Días transcurridos desde arrivalDate
+    },
+    "currentFarm": {
+      "_id": string,
+      "name": string,
+      "code": string,
+      "location": string
+    },
+    "currentGroup": {                        // null si no pertenece a un grupo
+      "_id": string,
+      "name": string,
+      "code": string,
+      "stage": string                        // Etapa legible (ej: "Engorda")
+    } | null,
+    "discardInfo": {                         // null si el cerdo no está descartado/muerto
+      "isDiscarded": boolean,
+      "reason": string,                      // "muerto" | "enfermedad" | "bajo rendimiento" | etc.
+      "destination": string | null,
+      "date": string,                        // ISO date
+      "responsible": {
+        "_id": string,
+        "name": string,
+        "lastname": string,
+        "email": string
+      } | null,
+      "observations": string | null
+    } | null,
+    "recentHistory": [                       // Últimos 5-10 cambios (ordenados desc por fecha)
+      {
+        "date": string,                      // ISO date
+        "action": string,                    // Nombre de la acción (ej: "Cambio de etapa")
+        "user": {
+          "_id": string,
+          "name": string,
+          "lastname": string
+        },
+        "changes": [
+          {
+            "field": string,                 // Nombre técnico del campo (ej: "currentStage", "weight", "group", "status")
+            "oldValue": any | null,
+            "newValue": any
+          }
+        ]
+      }
+    ],
+    "reproductionHistory": [                 // Eventos reproductivos (ordenados desc por fecha)
+      {
+        "_id": string,
+        "date": string,                      // ISO date
+        "type": string,                      // Machos: "extraction"
+                                             // Hembras: "insemination" | "birth" | "abortion" | "heat_detected"
+        "typeLabel": string,                 // Legible (ej: "Extracción", "Inseminación", "Parto")
+        "user": {
+          "_id": string,
+          "name": string,
+          "lastname": string
+        },
+        "details": {
+          // Campos según tipo:
+
+          // Para "extraction" (macho):
+          "volume": number,                  // ml
+          "concentration": number,           // millones/ml
+          "quality": string,                 // "excellent" | "good" | "regular" | "poor"
+          "destinationFemale": {              // Hembra receptora (si aplica)
+            "_id": string,
+            "code": string
+          } | null,
+
+          // Para "insemination" (hembra):
+          "maleCode": string,                // Código del verraco donante
+          "dose": number,                    // ml o número de dosis
+          "method": string,                  // "artificial" | "natural"
+
+          // Para "birth" (hembra):
+          "bornAlive": number,
+          "bornDead": number,
+          "mummified": number,
+          "totalWeight": number,             // kg total de la camada
+
+          // Para "abortion" (hembra):
+          "gestationDays": number,
+          "cause": string | null,
+
+          // Para "heat_detected" (hembra):
+          "intensity": string                // "low" | "medium" | "high"
+        },
+        "observations": string | null
+      }
+    ]
+  }
+}
+
+====================================================================
+ENDPOINT: GET /pig/full_history/:pig_id
+PROPÓSITO: Historial completo de cambios del cerdo con paginación y filtros.
+           Se consume desde el modal "Ver todo" de la card "Historial Reciente".
+====================================================================
+
+RECIBE:
+  - pig_id (param): string
+  - page (query, opcional): number (default 1)
+  - limit (query, opcional): number (default 20)
+  - start_date (query, opcional): string (YYYY-MM-DD)
+  - end_date (query, opcional): string (YYYY-MM-DD)
+  - user_id (query, opcional): string           // Filtrar por usuario que hizo el cambio
+  - field (query, opcional): string             // Filtrar por campo modificado (ej: "currentStage")
+
+RETORNA:
+{
+  "data": {
+    "items": [
+      {
+        "_id": string,
+        "date": string,                         // ISO date
+        "action": string,                       // Nombre de la acción (ej: "Cambio de etapa")
+        "user": {
+          "_id": string,
+          "name": string,
+          "lastname": string,
+          "email": string
+        },
+        "changes": [
+          {
+            "field": string,                    // "currentStage" | "weight" | "group" | "status" | etc.
+            "oldValue": any | null,
+            "newValue": any
+          }
+        ]
+      }
+    ],
+    "pagination": {
+      "page": number,
+      "limit": number,
+      "total": number,                          // Total de registros que cumplen los filtros
+      "totalPages": number
+    },
+    "filterOptions": {                          // Valores disponibles para los dropdowns del modal
+      "users": [
+        { "_id": string, "name": string, "lastname": string }
+      ],
+      "fields": [
+        { "key": string, "label": string }      // (ej: { "key": "currentStage", "label": "Etapa" })
+      ]
+    }
+  }
+}
+
+
+====================================================================
+ENDPOINT: GET /pig/full_reproduction_history/:pig_id
+PROPÓSITO: Historial reproductivo completo del cerdo con paginación y filtros.
+           Se consume desde el modal "Ver todo" de la card "Historial Reproductivo".
+====================================================================
+
+RECIBE:
+  - pig_id (param): string
+  - page (query, opcional): number (default 1)
+  - limit (query, opcional): number (default 20)
+  - start_date (query, opcional): string (YYYY-MM-DD)
+  - end_date (query, opcional): string (YYYY-MM-DD)
+  - type (query, opcional): string              // "extraction" | "insemination" | "birth" | "abortion" | "heat_detected"
+
+RETORNA:
+{
+  "data": {
+    "items": [
+      {
+        "_id": string,
+        "date": string,                         // ISO date
+        "type": string,                         // Tipo de evento reproductivo
+        "typeLabel": string,                    // Legible (ej: "Parto")
+        "user": {
+          "_id": string,
+          "name": string,
+          "lastname": string
+        },
+        "details": {
+          // Campos según type (ver endpoint /pig/general_info para estructura completa):
+          // extraction: volume, concentration, quality, destinationFemale
+          // insemination: maleCode, dose, method
+          // birth: bornAlive, bornDead, mummified, totalWeight
+          // abortion: gestationDays, cause
+          // heat_detected: intensity
+        },
+        "observations": string | null
+      }
+    ],
+    "pagination": {
+      "page": number,
+      "limit": number,
+      "total": number,
+      "totalPages": number
+    },
+    "summary": {                                // Resumen de todo el historial (ignora paginación)
+      "totalEvents": number,
+      "countByType": [
+        {
+          "type": string,
+          "label": string,
+          "count": number
+        }
+      ]
+    }
+  }
+}
+
+
+====================================================================
+ENDPOINT: GET /pig/reproduction_details/:pig_id
+PROPÓSITO: Datos completos de la tab "Reproducción" en PigDetails.
+           La estructura varía según el sexo del cerdo (macho/hembra).
+====================================================================
+
+RECIBE:
+  - pig_id (param): string
+
+RETORNA:
+{
+  "data": {
+    "sex": string,                              // "male" | "female"
+
+    // ============ SI ES HEMBRA (sex === "female") ============
+    "femaleStats": {
+      "kpis": {
+        "totalBirths": number,                  // Total de partos registrados
+        "avgBornAlivePerBirth": number,         // Promedio de lechones vivos por parto
+        "pregnancyRate": number,                // Tasa de preñez en % (partos exitosos / inseminaciones)
+        "daysSinceLastService": number | null,  // Días desde última inseminación/monta
+        "nextExpectedEvent": {                  // null si no hay evento esperado
+          "type": string,                       // "birth" | "heat"
+          "label": string,                      // Legible (ej: "Parto esperado")
+          "date": string                        // ISO date estimada
+        } | null
+      },
+      "currentStatus": {
+        "cycle": string,                        // "empty" | "inseminated" | "pregnant" | "lactating" | "weaning"
+        "cycleLabel": string,                   // Legible (ej: "Gestante")
+        "daysInCycle": number,                  // Días en la etapa actual
+        "estimatedBirthDate": string | null,    // ISO date (solo si cycle === "pregnant")
+        "lastServiceMale": {                    // Verraco del último servicio (null si no aplica)
+          "_id": string,
+          "code": string
+        } | null,
+        "lastServiceDate": string | null        // ISO date
+      },
+      "littersPerformance": [                   // Rendimiento por camada (orden desc por fecha)
+        {
+          "_id": string,
+          "birthDate": string,                  // ISO date
+          "bornAlive": number,
+          "bornDead": number,
+          "mummified": number,
+          "totalWeight": number,                // kg
+          "avgWeight": number,                  // Peso promedio por lechón en kg
+          "weaned": number,                     // Lechones destetados
+          "survivalRate": number                // % de supervivencia (weaned / bornAlive * 100)
+        }
+      ]
+    } | null,
+
+    // ============ SI ES MACHO (sex === "male") ============
+    "maleStats": {
+      "kpis": {
+        "totalExtractions": number,             // Total de extracciones registradas
+        "avgVolume": number,                    // Volumen promedio por extracción en ml
+        "avgConcentration": number,             // Concentración promedio en millones/ml
+        "daysSinceLastExtraction": number | null,
+        "predominantQuality": string            // "excellent" | "good" | "regular" | "poor"
+      },
+      "qualityEvolution": [                     // Para gráfica de líneas temporal
+        {
+          "date": string,                       // ISO date
+          "volume": number,                     // ml
+          "concentration": number               // M/ml
+        }
+      ],
+      "qualityDistribution": [                  // Para gráfica donut
+        {
+          "quality": string,                    // "excellent" | "good" | "regular" | "poor"
+          "qualityLabel": string,               // Legible
+          "count": number,
+          "percentage": number                  // % del total
+        }
+      ],
+      "servedFemales": [                        // Hembras inseminadas con su semen
+        {
+          "_id": string,
+          "femaleCode": string,
+          "serviceDate": string,                // ISO date
+          "result": string,                     // "successful_birth" | "abortion" | "pending" | "not_pregnant"
+          "resultLabel": string,                // Legible (ej: "Parto exitoso")
+          "pigletsGenerated": number            // Lechones vivos generados (0 si no hubo parto aún)
+        }
+      ],
+      "totalOffspring": number                  // Total de lechones generados indirectamente
+    } | null,
+
+    // ============ HISTORIAL (ambos sexos) ============
+    "reproductionHistory": [                    // Mismo formato que en /pig/general_info
+      {
+        "_id": string,
+        "date": string,
+        "type": string,                         // "extraction" | "insemination" | "birth" | "abortion" | "heat_detected"
+        "typeLabel": string,
+        "user": { "_id": string, "name": string, "lastname": string },
+        "details": {
+          // Campos según type (ver /pig/general_info para estructura completa)
+        },
+        "observations": string | null
+      }
+    ]
+  }
+}
+
+
+====================================================================
+ENDPOINT: GET /pig/feeding_stats/:pig_id
+PROPÓSITO: Estadísticas de alimentación del cerdo para la tab "Alimentación" en PigDetails.
+           Se muestra arriba de la card "Paquetes de alimentación administrados".
+====================================================================
+
+RECIBE:
+  - pig_id (param): string
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "totalConsumed": number,                  // Total de alimento consumido histórico en kg
+      "avgPerDay": number,                      // Consumo promedio diario en kg/día
+      "feedConversionRatio": number             // Conversión alimenticia: kg alimento / kg peso ganado
+                                                // (ej: 2.8). Si no hay historial de pesos suficiente, enviar 0.
+    },
+    "cumulativeConsumption": [                  // Serie temporal para gráfica de consumo acumulado
+      {
+        "date": string,                         // ISO date (YYYY-MM-DD)
+        "value": number                         // Kg acumulados hasta esa fecha
+      }
+    ],
+    "distributionByType": [                     // Para gráfica donut de distribución
+      {
+        "id": string,                           // Identificador único (ej: "Nutrición")
+        "label": string,                        // Legible (ej: "Nutrición", "Suplementos", "Medicados")
+        "value": number,                        // Kg consumidos de ese tipo
+        "color": string                         // Color en hex (ej: "#f59e0b")
+      }
+    ]
+  }
+}
+
+
+====================================================================
+ENDPOINT: GET /pig/medical_stats/:pig_id
+PROPÓSITO: Estadísticas médicas del cerdo para la tab "Medicación" en PigDetails.
+           Se muestra arriba de las cards de enfermedades, medicamentos y paquetes.
+====================================================================
+
+RECIBE:
+  - pig_id (param): string
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "totalMedications": number,               // Total de medicamentos administrados históricos
+      "totalSicknesses": number,                // Total de enfermedades registradas históricas
+      "daysSinceLastApplication": number | null // Días desde la última aplicación (medicamento o registro)
+    },
+    "healthStatus": string,                     // "healthy" | "treatment" | "observation"
+                                                // "healthy": sin enfermedades activas
+                                                // "treatment": tiene al menos una enfermedad activa en tratamiento
+                                                // "observation": detectada reciente sin tratamiento confirmado
+    "activeSickness": {                         // null si healthStatus !== "treatment"
+      "_id": string,
+      "name": string,                           // Nombre de la enfermedad activa (ej: "Diarrea aguda")
+      "daysInTreatment": number                 // Días transcurridos desde el inicio del tratamiento
+    } | null,
+    "timeline": [                               // Últimas 6-10 aplicaciones (orden desc por fecha)
+      {
+        "date": string,                         // ISO date (YYYY-MM-DD)
+        "type": string,                         // "medication" | "sickness"
+        "label": string                         // Nombre legible (ej: "Antibiótico", "Diarrea")
+      }
+    ]
+  }
+}
+
+
+====================================================================
+ENDPOINT: GET /group/feeding_stats/:group_id
+PROPÓSITO: Estadísticas de alimentación del grupo para la tab "Alimentación" en GroupDetails.
+           Se muestra arriba de la card de paquetes de alimentación del grupo.
+====================================================================
+
+RECIBE:
+  - group_id (param): string
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "totalConsumed": number,                  // Total de alimento consumido histórico del grupo en kg
+      "avgPerDay": number,                      // Consumo promedio diario del grupo en kg/día
+      "avgPerPig": number,                      // Consumo promedio por cerdo en kg/día (totalConsumed / cerdos-día)
+      "feedConversionRatio": number             // Conversión alimenticia: kg alimento / kg peso ganado (promedio del grupo)
+                                                // Si no hay historial de pesos suficiente, enviar 0.
+    },
+    "cumulativeConsumption": [                  // Serie temporal del consumo acumulado del grupo
+      {
+        "date": string,                         // ISO date (YYYY-MM-DD)
+        "value": number                         // Kg acumulados hasta esa fecha
+      }
+    ],
+    "distributionByType": [                     // Para gráfica donut de distribución
+      {
+        "id": string,                           // Identificador único (ej: "Nutrición")
+        "label": string,                        // Legible (ej: "Nutrición", "Suplementos", "Medicados")
+        "value": number,                        // Kg consumidos de ese tipo por el grupo
+        "color": string                         // Color en hex (ej: "#f59e0b")
+      }
+    ]
+  }
+}
+
+
+====================================================================
+ENDPOINT: GET /group/medical_stats/:group_id
+PROPÓSITO: Estadísticas médicas del grupo para la tab "Medicación" en GroupDetails.
+           Se muestra arriba de las cards de eventos sanitarios y paquetes de medicación.
+====================================================================
+
+RECIBE:
+  - group_id (param): string
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "totalMedications": number,               // Total de medicamentos administrados al grupo (histórico)
+      "totalHealthEvents": number,              // Total de eventos sanitarios registrados (histórico)
+      "daysSinceLastApplication": number | null // Días desde la última aplicación (medicamento o evento)
+    },
+    "healthStatus": string,                     // "healthy" | "treatment" | "observation"
+                                                // "healthy": sin eventos sanitarios activos
+                                                // "treatment": tiene al menos un evento sanitario activo
+                                                // "observation": evento detectado reciente sin tratamiento confirmado
+    "activeHealthEvent": {                      // null si healthStatus !== "treatment"
+      "_id": string,
+      "name": string,                           // Nombre del evento sanitario activo (ej: "Brote de tos")
+      "affectedPigs": number,                   // Cantidad de cerdos del grupo afectados
+      "daysInTreatment": number                 // Días transcurridos desde el inicio del tratamiento
+    } | null,
+    "timeline": [                               // Últimas 6-10 aplicaciones (orden desc por fecha)
+      {
+        "date": string,                         // ISO date (YYYY-MM-DD)
+        "type": string,                         // "medication" | "sickness"
+        "label": string                         // Nombre legible (ej: "Antibiótico", "Brote tos")
+      }
+    ]
+  }
+}
+
+
+====================================================================
+ENDPOINT: GET /litter/medical_stats/:litter_id
+PROPÓSITO: Estadísticas médicas de la camada para la tab "Información médica" en LitterDetails.
+           Se muestra arriba de la card de paquetes de medicación.
+====================================================================
+
+RECIBE:
+  - litter_id (param): string
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "totalMedications": number,               // Total de medicamentos administrados a la camada (histórico)
+      "totalSicknesses": number,                // Total de enfermedades registradas en la camada (histórico)
+      "daysSinceLastApplication": number | null // Días desde la última aplicación (medicamento o enfermedad)
+    },
+    "healthStatus": string,                     // "healthy" | "treatment" | "observation"
+                                                // "healthy": sin enfermedades activas
+                                                // "treatment": tiene al menos una enfermedad activa
+                                                // "observation": enfermedad detectada reciente sin tratamiento confirmado
+    "activeSickness": {                         // null si healthStatus !== "treatment"
+      "_id": string,
+      "name": string,                           // Nombre de la enfermedad activa (ej: "Diarrea neonatal")
+      "affectedPiglets": number,                // Cantidad de lechones de la camada afectados
+      "daysInTreatment": number                 // Días transcurridos desde el inicio del tratamiento
+    } | null,
+    "timeline": [                               // Últimas 6-10 aplicaciones (orden desc por fecha)
+      {
+        "date": string,                         // ISO date (YYYY-MM-DD)
+        "type": string,                         // "medication" | "sickness"
+        "label": string                         // Nombre legible (ej: "Hierro inyectable", "Diarrea")
+      }
+    ]
+  }
+}
+
+
+====================================================================
+ENDPOINT: GET /litter/feeding_stats/:litter_id
+PROPÓSITO: Estadísticas de alimentación de la camada para la tab "Alimentación" en LitterDetails.
+           Se muestra arriba de la card de paquetes de alimentación de la camada.
+====================================================================
+
+RECIBE:
+  - litter_id (param): string
+
+RETORNA:
+{
+  "data": {
+    "kpis": {
+      "totalConsumed": number,                  // Total de alimento consumido histórico de la camada en kg
+      "avgPerDay": number,                      // Consumo promedio diario de la camada en kg/día
+      "avgPerPiglet": number                    // Consumo promedio por lechón en kg/día (totalConsumed / lechones-día)
+    },
+    "cumulativeConsumption": [                  // Serie temporal del consumo acumulado
+      {
+        "date": string,                         // ISO date (YYYY-MM-DD)
+        "value": number                         // Kg acumulados hasta esa fecha
+      }
+    ],
+    "distributionByType": [                     // Para gráfica donut de distribución
+      {
+        "id": string,                           // Identificador único (ej: "pre_starter", "starter", "supplements")
+        "label": string,                        // Legible (ej: "Pre-iniciador", "Iniciador", "Suplementos")
+        "value": number,                        // Kg consumidos de ese tipo por la camada
+        "color": string                         // Color en hex (ej: "#f59e0b")
+      }
+    ]
+  }
+}

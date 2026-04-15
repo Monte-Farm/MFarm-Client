@@ -3,9 +3,13 @@ import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import LoadingAnimation from "../Shared/LoadingAnimation";
 import AlertMessage from "../Shared/AlertMesagge";
-import { Button, Card, CardBody, CardHeader, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from "reactstrap";
+import { Button, Card, CardBody, CardHeader, Col, Modal, ModalBody, ModalFooter, ModalHeader, Row, Spinner } from "reactstrap";
 import { FiAlertCircle, FiCheckCircle, FiEye } from "react-icons/fi";
+import { RiRestaurantLine, RiScales3Line, RiExchangeLine, RiGroupLine } from "react-icons/ri";
 import FeedingPackageDetails from "./FeedingPackageDetails";
+import StatKpiCard from "../Graphics/StatKpiCard";
+import BasicLineChartCard from "../Graphics/BasicLineChartCard";
+import DonutChartCard from "../Graphics/DonutChartCard";
 
 import SingleFeedingForm from "../Forms/AsignFeedingForm";
 import SuccessModal from "../Shared/SuccessModal";
@@ -45,6 +49,7 @@ const GroupFeedingDetails: React.FC<LitterFeedingDetailsProps> = ({ litterId }) 
         unasignFeedingError: false
     });
     const [feedingPackages, setFeedingPackages] = useState<any[]>([]);
+    const [feedingStats, setFeedingStats] = useState<any | null>(null);
     const [feedings, setFeedings] = useState<any[]>([]);
     const [selectedFeedingPackage, setSelectedFeedingPackage] = useState<string>("")
     const [selectedFeeding, setSelectedFeeding] = useState<string>("")
@@ -59,11 +64,15 @@ const GroupFeedingDetails: React.FC<LitterFeedingDetailsProps> = ({ litterId }) 
         if (!configContext || !userLogged) return;
         try {
             setLoading(true)
-            const feedingResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/litter/get_feeding_info/${litterId}`)
+            const [feedingResponse, statsResponse] = await Promise.all([
+                configContext.axiosHelper.get(`${configContext.apiUrl}/litter/get_feeding_info/${litterId}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/litter/feeding_stats/${litterId}`),
+            ]);
             const feedingData = feedingResponse.data.data;
 
             setFeedingPackages(feedingData.feedingPackagesHistory);
             setFeedings(feedingData.feedings);
+            setFeedingStats(statsResponse.data.data);
         } catch (error) {
             console.error('Error fetching data: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: 'Error al obtener la informacion medica, intentelo mas tarde' });
@@ -169,8 +178,105 @@ const GroupFeedingDetails: React.FC<LitterFeedingDetailsProps> = ({ litterId }) 
             <LoadingAnimation />
         );
     }
+    const typeLabels: Record<string, string> = {
+        nutrition: 'Nutrición',
+        medications: 'Medicamentos',
+        vitamins: 'Vitaminas',
+        minerals: 'Minerales',
+        supplies: 'Insumos',
+        supplements: 'Suplementos',
+        medicated: 'Medicados',
+        others: 'Otros',
+        pre_starter: 'Pre-iniciador',
+        starter: 'Iniciador',
+    };
+    const translatedDist = (feedingStats?.distributionByType || []).map((d: any) => ({
+        ...d,
+        id: typeLabels[d.id] || typeLabels[d.label] || d.label || d.id,
+        label: typeLabels[d.label] || typeLabels[d.id] || d.label || d.id,
+    }));
+
     return (
         <>
+            {feedingStats && (
+                <>
+                    {/* KPIs */}
+                    <Row className="g-3 mb-3">
+                        <Col md={6} lg>
+                            <StatKpiCard
+                                title="Alimento Consumido"
+                                value={feedingStats.kpis?.totalConsumed || 0}
+                                suffix="kg"
+                                icon={<RiRestaurantLine size={20} style={{ color: '#f59e0b' }} />}
+                                animateValue={true}
+                                decimals={1}
+                            />
+                        </Col>
+                        <Col md={6} lg>
+                            <StatKpiCard
+                                title="Consumo Diario Promedio"
+                                value={feedingStats.kpis?.avgPerDay || 0}
+                                suffix="kg/día"
+                                icon={<RiScales3Line size={20} style={{ color: '#0ea5e9' }} />}
+                                animateValue={true}
+                                decimals={2}
+                            />
+                        </Col>
+                        <Col md={6} lg>
+                            <StatKpiCard
+                                title="Promedio por Lechón"
+                                value={feedingStats.kpis?.avgPerPiglet || 0}
+                                suffix="kg/día"
+                                icon={<RiGroupLine size={20} style={{ color: '#8b5cf6' }} />}
+                                animateValue={true}
+                                decimals={3}
+                            />
+                        </Col>
+                    </Row>
+
+                    {/* Gráficas */}
+                    <Row className="g-3 mb-3">
+                        <Col lg={8}>
+                            <BasicLineChartCard
+                                title="Consumo Acumulado de la Camada"
+                                data={[{
+                                    id: 'Alimento (kg)',
+                                    color: '#f59e0b',
+                                    data: (feedingStats.cumulativeConsumption || []).map((p: any) => ({ x: p.date, y: p.value })),
+                                }]}
+                                yLabel="Kg acumulados"
+                                xLabel="Fecha"
+                                height={280}
+                                curve="natural"
+                                pointSize={5}
+                                strokeWidth={2}
+                                enableGrid={true}
+                                enablePoints={true}
+                                enableArea={true}
+                                showLegend={false}
+                                headerBgColor="#ffffff"
+                                className="border-0 shadow-sm h-100"
+                            />
+                        </Col>
+                        <Col lg={4}>
+                            <DonutChartCard
+                                title="Distribución por Tipo"
+                                data={translatedDist}
+                                legendItems={translatedDist.map((d: any) => ({
+                                    label: d.label,
+                                    value: `${d.value} kg`,
+                                    percentage: feedingStats.kpis?.totalConsumed
+                                        ? `${((d.value / feedingStats.kpis.totalConsumed) * 100).toFixed(1)}%`
+                                        : '0%',
+                                }))}
+                                className="h-100 border-0 shadow-sm"
+                                headerBgColor="#ffffff"
+                            />
+                        </Col>
+                    </Row>
+                </>
+            )}
+
             <div className="d-flex gap-3 align-items-stretch" style={{ height: "600px" }}>
                 <FeedingPackagesCard
                     packages={feedingPackages}

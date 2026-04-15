@@ -3,14 +3,15 @@ import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import LoadingAnimation from "../Shared/LoadingAnimation";
 import AlertMessage from "../Shared/AlertMesagge";
-import { Button, Card, CardBody, CardHeader, Modal, ModalBody, ModalHeader } from "reactstrap";
+import { Badge, Button, Card, CardBody, CardHeader, Col, Modal, ModalBody, ModalHeader, Row } from "reactstrap";
 import { FiAlertCircle, FiEye } from "react-icons/fi";
+import { RiMedicineBottleLine, RiVirusLine, RiTimerLine, RiHeartPulseLine } from "react-icons/ri";
+import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
+import ApplicationsTimeline from "Components/Common/Graphics/ApplicationsTimeline";
 import MedicationPackageDetails from "./MedicationPackageDetails";
-import VaccinationPlanDetails from "./VaccinationPlanDetails";
 import PigSicknessForm from "../Forms/PigSicknessForm";
 import SicknessDetails from "./SicknessDetailsModal";
 import AsignMedicationPackageForm from "../Forms/AsignMedicationPackageForm";
-import AsignVaccinationPlanForm from "../Forms/AsignVaccinationPlan";
 import AsignMedicationForm from "../Forms/AsignMedicationForm";
 
 interface PigMedicalDetailsProps {
@@ -22,14 +23,13 @@ const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
     const userLogged = getLoggedinUser();
     const [loading, setLoading] = useState<boolean>(true)
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ asignSingle: false, medicationPackage: false, medicationPackageDetails: false, asignVaccinationPlan: false, vaccinationPlanDetails: false, registerSickness: false, sicknessDetails: false });
+    const [modals, setModals] = useState({ asignSingle: false, medicationPackage: false, medicationPackageDetails: false, registerSickness: false, sicknessDetails: false });
     const [medicationPackages, setMedicationPackages] = useState<any[]>([]);
     const [medications, setMedications] = useState<any[]>([]);
     const [sickness, setSickeness] = useState<any[]>([]);
-    const [vaccinationPlans, setVaccinationPlans] = useState<any[]>([])
+    const [medicalStats, setMedicalStats] = useState<any | null>(null);
 
     const [selectedMedicationPackage, setSelectedMedicationPackage] = useState<string>("")
-    const [selectedVaccinationPlan, setSelectedVaccinationPlan] = useState<string>("")
     const [selectedSickness, setSelectedSickness] = useState<string>("");
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
@@ -40,13 +40,16 @@ const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
         if (!configContext || !userLogged) return;
         try {
             setLoading(true)
-            const medicalResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/pig/get_medical_info/${pigId}`)
+            const [medicalResponse, statsResponse] = await Promise.all([
+                configContext.axiosHelper.get(`${configContext.apiUrl}/pig/get_medical_info/${pigId}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/pig/medical_stats/${pigId}`),
+            ]);
             const medicalData = medicalResponse.data.data;
 
             setMedicationPackages(medicalData.medicationPackagesHistory);
             setMedications(medicalData.medications);
-            setVaccinationPlans(medicalData.vaccinationPlansHistory)
             setSickeness(medicalData.sicknessHistory)
+            setMedicalStats(statsResponse.data.data);
         } catch (error) {
             console.error('Error fetching data: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: 'Error al obtener la informacion medica, intentelo mas tarde' });
@@ -65,8 +68,100 @@ const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
         );
     }
 
+    const healthStatusConfig: Record<string, { color: string; label: string; bg: string }> = {
+        healthy: { color: 'success', label: 'Sano', bg: '#d1fae5' },
+        treatment: { color: 'danger', label: 'En Tratamiento', bg: '#fee2e2' },
+        observation: { color: 'warning', label: 'En Observación', bg: '#fef3c7' },
+    };
+
+    const currentHealth = medicalStats ? healthStatusConfig[medicalStats.healthStatus] || healthStatusConfig.healthy : healthStatusConfig.healthy;
+
     return (
         <>
+            {medicalStats && (
+                <>
+                    {/* KPIs */}
+                    <Row className="g-3 mb-3">
+                        <Col md={6} lg>
+                            <StatKpiCard
+                                title="Medicamentos"
+                                value={medicalStats.kpis?.totalMedications || 0}
+                                icon={<RiMedicineBottleLine size={20} style={{ color: '#0ea5e9' }} />}
+                                animateValue={true}
+                                decimals={0}
+                            />
+                        </Col>
+                        <Col md={6} lg>
+                            <StatKpiCard
+                                title="Enfermedades"
+                                value={medicalStats.kpis?.totalSicknesses || 0}
+                                icon={<RiVirusLine size={20} style={{ color: '#ef4444' }} />}
+                                animateValue={true}
+                                decimals={0}
+                            />
+                        </Col>
+                        <Col md={6} lg>
+                            <StatKpiCard
+                                title="Días desde Última Aplicación"
+                                value={medicalStats.kpis?.daysSinceLastApplication ?? 0}
+                                suffix="días"
+                                icon={<RiTimerLine size={20} style={{ color: '#f59e0b' }} />}
+                                animateValue={true}
+                                decimals={0}
+                            />
+                        </Col>
+                        <Col md={6} lg>
+                            <Card className="h-100 border-0 shadow-sm" style={{ background: currentHealth.bg }}>
+                                <CardBody className="d-flex flex-column justify-content-center">
+                                    <div className="text-muted small fw-medium mb-1">
+                                        <RiHeartPulseLine className="me-1" />
+                                        Estado de Salud
+                                    </div>
+                                    <Badge color={currentHealth.color} className="fw-normal px-3 py-2 align-self-start" style={{ fontSize: '0.9rem' }}>
+                                        {currentHealth.label}
+                                    </Badge>
+                                </CardBody>
+                            </Card>
+                        </Col>
+                    </Row>
+
+                    {/* Alerta de tratamiento activo */}
+                    {medicalStats.activeSickness && medicalStats.healthStatus === 'treatment' && (
+                        <Card className="border-0 shadow-sm mb-3" style={{ borderLeft: '4px solid #ef4444' }}>
+                            <CardBody className="py-3">
+                                <Row className="align-items-center g-3">
+                                    <Col xs="auto">
+                                        <div
+                                            className="rounded-circle d-flex align-items-center justify-content-center"
+                                            style={{ width: 48, height: 48, background: '#fee2e2' }}
+                                        >
+                                            <RiVirusLine size={24} style={{ color: '#ef4444' }} />
+                                        </div>
+                                    </Col>
+                                    <Col>
+                                        <div className="fw-bold text-dark">⚠ Tratamiento Activo: {medicalStats.activeSickness.name}</div>
+                                        <div className="small text-muted">
+                                            {medicalStats.activeSickness.daysInTreatment} días en tratamiento
+                                        </div>
+                                    </Col>
+                                </Row>
+                            </CardBody>
+                        </Card>
+                    )}
+
+                    {/* Timeline */}
+                    <div className="mb-3">
+                        <ApplicationsTimeline
+                            events={medicalStats.timeline}
+                            typeConfig={{
+                                medication: { color: '#0ea5e9', icon: RiMedicineBottleLine, label: 'Medicamento' },
+                                sickness: { color: '#ef4444', icon: RiVirusLine, label: 'Enfermedad' },
+                            }}
+                        />
+                    </div>
+                </>
+            )}
+
             <div className="d-flex gap-3 align-items-stretch" style={{ height: "700px" }}>
                 <div className="w-100 d-flex flex-column gap-3">
                     <Card className="w-100 h-50 flex-grow-1 m-0">
@@ -341,88 +436,6 @@ const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
                     </Card>
                 </div>
 
-                <div className="w-100 d-flex flex-column">
-                    <Card className="w-100 flex-grow-1 m-0">
-                        <CardHeader className="bg-light d-flex justify-content-between">
-                            <h5>Planes de vacunacion asignados</h5>
-
-                            <Button className="" size="sm" onClick={() => toggleModal('asignVaccinationPlan')}>
-                                <i className="" />
-                                Asignar plan
-                            </Button>
-                        </CardHeader>
-                        <CardBody className={vaccinationPlans.length === 0 ? 'd-flex justify-content-center align-items-center' : ''}>
-                            {vaccinationPlans.length === 0 ? (
-                                <>
-                                    <FiAlertCircle className="text-muted" size={22} />
-                                    <span className="fs-5 text-black text-muted text-center rounded-5 ms-2">
-                                        No hay planes de vacunacion asignados
-                                    </span>
-                                </>
-                            ) : (
-                                <div className="d-flex flex-column gap-3">
-
-                                    {vaccinationPlans.map((p, index) => {
-                                        const date = new Date(p.applicationDate).toLocaleString("es-MX", {
-                                            dateStyle: "short",
-                                            timeStyle: "short",
-                                        });
-
-                                        const stageLabels: Record<string, string> = {
-                                            piglet: "Lechón",
-                                            sow: "Cerda",
-                                            nursery: "Destete",
-                                            grower: "Crecimiento",
-                                            finisher: "Finalización",
-                                        };
-
-                                        return (
-                                            <div key={index} className="p-3 border rounded shadow-sm bg-indigo-50 d-flex flex-column position-relative" style={{ backgroundColor: "#eef2ff" }}>
-
-                                                <Button className="btn position-absolute" size="sm" style={{ top: "10px", right: "10px", borderRadius: "4px", }} onClick={() => { setSelectedVaccinationPlan(p.planId); toggleModal('vaccinationPlanDetails') }}>
-                                                    <FiEye size={18} />
-                                                </Button>
-
-                                                <strong className="fs-5 mb-2 pe-4">
-                                                    {p.name}
-                                                </strong>
-
-                                                <div className="d-flex flex-column gap-1 fs-6 mb-2">
-
-                                                    <span>
-                                                        <strong className="text-muted">Etapa:</strong>{" "}
-                                                        {stageLabels[p.stage] ?? p.stage}
-                                                    </span>
-
-                                                </div>
-
-                                                <div className="fs-6 d-flex justify-content-between flex-wrap gap-2">
-                                                    <div>
-                                                        <strong className="text-muted">Aplicado por:</strong>{" "}
-                                                        {p.appliedBy ? `${p.appliedBy.name} ${p.appliedBy.lastname}` : "Desconocido"}
-                                                    </div>
-
-                                                    <div>
-                                                        <strong className="text-muted">Fecha:</strong> {date}
-                                                    </div>
-                                                </div>
-
-                                                {p.observations && p.observations.trim() !== "" && (
-                                                    <div className="mt-2 fs-6">
-                                                        <strong className="text-muted">Notas:</strong>{" "}
-                                                        {p.observations}
-                                                    </div>
-                                                )}
-
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </CardBody>
-                    </Card>
-                </div>
-
             </div>
 
             <Modal size="xl" isOpen={modals.registerSickness} toggle={() => toggleModal("registerSickness")} backdrop='static' keyboard={false} centered>
@@ -450,20 +463,6 @@ const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
                 <ModalHeader toggle={() => toggleModal("medicationPackageDetails")}>Detalles de paquete de medicacion</ModalHeader>
                 <ModalBody>
                     <MedicationPackageDetails medicationPackageId={selectedMedicationPackage} />
-                </ModalBody>
-            </Modal>
-
-            <Modal size="xl" isOpen={modals.asignVaccinationPlan} toggle={() => toggleModal("asignVaccinationPlan")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("asignVaccinationPlan")}>Asignar plan de vacunacion</ModalHeader>
-                <ModalBody>
-                    <AsignVaccinationPlanForm pigId={pigId} onSave={() => { toggleModal('asignVaccinationPlan'); fetchMedicalInfo(); }} />
-                </ModalBody>
-            </Modal>
-
-            <Modal size="xl" isOpen={modals.vaccinationPlanDetails} toggle={() => toggleModal("vaccinationPlanDetails")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("vaccinationPlanDetails")}>Detalles del plan de vacunacion</ModalHeader>
-                <ModalBody>
-                    <VaccinationPlanDetails vaccinationPlanId={selectedVaccinationPlan} />
                 </ModalBody>
             </Modal>
 

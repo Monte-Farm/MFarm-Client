@@ -94,136 +94,149 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCa
           formik.handleSubmit();
         }}
       >
-        {/* Código */}
-        <div className="mt-4">
-          <Label htmlFor="idInput" className="form-label">Código</Label>
-          <Input
-            type="text"
-            id="idInput"
-            className="form-control"
-            name="id"
-            value={formik.values.id}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            invalid={formik.touched.id && !!formik.errors.id}
-            disabled={isCodeDisabled}
-          />
-          {formik.touched.id && formik.errors.id && <FormFeedback>{formik.errors.id}</FormFeedback>}
+        {/* Identificación */}
+        <div className="mb-4">
+          <div className="text-uppercase text-muted fw-semibold mb-3" style={{ fontSize: '0.7rem', letterSpacing: '0.8px' }}>
+            Identificación
+          </div>
+
+          <Row className="g-3">
+            <Col lg={4}>
+              <Label htmlFor="idInput" className="form-label">Código</Label>
+              <Input
+                type="text"
+                id="idInput"
+                name="id"
+                value={formik.values.id}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                invalid={formik.touched.id && !!formik.errors.id}
+                disabled={isCodeDisabled}
+              />
+              {formik.touched.id && formik.errors.id && <FormFeedback>{formik.errors.id}</FormFeedback>}
+            </Col>
+
+            <Col lg={8}>
+              <Label htmlFor="nameInput" className="form-label">Nombre del Proveedor</Label>
+              <Input
+                type="text"
+                id="nameInput"
+                name="name"
+                placeholder="Ej. Distribuidora XYZ"
+                value={formik.values.name}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                invalid={formik.touched.name && !!formik.errors.name}
+              />
+              {formik.touched.name && formik.errors.name && <FormFeedback>{formik.errors.name}</FormFeedback>}
+            </Col>
+
+            <Col lg={12}>
+              <Label htmlFor="supplierTypeInput" className="form-label">Tipo de Proveedor</Label>
+              <Input
+                type="select"
+                id="supplierTypeInput"
+                name="supplier_type"
+                value={formik.values.supplier_type}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                invalid={formik.touched.supplier_type && !!formik.errors.supplier_type}
+              >
+                <option value="">Seleccione un tipo</option>
+                {getSupplierTypeOptions().map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </Input>
+              {formik.touched.supplier_type && formik.errors.supplier_type && (
+                <FormFeedback>{formik.errors.supplier_type}</FormFeedback>
+              )}
+            </Col>
+          </Row>
         </div>
 
-        {/* Nombre */}
-        <div className="mt-4">
-          <Label htmlFor="nameInput" className="form-label">Nombre</Label>
-          <Input
-            type="text"
-            id="nameInput"
-            className="form-control"
-            name="name"
-            placeholder="Ingrese el nombre del proveedor"
-            value={formik.values.name}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            invalid={formik.touched.name && !!formik.errors.name}
-          />
-          {formik.touched.name && formik.errors.name && <FormFeedback>{formik.errors.name}</FormFeedback>}
+        {/* Contacto */}
+        <div className="mb-4">
+          <div className="text-uppercase text-muted fw-semibold mb-3" style={{ fontSize: '0.7rem', letterSpacing: '0.8px' }}>
+            Contacto
+          </div>
+
+          <Row className="g-3">
+            <Col lg={6}>
+              <Label htmlFor="phone_numberInput" className="form-label">Teléfono</Label>
+              <Input
+                type="text"
+                id="phone_numberInput"
+                name="phone_number"
+                placeholder="Ej. 809-555-0000"
+                value={formik.values.phone_number}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                invalid={formik.touched.phone_number && !!formik.errors.phone_number}
+              />
+              {formik.touched.phone_number && formik.errors.phone_number && <FormFeedback>{formik.errors.phone_number}</FormFeedback>}
+            </Col>
+
+            <Col lg={6}>
+              <Label htmlFor="emailInput" className="form-label">Correo Electrónico</Label>
+              <Input
+                type="email"
+                id="emailInput"
+                name="email"
+                placeholder="contacto@proveedor.com"
+                value={formik.values.email}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                invalid={formik.touched.email && !!formik.errors.email}
+              />
+              {formik.touched.email && formik.errors.email && <FormFeedback>{formik.errors.email}</FormFeedback>}
+            </Col>
+
+            <Col lg={12}>
+              <Label htmlFor="addressInput" className="form-label">Dirección</Label>
+              <Input
+                type="text"
+                id="addressInput"
+                name="address"
+                placeholder="Ingrese la dirección completa"
+                value={formik.values.address}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                invalid={formik.touched.address && !!formik.errors.address}
+              />
+              {formik.touched.address && formik.errors.address && <FormFeedback>{formik.errors.address}</FormFeedback>}
+            </Col>
+          </Row>
         </div>
 
-        <Row className="mt-4">
-          {/* Dirección */}
-          <Col lg={6}>
-            <Label htmlFor="addressInput" className="form-label">Dirección</Label>
-            <Input
-              type="text"
-              id="addressInput"
-              className="form-control"
-              name="address"
-              placeholder="Ingrese la dirección"
-              value={formik.values.address}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              invalid={formik.touched.address && !!formik.errors.address}
-            />
-            {formik.touched.address && formik.errors.address && <FormFeedback>{formik.errors.address}</FormFeedback>}
-          </Col>
+        {/* Información Fiscal */}
+        <div className="mb-4">
+          <div className="text-uppercase text-muted fw-semibold mb-3" style={{ fontSize: '0.7rem', letterSpacing: '0.8px' }}>
+            Información Fiscal
+          </div>
 
-          {/* Número de Teléfono */}
-          <Col lg={6}>
-            <Label htmlFor="phone_numberInput" className="form-label">Número Telefonico</Label>
-            <Input
-              type="text"
-              id="phone_numberInput"
-              name="phone_number"
-              value={formik.values.phone_number}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              invalid={formik.touched.phone_number && !!formik.errors.phone_number} />
-            {formik.touched.phone_number && formik.errors.phone_number && <FormFeedback>{formik.errors.phone_number}</FormFeedback>}
-          </Col>
-        </Row>
-
-        <Row className="mt-4">
-          {/* Correo Electrónico */}
-          <Col lg={6}>
-            <Label htmlFor="emailInput" className="form-label">Correo Electrónico</Label>
-            <Input
-              type="email"
-              id="emailInput"
-              className="form-control"
-              name="email"
-              placeholder="Ingrese el correo electrónico"
-              value={formik.values.email}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              invalid={formik.touched.email && !!formik.errors.email}
-            />
-            {formik.touched.email && formik.errors.email && <FormFeedback>{formik.errors.email}</FormFeedback>}
-          </Col>
-
-          {/* Tipo de Proveedor */}
-          <Col lg={6}>
-            <Label htmlFor="supplierTypeInput" className="form-label">Tipo de Proveedor</Label>
-            <Input
-              type="select"
-              id="supplierTypeInput"
-              name="supplier_type"
-              value={formik.values.supplier_type}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              invalid={formik.touched.supplier_type && !!formik.errors.supplier_type}
-            >
-              <option value="">Seleccione un tipo</option>
-              {getSupplierTypeOptions().map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </Input>
-            {formik.touched.supplier_type && formik.errors.supplier_type && (
-              <FormFeedback>{formik.errors.supplier_type}</FormFeedback>
-            )}
-          </Col>
-        </Row>
-
-        {/* RNC */}
-        <div className="mt-4">
-          <Label htmlFor="rncInput" className="form-label">ID Fiscal</Label>
-          <Input
-            type="text"
-            id="rncInput"
-            className="form-control"
-            name="rnc"
-            placeholder="Ingrese el ID Fiscal"
-            value={formik.values.rnc}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            invalid={formik.touched.rnc && !!formik.errors.rnc}
-            disabled={isCodeDisabled}
-          />
-          {formik.touched.rnc && formik.errors.rnc && <FormFeedback>{formik.errors.rnc}</FormFeedback>}
+          <Row className="g-3">
+            <Col lg={12}>
+              <Label htmlFor="rncInput" className="form-label">ID Fiscal (RNC)</Label>
+              <Input
+                type="text"
+                id="rncInput"
+                name="rnc"
+                placeholder="Ingrese el ID Fiscal"
+                value={formik.values.rnc}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                invalid={formik.touched.rnc && !!formik.errors.rnc}
+                disabled={isCodeDisabled}
+              />
+              {formik.touched.rnc && formik.errors.rnc && <FormFeedback>{formik.errors.rnc}</FormFeedback>}
+            </Col>
+          </Row>
         </div>
 
-        {/* Botones */}
-        <div className="d-flex justify-content-end mt-4 gap-2">
+        {/* ============ BOTONES ============ */}
+        <div className="d-flex justify-content-end mt-4 pt-3 gap-2 border-top">
           <Button className="farm-secondary-button" onClick={() => setCancelModalOpen(true)} disabled={formik.isSubmitting}>
             Cancelar
           </Button>

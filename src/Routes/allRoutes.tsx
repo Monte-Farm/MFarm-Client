@@ -73,6 +73,7 @@ import ViewSaleGroups from "pages/Groups/ViewSaleGroups";
 import ViewSoldGroups from "pages/Groups/ViewSoldGroups";
 import ViewPigSales from "pages/Sales/ViewPigSales";
 import ViewFeedingConsumption from "pages/Feeding/ViewFeedingConsumption";
+import NotFound from "pages/NotFound/NotFound";
 
 //Reports - Production
 import InseminationsBirthsReport from "pages/Reports/Production/InseminationsBirthsReport";
@@ -242,9 +243,8 @@ const authProtectedRoutes = [
   {
     path: "/",
     exact: true,
-    component: <Navigate to="/dashboard" />,
+    component: <Navigate to="/home" />,
   },
-  { path: "*", component: <Navigate to="/dashboard" /> },
 ];
 
 const publicRoutes = [
@@ -261,6 +261,7 @@ const publicRoutes = [
   { path: "/auth-500", component: <Error500 /> },
   { path: "/auth-offline", component: <Offlinepage /> },
 
+  { path: "*", component: <NotFound /> },
 ];
 
 export { authProtectedRoutes, publicRoutes };

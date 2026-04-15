@@ -131,7 +131,7 @@ const ViewPurchaseOrders = () => {
                 <BreadCrumb title={"Ver Ordenes de Compra"} pageTitle={"Ordenes de Compra"} />
 
                 {/* KPIs Section */}
-                <div className="row">
+                <div className="row mb-3">
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
                             title="Total de Órdenes del Mes"

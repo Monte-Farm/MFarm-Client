@@ -191,7 +191,7 @@ const SubwarehouseIncomes = () => {
                 <BreadCrumb title={"Ver Entradas"} pageTitle={"Entradas"} />
 
                 {/* KPIs Section */}
-                <div className="row">
+                <div className="row mb-3">
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
                             title="Valor Total de Entradas"

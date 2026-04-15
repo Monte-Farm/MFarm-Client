@@ -743,18 +743,6 @@ const Navdata = () => {
                     },
                     stateVariables: isFeedingPackage,
                 },
-                {
-                    id: "feedingConsumption",
-                    label: "Consumo de alimentación",
-                    link: "/feeding/view_feeding_consumption",
-                    roles: ['farm_manager', 'veterinarian',],
-                    parentId: "feeding",
-                    click: function (e: any) {
-                        e.preventDefault();
-                        setIsFeedingConsumption(!isFeedingConsumption)
-                    },
-                    stateVariables: isFeedingConsumption,
-                },
             ]
         },
 

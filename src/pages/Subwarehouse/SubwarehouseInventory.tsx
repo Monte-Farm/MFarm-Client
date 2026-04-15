@@ -158,7 +158,7 @@ const SubwarehouseInventory = () => {
                 <BreadCrumb title={"Inventario"} pageTitle={"Subalmacén"} />
 
                 {/* KPIs Section */}
-                <div className="row">
+                <div className="row mb-3">
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
                             title="Valor Total del Inventario"

@@ -216,7 +216,7 @@ const ViewInventory = () => {
         <BreadCrumb title="Inventario" pageTitle="Almacén General" />
 
         {/* KPIs Section */}
-        <div className="row mb-0">
+        <div className="row mb-3">
 
           <div className="col-xl-3 col-md-6">
             <StatKpiCard

@@ -220,7 +220,7 @@ const SubwarehouseOutcomes = () => {
                 <BreadCrumb title={"Ver Salidas"} pageTitle={"Salidas"} />
 
                 {/* KPIs Section */}
-                <div className="row">
+                <div className="row mb-3">
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
                             title="Valor Total de Salidas"

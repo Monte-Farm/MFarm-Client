@@ -549,7 +549,7 @@ const SubwarehouseDetails = () => {
                 <TabContent activeTab={activeStep} className="justified-tabs mt-3">
                     <TabPane tabId="1">
                         {/* KPIs Section */}
-                        <div className="row mb-0">
+                        <div className="row mb-3">
                             <div className="col-xl-3 col-md-6">
                                 <StatKpiCard
                                     title="Valor Total del Inventario"
@@ -643,7 +643,7 @@ const SubwarehouseDetails = () => {
 
                     <TabPane tabId="2">
                         {/* KPIs Section */}
-                        <div className="row">
+                        <div className="row mb-3">
                             <div className="col-xl-3 col-md-6">
                                 <StatKpiCard
                                     title="Valor Total de Entradas"
@@ -721,7 +721,7 @@ const SubwarehouseDetails = () => {
 
                     <TabPane tabId="3">
                         {/* KPIs Section */}
-                        <div className="row">
+                        <div className="row mb-3">
                             <div className="col-xl-3 col-md-6">
                                 <StatKpiCard
                                     title="Valor Total de Salidas"

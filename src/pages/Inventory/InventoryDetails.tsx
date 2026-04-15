@@ -1,87 +1,35 @@
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useState, useEffect, useContext } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom"
-import { Button, Card, CardBody, CardHeader, Col, Container, Nav, NavItem, NavLink, Row, TabContent, TabPane, Alert, Badge, Spinner, Modal, ModalHeader, ModalBody } from "reactstrap"
+import { Button, Card, CardBody, CardHeader, Col, Container, Nav, NavItem, NavLink, Row, TabContent, TabPane, Badge, Spinner, Modal, ModalHeader, ModalBody } from "reactstrap"
 import classnames from "classnames";
-import ObjectDetails from "Components/Common/Details/ObjectDetails";
-import { Attribute } from "common/data_interfaces";
 import { ConfigContext } from "App";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
 import BasicLineChartCard from "Components/Common/Graphics/BasicLineChartCard";
 import DonutChartCard from "Components/Common/Graphics/DonutChartCard";
 import StackedAreaChartCard from "Components/Common/Graphics/StackedAreaChartCard";
-import { RiBox3Line, RiMoneyDollarCircleLine, RiPriceTag3Line, RiPercentLine, RiAddLine, RiSubtractLine, RiFilter3Line, RiDownloadLine, RiArrowUpLine } from "react-icons/ri";
+import { RiBox3Line, RiMoneyDollarCircleLine, RiPriceTag3Line, RiPercentLine, RiAddLine, RiSubtractLine, RiArrowUpLine, RiArrowDownLine, RiInformationLine, RiExchangeLine } from "react-icons/ri";
 import NoImage from '../../assets/images/no-image.png';
-import { transformQuantityData, transformPriceData, combinePriceSeries } from '../../utils/chartTransformers';
+import { transformQuantityData, combinePriceSeries } from '../../utils/chartTransformers';
 import CustomTable from "Components/Common/Tables/CustomTable";
 import { Column } from "common/data/data_types";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
 
-const productAttributes: Attribute[] = [
-    { key: 'id', label: 'Código', type: 'text' },
-    { key: 'name', label: 'Nombre', type: 'text' },
-    {
-        key: 'category',
-        label: 'Categoría',
-        render: (value: any) => {
-            let color = "secondary";
-            let label = value;
-
-            switch (value) {
-                case "nutrition":
-                    color = "info";
-                    label = "Nutrición";
-                    break;
-                case "medications":
-                    color = "warning";
-                    label = "Medicamentos";
-                    break;
-                case "vaccines":
-                    color = "primary";
-                    label = "Vacunas";
-                    break;
-                case "vitamins":
-                    color = "success";
-                    label = "Vitaminas";
-                    break;
-                case "minerals":
-                    color = "success";
-                    label = "Minerales";
-                    break;
-                case "supplies":
-                    color = "success";
-                    label = "Insumos";
-                    break;
-                case "hygiene_cleaning":
-                    color = "success";
-                    label = "Higiene y desinfección";
-                    break;
-                case "equipment_tools":
-                    color = "success";
-                    label = "Equipamiento y herramientas";
-                    break;
-                case "spare_parts":
-                    color = "success";
-                    label = "Refacciones y repuestos";
-                    break;
-                case "office_supplies":
-                    color = "success";
-                    label = "Material de oficina";
-                    break;
-                case "others":
-                    color = "success";
-                    label = "Otros";
-                    break;
-            }
-
-            return <Badge color={color}>{label}</Badge>;
-        }
-    },
-    { key: 'unit_measurement', label: 'Unidad de Medida', type: 'text' },
-    { key: 'description', label: 'Descripción', type: 'text' },
-]
+const categoryConfig: Record<string, { color: string; label: string }> = {
+    nutrition: { color: "info", label: "Nutrición" },
+    medications: { color: "warning", label: "Medicamentos" },
+    vaccines: { color: "primary", label: "Vacunas" },
+    vitamins: { color: "success", label: "Vitaminas" },
+    minerals: { color: "success", label: "Minerales" },
+    supplies: { color: "success", label: "Insumos" },
+    hygiene_cleaning: { color: "success", label: "Higiene y desinfección" },
+    equipment_tools: { color: "success", label: "Equipamiento y herramientas" },
+    spare_parts: { color: "success", label: "Refacciones y repuestos" },
+    office_supplies: { color: "success", label: "Material de oficina" },
+    others: { color: "secondary", label: "Otros" },
+};
 
 const ProductDetails = () => {
     document.title = 'Detalles de Producto | Almacén'
@@ -100,21 +48,18 @@ const ProductDetails = () => {
     const [pdfLoading, setPdfLoading] = useState(false);
     const [fileURL, setFileURL] = useState<string | null>(null);
     const [showPDFModal, setShowPDFModal] = useState(false);
-    // Calcular variación de precio
+
     const calculatePriceVariation = () => {
         const lastPrice = productStatistics?.lastPrice || 0;
         const averagePrice = productStatistics?.averagePrice || 0;
-        
         if (averagePrice === 0) return 0;
-        
-        // Calcula la variación porcentual vs el precio promedio
-        const variation = ((lastPrice - averagePrice) / averagePrice) * 100;
-        return variation;
+        return ((lastPrice - averagePrice) / averagePrice) * 100;
     };
 
     const priceVariation = calculatePriceVariation();
     const productId = searchParams.get('product');
     const warehouseId = searchParams.get('warehouse');
+    const categoryInfo = productDetails?.category ? categoryConfig[productDetails.category] : null;
 
     const movementsColumns: Column<any>[] = [
         { header: 'Fecha', accessor: 'date', isFilterable: true, type: 'date' },
@@ -127,18 +72,11 @@ const ProductDetails = () => {
             render: (value: string) => {
                 let color = 'secondary';
                 let text = 'N/A';
-
                 switch (value) {
-                    case "income":
-                        color = "success";
-                        text = "Entrada";
-                        break;
-                    case "outcome":
-                        color = "danger";
-                        text = "Salida";
-                        break;
+                    case "income": color = "success"; text = "Entrada"; break;
+                    case "outcome": color = "danger"; text = "Salida"; break;
                 }
-                return <Badge color={color}>{text}</Badge>;
+                return <Badge color={color} className="px-2 py-1">{text}</Badge>;
             },
         },
         { header: 'Cantidad', accessor: 'quantity', type: 'number' },
@@ -148,11 +86,8 @@ const ProductDetails = () => {
             accessor: 'origin',
             type: 'text',
             render: (_, row) => {
-                if (row.type === 'income' && row.origin) {
-                    return `${row.origin.name}`;
-                } else if (row.type === 'outcome' && row.destination) {
-                    return `${row.destination.name}`;
-                }
+                if (row.type === 'income' && row.origin) return `${row.origin.name}`;
+                if (row.type === 'outcome' && row.destination) return `${row.destination.name}`;
                 return 'N/A';
             },
         },
@@ -170,7 +105,6 @@ const ProductDetails = () => {
 
     const handleFetchProductDetails = async () => {
         if (!configContext || !productId) return;
-
         try {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/product/find_product_id/${productId}`);
             setProductDetails(response.data.data);
@@ -181,7 +115,6 @@ const ProductDetails = () => {
 
     const handleFetchProductStatistics = async () => {
         if (!configContext || !productId || !warehouseId) return;
-
         try {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/product_statistics/${warehouseId}/${productId}`);
             setProductStatistics(response.data.data);
@@ -192,7 +125,6 @@ const ProductDetails = () => {
 
     const handleFetchProductHistoricalData = async () => {
         if (!configContext || !productId || !warehouseId) return;
-
         try {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/product_historical_data/${warehouseId}/${productId}`);
             setHistoricalData(response.data.data);
@@ -203,11 +135,9 @@ const ProductDetails = () => {
 
     const handleFetchProductMovements = async () => {
         if (!configContext || !productId || !warehouseId) return;
-
         try {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/product_movements/${warehouseId}/${productId}`);
-            const movementsData = response.data.data;
-            setMovements(movementsData.movements);
+            setMovements(response.data.data.movements);
         } catch (error) {
             handleError(error, 'Error al obtener los movimientos del producto');
         }
@@ -215,7 +145,6 @@ const ProductDetails = () => {
 
     const handleFetchProductMovementsSummary = async () => {
         if (!configContext || !productId || !warehouseId) return;
-
         try {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/product_movement_summary/${warehouseId}/${productId}`);
             setMovementsSummary(response.data.data.summary);
@@ -226,7 +155,6 @@ const ProductDetails = () => {
 
     const handleFetchProductMovementsCharts = async () => {
         if (!configContext || !productId || !warehouseId) return;
-
         try {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/product_movement_charts/${warehouseId}/${productId}`);
             setMovementsCharts(response.data.data.charts);
@@ -237,14 +165,11 @@ const ProductDetails = () => {
 
     const handlePrintProduct = async () => {
         if (!configContext || !warehouseId || !productId) return;
-
         try {
             setPdfLoading(true);
             const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/product_inventory/${warehouseId}/${productId}`);
-            
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
             const url = window.URL.createObjectURL(pdfBlob);
-            
             setFileURL(url);
             setShowPDFModal(true);
         } catch (error) {
@@ -257,7 +182,6 @@ const ProductDetails = () => {
 
     const fetchData = async () => {
         if (!configContext || !productId || !warehouseId) return;
-
         setLoading(true);
         try {
             await Promise.all([
@@ -280,9 +204,7 @@ const ProductDetails = () => {
     }, [productId, warehouseId]);
 
     if (loading) {
-        return (
-            <LoadingAnimation />
-        )
+        return <LoadingAnimation />;
     }
 
     return (
@@ -293,159 +215,215 @@ const ProductDetails = () => {
                 <div className="d-flex gap-2 mb-3">
                     <div className="flex-grow-1">
                         <Button className="farm-secondary-button" onClick={() => history(-1)}>
-                            <i className=" ri-arrow-left-line me-3"></i>
+                            <i className="ri-arrow-left-line me-3"></i>
                             Regresar
                         </Button>
                     </div>
-                    <Button 
-                        color="primary" 
-                        onClick={handlePrintProduct}
-                        disabled={pdfLoading}
-                    >
+                    <Button color="primary" onClick={handlePrintProduct} disabled={pdfLoading}>
                         {pdfLoading ? (
-                            <>
-                                <Spinner className="me-2" size='sm' />
-                                Generando...
-                            </>
+                            <><Spinner className="me-2" size='sm' />Generando...</>
                         ) : (
-                            <>
-                                <i className="ri-file-pdf-line me-2"></i>
-                                Imprimir Reporte
-                            </>
+                            <><i className="ri-file-pdf-line me-2"></i>Imprimir Reporte</>
                         )}
                     </Button>
                 </div>
 
-                <div className="p-3 bg-white rounded">
-                    <Nav tabs className="nav-tabs">
-                        <NavItem>
-                            <NavLink
-                                style={{ cursor: "pointer" }}
-                                className={classnames({ active: activeTab === "1" })}
-                                onClick={() => toggleTab("1")}
-                            >
-                                Información del Producto
-                            </NavLink>
-                        </NavItem>
-                        <NavItem>
-                            <NavLink
-                                style={{ cursor: "pointer" }}
-                                className={classnames({ active: activeTab === "2" })}
-                                onClick={() => toggleTab("2")}
-                            >
-                                Movimientos
-                            </NavLink>
-                        </NavItem>
-                    </Nav>
-                </div>
+                {/* Tabs */}
+                <Card className="border-0 shadow-sm mb-3">
+                    <CardBody className="p-0">
+                        <Nav tabs className="nav-tabs-custom border-0 px-3 pt-2">
+                            <NavItem>
+                                <NavLink
+                                    style={{ cursor: "pointer" }}
+                                    className={classnames("fw-medium", { active: activeTab === "1" })}
+                                    onClick={() => toggleTab("1")}
+                                >
+                                    <RiInformationLine className="me-1" />
+                                    Información General
+                                </NavLink>
+                            </NavItem>
+                            <NavItem>
+                                <NavLink
+                                    style={{ cursor: "pointer" }}
+                                    className={classnames("fw-medium", { active: activeTab === "2" })}
+                                    onClick={() => toggleTab("2")}
+                                >
+                                    <RiExchangeLine className="me-1" />
+                                    Movimientos
+                                </NavLink>
+                            </NavItem>
+                        </Nav>
+                    </CardBody>
+                </Card>
 
-                <TabContent activeTab={activeTab} className="justified-tabs mt-3">
+                <TabContent activeTab={activeTab}>
+                    {/* ============ TAB 1: INFORMACIÓN ============ */}
                     <TabPane tabId="1">
-                        <div className="g-2" style={{ minHeight: '500px' }}>
-                            <div className="row g-2">
-                                {/* Sección 1: Columna izquierda grande */}
-                                <div className="col-md-3">
-                                    <Card className="h-100 m-0">
-                                        <CardHeader className="bg-light">
-                                            <h5 className="mb-0 text-muted">Información del Producto</h5>
-                                        </CardHeader>
-                                        <CardBody>
-                                            <ObjectDetails attributes={productAttributes} object={productDetails} showImage={true} imageSrc={productDetails?.image || NoImage} />
-                                        </CardBody>
-                                    </Card>
-                                </div>
+                        {/* KPIs Row */}
+                        <Row className="g-3 mb-3">
+                            <Col md={6} lg>
+                                <StatKpiCard
+                                    title="Existencias"
+                                    value={productStatistics?.existences?.quantity || 0}
+                                    suffix={productStatistics?.existences?.unitMeasurement || ''}
+                                    icon={<RiBox3Line size={20} style={{ color: "#f59e0b" }} />}
+                                    animateValue={true}
+                                    decimals={0}
+                                />
+                            </Col>
+                            <Col md={6} lg>
+                                <StatKpiCard
+                                    title="Valor Total"
+                                    value={productStatistics?.totalValue || 0}
+                                    icon={<RiMoneyDollarCircleLine size={20} style={{ color: "#0ea5e9" }} />}
+                                    animateValue={true}
+                                    decimals={0}
+                                    prefix="$"
+                                />
+                            </Col>
+                            <Col md={6} lg>
+                                <StatKpiCard
+                                    title="Último Precio"
+                                    value={productStatistics?.lastPrice || 0}
+                                    icon={<RiPriceTag3Line size={20} style={{ color: "#ef4444" }} />}
+                                    animateValue={true}
+                                    decimals={0}
+                                    prefix="$"
+                                />
+                            </Col>
+                            <Col md={6} lg>
+                                <StatKpiCard
+                                    title="Precio Promedio"
+                                    value={productStatistics?.averagePrice || 0}
+                                    icon={<RiPercentLine size={20} style={{ color: "#3b82f6" }} />}
+                                    animateValue={true}
+                                    decimals={0}
+                                    prefix="$"
+                                />
+                            </Col>
+                            <Col md={6} lg>
+                                <StatKpiCard
+                                    title="Variación de Precio"
+                                    value={priceVariation}
+                                    icon={priceVariation >= 0
+                                        ? <RiArrowUpLine size={20} style={{ color: "#ef4444" }} />
+                                        : <RiArrowDownLine size={20} style={{ color: "#10b981" }} />}
+                                    animateValue={true}
+                                    decimals={1}
+                                    suffix="%"
+                                />
+                            </Col>
+                        </Row>
 
-                                {/* Contenedor derecho para secciones 2-7 */}
-                                <div className="col-md-9 d-flex flex-column">
-                                    {/* Secciones 2-5: KPIs con componente Kpi */}
-                                    <div className="row g-2 mb-2">
-                                        <div className="col-2">
-                                            <StatKpiCard
-                                                title="Existencias"
-                                                value={productStatistics?.existences?.quantity || 0}
-                                                suffix={productStatistics?.existences?.unitMeasurement || ''}
-                                                icon={<RiBox3Line size={20} style={{ color: "#f59e0b" }} />}
-                                                animateValue={true}
-                                                decimals={0}
-                                            />
+                        {/* Product info + Charts */}
+                        <Row className="g-3">
+                            <Col lg={4}>
+                                <Card className="border-0 shadow-sm h-100 overflow-hidden">
+                                    <div
+                                        style={{
+                                            background: 'linear-gradient(135deg, #0d6efd 0%, #3b82f6 100%)',
+                                            height: 80,
+                                            position: 'relative'
+                                        }}
+                                    />
+                                    <CardBody className="pt-0 position-relative">
+                                        <div className="d-flex justify-content-center" style={{ marginTop: -60 }}>
+                                            <div
+                                                className="rounded-circle bg-white d-flex align-items-center justify-content-center shadow-sm"
+                                                style={{ width: 120, height: 120, border: '4px solid #fff', overflow: 'hidden' }}
+                                            >
+                                                <img
+                                                    src={productDetails?.image || NoImage}
+                                                    alt={productDetails?.name}
+                                                    style={{ maxWidth: '85%', maxHeight: '85%', objectFit: 'contain' }}
+                                                />
+                                            </div>
                                         </div>
-                                        <div className="col-2">
-                                            <StatKpiCard
-                                                title="Valor Total"
-                                                value={productStatistics?.totalValue || 0}
-                                                icon={<RiMoneyDollarCircleLine size={20} style={{ color: "#0ea5e9" }} />}
-                                                animateValue={true}
-                                                decimals={0}
-                                                prefix="$"
-                                            />
-                                        </div>
-                                        <div className="col-2">
-                                            <StatKpiCard
-                                                title="Último Precio de compra"
-                                                value={productStatistics?.lastPrice || 0}
-                                                icon={<RiPriceTag3Line size={20} style={{ color: "#ef4444" }} />}
-                                                animateValue={true}
-                                                decimals={0}
-                                                prefix="$"
-                                            />
-                                        </div>
-                                        <div className="col-2">
-                                            <StatKpiCard
-                                                title="Precio Promedio"
-                                                value={productStatistics?.averagePrice || 0}
-                                                icon={<RiPercentLine size={20} style={{ color: "#3b82f6" }} />}
-                                                animateValue={true}
-                                                decimals={0}
-                                                prefix="$"
-                                            />
-                                        </div>
-                                        <div className="col-2">
-                                            <StatKpiCard
-                                                title="Variación de Precio"
-                                                value={priceVariation}
-                                                icon={<RiArrowUpLine size={20} style={{ color: priceVariation >= 0 ? "#ef4444" : "#10b981" }} />}
-                                                animateValue={true}
-                                                decimals={1}
-                                                suffix="%"
-                                            />
-                                        </div>
-                                    </div>
 
-                                    {/* Secciones 6-7: Fila inferior (directamente debajo de 2-5) */}
-                                    <div className="d-flex gap-3 h-75">
+                                        <div className="text-center mt-3 mb-4">
+                                            <h4 className="mb-2 fw-bold text-dark">{productDetails?.name}</h4>
+                                            {categoryInfo && (
+                                                <Badge
+                                                    color={categoryInfo.color}
+                                                    className="fw-normal px-3 py-2"
+                                                    style={{ fontSize: '0.75rem', letterSpacing: '0.3px' }}
+                                                >
+                                                    {categoryInfo.label}
+                                                </Badge>
+                                            )}
+                                        </div>
+
+                                        <div className="row g-2 mb-3">
+                                            <div className="col-6">
+                                                <div
+                                                    className="p-3 rounded-3 h-100"
+                                                    style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }}
+                                                >
+                                                    <div className="text-muted text-uppercase fw-semibold mb-1" style={{ fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                                                        Código
+                                                    </div>
+                                                    <div className="fw-bold text-dark text-truncate" style={{ fontSize: '0.95rem' }}>
+                                                        {productDetails?.id || '—'}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="col-6">
+                                                <div
+                                                    className="p-3 rounded-3 h-100"
+                                                    style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }}
+                                                >
+                                                    <div className="text-muted text-uppercase fw-semibold mb-1" style={{ fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                                                        Unidad
+                                                    </div>
+                                                    <div className="fw-bold text-dark text-truncate" style={{ fontSize: '0.95rem' }}>
+                                                        {productDetails?.unit_measurement || '—'}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <div className="text-muted text-uppercase fw-semibold mb-2" style={{ fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                                                <RiInformationLine className="me-1" />
+                                                Descripción
+                                            </div>
+                                            <p className="text-dark mb-0 small" style={{ lineHeight: 1.6 }}>
+                                                {productDetails?.description || 'Sin descripción disponible'}
+                                            </p>
+                                        </div>
+                                    </CardBody>
+                                </Card>
+                            </Col>
+
+                            <Col lg={8}>
+                                <Row className="g-3">
+                                    <Col xs={12}>
                                         <BasicLineChartCard
                                             title="Existencias Históricas"
                                             data={transformQuantityData(historicalData?.quantityHistory, "Existencias", "#0d6efd")}
                                             yLabel="Cantidad"
                                             xLabel="Período"
-                                            height={350}
+                                            height={280}
                                             curve="natural"
                                             pointSize={4}
                                             strokeWidth={2}
                                             enableGrid={true}
                                             enablePoints={true}
                                             enableArea={false}
-                                            headerBgColor="#e3f2fd"
-                                            className="mb-0"
+                                            headerBgColor="#ffffff"
+                                            className="mb-0 border-0 shadow-sm"
                                         />
-
+                                    </Col>
+                                    <Col xs={12}>
                                         <BasicLineChartCard
                                             title="Precios Históricos"
                                             data={combinePriceSeries([
-                                                {
-                                                    data: historicalData?.averagePriceHistory,
-                                                    serieId: "Precio Promedio",
-                                                    color: "#dc3545"
-                                                },
-                                                {
-                                                    data: historicalData?.lastPriceHistory,
-                                                    serieId: "Último Precio de compra",
-                                                    color: "#198754"
-                                                }
+                                                { data: historicalData?.averagePriceHistory, serieId: "Precio Promedio", color: "#dc3545" },
+                                                { data: historicalData?.lastPriceHistory, serieId: "Último Precio de compra", color: "#198754" }
                                             ])}
                                             yLabel="Precio (RD$)"
                                             xLabel="Período"
-                                            height={350}
+                                            height={280}
                                             curve="natural"
                                             pointSize={4}
                                             strokeWidth={2}
@@ -454,18 +432,20 @@ const ProductDetails = () => {
                                             enableArea={false}
                                             showLegend={true}
                                             legendPosition="top"
-                                            headerBgColor="#f3e5f5"
-                                            className="mb-0"
+                                            headerBgColor="#ffffff"
+                                            className="mb-0 border-0 shadow-sm"
                                         />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                                    </Col>
+                                </Row>
+                            </Col>
+                        </Row>
                     </TabPane>
 
+                    {/* ============ TAB 2: MOVIMIENTOS ============ */}
                     <TabPane tabId="2">
-                        <div className="g-2">
-                            <div className="d-flex gap-2">
+                        {/* Summary KPIs */}
+                        <Row className="g-3 mb-3">
+                            <Col md={6} lg>
                                 <StatKpiCard
                                     title="Total Entradas"
                                     value={movementsSummary?.totalIncomes || 0}
@@ -474,6 +454,8 @@ const ProductDetails = () => {
                                     animateValue={true}
                                     decimals={0}
                                 />
+                            </Col>
+                            <Col md={6} lg>
                                 <StatKpiCard
                                     title="Total Salidas"
                                     value={movementsSummary?.totalOutcomes || 0}
@@ -482,32 +464,41 @@ const ProductDetails = () => {
                                     animateValue={true}
                                     decimals={0}
                                 />
+                            </Col>
+                            <Col md={6} lg>
                                 <StatKpiCard
                                     title="Total Movimientos"
                                     value={movementsSummary?.totalMovements || 0}
-                                    icon={<RiBox3Line size={20} style={{ color: "#3b82f6" }} />}
+                                    icon={<RiExchangeLine size={20} style={{ color: "#3b82f6" }} />}
                                     animateValue={true}
                                     decimals={0}
                                 />
+                            </Col>
+                            <Col md={6} lg>
                                 <StatKpiCard
-                                    title="Valor Total Entradas"
+                                    title="Valor Entradas"
                                     value={movementsSummary?.totalIncomeValue || 0}
                                     prefix="$"
                                     icon={<RiMoneyDollarCircleLine size={20} style={{ color: "#0ea5e9" }} />}
                                     animateValue={true}
                                     decimals={0}
                                 />
+                            </Col>
+                            <Col md={6} lg>
                                 <StatKpiCard
-                                    title="Valor Total Salidas"
+                                    title="Valor Salidas"
                                     value={movementsSummary?.totalOutcomeValue || 0}
                                     prefix="$"
                                     icon={<RiMoneyDollarCircleLine size={20} style={{ color: "#ef4444" }} />}
                                     animateValue={true}
                                     decimals={0}
                                 />
-                            </div>
+                            </Col>
+                        </Row>
 
-                            <div className="d-flex gap-2">
+                        {/* Charts Row */}
+                        <Row className="g-3 mb-3">
+                            <Col lg={4}>
                                 <DonutChartCard
                                     title="Distribución por Tipo"
                                     data={movementsCharts?.distribution || []}
@@ -527,10 +518,11 @@ const ProductDetails = () => {
                                                 : '0%'
                                         }
                                     ]}
-                                    className="w-100"
-                                    headerBgColor="#e8f5e8"
+                                    className="h-100 border-0 shadow-sm"
+                                    headerBgColor="#ffffff"
                                 />
-
+                            </Col>
+                            <Col lg={4}>
                                 <BasicLineChartCard
                                     title="Tendencia de Movimientos"
                                     data={combinePriceSeries(
@@ -550,10 +542,11 @@ const ProductDetails = () => {
                                     enableArea={false}
                                     showLegend={true}
                                     legendPosition="top"
-                                    className="w-100"
-                                    headerBgColor="#e1f5fe"
+                                    className="h-100 border-0 shadow-sm"
+                                    headerBgColor="#ffffff"
                                 />
-
+                            </Col>
+                            <Col lg={4}>
                                 <StackedAreaChartCard
                                     title="Valor Acumulado"
                                     data={movementsCharts?.accumulatedValue || []}
@@ -566,33 +559,35 @@ const ProductDetails = () => {
                                     enablePoints={false}
                                     showLegend={true}
                                     legendPosition="top"
-                                    className="w-100"
-                                    headerBgColor="#e0f2f1"
+                                    className="h-100 border-0 shadow-sm"
+                                    headerBgColor="#ffffff"
                                     tooltipType="currency"
                                 />
-                            </div>
+                            </Col>
+                        </Row>
 
-                            <div className="w-100">
-                                <Card>
-                                    <CardHeader style={{ backgroundColor: '#f5f5f5' }}>
-                                        <h6 className="mb-0 text-muted">Movimientos Recientes</h6>
-                                    </CardHeader>
-                                    <CardBody className="p-0">
-                                        {movements && movements.length > 0 ? (
-                                            <CustomTable columns={movementsColumns} data={movements} showPagination={true} rowsPerPage={10} showSearchAndFilter={false} className="fs-6" />
-                                        ) : (
-                                            <div className="p-4 text-center">
-                                                <span className="fs-5 text-muted">Aún no hay movimientos registrados</span>
-                                            </div>
-                                        )}
-                                    </CardBody>
-                                </Card>
-                            </div>
-                        </div>
+                        {/* Movements Table */}
+                        <Card className="border-0 shadow-sm">
+                            <CardHeader className="bg-white border-bottom py-3">
+                                <h6 className="mb-0 fw-bold text-dark">
+                                    <RiExchangeLine className="me-2 text-primary" />
+                                    Movimientos Recientes
+                                </h6>
+                            </CardHeader>
+                            <CardBody className="p-0">
+                                {movements && movements.length > 0 ? (
+                                    <CustomTable columns={movementsColumns} data={movements} showPagination={true} rowsPerPage={10} showSearchAndFilter={false} className="fs-6" />
+                                ) : (
+                                    <div className="p-5 text-center">
+                                        <RiExchangeLine size={48} className="text-muted mb-2" />
+                                        <p className="fs-6 text-muted mb-0">Aún no hay movimientos registrados</p>
+                                    </div>
+                                )}
+                            </CardBody>
+                        </Card>
                     </TabPane>
                 </TabContent>
 
-                {/* Modal PDF */}
                 <Modal size="xl" isOpen={showPDFModal} toggle={() => setShowPDFModal(!showPDFModal)} backdrop='static' keyboard={false} centered>
                     <ModalHeader toggle={() => setShowPDFModal(!showPDFModal)}>Reporte de Inventario del Producto</ModalHeader>
                     <ModalBody>

@@ -11,6 +11,7 @@ import {
     Card,
     CardBody,
     CardHeader,
+    Col,
     Container,
     Modal,
     ModalBody,
@@ -18,6 +19,7 @@ import {
     Nav,
     NavItem,
     NavLink,
+    Row,
     TabContent,
     TabPane,
 } from "reactstrap";
@@ -25,11 +27,11 @@ import classnames from "classnames";
 import ObjectDetails from "Components/Common/Details/ObjectDetails";
 import { Attribute } from "common/data_interfaces";
 import KPI from "Components/Common/Graphics/Kpi";
+import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
 import { FaBalanceScale, FaBirthdayCake, FaCalendarDay, FaChartLine, FaMars, FaPiggyBank, FaSkullCrossbones, FaVenus } from "react-icons/fa";
 import { Column } from "common/data/data_types";
 import CustomTable from "Components/Common/Tables/CustomTable";
-import GroupHistoryList from "Components/Common/Lists/GroupHistoryList";
-import SimpleBar from "simplebar-react";
+import GroupHistoryTimeline from "Components/Common/Lists/GroupHistoryTimeline";
 import GroupMedicalDetails from "Components/Common/Details/GroupMedicalDetails";
 import GroupFeedingDetails from "Components/Common/Details/GroupFeedingDetails";
 import ChangeStageGroup from "Components/Common/Forms/ChangeStageGroup";
@@ -282,11 +284,53 @@ const GroupDetails = () => {
             <Container fluid>
                 <BreadCrumb title={"Detalles de grupo"} pageTitle={"Grupos"} />
 
-                <div className="w-100 mb-4">
+                <div className="w-100 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <Button className="btn-danger" onClick={() => navigate(-1)}>
                         <i className="ri-arrow-left-line me-2" />
                         Regresar
                     </Button>
+
+                    <div className="d-flex gap-2 flex-wrap">
+                        {['weaning', 'ready_to_grow', 'grow_overdue'].includes(groupData.status) && (
+                            <Button color="success" disabled={groupData.status === 'sold' || !['ready_to_grow', 'grow_overdue'].includes(groupData.status)} onClick={() => toggleModal('changeStage')}>
+                                <i className="mdi mdi-chart-line-variant me-2" />
+                                Cambiar a crecimiento
+                            </Button>
+                        )}
+
+                        {['growing', 'ready_for_sale'].includes(groupData.status) && (
+                            <>
+                                <Button color="info" disabled={groupData.status === 'sold' || !groupData.isReadyForReplacement} onClick={() => toggleModal('processReplacement')}>
+                                    <i className="ri-refresh-line me-2" />
+                                    Procesar reemplazo
+                                </Button>
+                                <Button color="warning" disabled={groupData.status === 'sold' || !['ready_for_sale'].includes(groupData.status)} onClick={() => toggleModal('changeStage')}>
+                                    <i className="ri-money-dollar-circle-line me-2" />
+                                    Procesar venta
+                                </Button>
+                            </>
+                        )}
+
+                        {groupData.status === 'sale' && groupData.stage === 'sale' && (
+                            <Button color="success" onClick={() => toggleModal('sellPigs')}>
+                                <i className="ri-shopping-cart-line me-2" />
+                                Vender
+                            </Button>
+                        )}
+
+                        <Button color="danger" onClick={() => toggleModal('discard')} disabled={groupData.status === 'sold'} title="Retirar cerdos">
+                            <i className="ri-upload-2-line me-2" />
+                            Retirar
+                        </Button>
+                        <Button color="warning" onClick={() => toggleModal('transfer')} disabled={groupData.status === 'sold'} title="Transferir cerdos">
+                            <i className="ri-arrow-left-right-line me-2" />
+                            Transferir
+                        </Button>
+                        <Button color="dark" onClick={() => toggleModal('registerDeath')} disabled={groupData.status === 'sold'} title="Registrar muerte">
+                            <FaSkullCrossbones className="me-2" />
+                            Registrar muerte
+                        </Button>
+                    </div>
                 </div>
 
                 <div className="p-3 bg-white rounded">
@@ -297,7 +341,7 @@ const GroupDetails = () => {
                                 className={classnames({ active: activeTab === "0" })}
                                 onClick={() => toggleTab("0")}
                             >
-                                Nueva Tab
+                                Rendimiento
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -341,373 +385,212 @@ const GroupDetails = () => {
 
                 <TabContent activeTab={activeTab} className="justified-tabs mt-3">
                     <TabPane tabId="0">
-                        <div className="p-4">
-                            {/* Header Section */}
-                            <div className="row mb-4">
-                                <div className="col-12">
-                                    <div className="d-flex align-items-center justify-content-between mb-3">
-                                        <div>
-                                            <h2 className="mb-1 fw-bold text-dark">
-                                                <i className="ri-dashboard-3-line me-2 text-primary" />
-                                                Dashboard de Métricas
-                                            </h2>
-                                            <p className="text-muted mb-0">Análisis completo del rendimiento del grupo</p>
-                                        </div>
-                                        <div className="text-end">
-                                            <div className="badge bg-primary-subtle text-primary px-3 py-2 fs-6">
-                                                <i className="ri-refresh-line me-1" />
-                                                Actualizado en tiempo real
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        {/* KPIs principales */}
+                        <Row className="g-3 mb-3">
+                            <Col md={6} lg={3}>
+                                <StatKpiCard
+                                    title="Tasa de Supervivencia"
+                                    value={groupMetrics?.survivalMetrics?.survivalRate || 0}
+                                    suffix="%"
+                                    icon={<i className="ri-heart-pulse-line" style={{ fontSize: 20, color: '#10b981' }} />}
+                                    animateValue={true}
+                                    decimals={1}
+                                />
+                            </Col>
+                            <Col md={6} lg={3}>
+                                <StatKpiCard
+                                    title="FCR"
+                                    value={groupMetrics?.feedEfficiency?.fcr || 0}
+                                    suffix="kg/kg"
+                                    icon={<i className="ri-exchange-line" style={{ fontSize: 20, color: '#ef4444' }} />}
+                                    animateValue={true}
+                                    decimals={2}
+                                />
+                            </Col>
+                            <Col md={6} lg={3}>
+                                <StatKpiCard
+                                    title="Uniformidad"
+                                    value={groupMetrics?.weightMetrics?.uniformity || 0}
+                                    suffix="%"
+                                    icon={<i className="ri-scales-3-line" style={{ fontSize: 20, color: '#8b5cf6' }} />}
+                                    animateValue={true}
+                                    decimals={1}
+                                />
+                            </Col>
+                            <Col md={6} lg={3}>
+                                <StatKpiCard
+                                    title="Días en Producción"
+                                    value={groupMetrics?.timeMetrics?.daysInProduction || 0}
+                                    suffix="días"
+                                    icon={<i className="ri-time-line" style={{ fontSize: 20, color: '#f59e0b' }} />}
+                                    animateValue={true}
+                                    decimals={0}
+                                />
+                            </Col>
+                        </Row>
 
-                            {/* Key Metrics Overview */}
-                            <div className="row g-3 mb-4">
-                                <div className="col-12">
-                                    <div className="bg-white border-0 shadow-lg rounded-3 p-4">
-                                        <div className="row align-items-center">
-                                            <div className="col-md-3">
-                                                <div className="text-center p-3 rounded bg-primary bg-opacity-10">
-                                                    <div className="display-6 fw-bold mb-2 text-primary">{groupMetrics?.groupInfo?.code || '-'}</div>
-                                                    <div className="small text-muted fw-medium">CÓDIGO DE GRUPO</div>
-                                                </div>
-                                            </div>
-                                            <div className="col-md-3">
-                                                <div className="text-center p-3 rounded bg-success bg-opacity-10">
-                                                    <div className="display-6 fw-bold mb-2 text-success">{groupMetrics?.groupInfo?.pigCount || 0}</div>
-                                                    <div className="small text-muted fw-medium">CERDOS ACTIVOS</div>
-                                                </div>
-                                            </div>
-                                            <div className="col-md-3">
-                                                <div className="text-center p-3 rounded bg-info bg-opacity-10">
-                                                    <div className="display-6 fw-bold mb-2 text-info">{groupMetrics?.survivalMetrics?.survivalRate || 0}%</div>
-                                                    <div className="small text-muted fw-medium">TASA DE SUPERVIVENCIA</div>
-                                                </div>
-                                            </div>
-                                            <div className="col-md-3">
-                                                <div className="text-center p-3 rounded bg-warning bg-opacity-10">
-                                                    <div className="display-6 fw-bold mb-2 text-warning">${groupMetrics?.costBreakdown?.total?.toFixed(2) || 0}</div>
-                                                    <div className="small text-muted fw-medium">COSTO TOTAL</div>
-                                                </div>
-                                            </div>
+                        {/* Análisis de Peso */}
+                        <Card className="border-0 shadow-sm mb-3">
+                            <CardHeader className="bg-white border-bottom py-3">
+                                <h6 className="mb-0 fw-bold text-dark">
+                                    <i className="ri-scales-3-line me-2 text-primary" />
+                                    Análisis de Peso
+                                </h6>
+                            </CardHeader>
+                            <CardBody>
+                                <Row className="g-3 mb-3">
+                                    <Col xs={6} md={3}>
+                                        <div className="text-center p-3 rounded" style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }}>
+                                            <div className="h4 fw-bold text-dark mb-1">{groupMetrics?.weightMetrics?.totalWeight?.toFixed(1) || 0} <small className="fs-6 text-muted">kg</small></div>
+                                            <div className="text-muted text-uppercase fw-semibold" style={{ fontSize: '0.7rem', letterSpacing: '0.5px' }}>Peso Total</div>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
+                                    </Col>
+                                    <Col xs={6} md={3}>
+                                        <div className="text-center p-3 rounded" style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }}>
+                                            <div className="h4 fw-bold text-dark mb-1">{groupMetrics?.weightMetrics?.averageWeight?.toFixed(2) || 0} <small className="fs-6 text-muted">kg</small></div>
+                                            <div className="text-muted text-uppercase fw-semibold" style={{ fontSize: '0.7rem', letterSpacing: '0.5px' }}>Peso Promedio</div>
+                                        </div>
+                                    </Col>
+                                    <Col xs={6} md={3}>
+                                        <div className="text-center p-3 rounded" style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }}>
+                                            <div className="h4 fw-bold text-dark mb-1">{groupMetrics?.weightMetrics?.minWeight?.toFixed(2) || 0} <small className="fs-6 text-muted">kg</small></div>
+                                            <div className="text-muted text-uppercase fw-semibold" style={{ fontSize: '0.7rem', letterSpacing: '0.5px' }}>Peso Mínimo</div>
+                                        </div>
+                                    </Col>
+                                    <Col xs={6} md={3}>
+                                        <div className="text-center p-3 rounded" style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }}>
+                                            <div className="h4 fw-bold text-dark mb-1">{groupMetrics?.weightMetrics?.maxWeight?.toFixed(2) || 0} <small className="fs-6 text-muted">kg</small></div>
+                                            <div className="text-muted text-uppercase fw-semibold" style={{ fontSize: '0.7rem', letterSpacing: '0.5px' }}>Peso Máximo</div>
+                                        </div>
+                                    </Col>
+                                </Row>
+                                <Row className="g-3">
+                                    <Col md={6}>
+                                        <div className="d-flex justify-content-between align-items-center p-2 px-3 rounded" style={{ background: '#f8f9fa' }}>
+                                            <span className="text-muted small">Varianza de peso</span>
+                                            <strong className="text-dark">±{groupMetrics?.weightMetrics?.weightVariance?.toFixed(2) || 0}</strong>
+                                        </div>
+                                    </Col>
+                                    <Col md={6}>
+                                        <div className="d-flex justify-content-between align-items-center p-2 px-3 rounded" style={{ background: '#f8f9fa' }}>
+                                            <span className="text-muted small">Uniformidad del grupo</span>
+                                            <strong className="text-dark">{groupMetrics?.weightMetrics?.uniformity || 0}%</strong>
+                                        </div>
+                                    </Col>
+                                </Row>
+                            </CardBody>
+                        </Card>
 
-                            {/* Main Dashboard Grid */}
-                            <div className="row g-4">
-                                {/* Left Column - Performance Metrics */}
-                                <div className="col-12 col-xl-8">
-                                    <div className="row g-3">
-                                        {/* Weight Performance Card */}
-                                        <div className="col-12">
-                                            <div className="card border-0 shadow-sm h-100">
-                                                <div className="card-header bg-gradient-success text-white border-0 py-3">
-                                                    <div className="d-flex align-items-center justify-content-between">
-                                                        <div className="d-flex align-items-center">
-                                                            <i className="ri-scales-3-line fs-4 me-2" />
-                                                            <h5 className="mb-0 fw-semibold">Análisis de Peso</h5>
-                                                        </div>
-                                                        <div className="badge bg-white text-success fs-6">
-                                                            <i className="ri-line-chart-line me-1" />
-                                                            Rendimiento
-                                                        </div>
-                                                    </div>
+                        {/* Eficiencia alimenticia + Supervivencia */}
+                        <Row className="g-3 mb-3">
+                            <Col lg={7}>
+                                <Card className="border-0 shadow-sm h-100">
+                                    <CardHeader className="bg-white border-bottom py-3">
+                                        <h6 className="mb-0 fw-bold text-dark">
+                                            <i className="ri-restaurant-line me-2 text-warning" />
+                                            Eficiencia Alimenticia
+                                        </h6>
+                                    </CardHeader>
+                                    <CardBody>
+                                        <Row className="g-3">
+                                            <Col xs={6} md={4}>
+                                                <div className="text-center p-3 rounded" style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }}>
+                                                    <div className="h4 fw-bold text-dark mb-1">{groupMetrics?.feedEfficiency?.estimatedFeedKg || 0} <small className="fs-6 text-muted">kg</small></div>
+                                                    <div className="text-muted text-uppercase fw-semibold" style={{ fontSize: '0.7rem', letterSpacing: '0.5px' }}>Alimento Estimado</div>
                                                 </div>
-                                                <div className="card-body">
-                                                    <div className="row mb-4">
-                                                        <div className="col-6 col-md-3">
-                                                            <div className="text-center p-3 rounded bg-light">
-                                                                <div className="h3 text-primary fw-bold mb-1">{groupMetrics?.weightMetrics?.totalWeight?.toFixed(1) || 0} <small className="fs-6">kg</small></div>
-                                                                <div className="small text-muted">Peso Total</div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="col-6 col-md-3">
-                                                            <div className="text-center p-3 rounded bg-light">
-                                                                <div className="h3 text-info fw-bold mb-1">{groupMetrics?.weightMetrics?.averageWeight?.toFixed(2) || 0} <small className="fs-6">kg</small></div>
-                                                                <div className="small text-muted">Peso Promedio</div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="col-6 col-md-3">
-                                                            <div className="text-center p-3 rounded bg-light">
-                                                                <div className="h3 text-success fw-bold mb-1">{groupMetrics?.weightMetrics?.uniformity || 0}%</div>
-                                                                <div className="small text-muted">Uniformidad</div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="col-6 col-md-3">
-                                                            <div className="text-center p-3 rounded bg-light">
-                                                                <div className="h3 text-warning fw-bold mb-1">±{groupMetrics?.weightMetrics?.weightVariance?.toFixed(2) || 0}</div>
-                                                                <div className="small text-muted">Varianza</div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="border-top pt-3">
-                                                        <div className="row">
-                                                            <div className="col-6">
-                                                                <div className="d-flex align-items-center justify-content-between p-2 rounded bg-light">
-                                                                    <span className="text-muted fw-medium">Peso Mínimo:</span>
-                                                                    <span className="fw-bold text-primary">{groupMetrics?.weightMetrics?.minWeight?.toFixed(2) || 0} kg</span>
-                                                                </div>
-                                                            </div>
-                                                            <div className="col-6">
-                                                                <div className="d-flex align-items-center justify-content-between p-2 rounded bg-light">
-                                                                    <span className="text-muted fw-medium">Peso Máximo:</span>
-                                                                    <span className="fw-bold text-primary">{groupMetrics?.weightMetrics?.maxWeight?.toFixed(2) || 0} kg</span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                            </Col>
+                                            <Col xs={6} md={4}>
+                                                <div className="text-center p-3 rounded" style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }}>
+                                                    <div className="h4 fw-bold text-dark mb-1">{groupMetrics?.feedEfficiency?.totalWeightGainKg?.toFixed(1) || 0} <small className="fs-6 text-muted">kg</small></div>
+                                                    <div className="text-muted text-uppercase fw-semibold" style={{ fontSize: '0.7rem', letterSpacing: '0.5px' }}>Ganancia Total</div>
                                                 </div>
-                                            </div>
-                                        </div>
+                                            </Col>
+                                            <Col xs={12} md={4}>
+                                                <div className="text-center p-3 rounded" style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }}>
+                                                    <div className="h4 fw-bold text-dark mb-1">{groupMetrics?.feedEfficiency?.fcr?.toFixed(2) || 0}</div>
+                                                    <div className="text-muted text-uppercase fw-semibold" style={{ fontSize: '0.7rem', letterSpacing: '0.5px' }}>FCR</div>
+                                                </div>
+                                            </Col>
+                                        </Row>
+                                    </CardBody>
+                                </Card>
+                            </Col>
 
-                                        {/* Feed Efficiency Card */}
-                                        <div className="col-12">
-                                            <div className="card border-0 shadow-sm h-100">
-                                                <div className="card-header bg-gradient-warning text-white border-0 py-3">
-                                                    <div className="d-flex align-items-center justify-content-between">
-                                                        <div className="d-flex align-items-center">
-                                                            <i className="ri-restaurant-line fs-4 me-2" />
-                                                            <h5 className="mb-0 fw-semibold">Eficiencia Alimenticia</h5>
-                                                        </div>
-                                                        <div className="badge bg-white text-warning fs-6">
-                                                            <i className="ri-calculator-line me-1" />
-                                                            Optimización
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="card-body">
-                                                    <div className="row mb-4">
-                                                        <div className="col-6 col-md-3">
-                                                            <div className="text-center p-3 rounded bg-light">
-                                                                <div className="h3 text-primary fw-bold mb-1">{groupMetrics?.feedEfficiency?.estimatedFeedKg || 0} <small className="fs-6">kg</small></div>
-                                                                <div className="small text-muted">Alimento Estimado</div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="col-6 col-md-3">
-                                                            <div className="text-center p-3 rounded bg-light">
-                                                                <div className="h3 text-info fw-bold mb-1">{groupMetrics?.feedEfficiency?.totalWeightGainKg?.toFixed(1) || 0} <small className="fs-6">kg</small></div>
-                                                                <div className="small text-muted">Ganancia Total</div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="col-6 col-md-3">
-                                                            <div className="text-center p-3 rounded bg-light">
-                                                                <div className="h3 text-success fw-bold mb-1">{groupMetrics?.feedEfficiency?.fcr?.toFixed(2) || 0}</div>
-                                                                <div className="small text-muted">FCR</div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="col-6 col-md-3">
-                                                            <div className="text-center p-3 rounded bg-light">
-                                                                <div className="h3 text-warning fw-bold mb-1">${groupMetrics?.feedEfficiency?.feedCostPerKgGain?.toFixed(2) || 0}</div>
-                                                                <div className="small text-muted">Costo/kg Ganado</div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="alert alert-warning border-0 mb-0">
-                                                        <div className="d-flex align-items-center justify-content-between">
-                                                            <div>
-                                                                <i className="ri-money-dollar-circle-line me-2" />
-                                                                <strong>Costo Total de Alimentación:</strong>
-                                                            </div>
-                                                            <span className="h4 mb-0 text-warning fw-bold">${groupMetrics?.feedEfficiency?.feedCostTotal?.toFixed(2) || 0}</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                            <Col lg={5}>
+                                <Card className="border-0 shadow-sm h-100">
+                                    <CardHeader className="bg-white border-bottom py-3">
+                                        <h6 className="mb-0 fw-bold text-dark">
+                                            <i className="ri-heart-pulse-line me-2 text-success" />
+                                            Supervivencia
+                                        </h6>
+                                    </CardHeader>
+                                    <CardBody className="d-flex flex-column justify-content-center">
+                                        <div className="text-center mb-3">
+                                            <div className="display-5 fw-bold text-success">{groupMetrics?.survivalMetrics?.survivalRate || 0}%</div>
+                                            <div className="text-muted small">Tasa de Supervivencia</div>
                                         </div>
-                                    </div>
-                                </div>
+                                        <Row className="g-2">
+                                            <Col xs={6}>
+                                                <div className="text-center p-2 rounded" style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }}>
+                                                    <div className="h5 fw-bold text-dark mb-0">{groupMetrics?.survivalMetrics?.initialPigCount || 0}</div>
+                                                    <div className="text-muted small">Iniciales</div>
+                                                </div>
+                                            </Col>
+                                            <Col xs={6}>
+                                                <div className="text-center p-2 rounded" style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }}>
+                                                    <div className="h5 fw-bold text-dark mb-0">{groupMetrics?.survivalMetrics?.currentPigCount || 0}</div>
+                                                    <div className="text-muted small">Actuales</div>
+                                                </div>
+                                            </Col>
+                                        </Row>
+                                        <div className="border-top mt-3 pt-3 d-flex justify-content-between align-items-center">
+                                            <span className="text-muted small">Mortalidad</span>
+                                            <Badge color={groupMetrics?.survivalMetrics?.mortality > 0 ? 'danger' : 'success'} className="fw-normal">
+                                                {groupMetrics?.survivalMetrics?.mortality || 0} ({groupMetrics?.survivalMetrics?.mortalityRate || 0}%)
+                                            </Badge>
+                                        </div>
+                                    </CardBody>
+                                </Card>
+                            </Col>
+                        </Row>
 
-                                {/* Right Column - Status & Costs */}
-                                <div className="col-12 col-xl-4">
-                                    <div className="row g-3">
-                                        {/* Survival Status Card */}
-                                        <div className="col-12">
-                                            <div className="card border-0 shadow-sm h-100">
-                                                <div className="card-header bg-gradient-info text-white border-0 py-3">
-                                                    <div className="d-flex align-items-center justify-content-between">
-                                                        <div className="d-flex align-items-center">
-                                                            <i className="ri-heart-pulse-line fs-4 me-2" />
-                                                            <h5 className="mb-0 fw-semibold">Estado de Salud</h5>
-                                                        </div>
-                                                        <div className="badge bg-white text-info fs-6">
-                                                            <i className="ri-shield-check-line me-1" />
-                                                            Vital
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="card-body">
-                                                    <div className="text-center mb-4">
-                                                        <div className="position-relative d-inline-block">
-                                                            <div className="display-3 fw-bold text-success mb-2">
-                                                                {groupMetrics?.survivalMetrics?.survivalRate || 0}%
-                                                            </div>
-                                                            <div className="badge bg-success-subtle text-success position-absolute top-0 start-100 translate-middle">
-                                                                <i className="ri-arrow-up-line" />
-                                                            </div>
-                                                        </div>
-                                                        <div className="text-muted">Tasa de Supervivencia</div>
-                                                    </div>
-                                                    <div className="row mb-3">
-                                                        <div className="col-6">
-                                                            <div className="text-center p-3 rounded bg-light">
-                                                                <div className="h5 text-primary fw-bold mb-1">{groupMetrics?.survivalMetrics?.initialPigCount || 0}</div>
-                                                                <div className="small text-muted">Iniciales</div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="col-6">
-                                                            <div className="text-center p-3 rounded bg-light">
-                                                                <div className="h5 text-info fw-bold mb-1">{groupMetrics?.survivalMetrics?.currentPigCount || 0}</div>
-                                                                <div className="small text-muted">Actuales</div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="border-top pt-3">
-                                                        <div className="d-flex align-items-center justify-content-between">
-                                                            <span className="text-muted fw-medium">Mortalidad:</span>
-                                                            <Badge color={groupMetrics?.survivalMetrics?.mortality > 0 ? "danger" : "success"} className="fs-6">
-                                                                <i className={`ri-${groupMetrics?.survivalMetrics?.mortality > 0 ? 'alert' : 'check'}-line me-1`} />
-                                                                {groupMetrics?.survivalMetrics?.mortality || 0} ({groupMetrics?.survivalMetrics?.mortalityRate || 0}%)
-                                                            </Badge>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                        {/* Cronología */}
+                        <Card className="border-0 shadow-sm">
+                            <CardHeader className="bg-white border-bottom py-3">
+                                <h6 className="mb-0 fw-bold text-dark">
+                                    <i className="ri-calendar-event-line me-2 text-primary" />
+                                    Cronología
+                                </h6>
+                            </CardHeader>
+                            <CardBody>
+                                <Row className="g-3">
+                                    <Col md={4}>
+                                        <div className="d-flex justify-content-between align-items-center p-3 rounded" style={{ background: '#f8f9fa' }}>
+                                            <span className="text-muted small">Días en Producción</span>
+                                            <strong className="text-dark">{groupMetrics?.timeMetrics?.daysInProduction || 0} días</strong>
                                         </div>
-
-                                        {/* Cost Analysis Card */}
-                                        <div className="col-12">
-                                            <div className="card border-0 shadow-sm h-100">
-                                                <div className="card-header bg-gradient-danger text-white border-0 py-3">
-                                                    <div className="d-flex align-items-center justify-content-between">
-                                                        <div className="d-flex align-items-center">
-                                                            <i className="ri-money-dollar-circle-line fs-4 me-2" />
-                                                            <h5 className="mb-0 fw-semibold">Análisis de Costos</h5>
-                                                        </div>
-                                                        <div className="badge bg-white text-danger fs-6">
-                                                            <i className="ri-funds-line me-1" />
-                                                            Finanzas
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="card-body">
-                                                    <div className="text-center mb-4">
-                                                        <div className="display-4 fw-bold text-danger mb-2">
-                                                            ${groupMetrics?.costBreakdown?.total?.toFixed(2) || 0}
-                                                        </div>
-                                                        <div className="text-muted">Costo Total Operativo</div>
-                                                    </div>
-                                                    <div className="space-y-2">
-                                                        <div className="d-flex align-items-center justify-content-between p-2 rounded bg-light">
-                                                            <div className="d-flex align-items-center">
-                                                                <i className="ri-restaurant-line text-primary me-2" />
-                                                                <span className="text-muted fw-medium">Alimento:</span>
-                                                            </div>
-                                                            <div className="text-end">
-                                                                <strong className="text-primary">${groupMetrics?.costBreakdown?.feed?.toFixed(2) || 0}</strong>
-                                                                <Badge color="primary" className="ms-2">
-                                                                    {groupMetrics?.costBreakdown?.feedPercentage || 0}%
-                                                                </Badge>
-                                                            </div>
-                                                        </div>
-                                                        <div className="d-flex align-items-center justify-content-between p-2 rounded bg-light">
-                                                            <div className="d-flex align-items-center">
-                                                                <i className="ri-medicine-bottle-line text-info me-2" />
-                                                                <span className="text-muted fw-medium">Medicación:</span>
-                                                            </div>
-                                                            <div className="text-end">
-                                                                <strong className="text-info">${groupMetrics?.costBreakdown?.medication?.toFixed(2) || 0}</strong>
-                                                                <Badge color="info" className="ms-2">
-                                                                    {groupMetrics?.costBreakdown?.medicationPercentage || 0}%
-                                                                </Badge>
-                                                            </div>
-                                                        </div>
-                                                        <div className="d-flex align-items-center justify-content-between p-2 rounded bg-light">
-                                                            <div className="d-flex align-items-center">
-                                                                <i className="ri-shield-star-line text-success me-2" />
-                                                                <span className="text-muted fw-medium">Vacunas:</span>
-                                                            </div>
-                                                            <div className="text-end">
-                                                                <strong className="text-success">${groupMetrics?.costBreakdown?.vaccines?.toFixed(2) || 0}</strong>
-                                                                <Badge color="success" className="ms-2">
-                                                                    {groupMetrics?.costBreakdown?.vaccinePercentage || 0}%
-                                                                </Badge>
-                                                            </div>
-                                                        </div>
-                                                        <div className="d-flex align-items-center justify-content-between p-2 rounded bg-light">
-                                                            <div className="d-flex align-items-center">
-                                                                <i className="ri-more-line text-warning me-2" />
-                                                                <span className="text-muted fw-medium">Otros:</span>
-                                                            </div>
-                                                            <div className="text-end">
-                                                                <strong className="text-warning">${groupMetrics?.costBreakdown?.other?.toFixed(2) || 0}</strong>
-                                                                <Badge color="warning" className="ms-2">
-                                                                    {groupMetrics?.costBreakdown?.otherPercentage || 0}%
-                                                                </Badge>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                    </Col>
+                                    <Col md={4}>
+                                        <div className="d-flex justify-content-between align-items-center p-3 rounded" style={{ background: '#f8f9fa' }}>
+                                            <span className="text-muted small">Fecha de Inicio</span>
+                                            <strong className="text-dark">
+                                                {groupMetrics?.timeMetrics?.startDate
+                                                    ? new Date(groupMetrics.timeMetrics.startDate).toLocaleDateString('es-DO', { day: '2-digit', month: 'short', year: 'numeric' })
+                                                    : '—'}
+                                            </strong>
                                         </div>
-
-                                        {/* Time Metrics Card */}
-                                        <div className="col-12">
-                                            <div className="card border-0 shadow-sm h-100">
-                                                <div className="card-header bg-gradient-secondary text-white border-0 py-3">
-                                                    <div className="d-flex align-items-center justify-content-between">
-                                                        <div className="d-flex align-items-center">
-                                                            <i className="ri-time-line fs-4 me-2" />
-                                                            <h5 className="mb-0 fw-semibold">Métricas de Tiempo</h5>
-                                                        </div>
-                                                        <div className="badge bg-white text-secondary fs-6">
-                                                            <i className="ri-calendar-line me-1" />
-                                                            Cronología
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="card-body">
-                                                    <div className="text-center mb-4">
-                                                        <div className="display-4 fw-bold text-secondary mb-2">
-                                                            {groupMetrics?.timeMetrics?.daysInProduction || 0}
-                                                        </div>
-                                                        <div className="text-muted">Días en Producción</div>
-                                                    </div>
-                                                    <div className="space-y-3">
-                                                        <div className="d-flex align-items-center justify-content-between p-3 rounded bg-light">
-                                                            <div className="d-flex align-items-center">
-                                                                <i className="ri-money-dollar-circle-line text-primary me-2" />
-                                                                <span className="text-muted fw-medium">Costo por Día:</span>
-                                                            </div>
-                                                            <strong className="text-primary fs-5">${groupMetrics?.timeMetrics?.costPerDay?.toFixed(2) || 0}</strong>
-                                                        </div>
-                                                        <div className="d-flex align-items-center justify-content-between p-3 rounded bg-light">
-                                                            <div className="d-flex align-items-center">
-                                                                <i className="ri-calendar-event-line text-info me-2" />
-                                                                <span className="text-muted fw-medium">Fecha Inicio:</span>
-                                                            </div>
-                                                            <strong className="text-info">{new Date(groupMetrics?.timeMetrics?.startDate || '').toLocaleDateString()}</strong>
-                                                        </div>
-                                                        <div className="d-flex align-items-center justify-content-between p-3 rounded bg-light">
-                                                            <div className="d-flex align-items-center">
-                                                                <i className="ri-flag-line text-success me-2" />
-                                                                <span className="text-muted fw-medium">Etapa Actual:</span>
-                                                            </div>
-                                                            <Badge color="success" className="fs-6">
-                                                                {groupMetrics?.groupInfo?.stage || '-'}
-                                                            </Badge>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                    </Col>
+                                    <Col md={4}>
+                                        <div className="d-flex justify-content-between align-items-center p-3 rounded" style={{ background: '#f8f9fa' }}>
+                                            <span className="text-muted small">Etapa Actual</span>
+                                            <Badge color="success" className="fw-normal">
+                                                {groupMetrics?.groupInfo?.stage || '—'}
+                                            </Badge>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                                    </Col>
+                                </Row>
+                            </CardBody>
+                        </Card>
                     </TabPane>
 
                     <TabPane tabId="1">
@@ -729,77 +612,38 @@ const GroupDetails = () => {
                                 </div>
                             </div>
 
-                            {/* 🔹 2. COLUMNA IZQUIERDA: GRÁFICOS (Análisis visual) */}
-                            <div className="col-12 col-xl-7 d-flex flex-column gap-2 h-100">
-                                <WeightDistributionChart data={weightDistribution} title="Distribución de pesos" />
-                                <WeightEvolutionChart entityId={group_id ?? ""} mode="group" title="Evolución del peso" />
-                            </div>
-
-                            {/* 🔹 3. COLUMNA DERECHA: DATOS Y LISTADO (Detalles técnicos) */}
-                            <div className="col-12 col-xl-5 d-flex flex-column gap-2">
-                                {/* Datos del grupo (Ahora más compacto) */}
-                                <Card className="shadow-sm flex-grow-1 h-50">
-                                    <CardHeader className="bg-white d-flex justify-content-between align-items-center">
+                            {/* 🔹 Fila: Información General + Distribución + Evolución */}
+                            <div className="col-12 col-xl-4 d-flex flex-column">
+                                <Card className="shadow-sm flex-grow-1 h-100">
+                                    <CardHeader className="bg-white">
                                         <h5 className="mb-0 text-uppercase text-muted">Información General</h5>
-
-                                        {['weaning', 'ready_to_grow', 'grow_overdue'].includes(groupData.status) && (
-                                            <Button color="success" disabled={groupData.status === 'sold' || !['ready_to_grow', 'grow_overdue'].includes(groupData.status)} onClick={() => toggleModal('changeStage')}>
-                                                <i className="mdi mdi-chart-line-variant me-2" />
-                                                Cambiar a crecimiento
-                                            </Button>
-                                        )}
-
-                                        {['growing', 'ready_for_sale',].includes(groupData.status) && (
-                                            <div className="d-flex gap-2">
-
-                                                <Button color="info" disabled={groupData.status === 'sold' || !groupData.isReadyForReplacement} onClick={() => toggleModal('processReplacement')}>
-                                                    <i className="ri-refresh-line me-2" />
-                                                    Procesar reemplazo
-                                                </Button>
-
-                                                <Button color="warning" disabled={groupData.status === 'sold' || !['ready_for_sale'].includes(groupData.status)} onClick={() => toggleModal('changeStage')}>
-                                                    <i className="ri-money-dollar-circle-line me-2" />
-                                                    Procesar venta
-                                                </Button>
-
-                                            </div>
-                                        )}
-
-                                        {groupData.status === 'sale' && groupData.stage === 'sale' && (
-                                            <Button color="success" onClick={() => toggleModal('sellPigs')}>
-                                                <i className="ri-shopping-cart-line me-2" />
-                                                Vender
-                                            </Button>
-                                        )}
                                     </CardHeader>
                                     <CardBody>
                                         <ObjectDetails attributes={groupAttibutes} object={groupData} />
                                     </CardBody>
                                 </Card>
+                            </div>
 
-                                {/* Tabla de Cerdos */}
-                                <Card className="shadow-sm flex-grow-1 h-50">
-                                    <CardHeader className="bg-white d-flex justify-content-between align-items-center">
+                            <div className="col-12 col-xl-4 d-flex flex-column">
+                                <WeightDistributionChart data={weightDistribution} title="Distribución de pesos" />
+                            </div>
+
+                            <div className="col-12 col-xl-4 d-flex flex-column">
+                                <WeightEvolutionChart entityId={group_id ?? ""} mode="group" title="Evolución del peso" />
+                            </div>
+
+                            {/* 🔹 Tabla de Cerdos (ancho completo) */}
+                            <div className="col-12">
+                                <Card className="shadow-sm m-0">
+                                    <CardHeader className="bg-white">
                                         <h5 className="mb-0 fw-bold text-uppercase text-muted">Cerdos en el grupo</h5>
-
-                                        <div className="d-flex gap-2">
-                                            <Button color="danger" onClick={() => toggleModal('discard')} disabled={groupData.status === 'sold'}>
-                                                <i className="ri-upload-2-line align-middle" />
-                                            </Button>
-                                            <Button color="warning" onClick={() => toggleModal('transfer')} disabled={groupData.status === 'sold'}>
-                                                <i className="ri-arrow-left-right-line align-middle" />
-                                            </Button>
-                                            <Button color="dark" onClick={() => toggleModal('registerDeath')} disabled={groupData.status === 'sold'}>
-                                                <FaSkullCrossbones color="white" />
-                                            </Button>
-                                        </div>
                                     </CardHeader>
                                     <CardBody className="px-0">
                                         <CustomTable
                                             columns={pigColumns}
                                             data={groupData.pigsInGroup}
                                             showSearchAndFilter={false}
-                                            rowsPerPage={5}
+                                            rowsPerPage={10}
                                             showPagination
                                         />
                                     </CardBody>
@@ -817,18 +661,7 @@ const GroupDetails = () => {
                     </TabPane>
 
                     <TabPane tabId="4">
-                        <div className="w-100 h-100">
-                            <Card className="h-100">
-                                <CardHeader className="border-bottom custom-card-header">
-                                    <h5 className="mb-0 text-dark fw-semibold">Historial de grupo</h5>
-                                </CardHeader>
-                                <CardBody className="h-100 overflow-hidden p-0">
-                                    <SimpleBar style={{ maxHeight: "100%" }}>
-                                        <GroupHistoryList data={groupData.groupHistory} />
-                                    </SimpleBar>
-                                </CardBody>
-                            </Card>
-                        </div>
+                        <GroupHistoryTimeline data={groupData.groupHistory || []} />
                     </TabPane>
                 </TabContent>
             </Container>

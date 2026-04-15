@@ -70,7 +70,7 @@ const WeightEvolutionChart = ({ entityId, mode, title }: Props) => {
     const hasData = data.length > 0 && data[0]?.data?.length > 0;
 
     return (
-        <Card className="w-100 shadow border-0">
+        <Card className="w-100 h-100 shadow border-0">
             <CardHeader className="bg-white border-0 pb-0">
                 <div className="d-flex flex-column gap-3">
 

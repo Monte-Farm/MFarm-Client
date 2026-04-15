@@ -5,17 +5,21 @@ import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import { getLoggedinUser } from "helpers/api_helper";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, TabContent, TabPane } from "reactstrap";
+import { Badge, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
 import classnames from "classnames";
 import ObjectDetails from "Components/Common/Details/ObjectDetails";
 import { Attribute } from "common/data_interfaces";
+import { Column } from "common/data/data_types";
 import LitterMedicalDetails from "Components/Common/Details/LitterMedicalDetails";
 import LitterEventsCard from "Components/Common/Shared/LitterEventsCard";
 import WeanLitterForm from "Components/Common/Forms/WeanLitterForm";
 import DiscardPigletsForm from "Components/Common/Forms/DiscardPigletsForm";
 import WeaningProgress from "Components/Common/Shared/WeaningProgress";
 import LitterFeedingDetails from "Components/Common/Details/LitterFeedingDetails";
-import SimpleBar from "simplebar-react";
+import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
+import CustomTable from "Components/Common/Tables/CustomTable";
+import { FaMars, FaVenus, FaPiggyBank } from "react-icons/fa";
+import { RiScales3Line, RiCalculatorLine } from "react-icons/ri";
 
 const LitterDetails = () => {
     const { litter_id } = useParams();
@@ -115,11 +119,22 @@ const LitterDetails = () => {
             <Container fluid>
                 <BreadCrumb title={"Detalles de camada"} pageTitle={"Camadas"} />
 
-                <div className="w-100 mb-4">
+                <div className="w-100 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <Button className="btn-danger" onClick={() => navigate(-1)}>
                         <i className="ri-arrow-left-line me-2" />
                         Regresar
                     </Button>
+
+                    <div className="d-flex gap-2 flex-wrap">
+                        <Button color="danger" onClick={() => toggleModal('discardPiglets')} disabled={litterDetails.status === 'weaned'}>
+                            <i className="ri-close-circle-line me-2" />
+                            Descartar lechones
+                        </Button>
+                        <Button color="success" onClick={() => toggleModal('weanLitter')} disabled={litterDetails.status === 'weaned' || litterDetails.status === 'active'}>
+                            <i className="mdi mdi-baby-bottle-outline me-2" />
+                            Destetar
+                        </Button>
+                    </div>
                 </div>
 
                 <div className="p-3 bg-white rounded">
@@ -156,141 +171,156 @@ const LitterDetails = () => {
 
                 <TabContent activeTab={activeTab} className="justified-tabs mt-3">
                     <TabPane tabId="1">
-                        <div className="w-100 mb-3">
-                            <WeaningProgress birthDate={litterDetails?.birthDate} litterStatus={litterDetails?.status} />
-                        </div>
+                        {(() => {
+                            const piglets = litterDetails?.piglets || [];
+                            const totalCurrent = (litterDetails?.currentMale || 0) + (litterDetails?.currentFemale || 0);
+                            const totalWeight = piglets.reduce((acc: number, p: any) => acc + Number(p.weight || 0), 0);
+                            const avgWeight = piglets.length > 0 ? totalWeight / piglets.length : 0;
 
+                            const pigletColumns: Column<any>[] = [
+                                {
+                                    header: 'Sexo',
+                                    accessor: 'sex',
+                                    type: 'text',
+                                    render: (value: string) => (
+                                        <Badge color={value === 'male' ? 'info' : 'danger'} className="fw-normal">
+                                            {value === 'male' ? '♂ Macho' : '♀ Hembra'}
+                                        </Badge>
+                                    ),
+                                },
+                                {
+                                    header: 'Peso (kg)',
+                                    accessor: 'weight',
+                                    type: 'number',
+                                    render: (value: any) => <span>{Number(value || 0).toFixed(2)}</span>,
+                                },
+                                {
+                                    header: 'Estado',
+                                    accessor: 'status',
+                                    type: 'text',
+                                    render: (value: string) => (
+                                        <Badge color={value === 'alive' ? 'success' : 'dark'} className="fw-normal">
+                                            {value === 'alive' ? 'Vivo' : 'Muerto'}
+                                        </Badge>
+                                    ),
+                                },
+                            ];
 
-                        <div className="row g-3">
-                            <div className="col-12 col-lg-4 d-flex flex-column">
-                                <Card className="flex-fill">
-                                    <CardHeader className="bg-white border-bottom d-flex justify-content-between">
-                                        <h5 className="mb-0 text-dark fw-semibold">Datos de la camada</h5>
+                            return (
+                                <>
+                                    {/* KPIs */}
+                                    <Row className="g-3 mb-3">
+                                        <Col md={6} lg>
+                                            <StatKpiCard
+                                                title="Total Lechones"
+                                                value={totalCurrent}
+                                                icon={<FaPiggyBank size={20} style={{ color: '#374151' }} />}
+                                                animateValue={true}
+                                                decimals={0}
+                                            />
+                                        </Col>
+                                        <Col md={6} lg>
+                                            <StatKpiCard
+                                                title="Machos"
+                                                value={litterDetails?.currentMale || 0}
+                                                icon={<FaMars size={20} style={{ color: '#0ea5e9' }} />}
+                                                animateValue={true}
+                                                decimals={0}
+                                            />
+                                        </Col>
+                                        <Col md={6} lg>
+                                            <StatKpiCard
+                                                title="Hembras"
+                                                value={litterDetails?.currentFemale || 0}
+                                                icon={<FaVenus size={20} style={{ color: '#ec4899' }} />}
+                                                animateValue={true}
+                                                decimals={0}
+                                            />
+                                        </Col>
+                                        <Col md={6} lg>
+                                            <StatKpiCard
+                                                title="Peso Promedio"
+                                                value={avgWeight}
+                                                suffix="kg"
+                                                icon={<RiScales3Line size={20} style={{ color: '#10b981' }} />}
+                                                animateValue={true}
+                                                decimals={2}
+                                            />
+                                        </Col>
+                                        <Col md={6} lg>
+                                            <StatKpiCard
+                                                title="Peso Total"
+                                                value={totalWeight}
+                                                suffix="kg"
+                                                icon={<RiCalculatorLine size={20} style={{ color: '#4F46E5' }} />}
+                                                animateValue={true}
+                                                decimals={2}
+                                            />
+                                        </Col>
+                                    </Row>
 
-                                        <Button color="success" onClick={() => toggleModal('weanLitter')} disabled={litterDetails.status === 'weaned' || litterDetails.status === 'active'}>
-                                            <i className="mdi mdi-baby-bottle-outline me-2" />
-                                            Destetar
-                                        </Button>
-                                    </CardHeader>
-                                    <CardBody>
-                                        <ObjectDetails attributes={litterAttributes} object={litterDetails} />
-                                    </CardBody>
-                                </Card>
+                                    {/* Progreso de destete */}
+                                    <Card className="border-0 shadow-sm mb-3">
+                                        <CardBody>
+                                            <WeaningProgress birthDate={litterDetails?.birthDate} litterStatus={litterDetails?.status} />
+                                        </CardBody>
+                                    </Card>
 
-                                <Card className="flex-fill">
-                                    <CardHeader className="d-flex justify-content-between align-items-center">
-                                        <h5>Información de la madre</h5>
-                                        <Button className="fs-6 p-0" color="link" onClick={() => navigate(`/pigs/pig_details/${litterDetails?.mother?._id}`)}>
-                                            Todos los detalles ↗
-                                        </Button>
-                                    </CardHeader>
-                                    <CardBody className="overflow-auto">
-                                        <ObjectDetails attributes={motherAttributes} object={litterDetails.mother} />
-                                    </CardBody>
-                                </Card>
-                            </div>
+                                    {/* 3 cards lado a lado */}
+                                    <Row className="g-3 align-items-stretch mb-3">
+                                        <Col lg={4} className="d-flex flex-column">
+                                            <Card className="shadow-sm flex-grow-1 m-0 h-100 border-0">
+                                                <CardHeader className="bg-white">
+                                                    <h5 className="mb-0 text-uppercase text-muted">Datos de la camada</h5>
+                                                </CardHeader>
+                                                <CardBody>
+                                                    <ObjectDetails attributes={litterAttributes} object={litterDetails} />
+                                                </CardBody>
+                                            </Card>
+                                        </Col>
 
-                            <div className="col-12 col-lg-4 d-flex flex-column">
-                                <Card className="flex-fill">
-                                    <CardHeader className="bg-white border-bottom d-flex justify-content-between align-items-center">
-                                        <h5 className="mb-0 text-dark fw-semibold">Lechones</h5>
-                                        <Button color="danger" size="sm" onClick={() => toggleModal('discardPiglets')} disabled={litterDetails.status === 'weaned'}>
-                                            <i className="ri-close-circle-line me-1" />
-                                            Descartar lechones
-                                        </Button>
-                                    </CardHeader>
-                                    <CardBody className="p-3">
-                                        {/* Estadísticas de lechones */}
-                                        <div className="row g-2 mb-3">
-                                            <div className="col-6">
-                                                <div className="border rounded p-2 text-center bg-light">
-                                                    <div className="d-flex align-items-center justify-content-center mb-1">
-                                                        <i className="ri-men-line fs-5 text-info me-1"></i>
-                                                        <span className="text-muted fw-semibold">Machos</span>
-                                                    </div>
-                                                    <h4 className="mb-0 text-info fw-bold">{litterDetails?.currentMale}</h4>
-                                                </div>
+                                        <Col lg={4} className="d-flex flex-column">
+                                            <Card className="shadow-sm flex-grow-1 m-0 h-100 border-0">
+                                                <CardHeader className="bg-white d-flex justify-content-between align-items-center">
+                                                    <h5 className="mb-0 text-uppercase text-muted">Información de la madre</h5>
+                                                    <Button className="fs-6 p-0" color="link" onClick={() => navigate(`/pigs/pig_details/${litterDetails?.mother?._id}`)}>
+                                                        Todos los detalles ↗
+                                                    </Button>
+                                                </CardHeader>
+                                                <CardBody>
+                                                    <ObjectDetails attributes={motherAttributes} object={litterDetails.mother} />
+                                                </CardBody>
+                                            </Card>
+                                        </Col>
+
+                                        <Col lg={4} className="d-flex flex-column">
+                                            <div className="d-flex flex-column flex-grow-1 h-100">
+                                                <LitterEventsCard events={litterDetails?.events} />
                                             </div>
-                                            <div className="col-6">
-                                                <div className="border rounded p-2 text-center bg-light">
-                                                    <div className="d-flex align-items-center justify-content-center mb-1">
-                                                        <i className="ri-women-line fs-5 text-danger me-1"></i>
-                                                        <span className="text-muted fw-semibold">Hembras</span>
-                                                    </div>
-                                                    <h4 className="mb-0 text-danger fw-bold">{litterDetails?.currentFemale}</h4>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        </Col>
+                                    </Row>
 
-                                        <div className="row g-2 mb-3">
-                                            <div className="col-6">
-                                                <div className="border rounded p-2 text-center">
-                                                    <div className="d-flex align-items-center justify-content-center mb-1">
-                                                        <i className="ri-scales-3-line fs-5 text-success me-1"></i>
-                                                        <span className="text-muted fw-semibold">Peso Promedio</span>
-                                                    </div>
-                                                    <h4 className="mb-0 text-success fw-bold">
-                                                        {litterDetails?.piglets?.length > 0
-                                                            ? (litterDetails?.piglets?.reduce((acc: number, p: any) => acc + Number(p.weight), 0) / litterDetails?.piglets?.length).toFixed(2)
-                                                            : '0.00'
-                                                        } kg
-                                                    </h4>
-                                                </div>
-                                            </div>
-                                            <div className="col-6">
-                                                <div className="border rounded p-2 text-center">
-                                                    <div className="d-flex align-items-center justify-content-center mb-1">
-                                                        <i className="ri-calculator-line fs-5 text-primary me-1"></i>
-                                                        <span className="text-muted fw-semibold">Peso Total</span>
-                                                    </div>
-                                                    <h4 className="mb-0 text-primary fw-bold">
-                                                        {litterDetails?.piglets?.reduce((acc: number, p: any) => acc + Number(p.weight), 0).toFixed(2)} kg
-                                                    </h4>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Tabla detallada con scroll */}
-                                        <div className="text-muted fw-semibold mb-2">Detalles de lechones:</div>
-
-                                        <SimpleBar style={{ maxHeight: '400px' }}>
-                                            <table className="table table-hover table-sm">
-                                                <thead className="table-light">
-                                                    <tr>
-                                                        <th className="text-center">#</th>
-                                                        <th className="text-center">Sexo</th>
-                                                        <th className="text-center">Peso</th>
-                                                        <th className="text-center">Estado</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {litterDetails?.piglets?.map((piglet: any, index: number) => (
-                                                        <tr key={index}>
-                                                            <td className="text-center">{index + 1}</td>
-                                                            <td className="text-center">
-                                                                <Badge color={piglet.sex === 'male' ? "info" : "danger"}>
-                                                                    {piglet.sex === 'male' ? "♂" : "♀"}
-                                                                </Badge>
-                                                            </td>
-                                                            <td className="text-center">{Number(piglet.weight).toFixed(2)}kg</td>
-                                                            <td className="text-center">
-                                                                <Badge color={piglet.status === 'alive' ? "success" : "danger"}>
-                                                                    {piglet.status === 'alive' ? "Vivo" : "Muerto"}
-                                                                </Badge>
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </SimpleBar>
-                                    </CardBody>
-                                </Card>
-                            </div>
-
-                            <div className="col-12 col-lg-4 d-flex flex-column">
-                                <LitterEventsCard events={litterDetails?.events} />
-                            </div>
-                        </div>
+                                    {/* Tabla de lechones */}
+                                    <Card className="shadow-sm m-0 border-0">
+                                        <CardHeader className="bg-white">
+                                            <h5 className="mb-0 fw-bold text-uppercase text-muted">
+                                                <FaPiggyBank className="me-2 text-primary" />
+                                                Lechones de la camada
+                                            </h5>
+                                        </CardHeader>
+                                        <CardBody className="p-0">
+                                            <CustomTable
+                                                columns={pigletColumns}
+                                                data={piglets}
+                                                showSearchAndFilter={false}
+                                                rowsPerPage={10}
+                                                showPagination
+                                            />
+                                        </CardBody>
+                                    </Card>
+                                </>
+                            );
+                        })()}
                     </TabPane>
 
                     <TabPane tabId="2">
