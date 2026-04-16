@@ -733,7 +733,7 @@ const Navdata = () => {
             subItems: [
                 {
                     id: "feedingPackages",
-                    label: "Paquetes de alimentación",
+                    label: "Recetas de alimentación",
                     link: "/feeding/view_feeding_packages",
                     roles: ['farm_manager', 'veterinarian',],
                     parentId: "feeding",
@@ -742,6 +742,13 @@ const Navdata = () => {
                         setIsFeedingPackage(!isFeedingPackage)
                     },
                     stateVariables: isFeedingPackage,
+                },
+                {
+                    id: "feedPreparations",
+                    label: "Preparaciones de alimento",
+                    link: "/feeding/view_feed_preparations",
+                    roles: ['farm_manager', 'veterinarian',],
+                    parentId: "feeding",
                 },
             ]
         },

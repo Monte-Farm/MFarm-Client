@@ -22,6 +22,7 @@ type SelectableCustomTableProps<T> = {
     resetSelectionTrigger?: any;
     onChangeRow?: (updatedRow: T) => void; // NUEVO opcional
     selectionOnlyOnCheckbox?: boolean; // NUEVO: para controlar si la selección solo funciona con checkbox
+    initialSelectedIds?: string[]; // Preselección inicial (útil al editar)
 };
 
 const formatValue = (value: any, type?: ColumnType) => {
@@ -57,16 +58,36 @@ function SelectableCustomTable<T extends { id: string }>(props: SelectableCustom
         resetSelectionTrigger,
         onChangeRow,
         selectionOnlyOnCheckbox = false,
+        initialSelectedIds,
     } = props;
 
     const [filterText, setFilterText] = useState<string>("");
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
+    const isFirstResetRun = React.useRef(true);
     useEffect(() => {
+        if (isFirstResetRun.current) {
+            isFirstResetRun.current = false;
+            return;
+        }
         setSelectedIds(new Set());
         onSelect?.([]);
     }, [resetSelectionTrigger]);
+
+    // Aplica la preselección inicial cuando llegan datos y/o cambian los IDs preseleccionados.
+    useEffect(() => {
+        if (!initialSelectedIds || initialSelectedIds.length === 0) return;
+        if (data.length === 0) return;
+        const validIds = new Set(
+            initialSelectedIds.filter(id => data.some((row: any) => row.id === id || row._id === id))
+        );
+        if (validIds.size === 0) return;
+        setSelectedIds(validIds);
+        const selectedRows = data.filter((row: any) => validIds.has(row.id) || validIds.has(row._id));
+        onSelect?.(selectedRows);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [data, initialSelectedIds?.join(",")]);
 
     const filteredData = useMemo(() => {
         if (!filterText) return data;

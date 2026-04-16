@@ -91,6 +91,8 @@ export interface ProductData {
     status: boolean;
     unit_measurement: string;
     image: string;
+    type?: 'raw' | 'prepared_feed';
+    recipeId?: string;
 }
 
 export interface SubwarehouseData {
@@ -180,29 +182,6 @@ export interface Attribute {
     render?: (value: any, object: Record<string, any>) => React.ReactNode;
 }
 
-
-export interface PigFeedingEntry {
-    category: string;
-    name: string;
-    dailyAmount: number;
-    unit: string;
-    observations?: string;
-}
-
-export interface FeedingPackagesHistory {
-    packageId: string;
-    name: string;
-    stage: string;
-    feedings: {
-        feeding: string;
-        quantity: number;
-    }[];
-    applicationDate: Date;
-    appliedBy: string;
-    observations?: string;
-    periodicity: string;
-    is_active: boolean;
-}
 
 export interface PigMedicationEntry {
     medication: string;
@@ -297,8 +276,7 @@ export interface PigData {
         observations?: string | null;
     };
     historyChanges: PigHistoryChanges[];
-    feedings: PigFeedingEntry[];
-    feedingsPackagesHistory: FeedingPackagesEntry[];
+    feedAdministrationHistory: FeedAdministrationHistoryEntry[];
     medications: PigMedicationEntry[];
     medicationPackagesHistory: medicationPackagesEntry[];
     vaccinationPlansHistory: VaccinationPlanEntry[];
@@ -354,34 +332,6 @@ export interface GroupMedicationPackagesHistory {
     observations?: string;
     isActive: boolean;
     estimatedTotal: number
-}
-
-export interface GroupFeedings {
-    feeding: string;
-    quantityPerPig: number;
-    totalQuantity: number;
-    avgPerPig?: number;
-    applicationDate: Date | null;
-    appliedBy: string;
-    periodicity?: string;
-    observations?: string;
-    isActive: boolean;
-}
-
-export interface GroupFeedingPackagesHistory {
-    packageId: string;
-    name: string;
-    feedings: {
-        feeding: string;
-        totalQuantity: number;
-        avgPerPig?: number;
-    }[];
-    applicationDate: Date | null;
-    appliedBy: string;
-    periodicity: string;
-    observations?: string;
-    isActive: boolean;
-    stage: string;
 }
 
 export interface GroupMedications {
@@ -464,8 +414,7 @@ export interface GroupData {
         action: string;
         description: string;
     }[];
-    feedings?: GroupFeedings[];
-    feedingPackagesHistory?: GroupFeedingPackagesHistory[];
+    feedAdministrationHistory?: FeedAdministrationHistoryEntry[];
     medications?: GroupMedications[];
     medicationPackagesHistory?: GroupMedicationPackagesHistory[];
     vaccinationPlansHistory?: GroupVaccinationPlansHistory[];
@@ -588,6 +537,7 @@ export interface VaccinationPlan {
 }
 
 export interface FeedingPackage {
+    _id?: string;
     code: string;
     name: string;
     description?: string;
@@ -596,28 +546,86 @@ export interface FeedingPackage {
     creation_responsible: string;
     is_active: boolean;
     stage: string;
+    expectedYield: number;
     feedings: {
         feeding: string;
-        quantity: number;
-        administration_route: string
-    }[]
-    periodicity: string;
+        percentage: number;
+    }[];
 }
 
-export interface FeedingPackagesEntry {
-    packageId: string;
-    name: string;
-    stage: string;
-    feedings: {
-        feeding: string;
-        quantity: number;
-    }[];
-    applicationDate: Date | null;
-    appliedBy: string;
+export interface FeedPreparationIngredientUsed {
+    product: {
+        _id: string;
+        name: string;
+        unit_measurement: string;
+    };
+    quantity: number;
+    unitPrice: number;
+    subtotal: number;
+}
+
+export interface FeedPreparation {
+    _id?: string;
+    code: string;
+    farm: string;
+    recipe: string | { _id: string; code: string; name: string; stage: string };
+    preparedProduct: string | { _id: string; name: string; unit_measurement: string };
+    preparationDate: Date | null;
+    batchSize: number;
+    actualYield: number;
+    shrinkage: number;
+    shrinkagePercentage: number;
+    subwarehouse: string;
+    ingredientsUsed: FeedPreparationIngredientUsed[];
+    totalCost: number;
+    costPerKg: number;
+    responsible: string | { _id: string; name: string; lastname: string; username?: string };
+    notes?: string;
+}
+
+export interface FeedAdministrationHistoryEntry {
+    _id: string;
+    administrationId: string;
+    preparedProduct: {
+        _id: string;
+        name: string;
+        unit_measurement: string;
+        category: string;
+    };
+    recipe: {
+        _id: string;
+        code: string;
+        name: string;
+        stage: string;
+    };
+    quantity: number;
+    unitCost: number;
+    totalCost: number;
+    applicationDate: Date | string;
+    appliedBy: {
+        _id: string;
+        name: string;
+        lastname: string;
+        username?: string;
+    };
     observations?: string;
-    periodicity: string;
-    is_active: boolean;
-};
+}
+
+export interface FeedAdministration {
+    _id?: string;
+    code: string;
+    farm: string;
+    targetType: 'group' | 'litter' | 'pig';
+    targetId: string;
+    preparedProduct: string | { _id: string; name: string; unit_measurement: string };
+    recipe: string | { _id: string; code: string; name: string; stage: string };
+    quantity: number;
+    unitCost: number;
+    totalCost: number;
+    date: Date | string | null;
+    responsible: string | { _id: string; name: string; lastname: string };
+    observations?: string;
+}
 
 export interface PigletSnapshot {
     sex: 'male' | 'female' | '';
@@ -649,8 +657,7 @@ export interface Litter {
     observations?: string;
     responsible: string;
     events: LitterEvent[];
-    feedings: GroupFeedings[];
-    feedingPackagesHistory: FeedingPackagesHistory[];
+    feedAdministrationHistory: FeedAdministrationHistoryEntry[];
     medications: GroupMedications[];
     medicationPackagesHistory: GroupMedicationPackagesHistory[];
     vaccinationPlansHistory: GroupVaccinationPlansHistory[];

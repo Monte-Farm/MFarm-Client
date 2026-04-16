@@ -377,7 +377,7 @@ const ViewFeedingConsumption = () => {
                             date: timeline.date,
                             totalKg: timeline.totalKg,
                             groupCode: group.groupCode,
-                            packageName: timeline.packageName
+                            productName: timeline.productName
                         });
                     });
                 }
@@ -404,7 +404,7 @@ const ViewFeedingConsumption = () => {
                             date: timeline.date,
                             totalKg: timeline.totalKg,
                             litterCode: litter.litterCode,
-                            packageName: timeline.packageName
+                            productName: timeline.productName
                         });
                     });
                 }

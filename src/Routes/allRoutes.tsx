@@ -60,6 +60,7 @@ import DiscardedPigs from "pages/Pigs/DiscardedPigs";
 import ViewMedicationPackages from "pages/Medication/ViewMedicationPackages";
 import ViewVaccinationPlans from "pages/Medication/ViewVaccinePlans";
 import ViewFeedingPackages from "pages/Feeding/ViewFeedingPackages";
+import ViewFeedPreparations from "pages/Feeding/ViewFeedPreparations";
 import ViewLitters from "pages/Lactation/ViewLitters";
 import LitterDetails from "pages/Lactation/LitterDetails";
 import InventoryPigs from "pages/Pigs/InventoryPigs";
@@ -192,6 +193,7 @@ const authProtectedRoutes = [
 
   //Feeding
   { path: "/feeding/view_feeding_packages", component: <ViewFeedingPackages /> },
+  { path: "/feeding/view_feed_preparations", component: <ViewFeedPreparations /> },
   { path: "/feeding/view_feeding_consumption", component: <ViewFeedingConsumption /> },
 
   //Lactation

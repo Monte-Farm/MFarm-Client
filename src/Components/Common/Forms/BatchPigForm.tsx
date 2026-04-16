@@ -123,7 +123,6 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                 observations: '',
                 historyChanges: [],
                 discarded: false,
-                feedings: [],
                 medications: [],
                 medicationPackagesHistory: [],
                 vaccinationPlansHistory: [],
@@ -131,7 +130,7 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                 reproduction: [],
                 registered_by: userLogged._id,
                 registration_date: new Date(),
-                feedingsPackagesHistory: [],
+                feedAdministrationHistory: [],
             }));
 
             setPigsBatch(pigs);

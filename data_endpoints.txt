@@ -2139,3 +2139,72 @@ RETORNA:
     ]
   }
 }
+
+
+// =====================================================================
+// PENDIENTE — Endpoint nuevo para selector de alimento preparado
+// =====================================================================
+//
+// Contexto:
+// El front (FeedAdministrationForm) necesita listar los alimentos preparados
+// disponibles para administrar a un target (camada / grupo / cerdo). Hoy se
+// reusa GET /warehouse/feeding_products/:farmId y se filtra en el front por
+// `type === 'prepared_feed'` y stock > 0, lo cual:
+//   1. Mezcla materia prima y preparados en la respuesta.
+//   2. No filtra por etapa (riesgo: dar alimento de finalización a lechones).
+//   3. Obliga al front a conocer el shape interno del producto (`recipeId`,
+//      `recipe.stage`, etc.).
+//
+// Regla de negocio:
+// - Cada receta tiene una `stage` (piglet, sow, nursery, grower, finisher,
+//   general).
+// - Una receta de `stage='general'` aplica para cualquier target.
+// - Las demás recetas solo aplican a targets de su misma etapa.
+// - Solo deben listarse alimentos preparados con `stock > 0`.
+//
+// ---------------------------------------------------------------------
+// GET /warehouse/prepared_feeds_by_stage/:farm_id/:stage
+// ---------------------------------------------------------------------
+// Path params:
+//   farm_id : ObjectId   — granja del usuario logueado.
+//   stage   : string     — etapa del target receptor. Valores válidos:
+//                          'piglet' | 'sow' | 'nursery' | 'grower' |
+//                          'finisher' | 'general'.
+//                          (Si el target es una camada se manda 'piglet'.)
+//
+// Comportamiento:
+// - Devuelve productos con type='prepared_feed' Y stock > 0 cuya receta
+//   asociada cumpla:
+//     recipe.stage === stage  OR  recipe.stage === 'general'
+// - Si stage='general' devuelve TODOS los preparados con stock > 0.
+//
+// Response (200):
+// {
+//   "data": [
+//     {
+//       "_id": ObjectId,                  // ID Mongo del producto preparado
+//       "id": string,                     // Código del producto (ej: "PREP-FP-0001")
+//       "name": string,                   // "Alimento preparado: {recipe.name}"
+//       "unit_measurement": string,       // "kg"
+//       "totalStock": number,             // Stock disponible global de la granja en kg
+//       "averagePrice": number,           // Precio promedio ponderado por kg
+//       "recipe": {                       // Info mínima de la receta origen
+//         "_id": ObjectId,
+//         "code": string,                 // "FP-0001"
+//         "name": string,                 // "Receta destete"
+//         "stage": string                 // "piglet" | ... | "general"
+//       }
+//     }
+//   ]
+// }
+//
+// Errores:
+//   400 — stage inválido.
+//   404 — granja no encontrada.
+//
+// Notas para el front:
+// - Reemplaza la llamada actual a /warehouse/feeding_products en
+//   FeedAdministrationForm.
+// - Para administración bulk a grupos/camadas mixtas, el front debe llamar
+//   con la etapa común; si los targets seleccionados tienen etapas distintas
+//   no debe permitirse el bulk (validar en UI antes).

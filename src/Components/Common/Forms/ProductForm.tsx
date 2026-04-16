@@ -5,6 +5,7 @@ import { useFormik } from "formik";
 import FileUploader from "../Shared/FileUploader";
 import { ProductCategory, ProductData } from "common/data_interfaces";
 import { ConfigContext } from "App";
+import { PRODUCT_TYPES } from "common/enums/products.enums";
 import AlertMessage from "../Shared/AlertMesagge";
 
 interface ProductFormProps {
@@ -51,6 +52,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
             status: true,
             unit_measurement: "",
             image: "",
+            type: PRODUCT_TYPES.RAW,
         },
         enableReinitialize: true,
         validationSchema,

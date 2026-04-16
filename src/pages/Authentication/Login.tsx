@@ -4,7 +4,7 @@ import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import loginImage from "../../assets/images/portada.png";
 import LoginForm from "../../Components/Common/Velzon/Login";
 import axios, { AxiosError, AxiosResponse } from "axios";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getLoggedinUser, setAuthorization } from "helpers/api_helper";
 import { useNavigate } from "react-router-dom";
 import { ConfigContext } from "App";
 import Aurora from "Components/Common/Velzon/Aurora";
@@ -30,6 +30,7 @@ const CoverSignIn = () => {
             }
 
             sessionStorage.setItem('authUser', JSON.stringify(user));
+            setAuthorization(user.token);
             configContext?.setUserLogged(getLoggedinUser());
             history('/home');
         } catch (error: any) {
