@@ -11,6 +11,7 @@ import PigMedicalDetails from "Components/Common/Details/PigMedicalDetails";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import PigFeedingDetails from "Components/Common/Details/PigFeedingDetails";
 import PigReproductionDetails from "Components/Common/Details/PigReproductionDetails";
+import WeighSinglePigForm from "Components/Common/Forms/WeighSinglePigForm";
 import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
 import DatePicker from "react-flatpickr";
 import { RiCalendarLine, RiScales3Line, RiHome4Line, RiGroupLine, RiInformationLine, RiMapPin2Line, RiErrorWarningLine, RiHistoryLine, RiArrowRightLine } from "react-icons/ri";
@@ -40,7 +41,7 @@ const PigDetails = () => {
     const [pigReproductionHistory, setPigReproductionHistory] = useState<any[]>([])
     const [generalInfo, setGeneralInfo] = useState<any | null>(null)
     const [activeTab, setActiveTab] = useState<string>('1');
-    const [modals, setModals] = useState({ update: false, viewPDF: false, selectMedicationMode: false, asignSingle: false, medicationPackage: false, });
+    const [modals, setModals] = useState({ update: false, viewPDF: false, selectMedicationMode: false, asignSingle: false, medicationPackage: false, weighPig: false });
     const [fileURL, setFileURL] = useState<string>('')
     const navigate = useNavigate()
     const [generatingReport, setGeneratingReport] = useState(false);
@@ -229,7 +230,11 @@ const PigDetails = () => {
                         Regresar
                     </Button>
 
-                    <Button className="h-50 farm-primary-button ms-auto" onClick={handlePrintReport} disabled={generatingReport}>
+                    <Button color="primary" className="h-50 ms-auto me-2" onClick={() => toggleModal('weighPig')} disabled={pigInfo?.status !== 'alive'}>
+                        <i className="ri-scales-3-line me-2" />
+                        Registrar pesaje
+                    </Button>
+                    <Button className="h-50 farm-primary-button" onClick={handlePrintReport} disabled={generatingReport}>
                         {generatingReport ? (
                             <>
                                 <Spinner size="sm" /> Generando...
@@ -545,6 +550,17 @@ const PigDetails = () => {
             </Container>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
+
+            <Modal size="md" isOpen={modals.weighPig} toggle={() => toggleModal('weighPig')} centered backdrop="static" keyboard={false}>
+                <ModalHeader toggle={() => toggleModal('weighPig')}>Registrar pesaje</ModalHeader>
+                <ModalBody>
+                    <WeighSinglePigForm
+                        pigId={pig_id ?? ''}
+                        currentWeight={generalInfo?.basicInfo?.weight ?? 0}
+                        onSave={() => { toggleModal('weighPig'); fetchData(); }}
+                    />
+                </ModalBody>
+            </Modal>
 
             {/* Modal: Historial Completo */}
             <Modal isOpen={fullHistoryModal} toggle={() => setFullHistoryModal(false)} size="xl" scrollable centered>
