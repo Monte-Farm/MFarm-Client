@@ -79,6 +79,11 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
             then: schema => schema.required('Por favor ingrese la granja de origen'),
             otherwise: schema => schema.notRequired(),
         }),
+        purchasePrice: Yup.number().when('origin', {
+            is: 'purchased',
+            then: schema => schema.min(0.01, 'El precio debe ser mayor a 0').required('Por favor ingrese el precio de compra'),
+            otherwise: schema => schema.notRequired(),
+        }),
         status: Yup.mixed<'alive' | 'sold' | 'slaughtered' | 'dead' | 'discarded'>()
             .oneOf(['alive', 'sold', 'slaughtered', 'dead', 'discarded'], 'Estado inválido')
             .required('Por favor seleccione el estado'),
@@ -106,12 +111,14 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
             originDetail: '',
             sourceFarm: '',
             arrivalDate: null,
+            purchasePrice: 0,
             status: 'alive',
             currentStage: 'piglet',
             sex: 'male',
             weight: 0,
             observations: '',
             historyChanges: [],
+            feedings: [],
             medications: [],
             medicationPackagesHistory: [],
             vaccinationPlansHistory: [],
@@ -210,138 +217,131 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
 
                 <TabContent activeTab={activeStep}>
                     <TabPane id="step-pigdate-tab" tabId={1}>
-                        <div className="d-flex gap-3">
-                            <div className="mt-4 w-50">
-                                <Label htmlFor="code" className="form-label">Código</Label>
-                                <Input
-                                    type="text"
-                                    id="code"
-                                    name="code"
-                                    value={formik.values.code}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    invalid={formik.touched.code && !!formik.errors.code}
-                                    placeholder="Ej: C001"
-                                />
-                                {formik.touched.code && formik.errors.code && (
-                                    <FormFeedback>{formik.errors.code}</FormFeedback>
-                                )}
-                            </div>
 
-                            <div className="mt-4 w-50">
-                                <Label htmlFor="birthdate" className="form-label">Fecha de nacimiento</Label>
-                                <DatePicker
-                                    id="birthdate"
-                                    className={`form-control ${formik.touched.birthdate && formik.errors.birthdate ? 'is-invalid' : ''}`}
-                                    value={formik.values.birthdate ?? undefined}
-                                    onChange={(date: Date[]) => {
-                                        if (date[0]) formik.setFieldValue('birthdate', date[0]);
-                                    }}
-                                    options={{ dateFormat: 'd/m/Y' }}
-                                />
-                                {formik.touched.birthdate && formik.errors.birthdate && (
-                                    <FormFeedback className="d-block">{formik.errors.birthdate as string}</FormFeedback>
-                                )}
+                        {/* Sección: Identificación */}
+                        <div className="card mb-3 shadow-sm">
+                            <div className="card-header fw-semibold" style={{ backgroundColor: '#e3f2fd' }}>
+                                <i className="ri-fingerprint-line me-2 text-primary"></i>Identificación
+                            </div>
+                            <div className="card-body">
+                                <div className="d-flex gap-3">
+                                    <div className="w-50">
+                                        <Label htmlFor="code" className="form-label">Código</Label>
+                                        <Input
+                                            type="text"
+                                            id="code"
+                                            name="code"
+                                            value={formik.values.code}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            invalid={formik.touched.code && !!formik.errors.code}
+                                            placeholder="Ej: C001"
+                                        />
+                                        {formik.touched.code && formik.errors.code && (
+                                            <FormFeedback>{formik.errors.code}</FormFeedback>
+                                        )}
+                                    </div>
+
+                                    <div className="w-50">
+                                        <Label htmlFor="birthdate" className="form-label">Fecha de nacimiento</Label>
+                                        <DatePicker
+                                            id="birthdate"
+                                            className={`form-control ${formik.touched.birthdate && formik.errors.birthdate ? 'is-invalid' : ''}`}
+                                            value={formik.values.birthdate ?? undefined}
+                                            onChange={(date: Date[]) => {
+                                                if (date[0]) formik.setFieldValue('birthdate', date[0]);
+                                            }}
+                                            options={{ dateFormat: 'd/m/Y' }}
+                                        />
+                                        {formik.touched.birthdate && formik.errors.birthdate && (
+                                            <FormFeedback className="d-block">{formik.errors.birthdate as string}</FormFeedback>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="d-flex gap-3 mt-3">
+                                    <div className="w-50">
+                                        <Label htmlFor="breedInput" className="form-label">Raza</Label>
+                                        <Input
+                                            type="select"
+                                            id="breedInput"
+                                            name="breed"
+                                            value={formik.values.breed}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            invalid={formik.touched.breed && !!formik.errors.breed}
+                                        >
+                                            <option value="">Seleccione una raza</option>
+                                            <option value="Yorkshire">Yorkshire</option>
+                                            <option value="Landrace">Landrace</option>
+                                            <option value="Duroc">Duroc</option>
+                                            <option value="Hampshire">Hampshire</option>
+                                            <option value="Pietrain">Pietrain</option>
+                                            <option value="Berkshire">Berkshire</option>
+                                            <option value="Large White">Large White</option>
+                                            <option value="Chester White">Chester White</option>
+                                            <option value="Poland China">Poland China</option>
+                                            <option value="Tamworth">Tamworth</option>
+                                        </Input>
+                                        {formik.touched.breed && formik.errors.breed && (
+                                            <FormFeedback>{formik.errors.breed}</FormFeedback>
+                                        )}
+                                    </div>
+
+                                    <div className="w-50">
+                                        <Label htmlFor="currentStage" className="form-label">Etapa actual</Label>
+                                        <Input
+                                            type="select"
+                                            id="currentStage"
+                                            name="currentStage"
+                                            value={formik.values.currentStage}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            invalid={formik.touched.currentStage && !!formik.errors.currentStage}
+                                        >
+                                            <option value="piglet">Lechón</option>
+                                            <option value="weaning">Destete</option>
+                                            <option value="fattening">Engorda</option>
+                                            <option value="breeder">Reproductor</option>
+                                        </Input>
+                                        {formik.touched.currentStage && formik.errors.currentStage && (
+                                            <FormFeedback>{formik.errors.currentStage}</FormFeedback>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="d-flex gap-3">
-                            <div className="mt-4 w-100">
-                                <Label htmlFor="breedInput" className="form-label">Raza</Label>
-                                <Input
-                                    type="select"
-                                    id="breedInput"
-                                    name="breed"
-                                    value={formik.values.breed}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    invalid={formik.touched.breed && !!formik.errors.breed}
-                                >
-                                    <option value="">Seleccione una raza</option>
-                                    <option value="Yorkshire">Yorkshire</option>
-                                    <option value="Landrace">Landrace</option>
-                                    <option value="Duroc">Duroc</option>
-                                    <option value="Hampshire">Hampshire</option>
-                                    <option value="Pietrain">Pietrain</option>
-                                    <option value="Berkshire">Berkshire</option>
-                                    <option value="Large White">Large White</option>
-                                    <option value="Chester White">Chester White</option>
-                                    <option value="Poland China">Poland China</option>
-                                    <option value="Tamworth">Tamworth</option>
-                                </Input>
-                                {formik.touched.breed && formik.errors.breed && (
-                                    <FormFeedback>{formik.errors.breed}</FormFeedback>
-                                )}
+                        {/* Sección: Origen */}
+                        <div className="card mb-3 shadow-sm">
+                            <div className="card-header fw-semibold" style={{ backgroundColor: '#e8f5e9' }}>
+                                <i className="ri-map-pin-line me-2 text-success"></i>Origen
                             </div>
+                            <div className="card-body">
+                                <div className="d-flex gap-3">
+                                    <div className="w-50">
+                                        <Label htmlFor="origin" className="form-label">Tipo de origen</Label>
+                                        <Input
+                                            type="select"
+                                            id="origin"
+                                            name="origin"
+                                            value={formik.values.origin}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            invalid={formik.touched.origin && !!formik.errors.origin}
+                                        >
+                                            <option value="">Seleccione una opcion</option>
+                                            {/* <option value="born">Nacido en la granja</option> */}
+                                            <option value="purchased">Comprado</option>
+                                            <option value="donated">Donado</option>
+                                            <option value="other">Otro</option>
+                                        </Input>
+                                        {formik.touched.origin && formik.errors.origin && (
+                                            <FormFeedback>{formik.errors.origin}</FormFeedback>
+                                        )}
+                                    </div>
 
-
-                            <div className="mt-4 w-100">
-                                <Label htmlFor="currentStage" className="form-label">Etapa actual</Label>
-                                <Input
-                                    type="select"
-                                    id="currentStage"
-                                    name="currentStage"
-                                    value={formik.values.currentStage}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    invalid={formik.touched.currentStage && !!formik.errors.currentStage}
-                                >
-                                    <option value="piglet">Lechón</option>
-                                    <option value="weaning">Destete</option>
-                                    <option value="fattening">Engorda</option>
-                                    <option value="breeder">Reproductor</option>
-                                </Input>
-                                {formik.touched.currentStage && formik.errors.currentStage && (
-                                    <FormFeedback>{formik.errors.currentStage}</FormFeedback>
-                                )}
-                            </div>
-
-                            <div className="mt-4 w-100">
-                                <Label htmlFor="origin" className="form-label">Origen</Label>
-                                <Input
-                                    type="select"
-                                    id="origin"
-                                    name="origin"
-                                    value={formik.values.origin}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    invalid={formik.touched.origin && !!formik.errors.origin}
-                                >
-                                    <option value="">Seleccione una opcion</option>
-                                    {/* <option value="born">Nacido en la granja</option> */}
-                                    <option value="purchased">Comprado</option>
-                                    <option value="donated">Donado</option>
-                                    <option value="other">Otro</option>
-                                </Input>
-                                {formik.touched.origin && formik.errors.origin && (
-                                    <FormFeedback>{formik.errors.origin}</FormFeedback>
-                                )}
-                            </div>
-
-                        </div>
-
-                        <div className="d-flex gap-3 mt-4">
-                            {formik.values.origin !== '' && (
-                                <>
-                                    {formik.values.origin === 'other' && (
-                                        <div className="w-50">
-                                            <Label htmlFor="originDetail" className="form-label">Detalle del origen</Label>
-                                            <Input
-                                                type="text"
-                                                id="originDetail"
-                                                name="originDetail"
-                                                value={formik.values.originDetail}
-                                                onChange={formik.handleChange}
-                                                onBlur={formik.handleBlur}
-                                                invalid={formik.touched.originDetail && !!formik.errors.originDetail}
-                                            />
-                                            {formik.touched.originDetail && formik.errors.originDetail && (
-                                                <FormFeedback>{formik.errors.originDetail as string}</FormFeedback>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    {formik.values.origin !== 'born' && (
+                                    {formik.values.origin !== '' && formik.values.origin !== 'born' && (
                                         <div className="w-50">
                                             <Label htmlFor="arrivalDate" className="form-label">Fecha de llegada</Label>
                                             <DatePicker
@@ -358,78 +358,125 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
                                             )}
                                         </div>
                                     )}
+                                </div>
 
-                                    {(formik.values.origin === 'purchased' || formik.values.origin === 'donated') && (
-                                        <div className="w-50">
-                                            <Label htmlFor="sourceFarm" className="form-label">Granja de origen</Label>
-                                            <Input
-                                                type="text"
-                                                id="sourceFarm"
-                                                name="sourceFarm"
-                                                value={formik.values.sourceFarm}
-                                                onChange={formik.handleChange}
-                                                onBlur={formik.handleBlur}
-                                                invalid={formik.touched.sourceFarm && !!formik.errors.sourceFarm}
-                                            />
-                                            {formik.touched.sourceFarm && formik.errors.sourceFarm && (
-                                                <FormFeedback>{formik.errors.sourceFarm as string}</FormFeedback>
-                                            )}
-                                        </div>
-                                    )}
-                                </>
-                            )}
+                                {formik.values.origin !== '' && (
+                                    <div className="d-flex gap-3 mt-3">
+                                        {formik.values.origin === 'other' && (
+                                            <div className="w-50">
+                                                <Label htmlFor="originDetail" className="form-label">Detalle del origen</Label>
+                                                <Input
+                                                    type="text"
+                                                    id="originDetail"
+                                                    name="originDetail"
+                                                    value={formik.values.originDetail}
+                                                    onChange={formik.handleChange}
+                                                    onBlur={formik.handleBlur}
+                                                    invalid={formik.touched.originDetail && !!formik.errors.originDetail}
+                                                />
+                                                {formik.touched.originDetail && formik.errors.originDetail && (
+                                                    <FormFeedback>{formik.errors.originDetail as string}</FormFeedback>
+                                                )}
+                                            </div>
+                                        )}
 
+                                        {(formik.values.origin === 'purchased' || formik.values.origin === 'donated') && (
+                                            <div className="w-50">
+                                                <Label htmlFor="sourceFarm" className="form-label">Granja de origen</Label>
+                                                <Input
+                                                    type="text"
+                                                    id="sourceFarm"
+                                                    name="sourceFarm"
+                                                    value={formik.values.sourceFarm}
+                                                    onChange={formik.handleChange}
+                                                    onBlur={formik.handleBlur}
+                                                    invalid={formik.touched.sourceFarm && !!formik.errors.sourceFarm}
+                                                />
+                                                {formik.touched.sourceFarm && formik.errors.sourceFarm && (
+                                                    <FormFeedback>{formik.errors.sourceFarm as string}</FormFeedback>
+                                                )}
+                                            </div>
+                                        )}
 
-                        </div>
-
-                        <div className="d-flex gap-3">
-                            <div className="mt-4 w-50">
-                                <Label htmlFor="sex" className="form-label">Sexo</Label>
-                                <Input
-                                    type="select"
-                                    id="sex"
-                                    name="sex"
-                                    value={formik.values.sex}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    invalid={formik.touched.sex && !!formik.errors.sex}
-                                >
-                                    <option value="male">Macho</option>
-                                    <option value="female">Hembra</option>
-                                </Input>
-                                {formik.touched.sex && formik.errors.sex && (
-                                    <FormFeedback>{formik.errors.sex}</FormFeedback>
+                                        {formik.values.origin === 'purchased' && (
+                                            <div className="w-50">
+                                                <Label htmlFor="purchasePrice" className="form-label">Precio de compra ($)</Label>
+                                                <Input
+                                                    type="number"
+                                                    step="0.01"
+                                                    id="purchasePrice"
+                                                    name="purchasePrice"
+                                                    value={formik.values.purchasePrice}
+                                                    onChange={formik.handleChange}
+                                                    onBlur={formik.handleBlur}
+                                                    invalid={formik.touched.purchasePrice && !!formik.errors.purchasePrice}
+                                                />
+                                                {formik.touched.purchasePrice && formik.errors.purchasePrice && (
+                                                    <FormFeedback>{formik.errors.purchasePrice as string}</FormFeedback>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
                                 )}
                             </div>
-
-                            <div className="mt-4 w-50">
-                                <Label htmlFor="weight" className="form-label">Peso</Label>
-                                <Input
-                                    type="number"
-                                    id="weight"
-                                    name="weight"
-                                    value={formik.values.weight}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    invalid={formik.touched.weight && !!formik.errors.weight}
-                                />
-                                {formik.touched.weight && formik.errors.weight && (
-                                    <FormFeedback>{formik.errors.weight}</FormFeedback>
-                                )}
-                            </div>
                         </div>
 
-                        <div className="mt-4">
-                            <Label htmlFor="observations" className="form-label">Caracteristicas fisicas</Label>
-                            <Input
-                                type="textarea"
-                                id="observations"
-                                name="observations"
-                                value={formik.values.observations}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                placeholder="Ej: Marca de nacimiento"
-                            />
+                        {/* Sección: Características físicas */}
+                        <div className="card mb-3 shadow-sm">
+                            <div className="card-header fw-semibold" style={{ backgroundColor: '#ede7f6' }}>
+                                <i className="ri-scales-3-line me-2" style={{ color: '#7c4dff' }}></i>Características físicas
+                            </div>
+                            <div className="card-body">
+                                <div className="d-flex gap-3">
+                                    <div className="w-50">
+                                        <Label htmlFor="sex" className="form-label">Sexo</Label>
+                                        <Input
+                                            type="select"
+                                            id="sex"
+                                            name="sex"
+                                            value={formik.values.sex}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            invalid={formik.touched.sex && !!formik.errors.sex}
+                                        >
+                                            <option value="male">Macho</option>
+                                            <option value="female">Hembra</option>
+                                        </Input>
+                                        {formik.touched.sex && formik.errors.sex && (
+                                            <FormFeedback>{formik.errors.sex}</FormFeedback>
+                                        )}
+                                    </div>
+
+                                    <div className="w-50">
+                                        <Label htmlFor="weight" className="form-label">Peso (kg)</Label>
+                                        <Input
+                                            type="number"
+                                            id="weight"
+                                            name="weight"
+                                            value={formik.values.weight}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            invalid={formik.touched.weight && !!formik.errors.weight}
+                                        />
+                                        {formik.touched.weight && formik.errors.weight && (
+                                            <FormFeedback>{formik.errors.weight}</FormFeedback>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="mt-3">
+                                    <Label htmlFor="observations" className="form-label">Observaciones</Label>
+                                    <Input
+                                        type="textarea"
+                                        id="observations"
+                                        name="observations"
+                                        value={formik.values.observations}
+                                        onChange={formik.handleChange}
+                                        onBlur={formik.handleBlur}
+                                        placeholder="Ej: Marca de nacimiento"
+                                    />
+                                </div>
+                            </div>
                         </div>
 
                         <div className="d-flex mt-3 justify-content-end">
@@ -618,6 +665,13 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
                                                                 <div>{formik.values.sourceFarm}</div>
                                                             </div>
                                                         )}
+
+                                                    {formik.values.origin === "purchased" && (
+                                                        <div className="col-md-6">
+                                                            <label className="fw-semibold">Precio de compra</label>
+                                                            <div>${formik.values.purchasePrice?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</div>
+                                                        </div>
+                                                    )}
 
                                                 </div>
                                             </div>

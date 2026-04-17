@@ -262,6 +262,7 @@ export interface PigData {
     originDetail?: string;
     sourceFarm?: string;
     arrivalDate?: Date | null;
+    purchasePrice?: number;
     status: 'alive' | 'sold' | 'slaughtered' | 'dead' | 'discarded';
     currentStage: 'piglet' | 'weaning' | 'fattening' | 'breeder' | '';
     sex: 'male' | 'female' | '';
@@ -276,6 +277,7 @@ export interface PigData {
         observations?: string | null;
     };
     historyChanges: PigHistoryChanges[];
+    feedings: any[];
     feedAdministrationHistory: FeedAdministrationHistoryEntry[];
     medications: PigMedicationEntry[];
     medicationPackagesHistory: medicationPackagesEntry[];

@@ -32,11 +32,13 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
         originDetail?: string;
         sourceFarm?: string;
         arrivalDate?: Date | null;
+        purchasePrice?: number;
     }>({
         origin: '',
         originDetail: '',
         sourceFarm: '',
         arrivalDate: null,
+        purchasePrice: 0,
     })
     const [pigsBatch, setPigsBatch] = useState<PigData[]>([]);
     const [pigsBatchLength, setPigsBatchLength] = useState<number | ''>(0);
@@ -82,6 +84,8 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
 
         if ((sharedBatchAttributes.origin === "purchased" || sharedBatchAttributes.origin === "donated") && !sharedBatchAttributes.sourceFarm) return false;
 
+        if (sharedBatchAttributes.origin === "purchased" && (!sharedBatchAttributes.purchasePrice || sharedBatchAttributes.purchasePrice <= 0)) return false;
+
         return true;
     };
 
@@ -116,12 +120,14 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                 originDetail: sharedBatchAttributes.originDetail,
                 sourceFarm: sharedBatchAttributes.sourceFarm,
                 arrivalDate: sharedBatchAttributes.arrivalDate,
+                purchasePrice: sharedBatchAttributes.origin === 'purchased' ? sharedBatchAttributes.purchasePrice : undefined,
                 status: 'alive',
                 currentStage: '',
                 sex: '',
                 weight: 0,
                 observations: '',
                 historyChanges: [],
+                feedings: [],
                 discarded: false,
                 medications: [],
                 medicationPackagesHistory: [],
@@ -191,89 +197,75 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
             <TabContent activeTab={activeStep}>
                 <TabPane tabId={1}>
                     <>
-                        <div className="border rounded p-3 shadow-sm bg-light mb-3">
-
-                            <div className="d-flex justify-content-between align-items-center mb-3">
-                                <h5 className="mb-0 fw-bold">Información del lote</h5>
-
-                                <span className="badge bg-info text-dark px-3 py-2 fs-6">
-                                    {sharedBatchAttributes.origin === "born" && "Nacidos en granja"}
-                                    {sharedBatchAttributes.origin === "purchased" && "Comprados"}
-                                    {sharedBatchAttributes.origin === "donated" && "Donados"}
-                                    {sharedBatchAttributes.origin === "other" && "Otro origen"}
-                                </span>
+                        {/* Sección: Información del lote */}
+                        <div className="card mb-3 shadow-sm">
+                            <div className="card-header fw-semibold d-flex justify-content-between align-items-center" style={{ backgroundColor: '#e3f2fd' }}>
+                                <span><i className="ri-group-line me-2 text-primary"></i>Información del lote</span>
+                                {sharedBatchAttributes.origin && (
+                                    <Badge color="primary" className="px-3 py-2">
+                                        {sharedBatchAttributes.origin === "born" && "Nacidos en granja"}
+                                        {sharedBatchAttributes.origin === "purchased" && "Comprados"}
+                                        {sharedBatchAttributes.origin === "donated" && "Donados"}
+                                        {sharedBatchAttributes.origin === "other" && "Otro origen"}
+                                    </Badge>
+                                )}
                             </div>
-
-                            <div className="d-flex gap-3">
-                                <div className="w-50">
-                                    <Label className="form-label fw-semibold">Número de cerdos</Label>
-                                    <Input
-                                        type="number"
-                                        value={pigsBatchLength}
-                                        onChange={(e) => {
-                                            const value = e.target.value;
-
-                                            if (value === '') {
-                                                setPigsBatchLength('');
-                                                return;
+                            <div className="card-body">
+                                <div className="d-flex gap-3">
+                                    <div className="w-50">
+                                        <Label className="form-label fw-semibold">Número de cerdos</Label>
+                                        <Input
+                                            type="number"
+                                            value={pigsBatchLength}
+                                            onChange={(e) => {
+                                                const value = e.target.value;
+                                                if (value === '') {
+                                                    setPigsBatchLength('');
+                                                    return;
+                                                }
+                                                setPigsBatchLength(Number(value));
+                                            }}
+                                            onBlur={() => {
+                                                if (pigsBatchLength === '') setPigsBatchLength(0);
+                                            }}
+                                            onFocus={() => {
+                                                if (pigsBatchLength === 0) setPigsBatchLength('');
+                                            }}
+                                        />
+                                    </div>
+                                    <div className="w-50">
+                                        <Label className="form-label fw-semibold">Origen</Label>
+                                        <Input
+                                            type="select"
+                                            value={sharedBatchAttributes.origin}
+                                            onChange={(e) =>
+                                                setSharedBatchAttributes(p => ({ ...p, origin: e.target.value as any }))
                                             }
-
-                                            setPigsBatchLength(Number(value));
-                                        }}
-                                        onBlur={() => {
-                                            if (pigsBatchLength === '') {
-                                                setPigsBatchLength(0);
-                                            }
-                                        }}
-                                        onFocus={() => {
-                                            if (pigsBatchLength === 0) {
-                                                setPigsBatchLength('');
-                                            }
-                                        }}
-                                        className="shadow-sm"
-                                    />
-                                </div>
-
-                                <div className="w-50">
-                                    <Label className="form-label fw-semibold">Origen</Label>
-                                    <Input
-                                        type="select"
-                                        className="shadow-sm"
-                                        value={sharedBatchAttributes.origin}
-                                        onChange={(e) =>
-                                            setSharedBatchAttributes(p => ({ ...p, origin: e.target.value as any }))
-                                        }
-                                    >
-                                        <option value="">Seleccione una opcion</option>
-                                        {/* <option value="born">Nacido en la granja</option> */}
-                                        <option value="purchased">Comprado</option>
-                                        <option value="donated">Donado</option>
-                                        <option value="other">Otro</option>
-                                    </Input>
+                                        >
+                                            <option value="">Seleccione una opcion</option>
+                                            {/* <option value="born">Nacido en la granja</option> */}
+                                            <option value="purchased">Comprado</option>
+                                            <option value="donated">Donado</option>
+                                            <option value="other">Otro</option>
+                                        </Input>
+                                    </div>
                                 </div>
                             </div>
+                        </div>
 
-                            <div className="d-flex gap-2">
-                                {sharedBatchAttributes.origin !== '' && (
-                                    <>
-                                        {sharedBatchAttributes.origin === 'other' && (
-                                            <div className="mt-4 w-50">
-                                                <Label className="form-label fw-semibold">Detalle del origen</Label>
-                                                <Input
-                                                    className="shadow-sm"
-                                                    value={sharedBatchAttributes.originDetail}
-                                                    onChange={(e) =>
-                                                        setSharedBatchAttributes(p => ({ ...p, originDetail: e.target.value }))
-                                                    }
-                                                />
-                                            </div>
-                                        )}
-
+                        {/* Sección: Origen (condicional) */}
+                        {sharedBatchAttributes.origin !== '' && (
+                            <div className="card mb-3 shadow-sm">
+                                <div className="card-header fw-semibold" style={{ backgroundColor: '#e8f5e9' }}>
+                                    <i className="ri-map-pin-line me-2 text-success"></i>Datos de origen
+                                </div>
+                                <div className="card-body">
+                                    <div className="d-flex gap-3">
                                         {sharedBatchAttributes.origin !== 'born' && (
-                                            <div className="mt-4 w-50">
+                                            <div className="w-50">
                                                 <Label className="form-label fw-semibold">Fecha de llegada</Label>
                                                 <DatePicker
-                                                    className="form-control shadow-sm"
+                                                    className="form-control"
                                                     value={sharedBatchAttributes.arrivalDate ?? undefined}
                                                     onChange={(value: Date[]) => {
                                                         if (value[0]) setSharedBatchAttributes(p => ({ ...p, arrivalDate: value[0] }));
@@ -285,10 +277,9 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
 
                                         {(sharedBatchAttributes.origin === 'purchased' ||
                                             sharedBatchAttributes.origin === 'donated') && (
-                                                <div className="mt-4 w-50">
+                                                <div className="w-50">
                                                     <Label className="form-label fw-semibold">Granja de origen</Label>
                                                     <Input
-                                                        className="shadow-sm"
                                                         value={sharedBatchAttributes.sourceFarm}
                                                         onChange={(e) =>
                                                             setSharedBatchAttributes(p => ({ ...p, sourceFarm: e.target.value }))
@@ -296,159 +287,186 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                                                     />
                                                 </div>
                                             )}
-                                    </>
-                                )}
+                                    </div>
+
+                                    <div className="d-flex gap-3 mt-3">
+                                        {sharedBatchAttributes.origin === 'other' && (
+                                            <div className="w-50">
+                                                <Label className="form-label fw-semibold">Detalle del origen</Label>
+                                                <Input
+                                                    value={sharedBatchAttributes.originDetail}
+                                                    onChange={(e) =>
+                                                        setSharedBatchAttributes(p => ({ ...p, originDetail: e.target.value }))
+                                                    }
+                                                />
+                                            </div>
+                                        )}
+
+                                        {sharedBatchAttributes.origin === 'purchased' && (
+                                            <div className="w-50">
+                                                <Label className="form-label fw-semibold">Precio de compra por cerdo ($)</Label>
+                                                <Input
+                                                    type="number"
+                                                    step="0.01"
+                                                    value={sharedBatchAttributes.purchasePrice}
+                                                    onChange={(e) =>
+                                                        setSharedBatchAttributes(p => ({ ...p, purchasePrice: parseFloat(e.target.value) || 0 }))
+                                                    }
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* ESTADO DEL LOTE */}
                         {!isBatchInfoComplete() ? (
-                            <div className="mt-3 p-3 border rounded text-center bg-warning-subtle">
-                                <FiAlertCircle size={26} className="text-warning" />
-                                <p className="mt-2 mb-0 fw-semibold">Completa la información del lote para continuar</p>
+                            <div className="p-4 border rounded text-center" style={{ backgroundColor: '#e3f2fd' }}>
+                                <FiAlertCircle size={26} className="text-primary" />
+                                <p className="mt-2 mb-0 fw-semibold text-primary">Completa la información del lote para continuar</p>
                             </div>
                         ) : (
                             pigsBatch.length > 0 && (
-                                <div className="mt-3">
-                                    <SimpleBar style={{ maxHeight: 400, paddingRight: 10 }}>
+                                <>
+                                    {/* Lista de cerdos */}
+                                    <div className="card shadow-sm">
+                                        <div className="card-header fw-semibold" style={{ backgroundColor: '#e0f2f1' }}>
+                                            <i className="ri-list-check-2 me-2 text-info"></i>Datos individuales ({pigsBatch.length} cerdos)
+                                        </div>
+                                        <div className="card-body p-0">
+                                            <SimpleBar style={{ maxHeight: 400, padding: '16px' }}>
+                                                {pigsBatch.map((pig, index) => (
+                                                    <div key={index} className="border rounded p-3 mb-3 bg-white" style={{ borderLeft: "5px solid #0d6efd" }}>
+                                                        <div className="d-flex justify-content-between align-items-center mb-3">
+                                                            <span className="fw-bold">Cerdo #{index + 1}</span>
+                                                            <Badge color={pig.sex === 'male' ? "info" : pig.sex === 'female' ? "danger" : "secondary"}>
+                                                                {pig.sex === 'male' && (<><FaMars className="me-1" />Macho</>)}
+                                                                {pig.sex === 'female' && (<><FaVenus className="me-1" />Hembra</>)}
+                                                                {!pig.sex && "Sin sexo"}
+                                                            </Badge>
+                                                        </div>
 
-                                        {pigsBatch.map((pig, index) => (
-                                            <div key={index} className="border rounded p-3 mb-3 shadow-sm bg-white" style={{ borderLeft: "6px solid #0d6efd" }}>
+                                                        <div className="d-flex gap-2 mb-2">
+                                                            <div className="w-100">
+                                                                <Label className="form-label" style={{ fontSize: '12px' }}>Fecha de nacimiento</Label>
+                                                                <DatePicker
+                                                                    value={pig.birthdate ?? undefined}
+                                                                    className={`form-control form-control-sm ${pigsErrors[index]?.birthdate ? "is-invalid" : ""}`}
+                                                                    onChange={(date: Date[]) => {
+                                                                        if (date[0]) {
+                                                                            const newPigs = [...pigsBatch];
+                                                                            newPigs[index].birthdate = date[0];
+                                                                            setPigsBatch(newPigs);
+                                                                        }
+                                                                    }}
+                                                                    options={{ dateFormat: 'd/m/Y' }}
+                                                                />
+                                                                {pigsErrors[index]?.birthdate && (
+                                                                    <FormFeedback>{pigsErrors[index]?.birthdate}</FormFeedback>
+                                                                )}
+                                                            </div>
+                                                            <div className="w-100">
+                                                                <Label className="form-label" style={{ fontSize: '12px' }}>Raza</Label>
+                                                                <Input
+                                                                    type="select"
+                                                                    bsSize="sm"
+                                                                    className={pigsErrors[index]?.breed ? "is-invalid" : ""}
+                                                                    value={pig.breed}
+                                                                    onChange={(e) => {
+                                                                        const newPigs = [...pigsBatch];
+                                                                        newPigs[index].breed = e.target.value;
+                                                                        setPigsBatch(newPigs);
+                                                                    }}
+                                                                >
+                                                                    <option value="">Seleccionar</option>
+                                                                    <option value="Yorkshire">Yorkshire</option>
+                                                                    <option value="Landrace">Landrace</option>
+                                                                    <option value="Duroc">Duroc</option>
+                                                                    <option value="Hampshire">Hampshire</option>
+                                                                    <option value="Pietrain">Pietrain</option>
+                                                                    <option value="Berkshire">Berkshire</option>
+                                                                    <option value="Large White">Large White</option>
+                                                                    <option value="Chester White">Chester White</option>
+                                                                    <option value="Poland China">Poland China</option>
+                                                                    <option value="Tamworth">Tamworth</option>
+                                                                </Input>
+                                                                {pigsErrors[index]?.breed && (
+                                                                    <FormFeedback>{pigsErrors[index]?.breed}</FormFeedback>
+                                                                )}
+                                                            </div>
+                                                            <div className="w-100">
+                                                                <Label className="form-label" style={{ fontSize: '12px' }}>Etapa</Label>
+                                                                <Input
+                                                                    type="select"
+                                                                    bsSize="sm"
+                                                                    className={pigsErrors[index]?.currentStage ? "is-invalid" : ""}
+                                                                    value={pig.currentStage}
+                                                                    onChange={(e) => {
+                                                                        const newPigs = [...pigsBatch];
+                                                                        newPigs[index].currentStage = e.target.value as any;
+                                                                        setPigsBatch(newPigs);
+                                                                    }}
+                                                                >
+                                                                    <option value="">Seleccionar</option>
+                                                                    <option value="piglet">Lechón</option>
+                                                                    <option value="weaning">Destete</option>
+                                                                    <option value="fattening">Engorda</option>
+                                                                    <option value="breeder">Reproductor</option>
+                                                                </Input>
+                                                                {pigsErrors[index]?.currentStage && (
+                                                                    <FormFeedback>{pigsErrors[index]?.currentStage}</FormFeedback>
+                                                                )}
+                                                            </div>
+                                                        </div>
 
-                                                <div className="d-flex justify-content-between mb-3">
-                                                    <p className="fw-bold fs-5 m-0">Cerdo #{index + 1}</p>
-
-                                                    <Badge className="" color={pig.sex === 'male' ? "info" : pig.sex === 'female' ? "danger" : "secondary"}>
-                                                        {pig.sex === 'male' && (<><FaMars /> Macho</>)}
-                                                        {pig.sex === 'female' && (<><FaVenus /> Hembra</>)}
-                                                        {!pig.sex && "Sin sexo"}
-                                                    </Badge>
-                                                </div>
-
-                                                {/* CAMPOS DEL CERDO */}
-                                                <div className="d-flex gap-2">
-
-                                                    {/* Birthdate */}
-                                                    <div className="w-100">
-                                                        <Label className="form-label fw-semibold">Fecha de nacimiento</Label>
-                                                        <DatePicker
-                                                            value={pig.birthdate ?? undefined}
-                                                            className={`form-control shadow-sm ${pigsErrors[index]?.birthdate ? "is-invalid" : ""}`}
-                                                            onChange={(date: Date[]) => {
-                                                                if (date[0]) {
-                                                                    const newPigs = [...pigsBatch];
-                                                                    newPigs[index].birthdate = date[0];
-                                                                    setPigsBatch(newPigs);
-                                                                }
-                                                            }}
-                                                            options={{ dateFormat: 'd/m/Y' }}
-                                                        />
-                                                        {pigsErrors[index]?.birthdate && (
-                                                            <FormFeedback>{pigsErrors[index]?.birthdate}</FormFeedback>
-                                                        )}
+                                                        <div className="d-flex gap-2">
+                                                            <div className="w-50">
+                                                                <Label className="form-label" style={{ fontSize: '12px' }}>Sexo</Label>
+                                                                <Input
+                                                                    type="select"
+                                                                    bsSize="sm"
+                                                                    className={pigsErrors[index]?.sex ? "is-invalid" : ""}
+                                                                    value={pig.sex}
+                                                                    onChange={(e) => {
+                                                                        const newPigs = [...pigsBatch];
+                                                                        newPigs[index].sex = e.target.value as any;
+                                                                        setPigsBatch(newPigs);
+                                                                    }}
+                                                                >
+                                                                    <option value="">Seleccionar</option>
+                                                                    <option value="male">Macho</option>
+                                                                    <option value="female">Hembra</option>
+                                                                </Input>
+                                                                {pigsErrors[index]?.sex && (
+                                                                    <FormFeedback>{pigsErrors[index]?.sex}</FormFeedback>
+                                                                )}
+                                                            </div>
+                                                            <div className="w-50">
+                                                                <Label className="form-label" style={{ fontSize: '12px' }}>Peso (kg)</Label>
+                                                                <Input
+                                                                    type="number"
+                                                                    step="0.01"
+                                                                    bsSize="sm"
+                                                                    className={pigsErrors[index]?.weight ? "is-invalid" : ""}
+                                                                    value={pig.weight}
+                                                                    onChange={(e) => {
+                                                                        const newPigs = [...pigsBatch];
+                                                                        newPigs[index].weight = parseFloat(e.target.value) || 0;
+                                                                        setPigsBatch(newPigs);
+                                                                    }}
+                                                                />
+                                                                {pigsErrors[index]?.weight && (
+                                                                    <FormFeedback>{pigsErrors[index]?.weight}</FormFeedback>
+                                                                )}
+                                                            </div>
+                                                        </div>
                                                     </div>
-
-                                                    {/* Breed */}
-                                                    <div className="w-100">
-                                                        <Label className="form-label fw-semibold">Raza</Label>
-                                                        <Input
-                                                            type="select"
-                                                            className={`shadow-sm ${pigsErrors[index]?.breed ? "is-invalid" : ""}`}
-                                                            value={pig.breed}
-                                                            onChange={(e) => {
-                                                                const newPigs = [...pigsBatch];
-                                                                newPigs[index].breed = e.target.value;
-                                                                setPigsBatch(newPigs);
-                                                            }}
-                                                        >
-                                                            <option value="">Seleccione una raza</option>
-                                                            <option value="Yorkshire">Yorkshire</option>
-                                                            <option value="Landrace">Landrace</option>
-                                                            <option value="Duroc">Duroc</option>
-                                                            <option value="Hampshire">Hampshire</option>
-                                                            <option value="Pietrain">Pietrain</option>
-                                                            <option value="Berkshire">Berkshire</option>
-                                                            <option value="Large White">Large White</option>
-                                                            <option value="Chester White">Chester White</option>
-                                                            <option value="Poland China">Poland China</option>
-                                                            <option value="Tamworth">Tamworth</option>
-                                                        </Input>
-                                                        {pigsErrors[index]?.breed && (
-                                                            <FormFeedback>{pigsErrors[index]?.breed}</FormFeedback>
-                                                        )}
-                                                    </div>
-
-                                                    {/* Stage */}
-                                                    <div className="w-100">
-                                                        <Label className="form-label fw-semibold">Etapa actual</Label>
-                                                        <Input
-                                                            type="select"
-                                                            className={`shadow-sm ${pigsErrors[index]?.currentStage ? "is-invalid" : ""}`}
-                                                            value={pig.currentStage}
-                                                            onChange={(e) => {
-                                                                const newPigs = [...pigsBatch];
-                                                                newPigs[index].currentStage = e.target.value as any;
-                                                                setPigsBatch(newPigs);
-                                                            }}
-                                                        >
-                                                            <option value="">Seleccione una etapa</option>
-                                                            <option value="piglet">Lechón</option>
-                                                            <option value="weaning">Destete</option>
-                                                            <option value="fattening">Engorda</option>
-                                                            <option value="breeder">Reproductor</option>
-                                                        </Input>
-                                                        {pigsErrors[index]?.currentStage && (
-                                                            <FormFeedback>{pigsErrors[index]?.currentStage}</FormFeedback>
-                                                        )}
-                                                    </div>
-
-                                                    {/* Sex */}
-                                                    <div className="w-100">
-                                                        <Label className="form-label fw-semibold">Sexo</Label>
-                                                        <Input
-                                                            type="select"
-                                                            className={`shadow-sm ${pigsErrors[index]?.sex ? "is-invalid" : ""}`}
-                                                            value={pig.sex}
-                                                            onChange={(e) => {
-                                                                const newPigs = [...pigsBatch];
-                                                                newPigs[index].sex = e.target.value as any;
-                                                                setPigsBatch(newPigs);
-                                                            }}
-                                                        >
-                                                            <option value="">Seleccionar</option>
-                                                            <option value="male">Macho</option>
-                                                            <option value="female">Hembra</option>
-                                                        </Input>
-                                                        {pigsErrors[index]?.sex && (
-                                                            <FormFeedback>{pigsErrors[index]?.sex}</FormFeedback>
-                                                        )}
-                                                    </div>
-
-                                                    {/* Weight */}
-                                                    <div className="w-100">
-                                                        <Label className="form-label fw-semibold">Peso (kg)</Label>
-                                                        <Input
-                                                            type="number"
-                                                            step="0.01"
-                                                            className={`shadow-sm ${pigsErrors[index]?.weight ? "is-invalid" : ""}`}
-                                                            value={pig.weight}
-                                                            onChange={(e) => {
-                                                                const newPigs = [...pigsBatch];
-                                                                newPigs[index].weight = parseFloat(e.target.value) || 0;
-                                                                setPigsBatch(newPigs);
-                                                            }}
-                                                        />
-                                                        {pigsErrors[index]?.weight && (
-                                                            <FormFeedback>{pigsErrors[index]?.weight}</FormFeedback>
-                                                        )}
-                                                    </div>
-
-                                                </div>
-                                            </div>
-                                        ))}
-
-                                    </SimpleBar>
-                                </div>
+                                                ))}
+                                            </SimpleBar>
+                                        </div>
+                                    </div>
+                                </>
                             )
                         )}
 
@@ -543,6 +561,22 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                                             <span className="fw-semibold">{sharedBatchAttributes.sourceFarm || "-"}</span>
                                         </div>
                                     )}
+
+                                {sharedBatchAttributes.origin === "purchased" && (
+                                    <div>
+                                        <span className="text-muted d-block">Precio por cerdo</span>
+                                        <span className="fw-semibold">${sharedBatchAttributes.purchasePrice?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                                    </div>
+                                )}
+
+                                {sharedBatchAttributes.origin === "purchased" && (
+                                    <div>
+                                        <span className="text-muted d-block">Costo total del lote</span>
+                                        <span className="fw-bold fs-5 text-success">
+                                            ${((sharedBatchAttributes.purchasePrice || 0) * Number(pigsBatchLength)).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+                                        </span>
+                                    </div>
+                                )}
 
                             </CardBody>
                         </Card>
