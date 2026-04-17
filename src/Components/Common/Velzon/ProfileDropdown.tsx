@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import defaultProfileImage from '../../../assets/images/default-profile-mage.jpg';
 import { getLoggedinUser } from 'helpers/api_helper';
 import { userRoles } from 'common/user_roles';
+import { disconnectNotificationSocket } from 'helpers/socketService';
 
 const ProfileDropdown = () => {
+    const dispatch = useDispatch();
     const navigate = useNavigate();
     const userLogged = getLoggedinUser();
     const [isProfileDropdown, setIsProfileDropdown] = useState(false);
@@ -17,10 +19,10 @@ const ProfileDropdown = () => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
 
-
     const clicLogout = () => {
-        navigate('/login')
-        sessionStorage.removeItem('authUser')
+        disconnectNotificationSocket(dispatch);
+        sessionStorage.removeItem('authUser');
+        navigate('/login');
     }
 
     const roleLabels = userLogged.role.map((role: string) => {

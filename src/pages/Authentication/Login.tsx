@@ -11,9 +11,12 @@ import Aurora from "Components/Common/Velzon/Aurora";
 import LogoSystem from '../../assets/images/logo.png'
 import systemLogo from '../../assets/images/system-logo.png'
 import loginBanner from '../../assets/images/login_banner.png'
+import { useDispatch } from "react-redux";
+import { connectNotificationSocket } from "helpers/socketService";
 
 const CoverSignIn = () => {
     document.title = "Inicio de sesión | MFarm";
+    const dispatch = useDispatch();
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
     const [showDisabledAlert, setShowDisabledAlert] = useState<boolean>(false);
@@ -32,6 +35,7 @@ const CoverSignIn = () => {
             sessionStorage.setItem('authUser', JSON.stringify(user));
             setAuthorization(user.token);
             configContext?.setUserLogged(getLoggedinUser());
+            connectNotificationSocket(user.token, dispatch);
             history('/home');
         } catch (error: any) {
             console.error(error.response);

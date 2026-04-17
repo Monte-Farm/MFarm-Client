@@ -664,3 +664,40 @@ export interface Litter {
     medicationPackagesHistory: GroupMedicationPackagesHistory[];
     vaccinationPlansHistory: GroupVaccinationPlansHistory[];
 }
+
+export type NotificationType =
+    | 'birth_approaching'
+    | 'reproduction'
+    | 'stage_change'
+    | 'weight_goal'
+    | 'feeding_alert'
+    | 'health_alert'
+    | 'group_management'
+    | 'inventory'
+    | 'system';
+
+export type NotificationEntityType =
+    | 'birth'
+    | 'pregnancy'
+    | 'insemination'
+    | 'pig'
+    | 'group'
+    | 'income';
+
+export interface NotificationEntity {
+    type: NotificationEntityType;
+    id: string;
+    code?: string;
+}
+
+export interface NotificationData {
+    _id: string;
+    userId: string;
+    type: NotificationType;
+    title: string;
+    message: string;
+    read: boolean;
+    entity?: NotificationEntity;
+    createdAt: string;
+    updatedAt: string;
+}

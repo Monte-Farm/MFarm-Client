@@ -9,14 +9,16 @@ import AccountReducer from "./auth/register/reducer";
 import ForgetPasswordReducer from "./auth/forgetpwd/reducer";
 import ProfileReducer from "./auth/profile/reducer";
 
-
+// Notifications
+import NotificationsReducer from "./notifications/reducer";
 
 const rootReducer = combineReducers({
     Layout: LayoutReducer,
     Login: LoginReducer,
     Account: AccountReducer,
     ForgetPassword: ForgetPasswordReducer,
-    Profile: ProfileReducer
+    Profile: ProfileReducer,
+    Notifications: NotificationsReducer,
 });
 
 export default rootReducer;
