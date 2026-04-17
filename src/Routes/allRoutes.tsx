@@ -96,6 +96,10 @@ import ProfitabilityReport from "pages/Reports/Finance/ProfitabilityReport";
 import OperationsClosingReport from "pages/Reports/Finance/OperationsClosingReport";
 import CashFlowReport from "pages/Reports/Finance/CashFlowReport";
 import SupplierStatementReport from "pages/Reports/Finance/SupplierStatementReport";
+import ExpensesReport from "pages/Reports/Finance/ExpensesReport";
+
+//Expenses
+import ViewExpenses from "pages/Expenses/ViewExpenses";
 
 //Reports - Sales
 import SalesReport from "pages/Reports/Sales/SalesReport";
@@ -150,6 +154,9 @@ const authProtectedRoutes = [
 
   //Purchase orders
   { path: '/purchase_orders/view_purchase_orders', component: <ViewPurchaseOrders /> },
+
+  //Expenses
+  { path: '/expenses/view_expenses', component: <ViewExpenses /> },
 
   //Pigs
   { path: '/pigs/view_pigs', component: <ViewPigs /> },
@@ -229,6 +236,7 @@ const authProtectedRoutes = [
   { path: '/reports/finance/operations-closing', component: <OperationsClosingReport /> },
   { path: '/reports/finance/cash-flow', component: <CashFlowReport /> },
   { path: '/reports/finance/supplier-statement', component: <SupplierStatementReport /> },
+  { path: '/reports/finance/expenses', component: <ExpensesReport /> },
 
   //Reports - Sales
   { path: '/reports/sales/overview', component: <SalesReport /> },

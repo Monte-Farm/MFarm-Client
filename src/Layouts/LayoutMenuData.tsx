@@ -69,6 +69,9 @@ const Navdata = () => {
     const [isSows, setIsSows] = useState<boolean>(false);
     const [isBoars, setIsBoars] = useState<boolean>(false);
 
+    //Expenses
+    const [isExpenses, setIsExpenses] = useState<boolean>(false);
+
     //Sale
     const [isSale, setIsSale] = useState<boolean>(false);
     const [isPigSales, setIsPigSales] = useState<boolean>(false);
@@ -405,6 +408,20 @@ const Navdata = () => {
                     stateVariables: isPigSales,
                 },
             ]
+        },
+        {
+            id: 'expenses',
+            label: 'Gastos',
+            icon: 'ri-wallet-3-line',
+            link: '/expenses/view_expenses',
+            roles: ['farm_manager'],
+            stateVariables: isExpenses,
+            click: function (e: any) {
+                e.preventDefault();
+                setIsExpenses(!isExpenses);
+                setIscurrentState('Expenses');
+                updateIconSidebar(e);
+            },
         },
 
         // ===================== OPERACIÓN =====================
@@ -919,6 +936,13 @@ const Navdata = () => {
                             id: 6,
                             label: "Estado de Cuenta Proveedor",
                             link: "/reports/finance/supplier-statement",
+                            roles: ['Superadmin', 'farm_manager'],
+                            parentId: "financeReports"
+                        },
+                        {
+                            id: 7,
+                            label: "Gastos Operativos",
+                            link: "/reports/finance/expenses",
                             roles: ['Superadmin', 'farm_manager'],
                             parentId: "financeReports"
                         },
