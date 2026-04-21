@@ -32,6 +32,7 @@ const Home = () => {
     const renderDashboard = () => {
         switch (activeRole) {
             case "Superadmin":
+                return null;
             case "farm_manager":
                 return <ExecutiveDashboard startDate={startDate} endDate={endDate} />;
             case "warehouse_manager":
