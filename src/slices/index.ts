@@ -15,6 +15,9 @@ import NotificationsReducer from "./notifications/reducer";
 // AI Chat
 import AiReducer from "./ai/reducer";
 
+// Configurations
+import ConfigurationsReducer from "./configurations/reducer";
+
 const rootReducer = combineReducers({
     Layout: LayoutReducer,
     Login: LoginReducer,
@@ -23,6 +26,7 @@ const rootReducer = combineReducers({
     Profile: ProfileReducer,
     Notifications: NotificationsReducer,
     Ai: AiReducer,
+    Configurations: ConfigurationsReducer,
 });
 
 export default rootReducer;

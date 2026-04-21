@@ -85,12 +85,22 @@ const ProfileDropdown = () => {
                             </DropdownItem>
                         )}
 
-                        <DropdownItem className='p-0'>
-                            <Link to="/settings" className="dropdown-item d-flex align-items-center py-2">
-                                <i className="mdi mdi-cog-outline fs-18 me-2 text-primary"></i>
-                                <span>Configuración</span>
-                            </Link>
-                        </DropdownItem>
+                        {userLogged.role.includes('Superadmin') && (
+                            <DropdownItem className='p-0'>
+                                <Link to="/configurations/global" className="dropdown-item d-flex align-items-center py-2">
+                                    <i className="mdi mdi-cog-outline fs-18 me-2 text-primary"></i>
+                                    <span>Configuración</span>
+                                </Link>
+                            </DropdownItem>
+                        )}
+                        {userLogged.role.includes('farm_manager') && (
+                            <DropdownItem className='p-0'>
+                                <Link to="/configurations/farm" className="dropdown-item d-flex align-items-center py-2">
+                                    <i className="mdi mdi-cog-outline fs-18 me-2 text-primary"></i>
+                                    <span>Configuración</span>
+                                </Link>
+                            </DropdownItem>
+                        )}
                     </div>
 
                     <div className="border-top py-1">

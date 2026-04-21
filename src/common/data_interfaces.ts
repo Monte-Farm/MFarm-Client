@@ -701,3 +701,65 @@ export interface NotificationData {
     createdAt: string;
     updatedAt: string;
 }
+
+export interface GlobalConfiguration {
+    _id?: string;
+    companyName: string;
+    currency: string;
+    currencySymbol: string;
+    decimals: number;
+    locale: string;
+    timezone: string;
+    dateFormat: string;
+    unitMeasurements: string[];
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface GestationThresholds {
+    closeToFarrowDays: number;
+    farrowingPendingDays: number;
+    overdueFarrowingDays: number;
+}
+
+export interface LactationThresholds {
+    weanReadyDays: number;
+    weanOverdueDays: number;
+}
+
+export interface WeaningThresholds {
+    fatteningReadyDays: number;
+    fatteningOverdueDays: number;
+}
+
+export interface FatteningThresholds {
+    saleReadyDays: number;
+    saleOverdueDays: number;
+}
+
+export interface ReplacementThresholds {
+    minAge: number;
+    maxAge: number;
+}
+
+export interface ProductionCycles {
+    gestation: GestationThresholds;
+    lactation: LactationThresholds;
+    weaning: WeaningThresholds;
+    fattening: FatteningThresholds;
+    replacement: ReplacementThresholds;
+}
+
+export interface NotificationsConfig {
+    farrowingAdvanceNotificationDays: number;
+    stageChangeAdvanceNotificationDays: number;
+}
+
+export interface FarmConfiguration {
+    _id?: string;
+    farmId: string;
+    productionCycles: ProductionCycles;
+    notifications: NotificationsConfig;
+    createdAt?: string;
+    updatedAt?: string;
+}

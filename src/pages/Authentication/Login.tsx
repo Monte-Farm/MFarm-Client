@@ -13,10 +13,11 @@ import systemLogo from '../../assets/images/system-logo.png'
 import loginBanner from '../../assets/images/login_banner.png'
 import { useDispatch } from "react-redux";
 import { connectNotificationSocket } from "helpers/socketService";
+import { fetchGlobalConfig } from "slices/configurations/thunk";
 
 const CoverSignIn = () => {
     document.title = "Inicio de sesión | MFarm";
-    const dispatch = useDispatch();
+    const dispatch: any = useDispatch();
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
     const [showDisabledAlert, setShowDisabledAlert] = useState<boolean>(false);
@@ -36,6 +37,7 @@ const CoverSignIn = () => {
             setAuthorization(user.token);
             configContext?.setUserLogged(getLoggedinUser());
             connectNotificationSocket(user.token, dispatch);
+            dispatch(fetchGlobalConfig());
             history('/home');
         } catch (error: any) {
             console.error(error.response);

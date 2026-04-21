@@ -110,6 +110,11 @@ import CatalogsReport from "pages/Reports/Catalogs/CatalogsReport";
 import GroupTraceabilityReport from "pages/Reports/Traceability/GroupTraceabilityReport";
 import AuditReport from "pages/Reports/Audit/AuditReport";
 
+//Configurations
+import GlobalConfiguration from "pages/Configurations/GlobalConfiguration";
+import FarmConfiguration from "pages/Configurations/FarmConfiguration";
+import RoleProtected from "./RoleProtected";
+
 
 const authProtectedRoutes = [
 
@@ -246,6 +251,24 @@ const authProtectedRoutes = [
   { path: '/reports/catalogs', component: <CatalogsReport /> },
   { path: '/reports/traceability', component: <GroupTraceabilityReport /> },
   { path: '/reports/audit', component: <AuditReport /> },
+
+  //Configurations
+  {
+    path: '/configurations/global',
+    component: (
+      <RoleProtected allowedRoles={['Superadmin']}>
+        <GlobalConfiguration />
+      </RoleProtected>
+    ),
+  },
+  {
+    path: '/configurations/farm',
+    component: (
+      <RoleProtected allowedRoles={['farm_manager']}>
+        <FarmConfiguration />
+      </RoleProtected>
+    ),
+  },
 
 
   // this route should be at the end of all other routes
