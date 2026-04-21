@@ -4,6 +4,8 @@ import remarkGfm from 'remark-gfm';
 import { AiMessage } from 'slices/ai/reducer';
 import AiChatTyping from './AiChatTyping';
 import AiChatSuggestions from './AiChatSuggestions';
+import AiChart from './AiChart';
+import AiReportCard from './AiReportCard';
 
 interface AiChatMessagesProps {
     messages: AiMessage[];
@@ -41,17 +43,25 @@ const AiChatMessages: React.FC<AiChatMessagesProps> = ({ messages, sending, load
                     className={`ai-chat-bubble ai-chat-bubble--${msg.role}`}
                 >
                     {msg.role === 'assistant' ? (
-                        <div className="ai-chat-bubble__markdown">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                {msg.text}
-                            </ReactMarkdown>
-                        </div>
+                        <>
+                            {msg.chart && msg.chart.series && msg.chart.series.length > 0 && (
+                                <AiChart spec={msg.chart} />
+                            )}
+                            {msg.report && <AiReportCard report={msg.report} />}
+                            {msg.text && (
+                                <div className="ai-chat-bubble__markdown">
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                        {msg.text}
+                                    </ReactMarkdown>
+                                </div>
+                            )}
+                        </>
                     ) : (
                         <div className="ai-chat-bubble__text">{msg.text}</div>
                     )}
                 </div>
             ))}
-            {sending && <AiChatTyping />}
+            {sending && messages[messages.length - 1]?.role !== 'assistant' && <AiChatTyping />}
         </div>
     );
 };

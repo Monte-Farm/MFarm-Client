@@ -1,13 +1,19 @@
 import { APIClient } from 'helpers/api_helper';
+import config from 'config';
 import {
+    appendDeltaToLastAssistant,
     appendMessage,
     resetConversation,
     setActiveConversationId,
+    setChartOnLastAssistant,
     setError,
     setLoadingHistory,
     setMessages,
+    setReportOnLastAssistant,
     setSending,
     AiMessage,
+    AiReport,
+    ChartSpec,
 } from './reducer';
 
 const api = new APIClient();
@@ -70,6 +76,17 @@ export const loadConversation = (conversationId: string) => async (dispatch: any
     }
 };
 
+const getAuthToken = (): string | null => {
+    try {
+        const raw = sessionStorage.getItem('authUser');
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        return parsed?.token ?? null;
+    } catch {
+        return null;
+    }
+};
+
 export const sendMessage = (message: string) => async (dispatch: any, getState: any) => {
     const trimmed = message.trim();
     if (!trimmed) return;
@@ -80,21 +97,131 @@ export const sendMessage = (message: string) => async (dispatch: any, getState: 
     dispatch(setSending(true));
     dispatch(setError(null));
 
+    const token = getAuthToken();
+    let assistantStarted = false;
+    let fullReply = '';
+    let chartApplied = false;
+    let reportApplied = false;
+    let streamConversationId: string | null = activeConversationId;
+
     try {
         const body: { message: string; conversationId?: string } = { message: trimmed };
         if (activeConversationId) body.conversationId = activeConversationId;
 
-        const res = await api.create('/ai/chat', body);
-        const data = res.data.data;
+        const res = await fetch(`${config.api.API_URL}/ai/chat/stream`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token ?? ''}`,
+                Accept: 'text/event-stream',
+            },
+            body: JSON.stringify(body),
+        });
 
-        if (data?.conversationId && data.conversationId !== activeConversationId) {
-            dispatch(setActiveConversationId(data.conversationId));
-            persistConversationId(data.conversationId);
+        if (!res.ok || !res.body) {
+            const backendMessage = await res.text().catch(() => undefined);
+            dispatch(setError(errorMessageFromStatus(res.status, backendMessage)));
+            dispatch(setSending(false));
+            return;
         }
-        dispatch(appendMessage({ role: 'assistant', text: data?.reply ?? '' }));
+
+        const ensureAssistantBubble = () => {
+            if (!assistantStarted) {
+                dispatch(appendMessage({ role: 'assistant', text: '' }));
+                assistantStarted = true;
+            }
+        };
+
+        const handleEvent = (evt: any) => {
+            switch (evt?.type) {
+                case 'start':
+                    if (evt.conversationId) {
+                        streamConversationId = evt.conversationId;
+                        if (evt.conversationId !== activeConversationId) {
+                            dispatch(setActiveConversationId(evt.conversationId));
+                            persistConversationId(evt.conversationId);
+                        }
+                    }
+                    break;
+                case 'text_delta':
+                    if (typeof evt.text === 'string' && evt.text) {
+                        ensureAssistantBubble();
+                        fullReply += evt.text;
+                        dispatch(appendDeltaToLastAssistant(evt.text));
+                    }
+                    break;
+                case 'chart_spec':
+                    if (evt.chart) {
+                        ensureAssistantBubble();
+                        dispatch(setChartOnLastAssistant(evt.chart as ChartSpec));
+                        chartApplied = true;
+                    }
+                    break;
+                case 'report_ready':
+                    if (evt.report) {
+                        ensureAssistantBubble();
+                        dispatch(setReportOnLastAssistant(evt.report as AiReport));
+                        reportApplied = true;
+                    }
+                    break;
+                case 'done':
+                    if (evt.conversationId && evt.conversationId !== streamConversationId) {
+                        streamConversationId = evt.conversationId;
+                        dispatch(setActiveConversationId(evt.conversationId));
+                        persistConversationId(evt.conversationId);
+                    }
+                    // Fallback: if we got no deltas but a final reply, use it.
+                    if (!fullReply && typeof evt.reply === 'string' && evt.reply) {
+                        ensureAssistantBubble();
+                        dispatch(appendDeltaToLastAssistant(evt.reply));
+                    }
+                    // Fallback: chart_spec may not have arrived; done carries it too.
+                    if (!chartApplied && evt.chart) {
+                        ensureAssistantBubble();
+                        dispatch(setChartOnLastAssistant(evt.chart as ChartSpec));
+                    }
+                    if (!reportApplied && evt.report) {
+                        ensureAssistantBubble();
+                        dispatch(setReportOnLastAssistant(evt.report as AiReport));
+                    }
+                    break;
+                case 'error':
+                    dispatch(setError(evt.message || errorMessageFromStatus()));
+                    break;
+                default:
+                    // Ignore thinking_*, tool_*, iteration — not rendered in MVP.
+                    break;
+            }
+        };
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+
+            let idx: number;
+            while ((idx = buffer.indexOf('\n\n')) !== -1) {
+                const frame = buffer.slice(0, idx);
+                buffer = buffer.slice(idx + 2);
+                for (const line of frame.split('\n')) {
+                    if (!line.startsWith('data:')) continue;
+                    const payload = line.slice(5).trim();
+                    if (!payload) continue;
+                    try {
+                        handleEvent(JSON.parse(payload));
+                    } catch {
+                        // ignore malformed frame
+                    }
+                }
+            }
+        }
     } catch (err: any) {
         const status = err?.response?.status;
-        const backendMessage = err?.response?.data?.statusMessage;
+        const backendMessage = err?.response?.data?.statusMessage ?? err?.message;
         dispatch(setError(errorMessageFromStatus(status, backendMessage)));
     } finally {
         dispatch(setSending(false));
