@@ -39,7 +39,6 @@ import CompleteOrder from "pages/Orders/CompleteOrder";
 import SubwarehouseInventory from "pages/Subwarehouse/SubwarehouseInventory";
 import SubwarehouseIncomes from "pages/Subwarehouse/SubwarehouseIncomes";
 import SubwarehouseOutcomes from "pages/Subwarehouse/SubwarehouseOutcomes";
-import WarehouseConfiguration from "pages/Configuration/WarehouseConfiguration";
 import ViewPurchaseOrders from "pages/PurchaseOrders/ViewPurchaseOrders";
 import ViewPigs from "pages/Pigs/ViewPigs";
 import ViewFarms from "pages/Farms/ViewFarms";
@@ -124,10 +123,6 @@ const authProtectedRoutes = [
   //Farms
   { path: '/farms/view_farms', component: <ViewFarms /> },
   { path: '/farms/farm_details/:farm_id', component: <FarmDetails /> },
-
-  //Warehouse
-  { path: '/warehouse/configuration', component: <WarehouseConfiguration /> },
-
 
   //Warehouse - Inventory
   { path: '/warehouse/inventory/view_inventory', component: <ViewInventory /> },

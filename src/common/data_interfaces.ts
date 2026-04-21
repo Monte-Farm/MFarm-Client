@@ -131,20 +131,6 @@ export interface ProductCategory {
     value: string;
 }
 
-export interface ConfigurationData {
-    farmName: string;
-    farmLogo: string;
-    farmIcon: string;
-    unitMeasurements: string[];
-    productCategories: ProductCategory[];
-    incomeTypes: string[];
-    outcomeTypes: string[];
-    userRoles: string[];
-    taxes: Tax[];
-    supplierCategories: string[];
-}
-
-
 export interface UserData {
     _id?: string
     profile_image?: string
