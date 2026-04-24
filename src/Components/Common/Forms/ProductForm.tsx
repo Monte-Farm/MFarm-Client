@@ -5,7 +5,9 @@ import { useFormik } from "formik";
 import FileUploader from "../Shared/FileUploader";
 import { ProductCategory, ProductData } from "common/data_interfaces";
 import { ConfigContext } from "App";
+import { PRODUCT_TYPES } from "common/enums/products.enums";
 import AlertMessage from "../Shared/AlertMesagge";
+import { useGlobalConfig } from "hooks/useGlobalConfig";
 
 interface ProductFormProps {
     initialData?: ProductData;
@@ -21,6 +23,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const configContext = useContext(ConfigContext)
     const [selectedCategory, setSelectedCategory] = useState<ProductCategory>()
+    const { globalConfig } = useGlobalConfig();
+    const unitOptions = globalConfig?.unitMeasurements ?? [];
 
     const validationSchema = Yup.object({
         id: Yup.string()
@@ -51,6 +55,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
             status: true,
             unit_measurement: "",
             image: "",
+            type: PRODUCT_TYPES.RAW,
         },
         enableReinitialize: true,
         validationSchema,
@@ -183,13 +188,9 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                                 invalid={formik.touched.unit_measurement && !!formik.errors.unit_measurement}
                             >
                                 <option value="">Seleccione una unidad</option>
-                                <option value="kg">Kilogramo (kg)</option>
-                                <option value="g">Gramo (g)</option>
-                                <option value="l">Litro (l)</option>
-                                <option value="ml">Mililitro (ml)</option>
-                                <option value="unit">Unidad</option>
-                                <option value="bag">Saco</option>
-                                <option value="box">Caja</option>
+                                {unitOptions.map((u) => (
+                                    <option key={u} value={u}>{u}</option>
+                                ))}
                             </Input>
                             {formik.touched.unit_measurement && formik.errors.unit_measurement && (
                                 <FormFeedback>{formik.errors.unit_measurement}</FormFeedback>

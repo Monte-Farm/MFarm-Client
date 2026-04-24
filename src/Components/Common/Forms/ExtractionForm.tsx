@@ -13,6 +13,7 @@ import { HttpStatusCode } from "axios";
 import SuccessModal from "../Shared/SuccessModal";
 import PigDetailsModal from "../Details/DetailsPigModal";
 import SelectableTable from "../Tables/SelectableTable";
+import { useGlobalConfig } from "hooks/useGlobalConfig";
 
 
 interface ExtractionFormProps {
@@ -24,6 +25,8 @@ interface ExtractionFormProps {
 const ExtractionForm: React.FC<ExtractionFormProps> = ({ initialData, onSave, onCancel }) => {
     const configContext = useContext(ConfigContext);
     const userLogged = getLoggedinUser();
+    const { globalConfig } = useGlobalConfig();
+    const unitOptions = globalConfig?.unitMeasurements ?? [];
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [loading, setLoading] = useState<boolean>(false)
     const [activeStep, setActiveStep] = useState<number>(1);
@@ -387,15 +390,19 @@ const ExtractionForm: React.FC<ExtractionFormProps> = ({ initialData, onSave, on
                             <div className="mt-4 w-100">
                                 <Label htmlFor="unit_measurement" className="form-label">Unidad de medida</Label>
                                 <Input
-                                    type="text"
+                                    type="select"
                                     id="unit_measurement"
                                     name="unit_measurement"
                                     value={formik.values.unit_measurement}
                                     onChange={formik.handleChange}
                                     onBlur={formik.handleBlur}
                                     invalid={formik.touched.unit_measurement && !!formik.errors.unit_measurement}
-                                    placeholder="Ej: ml"
-                                />
+                                >
+                                    <option value="">Seleccione una unidad</option>
+                                    {unitOptions.map((u) => (
+                                        <option key={u} value={u}>{u}</option>
+                                    ))}
+                                </Input>
                                 {formik.touched.unit_measurement && formik.errors.unit_measurement && (
                                     <FormFeedback>{formik.errors.unit_measurement}</FormFeedback>
                                 )}

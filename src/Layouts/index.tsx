@@ -5,6 +5,7 @@ import withRouter from '../Components/Common/Velzon/withRouter';
 //import Components
 import Header from './Header';
 import Sidebar from './Sidebar';
+import AiChatWidget from '../Components/Common/AiChat/AiChatWidget';
 
 
 //import actions
@@ -146,6 +147,7 @@ const Layout = (props : any) => {
                     {/*<Footer />*/}
                 </div>
             </div>
+            <AiChatWidget />
             {/* <RightSidebar /> */}
         </React.Fragment>
 

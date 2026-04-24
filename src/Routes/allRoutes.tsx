@@ -39,7 +39,6 @@ import CompleteOrder from "pages/Orders/CompleteOrder";
 import SubwarehouseInventory from "pages/Subwarehouse/SubwarehouseInventory";
 import SubwarehouseIncomes from "pages/Subwarehouse/SubwarehouseIncomes";
 import SubwarehouseOutcomes from "pages/Subwarehouse/SubwarehouseOutcomes";
-import WarehouseConfiguration from "pages/Configuration/WarehouseConfiguration";
 import ViewPurchaseOrders from "pages/PurchaseOrders/ViewPurchaseOrders";
 import ViewPigs from "pages/Pigs/ViewPigs";
 import ViewFarms from "pages/Farms/ViewFarms";
@@ -60,6 +59,7 @@ import DiscardedPigs from "pages/Pigs/DiscardedPigs";
 import ViewMedicationPackages from "pages/Medication/ViewMedicationPackages";
 import ViewVaccinationPlans from "pages/Medication/ViewVaccinePlans";
 import ViewFeedingPackages from "pages/Feeding/ViewFeedingPackages";
+import ViewFeedPreparations from "pages/Feeding/ViewFeedPreparations";
 import ViewLitters from "pages/Lactation/ViewLitters";
 import LitterDetails from "pages/Lactation/LitterDetails";
 import InventoryPigs from "pages/Pigs/InventoryPigs";
@@ -95,6 +95,14 @@ import ProfitabilityReport from "pages/Reports/Finance/ProfitabilityReport";
 import OperationsClosingReport from "pages/Reports/Finance/OperationsClosingReport";
 import CashFlowReport from "pages/Reports/Finance/CashFlowReport";
 import SupplierStatementReport from "pages/Reports/Finance/SupplierStatementReport";
+import ExpensesReport from "pages/Reports/Finance/ExpensesReport";
+
+//Expenses
+import ViewExpenses from "pages/Expenses/ViewExpenses";
+
+//Finance - Period Closing
+import PeriodClosingList from "pages/Finance/PeriodClosing/PeriodClosingList";
+import PeriodClosingDetail from "pages/Finance/PeriodClosing/PeriodClosingDetail";
 
 //Reports - Sales
 import SalesReport from "pages/Reports/Sales/SalesReport";
@@ -105,6 +113,11 @@ import CatalogsReport from "pages/Reports/Catalogs/CatalogsReport";
 import GroupTraceabilityReport from "pages/Reports/Traceability/GroupTraceabilityReport";
 import AuditReport from "pages/Reports/Audit/AuditReport";
 
+//Configurations
+import GlobalConfiguration from "pages/Configurations/GlobalConfiguration";
+import FarmConfiguration from "pages/Configurations/FarmConfiguration";
+import RoleProtected from "./RoleProtected";
+
 
 const authProtectedRoutes = [
 
@@ -114,10 +127,6 @@ const authProtectedRoutes = [
   //Farms
   { path: '/farms/view_farms', component: <ViewFarms /> },
   { path: '/farms/farm_details/:farm_id', component: <FarmDetails /> },
-
-  //Warehouse
-  { path: '/warehouse/configuration', component: <WarehouseConfiguration /> },
-
 
   //Warehouse - Inventory
   { path: '/warehouse/inventory/view_inventory', component: <ViewInventory /> },
@@ -149,6 +158,13 @@ const authProtectedRoutes = [
 
   //Purchase orders
   { path: '/purchase_orders/view_purchase_orders', component: <ViewPurchaseOrders /> },
+
+  //Expenses
+  { path: '/expenses/view_expenses', component: <ViewExpenses /> },
+
+  //Finance - Period Closing
+  { path: '/finance/period-closing', component: <PeriodClosingList /> },
+  { path: '/finance/period-closing/:closingId', component: <PeriodClosingDetail /> },
 
   //Pigs
   { path: '/pigs/view_pigs', component: <ViewPigs /> },
@@ -192,6 +208,7 @@ const authProtectedRoutes = [
 
   //Feeding
   { path: "/feeding/view_feeding_packages", component: <ViewFeedingPackages /> },
+  { path: "/feeding/view_feed_preparations", component: <ViewFeedPreparations /> },
   { path: "/feeding/view_feeding_consumption", component: <ViewFeedingConsumption /> },
 
   //Lactation
@@ -227,6 +244,7 @@ const authProtectedRoutes = [
   { path: '/reports/finance/operations-closing', component: <OperationsClosingReport /> },
   { path: '/reports/finance/cash-flow', component: <CashFlowReport /> },
   { path: '/reports/finance/supplier-statement', component: <SupplierStatementReport /> },
+  { path: '/reports/finance/expenses', component: <ExpensesReport /> },
 
   //Reports - Sales
   { path: '/reports/sales/overview', component: <SalesReport /> },
@@ -236,6 +254,24 @@ const authProtectedRoutes = [
   { path: '/reports/catalogs', component: <CatalogsReport /> },
   { path: '/reports/traceability', component: <GroupTraceabilityReport /> },
   { path: '/reports/audit', component: <AuditReport /> },
+
+  //Configurations
+  {
+    path: '/configurations/global',
+    component: (
+      <RoleProtected allowedRoles={['Superadmin']}>
+        <GlobalConfiguration />
+      </RoleProtected>
+    ),
+  },
+  {
+    path: '/configurations/farm',
+    component: (
+      <RoleProtected allowedRoles={['farm_manager']}>
+        <FarmConfiguration />
+      </RoleProtected>
+    ),
+  },
 
 
   // this route should be at the end of all other routes

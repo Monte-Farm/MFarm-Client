@@ -10,7 +10,6 @@ import {
 import { getLoggedinUser } from "helpers/api_helper"
 import { FiCheckCircle, FiAlertCircle } from "react-icons/fi"
 import { useNavigate } from "react-router-dom"
-import 'simplebar-react/dist/simplebar.min.css';
 import { Column } from "common/data/data_types"
 import CustomTable from "Components/Common/Tables/CustomTable"
 import PDFViewer from "Components/Common/Shared/PDFViewer"

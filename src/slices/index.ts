@@ -9,14 +9,28 @@ import AccountReducer from "./auth/register/reducer";
 import ForgetPasswordReducer from "./auth/forgetpwd/reducer";
 import ProfileReducer from "./auth/profile/reducer";
 
+// Notifications
+import NotificationsReducer from "./notifications/reducer";
 
+// AI Chat
+import AiReducer from "./ai/reducer";
+
+// Configurations
+import ConfigurationsReducer from "./configurations/reducer";
+
+// Period Closing
+import PeriodClosingReducer from "./periodClosing/reducer";
 
 const rootReducer = combineReducers({
     Layout: LayoutReducer,
     Login: LoginReducer,
     Account: AccountReducer,
     ForgetPassword: ForgetPasswordReducer,
-    Profile: ProfileReducer
+    Profile: ProfileReducer,
+    Notifications: NotificationsReducer,
+    Ai: AiReducer,
+    Configurations: ConfigurationsReducer,
+    PeriodClosing: PeriodClosingReducer,
 });
 
 export default rootReducer;

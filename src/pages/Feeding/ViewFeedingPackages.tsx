@@ -6,18 +6,19 @@ import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import { getLoggedinUser } from "helpers/api_helper";
+import { FEEDING_PACKAGE_URLS } from "helpers/feeding_urls";
 import { useContext, useEffect, useState } from "react";
 import { FiInbox } from "react-icons/fi";
 import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader } from "reactstrap";
 
 const ViewFeedingPackages = () => {
-    document.title = 'Ver paquetes de alimentacion | System Management'
+    document.title = 'Ver recetas de alimentación | System Management'
     const configContext = useContext(ConfigContext);
     const userLogged = getLoggedinUser();
     const [loading, setLoading] = useState<boolean>(true);
     const [feedingPackages, setFeedingPackages] = useState<any[]>([]);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
-    const [modals, setModals] = useState({ create: false, details: false, update: false, delete: false, activate: false });
+    const [modals, setModals] = useState({ create: false, details: false, update: false });
     const [selectedFeedingPackage, setSelectedFeedingPackage] = useState<any>(null);
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
@@ -77,10 +78,13 @@ const ViewFeedingPackages = () => {
         {
             header: "Acciones",
             accessor: "action",
-            render: (value: any, row: any) => (
+            render: (_value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="farm-primary-button btn-icon" onClick={() => { setSelectedFeedingPackage(row); toggleModal('details') }}>
+                    <Button className="farm-primary-button btn-icon" title="Ver detalles" onClick={() => { setSelectedFeedingPackage(row); toggleModal('details') }}>
                         <i className="ri-eye-fill align-middle"></i>
+                    </Button>
+                    <Button color="warning" className="btn-icon" title="Editar receta" onClick={() => { setSelectedFeedingPackage(row); toggleModal('update') }}>
+                        <i className="ri-pencil-line align-middle"></i>
                     </Button>
                 </div>
             ),
@@ -91,12 +95,8 @@ const ViewFeedingPackages = () => {
         if (!configContext || !userLogged) return;
         try {
             setLoading(true)
-            const [feedingResponse] = await Promise.all([
-                configContext.axiosHelper.get(`${configContext.apiUrl}/feeding_package/find_by_farm/${userLogged.farm_assigned}`),
-            ])
-
+            const feedingResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/${FEEDING_PACKAGE_URLS.findByFarm(userLogged.farm_assigned)}`);
             setFeedingPackages(feedingResponse.data.data);
-
         } catch (error) {
             console.error('Error fetching data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al cargar los datos, intentelo mas tarde' })
@@ -118,14 +118,14 @@ const ViewFeedingPackages = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Ver paquetes de alimentacion"} pageTitle={"Alimentacion"} />
+                <BreadCrumb title={"Ver recetas de alimentación"} pageTitle={"Alimentación"} />
 
                 <Card className="rounded">
                     <CardHeader>
                         <div className="d-flex">
                             <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>
                                 <i className="ri-add-line me-2  " />
-                                Crear paquete de alimentacion
+                                Crear receta de alimentación
                             </Button>
                         </div>
                     </CardHeader>
@@ -133,7 +133,7 @@ const ViewFeedingPackages = () => {
                         {feedingPackages.length === 0 ? (
                             <>
                                 <FiInbox className="text-muted" size={48} style={{ marginBottom: 10 }} />
-                                <span className="fs-5 text-muted">Aún no hay paquetes de alimentacion registrados</span>
+                                <span className="fs-5 text-muted">Aún no hay recetas registradas</span>
                             </>
                         ) : (
                             <CustomTable columns={feedingPackagesColumns} data={feedingPackages} showPagination={true} rowsPerPage={10} />
@@ -144,14 +144,27 @@ const ViewFeedingPackages = () => {
 
 
             <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("create")}>Nuevo paquete de alimentacion</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("create")}>Nueva receta de alimentación</ModalHeader>
                 <ModalBody>
-                    <FeedingPackageForm onSave={() => { toggleModal('create'); fetchData(); }} onCancel={() => { }} />
+                    <FeedingPackageForm onSave={() => { toggleModal('create'); fetchData(); }} onCancel={() => toggleModal('create', false)} />
+                </ModalBody>
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.update} toggle={() => toggleModal("update")} backdrop='static' keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal("update")}>Editar receta de alimentación</ModalHeader>
+                <ModalBody>
+                    {selectedFeedingPackage?._id && (
+                        <FeedingPackageForm
+                            feedingPackageId={selectedFeedingPackage._id}
+                            onSave={() => { toggleModal('update'); fetchData(); }}
+                            onCancel={() => toggleModal('update', false)}
+                        />
+                    )}
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => { toggleModal("details"); fetchData() }}>Detalles de paquete de medicación</ModalHeader>
+                <ModalHeader toggle={() => { toggleModal("details"); fetchData() }}>Detalles de la receta</ModalHeader>
                 <ModalBody>
                     <FeedingPackageDetails feedingPackageId={selectedFeedingPackage?._id} />
                 </ModalBody>

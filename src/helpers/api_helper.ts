@@ -1,5 +1,6 @@
 import axios, { AxiosResponse, AxiosRequestConfig } from 'axios';
 import config from "../config";
+import { emitPeriodClosed } from "../utils/periodClosedEvents";
 
 const { api } = config;
 
@@ -14,7 +15,38 @@ const token = JSON.parse(authUser) ? JSON.parse(authUser).token : null;
 if (token)
   axios.defaults.headers.common["Authorization"] = "Bearer " + token;
 
-// intercepting to capture errors
+// Response interceptor: catch 409 PERIOD_CLOSED and fire global event
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const data = error?.response?.data;
+    if (error?.response?.status === 409 && data?.error === "PERIOD_CLOSED") {
+      emitPeriodClosed({
+        closingId: data.closingId,
+        periodLabel: data.periodLabel,
+        periodStart: data.periodStart,
+        periodEnd: data.periodEnd,
+        closedAt: data.closedAt,
+        closedBy: data.closedBy || null,
+        message: data.message || "No se puede operar en este periodo porque ya fue cerrado.",
+      });
+      // Mark the error so caller catches can skip showing their own generic error UI
+      if (error) (error as any).__periodClosed = true;
+    }
+    return Promise.reject(error);
+  }
+);
+
+/**
+ * Helper for catch blocks: returns true if the error was already handled by the
+ * global PERIOD_CLOSED modal and the caller should NOT show any additional UI.
+ */
+export const isPeriodClosedError = (err: any): boolean => {
+  if (!err) return false;
+  if (err.__periodClosed) return true;
+  const data = err?.response?.data;
+  return err?.response?.status === 409 && data?.error === "PERIOD_CLOSED";
+};
 
 /**
  * Sets the default authorization

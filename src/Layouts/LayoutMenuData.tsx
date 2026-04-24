@@ -69,6 +69,12 @@ const Navdata = () => {
     const [isSows, setIsSows] = useState<boolean>(false);
     const [isBoars, setIsBoars] = useState<boolean>(false);
 
+    //Expenses
+    const [isExpenses, setIsExpenses] = useState<boolean>(false);
+
+    //Period Closing
+    const [isPeriodClosing, setIsPeriodClosing] = useState<boolean>(false);
+
     //Sale
     const [isSale, setIsSale] = useState<boolean>(false);
     const [isPigSales, setIsPigSales] = useState<boolean>(false);
@@ -406,6 +412,34 @@ const Navdata = () => {
                 },
             ]
         },
+        {
+            id: 'expenses',
+            label: 'Gastos',
+            icon: 'ri-wallet-3-line',
+            link: '/expenses/view_expenses',
+            roles: ['farm_manager'],
+            stateVariables: isExpenses,
+            click: function (e: any) {
+                e.preventDefault();
+                setIsExpenses(!isExpenses);
+                setIscurrentState('Expenses');
+                updateIconSidebar(e);
+            },
+        },
+        {
+            id: 'periodClosing',
+            label: 'Cierre de Periodos',
+            icon: 'ri-lock-2-line',
+            link: '/finance/period-closing',
+            roles: ['Superadmin', 'farm_manager'],
+            stateVariables: isPeriodClosing,
+            click: function (e: any) {
+                e.preventDefault();
+                setIsPeriodClosing(!isPeriodClosing);
+                setIscurrentState('PeriodClosing');
+                updateIconSidebar(e);
+            },
+        },
 
         // ===================== OPERACIÓN =====================
         {
@@ -733,7 +767,7 @@ const Navdata = () => {
             subItems: [
                 {
                     id: "feedingPackages",
-                    label: "Paquetes de alimentación",
+                    label: "Recetas de alimentación",
                     link: "/feeding/view_feeding_packages",
                     roles: ['farm_manager', 'veterinarian',],
                     parentId: "feeding",
@@ -742,6 +776,13 @@ const Navdata = () => {
                         setIsFeedingPackage(!isFeedingPackage)
                     },
                     stateVariables: isFeedingPackage,
+                },
+                {
+                    id: "feedPreparations",
+                    label: "Preparaciones de alimento",
+                    link: "/feeding/view_feed_preparations",
+                    roles: ['farm_manager', 'veterinarian',],
+                    parentId: "feeding",
                 },
             ]
         },
@@ -896,7 +937,7 @@ const Navdata = () => {
                         },
                         {
                             id: 4,
-                            label: "Cierre de Operacion",
+                            label: "Estado de Resultados",
                             link: "/reports/finance/operations-closing",
                             roles: ['Superadmin', 'farm_manager'],
                             parentId: "financeReports"
@@ -912,6 +953,13 @@ const Navdata = () => {
                             id: 6,
                             label: "Estado de Cuenta Proveedor",
                             link: "/reports/finance/supplier-statement",
+                            roles: ['Superadmin', 'farm_manager'],
+                            parentId: "financeReports"
+                        },
+                        {
+                            id: 7,
+                            label: "Gastos Operativos",
+                            link: "/reports/finance/expenses",
                             roles: ['Superadmin', 'farm_manager'],
                             parentId: "financeReports"
                         },

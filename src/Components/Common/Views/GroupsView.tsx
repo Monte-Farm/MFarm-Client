@@ -12,8 +12,8 @@ import GroupWithDrawForm from "Components/Common/Forms/GroupWithdrawForm";
 import GroupInsertForm from "Components/Common/Forms/GroupInsertForm";
 import GroupTransferForm from "Components/Common/Forms/GroupTransferForm";
 import BulkGroupMedicationAssignmentModal from "Components/Common/Forms/BulkGroupMedicationAssignmentModal";
-import BulkGroupFeedingAssignmentModal from "Components/Common/Forms/BulkGroupFeedingAssignmentModal";
 import BulkGroupStageChangeModal from "Components/Common/Forms/BulkGroupStageChangeModal";
+import BulkFeedAdministrationModal from "Components/Common/Forms/BulkFeedAdministrationModal";
 import BulkGroupHealthEventModal from "Components/Common/Forms/BulkGroupHealthEventModal";
 import KPI from "Components/Common/Graphics/Kpi";
 import { FaArrowDown, FaArrowUp, FaBalanceScale, FaLayerGroup, FaMars, FaPiggyBank, FaVenus, FaWeight } from "react-icons/fa";
@@ -51,7 +51,7 @@ const GroupsView: React.FC<GroupsViewProps> = ({
 
     const [selectedGroups, setSelectedGroups] = useState<any[]>([]);
     const [bulkMedicationModalOpen, setBulkMedicationModalOpen] = useState(false);
-    const [bulkFeedingModalOpen, setBulkFeedingModalOpen] = useState(false);
+    const [bulkFeedAdminModalOpen, setBulkFeedAdminModalOpen] = useState(false);
     const [bulkStageChangeModalOpen, setBulkStageChangeModalOpen] = useState(false);
     const [bulkHealthEventModalOpen, setBulkHealthEventModalOpen] = useState(false);
 
@@ -60,11 +60,6 @@ const GroupsView: React.FC<GroupsViewProps> = ({
     };
 
     const handleBulkMedicationSuccess = () => {
-        fetchData();
-        setSelectedGroups([]);
-    };
-
-    const handleBulkFeedingSuccess = () => {
         fetchData();
         setSelectedGroups([]);
     };
@@ -131,10 +126,10 @@ const GroupsView: React.FC<GroupsViewProps> = ({
                                         <Button
                                             color="info"
                                             className="btn-sm"
-                                            onClick={() => setBulkFeedingModalOpen(true)}
+                                            onClick={() => setBulkFeedAdminModalOpen(true)}
                                         >
                                             <i className="ri-restaurant-line me-1"></i>
-                                            Asignar Alimentación
+                                            Administrar alimento
                                         </Button>
                                         <Button
                                             color="warning"
@@ -221,11 +216,12 @@ const GroupsView: React.FC<GroupsViewProps> = ({
                 onSuccess={handleBulkMedicationSuccess}
             />
 
-            <BulkGroupFeedingAssignmentModal
-                isOpen={bulkFeedingModalOpen}
-                onClose={() => setBulkFeedingModalOpen(false)}
-                selectedGroups={selectedGroups}
-                onSuccess={handleBulkFeedingSuccess}
+            <BulkFeedAdministrationModal
+                isOpen={bulkFeedAdminModalOpen}
+                onClose={() => setBulkFeedAdminModalOpen(false)}
+                targetType="group"
+                selectedTargets={selectedGroups}
+                onSuccess={() => { fetchData(); setSelectedGroups([]); }}
             />
 
             <BulkGroupStageChangeModal

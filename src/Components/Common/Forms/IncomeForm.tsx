@@ -102,9 +102,9 @@ const productColumns: Column<any>[] = [
         render: (_, row) => <span>{row.quantity} {row.unit_measurement}</span>,
         bgColor: '#f0f0ff'
     },
-    { 
-        header: 'Precio Unitario', 
-        accessor: 'price', 
+    {
+        header: 'Precio Unitario',
+        accessor: 'price',
         type: "currency",
         bgColor: '#e6f0ff'
     },
@@ -201,6 +201,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
     const [selectedCurrency, setSelectecCurrency] = useState()
     const [mainWarehouseId, setMainWarehouseId] = useState<string>('')
+    const [entryMode, setEntryMode] = useState<"purchase_order" | "direct" | null>(null)
 
     function toggleArrowTab(tab: any) {
         if (activeStep !== tab) {
@@ -267,6 +268,27 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
         } catch (error) {
             console.error('Error fetching initial data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos iniciales, intentelo mas tarde' });
+        }
+    };
+
+    const fetchSuppliers = async () => {
+        if (!configContext) return;
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/supplier/find_supplier_status/${true}`);
+            setSuppliers(response.data.data);
+        } catch (error) {
+            console.error('Error obtaining suppliers:', error);
+        }
+    };
+
+    const fetchCatalogProducts = async () => {
+        if (!configContext) return;
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/product`);
+            const rawProducts = response.data.data.filter((p: any) => p.type === 'raw');
+            setProducts(rawProducts);
+        } catch (error) {
+            console.error('Error obtaining products:', error);
         }
     };
 
@@ -341,16 +363,31 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
     }
 
     const handleProductSelect = (selectedProductsData: Array<{ id: string; quantity: number; price: number }>) => {
-        formik.setFieldValue("products", selectedProductsData);
+        if (entryMode === "direct") {
+            const formikProducts = selectedProductsData.map((sp) => {
+                const productData = products.find((p: any) => p.id === sp.id) as any | undefined;
+                return { id: productData?._id || sp.id, quantity: sp.quantity, price: sp.price, totalPrice: sp.quantity * (sp.price || 0) };
+            });
+            formik.setFieldValue("products", formikProducts);
 
-        const updatedSelectedProducts: any = selectedProductsData.map((selectedProduct) => {
-            const productData = products.find((p: any) => p.id._id === selectedProduct.id) as any | undefined;
-            return productData
-                ? { ...productData.id, code: productData.id.id, ...selectedProduct }
-                : selectedProduct;
-        });
+            const updatedSelectedProducts: any = selectedProductsData.map((sp) => {
+                const productData = products.find((p: any) => p.id === sp.id) as any | undefined;
+                return productData
+                    ? { ...productData, code: productData.id, ...sp, id: productData._id }
+                    : sp;
+            });
+            setSelectedProducts(updatedSelectedProducts);
+        } else {
+            formik.setFieldValue("products", selectedProductsData);
 
-        setSelectedProducts(updatedSelectedProducts);
+            const updatedSelectedProducts: any = selectedProductsData.map((selectedProduct) => {
+                const productData = products.find((p: any) => p.id._id === selectedProduct.id) as any | undefined;
+                return productData
+                    ? { ...productData.id, code: productData.id.id, ...selectedProduct }
+                    : selectedProduct;
+            });
+            setSelectedProducts(updatedSelectedProducts);
+        }
     };
 
     const handleProductEdit = (updatedProducts: Array<{ id: string; quantity: number; price: number }>) => {
@@ -367,7 +404,27 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
         setSelectedProducts(updatedSelectedProducts);
     };
 
+    const selectEntryMode = (mode: "purchase_order" | "direct") => {
+        setEntryMode(mode);
+        if (mode === "direct") {
+            fetchSuppliers();
+            fetchCatalogProducts();
+            formik.setFieldValue('purchaseOrder', '');
+            setSelectedPurchaseOrder(null);
+            setHasSelectedPurchaseOrder(false);
+            toggleArrowTab(2);
+        }
+    };
+
+    const handleSupplierChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const supplierId = e.target.value;
+        const supplier = suppliers.find((s: any) => s._id === supplierId);
+        setSelectedSupplier(supplier || null);
+        formik.setFieldValue('origin.id', supplierId);
+    };
+
     const clicPurchaseOrder = (row: any) => {
+        setEntryMode("purchase_order");
         setSelectedPurchaseOrder(row);
         setProducts(row.products);
 
@@ -435,7 +492,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                 aria-controls="step-selectPurchaseOrder-tab"
                                 disabled
                             >
-                                Seleccionar orden de compra
+                                {entryMode === "direct" ? "Modo de entrada" : entryMode === "purchase_order" ? "Orden de compra" : "Seleccionar modo"}
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -492,148 +549,228 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
 
                 <TabContent activeTab={activeStep}>
                     <TabPane id="step-selectPurchaseOrder-tab" tabId={1}>
-                        <div className="d-flex gap-2 mb-1">
-                            <h5 className="text-muted">Ordenes de Compra</h5>
-                        </div>
-                        <SelectableTable columns={purchaseOrdersColumns} data={purchaseOrders} onSelect={(rows: any[]) => rows?.[0] && clicPurchaseOrder(rows[0])} selectionMode="single" showSearchAndFilter={false} showPagination={false} />
+                        {!entryMode ? (
+                            <div className="d-flex flex-column align-items-center gap-4 py-4">
+                                <h5 className="text-muted">¿Cómo desea registrar la entrada?</h5>
+                                <div className="d-flex gap-4 w-75">
+                                    <Card
+                                        className="w-50 text-center border cursor-pointer shadow-sm"
+                                        style={{ cursor: 'pointer' }}
+                                        onClick={() => selectEntryMode("purchase_order")}
+                                    >
+                                        <CardBody className="py-5">
+                                            <i className="ri-file-list-3-line text-primary" style={{ fontSize: '3rem' }}></i>
+                                            <h5 className="mt-3">Con orden de compra</h5>
+                                            <p className="text-muted mb-0">Seleccione una orden de compra existente para registrar la entrada de productos.</p>
+                                        </CardBody>
+                                    </Card>
+                                    <Card
+                                        className="w-50 text-center border cursor-pointer shadow-sm"
+                                        style={{ cursor: 'pointer' }}
+                                        onClick={() => selectEntryMode("direct")}
+                                    >
+                                        <CardBody className="py-5">
+                                            <i className="ri-add-box-line text-success" style={{ fontSize: '3rem' }}></i>
+                                            <h5 className="mt-3">Entrada directa</h5>
+                                            <p className="text-muted mb-0">Registre una entrada de productos sin necesidad de una orden de compra.</p>
+                                        </CardBody>
+                                    </Card>
+                                </div>
+                            </div>
+                        ) : entryMode === "purchase_order" ? (
+                            <div>
+                                <div className="d-flex justify-content-between align-items-center mb-1">
+                                    <h5 className="text-muted">Ordenes de Compra</h5>
+                                    <Button size="sm" className="btn" onClick={() => setEntryMode(null)}>
+                                        <i className="ri-arrow-go-back-line me-1"></i>Cambiar modo
+                                    </Button>
+                                </div>
+                                <SelectableTable columns={purchaseOrdersColumns} data={purchaseOrders} onSelect={(rows: any[]) => rows?.[0] && clicPurchaseOrder(rows[0])} selectionMode="single" showSearchAndFilter={false} showPagination={false} />
+                            </div>
+                        ) : null}
                     </TabPane>
 
                     <TabPane id="step-incomeData-tab" tabId={2}>
                         <div>
-                            <Row>
-                                <Col lg={6}>
-                                    <div className="">
-                                        <Label htmlFor="id" className="form-label">Identificador</Label>
-                                        <Input
-                                            type="text"
-                                            id="id"
-                                            name="id"
-                                            value={formik.values.id}
-                                            onChange={formik.handleChange}
-                                            onBlur={formik.handleBlur}
-                                            invalid={formik.touched.id && !!formik.errors.id}
-                                            disabled
-                                        />
-                                        {formik.touched.id && formik.errors.id && <FormFeedback>{formik.errors.id}</FormFeedback>}
-                                    </div>
-                                </Col>
-
-                                {/* Fecha de registro */}
-                                <Col lg={6}>
-                                    <div className="">
-                                        <Label htmlFor="date" className="form-label">Fecha de entrada</Label>
-                                        <DatePicker
-                                            id="date"
-                                            className={`form-control ${formik.touched.date && formik.errors.date ? 'is-invalid' : ''}`}
-                                            value={formik.values.date ?? undefined}
-                                            onChange={(date: Date[]) => {
-                                                if (date[0]) formik.setFieldValue('date', date[0]);
-                                            }}
-                                            options={{ dateFormat: 'd/m/Y' }}
-                                        />
-                                        {formik.touched.date && formik.errors.date && (
-                                            <FormFeedback className="d-block">{formik.errors.date as string}</FormFeedback>
+                            {entryMode === "direct" && (
+                                <div className="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 className="text-muted mb-0">Entrada directa</h5>
+                                    <Button className="btn" size="sm" onClick={() => { setEntryMode(null); toggleArrowTab(1); }}>
+                                        <i className="ri-arrow-go-back-line me-1"></i>Cambiar modo
+                                    </Button>
+                                </div>
+                            )}
+                            {/* Datos generales */}
+                            <Card className="shadow-sm">
+                                <CardHeader className="bg-light">
+                                    <h6 className="mb-0"><i className="ri-information-line me-2"></i>Datos generales</h6>
+                                </CardHeader>
+                                <CardBody>
+                                    <Row className="g-3">
+                                        <Col lg={entryMode === "direct" ? 3 : 6}>
+                                            <Label htmlFor="id" className="form-label">Identificador</Label>
+                                            <Input
+                                                type="text"
+                                                id="id"
+                                                name="id"
+                                                value={formik.values.id}
+                                                onChange={formik.handleChange}
+                                                onBlur={formik.handleBlur}
+                                                invalid={formik.touched.id && !!formik.errors.id}
+                                                disabled
+                                            />
+                                            {formik.touched.id && formik.errors.id && <FormFeedback>{formik.errors.id}</FormFeedback>}
+                                        </Col>
+                                        <Col lg={entryMode === "direct" ? 3 : 6}>
+                                            <Label htmlFor="date" className="form-label">Fecha de entrada</Label>
+                                            <DatePicker
+                                                id="date"
+                                                className={`form-control ${formik.touched.date && formik.errors.date ? 'is-invalid' : ''}`}
+                                                value={formik.values.date ?? undefined}
+                                                onChange={(date: Date[]) => {
+                                                    if (date[0]) formik.setFieldValue('date', date[0]);
+                                                }}
+                                                options={{ dateFormat: 'd/m/Y' }}
+                                            />
+                                            {formik.touched.date && formik.errors.date && (
+                                                <FormFeedback className="d-block">{formik.errors.date as string}</FormFeedback>
+                                            )}
+                                        </Col>
+                                        {entryMode === "direct" && (
+                                            <Col lg={6}>
+                                                <Label htmlFor="supplierSelect" className="form-label">Proveedor</Label>
+                                                <Input
+                                                    type="select"
+                                                    id="supplierSelect"
+                                                    value={formik.values.origin.id}
+                                                    onChange={handleSupplierChange}
+                                                    invalid={formik.touched.origin?.id && !formik.values.origin.id}
+                                                >
+                                                    <option value="">Seleccione un proveedor</option>
+                                                    {suppliers.map((supplier: any) => (
+                                                        <option key={supplier._id} value={supplier._id}>
+                                                            {supplier.name}
+                                                        </option>
+                                                    ))}
+                                                </Input>
+                                                {formik.touched.origin?.id && !formik.values.origin.id && (
+                                                    <FormFeedback className="d-block">Por favor, seleccione un proveedor</FormFeedback>
+                                                )}
+                                            </Col>
                                         )}
-                                    </div>
-                                </Col>
-                            </Row>
+                                    </Row>
+                                </CardBody>
+                            </Card>
 
-                            <div className="d-flex gap-3 mt-4">
-                                <div className="w-100">
-                                    <Label htmlFor="invoiceNumberInput" className="form-label">No.de Factura</Label>
-                                    <Input
-                                        type="text"
-                                        id="invoiceNumberInput"
-                                        name="invoiceNumber"
-                                        value={formik.values.invoiceNumber}
-                                        onChange={formik.handleChange}
-                                        onBlur={formik.handleBlur}
-                                        invalid={formik.touched.invoiceNumber && !!formik.errors.invoiceNumber}
-                                    />
-                                    {formik.touched.invoiceNumber && formik.errors.invoiceNumber && <FormFeedback>{formik.errors.invoiceNumber}</FormFeedback>}
-                                </div>
+                            {/* Datos de facturación */}
+                            <Card className="shadow-sm">
+                                <CardHeader className="bg-light">
+                                    <h6 className="mb-0"><i className="ri-file-text-line me-2"></i>Facturación</h6>
+                                </CardHeader>
+                                <CardBody>
+                                    <Row className="g-3">
+                                        <Col lg={4}>
+                                            <Label htmlFor="invoiceNumberInput" className="form-label">No. de Factura</Label>
+                                            <Input
+                                                type="text"
+                                                id="invoiceNumberInput"
+                                                name="invoiceNumber"
+                                                value={formik.values.invoiceNumber}
+                                                onChange={formik.handleChange}
+                                                onBlur={formik.handleBlur}
+                                                invalid={formik.touched.invoiceNumber && !!formik.errors.invoiceNumber}
+                                            />
+                                            {formik.touched.invoiceNumber && formik.errors.invoiceNumber && <FormFeedback>{formik.errors.invoiceNumber}</FormFeedback>}
+                                        </Col>
+                                        <Col lg={4}>
+                                            <Label htmlFor="emissionDateInput" className="form-label">Fecha de emisión</Label>
+                                            <DatePicker
+                                                id="emissionDateInput"
+                                                className={`form-control ${formik.touched.emissionDate && formik.errors.emissionDate ? 'is-invalid' : ''}`}
+                                                value={formik.values.emissionDate ?? undefined}
+                                                onChange={(date: Date[]) => {
+                                                    if (date[0]) formik.setFieldValue('emissionDate', date[0]);
+                                                }}
+                                                options={{ dateFormat: 'd/m/Y' }}
+                                            />
+                                            {formik.touched.emissionDate && formik.errors.emissionDate && (
+                                                <FormFeedback className="d-block">{formik.errors.emissionDate as string}</FormFeedback>
+                                            )}
+                                        </Col>
+                                        <Col lg={4}>
+                                            <Label htmlFor="fiscalRecordInput" className="form-label">Registro Fiscal</Label>
+                                            <Input
+                                                type="text"
+                                                id="fiscalRecordInput"
+                                                name="fiscalRecord"
+                                                value={formik.values.fiscalRecord}
+                                                onChange={formik.handleChange}
+                                                onBlur={formik.handleBlur}
+                                                invalid={formik.touched.fiscalRecord && !!formik.errors.fiscalRecord}
+                                            />
+                                            {formik.touched.fiscalRecord && formik.errors.fiscalRecord && <FormFeedback>{formik.errors.fiscalRecord}</FormFeedback>}
+                                        </Col>
+                                    </Row>
+                                </CardBody>
+                            </Card>
 
-                                <div className="w-100">
-                                    <Label htmlFor="emissionDateInput" className="form-label">Fecha de emisión de factura</Label>
-                                    <DatePicker
-                                        id="emissionDateInput"
-                                        className={`form-control ${formik.touched.emissionDate && formik.errors.emissionDate ? 'is-invalid' : ''}`}
-                                        value={formik.values.emissionDate ?? undefined}
-                                        onChange={(date: Date[]) => {
-                                            if (date[0]) formik.setFieldValue('emissionDate', date[0]);
-                                        }}
-                                        options={{ dateFormat: 'd/m/Y' }}
-                                    />
-                                    {formik.touched.emissionDate && formik.errors.emissionDate && (
-                                        <FormFeedback className="d-block">{formik.errors.emissionDate as string}</FormFeedback>
-                                    )}
-                                </div>
-
-                                <div className="w-100">
-                                    <Label htmlFor="fiscalRecordInput" className="form-label">Registro Fiscal</Label>
-                                    <Input
-                                        type="text"
-                                        id="fiscalRecordInput"
-                                        name="fiscalRecord"
-                                        value={formik.values.fiscalRecord}
-                                        onChange={formik.handleChange}
-                                        onBlur={formik.handleBlur}
-                                        invalid={formik.touched.fiscalRecord && !!formik.errors.fiscalRecord}
-                                    />
-                                    {formik.touched.fiscalRecord && formik.errors.fiscalRecord && <FormFeedback>{formik.errors.fiscalRecord}</FormFeedback>}
-                                </div>
-                            </div>
-
-                            <div className="d-flex gap-3 mt-4">
-                                <div className="w-50">
-                                    <Label htmlFor="taxInput" className="form-label">Impuesto (%)</Label>
-                                    <div className="input-group">
-                                        <Input
-                                            type="number"
-                                            id="taxInput"
-                                            name="tax"
-                                            value={formik.values.tax}
-                                            onChange={formik.handleChange}
-                                            onBlur={formik.handleBlur}
-                                            invalid={formik.touched.tax && !!formik.errors.tax}
-                                            min={0}
-                                            step="0.01"
-                                        />
-                                        <span className="input-group-text">%</span>
-                                    </div>
-                                    {formik.touched.tax && formik.errors.tax && <FormFeedback>{formik.errors.tax}</FormFeedback>}
-                                </div>
-
-                                <div className="w-50">
-                                    <Label htmlFor="discountInput" className="form-label">Descuento (%)</Label>
-                                    <div className="input-group">
-                                        <Input
-                                            type="number"
-                                            id="discountInput"
-                                            name="discount"
-                                            value={formik.values.discount}
-                                            onChange={formik.handleChange}
-                                            onBlur={formik.handleBlur}
-                                            invalid={formik.touched.discount && !!formik.errors.discount}
-                                            min={0}
-                                            step="0.01"
-                                        />
-                                        <span className="input-group-text">%</span>
-                                    </div>
-                                    {formik.touched.discount && formik.errors.discount && <FormFeedback>{formik.errors.discount}</FormFeedback>}
-                                </div>
-                            </div>
+                            {/* Impuestos y descuentos */}
+                            <Card className="shadow-sm">
+                                <CardHeader className="bg-light">
+                                    <h6 className="mb-0"><i className="ri-percent-line me-2"></i>Impuestos y descuentos</h6>
+                                </CardHeader>
+                                <CardBody>
+                                    <Row className="g-3">
+                                        <Col lg={6}>
+                                            <Label htmlFor="taxInput" className="form-label">Impuesto</Label>
+                                            <div className="input-group">
+                                                <Input
+                                                    type="number"
+                                                    id="taxInput"
+                                                    name="tax"
+                                                    value={formik.values.tax}
+                                                    onChange={formik.handleChange}
+                                                    onBlur={formik.handleBlur}
+                                                    invalid={formik.touched.tax && !!formik.errors.tax}
+                                                    min={0}
+                                                    step="0.01"
+                                                />
+                                                <span className="input-group-text">%</span>
+                                            </div>
+                                            {formik.touched.tax && formik.errors.tax && <FormFeedback>{formik.errors.tax}</FormFeedback>}
+                                        </Col>
+                                        <Col lg={6}>
+                                            <Label htmlFor="discountInput" className="form-label">Descuento</Label>
+                                            <div className="input-group">
+                                                <Input
+                                                    type="number"
+                                                    id="discountInput"
+                                                    name="discount"
+                                                    value={formik.values.discount}
+                                                    onChange={formik.handleChange}
+                                                    onBlur={formik.handleBlur}
+                                                    invalid={formik.touched.discount && !!formik.errors.discount}
+                                                    min={0}
+                                                    step="0.01"
+                                                />
+                                                <span className="input-group-text">%</span>
+                                            </div>
+                                            {formik.touched.discount && formik.errors.discount && <FormFeedback>{formik.errors.discount}</FormFeedback>}
+                                        </Col>
+                                    </Row>
+                                </CardBody>
+                            </Card>
 
                             <div className="d-flex mt-4">
-                                <Button
-                                    className="btn btn-light btn-label previestab farm-secondary-button"
-                                    onClick={() => {
-                                        toggleArrowTab(activeStep - 1);
-                                    }}
-                                >
-                                    <i className="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i>{" "}
-                                    Atras
-                                </Button>
+                                {entryMode !== "direct" && (
+                                    <Button
+                                        className="btn btn-light btn-label previestab farm-secondary-button"
+                                        onClick={() => toggleArrowTab(activeStep - 1)}
+                                    >
+                                        <i className="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i>{" "}
+                                        Atras
+                                    </Button>
+                                )}
 
                                 <Button
                                     className="btn btn-success btn-label right ms-auto nexttab nexttab ms-auto farm-secondary-button"
@@ -726,18 +863,31 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                     <TabPane id="step-summary-tab" tabId={4}>
                         <div className="d-flex flex-column gap-1 w-100">
                             <div className="d-flex gap-3">
-                                <Card className="w-50">
-                                    <CardHeader className='bg-gradient' style={{ backgroundColor: '#e3f2fd' }}>
-                                        <h5 className="mb-0 text-primary">Orden de compra</h5>
-                                    </CardHeader>
-                                    <CardBody className="pt-4">
-                                        {selectedPurchaseOrder && (
+                                {selectedPurchaseOrder ? (
+                                    <Card className="w-50">
+                                        <CardHeader className='bg-gradient' style={{ backgroundColor: '#e3f2fd' }}>
+                                            <h5 className="mb-0 text-primary">Orden de compra</h5>
+                                        </CardHeader>
+                                        <CardBody className="pt-4">
                                             <ObjectDetails attributes={purchaseOrderAttributes} object={selectedPurchaseOrder} />
-                                        )}
-                                    </CardBody>
-                                </Card>
+                                        </CardBody>
+                                    </Card>
+                                ) : selectedSupplier ? (
+                                    <Card className="w-50">
+                                        <CardHeader className='bg-gradient' style={{ backgroundColor: '#e3f2fd' }}>
+                                            <h5 className="mb-0 text-primary">Proveedor</h5>
+                                        </CardHeader>
+                                        <CardBody className="pt-4">
+                                            <ObjectDetails attributes={[
+                                                { key: 'name', label: 'Nombre' },
+                                                { key: 'email', label: 'Email' },
+                                                { key: 'phone_number', label: 'Teléfono' },
+                                            ]} object={selectedSupplier} />
+                                        </CardBody>
+                                    </Card>
+                                ) : null}
 
-                                <Card className="w-50">
+                                <Card className={selectedPurchaseOrder || selectedSupplier ? "w-50" : "w-100"}>
                                     <CardHeader className='bg-gradient' style={{ backgroundColor: '#e8f5e9' }}>
                                         <h5 className="mb-0 text-success">Entrada</h5>
                                     </CardHeader>

@@ -91,6 +91,8 @@ export interface ProductData {
     status: boolean;
     unit_measurement: string;
     image: string;
+    type?: 'raw' | 'prepared_feed';
+    recipeId?: string;
 }
 
 export interface SubwarehouseData {
@@ -129,20 +131,6 @@ export interface ProductCategory {
     value: string;
 }
 
-export interface ConfigurationData {
-    farmName: string;
-    farmLogo: string;
-    farmIcon: string;
-    unitMeasurements: string[];
-    productCategories: ProductCategory[];
-    incomeTypes: string[];
-    outcomeTypes: string[];
-    userRoles: string[];
-    taxes: Tax[];
-    supplierCategories: string[];
-}
-
-
 export interface UserData {
     _id?: string
     profile_image?: string
@@ -180,29 +168,6 @@ export interface Attribute {
     render?: (value: any, object: Record<string, any>) => React.ReactNode;
 }
 
-
-export interface PigFeedingEntry {
-    category: string;
-    name: string;
-    dailyAmount: number;
-    unit: string;
-    observations?: string;
-}
-
-export interface FeedingPackagesHistory {
-    packageId: string;
-    name: string;
-    stage: string;
-    feedings: {
-        feeding: string;
-        quantity: number;
-    }[];
-    applicationDate: Date;
-    appliedBy: string;
-    observations?: string;
-    periodicity: string;
-    is_active: boolean;
-}
 
 export interface PigMedicationEntry {
     medication: string;
@@ -283,6 +248,7 @@ export interface PigData {
     originDetail?: string;
     sourceFarm?: string;
     arrivalDate?: Date | null;
+    purchasePrice?: number;
     status: 'alive' | 'sold' | 'slaughtered' | 'dead' | 'discarded';
     currentStage: 'piglet' | 'weaning' | 'fattening' | 'breeder' | '';
     sex: 'male' | 'female' | '';
@@ -297,8 +263,8 @@ export interface PigData {
         observations?: string | null;
     };
     historyChanges: PigHistoryChanges[];
-    feedings: PigFeedingEntry[];
-    feedingsPackagesHistory: FeedingPackagesEntry[];
+    feedings: any[];
+    feedAdministrationHistory: FeedAdministrationHistoryEntry[];
     medications: PigMedicationEntry[];
     medicationPackagesHistory: medicationPackagesEntry[];
     vaccinationPlansHistory: VaccinationPlanEntry[];
@@ -354,34 +320,6 @@ export interface GroupMedicationPackagesHistory {
     observations?: string;
     isActive: boolean;
     estimatedTotal: number
-}
-
-export interface GroupFeedings {
-    feeding: string;
-    quantityPerPig: number;
-    totalQuantity: number;
-    avgPerPig?: number;
-    applicationDate: Date | null;
-    appliedBy: string;
-    periodicity?: string;
-    observations?: string;
-    isActive: boolean;
-}
-
-export interface GroupFeedingPackagesHistory {
-    packageId: string;
-    name: string;
-    feedings: {
-        feeding: string;
-        totalQuantity: number;
-        avgPerPig?: number;
-    }[];
-    applicationDate: Date | null;
-    appliedBy: string;
-    periodicity: string;
-    observations?: string;
-    isActive: boolean;
-    stage: string;
 }
 
 export interface GroupMedications {
@@ -464,8 +402,7 @@ export interface GroupData {
         action: string;
         description: string;
     }[];
-    feedings?: GroupFeedings[];
-    feedingPackagesHistory?: GroupFeedingPackagesHistory[];
+    feedAdministrationHistory?: FeedAdministrationHistoryEntry[];
     medications?: GroupMedications[];
     medicationPackagesHistory?: GroupMedicationPackagesHistory[];
     vaccinationPlansHistory?: GroupVaccinationPlansHistory[];
@@ -588,6 +525,7 @@ export interface VaccinationPlan {
 }
 
 export interface FeedingPackage {
+    _id?: string;
     code: string;
     name: string;
     description?: string;
@@ -596,28 +534,86 @@ export interface FeedingPackage {
     creation_responsible: string;
     is_active: boolean;
     stage: string;
+    expectedYield: number;
     feedings: {
         feeding: string;
-        quantity: number;
-        administration_route: string
-    }[]
-    periodicity: string;
+        percentage: number;
+    }[];
 }
 
-export interface FeedingPackagesEntry {
-    packageId: string;
-    name: string;
-    stage: string;
-    feedings: {
-        feeding: string;
-        quantity: number;
-    }[];
-    applicationDate: Date | null;
-    appliedBy: string;
+export interface FeedPreparationIngredientUsed {
+    product: {
+        _id: string;
+        name: string;
+        unit_measurement: string;
+    };
+    quantity: number;
+    unitPrice: number;
+    subtotal: number;
+}
+
+export interface FeedPreparation {
+    _id?: string;
+    code: string;
+    farm: string;
+    recipe: string | { _id: string; code: string; name: string; stage: string };
+    preparedProduct: string | { _id: string; name: string; unit_measurement: string };
+    preparationDate: Date | null;
+    batchSize: number;
+    actualYield: number;
+    shrinkage: number;
+    shrinkagePercentage: number;
+    subwarehouse: string;
+    ingredientsUsed: FeedPreparationIngredientUsed[];
+    totalCost: number;
+    costPerKg: number;
+    responsible: string | { _id: string; name: string; lastname: string; username?: string };
+    notes?: string;
+}
+
+export interface FeedAdministrationHistoryEntry {
+    _id: string;
+    administrationId: string;
+    preparedProduct: {
+        _id: string;
+        name: string;
+        unit_measurement: string;
+        category: string;
+    };
+    recipe: {
+        _id: string;
+        code: string;
+        name: string;
+        stage: string;
+    };
+    quantity: number;
+    unitCost: number;
+    totalCost: number;
+    applicationDate: Date | string;
+    appliedBy: {
+        _id: string;
+        name: string;
+        lastname: string;
+        username?: string;
+    };
     observations?: string;
-    periodicity: string;
-    is_active: boolean;
-};
+}
+
+export interface FeedAdministration {
+    _id?: string;
+    code: string;
+    farm: string;
+    targetType: 'group' | 'litter' | 'pig';
+    targetId: string;
+    preparedProduct: string | { _id: string; name: string; unit_measurement: string };
+    recipe: string | { _id: string; code: string; name: string; stage: string };
+    quantity: number;
+    unitCost: number;
+    totalCost: number;
+    date: Date | string | null;
+    responsible: string | { _id: string; name: string; lastname: string };
+    observations?: string;
+}
 
 export interface PigletSnapshot {
     sex: 'male' | 'female' | '';
@@ -649,9 +645,558 @@ export interface Litter {
     observations?: string;
     responsible: string;
     events: LitterEvent[];
-    feedings: GroupFeedings[];
-    feedingPackagesHistory: FeedingPackagesHistory[];
+    feedAdministrationHistory: FeedAdministrationHistoryEntry[];
     medications: GroupMedications[];
     medicationPackagesHistory: GroupMedicationPackagesHistory[];
     vaccinationPlansHistory: GroupVaccinationPlansHistory[];
+}
+
+export type NotificationType =
+    | 'birth_approaching'
+    | 'reproduction'
+    | 'stage_change'
+    | 'weight_goal'
+    | 'feeding_alert'
+    | 'health_alert'
+    | 'group_management'
+    | 'inventory'
+    | 'system';
+
+export type NotificationEntityType =
+    | 'birth'
+    | 'pregnancy'
+    | 'insemination'
+    | 'pig'
+    | 'group'
+    | 'income';
+
+export interface NotificationEntity {
+    type: NotificationEntityType;
+    id: string;
+    code?: string;
+}
+
+export interface NotificationData {
+    _id: string;
+    userId: string;
+    type: NotificationType;
+    title: string;
+    message: string;
+    read: boolean;
+    entity?: NotificationEntity;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface GlobalConfiguration {
+    _id?: string;
+    companyName: string;
+    currency: string;
+    currencySymbol: string;
+    decimals: number;
+    locale: string;
+    timezone: string;
+    dateFormat: string;
+    unitMeasurements: string[];
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface GestationThresholds {
+    closeToFarrowDays: number;
+    farrowingPendingDays: number;
+    overdueFarrowingDays: number;
+}
+
+export interface LactationThresholds {
+    weanReadyDays: number;
+    weanOverdueDays: number;
+}
+
+export interface WeaningThresholds {
+    fatteningReadyDays: number;
+    fatteningOverdueDays: number;
+}
+
+export interface FatteningThresholds {
+    saleReadyDays: number;
+    saleOverdueDays: number;
+}
+
+export interface ReplacementThresholds {
+    minAge: number;
+    maxAge: number;
+}
+
+export interface ProductionCycles {
+    gestation: GestationThresholds;
+    lactation: LactationThresholds;
+    weaning: WeaningThresholds;
+    fattening: FatteningThresholds;
+    replacement: ReplacementThresholds;
+}
+
+export interface NotificationsConfig {
+    farrowingAdvanceNotificationDays: number;
+    stageChangeAdvanceNotificationDays: number;
+}
+
+export interface FarmConfiguration {
+    _id?: string;
+    farmId: string;
+    productionCycles: ProductionCycles;
+    notifications: NotificationsConfig;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+// ===================== Period Closing =====================
+
+export type PeriodClosingStatus = 'closed' | 'reopened' | 'archived';
+export type PeriodType = 'monthly' | 'annual';
+
+export interface PeriodClosingUser {
+    _id: string;
+    name: string;
+    lastname: string;
+}
+
+export interface ClosingKpis {
+    totalIncome: number;
+    totalCosts: number;
+    operatingResult: number;
+    operatingMargin: number;
+    totalKgSold: number;
+    totalPigsSold: number;
+}
+
+export interface ClosingCostItem {
+    category: string;
+    description: string;
+    amount: number;
+}
+
+export interface ClosingSalesSummary {
+    type: string;
+    pigCount: number;
+    totalWeight: number;
+    totalAmount: number;
+    avgPricePerKg: number;
+}
+
+export interface ClosingMonthlySummary {
+    month: string;
+    income: number;
+    costs: number;
+    result: number;
+}
+
+export interface ClosingSnapshotMeta {
+    generatedAt: string;
+    periodStart: string;
+    periodEnd: string;
+    farmId: string;
+    farmName: string;
+    timezone: string;
+    currency?: string;
+    currencySymbol?: string;
+}
+
+// --- Inventory ---
+export type InventoryStage = 'piglet' | 'weaning' | 'fattening' | 'gestation' | 'breeder' | 'lactation' | 'replacement';
+
+export interface InventoryByStageItem {
+    stage: InventoryStage;
+    count: number;
+    totalWeightKg: number;
+    avgWeightKg: number;
+}
+
+export interface InventorySnapshotSide {
+    date: string;
+    totalPigs: number;
+    totalWeightKg: number;
+    byStage: InventoryByStageItem[];
+}
+
+export interface InventoryMovementCounts {
+    count: number;
+    totalWeightKg: number;
+}
+
+export interface InventoryMovements {
+    births: InventoryMovementCounts;
+    purchases: InventoryMovementCounts;
+    sales: InventoryMovementCounts;
+    deaths: InventoryMovementCounts;
+    discards: InventoryMovementCounts;
+    transfersIn: InventoryMovementCounts;
+    transfersOut: InventoryMovementCounts;
+}
+
+export interface InventoryReconciliation {
+    expectedFinal: number;
+    actualFinal: number;
+    diff: number;
+    note: string;
+}
+
+export interface InventoryValuationByStage {
+    stage: InventoryStage;
+    totalWeightKg: number;
+    value: number;
+}
+
+export interface InventoryValuation {
+    pricePerKg: number;
+    pricePerKgSource: 'market_avg' | 'system_config' | 'manual' | string;
+    totalValue: number;
+    byStage: InventoryValuationByStage[];
+}
+
+export interface InventorySection {
+    initial: InventorySnapshotSide;
+    final: InventorySnapshotSide;
+    movements: InventoryMovements;
+    reconciliation: InventoryReconciliation;
+    valuation: InventoryValuation | null;
+}
+
+// --- Sales Detail ---
+export interface SalesByClient {
+    clientId: string | null;
+    clientName: string;
+    saleCount: number;
+    pigCount: number;
+    totalWeightKg: number;
+    totalAmount: number;
+    avgPricePerKg: number;
+}
+
+export interface SalesByType {
+    type: 'standing_pig' | 'slaughtered' | 'group_sale' | string;
+    label: string;
+    pigCount: number;
+    totalWeightKg: number;
+    totalAmount: number;
+    avgPricePerKg: number;
+    avgWeightPerPig: number;
+}
+
+export interface SalesAverages {
+    avgWeightAtSaleKg: number | null;
+    avgAgeAtSaleDays: number | null;
+    avgPricePerKg: number | null;
+    avgRevenuePerPig: number | null;
+}
+
+export interface SalesDetailSection {
+    byClient: SalesByClient[];
+    byType: SalesByType[];
+    averages: SalesAverages;
+}
+
+// --- Production ---
+export interface ProductionBirths {
+    litterCount: number;
+    pigletsBornAlive: number;
+    pigletsBornDead: number;
+    avgLitterSize: number | null;
+    avgPigletBirthWeightKg: number | null;
+}
+
+export interface ProductionWeanings {
+    litterCount: number;
+    pigletsWeaned: number;
+    avgLitterSizeAtWeaning: number | null;
+    avgWeaningAgeDays: number | null;
+    avgWeaningWeightKg: number | null;
+    preWeaningMortality: number | null;
+}
+
+export interface MortalityByStage {
+    stage: InventoryStage;
+    count: number;
+    rate: number | null;
+}
+
+export interface MortalityByCause {
+    cause: string;
+    count: number;
+}
+
+export interface ProductionMortality {
+    totalDeaths: number;
+    mortalityRate: number | null;
+    byStage: MortalityByStage[];
+    byCause: MortalityByCause[];
+}
+
+export interface FeedConversionByStage {
+    stage: InventoryStage;
+    fcr: number | null;
+}
+
+export interface FeedConversion {
+    overall: number | null;
+    byStage: FeedConversionByStage[] | null;
+}
+
+export interface AvgDaysPerStageItem {
+    stage: InventoryStage;
+    avgDays: number | null;
+}
+
+export interface ProductionSection {
+    births: ProductionBirths;
+    weanings: ProductionWeanings;
+    mortality: ProductionMortality;
+    feedConversion: FeedConversion;
+    avgDaysPerStage: AvgDaysPerStageItem[];
+}
+
+// --- Feeding ---
+export interface FeedingByPhase {
+    phase: 'starter' | 'grower' | 'finisher' | 'gestation' | 'lactation' | 'breeder' | 'other' | string;
+    label: string;
+    consumedKg: number;
+    cost: number;
+}
+
+export interface FeedingPerAnimal {
+    avgDailyConsumptionKg: number | null;
+    avgCostPerPigInInventory: number | null;
+    avgCostPerKgProduced: number | null;
+}
+
+export interface FeedingSection {
+    totalConsumedKg: number;
+    totalCost: number;
+    avgCostPerKgFeed: number | null;
+    byPhase: FeedingByPhase[];
+    perAnimal: FeedingPerAnimal;
+}
+
+// --- Health ---
+export interface HealthMedication {
+    productId: string | null;
+    productName: string;
+    applicationCount: number;
+    totalQuantity: number;
+    unit: string;
+    totalCost: number;
+}
+
+export interface HealthSection {
+    totalCost: number;
+    medications: HealthMedication[];
+    treatmentEvents: number;
+    vaccinationEvents: number;
+    mortalityByCause: MortalityByCause[];
+}
+
+// --- Reproduction ---
+export interface ReproductionInseminations {
+    count: number;
+    successRate: number | null;
+}
+
+export interface ReproductionActivePregnancies {
+    atPeriodStart: number;
+    atPeriodEnd: number;
+    confirmedInPeriod: number;
+}
+
+export interface ReproductionFarrowings {
+    count: number;
+    totalPigletsBorn: number;
+    avgLitterSize: number | null;
+}
+
+export interface ReproductionSows {
+    activeAtPeriodEnd: number;
+    newlyFarrowed: number;
+    weanedInPeriod: number;
+}
+
+export interface ReproductionSection {
+    inseminations: ReproductionInseminations;
+    activePregnancies: ReproductionActivePregnancies;
+    farrowings: ReproductionFarrowings;
+    sows: ReproductionSows;
+}
+
+// --- Workforce ---
+export interface WorkforceCostByRole {
+    role: string;
+    count: number;
+    totalCost: number;
+}
+
+export interface WorkforceHoursWorked {
+    total: number;
+    avgPerEmployee: number;
+}
+
+export interface WorkforceSection {
+    totalLaborCost: number;
+    employeeCount: number;
+    costByRole: WorkforceCostByRole[] | null;
+    hoursWorked: WorkforceHoursWorked | null;
+}
+
+// --- Comparisons ---
+export type ComparisonSource = 'closed_snapshot' | 'live_computation' | 'not_available' | 'mixed';
+
+export interface ComparisonVariation {
+    totalIncome: number | null;
+    totalCosts: number | null;
+    operatingResult: number | null;
+    operatingMargin: number | null;
+    totalKgSold: number | null;
+    totalPigsSold: number | null;
+}
+
+export interface ComparisonBlock {
+    periodLabel: string;
+    source: ComparisonSource;
+    kpis: ClosingKpis | null;
+    variation: ComparisonVariation | null;
+}
+
+export interface TrailingBlock {
+    periodRange: string;
+    source: ComparisonSource;
+    avgKpis: ClosingKpis | null;
+}
+
+export interface ComparisonsSection {
+    previousMonth: ComparisonBlock;
+    sameMonthLastYear: ComparisonBlock;
+    trailingThreeMonths: TrailingBlock;
+    previousYear?: ComparisonBlock;
+}
+
+export interface MonthlyEvolutionItem {
+    month: number;
+    monthLabel: string;
+    closingId: string | null;
+    kpis: ClosingKpis | null;
+}
+
+export interface ClosingSnapshot {
+    kpis: ClosingKpis;
+    costBreakdown: ClosingCostItem[];
+    salesSummary: ClosingSalesSummary[];
+    monthlySummary: ClosingMonthlySummary[];
+    meta: ClosingSnapshotMeta;
+
+    // Extended sections (optional for backward-compat with old closings)
+    inventory?: InventorySection;
+    salesDetail?: SalesDetailSection;
+    production?: ProductionSection;
+    feeding?: FeedingSection;
+    health?: HealthSection;
+    reproduction?: ReproductionSection;
+    workforce?: WorkforceSection;
+    comparisons?: ComparisonsSection;
+    monthlyEvolution?: MonthlyEvolutionItem[];
+}
+
+export interface PeriodClosing {
+    _id: string;
+    farmId: string;
+    periodType: PeriodType;
+    year: number;
+    month: number | null;
+    periodStart: string;
+    periodEnd: string;
+    status: PeriodClosingStatus;
+    snapshot: ClosingSnapshot;
+    closedBy: PeriodClosingUser | null;
+    closedAt: string;
+    notes?: string | null;
+    reopenedBy?: PeriodClosingUser | null;
+    reopenedAt?: string | null;
+    reopenReason?: string | null;
+    forced?: boolean;
+    forcedReason?: string | null;
+    forcedWarnings?: string[];
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface PeriodClosingListItem {
+    _id: string;
+    farmId: string;
+    periodType: PeriodType;
+    year: number;
+    month: number | null;
+    periodStart: string;
+    periodEnd: string;
+    status: PeriodClosingStatus;
+    closedBy: PeriodClosingUser | null;
+    closedAt: string;
+    kpis: ClosingKpis;
+}
+
+export interface PeriodClosingByPeriod {
+    _id: string;
+    status: PeriodClosingStatus;
+    closedAt: string;
+    closedBy: PeriodClosingUser | null;
+    reopenedAt: string | null;
+    reopenedBy: PeriodClosingUser | null;
+    reopenReason: string | null;
+}
+
+export interface PeriodClosingAuditEvent {
+    _id: string;
+    closingId: string;
+    action: 'close' | 'reopen' | 'reclose';
+    performedBy: PeriodClosingUser | null;
+    performedAt: string;
+    reason: string | null;
+    hasSnapshot: boolean;
+}
+
+export interface PeriodClosingPagination {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+}
+
+// ===================== Precheck (Phase 4) =====================
+
+export type PrecheckStatus = 'ok' | 'warning' | 'error';
+export type PrecheckSeverity = 'error' | 'warning';
+
+export interface PrecheckItem {
+    key: string;
+    label: string;
+    status: PrecheckStatus;
+    severity: PrecheckSeverity;
+    detail: string;
+    actionUrl: string | null;
+}
+
+export interface PrecheckSummary {
+    total: number;
+    ok: number;
+    warning: number;
+    error: number;
+}
+
+export interface PrecheckResponse {
+    periodType: PeriodType;
+    year: number;
+    month: number | null;
+    periodStart: string;
+    periodEnd: string;
+    items: PrecheckItem[];
+    summary: PrecheckSummary;
+    canClose: boolean;
+    canForceClose: boolean;
+    blockingErrors: string[];
 }

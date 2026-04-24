@@ -10,8 +10,8 @@ import { FiInbox } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { Badge, Button, Card, CardBody, CardHeader, Container } from "reactstrap";
 import BulkMedicationAssignmentModal from "Components/Common/Forms/BulkMedicationAssignmentModal";
-import BulkFeedingAssignmentModal from "Components/Common/Forms/BulkFeedingAssignmentModal";
 import BulkWeanLittersModal from "Components/Common/Forms/BulkWeanLittersModal";
+import BulkFeedAdministrationModal from "Components/Common/Forms/BulkFeedAdministrationModal";
 
 const ViewLitters = () => {
     const configContext = useContext(ConfigContext);
@@ -21,7 +21,7 @@ const ViewLitters = () => {
     const [litters, setLitters] = useState<any[]>([])
     const [selectedLitters, setSelectedLitters] = useState<any[]>([])
     const [bulkMedicationModalOpen, setBulkMedicationModalOpen] = useState(false);
-    const [bulkFeedingModalOpen, setBulkFeedingModalOpen] = useState(false);
+    const [bulkFeedAdminModalOpen, setBulkFeedAdminModalOpen] = useState(false);
     const [bulkWeanModalOpen, setBulkWeanModalOpen] = useState(false);
 
     const handleSelectionChange = (selected: any[]) => {
@@ -32,11 +32,6 @@ const ViewLitters = () => {
     const hasReadyToWeanLitters = selectedLitters.some(litter => litter.status === 'ready_to_wean' || litter.status === 'wean_overdue');
 
     const handleBulkMedicationSuccess = () => {
-        fetchLitter();
-        setSelectedLitters([]);
-    };
-
-    const handleBulkFeedingSuccess = () => {
         fetchLitter();
         setSelectedLitters([]);
     };
@@ -192,11 +187,11 @@ const ViewLitters = () => {
                                             color="info"
                                             className="btn-sm"
                                             disabled={!hasActiveLitters}
-                                            title={!hasActiveLitters ? "No hay camadas activas para asignar alimentación" : undefined}
-                                            onClick={() => setBulkFeedingModalOpen(true)}
+                                            title={!hasActiveLitters ? "No hay camadas activas para administrar alimento" : undefined}
+                                            onClick={() => setBulkFeedAdminModalOpen(true)}
                                         >
                                             <i className="ri-restaurant-line me-1"></i>
-                                            Asignar Alimentación
+                                            Administrar alimento
                                         </Button>
                                         <Button
                                             color="warning"
@@ -245,11 +240,12 @@ const ViewLitters = () => {
                 onSuccess={handleBulkMedicationSuccess}
             />
 
-            <BulkFeedingAssignmentModal
-                isOpen={bulkFeedingModalOpen}
-                onClose={() => setBulkFeedingModalOpen(false)}
-                selectedLitters={selectedLitters}
-                onSuccess={handleBulkFeedingSuccess}
+            <BulkFeedAdministrationModal
+                isOpen={bulkFeedAdminModalOpen}
+                onClose={() => setBulkFeedAdminModalOpen(false)}
+                targetType="litter"
+                selectedTargets={selectedLitters}
+                onSuccess={() => { fetchLitter(); setSelectedLitters([]); }}
             />
 
             <BulkWeanLittersModal

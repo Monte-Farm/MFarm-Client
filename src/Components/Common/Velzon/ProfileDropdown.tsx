@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import defaultProfileImage from '../../../assets/images/default-profile-mage.jpg';
 import { getLoggedinUser } from 'helpers/api_helper';
 import { userRoles } from 'common/user_roles';
+import { disconnectNotificationSocket } from 'helpers/socketService';
 
 const ProfileDropdown = () => {
+    const dispatch = useDispatch();
     const navigate = useNavigate();
     const userLogged = getLoggedinUser();
     const [isProfileDropdown, setIsProfileDropdown] = useState(false);
@@ -17,10 +19,10 @@ const ProfileDropdown = () => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
 
-
     const clicLogout = () => {
-        navigate('/login')
-        sessionStorage.removeItem('authUser')
+        disconnectNotificationSocket(dispatch);
+        sessionStorage.removeItem('authUser');
+        navigate('/login');
     }
 
     const roleLabels = userLogged.role.map((role: string) => {
@@ -83,12 +85,22 @@ const ProfileDropdown = () => {
                             </DropdownItem>
                         )}
 
-                        <DropdownItem className='p-0'>
-                            <Link to="/settings" className="dropdown-item d-flex align-items-center py-2">
-                                <i className="mdi mdi-cog-outline fs-18 me-2 text-primary"></i>
-                                <span>Configuración</span>
-                            </Link>
-                        </DropdownItem>
+                        {userLogged.role.includes('Superadmin') && (
+                            <DropdownItem className='p-0'>
+                                <Link to="/configurations/global" className="dropdown-item d-flex align-items-center py-2">
+                                    <i className="mdi mdi-cog-outline fs-18 me-2 text-primary"></i>
+                                    <span>Configuración</span>
+                                </Link>
+                            </DropdownItem>
+                        )}
+                        {userLogged.role.includes('farm_manager') && (
+                            <DropdownItem className='p-0'>
+                                <Link to="/configurations/farm" className="dropdown-item d-flex align-items-center py-2">
+                                    <i className="mdi mdi-cog-outline fs-18 me-2 text-primary"></i>
+                                    <span>Configuración</span>
+                                </Link>
+                            </DropdownItem>
+                        )}
                     </div>
 
                     <div className="border-top py-1">

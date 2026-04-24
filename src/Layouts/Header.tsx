@@ -11,6 +11,7 @@ import { getLoggedinUser } from 'helpers/api_helper';
 import LogoSystem from '../assets/images/logo.png'
 import { SubwarehouseData } from 'common/data_interfaces';
 import ProfileDropdown from 'Components/Common/Velzon/ProfileDropdown';
+import NotificationDropdown from 'Components/Common/Notifications/NotificationDropdown';
 
 const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
     const dispatch: any = useDispatch();
@@ -153,7 +154,7 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
                             {userLogged?.role === "Superadmin" && <Configuration />}
 
                             {/* NotificationDropdown */}
-                            {/* <NotificationDropdown /> */}
+                            <NotificationDropdown />
 
                             {/* ProfileDropdown */}
                             <ProfileDropdown />

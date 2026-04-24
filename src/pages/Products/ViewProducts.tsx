@@ -13,7 +13,7 @@ import ProductForm from "Components/Common/Forms/ProductForm";
 import SelectableCustomTable from "Components/Common/Tables/SelectableTable";
 import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
 import DonutChartCard, { DonutDataItem, DonutLegendItem } from "Components/Common/Graphics/DonutChartCard";
-import { getProductCategoryLabel } from "common/enums/products.enums";
+import { getProductCategoryLabel, getProductTypeLabel, PRODUCT_TYPES } from "common/enums/products.enums";
 import { FiInbox } from "react-icons/fi";
 
 
@@ -21,6 +21,7 @@ const productAttributes: Attribute[] = [
     { key: 'id', label: 'Código', type: 'text' },
     { key: 'name', label: 'Nombre', type: 'text' },
     { key: 'category', label: 'Categoría', type: 'text' },
+    { key: 'type', label: 'Tipo', type: 'text' },
     { key: 'unit_measurement', label: 'Unidad de Medida', type: 'text' },
     { key: 'description', label: 'Descripción', type: 'text' },
 ]
@@ -103,6 +104,17 @@ const ViewProducts = () => {
                 }
 
                 return <Badge color={color}>{label}</Badge>;
+            },
+        },
+        {
+            header: 'Tipo',
+            accessor: 'type',
+            isFilterable: true,
+            type: 'text',
+            render: (value: string) => {
+                const t = value || PRODUCT_TYPES.RAW;
+                const color = t === PRODUCT_TYPES.PREPARED_FEED ? 'warning' : 'secondary';
+                return <Badge color={color}>{getProductTypeLabel(t)}</Badge>;
             },
         },
         { header: 'Unidad de Medida', accessor: 'unit_measurement', isFilterable: true, type: 'text' },

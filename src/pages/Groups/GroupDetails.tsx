@@ -38,6 +38,7 @@ import ChangeStageGroup from "Components/Common/Forms/ChangeStageGroup";
 import WeightEvolutionChart from "Components/Common/Graphics/WeightEvolutionChart";
 import WeightDistributionChart from "Components/Common/Graphics/WeightDistributionChart";
 import GroupTransferForm from "Components/Common/Forms/GroupTransferForm";
+import WeighGroupForm from "Components/Common/Forms/WeighGroupForm";
 import GroupWithDrawForm from "Components/Common/Forms/GroupWithdrawForm";
 import DiscardPigInGroupForm from "Components/Common/Forms/DiscardPigInGroupForm";
 import GrowthStatusProgress from "Components/Common/Shared/GrowthStatusProgress";
@@ -55,7 +56,7 @@ const GroupDetails = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [groupData, setGroupData] = useState<any>({});
     const [activeTab, setActiveTab] = useState("0");
-    const [modals, setModals] = useState({ changeStage: false, registerDeath: false, discard: false, transfer: false, processSale: false, processReplacement: false, sellPigs: false });
+    const [modals, setModals] = useState({ changeStage: false, registerDeath: false, discard: false, transfer: false, processSale: false, processReplacement: false, sellPigs: false, weighGroup: false });
     const [lastWeighted, setLastWeigthed] = useState<any>({})
     const [growthRate, setGrowthRate] = useState<number>(0);
     const [averageAge, setAverageaAge] = useState<any>()
@@ -318,6 +319,10 @@ const GroupDetails = () => {
                             </Button>
                         )}
 
+                        <Button color="primary" onClick={() => toggleModal('weighGroup')} disabled={groupData.status === 'sold'} title="Registrar pesaje">
+                            <i className="ri-scales-3-line me-2" />
+                            Registrar pesaje
+                        </Button>
                         <Button color="danger" onClick={() => toggleModal('discard')} disabled={groupData.status === 'sold'} title="Retirar cerdos">
                             <i className="ri-upload-2-line me-2" />
                             Retirar
@@ -710,6 +715,13 @@ const GroupDetails = () => {
                 </ModalBody>
             </Modal>
 
+
+            <Modal size="lg" isOpen={modals.weighGroup} toggle={() => toggleModal("weighGroup")} centered backdrop={'static'} keyboard={false}>
+                <ModalHeader toggle={() => toggleModal("weighGroup")}>Registrar pesaje del grupo</ModalHeader>
+                <ModalBody>
+                    <WeighGroupForm groupId={group_id ?? ''} onSave={() => { toggleModal('weighGroup'); fetchData(); setRefreshKey(prev => prev + 1); }} />
+                </ModalBody>
+            </Modal>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </div>

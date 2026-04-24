@@ -1,3 +1,26 @@
+export enum PRODUCT_TYPES {
+    RAW = 'raw',
+    PREPARED_FEED = 'prepared_feed'
+}
+
+export const getProductTypeLabel = (type: string): string => {
+    switch (type) {
+        case PRODUCT_TYPES.RAW:
+            return 'Materia prima';
+        case PRODUCT_TYPES.PREPARED_FEED:
+            return 'Alimento preparado';
+        default:
+            return 'Sin tipo';
+    }
+};
+
+export const getProductTypeOptions = () => {
+    return [
+        { value: PRODUCT_TYPES.RAW, label: 'Materia prima' },
+        { value: PRODUCT_TYPES.PREPARED_FEED, label: 'Alimento preparado' }
+    ];
+};
+
 export enum PRODUCT_CATEGORIES {
     NUTRITION = 'nutrition',
     MEDICATIONS = 'medications',

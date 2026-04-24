@@ -4,16 +4,20 @@ import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import loginImage from "../../assets/images/portada.png";
 import LoginForm from "../../Components/Common/Velzon/Login";
 import axios, { AxiosError, AxiosResponse } from "axios";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getLoggedinUser, setAuthorization } from "helpers/api_helper";
 import { useNavigate } from "react-router-dom";
 import { ConfigContext } from "App";
 import Aurora from "Components/Common/Velzon/Aurora";
 import LogoSystem from '../../assets/images/logo.png'
 import systemLogo from '../../assets/images/system-logo.png'
 import loginBanner from '../../assets/images/login_banner.png'
+import { useDispatch } from "react-redux";
+import { connectNotificationSocket } from "helpers/socketService";
+import { fetchGlobalConfig } from "slices/configurations/thunk";
 
 const CoverSignIn = () => {
     document.title = "Inicio de sesión | MFarm";
+    const dispatch: any = useDispatch();
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
     const [showDisabledAlert, setShowDisabledAlert] = useState<boolean>(false);
@@ -30,7 +34,10 @@ const CoverSignIn = () => {
             }
 
             sessionStorage.setItem('authUser', JSON.stringify(user));
+            setAuthorization(user.token);
             configContext?.setUserLogged(getLoggedinUser());
+            connectNotificationSocket(user.token, dispatch);
+            dispatch(fetchGlobalConfig());
             history('/home');
         } catch (error: any) {
             console.error(error.response);

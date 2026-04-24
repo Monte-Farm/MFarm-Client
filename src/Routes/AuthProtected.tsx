@@ -6,14 +6,16 @@ import { useDispatch } from "react-redux";
 import { useProfile } from "../Components/Hooks/UserHooks";
 
 import { logoutUser } from "../slices/auth/login/thunk";
+import { connectNotificationSocket } from "../helpers/socketService";
 
 const AuthProtected = (props : any) =>{
   const dispatch : any = useDispatch();
   const { userProfile, loading, token } = useProfile();
-  
+
   useEffect(() => {
     if (userProfile && !loading && token) {
       setAuthorization(token);
+      connectNotificationSocket(token, dispatch);
     } else if (!userProfile && loading && !token) {
       dispatch(logoutUser());
     }
