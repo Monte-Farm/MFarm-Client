@@ -17,6 +17,7 @@ interface MovementRecord {
     productName: string;
     movementType: string;
     quantity: number;
+    stockAfter: number;
     unit: string;
     warehouse: string;
     user: string;
@@ -117,6 +118,10 @@ const InventoryMovementsReport = () => {
         },
         {
             header: "Cantidad", accessor: "quantity", type: "text", bgColor: "#e3f2fd",
+            render: (v: number, row: MovementRecord) => <span className="fw-semibold">{v} {row.unit}</span>,
+        },
+        {
+            header: "Stock Resultante", accessor: "stockAfter", type: "text", bgColor: "#F3E5F5",
             render: (v: number, row: MovementRecord) => <span className="fw-semibold">{v} {row.unit}</span>,
         },
         { header: "Almacen", accessor: "warehouse", type: "text", isFilterable: true },

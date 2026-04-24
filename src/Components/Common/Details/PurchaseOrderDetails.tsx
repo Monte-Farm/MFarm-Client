@@ -302,7 +302,7 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
                 </Card>
             </div>
 
-            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
                 <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Orden de Compra</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}

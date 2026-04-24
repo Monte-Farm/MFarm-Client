@@ -691,6 +691,7 @@ export interface NotificationData {
 export interface GlobalConfiguration {
     _id?: string;
     companyName: string;
+    logoUrl?: string | null;
     currency: string;
     currencySymbol: string;
     decimals: number;

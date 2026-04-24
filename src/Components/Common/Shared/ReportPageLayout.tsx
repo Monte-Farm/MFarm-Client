@@ -135,7 +135,7 @@ const ReportPageLayout: React.FC<ReportPageLayoutProps> = ({
             </Modal>
 
             {/* Modal for PDF viewer */}
-            <Modal size="xl" isOpen={pdfModalOpen} toggle={() => setPdfModalOpen(false)} backdrop="static" keyboard={false} centered>
+            <Modal size="xl" isOpen={pdfModalOpen} toggle={() => setPdfModalOpen(false)} backdrop="static" keyboard={false} centered fullscreen={true}>
                 <ModalHeader toggle={() => setPdfModalOpen(false)}>{pdfTitle}</ModalHeader>
                 {fileURL && (
                     <div style={{ padding: "1rem" }}>

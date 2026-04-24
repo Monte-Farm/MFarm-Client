@@ -463,7 +463,7 @@ const ViewPregnancies = () => {
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.reportPDF} toggle={() => toggleModal("reportPDF")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.reportPDF} toggle={() => toggleModal("reportPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
                 <ModalHeader toggle={() => toggleModal("reportPDF")}>Reporte de Embarazos Activos</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}

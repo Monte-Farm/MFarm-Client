@@ -2,6 +2,8 @@ import BreadCrumb from 'Components/Common/Shared/BreadCrumb';
 import SuccessModal from 'Components/Common/Shared/SuccessModal';
 import ErrorModal from 'Components/Common/Shared/ErrorModal';
 import LoadingGif from '../../assets/images/loading-gif.gif';
+import systemLogo from '../../assets/images/system-logo.png';
+import FileUploader from 'Components/Common/Shared/FileUploader';
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useFormik } from 'formik';
@@ -19,7 +21,7 @@ import {
     Label,
     Row,
 } from 'reactstrap';
-import { fetchGlobalConfig, updateGlobalConfig } from 'slices/configurations/thunk';
+import { deleteGlobalLogo, fetchGlobalConfig, updateGlobalConfig, uploadGlobalLogo } from 'slices/configurations/thunk';
 import { DATE_FORMAT_OPTIONS, DEFAULT_GLOBAL_CONFIG } from 'common/configuration_defaults';
 import { GlobalConfiguration as GlobalConfigType } from 'common/data_interfaces';
 import { deriveCurrencySymbol, getCurrencyOptions, getLocaleOptions, getTimezoneOptions } from 'utils/intlHelpers';
@@ -32,7 +34,14 @@ const GlobalConfiguration = () => {
 
     const [modals, setModals] = useState({ success: false, error: false });
     const [errorMessage, setErrorMessage] = useState<string>('');
+    const [successMessage, setSuccessMessage] = useState<string>('Configuración global actualizada correctamente');
     const [unitInput, setUnitInput] = useState<string>('');
+    const [pendingLogoFile, setPendingLogoFile] = useState<File | null>(null);
+    const [pendingLogoPreview, setPendingLogoPreview] = useState<string | null>(null);
+    const [pendingLogoRemoval, setPendingLogoRemoval] = useState<boolean>(false);
+
+    const ALLOWED_LOGO_MIME = ['image/png', 'image/jpeg', 'image/webp'];
+    const MAX_LOGO_SIZE = 2 * 1024 * 1024;
 
     const currencyOptions = useMemo(() => getCurrencyOptions(), []);
     const timezoneOptions = useMemo(() => getTimezoneOptions(), []);
@@ -82,12 +91,34 @@ const GlobalConfiguration = () => {
                 currencySymbol: deriveCurrencySymbol(values.currency, values.locale),
             };
             const result = await dispatch(updateGlobalConfig(payload));
-            if (result?.ok) {
-                toggleModal('success', true);
-            } else {
+            if (!result?.ok) {
                 setErrorMessage(result?.error?.response?.data?.message ?? 'Error al guardar la configuración');
                 toggleModal('error', true);
+                return;
             }
+
+            if (pendingLogoRemoval) {
+                const delRes = await dispatch(deleteGlobalLogo());
+                if (!delRes?.ok) {
+                    setErrorMessage(delRes?.error?.response?.data?.message ?? 'Error al eliminar el logo');
+                    toggleModal('error', true);
+                    return;
+                }
+                setPendingLogoRemoval(false);
+            } else if (pendingLogoFile) {
+                const upRes = await dispatch(uploadGlobalLogo(pendingLogoFile));
+                if (!upRes?.ok) {
+                    setErrorMessage(upRes?.error?.response?.data?.message ?? 'Error al subir el logo');
+                    toggleModal('error', true);
+                    return;
+                }
+                if (pendingLogoPreview) URL.revokeObjectURL(pendingLogoPreview);
+                setPendingLogoFile(null);
+                setPendingLogoPreview(null);
+            }
+
+            setSuccessMessage('Configuración global actualizada correctamente');
+            toggleModal('success', true);
         },
     });
 
@@ -108,6 +139,45 @@ const GlobalConfiguration = () => {
             formik.values.unitMeasurements.filter((u) => u !== unit),
         );
     };
+
+    const handleLogoFileSelected = (file: File) => {
+        if (!ALLOWED_LOGO_MIME.includes(file.type)) {
+            setErrorMessage('Formato no válido. Usa PNG, JPG o WEBP.');
+            toggleModal('error', true);
+            return;
+        }
+        if (file.size > MAX_LOGO_SIZE) {
+            setErrorMessage('La imagen supera el tamaño máximo de 2 MB.');
+            toggleModal('error', true);
+            return;
+        }
+
+        if (pendingLogoPreview) URL.revokeObjectURL(pendingLogoPreview);
+        const previewUrl = URL.createObjectURL(file);
+        setPendingLogoFile(file);
+        setPendingLogoPreview(previewUrl);
+        setPendingLogoRemoval(false);
+    };
+
+    const handleLogoFilesUpdate = (files: File[]) => {
+        if (files.length === 0 && pendingLogoFile) {
+            if (pendingLogoPreview) URL.revokeObjectURL(pendingLogoPreview);
+            setPendingLogoFile(null);
+            setPendingLogoPreview(null);
+        }
+    };
+
+    const handleMarkRemoveLogo = () => {
+        if (pendingLogoPreview) URL.revokeObjectURL(pendingLogoPreview);
+        setPendingLogoFile(null);
+        setPendingLogoPreview(null);
+        setPendingLogoRemoval(true);
+    };
+
+    const currentLogoSrc = pendingLogoPreview
+        || (pendingLogoRemoval ? systemLogo : (globalConfig?.logoUrl || systemLogo));
+    const hasCustomLogo = !!globalConfig?.logoUrl && !pendingLogoRemoval;
+    const hasPendingLogoChanges = !!pendingLogoFile || pendingLogoRemoval;
 
     const derivedSymbol = deriveCurrencySymbol(formik.values.currency, formik.values.locale);
 
@@ -148,6 +218,72 @@ const GlobalConfiguration = () => {
                             }}
                         >
                             <Row className="g-3">
+                                <Col lg={12}>
+                                    <Label className="form-label">Logo de la empresa</Label>
+                                    <Row className="g-3 align-items-start">
+                                        <Col md={4}>
+                                            <div
+                                                style={{
+                                                    width: '100%',
+                                                    height: 180,
+                                                    borderRadius: 12,
+                                                    border: '1px solid #E5E7EB',
+                                                    backgroundColor: '#F9FAFB',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    overflow: 'hidden',
+                                                }}
+                                            >
+                                                <img
+                                                    src={currentLogoSrc}
+                                                    alt="Logo"
+                                                    style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }}
+                                                />
+                                            </div>
+                                            <div className="d-flex justify-content-between align-items-center mt-2">
+                                                <small className="text-muted">
+                                                    {pendingLogoPreview
+                                                        ? 'Vista previa (sin guardar)'
+                                                        : pendingLogoRemoval
+                                                            ? 'Se quitará al guardar'
+                                                            : hasCustomLogo ? 'Logo actual' : 'Logo predeterminado'}
+                                                </small>
+                                                {hasCustomLogo && !pendingLogoPreview && (
+                                                    <Button
+                                                        type="button"
+                                                        color="danger"
+                                                        outline
+                                                        size="sm"
+                                                        disabled={loading}
+                                                        onClick={handleMarkRemoveLogo}
+                                                    >
+                                                        <i className="ri-delete-bin-line me-1" />
+                                                        Quitar
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        </Col>
+                                        <Col md={8}>
+                                            <FileUploader
+                                                acceptedFileTypes={['image/png', 'image/jpeg', 'image/webp']}
+                                                maxFiles={1}
+                                                onFileUpload={handleLogoFileSelected}
+                                                onUpdateFiles={handleLogoFilesUpdate}
+                                            />
+                                            <small className="text-muted d-block mt-2">
+                                                PNG, JPG o WEBP · máx. 2 MB · recomendado ≥ 512×512 px con fondo transparente.
+                                            </small>
+                                            {hasPendingLogoChanges && (
+                                                <small className="text-warning d-block mt-1">
+                                                    <i className="ri-information-line me-1" />
+                                                    Los cambios del logo se aplicarán al guardar.
+                                                </small>
+                                            )}
+                                        </Col>
+                                    </Row>
+                                </Col>
+
                                 <Col lg={6}>
                                     <Label htmlFor="companyName" className="form-label">Nombre de la empresa</Label>
                                     <Input
@@ -351,7 +487,7 @@ const GlobalConfiguration = () => {
             <SuccessModal
                 isOpen={modals.success}
                 onClose={() => toggleModal('success', false)}
-                message="Configuración global actualizada correctamente"
+                message={successMessage}
             />
             <ErrorModal
                 isOpen={modals.error}

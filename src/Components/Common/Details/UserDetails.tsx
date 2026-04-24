@@ -268,7 +268,7 @@ const UserDetailsModal: React.FC<UserDetailsProps> = ({ userId }) => {
                 </ModalFooter>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
                 <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Usuario</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}

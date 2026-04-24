@@ -187,7 +187,7 @@ const OrderDetails: React.FC<OrderDetailsProps> = ({ orderId }) => {
                 </Card>
             </div>
 
-            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
                 <ModalHeader toggle={() => toggleModal("viewPDF")}>Pedido de almacen </ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}

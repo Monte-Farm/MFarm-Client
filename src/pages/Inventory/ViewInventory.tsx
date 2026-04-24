@@ -270,8 +270,8 @@ const ViewInventory = () => {
               <h4 className="">Productos</h4>
 
               <div className="d-flex gap-2">
-                <Button 
-                  color="primary" 
+                <Button
+                  color="primary"
                   onClick={handlePrintInventory}
                   disabled={pdfLoading}
                 >
@@ -316,7 +316,7 @@ const ViewInventory = () => {
         </Card>
       </Container >
 
-      <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered>
+      <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
         <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Inventario </ModalHeader>
         <ModalBody>
           {fileURL && <PDFViewer fileUrl={fileURL} />}

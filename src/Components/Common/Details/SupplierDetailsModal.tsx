@@ -315,7 +315,7 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId 
             <ErrorModal isOpen={modals.updateError} onClose={() => { toggleModal('updateError') }} message={"Ha ocurrido un error al actualizar el proveedor, intentelo mas tarde"} />
             <ErrorModal isOpen={modals.deleteError} onClose={() => { toggleModal('deleteError') }} message={"Ha ocurrido un error al desactivar el proveedor, intentelo mas tarde"} />
 
-            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
                 <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Proveedor</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}

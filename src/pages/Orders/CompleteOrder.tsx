@@ -152,7 +152,7 @@ const CompleteOrder = () => {
             <SuccessModal isOpen={modals.success} onClose={handleCancel} message={"El pedido se ha completado exitosamente"}></SuccessModal>
             <ErrorModal isOpen={modals.error} onClose={handleCancel} message="Ha ocurrido un error al completar el pedido, intentelo mas tarde"></ErrorModal>
 
-            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
                 <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Pedido </ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}

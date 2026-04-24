@@ -37,6 +37,34 @@ export const updateGlobalConfig = (payload: Partial<GlobalConfiguration>) => asy
     }
 };
 
+export const uploadGlobalLogo = (file: File) => async (dispatch: any) => {
+    dispatch(setLoadingGlobal(true));
+    try {
+        const res = await api.uploadImage(CONFIGURATION_URLS.uploadGlobalLogo, file);
+        dispatch(setGlobalConfig(res.data.data));
+        return { ok: true as const, data: res.data.data as GlobalConfiguration };
+    } catch (error: any) {
+        dispatch(setError(error?.message ?? 'Error uploading company logo'));
+        return { ok: false as const, error };
+    } finally {
+        dispatch(setLoadingGlobal(false));
+    }
+};
+
+export const deleteGlobalLogo = () => async (dispatch: any) => {
+    dispatch(setLoadingGlobal(true));
+    try {
+        const res = await api.delete(CONFIGURATION_URLS.deleteGlobalLogo);
+        dispatch(setGlobalConfig(res.data.data));
+        return { ok: true as const, data: res.data.data as GlobalConfiguration };
+    } catch (error: any) {
+        dispatch(setError(error?.message ?? 'Error deleting company logo'));
+        return { ok: false as const, error };
+    } finally {
+        dispatch(setLoadingGlobal(false));
+    }
+};
+
 export const fetchFarmConfig = (farmId: string) => async (dispatch: any) => {
     dispatch(setLoadingFarm(true));
     try {

@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Dropdown, DropdownMenu, DropdownToggle, Form } from 'reactstrap';
 
@@ -18,6 +18,21 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
     const configContext = useContext(ConfigContext)
     const userLogged = getLoggedinUser();
     const [assigment, setAssigment] = useState<SubwarehouseData | null>(null)
+    const [farmName, setFarmName] = useState<string>("")
+
+    useEffect(() => {
+        const fetchFarmName = async () => {
+            if (!userLogged || userLogged.role === "Superadmin" || !userLogged.farm_assigned) return
+            try {
+                const response = await configContext?.axiosHelper.get(`${configContext.apiUrl}/farm/find_by_id/${userLogged.farm_assigned}`)
+                const farm = response?.data?.data
+                if (farm?.name) setFarmName(farm.name)
+            } catch (error) {
+                console.error("Error fetching farm name:", error)
+            }
+        }
+        fetchFarmName()
+    }, [configContext, userLogged?.farm_assigned, userLogged?.role])
 
     const selectDashboardData = createSelector(
         (state) => state.Layout,
@@ -106,6 +121,30 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
                                 </span>
                             </button>
 
+
+                            {userLogged?.role !== "Superadmin" && farmName && (
+                                <div
+                                    className="d-none d-md-flex align-items-center ms-3 px-3 py-2 rounded-pill"
+                                    style={{
+                                        background: "linear-gradient(135deg, rgba(64, 81, 137, 0.12) 0%, rgba(10, 179, 156, 0.12) 100%)",
+                                        border: "1px solid rgba(64, 81, 137, 0.18)",
+                                        boxShadow: "0 2px 6px rgba(56, 65, 74, 0.06)",
+                                        maxWidth: "260px"
+                                    }}
+                                    title={farmName}
+                                >
+                                    <i
+                                        className="ri-home-4-fill fs-16 me-2"
+                                        style={{ color: "#405189" }}
+                                    ></i>
+                                    <span
+                                        className="fw-semibold text-truncate"
+                                        style={{ color: "#405189", letterSpacing: "0.2px" }}
+                                    >
+                                        {farmName}
+                                    </span>
+                                </div>
+                            )}
 
                             {/* <SearchOption /> */}
                         </div>

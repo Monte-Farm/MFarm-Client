@@ -2,11 +2,15 @@ import React, { useEffect } from "react";
 import SimpleBar from "simplebar-react";
 import VerticalLayout from "./VerticalLayouts";
 import { Container } from "reactstrap";
+import { useSelector } from "react-redux";
 import { getLoggedinUser } from "helpers/api_helper";
 import systemLogo from '../assets/images/system-logo.png'
+import { GlobalConfiguration } from "common/data_interfaces";
 
 const Sidebar = ({ layoutType }: any) => {
   const userLogged = getLoggedinUser();
+  const globalConfig: GlobalConfiguration | null = useSelector((s: any) => s.Configurations.globalConfig);
+  const logoSrc = globalConfig?.logoUrl || systemLogo;
 
   const roleLabels: Record<string, string> = {
     'superadmin': 'Superadministrador',
@@ -42,7 +46,7 @@ const Sidebar = ({ layoutType }: any) => {
       <div className="app-menu navbar-menu">
         <div className="navbar-brand-box mt-2 mb-3">
 
-          <img src={systemLogo} height={150} width={150} alt="Logo del sistema"/>
+          <img src={logoSrc} height={150} width={150} alt="Logo del sistema" style={{ objectFit: 'contain' }}/>
 
           <button
             onClick={addEventListenerOnSmHoverMenu}

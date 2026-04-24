@@ -440,14 +440,6 @@ const Navdata = () => {
                 updateIconSidebar(e);
             },
         },
-
-        // ===================== OPERACIÓN =====================
-        {
-            id: "header-operation",
-            label: "Operación",
-            isHeader: true,
-            roles: ['farm_manager', 'general_worker', 'reproduction_technician', 'veterinarian'],
-        },
         {
             id: 'pigs',
             label: 'Cerdos',
@@ -487,6 +479,14 @@ const Navdata = () => {
                     stateVariables: isViewPigs,
                 },
             ]
+        },
+
+        // ===================== OPERACIÓN =====================
+        {
+            id: "header-operation",
+            label: "Operación",
+            isHeader: true,
+            roles: ['farm_manager', 'general_worker', 'reproduction_technician', 'veterinarian'],
         },
         {
             id: 'replacement',

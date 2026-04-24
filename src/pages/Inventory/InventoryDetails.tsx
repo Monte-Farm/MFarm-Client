@@ -588,7 +588,7 @@ const ProductDetails = () => {
                     </TabPane>
                 </TabContent>
 
-                <Modal size="xl" isOpen={showPDFModal} toggle={() => setShowPDFModal(!showPDFModal)} backdrop='static' keyboard={false} centered>
+                <Modal size="xl" isOpen={showPDFModal} toggle={() => setShowPDFModal(!showPDFModal)} backdrop='static' keyboard={false} centered fullscreen={true}>
                     <ModalHeader toggle={() => setShowPDFModal(!showPDFModal)}>Reporte de Inventario del Producto</ModalHeader>
                     <ModalBody>
                         {fileURL && <PDFViewer fileUrl={fileURL} />}
