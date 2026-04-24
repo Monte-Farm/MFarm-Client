@@ -151,7 +151,7 @@ const ExecutiveDashboard: React.FC<Props> = ({ startDate, endDate }) => {
             <Row className="g-3 mb-3">
                 <Col xl={8}>
                     <Card className="h-100">
-                        <CardHeader style={{ backgroundColor: "#f8f9fa" }}>
+                        <CardHeader>
                             <h6 className="mb-0 text-muted">Top Clientes (Ingresos)</h6>
                         </CardHeader>
                         <CardBody>
@@ -166,7 +166,7 @@ const ExecutiveDashboard: React.FC<Props> = ({ startDate, endDate }) => {
                 </Col>
                 <Col xl={4}>
                     <Card className="h-100">
-                        <CardHeader style={{ backgroundColor: "#f8f9fa" }}>
+                        <CardHeader>
                             <h6 className="mb-0 text-muted">Alertas de Inventario</h6>
                         </CardHeader>
                         <CardBody>

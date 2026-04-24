@@ -34,8 +34,8 @@ const ApplicationsTimeline = ({
 }: Props) => {
     return (
         <Card className="border-0 shadow-sm h-100">
-            <CardHeader className="bg-white border-bottom py-3">
-                <h6 className="mb-0 fw-bold text-dark">
+            <CardHeader className="border-bottom py-3">
+                <h6 className="mb-0 fw-bold">
                     <RiTimerLine className="me-2 text-primary" />
                     {title}
                 </h6>

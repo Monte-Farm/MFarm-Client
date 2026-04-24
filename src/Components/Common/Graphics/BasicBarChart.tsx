@@ -54,10 +54,11 @@ const BasicBarChart = ({
                         tooltip={({ id, value, indexValue }) => (
                             <div
                                 style={{
-                                    background: "white",
+                                    background: "var(--vz-card-bg, white)",
                                     padding: "6px 9px",
-                                    border: "1px solid #ccc",
+                                    border: "1px solid var(--vz-border-color, #ccc)",
                                     borderRadius: "4px",
+                                    color: "var(--vz-body-color, inherit)",
                                 }}
                             >
                                 <strong>{indexValue}</strong>

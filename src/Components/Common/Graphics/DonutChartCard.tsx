@@ -43,7 +43,7 @@ const DonutChartCard = ({
     enableArcLabels = false,
     enableArcLinkLabels = false,
     className = '',
-    headerBgColor = '#f8f9fa',
+    headerBgColor,
 }: DonutChartCardProps) => {
     // Check if there's data to display
     const hasData = data && data.length > 0;
@@ -51,7 +51,7 @@ const DonutChartCard = ({
     if (!hasData) {
         return (
             <Card className={`h-100 ${className}`}>
-                <CardHeader style={{ backgroundColor: headerBgColor }}>
+                <CardHeader style={headerBgColor ? { backgroundColor: headerBgColor } : undefined}>
                     <h6 className="mb-0 text-muted">{title}</h6>
                 </CardHeader>
                 <CardBody style={{ height: `${height}px`, display: "flex", justifyContent: "center", alignItems: "center" }}>
@@ -66,7 +66,7 @@ const DonutChartCard = ({
 
     return (
         <Card className={`h-100 ${className}`}>
-            <CardHeader style={{ backgroundColor: headerBgColor }}>
+            <CardHeader style={headerBgColor ? { backgroundColor: headerBgColor } : undefined}>
                 <h6 className="mb-0 text-muted">{title}</h6>
             </CardHeader>
             <CardBody>
@@ -83,7 +83,7 @@ const DonutChartCard = ({
                         enableArcLabels={enableArcLabels}
                         enableArcLinkLabels={enableArcLinkLabels}
                         arcLinkLabelsSkipAngle={10}
-                        arcLinkLabelsTextColor="#333333"
+                        arcLinkLabelsTextColor="currentColor"
                         arcLinkLabelsThickness={2}
                         arcLinkLabelsColor={{ from: 'color' }}
                         arcLabelsSkipAngle={10}
@@ -94,11 +94,12 @@ const DonutChartCard = ({
                         tooltip={({ datum }) => (
                             <div
                                 style={{
-                                    background: 'white',
+                                    background: 'var(--vz-card-bg, white)',
                                     padding: '9px 12px',
-                                    border: '1px solid #ccc',
+                                    border: '1px solid var(--vz-border-color, #ccc)',
                                     borderRadius: '4px',
                                     boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                    color: 'var(--vz-body-color, inherit)',
                                 }}
                             >
                                 <strong>{datum.label}</strong>: {datum.value}
@@ -113,7 +114,7 @@ const DonutChartCard = ({
                             <div
                                 key={index}
                                 className="d-flex align-items-center justify-content-between py-2"
-                                style={{ borderBottom: index < legendItems.length - 1 ? '1px solid #f0f0f0' : 'none' }}
+                                style={{ borderBottom: index < legendItems.length - 1 ? '1px solid var(--vz-border-color, #f0f0f0)' : 'none' }}
                             >
                                 <div className="d-flex align-items-center gap-2">
                                     {item.icon && (
@@ -131,10 +132,10 @@ const DonutChartCard = ({
                                             }}
                                         />
                                     )}
-                                    <span style={{ color: '#6b7280', fontSize: '14px' }}>{item.label}</span>
+                                    <span className="text-muted" style={{ fontSize: '14px' }}>{item.label}</span>
                                 </div>
                                 <div className="d-flex align-items-center gap-3">
-                                    <span style={{ color: '#111827', fontSize: '14px', fontWeight: 500 }}>
+                                    <span style={{ fontSize: '14px', fontWeight: 500 }}>
                                         {item.value}
                                     </span>
                                     {item.percentage && (

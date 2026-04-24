@@ -163,7 +163,7 @@ const WarehouseDashboard: React.FC<Props> = ({ startDate, endDate }) => {
             <Row className="g-3 mb-3">
                 <Col xl={6}>
                     <Card className="h-100">
-                        <CardHeader style={{ backgroundColor: "#f8f9fa" }}>
+                        <CardHeader>
                             <h6 className="mb-0 text-muted">
                                 <i className="ri-error-warning-line me-1 text-danger"></i>
                                 Stock Critico / Bajo
@@ -176,7 +176,7 @@ const WarehouseDashboard: React.FC<Props> = ({ startDate, endDate }) => {
                 </Col>
                 <Col xl={6}>
                     <Card className="h-100">
-                        <CardHeader style={{ backgroundColor: "#f8f9fa" }}>
+                        <CardHeader>
                             <h6 className="mb-0 text-muted">
                                 <i className="ri-time-line me-1 text-warning"></i>
                                 Productos sin Movimiento
@@ -190,7 +190,7 @@ const WarehouseDashboard: React.FC<Props> = ({ startDate, endDate }) => {
             </Row>
 
             <Card className="mb-3">
-                <CardHeader style={{ backgroundColor: "#f8f9fa" }}>
+                <CardHeader>
                     <h6 className="mb-0 text-muted">Movimientos Recientes</h6>
                 </CardHeader>
                 <CardBody>

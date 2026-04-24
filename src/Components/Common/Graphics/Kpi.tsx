@@ -1,5 +1,7 @@
 import { Card } from "reactstrap";
 import { IconType } from "react-icons";
+import { useSelector } from "react-redux";
+import { darkenHex } from "utils/colorUtils";
 
 interface KPIProps {
     title: string;
@@ -18,11 +20,15 @@ const KPI = ({
     bgColor = "#ffffff",
     iconColor = "#000000",
 }: KPIProps) => {
+    const layoutModeType = useSelector((state: any) => state.Layout?.layoutModeType);
+    const isDark = layoutModeType === "dark";
+    const resolvedBg = bgColor ? (isDark ? darkenHex(bgColor) : bgColor) : undefined;
+
     return (
         <Card
             className="h-100 text-center shadow-sm rounded-4 border-0"
             style={{
-                backgroundColor: bgColor,
+                backgroundColor: resolvedBg,
             }}
         >
             <div

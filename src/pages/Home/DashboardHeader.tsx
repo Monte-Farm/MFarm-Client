@@ -40,28 +40,28 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 <CardBody className="p-4">
                     <div className="d-flex flex-wrap align-items-center justify-content-between gap-3">
                         <div>
-                            <h4 className="mb-1 fw-bold" style={{ color: "#111827" }}>
+                            <h4 className="mb-1 fw-bold">
                                 {getGreeting()}, {userName}
                             </h4>
                             <div className="text-muted" style={{ fontSize: "14px", textTransform: "capitalize" }}>
                                 {todayLabel}
                                 <span className="mx-2">•</span>
-                                <span className="fw-semibold" style={{ color: "#405189" }}>{roleLabel}</span>
+                                <span className="fw-semibold text-primary">{roleLabel}</span>
                             </div>
                         </div>
                         <Button
-                            color="white"
-                            className="d-flex align-items-center gap-2 shadow-sm"
+                            color="light"
+                            className="d-flex align-items-center gap-2 shadow-sm border"
                             onClick={() => setPickerOpen(true)}
-                            style={{ border: "1.5px solid #dee2e6", borderRadius: "8px", padding: "8px 16px" }}
+                            style={{ borderRadius: "8px", padding: "8px 16px" }}
                         >
-                            <i className="ri-calendar-line" style={{ color: "#405189", fontSize: "16px" }}></i>
+                            <i className="ri-calendar-line text-primary" style={{ fontSize: "16px" }}></i>
                             <span style={{ fontSize: "13px" }}>
-                                <span className="fw-semibold" style={{ color: "#333" }}>{formatDateLabel(startDate)}</span>
-                                <span style={{ color: "#999", margin: "0 6px" }}>—</span>
-                                <span className="fw-semibold" style={{ color: "#333" }}>{formatDateLabel(endDate)}</span>
+                                <span className="fw-semibold">{formatDateLabel(startDate)}</span>
+                                <span className="text-muted" style={{ margin: "0 6px" }}>—</span>
+                                <span className="fw-semibold">{formatDateLabel(endDate)}</span>
                             </span>
-                            <i className="ri-arrow-down-s-line" style={{ color: "#666" }}></i>
+                            <i className="ri-arrow-down-s-line text-muted"></i>
                         </Button>
                     </div>
                 </CardBody>

@@ -12,20 +12,14 @@ import { getLoggedinUser } from "helpers/api_helper"
 import Select from "react-select"
 import { FiFilter, FiX, FiSearch, FiCheckCircle, FiAlertCircle } from "react-icons/fi"
 import Slider from 'rc-slider'
-import 'rc-slider/assets/index.css'
 import { useNavigate } from "react-router-dom"
-import 'simplebar-react/dist/simplebar.min.css';
 import { Column } from "common/data/data_types"
 import CustomTable from "Components/Common/Tables/CustomTable"
 import PDFViewer from "Components/Common/Shared/PDFViewer"
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation"
 import AlertMessage from "Components/Common/Shared/AlertMesagge"
-import { FaKeyboard, FaListUl, FaMars, FaVenus } from "react-icons/fa"
-import SinglePigForm from "Components/Common/Forms/SinglePigForm"
-import BatchPigForm from "Components/Common/Forms/BatchPigForm"
-import PigEditForm from "Components/Common/Forms/PigEditForm"
+import { FaVenus } from "react-icons/fa"
 import KPI from "Components/Common/Graphics/Kpi"
-import BasicPieChart from "Components/Common/Graphics/BasicPieChart"
 
 const ViewSows = () => {
     const [modals, setModals] = useState({ selectCreationMode: false, createSingle: false, createBatch: false, update: false, viewPDF: false });

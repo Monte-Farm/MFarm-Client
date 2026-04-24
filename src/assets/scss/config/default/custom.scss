@@ -21,7 +21,7 @@ File: Custom Css File
 //     // background-color: #F5F5DC;
 // }
 
-i {
+.navbar-menu i {
     color: #FDFDFD;
 }
 
@@ -1013,4 +1013,590 @@ i {
 
 .role-card input {
     display: none;
+}
+
+// ============================================
+// Farm Name Pill (Header)
+// ============================================
+
+.farm-name-pill {
+    padding: 0.5rem 1rem;
+    border-radius: 50rem;
+    max-width: 260px;
+    background: linear-gradient(135deg, rgba(64, 81, 137, 0.12) 0%, rgba(10, 179, 156, 0.12) 100%);
+    border: 1px solid rgba(64, 81, 137, 0.18);
+    box-shadow: 0 2px 6px rgba(56, 65, 74, 0.06);
+}
+
+.farm-name-pill-icon,
+.farm-name-pill-text {
+    color: #405189;
+}
+
+// ============================================
+// Dark Mode Overrides
+// ============================================
+
+[data-bs-theme="dark"] {
+
+    // bg-white y bg-light en dark mode → background oscuro
+    .bg-white  { background-color: #212529 !important; }
+    .bg-light  { background-color: #262a2e !important; }
+
+    // Asegurar CSS variables del tema por si Bootstrap no las genera
+    --vz-body-color: #ced4da;
+    --vz-body-bg: #1a1d21;
+    --vz-secondary-bg: #212529;
+    --vz-tertiary-bg: #262a2e;
+    --vz-heading-color: #e9ecef;
+    --vz-card-bg: #212529;
+    --vz-card-color: #ced4da;
+    --vz-table-color: #ced4da;
+    --vz-border-color: #32383e;
+    --vz-light: #262a2e;
+
+    // texto general
+    color: #ced4da;
+
+    // Headings
+    h1, h2, h3, h4, h5, h6,
+    .h1, .h2, .h3, .h4, .h5, .h6 {
+        color: #e9ecef;
+    }
+
+    // .text-dark en dark mode debe ser claro
+    .text-dark {
+        color: #e9ecef !important;
+    }
+
+    // Texto muted / secundario
+    .text-muted {
+        color: #878a99 !important;
+    }
+
+    // Sidebar: usar background oscuro del template en lugar del verde granja
+    .navbar-menu {
+        background-color: #1a1d21 !important;
+    }
+
+    // Cards
+    .farm-card,
+    .pig-card {
+        background-color: var(--vz-card-bg, #212529);
+    }
+
+    .card-text,
+    .farm-card-text,
+    .pig-card-text {
+        color: var(--vz-body-color, #ced4da);
+    }
+
+    .farm-card-title,
+    .pig-card-title {
+        color: var(--vz-heading-color, #e9ecef);
+    }
+
+    .farm-card-subtitle,
+    .pig-card-subtitle {
+        color: var(--vz-secondary-color, #878a99);
+    }
+
+    // Farm name pill
+    .farm-name-pill {
+        background: linear-gradient(135deg, rgba(64, 81, 137, 0.25) 0%, rgba(10, 179, 156, 0.25) 100%);
+        border-color: rgba(64, 81, 137, 0.35);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .farm-name-pill-icon,
+    .farm-name-pill-text {
+        color: #8aa0e0;
+    }
+
+    // Filter popover
+    .filter-popover .popover-body {
+        background-color: var(--vz-card-bg, #212529);
+    }
+
+    .filter-popover .popover-header {
+        background-color: var(--vz-tertiary-bg, #262a2e);
+        border-bottom-color: var(--vz-border-color, #32383e);
+    }
+
+    // History flags
+    .history-flag {
+        background-color: var(--vz-tertiary-bg, #262a2e);
+    }
+
+    .history-flag.expanded {
+        background-color: var(--vz-card-bg, #212529);
+    }
+
+    .flag-pointer {
+        background-color: var(--vz-light, #32383e);
+        color: var(--vz-body-color, #ced4da);
+    }
+
+    .flag-date {
+        color: var(--vz-body-color, #ced4da);
+    }
+
+    .flag-action {
+        background-color: var(--vz-light, #32383e);
+        color: var(--vz-body-color, #ced4da);
+    }
+
+    .flag-user {
+        color: var(--vz-secondary-color, #878a99);
+    }
+
+    .flag-details {
+        border-top-color: var(--vz-border-color, #32383e);
+    }
+
+    .change-field {
+        color: var(--vz-heading-color, #e9ecef);
+    }
+
+    .old-value {
+        background-color: rgba(220, 53, 69, 0.15);
+        color: #f1aeb5;
+    }
+
+    .new-value {
+        background-color: rgba(40, 167, 69, 0.15);
+        color: #75b798;
+    }
+
+    // Feeding entries
+    .feeding-entry-item {
+        background: linear-gradient(to right, var(--vz-tertiary-bg, #262a2e) 0%, var(--vz-card-bg, #212529) 100%);
+    }
+
+    .feeding-entry-item:hover {
+        background: linear-gradient(to right, var(--vz-light, #32383e) 0%, var(--vz-card-bg, #212529) 100%);
+    }
+
+    .feeding-entry-item.expanded {
+        background: var(--vz-card-bg, #212529);
+    }
+
+    .entry-details {
+        border-top-color: var(--vz-border-color, #32383e);
+    }
+
+    .entry-header,
+    .entry-name {
+        color: var(--vz-heading-color, #e9ecef);
+    }
+
+    .detail-field {
+        color: var(--vz-secondary-color, #878a99);
+    }
+
+    .detail-value {
+        color: var(--vz-body-color, #ced4da);
+    }
+
+    // Medication items
+    .medication-item {
+        background: linear-gradient(to right, var(--vz-tertiary-bg, #262a2e) 0%, var(--vz-card-bg, #212529) 100%);
+    }
+
+    .medication-item:hover {
+        background: linear-gradient(to right, var(--vz-light, #32383e) 0%, var(--vz-card-bg, #212529) 100%);
+    }
+
+    .medication-item.expanded {
+        background: var(--vz-card-bg, #212529);
+    }
+
+    .medication-details {
+        border-top-color: var(--vz-border-color, #32383e);
+    }
+
+    .medication-header,
+    .medication-name {
+        color: var(--vz-heading-color, #e9ecef);
+    }
+
+    .medication-route {
+        color: var(--vz-secondary-color, #878a99);
+    }
+
+    // User greeting
+    .greeting-text-simple {
+        color: var(--vz-secondary-color, #878a99);
+    }
+
+    .user-name-simple {
+        color: var(--vz-heading-color, #e9ecef);
+    }
+
+    .user-role-simple {
+        color: var(--vz-secondary-color, #878a99);
+        background-color: var(--vz-tertiary-bg, #262a2e);
+    }
+
+    .profile-img-simple {
+        border-color: var(--vz-border-color, #32383e);
+    }
+
+    // Role cards
+    .role-card {
+        border-color: var(--vz-border-color, #32383e);
+        background: var(--vz-tertiary-bg, #262a2e);
+    }
+
+    .role-card:hover {
+        border-color: #8aa0ff;
+        background: rgba(76, 111, 255, 0.15);
+    }
+
+    .role-card.selected {
+        border-color: #4c6fff;
+        background: rgba(76, 111, 255, 0.2);
+    }
+
+    // Manager card
+    .manager-card {
+        border-color: var(--vz-border-color, #32383e);
+    }
+
+    // Timeline
+    .timeline-line {
+        background: var(--vz-border-color, #32383e);
+    }
+
+    .stage-icon {
+        background: var(--vz-light, #32383e);
+        color: var(--vz-secondary-color, #878a99);
+        border-color: var(--vz-card-bg, #212529);
+    }
+
+    .stage-label {
+        color: var(--vz-secondary-color, #878a99);
+    }
+
+    .timeline-stage.completed .stage-label,
+    .timeline-stage.current .stage-label {
+        color: var(--vz-heading-color, #e9ecef);
+    }
+
+    // ---- Tablas ----
+    .table {
+        color: #ced4da;
+        --vz-table-color: #ced4da;
+        border-color: #32383e;
+
+        th, td {
+            border-color: #32383e;
+            color: #ced4da;
+        }
+
+        thead th {
+            color: #e9ecef;
+        }
+    }
+
+    // ---- Cards Bootstrap ----
+    .card {
+        background-color: #212529;
+        border-color: #32383e;
+        color: #ced4da;
+    }
+
+    .card-header,
+    .card-footer {
+        background-color: rgba(255,255,255,0.03);
+        border-color: #32383e;
+        color: #e9ecef;
+    }
+
+    .card-title { color: #e9ecef; }
+    .card-body  { color: #ced4da; }
+
+    // ---- Modales ----
+    .modal-content {
+        background-color: #1a1d21;
+        color: #ced4da;
+        border-color: #32383e;
+    }
+
+    .modal-header {
+        border-bottom-color: #32383e;
+        .modal-title { color: #e9ecef; }
+        .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
+    }
+
+    .modal-footer {
+        border-top-color: #32383e;
+    }
+
+    // ---- Formularios ----
+    .form-control,
+    .form-select {
+        background-color: #262a2f;
+        border-color: #32383e;
+        color: #ced4da;
+
+        &:focus {
+            background-color: #262a2f;
+            border-color: #405189;
+            color: #ced4da;
+        }
+
+        &::placeholder { color: #878a99; }
+        &:disabled     { background-color: #1e2227; color: #878a99; }
+    }
+
+    .form-label,
+    .col-form-label {
+        color: #adb5bd;
+    }
+
+    .input-group-text {
+        background-color: #262a2f;
+        border-color: #32383e;
+        color: #ced4da;
+    }
+
+    // ---- React Select (clases semánticas) ----
+    .react-select__control {
+        background-color: #262a2f !important;
+        border-color: #32383e !important;
+        color: #ced4da;
+    }
+
+    .react-select__single-value,
+    .react-select__input-container,
+    .react-select__input {
+        color: #ced4da !important;
+    }
+
+    .react-select__placeholder {
+        color: #878a99 !important;
+    }
+
+    .react-select__menu {
+        background-color: #292e33;
+        border-color: #32383e;
+        color: #ced4da;
+    }
+
+    .react-select__menu-list {
+        background-color: #292e33;
+    }
+
+    .react-select__option {
+        color: #ced4da;
+        background-color: transparent;
+
+        &:hover,
+        &.react-select__option--is-focused {
+            background-color: #2f343a;
+        }
+
+        &.react-select__option--is-selected {
+            background-color: #405189;
+            color: #fff;
+        }
+    }
+
+    .react-select__multi-value {
+        background-color: #405189;
+
+        .react-select__multi-value__label { color: #fff; }
+    }
+
+    .react-select__indicator {
+        color: #878a99;
+        &:hover { color: #ced4da; }
+    }
+
+    .react-select__indicator-separator { background-color: #32383e; }
+
+    // ---- React Dual Listbox ----
+    .rdl-filter,
+    .rdl-control {
+        background-color: #262a2f !important;
+        border-color: #32383e !important;
+        color: #ced4da !important;
+    }
+
+    // ---- Badges ----
+    .badge.bg-light { background-color: #32383e !important; color: #ced4da !important; }
+
+    // ---- Nav Tabs ----
+    .nav-tabs {
+        border-color: #32383e;
+        .nav-link {
+            color: #878a99;
+            &.active {
+                background-color: #212529;
+                border-color: #32383e #32383e #212529;
+                color: #ced4da;
+            }
+            &:hover { color: #e9ecef; }
+        }
+    }
+
+    // ---- List Group ----
+    .list-group-item {
+        background-color: #212529;
+        border-color: #32383e;
+        color: #ced4da;
+    }
+
+    // ---- Popover ----
+    .popover {
+        background-color: #1e2227;
+        border-color: #32383e;
+        .popover-header {
+            background-color: #262a2e;
+            border-bottom-color: #32383e;
+            color: #e9ecef;
+        }
+        .popover-body { color: #ced4da; }
+    }
+
+    // ---- Pagination ----
+    .page-link {
+        background-color: #212529;
+        border-color: #32383e;
+        color: #ced4da;
+        &:hover { background-color: #262a2e; }
+    }
+
+    .page-item.active .page-link {
+        background-color: #405189;
+        border-color: #405189;
+        color: #fff;
+    }
+
+    // ---- Accordion ----
+    .accordion-item {
+        background-color: #212529;
+        border-color: #32383e;
+        color: #ced4da;
+    }
+
+    .accordion-button {
+        background-color: #262a2e;
+        color: #e9ecef;
+
+        &:not(.collapsed) { background-color: #1e2227; color: #ced4da; }
+        &::after { filter: invert(1) grayscale(100%) brightness(200%); }
+    }
+
+    // ---- Alerts ----
+    .alert {
+        border-color: rgba(255,255,255,0.12);
+    }
+
+    // ---- Header / Topbar oscuro ----
+    #page-topbar {
+        background-color: #1a1d21 !important;
+        border-bottom-color: #32383e !important;
+    }
+
+    .topbar-user {
+        background-color: transparent !important;
+    }
+
+    .dropdown-menu {
+        background-color: #292e33 !important;
+        border-color: #32383e !important;
+        color: #ced4da !important;
+
+        .dropdown-item {
+            color: #ced4da !important;
+            &:hover, &:focus {
+                background-color: #32383e !important;
+                color: #e9ecef !important;
+            }
+        }
+
+        .dropdown-header {
+            color: #878a99 !important;
+        }
+
+        .dropdown-divider {
+            border-color: #32383e !important;
+        }
+    }
+
+    // ---- table-light en dark mode ----
+    .table-light {
+        --vz-table-bg: #262a2e !important;
+        --vz-table-color: #e9ecef !important;
+        background-color: #262a2e !important;
+        color: #e9ecef !important;
+
+        th, td {
+            background-color: #262a2e !important;
+            color: #e9ecef !important;
+        }
+    }
+
+    // ---- Columnas coloreadas en tablas (reducir opacidad en dark) ----
+    .table th[style*="background-color"],
+    .table td[style*="background-color"] {
+        color: #e9ecef !important;
+    }
+
+    // ---- Nivo Charts SVG text ----
+    .card-body svg text {
+        fill: #878a99 !important;
+    }
+
+    // ---- Nivo / custom chart tooltips ----
+    .card-body [style*="background: white"],
+    .card-body [style*="background:white"],
+    .card-body [style*='background: "white"'] {
+        background: #292e33 !important;
+        color: #ced4da !important;
+        border-color: #32383e !important;
+    }
+
+    // ---- Flatpickr calendar ----
+    .flatpickr-calendar {
+        background: #212529;
+        border-color: #32383e;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+        .flatpickr-months, .flatpickr-month {
+            background: #1a1d21;
+            color: #ced4da;
+        }
+
+        .flatpickr-current-month .flatpickr-monthDropdown-months,
+        .flatpickr-current-month input.cur-year {
+            background: #1a1d21;
+            color: #ced4da;
+        }
+
+        .flatpickr-weekdays { background: #1a1d21; }
+        span.flatpickr-weekday { color: #878a99; }
+
+        .flatpickr-day {
+            color: #ced4da;
+            &:hover { background: #32383e; border-color: #32383e; }
+            &.today { border-color: #405189; }
+            &.selected { background: #405189; border-color: #405189; color: #fff; }
+            &.flatpickr-disabled { color: #495057; }
+        }
+
+        .flatpickr-prev-month,
+        .flatpickr-next-month {
+            color: #ced4da;
+            fill: #ced4da;
+            svg { fill: #ced4da; }
+        }
+    }
+
+    // ---- .text-black ----
+    .text-black {
+        color: #e9ecef !important;
+    }
 }

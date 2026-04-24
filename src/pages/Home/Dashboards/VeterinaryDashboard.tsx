@@ -154,7 +154,7 @@ const VeterinaryDashboard: React.FC<Props> = ({ startDate, endDate }) => {
             <Row className="g-3 mb-3">
                 <Col xl={7}>
                     <Card className="h-100">
-                        <CardHeader style={{ backgroundColor: "#f8f9fa" }}>
+                        <CardHeader>
                             <h6 className="mb-0 text-muted">Tratamientos Recientes</h6>
                         </CardHeader>
                         <CardBody>
@@ -164,7 +164,7 @@ const VeterinaryDashboard: React.FC<Props> = ({ startDate, endDate }) => {
                 </Col>
                 <Col xl={5}>
                     <Card className="h-100">
-                        <CardHeader style={{ backgroundColor: "#f8f9fa" }}>
+                        <CardHeader>
                             <h6 className="mb-0 text-muted">Consumo de Alimento por Grupo</h6>
                         </CardHeader>
                         <CardBody>

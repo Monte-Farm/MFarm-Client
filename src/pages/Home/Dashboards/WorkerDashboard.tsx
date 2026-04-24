@@ -101,7 +101,7 @@ const WorkerDashboard: React.FC<Props> = ({ startDate, endDate }) => {
                 </Col>
                 <Col xl={7}>
                     <Card className="h-100">
-                        <CardHeader style={{ backgroundColor: "#f8f9fa" }}>
+                        <CardHeader>
                             <h6 className="mb-0 text-muted">Movimientos de Cerdos Recientes</h6>
                         </CardHeader>
                         <CardBody>

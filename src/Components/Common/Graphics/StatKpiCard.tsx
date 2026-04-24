@@ -64,7 +64,7 @@ const StatKpiCard: React.FC<StatKpiCardProps> = ({
                 </div>
 
                 <div className="mt-3">
-                    <div className="fw-semibold" style={{ fontSize: "28px", color: "#111827", lineHeight: 1 }}>
+                    <div className="fw-semibold" style={{ fontSize: "28px", lineHeight: 1 }}>
                         {canAnimate ? (
                             <CountUp
                                 end={numericValue}

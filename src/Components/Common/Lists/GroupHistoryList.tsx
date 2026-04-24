@@ -53,8 +53,7 @@ const GroupHistoryList: React.FC<GroupHistoryListProps> = ({ data }) => {
                         return (
                             <div
                                 key={idx}
-                                className="d-flex align-items-start gap-3 p-3 border rounded"
-                                style={{ backgroundColor: "#f8f9fa" }}
+                                className="d-flex align-items-start gap-3 p-3 border rounded bg-light"
                             >
                                 <span
                                     className={`badge bg-${badgeColor} text-white fs-6 py-2 px-3`}

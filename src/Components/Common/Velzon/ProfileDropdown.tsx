@@ -6,17 +6,27 @@ import defaultProfileImage from '../../../assets/images/default-profile-mage.jpg
 import { getLoggedinUser } from 'helpers/api_helper';
 import { userRoles } from 'common/user_roles';
 import { disconnectNotificationSocket } from 'helpers/socketService';
+import { changeLayoutMode } from 'slices/layouts/thunk';
+import { LAYOUT_MODE_TYPES } from 'Components/constants/layout';
 
 const ProfileDropdown = () => {
-    const dispatch = useDispatch();
+    const dispatch: any = useDispatch();
     const navigate = useNavigate();
     const userLogged = getLoggedinUser();
+    const layoutModeType = useSelector((state: any) => state.Layout.layoutModeType);
     const [isProfileDropdown, setIsProfileDropdown] = useState(false);
     const toggleProfileDropdown = () => setIsProfileDropdown(!isProfileDropdown);
     const [modals, setModals] = useState({ logout: false });
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
+    };
+
+    const handleToggleMode = () => {
+        const newMode = layoutModeType === LAYOUT_MODE_TYPES.LIGHTMODE
+            ? LAYOUT_MODE_TYPES.DARKMODE
+            : LAYOUT_MODE_TYPES.LIGHTMODE;
+        dispatch(changeLayoutMode(newMode));
     };
 
     const clicLogout = () => {
@@ -101,6 +111,21 @@ const ProfileDropdown = () => {
                                 </Link>
                             </DropdownItem>
                         )}
+                    </div>
+
+                    <div className="border-top py-1">
+                        <DropdownItem className="p-0" toggle={false}>
+                            <div
+                                className="dropdown-item d-flex align-items-center justify-content-between py-2"
+                                onClick={handleToggleMode}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                <div className="d-flex align-items-center">
+                                    <i className={`${layoutModeType === LAYOUT_MODE_TYPES.DARKMODE ? 'ri-sun-line' : 'ri-moon-line'} fs-18 me-2 text-primary`}></i>
+                                    <span>{layoutModeType === LAYOUT_MODE_TYPES.DARKMODE ? 'Modo Claro' : 'Modo Oscuro'}</span>
+                                </div>
+                            </div>
+                        </DropdownItem>
                     </div>
 
                     <div className="border-top py-1">

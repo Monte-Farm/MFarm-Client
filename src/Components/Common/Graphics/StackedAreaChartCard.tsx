@@ -60,7 +60,7 @@ const StackedAreaChartCard = ({
     legendPosition = 'top',
     areaOpacity = 0.7,
     strokeWidth = 2,
-    headerBgColor = '#f8f9fa',
+    headerBgColor,
     tooltipType = 'number',
 }: StackedAreaChartCardProps) => {
     // Transform data to Nivo format
@@ -85,7 +85,7 @@ const StackedAreaChartCard = ({
     if (!hasValidData) {
         return (
             <Card className={`w-100 ${className}`}>
-                <CardHeader style={{ backgroundColor: headerBgColor }}>
+                <CardHeader style={headerBgColor ? { backgroundColor: headerBgColor } : undefined}>
                     <h6 className="mb-0 text-muted">{title}</h6>
                 </CardHeader>
                 <CardBody style={{ height: typeof height === 'number' ? `${height}px` : height, display: "flex", justifyContent: "center", alignItems: "center" }}>
@@ -111,7 +111,7 @@ const StackedAreaChartCard = ({
 
     return (
         <Card className={`w-100 ${className}`}>
-            <CardHeader style={{ backgroundColor: headerBgColor }}>
+            <CardHeader style={headerBgColor ? { backgroundColor: headerBgColor } : undefined}>
                 <h6 className="mb-0 text-muted">{title}</h6>
             </CardHeader>
             <CardBody style={{ height: typeof height === 'number' ? `${height}px` : height, padding: "0 15px 15px 15px" }}>
@@ -169,12 +169,13 @@ const StackedAreaChartCard = ({
                         return (
                             <div
                                 style={{
-                                    background: 'white',
+                                    background: 'var(--vz-card-bg, white)',
                                     padding: '8px 12px',
-                                    border: '1px solid #ddd',
+                                    border: '1px solid var(--vz-border-color, #ddd)',
                                     borderRadius: '4px',
                                     boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                                    fontSize: '12px'
+                                    fontSize: '12px',
+                                    color: 'var(--vz-body-color, inherit)',
                                 }}
                             >
                                 <div style={{ color, fontWeight: 'bold' }}>

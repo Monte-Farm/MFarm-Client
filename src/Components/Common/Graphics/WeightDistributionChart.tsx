@@ -20,8 +20,8 @@ const WeightDistributionChart = ({ data, title }: Props) => {
 
     return (
         <Card className="w-100 h-100 shadow border-0">
-            <CardHeader className="bg-white border-0 pb-0">
-                <h5 className="mb-0 fw-semibold text-dark">
+            <CardHeader className="border-0 pb-0">
+                <h5 className="mb-0 fw-semibold">
                     {title || "Distribución de Peso"}
                 </h5>
             </CardHeader>

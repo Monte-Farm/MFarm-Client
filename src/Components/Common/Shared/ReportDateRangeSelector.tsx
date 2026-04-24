@@ -93,7 +93,7 @@ const ReportDateRangeSelector: React.FC<ReportDateRangeSelectorProps> = ({
                             className="text-start d-flex align-items-center border"
                         >
                             <i className={`ri-calendar-line me-2 fs-5 ${selectedPreset === 'today' ? 'text-white' : 'text-primary'}`}></i>
-                            <span className={selectedPreset === 'today' ? 'text-white' : 'text-dark'}>Hoy</span>
+                            <span className={selectedPreset === 'today' ? 'text-white' : ''}>Hoy</span>
                         </Button>
                         <Button
                             color={selectedPreset === 'week' ? 'primary' : 'light'}
@@ -105,7 +105,7 @@ const ReportDateRangeSelector: React.FC<ReportDateRangeSelectorProps> = ({
                             className="text-start d-flex align-items-center border"
                         >
                             <i className={`ri-calendar-2-line me-2 fs-5 ${selectedPreset === 'week' ? 'text-white' : 'text-primary'}`}></i>
-                            <span className={selectedPreset === 'week' ? 'text-white' : 'text-dark'}>Esta semana</span>
+                            <span className={selectedPreset === 'week' ? 'text-white' : ''}>Esta semana</span>
                         </Button>
                         <Button
                             color={selectedPreset === 'month' ? 'primary' : 'light'}
@@ -117,7 +117,7 @@ const ReportDateRangeSelector: React.FC<ReportDateRangeSelectorProps> = ({
                             className="text-start d-flex align-items-center border"
                         >
                             <i className={`ri-calendar-check-line me-2 fs-5 ${selectedPreset === 'month' ? 'text-white' : 'text-primary'}`}></i>
-                            <span className={selectedPreset === 'month' ? 'text-white' : 'text-dark'}>Este mes</span>
+                            <span className={selectedPreset === 'month' ? 'text-white' : ''}>Este mes</span>
                         </Button>
                         <Button
                             color={selectedPreset === 'year' ? 'primary' : 'light'}
@@ -129,7 +129,7 @@ const ReportDateRangeSelector: React.FC<ReportDateRangeSelectorProps> = ({
                             className="text-start d-flex align-items-center border"
                         >
                             <i className={`ri-calendar-event-line me-2 fs-5 ${selectedPreset === 'year' ? 'text-white' : 'text-primary'}`}></i>
-                            <span className={selectedPreset === 'year' ? 'text-white' : 'text-dark'}>Este año</span>
+                            <span className={selectedPreset === 'year' ? 'text-white' : ''}>Este año</span>
                         </Button>
                     </div>
                 </div>

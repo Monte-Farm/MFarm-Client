@@ -109,6 +109,11 @@ const Layout = (props : any) => {
         }
     };
 
+    // Sync topbar theme with layout mode
+    useEffect(() => {
+        dispatch(changeTopbarTheme(layoutModeType === "dark" ? "dark" : "light"));
+    }, [layoutModeType, dispatch]);
+
     // class add remove in header 
     useEffect(() => {
         window.addEventListener("scroll", scrollNavigation, true);

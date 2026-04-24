@@ -70,7 +70,7 @@ const BasicLineChartCard: React.FC<BasicLineChartCardProps> = ({
     className = "",
     margin = { top: 20, right: 20, bottom: 50, left: 60 },
     theme,
-    headerBgColor = '#f8f9fa',
+    headerBgColor,
 }) => {
     // Verificar si hay datos válidos
     const hasData = data.some(serie => serie.data && serie.data.length > 0 && serie.data.some(point => point.y !== null && point.y !== undefined));
@@ -86,39 +86,40 @@ const BasicLineChartCard: React.FC<BasicLineChartCardProps> = ({
         background: "transparent",
         text: {
             fontSize: 12,
-            fill: "#6b7280",
+            fill: "currentColor",
             fontFamily: "system-ui, -apple-system, sans-serif",
         },
         axis: {
             ticks: {
                 text: {
                     fontSize: 11,
-                    fill: "#9ca3af",
+                    fill: "currentColor",
                 },
             },
             legend: {
                 text: {
                     fontSize: 12,
-                    fill: "#4b5563",
+                    fill: "currentColor",
                     fontWeight: 500,
                 },
             },
         },
         grid: {
             line: {
-                stroke: "#e5e7eb",
+                stroke: "currentColor",
                 strokeWidth: 1,
                 strokeDasharray: "2 2",
+                opacity: 0.15,
             },
         },
         tooltip: {
             container: {
-                background: "rgba(255, 255, 255, 0.95)",
-                color: "#1f2937",
+                background: "var(--vz-card-bg, #fff)",
+                color: "var(--vz-body-color, #212529)",
                 fontSize: 12,
                 borderRadius: "6px",
                 boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                border: "1px solid #e5e7eb",
+                border: "1px solid var(--vz-border-color, #e5e7eb)",
             },
         },
         ...theme,
@@ -133,7 +134,7 @@ const BasicLineChartCard: React.FC<BasicLineChartCardProps> = ({
     if (loading) {
         return (
             <Card className={`w-100 h-100 ${className}`}>
-                <CardHeader style={{ backgroundColor: headerBgColor }}>
+                <CardHeader style={headerBgColor ? { backgroundColor: headerBgColor } : undefined}>
                     <h6 className="mb-0 text-muted">{title}</h6>
                 </CardHeader>
                 <CardBody style={{ height, display: "flex", justifyContent: "center", alignItems: "center" }}>
@@ -146,7 +147,7 @@ const BasicLineChartCard: React.FC<BasicLineChartCardProps> = ({
     if (error) {
         return (
             <Card className={`w-100 h-100 ${className}`}>
-                <CardHeader style={{ backgroundColor: headerBgColor }}>
+                <CardHeader style={headerBgColor ? { backgroundColor: headerBgColor } : undefined}>
                     <h6 className="mb-0 text-muted">{title}</h6>
                 </CardHeader>
                 <CardBody style={{ height, display: "flex", justifyContent: "center", alignItems: "center" }}>
@@ -162,7 +163,7 @@ const BasicLineChartCard: React.FC<BasicLineChartCardProps> = ({
     if (!hasData) {
         return (
             <Card className={`w-100 h-100 ${className}`}>
-                <CardHeader style={{ backgroundColor: headerBgColor }}>
+                <CardHeader style={headerBgColor ? { backgroundColor: headerBgColor } : undefined}>
                     <h6 className="mb-0 text-muted">{title}</h6>
                 </CardHeader>
                 <CardBody style={{ height, display: "flex", justifyContent: "center", alignItems: "center" }}>
@@ -177,7 +178,7 @@ const BasicLineChartCard: React.FC<BasicLineChartCardProps> = ({
 
     return (
         <Card className={`w-100 h-100 ${className}`}>
-            <CardHeader style={{ backgroundColor: headerBgColor }} className="d-flex align-items-center justify-content-between">
+            <CardHeader style={headerBgColor ? { backgroundColor: headerBgColor } : undefined} className="d-flex align-items-center justify-content-between">
                 <h6 className="mb-0 text-muted">{title}</h6>
                 {showLegend && (
                     <div className="d-flex align-items-center gap-2">
@@ -191,7 +192,7 @@ const BasicLineChartCard: React.FC<BasicLineChartCardProps> = ({
                                         borderRadius: "2px"
                                     }} 
                                 />
-                                <small style={{ fontSize: "12px", color: "#6b7280" }}>
+                                <small className="text-muted" style={{ fontSize: "12px" }}>
                                     {serie.id}
                                 </small>
                             </div>

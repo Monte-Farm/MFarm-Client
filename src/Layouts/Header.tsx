@@ -123,24 +123,9 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
 
 
                             {userLogged?.role !== "Superadmin" && farmName && (
-                                <div
-                                    className="d-none d-md-flex align-items-center ms-3 px-3 py-2 rounded-pill"
-                                    style={{
-                                        background: "linear-gradient(135deg, rgba(64, 81, 137, 0.12) 0%, rgba(10, 179, 156, 0.12) 100%)",
-                                        border: "1px solid rgba(64, 81, 137, 0.18)",
-                                        boxShadow: "0 2px 6px rgba(56, 65, 74, 0.06)",
-                                        maxWidth: "260px"
-                                    }}
-                                    title={farmName}
-                                >
-                                    <i
-                                        className="ri-home-4-fill fs-16 me-2"
-                                        style={{ color: "#405189" }}
-                                    ></i>
-                                    <span
-                                        className="fw-semibold text-truncate"
-                                        style={{ color: "#405189", letterSpacing: "0.2px" }}
-                                    >
+                                <div className="d-none d-md-flex align-items-center ms-3 farm-name-pill" title={farmName}>
+                                    <i className="ri-home-4-fill fs-16 me-2 farm-name-pill-icon"></i>
+                                    <span className="fw-semibold text-truncate farm-name-pill-text" style={{ letterSpacing: "0.2px" }}>
                                         {farmName}
                                     </span>
                                 </div>

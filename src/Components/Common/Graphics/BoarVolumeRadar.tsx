@@ -57,7 +57,7 @@ const BoarVolumeRadar = ({ data }: BoarVolumeRadarProps) => {
                         blendMode="multiply"
                         motionConfig="wobbly"
                         theme={{
-                            text: { fontSize: 14, fill: "#333" },
+                            text: { fontSize: 14, fill: "currentColor" },
                             legends: { text: { fontSize: 14 } },
                         }}
                     />

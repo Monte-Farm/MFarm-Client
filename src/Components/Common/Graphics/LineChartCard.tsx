@@ -123,7 +123,7 @@ const LineChartCard = ({
                         useMesh={true}
                         curve="natural"
                         theme={{
-                            text: { fontSize: 12, fill: "#333" },
+                            text: { fontSize: 12, fill: "currentColor" },
                             legends: { text: { fontSize: 14 } },
                         }}
                     />

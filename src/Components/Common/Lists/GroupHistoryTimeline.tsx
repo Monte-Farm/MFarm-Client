@@ -127,9 +127,9 @@ const GroupHistoryTimeline: React.FC<Props> = ({ data }) => {
 
     return (
         <Card className="border-0 shadow-sm">
-            <CardHeader className="bg-white border-bottom py-3">
+            <CardHeader className="border-bottom py-3">
                 <div className="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-                    <h6 className="mb-0 fw-bold text-dark">
+                    <h6 className="mb-0 fw-bold">
                         <RiHistoryLine className="me-2 text-primary" />
                         Historial del Grupo
                     </h6>
@@ -138,7 +138,7 @@ const GroupHistoryTimeline: React.FC<Props> = ({ data }) => {
                             {countByAction.map(({ action, count }) => {
                                 const cfg = actionConfig[action] || { color: '#64748b', label: action };
                                 return (
-                                    <Badge key={action} color="light" className="text-dark border fw-normal">
+                                    <Badge key={action} color="light" className="border fw-normal">
                                         <span className="rounded-circle d-inline-block me-2" style={{ width: 8, height: 8, background: cfg.color }} />
                                         {cfg.label}: <strong>{count}</strong>
                                     </Badge>
@@ -232,16 +232,16 @@ const GroupHistoryTimeline: React.FC<Props> = ({ data }) => {
                                     </div>
                                     <div className="ms-4 ps-2">
                                         <div className="d-flex align-items-center gap-2 mb-1 flex-wrap">
-                                            <Badge color="light" className="fw-normal text-dark border" style={{ background: `${cfg.color}15` }}>
+                                            <Badge color="light" className="fw-normal border" style={{ background: `${cfg.color}15` }}>
                                                 <span style={{ color: cfg.color }}>{cfg.label}</span>
                                             </Badge>
                                             <span className="text-muted small">·</span>
                                             <span className="text-muted small">{formatDate(item.date)}</span>
                                         </div>
-                                        <div className="fw-semibold text-dark mb-1">{translateDescription(item)}</div>
+                                        <div className="fw-semibold mb-1">{translateDescription(item)}</div>
                                         {item.userId?.name && (
                                             <div className="text-muted small">
-                                                Por <strong className="text-dark">{item.userId.name} {item.userId.lastname}</strong>
+                                                Por <strong>{item.userId.name} {item.userId.lastname}</strong>
                                             </div>
                                         )}
                                     </div>

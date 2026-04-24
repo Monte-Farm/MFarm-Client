@@ -39,6 +39,7 @@ export const changeLayout = (layout : any) => async (dispatch : any) => {
 export const changeLayoutMode = (layoutMode : any) => async (dispatch : any) => {
     try {
         changeHTMLAttribute("data-bs-theme", layoutMode);
+        localStorage.setItem("layoutModeType", layoutMode);
         dispatch(changeLayoutModeAction(layoutMode));
     } catch (error) { }
 };

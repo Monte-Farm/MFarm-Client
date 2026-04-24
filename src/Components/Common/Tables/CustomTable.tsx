@@ -4,6 +4,8 @@ import Pagination from "./Pagination";
 import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
 import { Column, ColumnType } from "common/data/data_types";
+import { useSelector } from "react-redux";
+import { darkenHex } from "utils/colorUtils";
 
 type CustomTableProps<T> = {
   columns: Column<T>[];
@@ -45,6 +47,9 @@ const CustomTable = <T,>({
   showPagination = true,
   fontSize,
 }: CustomTableProps<T>) => {
+
+  const layoutModeType = useSelector((state: any) => state.Layout?.layoutModeType);
+  const isDark = layoutModeType === "dark";
 
   const [filterText, setFilterText] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -115,9 +120,9 @@ const CustomTable = <T,>({
                 <th
                   key={index}
                   onClick={() => requestSort(col.accessor)}
-                  style={{ 
-                    cursor: "pointer", 
-                    backgroundColor: col.bgColor,
+                  style={{
+                    cursor: "pointer",
+                    backgroundColor: col.bgColor ? (isDark ? darkenHex(col.bgColor) : col.bgColor) : undefined,
                     ...(col.type === "currency" && { width: "1%", whiteSpace: "nowrap" })
                   }}
                 >
@@ -138,8 +143,8 @@ const CustomTable = <T,>({
                   style={{ cursor: rowClickable ? "pointer" : "default" }}
                 >
                   {columns.map((col, j) => (
-                    <td key={j} style={{ 
-                      backgroundColor: col.bgColor, 
+                    <td key={j} style={{
+                      backgroundColor: col.bgColor ? (isDark ? darkenHex(col.bgColor) : col.bgColor) : undefined,
                       textAlign: col.type === "currency" ? "right" : "left",
                       ...(col.type === "currency" && { whiteSpace: "nowrap" })
                     }}>

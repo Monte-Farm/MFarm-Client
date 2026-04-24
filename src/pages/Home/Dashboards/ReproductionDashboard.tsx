@@ -165,7 +165,7 @@ const ReproductionDashboard: React.FC<Props> = ({ startDate, endDate }) => {
             <Row className="g-3 mb-3">
                 <Col xl={5}>
                     <Card className="h-100">
-                        <CardHeader style={{ backgroundColor: "#f8f9fa" }}>
+                        <CardHeader>
                             <h6 className="mb-0 text-muted">
                                 <i className="ri-calendar-event-line me-1 text-primary"></i>
                                 Partos Proximos
@@ -178,7 +178,7 @@ const ReproductionDashboard: React.FC<Props> = ({ startDate, endDate }) => {
                 </Col>
                 <Col xl={7}>
                     <Card className="h-100">
-                        <CardHeader style={{ backgroundColor: "#f8f9fa" }}>
+                        <CardHeader>
                             <h6 className="mb-0 text-muted">Inseminaciones Recientes</h6>
                         </CardHeader>
                         <CardBody>

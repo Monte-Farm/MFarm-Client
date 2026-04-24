@@ -71,11 +71,11 @@ const WeightEvolutionChart = ({ entityId, mode, title }: Props) => {
 
     return (
         <Card className="w-100 h-100 shadow border-0">
-            <CardHeader className="bg-white border-0 pb-0">
+            <CardHeader className="border-0 pb-0">
                 <div className="d-flex flex-column gap-3">
 
                     {/* Título */}
-                    <h5 className="mb-0 fw-semibold text-dark">
+                    <h5 className="mb-0 fw-semibold">
                         {title ||
                             (mode === "group"
                                 ? "Evolución Grupal"

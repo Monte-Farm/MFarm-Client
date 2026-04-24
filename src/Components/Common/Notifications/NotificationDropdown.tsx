@@ -348,7 +348,7 @@ const NotificationDropdown = () => {
                             >
                                 <i className="ri-notification-off-line" style={{ fontSize: '34px', color: '#405189', opacity: 0.8 }} />
                             </div>
-                            <h6 className="mb-1 fw-semibold" style={{ fontSize: '15px', color: '#212529' }}>
+                            <h6 className="mb-1 fw-semibold" style={{ fontSize: '15px' }}>
                                 {activeTab === 'unread' ? 'Sin notificaciones nuevas' : 'No hay notificaciones'}
                             </h6>
                             <p className="mb-0" style={{ fontSize: '12.5px', maxWidth: '260px', color: '#878a99', lineHeight: '1.5' }}>
@@ -415,7 +415,6 @@ const NotificationDropdown = () => {
                                                     className="mb-0 text-truncate"
                                                     style={{
                                                         fontSize: '14px',
-                                                        color: '#212529',
                                                         fontWeight: !n.read ? 700 : 500,
                                                         letterSpacing: '-0.1px',
                                                     }}
