@@ -6,6 +6,7 @@ import './assets/scss/themes.scss';
 //import Route
 import Route from './Routes';
 import { APIClient, getLoggedinUser } from 'helpers/api_helper';
+import PeriodClosedModal from 'Components/Common/Shared/PeriodClosedModal';
 
 // Define el contexto con una estructura para exponer tanto el estado como el setter
 export const ConfigContext = React.createContext<{
@@ -30,6 +31,7 @@ function App() {
     <ConfigContext.Provider value={{ apiUrl, axiosHelper, userLogged, setUserLogged }}>
       <React.Fragment>
         <Route />
+        <PeriodClosedModal />
       </React.Fragment>
     </ConfigContext.Provider>
 

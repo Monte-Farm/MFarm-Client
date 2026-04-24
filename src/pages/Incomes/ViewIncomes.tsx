@@ -44,7 +44,7 @@ const ViewIncomes = () => {
             accessor: 'originName',
             isFilterable: true,
             type: 'text',
-            render: (_, row) => <span>{row.origin.id.name}</span>
+            render: (_, row) => <span>{row.origin?.id?.name ?? 'N/A'}</span>
         },
         { header: 'Fecha de entrada', accessor: 'date', isFilterable: true, type: 'date' },
         {

@@ -18,6 +18,9 @@ import AiReducer from "./ai/reducer";
 // Configurations
 import ConfigurationsReducer from "./configurations/reducer";
 
+// Period Closing
+import PeriodClosingReducer from "./periodClosing/reducer";
+
 const rootReducer = combineReducers({
     Layout: LayoutReducer,
     Login: LoginReducer,
@@ -27,6 +30,7 @@ const rootReducer = combineReducers({
     Notifications: NotificationsReducer,
     Ai: AiReducer,
     Configurations: ConfigurationsReducer,
+    PeriodClosing: PeriodClosingReducer,
 });
 
 export default rootReducer;

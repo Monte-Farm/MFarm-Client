@@ -72,6 +72,9 @@ const Navdata = () => {
     //Expenses
     const [isExpenses, setIsExpenses] = useState<boolean>(false);
 
+    //Period Closing
+    const [isPeriodClosing, setIsPeriodClosing] = useState<boolean>(false);
+
     //Sale
     const [isSale, setIsSale] = useState<boolean>(false);
     const [isPigSales, setIsPigSales] = useState<boolean>(false);
@@ -420,6 +423,20 @@ const Navdata = () => {
                 e.preventDefault();
                 setIsExpenses(!isExpenses);
                 setIscurrentState('Expenses');
+                updateIconSidebar(e);
+            },
+        },
+        {
+            id: 'periodClosing',
+            label: 'Cierre de Periodos',
+            icon: 'ri-lock-2-line',
+            link: '/finance/period-closing',
+            roles: ['Superadmin', 'farm_manager'],
+            stateVariables: isPeriodClosing,
+            click: function (e: any) {
+                e.preventDefault();
+                setIsPeriodClosing(!isPeriodClosing);
+                setIscurrentState('PeriodClosing');
                 updateIconSidebar(e);
             },
         },
@@ -920,7 +937,7 @@ const Navdata = () => {
                         },
                         {
                             id: 4,
-                            label: "Cierre de Operacion",
+                            label: "Estado de Resultados",
                             link: "/reports/finance/operations-closing",
                             roles: ['Superadmin', 'farm_manager'],
                             parentId: "financeReports"

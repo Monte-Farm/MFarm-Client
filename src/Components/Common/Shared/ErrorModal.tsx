@@ -1,6 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
 import ErrorImg from "../../../assets/images/error-modal.png"
+import { wasPeriodClosedRecently } from "utils/periodClosedEvents";
 
 interface SuccessModalProps {
     isOpen: boolean;
@@ -9,6 +10,19 @@ interface SuccessModalProps {
 }
 
 const ErrorModal: React.FC<SuccessModalProps> = ({ isOpen, onClose, message }) => {
+    const [suppressed, setSuppressed] = useState(false);
+
+    useEffect(() => {
+        if (isOpen && wasPeriodClosedRecently()) {
+            setSuppressed(true);
+            onClose();
+        } else if (!isOpen) {
+            setSuppressed(false);
+        }
+    }, [isOpen, onClose]);
+
+    if (suppressed) return null;
+
     return (
         <Modal isOpen={isOpen} backdrop="static" keyboard={false} centered>
             <ModalHeader></ModalHeader>

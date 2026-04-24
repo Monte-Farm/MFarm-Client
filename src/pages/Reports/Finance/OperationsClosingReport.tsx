@@ -1,13 +1,16 @@
 import React from "react";
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
-import { Button, Card, CardBody, CardHeader, Col, Row, Table } from "reactstrap";
+import { Link } from "react-router-dom";
+import { Alert, Button, Card, CardBody, CardHeader, Col, Row, Table } from "reactstrap";
 import { getLoggedinUser } from "helpers/api_helper";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import ReportPageLayout from "Components/Common/Shared/ReportPageLayout";
 import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
 import BasicBarChart from "Components/Common/Graphics/BasicBarChart";
+import { PERIOD_CLOSING_URLS } from "helpers/period_closing_urls";
+import { PeriodClosingByPeriod } from "common/data_interfaces";
 import { saveAs } from "file-saver";
 
 interface CostItem {
@@ -45,7 +48,7 @@ const formatCurrency = (value: number): string => {
 };
 
 const OperationsClosingReport = () => {
-    document.title = "Cierre de Operacion | Reportes";
+    document.title = "Estado de Resultados | Reportes";
 
     const configContext = useContext(ConfigContext);
     const userLogged = getLoggedinUser();
@@ -66,6 +69,8 @@ const OperationsClosingReport = () => {
     const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
     const [startDate, setStartDate] = useState(monthStart.toISOString().split("T")[0]);
     const [endDate, setEndDate] = useState(monthEnd.toISOString().split("T")[0]);
+
+    const [closingInfo, setClosingInfo] = useState<PeriodClosingByPeriod | null>(null);
 
     const fetchData = async () => {
         if (!configContext || !userLogged) return;
@@ -97,6 +102,32 @@ const OperationsClosingReport = () => {
 
     useEffect(() => {
         fetchData();
+    }, [startDate, endDate]);
+
+    useEffect(() => {
+        // Detect if selected range matches exactly a calendar month → check for existing closing
+        const check = async () => {
+            if (!configContext || !userLogged) return;
+            const start = new Date(startDate + "T00:00:00");
+            const end = new Date(endDate + "T00:00:00");
+            const isFirstOfMonth = start.getDate() === 1;
+            const isLastOfMonth = end.getDate() === new Date(end.getFullYear(), end.getMonth() + 1, 0).getDate();
+            const sameMonth = start.getFullYear() === end.getFullYear() && start.getMonth() === end.getMonth();
+            if (!(isFirstOfMonth && isLastOfMonth && sameMonth)) {
+                setClosingInfo(null);
+                return;
+            }
+            try {
+                const res = await configContext.axiosHelper.get(
+                    `${configContext.apiUrl}${PERIOD_CLOSING_URLS.byPeriod(userLogged.farm_assigned)}?period_type=monthly&year=${start.getFullYear()}&month=${start.getMonth() + 1}`
+                );
+                setClosingInfo(res.data?.data || null);
+            } catch {
+                setClosingInfo(null);
+            }
+        };
+        check();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [startDate, endDate]);
 
     // Group costs by category
@@ -150,10 +181,10 @@ const OperationsClosingReport = () => {
 
     return (
         <ReportPageLayout
-            title="Cierre de Operacion"
+            title="Estado de Resultados"
             pageTitle="Reportes Financieros"
             onGeneratePdf={handleGeneratePdf}
-            pdfTitle="Cierre de Operacion"
+            pdfTitle="Estado de Resultados"
             startDate={startDate}
             endDate={endDate}
             onDateChange={(s, e) => { setStartDate(s); setEndDate(e); }}
@@ -167,6 +198,31 @@ const OperationsClosingReport = () => {
                 </Button>
             }
         >
+            {/* Closing banner */}
+            {closingInfo && (
+                <Alert color={closingInfo.status === "closed" ? "success" : "warning"} className="d-flex align-items-center justify-content-between mb-3">
+                    <div>
+                        <i className={`${closingInfo.status === "closed" ? "ri-lock-line" : "ri-lock-unlock-line"} me-2`} />
+                        {closingInfo.status === "closed" ? (
+                            <>
+                                Este mes ya fue <strong>cerrado</strong>
+                                {closingInfo.closedBy && <> por {closingInfo.closedBy.name} {closingInfo.closedBy.lastname}</>}
+                                {closingInfo.closedAt && <> el {new Date(closingInfo.closedAt).toLocaleDateString("es-MX")}</>}.
+                            </>
+                        ) : (
+                            <>
+                                Este mes fue <strong>reabierto</strong>
+                                {closingInfo.reopenedBy && <> por {closingInfo.reopenedBy.name} {closingInfo.reopenedBy.lastname}</>}
+                                {closingInfo.reopenReason && <> — Razón: {closingInfo.reopenReason}</>}
+                            </>
+                        )}
+                    </div>
+                    <Link to={`/finance/period-closing/${closingInfo._id}`} className="btn btn-sm btn-light">
+                        Ver cierre oficial
+                    </Link>
+                </Alert>
+            )}
+
             {/* KPIs */}
             <Row className="g-3 mb-3">
                 <Col xl={2} md={4} sm={6}>
