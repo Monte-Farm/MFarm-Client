@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Badge, Card, CardBody, CardHeader, Col, Row } from "reactstrap";
 import { ConfigContext } from "App";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
 import BasicBarChart from "Components/Common/Graphics/BasicBarChart";
 import DonutChartCard from "Components/Common/Graphics/DonutChartCard";
@@ -30,7 +30,7 @@ const categoryColors = ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899", "
 
 const WarehouseDashboard: React.FC<Props> = ({ startDate, endDate }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [data, setData] = useState<WarehouseData | null>(null);

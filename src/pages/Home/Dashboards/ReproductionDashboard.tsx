@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Badge, Card, CardBody, CardHeader, Col, Row } from "reactstrap";
 import { ConfigContext } from "App";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
 import BasicLineChartCard from "Components/Common/Graphics/BasicLineChartCard";
 import BasicBarChart from "Components/Common/Graphics/BasicBarChart";
@@ -38,7 +38,7 @@ const resultLabels: Record<string, { label: string; color: string }> = {
 
 const ReproductionDashboard: React.FC<Props> = ({ startDate, endDate }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [data, setData] = useState<ReproductionData | null>(null);
