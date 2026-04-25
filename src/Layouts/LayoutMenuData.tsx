@@ -1,10 +1,10 @@
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Navdata = () => {
     const history = useNavigate();
-    const userLogged = getLoggedinUser()
+    const userLogged = getEffectiveUser()
 
     //state data
     const [isHome, setIsHome] = useState<boolean>(false);

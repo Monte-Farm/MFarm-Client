@@ -11,6 +11,7 @@ interface FarmCardsProps<T> {
     onEditClick?: (row: T) => void;
     onDeleteClick?: (row: T) => void;
     onCardClick?: (row: T) => void;
+    onEnterClick?: (row: T) => void;
     imageAccessor?: keyof T;
     className?: string;
 }
@@ -22,6 +23,7 @@ const FarmCards = <T extends Record<string, any>>({
     onEditClick,
     onDeleteClick,
     onCardClick,
+    onEnterClick,
     imageAccessor,
     className = "",
 }: FarmCardsProps<T>) => {
@@ -60,11 +62,23 @@ const FarmCards = <T extends Record<string, any>>({
                                     />
                                 )}
                                 <div className="farm-card-actions">
+                                    {onEnterClick && (
+                                        <Button
+                                            color="warning"
+                                            size="sm"
+                                            title="Entrar como gerente"
+                                            onClick={(e) => { e.stopPropagation(); onEnterClick(item); }}
+                                            className="farm-action-btn"
+                                            disabled={item.status === false}
+                                        >
+                                            <i className="ri-login-box-line" />
+                                        </Button>
+                                    )}
                                     {onDetailsClick && (
                                         <Button
                                             color="primary"
                                             size="sm"
-                                            onClick={() => onDetailsClick(item)}
+                                            onClick={(e) => { e.stopPropagation(); onDetailsClick(item); }}
                                             className="farm-action-btn"
                                         >
                                             <i className="ri-eye-fill" />
@@ -74,7 +88,7 @@ const FarmCards = <T extends Record<string, any>>({
                                         <Button
                                             color="secondary"
                                             size="sm"
-                                            onClick={() => onEditClick(item)}
+                                            onClick={(e) => { e.stopPropagation(); onEditClick(item); }}
                                             className="farm-action-btn"
                                             disabled={item.status === false}
                                         >
@@ -85,7 +99,7 @@ const FarmCards = <T extends Record<string, any>>({
                                         <Button
                                             color="danger"
                                             size="sm"
-                                            onClick={() => onDeleteClick(item)}
+                                            onClick={(e) => { e.stopPropagation(); onDeleteClick(item); }}
                                             className="farm-action-btn"
                                             disabled={item.status === false}
                                         >

@@ -1033,6 +1033,49 @@ File: Custom Css File
     color: #405189;
 }
 
+.farm-name-pill--impersonating {
+    background: linear-gradient(135deg, rgba(230, 126, 34, 0.12) 0%, rgba(231, 76, 60, 0.10) 100%);
+    border-color: rgba(230, 126, 34, 0.35);
+
+    .farm-name-pill-icon,
+    .farm-name-pill-text {
+        color: #c0620a;
+    }
+}
+
+.farm-selector-input {
+    min-width: 260px;
+    border-radius: 50rem;
+    border: 1px solid rgba(64, 81, 137, 0.25);
+    background: linear-gradient(135deg, rgba(64, 81, 137, 0.08) 0%, rgba(10, 179, 156, 0.08) 100%);
+    color: #405189;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 0.3rem 0.9rem;
+
+    &:focus {
+        border-color: rgba(64, 81, 137, 0.5);
+        box-shadow: 0 0 0 2px rgba(64, 81, 137, 0.12);
+    }
+}
+
+.farm-exit-impersonation-btn {
+    padding: 0.3rem 0.75rem;
+    border-radius: 50rem;
+    font-size: 12px;
+    font-weight: 600;
+    background-color: rgba(230, 126, 34, 0.12);
+    border: 1px solid rgba(230, 126, 34, 0.4);
+    color: #c0620a;
+    transition: background-color 0.15s, border-color 0.15s;
+
+    &:hover {
+        background-color: rgba(230, 126, 34, 0.22);
+        border-color: rgba(230, 126, 34, 0.6);
+        color: #9a4e08;
+    }
+}
+
 // ============================================
 // Dark Mode Overrides
 // ============================================
@@ -1111,6 +1154,44 @@ File: Custom Css File
     .farm-name-pill-icon,
     .farm-name-pill-text {
         color: #8aa0e0;
+    }
+
+    .farm-name-pill--impersonating {
+        background: linear-gradient(135deg, rgba(230, 126, 34, 0.22) 0%, rgba(231, 76, 60, 0.18) 100%);
+        border-color: rgba(230, 126, 34, 0.45);
+
+        .farm-name-pill-icon,
+        .farm-name-pill-text {
+            color: #f0a060;
+        }
+    }
+
+    .farm-exit-impersonation-btn {
+        background-color: rgba(230, 126, 34, 0.18);
+        border-color: rgba(230, 126, 34, 0.45);
+        color: #f0a060;
+
+        &:hover {
+            background-color: rgba(230, 126, 34, 0.30);
+            border-color: rgba(230, 126, 34, 0.65);
+            color: #f5b87a;
+        }
+    }
+
+    .farm-selector-input {
+        background: linear-gradient(135deg, rgba(64, 81, 137, 0.20) 0%, rgba(10, 179, 156, 0.20) 100%);
+        border-color: rgba(64, 81, 137, 0.35);
+        color: #8aa0e0;
+
+        option {
+            background-color: #212529;
+            color: #ced4da;
+        }
+
+        &:focus {
+            border-color: rgba(138, 160, 224, 0.6);
+            box-shadow: 0 0 0 2px rgba(64, 81, 137, 0.20);
+        }
     }
 
     // Filter popover
@@ -1598,5 +1679,44 @@ File: Custom Css File
     // ---- .text-black ----
     .text-black {
         color: #e9ecef !important;
+    }
+}
+
+// Flatpickr dark mode — el calendario se monta en <body> (fuera de [data-bs-theme]),
+// así que se necesita un selector independiente desde html.
+html[data-bs-theme="dark"] {
+    .flatpickr-calendar {
+        background: #212529;
+        border-color: #32383e;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+        .flatpickr-months, .flatpickr-month {
+            background: #1a1d21;
+            color: #ced4da;
+        }
+
+        .flatpickr-current-month .flatpickr-monthDropdown-months,
+        .flatpickr-current-month input.cur-year {
+            background: #1a1d21;
+            color: #ced4da;
+        }
+
+        .flatpickr-weekdays { background: #1a1d21; }
+        span.flatpickr-weekday { color: #878a99; }
+
+        .flatpickr-day {
+            color: #ced4da;
+            &:hover { background: #32383e; border-color: #32383e; }
+            &.today { border-color: #405189; }
+            &.selected { background: #405189; border-color: #405189; color: #fff; }
+            &.flatpickr-disabled { color: #495057; }
+        }
+
+        .flatpickr-prev-month,
+        .flatpickr-next-month {
+            color: #ced4da;
+            fill: #ced4da;
+            svg { fill: #ced4da; }
+        }
     }
 }

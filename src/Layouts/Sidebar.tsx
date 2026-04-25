@@ -3,12 +3,12 @@ import SimpleBar from "simplebar-react";
 import VerticalLayout from "./VerticalLayouts";
 import { Container } from "reactstrap";
 import { useSelector } from "react-redux";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import systemLogo from '../assets/images/system-logo.png'
 import { GlobalConfiguration } from "common/data_interfaces";
 
 const Sidebar = ({ layoutType }: any) => {
-  const userLogged = getLoggedinUser();
+  const userLogged = getEffectiveUser();
   const globalConfig: GlobalConfiguration | null = useSelector((s: any) => s.Configurations.globalConfig);
   const logoSrc = globalConfig?.logoUrl || systemLogo;
 

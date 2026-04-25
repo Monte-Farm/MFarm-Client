@@ -4,6 +4,7 @@ import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Modal, Mo
 import { useDispatch, useSelector } from 'react-redux';
 import defaultProfileImage from '../../../assets/images/default-profile-mage.jpg';
 import { getLoggedinUser } from 'helpers/api_helper';
+import { stopImpersonation } from 'helpers/impersonation_helper';
 import { userRoles } from 'common/user_roles';
 import { disconnectNotificationSocket } from 'helpers/socketService';
 import { changeLayoutMode } from 'slices/layouts/thunk';
@@ -31,6 +32,7 @@ const ProfileDropdown = () => {
 
     const clicLogout = () => {
         disconnectNotificationSocket(dispatch);
+        stopImpersonation();
         sessionStorage.removeItem('authUser');
         navigate('/login');
     }

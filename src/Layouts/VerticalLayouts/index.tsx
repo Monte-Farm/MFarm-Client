@@ -7,13 +7,13 @@ import { withTranslation } from "react-i18next";
 import withRouter from "../../Components/Common/Velzon/withRouter";
 import { useSelector } from "react-redux";
 import { createSelector } from 'reselect';
-import { getLoggedinUser } from 'helpers/api_helper';
+import { getEffectiveUser } from 'helpers/impersonation_helper';
 import { userRoles } from 'common/user_roles';
 
 const VerticalLayout = (props: any) => {
     const navData = navdata().props.children;
     const path = props.router.location.pathname;
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
 
     const userRolesArray = Array.isArray(userLogged.role) ? userLogged.role : [userLogged.role];
 

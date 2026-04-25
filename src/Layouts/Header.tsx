@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Dropdown, DropdownMenu, DropdownToggle, Form } from 'reactstrap';
+import { Dropdown, DropdownMenu, DropdownToggle, Form, Input } from 'reactstrap';
 
 import { changeSidebarVisibility } from '../slices/thunks';
 import { useSelector, useDispatch } from "react-redux";
@@ -8,21 +8,31 @@ import { createSelector } from 'reselect';
 import Configuration from 'Components/Common/Velzon/Configuration';
 import { ConfigContext } from 'App';
 import { getLoggedinUser } from 'helpers/api_helper';
+import { stopImpersonation } from 'helpers/impersonation_helper';
 import LogoSystem from '../assets/images/logo.png'
-import { SubwarehouseData } from 'common/data_interfaces';
+import { FarmData, SubwarehouseData } from 'common/data_interfaces';
 import ProfileDropdown from 'Components/Common/Velzon/ProfileDropdown';
 import NotificationDropdown from 'Components/Common/Notifications/NotificationDropdown';
+import { useNavigate } from 'react-router-dom';
 
 const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
     const dispatch: any = useDispatch();
     const configContext = useContext(ConfigContext)
+    const navigate = useNavigate();
     const userLogged = getLoggedinUser();
+    const impersonation = configContext?.impersonation ?? null;
     const [assigment, setAssigment] = useState<SubwarehouseData | null>(null)
     const [farmName, setFarmName] = useState<string>("")
+    const [farms, setFarms] = useState<FarmData[]>([])
+
+    const realRoles: string[] = Array.isArray(userLogged?.role) ? userLogged.role : [userLogged?.role];
+    const isSuperadmin = realRoles.includes('Superadmin');
 
     useEffect(() => {
         const fetchFarmName = async () => {
-            if (!userLogged || userLogged.role === "Superadmin" || !userLogged.farm_assigned) return
+            if (!userLogged || !userLogged.farm_assigned) return;
+            if (impersonation) return;
+            if (isSuperadmin) return;
             try {
                 const response = await configContext?.axiosHelper.get(`${configContext.apiUrl}/farm/find_by_id/${userLogged.farm_assigned}`)
                 const farm = response?.data?.data
@@ -32,7 +42,21 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
             }
         }
         fetchFarmName()
-    }, [configContext, userLogged?.farm_assigned, userLogged?.role])
+    }, [configContext, userLogged?.farm_assigned, userLogged?.role, impersonation])
+
+    useEffect(() => {
+        if (!isSuperadmin || impersonation || !configContext) return;
+        configContext.axiosHelper
+            .get(`${configContext.apiUrl}/farm/find_all`)
+            .then((res) => setFarms(res.data.data || []))
+            .catch(() => setFarms([]));
+    }, [isSuperadmin, impersonation])
+
+    const handleExitImpersonation = () => {
+        stopImpersonation();
+        configContext?.setImpersonation(null);
+        navigate('/farms/view_farms');
+    };
 
     const selectDashboardData = createSelector(
         (state) => state.Layout,
@@ -122,14 +146,47 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
                             </button>
 
 
-                            {userLogged?.role !== "Superadmin" && farmName && (
+                            {impersonation ? (
+                                <div className="d-none d-md-flex align-items-center ms-3 gap-2">
+                                    <div className="farm-name-pill farm-name-pill--impersonating" title={impersonation.farm_name}>
+                                        <i className="ri-eye-line fs-16 me-2 farm-name-pill-icon"></i>
+                                        <span className="fw-semibold text-truncate farm-name-pill-text" style={{ letterSpacing: "0.2px" }}>
+                                            {impersonation.farm_name}
+                                        </span>
+                                    </div>
+                                    <button
+                                        className="btn btn-sm farm-exit-impersonation-btn"
+                                        onClick={handleExitImpersonation}
+                                        title="Salir del modo granja"
+                                    >
+                                        <i className="ri-logout-box-line me-1" />
+                                        Salir
+                                    </button>
+                                </div>
+                            ) : isSuperadmin ? (
+                                <div className="d-none d-md-flex align-items-center ms-3 gap-2">
+                                    <i className="ri-building-line farm-name-pill-icon fs-16" />
+                                    <Input
+                                        type="select"
+                                        bsSize="sm"
+                                        value={configContext?.superadminFarmId ?? ''}
+                                        onChange={(e) => configContext?.setSuperadminFarmId(e.target.value)}
+                                        className="farm-selector-input"
+                                    >
+                                        <option value="">— Todas las granjas —</option>
+                                        {farms.map((f) => (
+                                            <option key={f._id} value={f._id}>{f.name}</option>
+                                        ))}
+                                    </Input>
+                                </div>
+                            ) : (farmName && (
                                 <div className="d-none d-md-flex align-items-center ms-3 farm-name-pill" title={farmName}>
                                     <i className="ri-home-4-fill fs-16 me-2 farm-name-pill-icon"></i>
                                     <span className="fw-semibold text-truncate farm-name-pill-text" style={{ letterSpacing: "0.2px" }}>
                                         {farmName}
                                     </span>
                                 </div>
-                            )}
+                            ))}
 
                             {/* <SearchOption /> */}
                         </div>

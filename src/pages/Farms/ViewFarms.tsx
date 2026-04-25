@@ -9,11 +9,17 @@ import FarmCards from "Components/Common/Lists/FarmCards";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { useNavigate } from "react-router-dom";
 import FarmForm from "Components/Common/Forms/FarmForm";
+import { startImpersonation } from "helpers/impersonation_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 
 const ViewFarms = () => {
     document.title = 'Granjas | System Pig'
     const configContext = useContext(ConfigContext);
     const navigate = useNavigate();
+    const realUser = getEffectiveUser();
+    const isSuperadmin = Array.isArray(realUser?.role)
+        ? realUser.role.includes('Superadmin')
+        : realUser?.role === 'Superadmin';
     const [loading, setLoading] = useState<boolean>(true);
     const [farms, setFarms] = useState<FarmData[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -125,6 +131,11 @@ const ViewFarms = () => {
                                 toggleModal('update', true);
                             }}
                             onCardClick={(farm) => navigate(`/farms/farm_details/${farm._id}`)}
+                            onEnterClick={isSuperadmin ? (farm) => {
+                                startImpersonation({ farm_id: farm._id!, farm_name: farm.name, effective_role: 'farm_manager' });
+                                configContext?.setImpersonation({ farm_id: farm._id!, farm_name: farm.name, effective_role: 'farm_manager' });
+                                navigate('/home');
+                            } : undefined}
                             imageAccessor="image"
                         />
                     </CardBody>

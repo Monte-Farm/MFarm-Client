@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom"
 import { Button, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
+import { stopImpersonation } from "helpers/impersonation_helper";
 
 const Logout = () => {
     const history = useNavigate();
@@ -12,8 +13,9 @@ const Logout = () => {
 
 
     const clicLogout = () => {
-        history('/login')
-        sessionStorage.removeItem('authUser')
+        stopImpersonation();
+        sessionStorage.removeItem('authUser');
+        history('/login');
     }
 
     return (
