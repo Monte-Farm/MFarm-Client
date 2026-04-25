@@ -1,4 +1,5 @@
 import { loginSuccess, logoutUserSuccess, apiError, reset_login_flag } from './reducer';
+import { stopImpersonation } from 'helpers/impersonation_helper';
 
 export const loginUser = (user: any, history: any) => async (dispatch: any) => {
   try {
@@ -10,6 +11,7 @@ export const loginUser = (user: any, history: any) => async (dispatch: any) => {
 
 export const logoutUser = () => async (dispatch: any) => {
   try {
+    stopImpersonation();
     sessionStorage.removeItem("authUser");
     dispatch(logoutUserSuccess(true));
   } catch (error) {
