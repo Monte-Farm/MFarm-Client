@@ -1,6 +1,6 @@
 import { ConfigContext } from "App"
 import { useFormik } from "formik"
-import { getLoggedinUser } from "helpers/api_helper"
+import { getEffectiveUser } from "helpers/impersonation_helper"
 import { useContext, useEffect, useState } from "react"
 import * as Yup from 'yup';
 import classnames from "classnames";
@@ -26,7 +26,7 @@ interface DiscardPigFormProps {
 
 const DiscardPigForm: React.FC<DiscardPigFormProps> = ({ pig, onSave, onCancel }) => {
     const configContext = useContext(ConfigContext)
-    const userLogged = getLoggedinUser()
+    const userLogged = getEffectiveUser()
     const [modals, setModals] = useState({ pigDetails: false, success: false, error: false })
     const [selectedPig, setSelectedPig] = useState<any>()
     const [activeStep, setActiveStep] = useState<number>(1);

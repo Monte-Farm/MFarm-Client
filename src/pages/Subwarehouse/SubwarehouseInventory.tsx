@@ -7,7 +7,7 @@ import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Column } from "common/data/data_types";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
@@ -17,7 +17,7 @@ const SubwarehouseInventory = () => {
     document.title = 'Inventario de Subalmacen | Subalmacen';
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [loading, setLoading] = useState<boolean>(true)
     const [subwarehouseInventory, setSubwarehouseInventory] = useState([])

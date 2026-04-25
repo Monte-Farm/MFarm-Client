@@ -5,7 +5,7 @@ import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody,
 import { Column } from "common/data/data_types";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import SellPigsFormV2 from "Components/Common/Forms/SellPigsFormV2";
 import SaleDetails from "Components/Common/Details/SaleDetails";
@@ -34,7 +34,7 @@ const ViewPigSales = () => {
     document.title = "Ver Ventas | Ventas";
 
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
 
     const [sales, setSales] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);

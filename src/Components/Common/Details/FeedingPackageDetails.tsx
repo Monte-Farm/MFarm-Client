@@ -1,5 +1,5 @@
 import { ConfigContext } from "App";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { FEEDING_PACKAGE_URLS } from "helpers/feeding_urls";
 import { useContext, useEffect, useState } from "react";
 import AlertMessage from "../Shared/AlertMesagge";
@@ -20,7 +20,7 @@ interface FeedingPackageDetailsProps {
 
 const FeedingPackageDetails: React.FC<FeedingPackageDetailsProps> = ({ feedingPackageId }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true);
     const [recipe, setRecipe] = useState<any>({});
     const [feedingsItems, setFeedingsItems] = useState<any[]>([]);

@@ -1,5 +1,5 @@
 import { ConfigContext } from "App";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useState } from "react";
 import { Button, Input, Label, Spinner } from "reactstrap";
 import ErrorModal from "../Shared/ErrorModal";
@@ -14,7 +14,7 @@ interface WeighSinglePigFormProps {
 
 const WeighSinglePigForm: React.FC<WeighSinglePigFormProps> = ({ pigId, currentWeight, onSave }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [modals, setModals] = useState({ success: false, error: false });
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' });

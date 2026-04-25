@@ -3,7 +3,7 @@ import { Column } from "common/data/data_types";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge, Button, ButtonGroup, Card, CardBody, CardHeader, CardSubtitle, Container, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, UncontrolledTooltip, Spinner } from "reactstrap";
@@ -22,7 +22,7 @@ import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSel
 const ViewUpcomingBirths = () => {
     document.title = 'Proximos partos | Management system';
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const navigate = useNavigate();
     const [alertConfig, setAlertConfig] = useState({ visible: false, mesagge: '', color: '' })
     const [modals, setModals] = useState({ birth: false, selectedBirth: false, pregnancyDetails: false, abortion: false, viewPDF: false, dateRange: false, bulkAbortion: false })

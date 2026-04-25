@@ -5,7 +5,7 @@ import { Badge, Button, Card, CardBody, CardHeader, Col, Container, Modal, Modal
 import { Column } from "common/data/data_types";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import ExpenseForm from "Components/Common/Forms/ExpenseForm";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
@@ -25,7 +25,7 @@ const ViewExpenses = () => {
     document.title = "Gastos | MFarm";
 
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [entries, setEntries] = useState<any[]>([]);

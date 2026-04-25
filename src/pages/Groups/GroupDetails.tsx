@@ -2,7 +2,7 @@ import { ConfigContext } from "App";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -49,7 +49,7 @@ const GroupDetails = () => {
     document.title = "Detalles de grupo | Management System";
     const { group_id } = useParams();
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const navigate = useNavigate();
 
     const [loading, setLoading] = useState<boolean>(true);

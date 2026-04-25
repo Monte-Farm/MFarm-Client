@@ -1,7 +1,7 @@
 import { ConfigContext } from "App";
 import { HttpStatusCode } from "axios";
 import { useFormik } from "formik";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import DatePicker from "react-flatpickr";
 import { FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo } from "react-icons/fi";
@@ -16,7 +16,7 @@ interface DiscardSampleFormProps {
 }
 
 const DiscardSampleForm = ({ sample, onSave, onCancel }: DiscardSampleFormProps) => {
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [successModalOpen, setSuccessModalOpen] = useState<boolean>(false);

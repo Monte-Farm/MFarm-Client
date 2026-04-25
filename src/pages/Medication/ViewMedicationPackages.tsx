@@ -5,7 +5,7 @@ import MedicationPackageForm from "Components/Common/Forms/MedicationPackageForm
 import BreadCrumb from "Components/Common/Shared/BreadCrumb"
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation"
 import CustomTable from "Components/Common/Tables/CustomTable"
-import { getLoggedinUser } from "helpers/api_helper"
+import { getEffectiveUser } from "helpers/impersonation_helper"
 import { useContext, useEffect, useState } from "react"
 import { FiInbox } from "react-icons/fi"
 import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader } from "reactstrap"
@@ -13,7 +13,7 @@ import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody,
 const ViewMedicationPackages = () => {
     document.title = 'Ver paquetes de medicación | System Management'
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true);
     const [medicationsPackages, setMedicationsPackages] = useState<any[]>([]);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })

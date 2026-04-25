@@ -1,7 +1,7 @@
 import { ConfigContext } from "App";
 import { Attribute, MedicationPackage, ProductData, VaccinationPlan } from "common/data_interfaces";
 import { useFormik } from "formik";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import { Badge, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from "reactstrap";
 import * as Yup from "yup";
@@ -23,7 +23,7 @@ interface VaccinationPlanFormProps {
 }
 
 const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCancel }) => {
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [activeStep, setActiveStep] = useState<number>(1);

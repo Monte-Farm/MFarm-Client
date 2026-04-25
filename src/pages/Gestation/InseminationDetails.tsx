@@ -2,7 +2,7 @@ import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import { ConfigContext } from "App";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Badge, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalHeader, Row, Spinner } from "reactstrap";
@@ -20,7 +20,7 @@ const InseminationDetails = () => {
     const { insemination_id } = useParams();
     const navigate = useNavigate();
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true)
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' });
     const [inseminationDetails, setInseminationDetails] = useState<any>({});

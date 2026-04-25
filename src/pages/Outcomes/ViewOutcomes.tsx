@@ -6,7 +6,7 @@ import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody,
 import { Column } from "common/data/data_types";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import OutcomeForm from "Components/Common/Forms/OutcomeForm";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
@@ -19,7 +19,7 @@ const ViewOutcomes = () => {
     document.title = 'Ver Salidas | Salidas'
     const navigate = useNavigate();
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
 
     const [outcomes, setOutcomes] = useState([])
     const [loading, setLoading] = useState<boolean>(false)

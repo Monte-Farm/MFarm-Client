@@ -6,7 +6,7 @@ import { Badge, Button, Card, CardBody, CardHeader, Col, Modal, ModalBody, Modal
 import { Column } from "common/data/data_types";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import LoadingAnimation from "../Shared/LoadingAnimation";
 import AlertMessage from "../Shared/AlertMesagge";
 import ObjectDetails from "./ObjectDetails";
@@ -17,7 +17,7 @@ interface PurchaseOrderDetailsProps {
 
 const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [purchaseOrderDetails, setPurchaseOrderDetails] = useState<PurchaseOrderData>();
     const [products, setProducts] = useState([])

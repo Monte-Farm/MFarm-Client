@@ -1,5 +1,5 @@
 import { ConfigContext } from "App";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import { Badge, Button, Card, CardBody, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from "reactstrap";
 import { useFormik } from "formik";
@@ -40,7 +40,7 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
     onSuccess
 }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
     const [modals, setModals] = useState({ success: false, error: false, missingStock: false });

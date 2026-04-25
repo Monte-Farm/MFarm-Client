@@ -1,7 +1,7 @@
 import { ConfigContext } from "App";
 import { ExtractionData, SemenSample } from "common/data_interfaces";
 import { useFormik } from "formik";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import { Alert, Button, FormFeedback, Input, Label, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, Table, TabPane } from "reactstrap";
 import * as Yup from 'yup';
@@ -24,7 +24,7 @@ interface SemenSampleFormProps {
 
 const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselectedExtraction, onSave, onCancel }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [loading, setLoading] = useState<boolean>(false)
     const [successModalOpen, setSuccessModalOpen] = useState<boolean>(false)

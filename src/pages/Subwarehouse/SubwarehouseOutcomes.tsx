@@ -6,7 +6,7 @@ import { Badge, Button, Card, CardBody, CardHeader, Col, Container, Modal, Modal
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Column } from "common/data/data_types";
 import CustomTable from "Components/Common/Tables/CustomTable";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import SubwarehouseOutcomeForm from "Components/Common/Forms/SubwarehouseOutcomeForm";
 import OutcomeDetails from "Components/Common/Details/OutcomeDetails";
@@ -20,7 +20,7 @@ const SubwarehouseOutcomes = () => {
     document.title = "Ver salidas | Subalmacén"
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [subwarehouseOutcomes, setSubwarehouseOutcomes] = useState([])
     const [loading, setLoading] = useState<boolean>(true)

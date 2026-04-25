@@ -1,5 +1,5 @@
 import { ConfigContext } from "App";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import { Badge, Button, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from "reactstrap";
 import SuccessModal from "../Shared/SuccessModal";
@@ -37,7 +37,7 @@ const BulkGroupStageChangeModal: React.FC<BulkGroupStageChangeModalProps> = ({
     onSuccess
 }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [modals, setModals] = useState({ success: false, error: false });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [validGroups, setValidGroups] = useState<GroupWeightData[]>([]);

@@ -5,7 +5,7 @@ import { ConfigContext } from 'App';
 import * as Yup from 'yup';
 import { useFormik } from 'formik';
 import defaultProfile from '../../../assets/images/default-profile-mage.jpg';
-import { getLoggedinUser } from 'helpers/api_helper';
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import FileUploader from '../Shared/FileUploader';
 import UserForm from './UserForm';
 
@@ -17,7 +17,7 @@ interface FarmFormProps {
 
 const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [managers, setManagers] = useState<UserData[]>([]);
     const [modals, setModals] = useState({ details: false, create: false, update: false, delete: false });
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });

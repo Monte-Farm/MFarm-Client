@@ -12,7 +12,7 @@ import DatePicker from 'react-flatpickr';
 import SelectableTable from '../Tables/SelectableTable';
 import SelectableCustomTable from '../Tables/SelectableTable';
 import CustomTable from '../Tables/CustomTable';
-import { getLoggedinUser } from 'helpers/api_helper';
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import LoadingAnimation from '../Shared/LoadingAnimation';
 import AlertMessage from '../Shared/AlertMesagge';
 import SuccessModal from '../Shared/SuccessModal';
@@ -63,7 +63,7 @@ const selectedProductColumns: Column<any>[] = [
 
 const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) => {
     const configContext = useContext(ConfigContext)
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [modals, setModals] = useState({ createWarehouse: false, cancel: false, success: false, error: false });
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const [orderOrigin, setOrderOrigin] = useState<string>('')

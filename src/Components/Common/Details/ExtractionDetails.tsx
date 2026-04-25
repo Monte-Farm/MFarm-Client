@@ -1,5 +1,5 @@
 import { ConfigContext } from "App";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import { Button, Col, Container, Row, Card, CardBody, CardHeader, Badge, Spinner, Modal, ModalBody, ModalHeader } from "reactstrap";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
@@ -16,7 +16,7 @@ interface ExtractionDetailsProps {
 const ExtractionDetails: React.FC<ExtractionDetailsProps> = ({ extractionId }) => {
     document.title = "Detalles de extracción | System Management";
     const configContext = useContext(ConfigContext);
-    const userLoggged = getLoggedinUser();
+    const userLoggged = getEffectiveUser();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [pdfLoading, setPdfLoading] = useState(false);

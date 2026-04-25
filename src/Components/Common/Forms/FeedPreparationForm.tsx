@@ -1,6 +1,6 @@
 import { ConfigContext } from "App";
 import { useFormik } from "formik";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { FEED_PREPARATION_URLS, FEEDING_PACKAGE_URLS } from "helpers/feeding_urls";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { Badge, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Spinner } from "reactstrap";
@@ -31,7 +31,7 @@ interface PreviewIngredient {
 }
 
 const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCancel }) => {
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
 
     const [loading, setLoading] = useState<boolean>(true);

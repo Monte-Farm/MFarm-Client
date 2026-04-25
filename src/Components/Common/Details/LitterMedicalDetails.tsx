@@ -1,5 +1,5 @@
 import { ConfigContext } from "App";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import LoadingAnimation from "../Shared/LoadingAnimation";
 import AlertMessage from "../Shared/AlertMesagge";
@@ -18,7 +18,7 @@ interface LitterMedicalDetailsProps {
 
 const LitterMedicalDetails: React.FC<LitterMedicalDetailsProps> = ({ litterId }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true)
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ asignMedication: false, asignMedicationPackage: false, medicationPackageDetails: false });

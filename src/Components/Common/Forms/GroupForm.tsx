@@ -1,7 +1,7 @@
 import { ConfigContext } from "App";
 import { Attribute, GroupData, PigData } from "common/data_interfaces";
 import { useFormik } from "formik";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import { Badge, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, TabContent, TabPane } from "reactstrap";
 import * as Yup from "yup";
@@ -40,7 +40,7 @@ const areaLabels: Record<string, string> = {
 
 const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
     const [pigs, setPigs] = useState<PigData[]>([]);

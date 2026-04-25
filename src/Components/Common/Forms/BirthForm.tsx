@@ -6,7 +6,7 @@ import { useContext, useEffect, useState } from "react"
 import { Button, Badge, Nav, NavItem, NavLink, TabContent, TabPane, Alert, Modal, ModalHeader, ModalBody, Label, Input, FormFeedback, Spinner, Card, CardHeader, CardBody } from "reactstrap"
 import * as Yup from 'yup';
 import classnames from "classnames";
-import { getLoggedinUser } from "helpers/api_helper"
+import { getEffectiveUser } from "helpers/impersonation_helper"
 import { FiXCircle } from "react-icons/fi"
 import PigDetailsModal from "../Details/DetailsPigModal"
 import DatePicker from "react-flatpickr"
@@ -27,7 +27,7 @@ interface BirthFormProps {
 
 const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) => {
     const configContext = useContext(ConfigContext)
-    const userLogged = getLoggedinUser()
+    const userLogged = getEffectiveUser()
     const [upcomingBirths, setUpcomingBirths] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true)
     const [activeStep, setActiveStep] = useState<number>(1);

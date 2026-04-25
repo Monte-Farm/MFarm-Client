@@ -12,7 +12,7 @@ import DatePicker from 'react-flatpickr';
 import AlertMessage from '../Shared/AlertMesagge';
 import SuccessModal from '../Shared/SuccessModal';
 import ErrorModal from '../Shared/ErrorModal';
-import { getLoggedinUser } from 'helpers/api_helper';
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import CustomTable from '../Tables/CustomTable';
 import SelectableTable from '../Tables/SelectableTable';
 import SelectableCustomTable from '../Tables/SelectableTable';
@@ -67,7 +67,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
     const [modals, setModals] = useState({ createWarehouse: false, cancel: false, success: false, error: false });
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [subwarehouses, setSubwarehouses] = useState<any[]>([])
     const [selectedSubwarehouse, setSelectedSubwarehouse] = useState<SubwarehouseData | null>(null)
     const [products, setProducts] = useState([])

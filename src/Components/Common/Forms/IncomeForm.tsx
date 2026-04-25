@@ -11,7 +11,7 @@ import { Column } from "common/data/data_types";
 import AlertMessage from "../Shared/AlertMesagge";
 import PurchaseOrderForm from "./PurchaseOrderForm";
 import SuccessModal from "../Shared/SuccessModal";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import CustomTable from "../Tables/CustomTable";
 import SelectableTable from "../Tables/SelectableTable";
 import SelectTable from "../Tables/SelectTable";
@@ -184,7 +184,7 @@ const productColumns: Column<any>[] = [
 
 const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }) => {
     const configContext = useContext(ConfigContext)
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
     const [suppliers, setSuppliers] = useState<any[]>([]);
     const [selectedSupplier, setSelectedSupplier] = useState<SupplierData | null>(null);

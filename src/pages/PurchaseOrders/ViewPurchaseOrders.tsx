@@ -7,7 +7,7 @@ import { Column } from "common/data/data_types";
 import PurchaseOrderForm from "Components/Common/Forms/PurchaseOrderForm";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
 import PurchaseOrderDetails from "Components/Common/Details/PurchaseOrderDetails";
@@ -15,7 +15,7 @@ import PurchaseOrderDetails from "Components/Common/Details/PurchaseOrderDetails
 const ViewPurchaseOrders = () => {
     document.title = 'Ver Ordenes de compra | Ordenes de compra';
     const configContext = useContext(ConfigContext)
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [purchaseOrders, setPurchaseOrders] = useState([])
     const [modals, setModals] = useState({ createPurchaseOrder: false, purchaseOrderDetails: false });

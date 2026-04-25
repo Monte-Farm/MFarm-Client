@@ -1,6 +1,6 @@
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import { Badge, Button, Card, CardBody, CardHeader, Modal, ModalBody, ModalHeader, Spinner } from "reactstrap";
 import LoadingAnimation from "../Shared/LoadingAnimation";
@@ -17,7 +17,7 @@ interface OutcomeDetailsProps {
 
 const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState(true);
     const [pdfLoading, setPdfLoading] = useState(false);
     const [modals, setModals] = useState({ viewPDF: false });

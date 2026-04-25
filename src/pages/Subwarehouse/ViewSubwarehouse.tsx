@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Column } from "common/data/data_types";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import CustomTable from "Components/Common/Tables/CustomTable";
@@ -34,7 +34,7 @@ const ViewSubwarehouse = () => {
     document.title = "Ver Subalmacénes | Subalmacén"
     const history = useNavigate();
     const configContext = useContext(ConfigContext)
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
 
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ create: false, details: false, update: false, delete: false });

@@ -1,7 +1,7 @@
 import { ConfigContext } from "App";
 import { PigData } from "common/data_interfaces";
 import { useFormik } from "formik";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import React, { useContext, useEffect, useState } from "react";
 import DatePicker from "react-flatpickr";
 import { Button, FormFeedback, Input, Label, Nav, NavItem, NavLink, TabContent, TabPane } from "reactstrap";
@@ -18,7 +18,7 @@ interface SinglePigFormProps {
 
 const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true)
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ success: false, error: false })

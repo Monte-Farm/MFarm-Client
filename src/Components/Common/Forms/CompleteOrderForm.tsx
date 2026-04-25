@@ -12,7 +12,7 @@ import CustomTable from '../Tables/CustomTable';
 import AlertMessage from '../Shared/AlertMesagge';
 import classnames from "classnames";
 import DatePicker from 'react-flatpickr';
-import { getLoggedinUser } from 'helpers/api_helper';
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import SuccessModal from '../Shared/SuccessModal';
 import ErrorModal from '../Shared/ErrorModal';
 
@@ -24,7 +24,7 @@ interface OrderFormProps {
 
 const CompleteOrderForm: React.FC<OrderFormProps> = ({ orderId, onSave, onCancel }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [modals, setModals] = useState({ cancel: false, success: false, error: false });
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const [orderDetails, setOrderDetails] = useState<any>({})

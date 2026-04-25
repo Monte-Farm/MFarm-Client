@@ -1,7 +1,7 @@
 import { ConfigContext } from "App";
 import { Attribute, FeedingPackage } from "common/data_interfaces";
 import { useFormik } from "formik";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { FEEDING_PACKAGE_URLS } from "helpers/feeding_urls";
 import { useContext, useEffect, useState } from "react";
 import { Badge, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Nav, NavItem, NavLink, Progress, Spinner, TabContent, TabPane } from "reactstrap";
@@ -35,7 +35,7 @@ interface SelectedFeeding {
 const RAW_INGREDIENT_CATEGORIES = ['nutrition', 'vitamins', 'minerals'];
 
 const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCancel, feedingPackageId }) => {
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
     const isEditMode = Boolean(feedingPackageId);
 

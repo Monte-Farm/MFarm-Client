@@ -2,7 +2,7 @@ import { ConfigContext } from "App";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, Progress, Spinner } from "reactstrap";
@@ -20,7 +20,7 @@ interface PregnancyDetailsProps {
 const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => {
     document.title = "Detalles de embarazo | Management System"
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [pregnancyDetails, setPregnancyDetails] = useState<any>({});
     const [sowDetails, setSowDetails] = useState<any>({})
     const [inseminationDetails, setInseminationDetails] = useState<any>({})

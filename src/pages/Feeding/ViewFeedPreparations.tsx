@@ -5,7 +5,7 @@ import FeedPreparationForm from "Components/Common/Forms/FeedPreparationForm";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import CustomTable from "Components/Common/Tables/CustomTable";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { FEED_PREPARATION_URLS } from "helpers/feeding_urls";
 import { useContext, useEffect, useState } from "react";
 import { FiInbox } from "react-icons/fi";
@@ -14,7 +14,7 @@ import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody,
 const ViewFeedPreparations = () => {
     document.title = 'Preparaciones de alimento | System Management';
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true);
     const [preparations, setPreparations] = useState<any[]>([]);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' });

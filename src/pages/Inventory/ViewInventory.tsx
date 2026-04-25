@@ -7,7 +7,7 @@ import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import IncomeForm from "Components/Common/Forms/IncomeForm";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
@@ -16,7 +16,7 @@ import PDFViewer from "Components/Common/Shared/PDFViewer";
 const ViewInventory = () => {
   document.title = "Inventario | Almacén General";
   const configContext = useContext(ConfigContext);
-  const userLogged = getLoggedinUser();
+  const userLogged = getEffectiveUser();
   const navigate = useNavigate();
 
   const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });

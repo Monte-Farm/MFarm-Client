@@ -1,5 +1,5 @@
 import { ConfigContext } from "App";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import LoadingAnimation from "../Shared/LoadingAnimation";
 import { Attribute } from "common/data_interfaces";
@@ -16,7 +16,7 @@ interface OrderDetailsProps {
 
 const OrderDetails: React.FC<OrderDetailsProps> = ({ orderId }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState(true);
     const [modals, setModals] = useState({ viewPDF: false });
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })

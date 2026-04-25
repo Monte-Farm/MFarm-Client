@@ -1,7 +1,7 @@
 import { Alert, Button, FormFeedback, Input, Label, Spinner } from "reactstrap";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import { ConfigContext } from "App";
 import DatePicker from "react-flatpickr";
@@ -16,7 +16,7 @@ interface HeatFormProps {
 }
 
 const HeatForm = ({ insemination, onSave, onCancel }: HeatFormProps) => {
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [successModalOpen, setSuccessModalOpen] = useState<boolean>(false);

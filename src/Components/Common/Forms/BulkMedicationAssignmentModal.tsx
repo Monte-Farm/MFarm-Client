@@ -1,6 +1,6 @@
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import { Badge, Button, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from "reactstrap";
 import DatePicker from "react-flatpickr";
@@ -25,7 +25,7 @@ const BulkMedicationAssignmentModal: React.FC<BulkMedicationAssignmentModalProps
     onSuccess
 }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [modals, setModals] = useState({ success: false, error: false, missingStock: false, subwarehouseError: false });
     const [medicationPackages, setMedicationPackages] = useState<any[]>([]);
     const [selectedMedicationPackage, setSelectedMedicationPackage] = useState<any>(null);

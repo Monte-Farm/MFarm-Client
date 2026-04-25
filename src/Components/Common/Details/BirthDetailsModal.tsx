@@ -1,5 +1,5 @@
 import { ConfigContext } from "App"
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react"
 import AlertMessage from "../Shared/AlertMesagge";
 import { Badge, Button, Card, CardBody, CardHeader, Spinner } from "reactstrap";
@@ -21,7 +21,7 @@ interface BirthDetailsProps {
 
 const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const navigate = useNavigate();
     const [birthDetails, setBirthDetails] = useState<any>({})
     const [pregnancyDetails, setPregnancyDetails] = useState<any>({})

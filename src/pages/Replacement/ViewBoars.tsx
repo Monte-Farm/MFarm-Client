@@ -6,7 +6,7 @@ import {
     Button, Card, CardBody, CardHeader, Container,
     Modal, ModalBody, ModalHeader, Spinner, Badge
 } from "reactstrap"
-import { getLoggedinUser } from "helpers/api_helper"
+import { getEffectiveUser } from "helpers/impersonation_helper"
 import { FiCheckCircle, FiAlertCircle } from "react-icons/fi"
 import { useNavigate } from "react-router-dom"
 import 'simplebar-react/dist/simplebar.min.css';
@@ -23,7 +23,7 @@ import PigFilters, { PigFiltersState } from "Components/Common/Filters/PigFilter
 const ViewBoars = () => {
     const [modals, setModals] = useState({ selectCreationMode: false, createSingle: false, createBatch: false, update: false, viewPDF: false });
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true)
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [pigs, setPigs] = useState<PigData[]>([])

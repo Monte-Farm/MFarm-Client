@@ -1,6 +1,6 @@
 import { ConfigContext } from "App";
 import { useFormik } from "formik";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import React, { useContext } from "react";
 import DatePicker from "react-flatpickr";
 import { Button, FormFeedback, Input, Label } from "reactstrap";
@@ -26,7 +26,7 @@ const categoryOptions = [
 
 const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [modals, setModals] = useState({ success: false, error: false });
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {

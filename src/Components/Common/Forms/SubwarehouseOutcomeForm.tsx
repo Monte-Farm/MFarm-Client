@@ -13,7 +13,7 @@ import CustomTable from '../Tables/CustomTable';
 import SelectableTable from '../Tables/SelectableTable';
 import SelectableCustomTable from '../Tables/SelectableTable';
 import { SubwarehouseData } from 'common/data_interfaces';
-import { getLoggedinUser } from 'helpers/api_helper';
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import SuccessModal from '../Shared/SuccessModal';
 import ErrorModal from '../Shared/ErrorModal';
 import AlertMessage from '../Shared/AlertMesagge';
@@ -68,7 +68,7 @@ const selectedProductColumns: Column<any>[] = [
 
 const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [modals, setModals] = useState({ createWarehouse: false, cancel: false, success: false, error: false });
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const [products, setProducts] = useState([])

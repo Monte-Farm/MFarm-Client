@@ -3,7 +3,7 @@ import { Column } from "common/data/data_types";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import SelectableCustomTable from "Components/Common/Tables/SelectableTable";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { config } from "process";
 import { useContext, useEffect, useState } from "react";
 import { FiInbox } from "react-icons/fi";
@@ -15,7 +15,7 @@ import BulkFeedAdministrationModal from "Components/Common/Forms/BulkFeedAdminis
 
 const ViewLitters = () => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const navigate = useNavigate();
     const [loading, setLoading] = useState<boolean>(true)
     const [litters, setLitters] = useState<any[]>([])

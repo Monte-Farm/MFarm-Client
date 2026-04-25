@@ -1,7 +1,7 @@
 import { ConfigContext } from "App";
 import { ExtractionData, PigData, UserData } from "common/data_interfaces";
 import { useFormik } from "formik";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import * as Yup from 'yup';
 import { Alert, Badge, Button, FormFeedback, Input, Label, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from "reactstrap";
@@ -24,7 +24,7 @@ interface ExtractionFormProps {
 
 const ExtractionForm: React.FC<ExtractionFormProps> = ({ initialData, onSave, onCancel }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const { globalConfig } = useGlobalConfig();
     const unitOptions = globalConfig?.unitMeasurements ?? [];
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });

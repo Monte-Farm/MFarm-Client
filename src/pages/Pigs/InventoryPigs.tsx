@@ -8,7 +8,7 @@ import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import PigFilters, { PigFiltersState } from "Components/Common/Filters/PigFilters";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState, useMemo } from "react";
 import { FaKeyboard, FaListUl } from "react-icons/fa";
 import { RiScales2Line, RiArrowUpLine, RiArrowDownLine } from "react-icons/ri";
@@ -57,7 +57,7 @@ interface AlertConfig {
 const InventoryPigs = () => {
     document.title = 'Inventario de cerdos | Management System'
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true)
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' });
     const [modals, setModals] = useState({ update: false, viewPDF: false, selectMedicationMode: false, asignSingle: false, medicationPackage: false, selectCreationMode: false, createSingle: false, createBatch: false });

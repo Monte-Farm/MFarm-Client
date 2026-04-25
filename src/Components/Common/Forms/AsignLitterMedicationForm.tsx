@@ -1,7 +1,7 @@
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import { Attribute, GroupData, LitterEvent, PigData } from "common/data_interfaces";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import { Badge, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from "reactstrap";
 import LoadingAnimation from "../Shared/LoadingAnimation";
@@ -23,7 +23,7 @@ interface AsignLitterMedicationFormProps {
 }
 
 const AsignLitterMedicationForm: React.FC<AsignLitterMedicationFormProps> = ({ litterId, onSave }) => {
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [activeStep, setActiveStep] = useState<number>(1);

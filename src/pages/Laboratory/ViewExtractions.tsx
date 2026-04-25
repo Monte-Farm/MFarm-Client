@@ -1,6 +1,6 @@
 import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb"
-import { getLoggedinUser } from "helpers/api_helper"
+import { getEffectiveUser } from "helpers/impersonation_helper"
 import { useContext, useEffect, useState } from "react";
 import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, UncontrolledTooltip, Spinner } from "reactstrap"
 import { FiCheckCircle, FiAlertCircle, FiInfo, FiInbox } from "react-icons/fi";
@@ -22,7 +22,7 @@ import SemenSampleForm from "Components/Common/Forms/SemenSampleForm";
 
 const ViewExtractions = () => {
     document.title = 'Ver extracciones | Management System'
-    const userLoggged = getLoggedinUser();
+    const userLoggged = getEffectiveUser();
     const configContext = useContext(ConfigContext)
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });

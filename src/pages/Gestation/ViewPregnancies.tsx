@@ -1,7 +1,7 @@
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb"
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import { Badge, Button, Card, CardBody, CardHeader, Container, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, UncontrolledTooltip, Spinner } from "reactstrap"
 import DatePicker from "react-flatpickr";
@@ -25,7 +25,7 @@ import PDFViewer from "Components/Common/Shared/PDFViewer";
 type PeriodKey = "day" | "week" | "month" | "year";
 const ViewPregnancies = () => {
     document.title = "Ver embarazos | Management System"
-    const userLoggged = getLoggedinUser();
+    const userLoggged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
     const [loading, setLoading] = useState<boolean>(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });

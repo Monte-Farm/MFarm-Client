@@ -1,5 +1,5 @@
 import { ConfigContext } from "App";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 
 interface UseGroupsByStageOptions {
@@ -9,7 +9,7 @@ interface UseGroupsByStageOptions {
 
 export const useGroupsByStage = ({ stage, statsEndpoint = 'group_alive_stats' }: UseGroupsByStageOptions) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ create: false, move: false, asign: false, withdraw: false });

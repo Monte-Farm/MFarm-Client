@@ -11,7 +11,7 @@ import { Column } from "common/data/data_types";
 import AlertMessage from "../Shared/AlertMesagge";
 import SuccessModal from "../Shared/SuccessModal";
 import DatePicker from "react-flatpickr";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import CustomTable from "../Tables/CustomTable";
 import SelectableTable from "../Tables/SelectableTable";
 import ObjectDetails from "../Details/ObjectDetails";
@@ -152,7 +152,7 @@ const supplierColumns: Column<any>[] = [
 ];
 
 const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSave, onCancel }) => {
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [suppliers, setSuppliers] = useState<any[]>([]);
     const [selectedSupplier, setSelectedSupplier] = useState<SupplierData | null>(null);
     const [modals, setModals] = useState({ success: false, createSupplier: false, createProduct: false });

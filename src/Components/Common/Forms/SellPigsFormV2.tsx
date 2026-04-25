@@ -1,5 +1,5 @@
 import { ConfigContext } from "App";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import {
     Badge, Button, Card, CardBody, CardHeader, Col, Input, Label,
@@ -141,7 +141,7 @@ const getROIBadgeClass = (roi: number) => {
 
 const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const isClassicMode = Boolean(groupId);
 
     // ── Navigation ──

@@ -2,7 +2,7 @@ import { ConfigContext } from "App";
 import { HttpStatusCode } from "axios";
 import { PigData } from "common/data_interfaces";
 import { useFormik } from "formik";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import React, { useContext, useState } from "react";
 import DatePicker from "react-flatpickr";
 import { Alert, Button, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from "reactstrap";
@@ -19,7 +19,7 @@ interface PigEditFormProps {
 
 const PigEditForm: React.FC<PigEditFormProps> = ({ pigData, onSave, onCancel }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ success: false, error: false, cancel: false });
 

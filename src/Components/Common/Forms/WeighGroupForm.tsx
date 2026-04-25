@@ -1,5 +1,5 @@
 import { ConfigContext } from "App";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import { FaQuestionCircle } from "react-icons/fa";
 import ErrorModal from "../Shared/ErrorModal";
@@ -16,7 +16,7 @@ interface WeighGroupFormProps {
 
 const WeighGroupForm: React.FC<WeighGroupFormProps> = ({ groupId, onSave }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [modals, setModals] = useState({ success: false, error: false });
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);

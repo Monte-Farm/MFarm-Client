@@ -1,7 +1,7 @@
 import { ConfigContext } from 'App';
 import { Attribute, SubwarehouseData } from 'common/data_interfaces';
 import { useFormik } from 'formik';
-import { getLoggedinUser } from 'helpers/api_helper';
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from 'react';
 import { Badge, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from 'reactstrap';
 import * as Yup from 'yup';
@@ -41,7 +41,7 @@ const roleColorsMap: Record<string, string> = {
 
 const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, isCodeDisabled }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [modals, setModals] = useState({ success: false, error: false, cancel: false });
     const [users, setUsers] = useState<any[]>([])
     const [loading, setLoading] = useState<boolean>(true)

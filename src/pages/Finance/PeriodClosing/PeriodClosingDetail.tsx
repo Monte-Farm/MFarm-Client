@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Col, Container, Nav, NavItem, NavLink, Row, Table, TabContent, TabPane } from "reactstrap";
 import { ConfigContext } from "App";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
@@ -69,7 +69,7 @@ const PeriodClosingDetail = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch<any>();
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
 
     const current: PeriodClosing | null = useSelector((state: any) => state.PeriodClosing.current);
     const loadingDetail: boolean = useSelector((state: any) => state.PeriodClosing.loadingDetail);

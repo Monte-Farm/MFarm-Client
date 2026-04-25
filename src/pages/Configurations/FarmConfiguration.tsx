@@ -22,7 +22,7 @@ import {
 import { fetchFarmConfig, updateFarmConfig } from 'slices/configurations/thunk';
 import { DEFAULT_FARM_CONFIG } from 'common/configuration_defaults';
 import { FarmConfiguration as FarmConfigType } from 'common/data_interfaces';
-import { getLoggedinUser } from 'helpers/api_helper';
+import { getEffectiveUser } from "helpers/impersonation_helper";
 
 type SectionKey = 'gestation' | 'lactation' | 'weaning' | 'fattening' | 'replacement' | 'notifications';
 
@@ -32,7 +32,7 @@ const FarmConfiguration = () => {
     const farmConfig: FarmConfigType | null = useSelector((s: any) => s.Configurations.farmConfig);
     const loading: boolean = useSelector((s: any) => s.Configurations.loadingFarm);
 
-    const user = useMemo(() => getLoggedinUser(), []);
+    const user = useMemo(() => getEffectiveUser(), []);
     const farmId: string | null = user?.farm_assigned ?? null;
 
     const [modals, setModals] = useState({ success: false, error: false });

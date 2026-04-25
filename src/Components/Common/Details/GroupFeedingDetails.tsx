@@ -1,5 +1,5 @@
 import { ConfigContext } from "App";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { FEEDING_INFO_URLS } from "helpers/feeding_urls";
 import { useContext, useEffect, useState } from "react";
 import { Col, Row } from "reactstrap";
@@ -39,7 +39,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId, onUpdate, isGroupSold = false, groupStage }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [administrations, setAdministrations] = useState<FeedAdministrationHistoryEntry[]>([]);

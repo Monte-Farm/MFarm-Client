@@ -8,7 +8,7 @@ import KPI from "Components/Common/Graphics/Kpi";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb"
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import CustomTable from "Components/Common/Tables/CustomTable";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import { FaMars, FaVenus } from "react-icons/fa";
 import { FiAlertCircle, FiCheckCircle, FiTrash2, FiTrendingDown } from "react-icons/fi";
@@ -19,7 +19,7 @@ import { usePigFilters } from "hooks/usePigFilters";
 
 const DiscardedPigs = () => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [modals, setModals] = useState({ discard: false, });
     const [loading, setLoading] = useState<boolean>(true)
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });

@@ -1,8 +1,8 @@
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useEffect, useState } from "react";
-import { getLoggedinUser } from "../../helpers/api_helper";
 
 const useProfile = () => {
-  const userProfileSession = getLoggedinUser();
+  const userProfileSession = getEffectiveUser();
   var token =
   userProfileSession &&
   userProfileSession["token"];
@@ -12,7 +12,7 @@ const useProfile = () => {
   );
 
   useEffect(() => {
-    const userProfileSession = getLoggedinUser();
+    const userProfileSession = getEffectiveUser();
     var token =
       userProfileSession &&
       userProfileSession["token"];

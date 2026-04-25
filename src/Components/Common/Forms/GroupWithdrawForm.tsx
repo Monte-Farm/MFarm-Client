@@ -7,7 +7,7 @@ import classnames from "classnames";
 import KPI from "../Graphics/Kpi";
 import { FaMars, FaPiggyBank, FaVenus } from "react-icons/fa";
 import DatePicker from "react-flatpickr";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import SelectableTable from "../Tables/SelectableTable";
 import { Column } from "common/data/data_types";
 import ObjectDetails from "../Details/ObjectDetails";
@@ -23,7 +23,7 @@ interface GroupWithDrawFormProps {
 
 const GroupWithDrawForm: React.FC<GroupWithDrawFormProps> = ({ groupId, onSave }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true);
     const [modals, setModals] = useState({ success: false, error: false })
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' });

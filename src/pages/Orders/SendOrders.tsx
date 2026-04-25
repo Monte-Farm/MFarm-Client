@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader } from "reactstrap";
 import { Column } from "common/data/data_types";
 import CustomTable from "Components/Common/Tables/CustomTable";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import OrderForm from "Components/Common/Forms/OrderForm";
@@ -16,7 +16,7 @@ const SendOrders = () => {
     document.title = 'Pedidos enviados | Management System'
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [orders, setOrders] = useState([])
     const [loading, setLoading] = useState<boolean>(true)

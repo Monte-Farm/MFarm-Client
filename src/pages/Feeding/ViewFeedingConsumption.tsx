@@ -7,7 +7,7 @@ import { Column } from "common/data/data_types";
 import BasicBarChart from "Components/Common/Graphics/BasicBarChart";
 import BasicLineChartCard from "Components/Common/Graphics/BasicLineChartCard";
 import BasicPieChart from "Components/Common/Graphics/BasicPieChart";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import { FiCalendar, FiFilter, FiTrendingUp, FiDollarSign, FiPackage, FiPieChart, FiBarChart2, FiUsers } from "react-icons/fi";
 import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector";
@@ -54,7 +54,7 @@ type ViewMode = 'farm' | 'multiple' | 'litters';
 
 const ViewFeedingConsumption = () => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     
     const [loading, setLoading] = useState<boolean>(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });

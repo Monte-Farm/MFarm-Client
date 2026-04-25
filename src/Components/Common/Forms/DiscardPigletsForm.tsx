@@ -1,5 +1,5 @@
 import { ConfigContext } from "App";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useState } from "react";
 import { Badge, Button, Card, CardBody, CardHeader, Col, Input, Label, Nav, NavItem, NavLink, Row, Spinner, TabContent, TabPane } from "reactstrap";
 import AlertMessage from "../Shared/AlertMesagge";
@@ -30,7 +30,7 @@ const getReasonLabel = (value: string) => REASON_OPTIONS.find((o) => o.value ===
 
 const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, piglets, onSave }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
 
     const [activeStep, setActiveStep] = useState(1);
     const [isSubmitting, setIsSubmitting] = useState(false);

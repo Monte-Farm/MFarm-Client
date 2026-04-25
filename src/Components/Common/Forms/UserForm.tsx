@@ -13,7 +13,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { UserData } from "common/data_interfaces";
 import { ConfigContext } from "App";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import FileUploader from "../Shared/FileUploader";
 import { userRoles } from "common/user_roles";
 import AlertMessage from "../Shared/AlertMesagge";
@@ -50,7 +50,7 @@ const UserForm: React.FC<UserFormProps> = ({
     const [fileToUpload, setFileToUpload] = useState<File | null>(null);
 
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));

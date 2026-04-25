@@ -2,7 +2,7 @@ import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import PregnancyDetails from "Components/Common/Details/PregnancyDetails";
 import { useContext, useEffect, useState } from "react";
 import { FiAlertCircle } from "react-icons/fi";
@@ -22,7 +22,7 @@ import PDFViewer from "Components/Common/Shared/PDFViewer";
 const ViewBirths = () => {
     document.title = 'Partos registrados | Management System'
     const configContext = useContext(ConfigContext)
-    const userLogged = getLoggedinUser()
+    const userLogged = getEffectiveUser()
     const navigate = useNavigate();
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' });

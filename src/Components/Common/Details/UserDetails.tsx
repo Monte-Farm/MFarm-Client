@@ -1,6 +1,6 @@
 import { ConfigContext } from "App";
 import { Attribute, UserData } from "common/data_interfaces";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useState, useEffect } from "react";
 import LoadingAnimation from "../Shared/LoadingAnimation";
 import { Badge, Button, Card, CardBody, CardHeader, Col, Modal, ModalBody, ModalFooter, ModalHeader, Row, Spinner } from "reactstrap";
@@ -19,7 +19,7 @@ interface UserDetailsProps {
 }
 
 const UserDetailsModal: React.FC<UserDetailsProps> = ({ userId }) => {
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
     const [userDetails, setUserDetails] = useState<UserData | null>(null)
     const [isLoading, setIsLoading] = useState<boolean>(false);

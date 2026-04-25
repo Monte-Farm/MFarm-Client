@@ -6,7 +6,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Link } from "react-router-dom";
 import { ConfigContext } from "App";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { PERIOD_CLOSING_URLS } from "helpers/period_closing_urls";
 import { ClosingKpis, PeriodClosingByPeriod, PrecheckItem, PrecheckResponse, PrecheckStatus } from "common/data_interfaces";
 import { closePeriod, fetchClosingPrecheck } from "slices/periodClosing/thunk";
@@ -65,7 +65,7 @@ const ChecklistItemRow = ({ item }: { item: PrecheckItem }) => (
 const ClosePeriodModal = ({ isOpen, onClose, onSuccess, farmId }: ClosePeriodModalProps) => {
     const dispatch = useDispatch<any>();
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const submitting = useSelector((state: any) => state.PeriodClosing.submitting);
     const precheck: PrecheckResponse | null = useSelector((state: any) => state.PeriodClosing.precheck);
     const loadingPrecheck: boolean = useSelector((state: any) => state.PeriodClosing.loadingPrecheck);

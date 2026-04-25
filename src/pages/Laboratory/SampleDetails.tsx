@@ -8,7 +8,7 @@ import ExtractionDetails from "Components/Common/Details/ExtractionDetails";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import ObjectDetails from "Components/Common/Details/ObjectDetails";
 import CustomTable from "Components/Common/Tables/CustomTable";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import { FiAlertCircle } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
@@ -21,7 +21,7 @@ const SampleDetails = () => {
     const { sample_id } = useParams();
     const navigate = useNavigate();
     const configContext = useContext(ConfigContext);
-    const userLoggged = getLoggedinUser();
+    const userLoggged = getEffectiveUser();
     const [loading, setLoading] = useState(true);
     const [alerConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' });
     const [sampleDetails, setSampleDetails] = useState<any>({});

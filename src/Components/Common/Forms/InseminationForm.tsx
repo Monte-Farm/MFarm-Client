@@ -2,7 +2,7 @@ import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import { InseminationData, PigData } from "common/data_interfaces";
 import { useFormik } from "formik";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, CardText, CardTitle, Col, FormFeedback, Input, Label, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Row, Spinner, TabContent, TabPane } from "reactstrap";
 import * as Yup from 'yup';
@@ -25,7 +25,7 @@ interface InseminationFormProps {
 
 const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave, onCancel }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [loading, setLoading] = useState<boolean>(false)
     const [activeStep, setActiveStep] = useState<number>(1);

@@ -6,7 +6,7 @@ import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, Mod
 import { Column } from "common/data/data_types"
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation"
 import AlertMessage from "Components/Common/Shared/AlertMesagge"
-import { getLoggedinUser } from "helpers/api_helper"
+import { getEffectiveUser } from "helpers/impersonation_helper"
 import IncomeForm from "Components/Common/Forms/IncomeForm"
 import CustomTable from "Components/Common/Tables/CustomTable"
 import StatKpiCard from "Components/Common/Graphics/StatKpiCard"
@@ -18,7 +18,7 @@ const ViewIncomes = () => {
     document.title = 'Ver Entradas | Almacén'
     const navigate = useNavigate()
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [incomes, setIncomes] = useState([])
     const [loading, setLoading] = useState<boolean>(true)

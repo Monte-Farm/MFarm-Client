@@ -1,6 +1,6 @@
 import { useState, useRef, useContext } from "react";
 import { ConfigContext } from "App";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { Button, Input, Popover, PopoverHeader, PopoverBody, Row, Col, FormGroup, Label, Badge } from "reactstrap";
 import Select from "react-select";
 import Slider from "rc-slider";
@@ -9,7 +9,7 @@ import { FiFilter, FiX, FiSearch } from "react-icons/fi";
 
 const InseminationFilters = ({ inseminations, setFilteredInseminations }: { inseminations: any[], setFilteredInseminations: Function }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
 
     const [searchTerm, setSearchTerm] = useState("");
     const [filters, setFilters] = useState({

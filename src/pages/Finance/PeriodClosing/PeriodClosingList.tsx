@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Badge, Button, Card, CardBody, CardHeader, Col, Container, Row } from "reactstrap";
 import PeriodClosingFilters from "Components/Common/Filters/PeriodClosingFilters";
 import { ConfigContext } from "App";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
@@ -51,7 +51,7 @@ const PeriodClosingList = () => {
     const dispatch = useDispatch<any>();
     const navigate = useNavigate();
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
 
     const { items, loadingList, error } = useSelector((state: any) => state.PeriodClosing);
 

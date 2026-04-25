@@ -1,6 +1,6 @@
 import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, UncontrolledTooltip, Spinner } from "reactstrap";
 import DatePicker from "react-flatpickr";
@@ -27,7 +27,7 @@ import PDFViewer from "Components/Common/Shared/PDFViewer";
 
 const ViewInseminations = () => {
     document.title = "Ver inseminaciones | Management System"
-    const userLoggged = getLoggedinUser();
+    const userLoggged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
     const navigate = useNavigate();
     const [loading, setLoading] = useState<boolean>(false);

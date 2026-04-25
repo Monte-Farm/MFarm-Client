@@ -1,5 +1,5 @@
 import { ConfigContext } from "App";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import { FaInfo, FaQuestionCircle } from "react-icons/fa";
 import ErrorModal from "../Shared/ErrorModal";
@@ -21,7 +21,7 @@ interface ProcessPigSaleFormProps {
 
 const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [modals, setModals] = useState({ confirm: false, success: false, error: false });
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);

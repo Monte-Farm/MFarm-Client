@@ -6,7 +6,7 @@ import { Badge, Button, Container, Card, CardHeader, CardBody, Row, Col, Modal, 
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Column } from "common/data/data_types";
 import CustomTable from "Components/Common/Tables/CustomTable";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import IncomeDetails from "Components/Common/Details/IncomeDetailsModal";
 import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
@@ -17,7 +17,7 @@ const SubwarehouseIncomes = () => {
     document.title = "Entradas de Subalmacén | Subalmacén"
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [subwarehouseIncomes, setSubwarehouseIncomes] = useState([])
     const [loading, setLoading] = useState<boolean>(true)

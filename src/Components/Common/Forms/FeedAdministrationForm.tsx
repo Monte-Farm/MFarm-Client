@@ -1,6 +1,6 @@
 import { ConfigContext } from "App";
 import { useFormik } from "formik";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { FEED_ADMINISTRATION_URLS, PREPARED_FEED_URLS } from "helpers/feeding_urls";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { Badge, Button, FormFeedback, Input, Label, Spinner } from "reactstrap";
@@ -34,7 +34,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
     onSave,
     onCancel,
 }) => {
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
 
     const [loading, setLoading] = useState<boolean>(true);

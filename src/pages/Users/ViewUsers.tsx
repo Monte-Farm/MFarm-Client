@@ -2,7 +2,7 @@ import { ConfigContext } from "App"
 import { Attribute, UserData } from "common/data_interfaces"
 import BreadCrumb from "Components/Common/Shared/BreadCrumb"
 import ObjectDetails from "Components/Common/Details/ObjectDetails"
-import { getLoggedinUser } from "helpers/api_helper"
+import { getEffectiveUser } from "helpers/impersonation_helper"
 import { useContext, useEffect, useMemo, useState } from "react"
 import { Badge, Button, Card, CardBody, CardHeader, Container, Input, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap"
 import { Column } from "common/data/data_types"
@@ -18,7 +18,7 @@ import defaultProfile from '../../assets/images/default-profile-mage.jpg'
 const ViewUsers = () => {
     document.title = 'Ver Usuarios | Usuarios'
     const configContext = useContext(ConfigContext)
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
 
     const [users, setUsers] = useState([]);
     const [selectedUser, setSelecteduser] = useState<any>()

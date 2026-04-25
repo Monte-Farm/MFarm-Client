@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { getLoggedinUser } from '../helpers/api_helper';
+import { getEffectiveUser } from '../helpers/impersonation_helper';
 
 interface RoleProtectedProps {
     allowedRoles: string[];
@@ -9,7 +9,7 @@ interface RoleProtectedProps {
 }
 
 const RoleProtected: React.FC<RoleProtectedProps> = ({ allowedRoles, children, redirectTo = '/' }) => {
-    const user = getLoggedinUser();
+    const user = getEffectiveUser();
     const roles: string[] = Array.isArray(user?.role) ? user.role : [];
     const hasRole = allowedRoles.some((r) => roles.includes(r));
 

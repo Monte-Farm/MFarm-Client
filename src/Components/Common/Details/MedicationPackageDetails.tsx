@@ -1,5 +1,5 @@
 import { ConfigContext } from "App";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import AlertMessage from "../Shared/AlertMesagge";
 import ObjectDetails from "./ObjectDetails";
@@ -19,7 +19,7 @@ interface MedicationPackageDetailsProps {
 
 const MedicationPackageDetails: React.FC<MedicationPackageDetailsProps> = ({ medicationPackageId }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true);
     const [medicationPackageDetails, setMedicationPackageDetails] = useState<any>({});
     const [medicationsItems, setMedicationsItems] = useState<any[]>([]);

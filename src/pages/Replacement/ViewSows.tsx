@@ -8,7 +8,7 @@ import {
     PopoverBody, Row, Col, FormGroup, Label, Badge,
     Spinner
 } from "reactstrap"
-import { getLoggedinUser } from "helpers/api_helper"
+import { getEffectiveUser } from "helpers/impersonation_helper"
 import Select from "react-select"
 import { FiFilter, FiX, FiSearch, FiCheckCircle, FiAlertCircle } from "react-icons/fi"
 import Slider from 'rc-slider'
@@ -24,7 +24,7 @@ import KPI from "Components/Common/Graphics/Kpi"
 const ViewSows = () => {
     const [modals, setModals] = useState({ selectCreationMode: false, createSingle: false, createBatch: false, update: false, viewPDF: false });
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true)
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [pigs, setPigs] = useState<PigData[]>([])

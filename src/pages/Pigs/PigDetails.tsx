@@ -1,7 +1,7 @@
 import { ConfigContext } from "App";
 import { Attribute, PigData, PigHistoryChanges } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb"
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom"
 import { Button, Card, CardBody, CardHeader, Col, Container, Nav, NavItem, NavLink, Row, Spinner, TabContent, TabPane, Badge, Modal, ModalHeader, ModalBody, ModalFooter, Input, Label } from "reactstrap"
@@ -33,7 +33,7 @@ const farmDetailsAttributes: Attribute[] = [
 const PigDetails = () => {
     const { pig_id } = useParams();
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true)
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [pigInfo, setPigInfo] = useState<PigData | null>(null)

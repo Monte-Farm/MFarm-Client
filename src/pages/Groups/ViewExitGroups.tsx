@@ -5,7 +5,7 @@ import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import GroupForm from "Components/Common/Forms/GroupForm";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import CustomTable from "Components/Common/Tables/CustomTable";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import { FiInbox } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
@@ -19,7 +19,7 @@ import { FaArrowDown, FaArrowUp, FaBalanceScale, FaLayerGroup, FaMars, FaPiggyBa
 const ViewExitGroups = () => {
     const navigate = useNavigate();
     const configContext = useContext(ConfigContext)
-    const userLogged = getLoggedinUser()
+    const userLogged = getEffectiveUser()
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ create: false, move: false, asign: false, withdraw: false });

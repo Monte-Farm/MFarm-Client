@@ -1,6 +1,6 @@
 import { ConfigContext } from "App";
 import { PigData } from "common/data_interfaces";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import React, { useContext, useEffect, useState } from "react";
 import DatePicker from "react-flatpickr";
 import { Alert, Button, Input, Label, Nav, NavItem, NavLink, Spinner, TabContent, TabPane, FormFeedback, Badge, Card, CardHeader, CardBody, } from "reactstrap";
@@ -23,7 +23,7 @@ interface BatchPigFormProps {
 const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
 
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ success: false, error: false });
     const [activeStep, setActiveStep] = useState<number>(1);
