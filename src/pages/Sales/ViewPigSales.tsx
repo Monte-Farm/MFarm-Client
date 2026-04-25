@@ -1,7 +1,7 @@
 import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
-import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader } from "reactstrap";
+import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, Spinner } from "reactstrap";
 import { Column } from "common/data/data_types";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
@@ -9,6 +9,8 @@ import { getEffectiveUser } from "helpers/impersonation_helper";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import SellPigsFormV2 from "Components/Common/Forms/SellPigsFormV2";
 import SaleDetails from "Components/Common/Details/SaleDetails";
+import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector";
+import PDFViewer from "Components/Common/Shared/PDFViewer";
 
 const paymentMethodLabel: Record<string, string> = {
     cash: "Efectivo",
@@ -38,7 +40,9 @@ const ViewPigSales = () => {
 
     const [sales, setSales] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
-    const [modals, setModals] = useState({ newSale: false, details: false });
+    const [modals, setModals] = useState({ newSale: false, details: false, dateRange: false, viewPDF: false });
+    const [pdfLoading, setPdfLoading] = useState(false);
+    const [fileURL, setFileURL] = useState<string | null>(null);
     const [selectedSaleId, setSelectedSaleId] = useState<string | null>(null);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
 
@@ -123,6 +127,24 @@ const ViewPigSales = () => {
         },
     ];
 
+    const handleGeneratePDF = async (startDate: string, endDate: string) => {
+        if (!configContext || !userLogged) return;
+        try {
+            setPdfLoading(true);
+            toggleModal('dateRange', false);
+            const response = await configContext.axiosHelper.getBlob(
+                `${configContext.apiUrl}/reports/pig_sales/range?start_date=${startDate}&end_date=${endDate}&farm_id=${userLogged.farm_assigned}`
+            );
+            const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+            setFileURL(window.URL.createObjectURL(pdfBlob));
+            toggleModal('viewPDF');
+        } catch (error) {
+            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+        } finally {
+            setPdfLoading(false);
+        }
+    };
+
     const fetchSales = async () => {
         if (!configContext || !userLogged) return;
         try {
@@ -151,12 +173,16 @@ const ViewPigSales = () => {
 
                 <Card>
                     <CardHeader>
-                        <div className="d-flex align-items-center">
-                            <h4 className="mb-0">Ventas de cerdos</h4>
-                            <Button
-                                className="ms-auto farm-primary-button"
-                                onClick={() => toggleModal("newSale")}
-                            >
+                        <div className="d-flex align-items-center gap-2">
+                            <h4 className="mb-0 me-auto">Ventas de cerdos</h4>
+                            <Button color="primary" onClick={() => toggleModal("dateRange")} disabled={pdfLoading}>
+                                {pdfLoading ? (
+                                    <><Spinner className="me-2" size="sm" />Generando...</>
+                                ) : (
+                                    <><i className="ri-file-pdf-line me-2" />Exportar PDF</>
+                                )}
+                            </Button>
+                            <Button className="farm-primary-button" onClick={() => toggleModal("newSale")}>
                                 <i className="ri-add-line me-2" />
                                 Nueva Venta
                             </Button>
@@ -188,6 +214,23 @@ const ViewPigSales = () => {
                 <ModalHeader toggle={() => { toggleModal("details"); setSelectedSaleId(null); }}>Detalles de la venta</ModalHeader>
                 <ModalBody>
                     {selectedSaleId && <SaleDetails saleId={selectedSaleId} />}
+                </ModalBody>
+            </Modal>
+
+            <Modal size="md" isOpen={modals.dateRange} toggle={() => toggleModal("dateRange")} centered>
+                <ModalHeader toggle={() => toggleModal("dateRange")}>Seleccionar rango de fechas</ModalHeader>
+                <ReportDateRangeSelector
+                    onGenerate={handleGeneratePDF}
+                    onCancel={() => toggleModal("dateRange")}
+                    loading={pdfLoading}
+                    generateButtonText="Generar PDF"
+                />
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop="static" keyboard={false} centered fullscreen={true}>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Ventas de Cerdos</ModalHeader>
+                <ModalBody>
+                    {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>
             </Modal>
 

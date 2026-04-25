@@ -8,10 +8,13 @@ import { config } from "process";
 import { useContext, useEffect, useState } from "react";
 import { FiInbox } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import { Badge, Button, Card, CardBody, CardHeader, Container } from "reactstrap";
+import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, Spinner } from "reactstrap";
 import BulkMedicationAssignmentModal from "Components/Common/Forms/BulkMedicationAssignmentModal";
 import BulkWeanLittersModal from "Components/Common/Forms/BulkWeanLittersModal";
 import BulkFeedAdministrationModal from "Components/Common/Forms/BulkFeedAdministrationModal";
+import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector";
+import PDFViewer from "Components/Common/Shared/PDFViewer";
+import AlertMessage from "Components/Common/Shared/AlertMesagge";
 
 const ViewLitters = () => {
     const configContext = useContext(ConfigContext);
@@ -23,6 +26,11 @@ const ViewLitters = () => {
     const [bulkMedicationModalOpen, setBulkMedicationModalOpen] = useState(false);
     const [bulkFeedAdminModalOpen, setBulkFeedAdminModalOpen] = useState(false);
     const [bulkWeanModalOpen, setBulkWeanModalOpen] = useState(false);
+    const [pdfModalOpen, setPdfModalOpen] = useState(false);
+    const [dateRangeModalOpen, setDateRangeModalOpen] = useState(false);
+    const [pdfLoading, setPdfLoading] = useState(false);
+    const [fileURL, setFileURL] = useState<string | null>(null);
+    const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
 
     const handleSelectionChange = (selected: any[]) => {
         setSelectedLitters(selected);
@@ -135,6 +143,24 @@ const ViewLitters = () => {
         },
     ]
 
+    const handleGeneratePDF = async (startDate: string, endDate: string) => {
+        if (!configContext || !userLogged) return;
+        try {
+            setPdfLoading(true);
+            setDateRangeModalOpen(false);
+            const response = await configContext.axiosHelper.getBlob(
+                `${configContext.apiUrl}/reports/litters/range?start_date=${startDate}&end_date=${endDate}&farm_id=${userLogged.farm_assigned}`
+            );
+            const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+            setFileURL(window.URL.createObjectURL(pdfBlob));
+            setPdfModalOpen(true);
+        } catch (error) {
+            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+        } finally {
+            setPdfLoading(false);
+        }
+    };
+
     const fetchLitter = async () => {
         if (!configContext || !userLogged) return
         try {
@@ -165,7 +191,7 @@ const ViewLitters = () => {
                 <BreadCrumb title={"Camadas"} pageTitle={"Lactancia"} />
 
                 <Card>
-                    <CardHeader className="d-flex justify-content-between align-items-center">
+                    <CardHeader className="d-flex justify-content-between align-items-center gap-2">
                         <div className="d-flex align-items-center gap-3">
                             <h4 className="mb-0">Camadas</h4>
                             {selectedLitters.length > 0 && (
@@ -207,6 +233,13 @@ const ViewLitters = () => {
                                 </div>
                             )}
                         </div>
+                        <Button color="primary" className="ms-auto" onClick={() => setDateRangeModalOpen(true)} disabled={pdfLoading}>
+                            {pdfLoading ? (
+                                <><Spinner className="me-2" size="sm" />Generando...</>
+                            ) : (
+                                <><i className="ri-file-pdf-line me-2" />Exportar PDF</>
+                            )}
+                        </Button>
                     </CardHeader>
 
                     <CardBody style={{ display: "flex", flexDirection: "column", height: "100%" }}>
@@ -254,6 +287,25 @@ const ViewLitters = () => {
                 selectedLitters={selectedLitters}
                 onSuccess={handleBulkWeanSuccess}
             />
+
+            <Modal size="md" isOpen={dateRangeModalOpen} toggle={() => setDateRangeModalOpen(false)} centered>
+                <ModalHeader toggle={() => setDateRangeModalOpen(false)}>Seleccionar rango de fechas de nacimiento</ModalHeader>
+                <ReportDateRangeSelector
+                    onGenerate={handleGeneratePDF}
+                    onCancel={() => setDateRangeModalOpen(false)}
+                    loading={pdfLoading}
+                    generateButtonText="Generar PDF"
+                />
+            </Modal>
+
+            <Modal size="xl" isOpen={pdfModalOpen} toggle={() => setPdfModalOpen(false)} backdrop="static" keyboard={false} centered fullscreen={true}>
+                <ModalHeader toggle={() => setPdfModalOpen(false)}>Reporte de Camadas</ModalHeader>
+                <ModalBody>
+                    {fileURL && <PDFViewer fileUrl={fileURL} />}
+                </ModalBody>
+            </Modal>
+
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </div>
     )
 }

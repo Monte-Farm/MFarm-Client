@@ -4,7 +4,7 @@ import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import SubwarehouseForm from "Components/Common/Forms/SubwarehouseForm";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
+import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Column } from "common/data/data_types";
 import { getEffectiveUser } from "helpers/impersonation_helper";
@@ -13,6 +13,7 @@ import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
 import DonutChartCard, { DonutDataItem, DonutLegendItem } from "Components/Common/Graphics/DonutChartCard";
+import PDFViewer from "Components/Common/Shared/PDFViewer";
 
 const getSubwarehouseTypeLabel = (type: string) => {
     switch (type) {
@@ -37,7 +38,9 @@ const ViewSubwarehouse = () => {
     const userLogged = getEffectiveUser();
 
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ create: false, details: false, update: false, delete: false });
+    const [modals, setModals] = useState({ create: false, details: false, update: false, delete: false, viewPDF: false });
+    const [pdfLoading, setPdfLoading] = useState(false);
+    const [fileURL, setFileURL] = useState<string | null>(null);
     const [subwarehouses, setSubwarehouses] = useState([])
     const [loading, setLoading] = useState<boolean>(true);
     const [subwarehouseStatistics, setSubwarehouseStatistics] = useState({
@@ -124,6 +127,23 @@ const ViewSubwarehouse = () => {
             )
         }
     ]
+
+    const handleGeneratePDF = async () => {
+        if (!configContext || !userLogged) return;
+        try {
+            setPdfLoading(true);
+            const response = await configContext.axiosHelper.getBlob(
+                `${configContext.apiUrl}/reports/subwarehouses/all?farm_id=${userLogged.farm_assigned}`
+            );
+            const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+            setFileURL(window.URL.createObjectURL(pdfBlob));
+            toggleModal('viewPDF');
+        } catch (error) {
+            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+        } finally {
+            setPdfLoading(false);
+        }
+    };
 
     const fetchSubwarehouses = async () => {
         if (!configContext || !userLogged) return;
@@ -284,11 +304,20 @@ const ViewSubwarehouse = () => {
 
                 <Card>
                     <CardHeader>
-                        <div className="d-flex">
-                            <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>
-                                <i className="ri-add-line me-2" />
-                                Agregar Subalmacén
-                            </Button>
+                        <div className="d-flex gap-2">
+                            <div className="ms-auto d-flex gap-2">
+                                <Button color="primary" onClick={handleGeneratePDF} disabled={pdfLoading}>
+                                    {pdfLoading ? (
+                                        <><Spinner className="me-2" size="sm" />Generando...</>
+                                    ) : (
+                                        <><i className="ri-file-pdf-line me-2" />Exportar PDF</>
+                                    )}
+                                </Button>
+                                <Button className="farm-primary-button" onClick={() => toggleModal('create')}>
+                                    <i className="ri-add-line me-2" />
+                                    Agregar Subalmacén
+                                </Button>
+                            </div>
                         </div>
                     </CardHeader>
                     <CardBody className={subwarehouses.length === 0 ? "d-flex flex-column justify-content-center align-items-center text-center" : "d-flex flex-column flex-grow-1"}>
@@ -320,6 +349,13 @@ const ViewSubwarehouse = () => {
                 </Modal> */}
 
             </Container>
+
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop="static" keyboard={false} centered fullscreen={true}>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Subalmacenes</ModalHeader>
+                <ModalBody>
+                    {fileURL && <PDFViewer fileUrl={fileURL} />}
+                </ModalBody>
+            </Modal>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </div>

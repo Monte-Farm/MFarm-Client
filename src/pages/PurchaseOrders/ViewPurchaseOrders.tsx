@@ -1,7 +1,7 @@
 import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
-import { Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader } from "reactstrap";
+import { Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, Spinner } from "reactstrap";
 import { useNavigate } from "react-router-dom";
 import { Column } from "common/data/data_types";
 import PurchaseOrderForm from "Components/Common/Forms/PurchaseOrderForm";
@@ -11,6 +11,8 @@ import { getEffectiveUser } from "helpers/impersonation_helper";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
 import PurchaseOrderDetails from "Components/Common/Details/PurchaseOrderDetails";
+import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector";
+import PDFViewer from "Components/Common/Shared/PDFViewer";
 
 const ViewPurchaseOrders = () => {
     document.title = 'Ver Ordenes de compra | Ordenes de compra';
@@ -18,7 +20,9 @@ const ViewPurchaseOrders = () => {
     const userLogged = getEffectiveUser();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [purchaseOrders, setPurchaseOrders] = useState([])
-    const [modals, setModals] = useState({ createPurchaseOrder: false, purchaseOrderDetails: false });
+    const [modals, setModals] = useState({ createPurchaseOrder: false, purchaseOrderDetails: false, dateRange: false, viewPDF: false });
+    const [pdfLoading, setPdfLoading] = useState(false);
+    const [fileURL, setFileURL] = useState<string | null>(null);
     const [mainWarehouseId, setMainWarehouseId] = useState<string>('')
     const [loading, setLoading] = useState(true);
     const [selectedPurchaseOrder, setSelectedPurchaseOrder] = useState<string>('')
@@ -97,6 +101,24 @@ const ViewPurchaseOrders = () => {
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos intentelo, mas tarde' })
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleGeneratePDF = async (startDate: string, endDate: string) => {
+        if (!configContext || !userLogged) return;
+        try {
+            setPdfLoading(true);
+            toggleModal('dateRange', false);
+            const response = await configContext.axiosHelper.getBlob(
+                `${configContext.apiUrl}/reports/purchase_orders/range?start_date=${startDate}&end_date=${endDate}&farm_id=${userLogged.farm_assigned}`
+            );
+            const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+            setFileURL(window.URL.createObjectURL(pdfBlob));
+            toggleModal('viewPDF');
+        } catch (error) {
+            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+        } finally {
+            setPdfLoading(false);
         }
     };
 
@@ -179,10 +201,19 @@ const ViewPurchaseOrders = () => {
                     <CardHeader>
                         <div className="d-flex justify-content-between">
                             <h4 className="m-2">Órdenes de Compra</h4>
-                            <Button className="h-50 farm-primary-button" onClick={() => toggleModal('createPurchaseOrder')}>
-                                <i className="ri-add-line pe-2" />
-                                Nueva Orden de Compra
-                            </Button>
+                            <div className="d-flex gap-2">
+                                <Button color="primary" onClick={() => toggleModal('dateRange')} disabled={pdfLoading}>
+                                    {pdfLoading ? (
+                                        <><Spinner className="me-2" size="sm" />Generando...</>
+                                    ) : (
+                                        <><i className="ri-file-pdf-line me-2" />Exportar PDF</>
+                                    )}
+                                </Button>
+                                <Button className="farm-primary-button" onClick={() => toggleModal('createPurchaseOrder')}>
+                                    <i className="ri-add-line pe-2" />
+                                    Nueva Orden de Compra
+                                </Button>
+                            </div>
                         </div>
                     </CardHeader>
 
@@ -217,6 +248,23 @@ const ViewPurchaseOrders = () => {
                 <ModalHeader toggle={() => toggleModal("purchaseOrderDetails")}>Detalles de orden de compra</ModalHeader>
                 <ModalBody>
                     <PurchaseOrderDetails purchaseId={selectedPurchaseOrder} />
+                </ModalBody>
+            </Modal>
+
+            <Modal size="md" isOpen={modals.dateRange} toggle={() => toggleModal("dateRange")} centered>
+                <ModalHeader toggle={() => toggleModal("dateRange")}>Seleccionar rango de fechas</ModalHeader>
+                <ReportDateRangeSelector
+                    onGenerate={handleGeneratePDF}
+                    onCancel={() => toggleModal("dateRange")}
+                    loading={pdfLoading}
+                    generateButtonText="Generar PDF"
+                />
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop="static" keyboard={false} centered fullscreen={true}>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Órdenes de Compra</ModalHeader>
+                <ModalBody>
+                    {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>
             </Modal>
 

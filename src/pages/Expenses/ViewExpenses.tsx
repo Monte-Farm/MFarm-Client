@@ -1,12 +1,14 @@
 import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
-import { Badge, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalHeader, Row } from "reactstrap";
+import { Badge, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalHeader, Row, Spinner } from "reactstrap";
 import { Column } from "common/data/data_types";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import ExpenseForm from "Components/Common/Forms/ExpenseForm";
+import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector";
+import PDFViewer from "Components/Common/Shared/PDFViewer";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
 import DonutChartCard, { DonutDataItem, DonutLegendItem } from "Components/Common/Graphics/DonutChartCard";
@@ -29,7 +31,9 @@ const ViewExpenses = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [entries, setEntries] = useState<any[]>([]);
-    const [modals, setModals] = useState({ createExpense: false });
+    const [modals, setModals] = useState({ createExpense: false, dateRange: false, viewPDF: false });
+    const [pdfLoading, setPdfLoading] = useState(false);
+    const [fileURL, setFileURL] = useState<string | null>(null);
     const [statistics, setStatistics] = useState({
         totalAmount: 0,
         avgAmount: 0,
@@ -68,6 +72,24 @@ const ViewExpenses = () => {
                     : value,
         },
     ];
+
+    const handleGeneratePDF = async (startDate: string, endDate: string) => {
+        if (!configContext || !userLogged) return;
+        try {
+            setPdfLoading(true);
+            toggleModal('dateRange', false);
+            const response = await configContext.axiosHelper.getBlob(
+                `${configContext.apiUrl}/reports/expenses/range?start_date=${startDate}&end_date=${endDate}&farm_id=${userLogged.farm_assigned}`
+            );
+            const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+            setFileURL(window.URL.createObjectURL(pdfBlob));
+            toggleModal('viewPDF');
+        } catch (error) {
+            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+        } finally {
+            setPdfLoading(false);
+        }
+    };
 
     const fetchData = async () => {
         if (!configContext || !userLogged) return;
@@ -185,8 +207,15 @@ const ViewExpenses = () => {
 
                 <Card>
                     <CardHeader>
-                        <div className="d-flex gap-2">
-                            <h4 className="me-auto">Gastos</h4>
+                        <div className="d-flex gap-2 align-items-center">
+                            <h4 className="me-auto mb-0">Gastos</h4>
+                            <Button color="primary" onClick={() => toggleModal("dateRange")} disabled={pdfLoading}>
+                                {pdfLoading ? (
+                                    <><Spinner className="me-2" size="sm" />Generando...</>
+                                ) : (
+                                    <><i className="ri-file-pdf-line me-2" />Exportar PDF</>
+                                )}
+                            </Button>
                             <Button className="farm-primary-button" onClick={() => toggleModal("createExpense")}>
                                 <i className="ri-add-line me-2" />
                                 Registrar gasto
@@ -210,6 +239,23 @@ const ViewExpenses = () => {
                 <ModalHeader toggle={() => toggleModal("createExpense")}>Registrar gasto</ModalHeader>
                 <ModalBody>
                     <ExpenseForm onSave={() => { toggleModal("createExpense"); fetchData(); }} onCancel={() => toggleModal("createExpense")} />
+                </ModalBody>
+            </Modal>
+
+            <Modal size="md" isOpen={modals.dateRange} toggle={() => toggleModal("dateRange")} centered>
+                <ModalHeader toggle={() => toggleModal("dateRange")}>Seleccionar rango de fechas</ModalHeader>
+                <ReportDateRangeSelector
+                    onGenerate={handleGeneratePDF}
+                    onCancel={() => toggleModal("dateRange")}
+                    loading={pdfLoading}
+                    generateButtonText="Generar PDF"
+                />
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop="static" keyboard={false} centered fullscreen={true}>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Gastos</ModalHeader>
+                <ModalBody>
+                    {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>
             </Modal>
 

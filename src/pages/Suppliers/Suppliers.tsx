@@ -1,7 +1,7 @@
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom";
-import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
+import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from "reactstrap";
 import SupplierForm from "Components/Common/Forms/SupplierForm";
 import { SupplierData } from "common/data_interfaces";
 import { ConfigContext } from "App";
@@ -13,16 +13,21 @@ import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
 import DonutChartCard, { DonutDataItem, DonutLegendItem } from "Components/Common/Graphics/DonutChartCard";
 import SupplierDetailsModal from "Components/Common/Details/SupplierDetailsModal";
 import { getSupplierTypeLabel } from "common/enums/suppliers.enums";
+import { getEffectiveUser } from "helpers/impersonation_helper";
+import PDFViewer from "Components/Common/Shared/PDFViewer";
 
 const Suppliers = () => {
     document.title = 'Ver Proveedores | Almacén'
     const configContext = useContext(ConfigContext)
+    const userLogged = getEffectiveUser();
 
     const [suppliersData, setSuppliersData] = useState([]);
+    const [pdfLoading, setPdfLoading] = useState(false);
+    const [fileURL, setFileURL] = useState<string | null>(null);
     const [selectedSupplier, setSelectedSupplier] = useState<any | undefined>(undefined);
     const [selectedSuppliers, setSelectedSuppliers] = useState<SupplierData[]>([]);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ create: false, update: false, delete: false, activate: false, details: false, bulkDelete: false, bulkActivate: false });
+    const [modals, setModals] = useState({ create: false, update: false, delete: false, activate: false, details: false, bulkDelete: false, bulkActivate: false, viewPDF: false });
     const [loading, setLoading] = useState<boolean>(false)
     const [supplierStatistics, setSupplierStatistics] = useState({
         totalSuppliers: 0,
@@ -96,6 +101,23 @@ const Suppliers = () => {
             )
         }
     ]
+
+    const handleGeneratePDF = async () => {
+        if (!configContext || !userLogged) return;
+        try {
+            setPdfLoading(true);
+            const response = await configContext.axiosHelper.getBlob(
+                `${configContext.apiUrl}/reports/suppliers/all?farm_id=${userLogged.farm_assigned}`
+            );
+            const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+            setFileURL(window.URL.createObjectURL(pdfBlob));
+            toggleModal('viewPDF');
+        } catch (error) {
+            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+        } finally {
+            setPdfLoading(false);
+        }
+    };
 
     const fetchAllSupplierData = async () => {
         if (!configContext) return;
@@ -394,10 +416,19 @@ const Suppliers = () => {
                                     </div>
                                 </div>
                             )}
-                            <Button className="farm-primary-button ms-auto" onClick={() => toggleModal('create')}>
-                                <i className="ri-add-line me-2" />
-                                Agregar Proveedor
-                            </Button>
+                            <div className="d-flex gap-2 ms-auto">
+                                <Button color="primary" onClick={handleGeneratePDF} disabled={pdfLoading}>
+                                    {pdfLoading ? (
+                                        <><Spinner className="me-2" size="sm" />Generando...</>
+                                    ) : (
+                                        <><i className="ri-file-pdf-line me-2" />Exportar PDF</>
+                                    )}
+                                </Button>
+                                <Button className="farm-primary-button" onClick={() => toggleModal('create')}>
+                                    <i className="ri-add-line me-2" />
+                                    Agregar Proveedor
+                                </Button>
+                            </div>
                         </div>
                     </CardHeader>
 
@@ -510,6 +541,13 @@ const Suppliers = () => {
                 </Modal>
 
             </Container>
+
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop="static" keyboard={false} centered fullscreen={true}>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Proveedores</ModalHeader>
+                <ModalBody>
+                    {fileURL && <PDFViewer fileUrl={fileURL} />}
+                </ModalBody>
+            </Modal>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </div >

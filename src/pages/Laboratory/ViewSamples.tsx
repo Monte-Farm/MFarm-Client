@@ -17,6 +17,7 @@ import KPI from "Components/Common/Graphics/Kpi";
 import DiscardSampleForm from "Components/Common/Forms/DiscardSampleForm";
 import SemenSampleForm from "Components/Common/Forms/SemenSampleForm";
 import SelectableCustomTable from "Components/Common/Tables/SelectableTable";
+import PDFViewer from "Components/Common/Shared/PDFViewer";
 
 const ViewSamples = () => {
     document.title = 'Ver génetica liquida | Management System'
@@ -24,7 +25,9 @@ const ViewSamples = () => {
     const configContext = useContext(ConfigContext)
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ create: false, discard: false, pigDetails: false, bulkDiscard: false, bulkDiscardForm: false });
+    const [modals, setModals] = useState({ create: false, discard: false, pigDetails: false, bulkDiscard: false, bulkDiscardForm: false, viewPDF: false });
+    const [pdfLoading, setPdfLoading] = useState(false);
+    const [fileURL, setFileURL] = useState<string | null>(null);
     const [samples, setSamples] = useState<SemenSample[]>([])
     const [selectedSample, setSelectedSample] = useState({})
     const [selectedSamples, setSelectedSamples] = useState<SemenSample[]>([])
@@ -163,6 +166,23 @@ const ViewSamples = () => {
         toggleModal('discard')
         fetchSemenSamples();
     }
+
+    const handleGeneratePDF = async () => {
+        if (!configContext || !userLoggged) return;
+        try {
+            setPdfLoading(true);
+            const response = await configContext.axiosHelper.getBlob(
+                `${configContext.apiUrl}/reports/semen_samples/all?farm_id=${userLoggged.farm_assigned}`
+            );
+            const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+            setFileURL(window.URL.createObjectURL(pdfBlob));
+            toggleModal('viewPDF');
+        } catch (error) {
+            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+        } finally {
+            setPdfLoading(false);
+        }
+    };
 
     const fetchSemenSamples = async () => {
         if (!configContext || !userLoggged) return
@@ -310,10 +330,19 @@ const ViewSamples = () => {
                                     </div>
                                 </div>
                             )}
-                            <Button className="farm-primary-button ms-auto" onClick={() => toggleModal('create')}>
-                                <i className="ri-add-line me-2" />
-                                Agregar muestra
-                            </Button>
+                            <div className="d-flex gap-2 ms-auto">
+                                <Button color="primary" onClick={handleGeneratePDF} disabled={pdfLoading}>
+                                    {pdfLoading ? (
+                                        <><Spinner className="me-2" size="sm" />Generando...</>
+                                    ) : (
+                                        <><i className="ri-file-pdf-line me-2" />Exportar PDF</>
+                                    )}
+                                </Button>
+                                <Button className="farm-primary-button" onClick={() => toggleModal('create')}>
+                                    <i className="ri-add-line me-2" />
+                                    Agregar muestra
+                                </Button>
+                            </div>
                         </div>
                     </CardHeader>
 
@@ -427,6 +456,13 @@ const ViewSamples = () => {
                         {bulkDiscardFormik.isSubmitting ? <Spinner size="sm" /> : 'Confirmar Descarte'}
                     </Button>
                 </ModalFooter>
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop="static" keyboard={false} centered fullscreen={true}>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Lotes de Genética Líquida</ModalHeader>
+                <ModalBody>
+                    {fileURL && <PDFViewer fileUrl={fileURL} />}
+                </ModalBody>
             </Modal>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />

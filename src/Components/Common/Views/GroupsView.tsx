@@ -27,6 +27,7 @@ interface GroupsViewProps {
     columns: Column<any>[];
     statsEndpoint?: 'group_alive_stats' | 'weaning_stats';
     transferStage?: string;
+    headerActions?: React.ReactNode;
 }
 
 const GroupsView: React.FC<GroupsViewProps> = ({
@@ -35,7 +36,8 @@ const GroupsView: React.FC<GroupsViewProps> = ({
     pageTitle,
     columns,
     statsEndpoint = 'group_alive_stats',
-    transferStage
+    transferStage,
+    headerActions
 }) => {
     const navigate = useNavigate();
     const {
@@ -109,7 +111,7 @@ const GroupsView: React.FC<GroupsViewProps> = ({
 
                 <Card>
                     <CardHeader className="d-flex justify-content-between align-items-center">
-                        <div className="d-flex align-items-center gap-3">
+                        <div className="d-flex align-items-center gap-3 flex-grow-1">
                             {selectedGroups.length > 0 && (
                                 <div className="d-flex align-items-center gap-2">
                                     <span className="text-muted">
@@ -153,6 +155,7 @@ const GroupsView: React.FC<GroupsViewProps> = ({
                                 </div>
                             )}
                         </div>
+                        {headerActions && <div className="ms-auto">{headerActions}</div>}
                     </CardHeader>
 
                     <CardBody style={{ display: "flex", flexDirection: "column", height: "100%" }}>

@@ -1,7 +1,7 @@
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import ObjectDetails from "Components/Common/Details/ObjectDetails";
 import { useContext, useEffect, useState } from "react";
-import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
+import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from "reactstrap";
 import noImageUrl from '../../assets/images/no-image.png'
 import { Attribute, ProductData } from "common/data_interfaces";
 import { ConfigContext } from "App";
@@ -15,6 +15,7 @@ import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
 import DonutChartCard, { DonutDataItem, DonutLegendItem } from "Components/Common/Graphics/DonutChartCard";
 import { getProductCategoryLabel, getProductTypeLabel, PRODUCT_TYPES } from "common/enums/products.enums";
 import { FiInbox } from "react-icons/fi";
+import PDFViewer from "Components/Common/Shared/PDFViewer";
 
 
 const productAttributes: Attribute[] = [
@@ -35,7 +36,9 @@ const ViewProducts = () => {
     const [selectedProduct, setSelectedProduct] = useState<ProductData>()
     const [selectedProducts, setSelectedProducts] = useState<ProductData[]>([]);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ create: false, details: false, update: false, delete: false, activate: false, bulkDelete: false, bulkActivate: false });
+    const [modals, setModals] = useState({ create: false, details: false, update: false, delete: false, activate: false, bulkDelete: false, bulkActivate: false, viewPDF: false });
+    const [pdfLoading, setPdfLoading] = useState(false);
+    const [fileURL, setFileURL] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [productStatistics, setProductStatistics] = useState({
         totalProducts: 0,
@@ -166,6 +169,23 @@ const ViewProducts = () => {
         setSelectedProduct(data);
         toggleModal(modal)
     }
+
+    const handleGeneratePDF = async () => {
+        if (!configContext) return;
+        try {
+            setPdfLoading(true);
+            const response = await configContext.axiosHelper.getBlob(
+                `${configContext.apiUrl}/reports/products/all`
+            );
+            const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+            setFileURL(window.URL.createObjectURL(pdfBlob));
+            toggleModal('viewPDF');
+        } catch (error) {
+            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+        } finally {
+            setPdfLoading(false);
+        }
+    };
 
     const fetchAllProductData = async () => {
         if (!configContext) return;
@@ -459,10 +479,19 @@ const ViewProducts = () => {
                                     </div>
                                 </div>
                             )}
-                            <Button className="farm-primary-button ms-auto" onClick={() => toggleModal('create')}>
-                                <i className="ri-add-line me-2  " />
-                                Agregar Producto
-                            </Button>
+                            <div className="d-flex gap-2 ms-auto">
+                                <Button color="primary" onClick={handleGeneratePDF} disabled={pdfLoading}>
+                                    {pdfLoading ? (
+                                        <><Spinner className="me-2" size="sm" />Generando...</>
+                                    ) : (
+                                        <><i className="ri-file-pdf-line me-2" />Exportar PDF</>
+                                    )}
+                                </Button>
+                                <Button className="farm-primary-button" onClick={() => toggleModal('create')}>
+                                    <i className="ri-add-line me-2" />
+                                    Agregar Producto
+                                </Button>
+                            </div>
                         </div>
                     </CardHeader>
                     <CardBody className={products.length === 0 ? "d-flex flex-column justify-content-center align-items-center text-center" : "d-flex flex-column flex-grow-1"}>
@@ -570,6 +599,13 @@ const ViewProducts = () => {
                     <Button className="farm-secondary-button" onClick={() => toggleModal("bulkActivate", false)}>Cancelar</Button>
                     <Button className="farm-primary-button" onClick={handleBulkActivate}>Confirmar</Button>
                 </ModalFooter>
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop="static" keyboard={false} centered fullscreen={true}>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>Catálogo de Productos</ModalHeader>
+                <ModalBody>
+                    {fileURL && <PDFViewer fileUrl={fileURL} />}
+                </ModalBody>
             </Modal>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />

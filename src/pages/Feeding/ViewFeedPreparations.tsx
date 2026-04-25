@@ -9,7 +9,10 @@ import { getEffectiveUser } from "helpers/impersonation_helper";
 import { FEED_PREPARATION_URLS } from "helpers/feeding_urls";
 import { useContext, useEffect, useState } from "react";
 import { FiInbox } from "react-icons/fi";
-import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader } from "reactstrap";
+import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, Spinner } from "reactstrap";
+import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector";
+import PDFViewer from "Components/Common/Shared/PDFViewer";
+import AlertMessage from "Components/Common/Shared/AlertMesagge";
 
 const ViewFeedPreparations = () => {
     document.title = 'Preparaciones de alimento | System Management';
@@ -18,7 +21,9 @@ const ViewFeedPreparations = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [preparations, setPreparations] = useState<any[]>([]);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' });
-    const [modals, setModals] = useState({ create: false, details: false });
+    const [modals, setModals] = useState({ create: false, details: false, dateRange: false, viewPDF: false });
+    const [pdfLoading, setPdfLoading] = useState(false);
+    const [fileURL, setFileURL] = useState<string | null>(null);
     const [selectedPreparation, setSelectedPreparation] = useState<any>(null);
 
     const toggleModal = (m: keyof typeof modals, state?: boolean) => {
@@ -79,6 +84,24 @@ const ViewFeedPreparations = () => {
         },
     ];
 
+    const handleGeneratePDF = async (startDate: string, endDate: string) => {
+        if (!configContext || !userLogged) return;
+        try {
+            setPdfLoading(true);
+            toggleModal('dateRange', false);
+            const response = await configContext.axiosHelper.getBlob(
+                `${configContext.apiUrl}/reports/feed_preparations/range?start_date=${startDate}&end_date=${endDate}&farm_id=${userLogged.farm_assigned}`
+            );
+            const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+            setFileURL(window.URL.createObjectURL(pdfBlob));
+            toggleModal('viewPDF');
+        } catch (error) {
+            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+        } finally {
+            setPdfLoading(false);
+        }
+    };
+
     const fetchData = async () => {
         if (!configContext || !userLogged) return;
         try {
@@ -107,8 +130,15 @@ const ViewFeedPreparations = () => {
 
                 <Card className="rounded">
                     <CardHeader>
-                        <div className="d-flex">
-                            <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>
+                        <div className="d-flex gap-2 justify-content-end">
+                            <Button color="primary" onClick={() => toggleModal('dateRange')} disabled={pdfLoading}>
+                                {pdfLoading ? (
+                                    <><Spinner className="me-2" size="sm" />Generando...</>
+                                ) : (
+                                    <><i className="ri-file-pdf-line me-2" />Exportar PDF</>
+                                )}
+                            </Button>
+                            <Button className="farm-primary-button" onClick={() => toggleModal('create')}>
                                 <i className="ri-add-line me-2" />
                                 Preparar alimento
                             </Button>
@@ -142,6 +172,25 @@ const ViewFeedPreparations = () => {
                     )}
                 </ModalBody>
             </Modal>
+
+            <Modal size="md" isOpen={modals.dateRange} toggle={() => toggleModal("dateRange")} centered>
+                <ModalHeader toggle={() => toggleModal("dateRange")}>Seleccionar rango de fechas</ModalHeader>
+                <ReportDateRangeSelector
+                    onGenerate={handleGeneratePDF}
+                    onCancel={() => toggleModal("dateRange")}
+                    loading={pdfLoading}
+                    generateButtonText="Generar PDF"
+                />
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop="static" keyboard={false} centered fullscreen={true}>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Preparaciones de Alimento</ModalHeader>
+                <ModalBody>
+                    {fileURL && <PDFViewer fileUrl={fileURL} />}
+                </ModalBody>
+            </Modal>
+
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </div>
     );
 };

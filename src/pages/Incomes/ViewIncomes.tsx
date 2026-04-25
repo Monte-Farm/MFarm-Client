@@ -2,7 +2,7 @@ import { ConfigContext } from "App"
 import BreadCrumb from "Components/Common/Shared/BreadCrumb"
 import { useContext, useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader } from "reactstrap"
+import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, Spinner } from "reactstrap"
 import { Column } from "common/data/data_types"
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation"
 import AlertMessage from "Components/Common/Shared/AlertMesagge"
@@ -12,6 +12,8 @@ import CustomTable from "Components/Common/Tables/CustomTable"
 import StatKpiCard from "Components/Common/Graphics/StatKpiCard"
 import DonutChartCard, { DonutDataItem, DonutLegendItem } from "Components/Common/Graphics/DonutChartCard"
 import IncomeDetails from "Components/Common/Details/IncomeDetailsModal"
+import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector"
+import PDFViewer from "Components/Common/Shared/PDFViewer"
 
 
 const ViewIncomes = () => {
@@ -22,7 +24,9 @@ const ViewIncomes = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [incomes, setIncomes] = useState([])
     const [loading, setLoading] = useState<boolean>(true)
-    const [modals, setModals] = useState({ createIncome: false, details: false });
+    const [modals, setModals] = useState({ createIncome: false, details: false, dateRange: false, viewPDF: false });
+    const [pdfLoading, setPdfLoading] = useState(false);
+    const [fileURL, setFileURL] = useState<string | null>(null);
     const [mainWarehouseId, setMainWarehouseId] = useState<string>('')
     const [selectedIncome, setSelectedIncome] = useState<any>({});
     const [incomeStatistics, setIncomeStatistics] = useState({
@@ -81,6 +85,24 @@ const ViewIncomes = () => {
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
+    };
+
+    const handleGeneratePDF = async (startDate: string, endDate: string) => {
+        if (!configContext || !userLogged) return;
+        try {
+            setPdfLoading(true);
+            toggleModal('dateRange', false);
+            const response = await configContext.axiosHelper.getBlob(
+                `${configContext.apiUrl}/reports/incomes/range?start_date=${startDate}&end_date=${endDate}&farm_id=${userLogged.farm_assigned}`
+            );
+            const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+            setFileURL(window.URL.createObjectURL(pdfBlob));
+            toggleModal('viewPDF');
+        } catch (error) {
+            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+        } finally {
+            setPdfLoading(false);
+        }
     };
 
     const fetchWarehouseId = async () => {
@@ -277,6 +299,13 @@ const ViewIncomes = () => {
                     <CardHeader>
                         <div className="d-flex gap-2">
                             <h4 className="me-auto">Entradas</h4>
+                            <Button color="primary" onClick={() => toggleModal('dateRange')} disabled={pdfLoading}>
+                                {pdfLoading ? (
+                                    <><Spinner className="me-2" size="sm" />Generando...</>
+                                ) : (
+                                    <><i className="ri-file-pdf-line me-2" />Exportar PDF</>
+                                )}
+                            </Button>
                             <Button className="farm-primary-button" onClick={() => toggleModal('createIncome')}>
                                 <i className="ri-add-line me-3" />
                                 Nueva Entrada
@@ -310,6 +339,23 @@ const ViewIncomes = () => {
                 </ModalBody>
             </Modal>
 
+
+            <Modal size="md" isOpen={modals.dateRange} toggle={() => toggleModal("dateRange")} centered>
+                <ModalHeader toggle={() => toggleModal("dateRange")}>Seleccionar rango de fechas</ModalHeader>
+                <ReportDateRangeSelector
+                    onGenerate={handleGeneratePDF}
+                    onCancel={() => toggleModal("dateRange")}
+                    loading={pdfLoading}
+                    generateButtonText="Generar PDF"
+                />
+            </Modal>
+
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop="static" keyboard={false} centered fullscreen={true}>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Entradas</ModalHeader>
+                <ModalBody>
+                    {fileURL && <PDFViewer fileUrl={fileURL} />}
+                </ModalBody>
+            </Modal>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </div>
