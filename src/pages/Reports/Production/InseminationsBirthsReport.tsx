@@ -1,7 +1,6 @@
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
 import { Badge, Card, CardBody, CardHeader, Col, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
-import { getLoggedinUser } from "helpers/api_helper";
 import { Column } from "common/data/data_types";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
@@ -10,6 +9,8 @@ import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import BasicBarChart from "Components/Common/Graphics/BasicBarChart";
 import classnames from "classnames";
+import { useReportScope } from "hooks/useReportScope";
+import { buildReportUrl } from "helpers/reports_url_helper";
 
 interface InseminationRecord {
     _id: string;
@@ -53,7 +54,7 @@ const InseminationsBirthsReport = () => {
     document.title = "Inseminaciones y Partos | Reportes";
 
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const { isGlobal, farmId, scopeKey } = useReportScope();
 
     const [loading, setLoading] = useState(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -80,12 +81,17 @@ const InseminationsBirthsReport = () => {
     const [endDate, setEndDate] = useState(monthEnd.toISOString().split("T")[0]);
 
     const fetchData = async () => {
-        if (!configContext || !userLogged) return;
+        if (!configContext) return;
         setLoading(true);
         try {
-            const res = await configContext.axiosHelper.get(
-                `${configContext.apiUrl}/reports/production/inseminations-births/${userLogged.farm_assigned}?start_date=${startDate}&end_date=${endDate}`
-            );
+            const url = buildReportUrl({
+                apiUrl: configContext.apiUrl,
+                basePath: "reports/production/inseminations-births",
+                isGlobal,
+                farmId,
+                query: { start_date: startDate, end_date: endDate },
+            });
+            const res = await configContext.axiosHelper.get(url);
             const data = res.data.data;
             setInseminations(data.inseminations || []);
             setBirths(data.births || []);
@@ -100,16 +106,23 @@ const InseminationsBirthsReport = () => {
 
     const handleGeneratePdf = async (pdfStart: string, pdfEnd: string): Promise<string> => {
         if (!configContext) throw new Error("No config");
-        const response = await configContext.axiosHelper.getBlob(
-            `${configContext.apiUrl}/reports/production/inseminations-births/pdf/${userLogged.farm_assigned}?start_date=${pdfStart}&end_date=${pdfEnd}&orientation=portrait&format=A4`
-        );
+        const url = buildReportUrl({
+            apiUrl: configContext.apiUrl,
+            basePath: "reports/production/inseminations-births",
+            isGlobal,
+            farmId,
+            variant: "pdf",
+            query: { start_date: pdfStart, end_date: pdfEnd, orientation: "portrait", format: "A4" },
+        });
+        const response = await configContext.axiosHelper.getBlob(url);
         const pdfBlob = new Blob([response.data], { type: "application/pdf" });
         return window.URL.createObjectURL(pdfBlob);
     };
 
     useEffect(() => {
         fetchData();
-    }, [startDate, endDate]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [startDate, endDate, scopeKey]);
 
     const inseminationColumns: Column<InseminationRecord>[] = [
         { header: "Fecha", accessor: "date", type: "date", isFilterable: true },

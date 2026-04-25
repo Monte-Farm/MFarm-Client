@@ -1,7 +1,8 @@
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
 import { Card, CardBody, CardHeader, Col, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
-import { getLoggedinUser } from "helpers/api_helper";
+import { useReportScope } from "hooks/useReportScope";
+import { buildReportUrl } from "helpers/reports_url_helper";
 import { Column } from "common/data/data_types";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
@@ -65,7 +66,7 @@ const FeedWeightReport = () => {
     document.title = "Conversion Alimenticia y Peso | Reportes";
 
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const { isGlobal, farmId, scopeKey } = useReportScope();
 
     const [loading, setLoading] = useState(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -87,12 +88,17 @@ const FeedWeightReport = () => {
     const [endDate, setEndDate] = useState(monthEnd.toISOString().split("T")[0]);
 
     const fetchData = async () => {
-        if (!configContext || !userLogged) return;
+        if (!configContext) return;
         setLoading(true);
         try {
-            const res = await configContext.axiosHelper.get(
-                `${configContext.apiUrl}/reports/production/feed-weight/${userLogged.farm_assigned}?start_date=${startDate}&end_date=${endDate}`
-            );
+            const url = buildReportUrl({
+                apiUrl: configContext.apiUrl,
+                basePath: "reports/production/feed-weight",
+                isGlobal,
+                farmId,
+                query: { start_date: startDate, end_date: endDate },
+            });
+            const res = await configContext.axiosHelper.get(url);
             const data = res.data.data;
             setFcrData(data.fcrByGroup || []);
             setAdgData(data.adgByGroup || []);
@@ -109,16 +115,23 @@ const FeedWeightReport = () => {
 
     const handleGeneratePdf = async (pdfStart: string, pdfEnd: string): Promise<string> => {
         if (!configContext) throw new Error("No config");
-        const response = await configContext.axiosHelper.getBlob(
-            `${configContext.apiUrl}/reports/production/feed-weight/pdf/${userLogged.farm_assigned}?start_date=${pdfStart}&end_date=${pdfEnd}&orientation=landscape&format=A4`
-        );
+        const url = buildReportUrl({
+            apiUrl: configContext.apiUrl,
+            basePath: "reports/production/feed-weight",
+            isGlobal,
+            farmId,
+            variant: "pdf",
+            query: { start_date: pdfStart, end_date: pdfEnd, orientation: "landscape", format: "A4" },
+        });
+        const response = await configContext.axiosHelper.getBlob(url);
         const pdfBlob = new Blob([response.data], { type: "application/pdf" });
         return window.URL.createObjectURL(pdfBlob);
     };
 
     useEffect(() => {
         fetchData();
-    }, [startDate, endDate]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [startDate, endDate, scopeKey]);
 
     // Columns
     const fcrColumns: Column<FcrRecord>[] = [

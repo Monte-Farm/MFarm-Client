@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Container } from "reactstrap";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import { roleLabels } from "common/role_labels";
 import { userRoles } from "common/user_roles";
 import DashboardHeader from "./DashboardHeader";
@@ -11,6 +11,7 @@ import ReproductionDashboard from "./Dashboards/ReproductionDashboard";
 import VeterinaryDashboard from "./Dashboards/VeterinaryDashboard";
 import WorkerDashboard from "./Dashboards/WorkerDashboard";
 import { getDefaultDateRange, resolveDashboardRole } from "./dashboardHelpers";
+import SuperadminDashboard from "./Dashboards/SuperadminDashboard";
 
 const getRoleLabel = (role: string): string => {
     if (roleLabels[role]) return roleLabels[role];
@@ -21,7 +22,7 @@ const getRoleLabel = (role: string): string => {
 const Home = () => {
     document.title = "Inicio | Pig System";
 
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
     const defaults = getDefaultDateRange();
     const [startDate, setStartDate] = useState(defaults.startDate);
     const [endDate, setEndDate] = useState(defaults.endDate);
@@ -32,7 +33,7 @@ const Home = () => {
     const renderDashboard = () => {
         switch (activeRole) {
             case "Superadmin":
-                return null;
+                return <SuperadminDashboard startDate={startDate} endDate={endDate} />;
             case "farm_manager":
                 return <ExecutiveDashboard startDate={startDate} endDate={endDate} />;
             case "warehouse_manager":

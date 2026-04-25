@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Card, CardBody, CardHeader, Col, Row } from "reactstrap";
 import { ConfigContext } from "App";
-import { getEffectiveUser } from "helpers/impersonation_helper";
 import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
 import BasicLineChartCard from "Components/Common/Graphics/BasicLineChartCard";
 import DonutChartCard from "Components/Common/Graphics/DonutChartCard";
@@ -10,11 +9,11 @@ import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import { Column } from "common/data/data_types";
 import { stageLabelsEs } from "../dashboardHelpers";
+import { buildReportUrl } from "helpers/reports_url_helper";
 
 interface Props {
     startDate: string;
     endDate: string;
-    overrideFarmId?: string;
 }
 
 interface ExecutiveData {
@@ -28,25 +27,26 @@ interface ExecutiveData {
 
 const stageColors = ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899", "#14b8a6", "#ef4444"];
 
-const ExecutiveDashboard: React.FC<Props> = ({ startDate, endDate, overrideFarmId }) => {
+const GlobalExecutiveDashboard: React.FC<Props> = ({ startDate, endDate }) => {
     const configContext = useContext(ConfigContext);
-    const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [data, setData] = useState<ExecutiveData | null>(null);
 
-    const farmId = overrideFarmId || userLogged?.farm_assigned;
-
     const fetchData = async () => {
-        if (!configContext || !farmId) return;
+        if (!configContext) return;
         setLoading(true);
         try {
-            const res = await configContext.axiosHelper.get(
-                `${configContext.apiUrl}/dashboard/executive/${farmId}?start_date=${startDate}&end_date=${endDate}`
-            );
+            const url = buildReportUrl({
+                apiUrl: configContext.apiUrl,
+                basePath: "dashboard/executive",
+                isGlobal: true,
+                query: { start_date: startDate, end_date: endDate },
+            });
+            const res = await configContext.axiosHelper.get(url);
             setData(res.data.data);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar el dashboard." });
+            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar el dashboard global." });
         } finally {
             setLoading(false);
         }
@@ -55,7 +55,7 @@ const ExecutiveDashboard: React.FC<Props> = ({ startDate, endDate, overrideFarmI
     useEffect(() => {
         fetchData();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [startDate, endDate, overrideFarmId]);
+    }, [startDate, endDate]);
 
     if (loading) return <LoadingAnimation absolutePosition={false} />;
     if (!data) return null;
@@ -209,4 +209,4 @@ const ExecutiveDashboard: React.FC<Props> = ({ startDate, endDate, overrideFarmI
     );
 };
 
-export default ExecutiveDashboard;
+export default GlobalExecutiveDashboard;

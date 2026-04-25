@@ -2,7 +2,8 @@ import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
 import { Card, CardBody, CardHeader, Col, Input, Row } from "reactstrap";
 import SimpleBar from "simplebar-react";
-import { getLoggedinUser } from "helpers/api_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
+import { useReportScope } from "hooks/useReportScope";
 import { Column } from "common/data/data_types";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
@@ -54,7 +55,8 @@ const SupplierStatementReport = () => {
     document.title = "Estado de Cuenta por Proveedor | Reportes";
 
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
+    const { isGlobal, farmId } = useReportScope();
 
     const [loading, setLoading] = useState(false);
     const [loadingSuppliers, setLoadingSuppliers] = useState(false);
@@ -78,11 +80,11 @@ const SupplierStatementReport = () => {
     const [endDate, setEndDate] = useState(monthEnd.toISOString().split("T")[0]);
 
     const fetchSuppliers = async () => {
-        if (!configContext || !userLogged) return;
+        if (!configContext || !farmId) return;
         setLoadingSuppliers(true);
         try {
             const res = await configContext.axiosHelper.get(
-                `${configContext.apiUrl}/reports/finance/supplier-statement/suppliers/${userLogged.farm_assigned}`
+                `${configContext.apiUrl}/reports/finance/supplier-statement/suppliers/${farmId}`
             );
             setSuppliers(res.data.data || []);
         } catch {
@@ -121,7 +123,11 @@ const SupplierStatementReport = () => {
 
     useEffect(() => {
         fetchSuppliers();
-    }, []);
+        setSelectedSupplierId("");
+        setPurchases([]);
+        setProducts([]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [farmId]);
 
     useEffect(() => {
         if (selectedSupplierId) {

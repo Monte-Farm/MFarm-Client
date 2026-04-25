@@ -1,7 +1,7 @@
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
 import { Card, CardBody, CardHeader, Col, Row } from "reactstrap";
-import { getLoggedinUser } from "helpers/api_helper";
+import { useReportScope } from "hooks/useReportScope";
 import { Column } from "common/data/data_types";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
@@ -60,7 +60,7 @@ const ExpensesReport = () => {
     document.title = "Reporte de Gastos | Reportes";
 
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const { isGlobal, farmId, scopeKey } = useReportScope();
 
     const [loading, setLoading] = useState(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -80,11 +80,11 @@ const ExpensesReport = () => {
     const [endDate, setEndDate] = useState(monthEnd.toISOString().split("T")[0]);
 
     const fetchData = async () => {
-        if (!configContext || !userLogged) return;
+        if (!configContext || !farmId) return;
         setLoading(true);
         try {
             const res = await configContext.axiosHelper.get(
-                `${configContext.apiUrl}/finances/manual_expenses_report/${userLogged.farm_assigned}/${startDate}/${endDate}`
+                `${configContext.apiUrl}/finances/manual_expenses_report/${farmId}/${startDate}/${endDate}`
             );
             const data = res.data.data;
             setExpenses(data.expenses || []);
@@ -101,7 +101,7 @@ const ExpensesReport = () => {
     const handleGeneratePdf = async (pdfStart: string, pdfEnd: string): Promise<string> => {
         if (!configContext) throw new Error("No config");
         const response = await configContext.axiosHelper.getBlob(
-            `${configContext.apiUrl}/finances/manual_expenses_report/pdf/${userLogged.farm_assigned}/${pdfStart}/${pdfEnd}?orientation=landscape&format=A4`
+            `${configContext.apiUrl}/finances/manual_expenses_report/pdf/${farmId}/${pdfStart}/${pdfEnd}?orientation=landscape&format=A4`
         );
         const pdfBlob = new Blob([response.data], { type: "application/pdf" });
         return window.URL.createObjectURL(pdfBlob);
@@ -109,7 +109,8 @@ const ExpensesReport = () => {
 
     useEffect(() => {
         fetchData();
-    }, [startDate, endDate]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [startDate, endDate, scopeKey]);
 
     const expenseColumns: Column<ExpenseRecord>[] = [
         { header: "Fecha", accessor: "date", type: "date", isFilterable: true },

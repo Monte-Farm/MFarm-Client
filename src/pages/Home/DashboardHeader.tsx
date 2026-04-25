@@ -49,20 +49,22 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                 <span className="fw-semibold text-primary">{roleLabel}</span>
                             </div>
                         </div>
-                        <Button
-                            color="light"
-                            className="d-flex align-items-center gap-2 shadow-sm border"
-                            onClick={() => setPickerOpen(true)}
-                            style={{ borderRadius: "8px", padding: "8px 16px" }}
-                        >
-                            <i className="ri-calendar-line text-primary" style={{ fontSize: "16px" }}></i>
-                            <span style={{ fontSize: "13px" }}>
-                                <span className="fw-semibold">{formatDateLabel(startDate)}</span>
-                                <span className="text-muted" style={{ margin: "0 6px" }}>—</span>
-                                <span className="fw-semibold">{formatDateLabel(endDate)}</span>
-                            </span>
-                            <i className="ri-arrow-down-s-line text-muted"></i>
-                        </Button>
+                        <div className="d-flex align-items-center gap-2 flex-wrap">
+                            <Button
+                                color="light"
+                                className="d-flex align-items-center gap-2 shadow-sm border"
+                                onClick={() => setPickerOpen(true)}
+                                style={{ borderRadius: "8px", padding: "8px 16px" }}
+                            >
+                                <i className="ri-calendar-line text-primary" style={{ fontSize: "16px" }}></i>
+                                <span style={{ fontSize: "13px" }}>
+                                    <span className="fw-semibold">{formatDateLabel(startDate)}</span>
+                                    <span className="text-muted" style={{ margin: "0 6px" }}>—</span>
+                                    <span className="fw-semibold">{formatDateLabel(endDate)}</span>
+                                </span>
+                                <i className="ri-arrow-down-s-line text-muted"></i>
+                            </Button>
+                        </div>
                     </div>
                 </CardBody>
             </Card>

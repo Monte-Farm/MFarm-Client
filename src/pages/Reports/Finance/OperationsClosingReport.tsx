@@ -3,7 +3,9 @@ import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Alert, Button, Card, CardBody, CardHeader, Col, Row, Table } from "reactstrap";
-import { getLoggedinUser } from "helpers/api_helper";
+import { useReportScope } from "hooks/useReportScope";
+import { buildReportUrl } from "helpers/reports_url_helper";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import ReportPageLayout from "Components/Common/Shared/ReportPageLayout";
@@ -51,7 +53,8 @@ const OperationsClosingReport = () => {
     document.title = "Estado de Resultados | Reportes";
 
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const userLogged = getEffectiveUser();
+    const { isGlobal, farmId, scopeKey } = useReportScope();
 
     const [loading, setLoading] = useState(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -73,12 +76,17 @@ const OperationsClosingReport = () => {
     const [closingInfo, setClosingInfo] = useState<PeriodClosingByPeriod | null>(null);
 
     const fetchData = async () => {
-        if (!configContext || !userLogged) return;
+        if (!configContext) return;
         setLoading(true);
         try {
-            const res = await configContext.axiosHelper.get(
-                `${configContext.apiUrl}/reports/finance/operations-closing/${userLogged.farm_assigned}?start_date=${startDate}&end_date=${endDate}`
-            );
+            const url = buildReportUrl({
+                apiUrl: configContext.apiUrl,
+                basePath: "reports/finance/operations-closing",
+                isGlobal,
+                farmId,
+                query: { start_date: startDate, end_date: endDate },
+            });
+            const res = await configContext.axiosHelper.get(url);
             const data = res.data.data;
             setKpis(data.kpis);
             setCostBreakdown(data.costBreakdown || []);
@@ -93,21 +101,28 @@ const OperationsClosingReport = () => {
 
     const handleGeneratePdf = async (pdfStart: string, pdfEnd: string): Promise<string> => {
         if (!configContext) throw new Error("No config");
-        const response = await configContext.axiosHelper.getBlob(
-            `${configContext.apiUrl}/reports/finance/operations-closing/pdf/${userLogged.farm_assigned}?start_date=${pdfStart}&end_date=${pdfEnd}&orientation=portrait&format=A4`
-        );
+        const url = buildReportUrl({
+            apiUrl: configContext.apiUrl,
+            basePath: "reports/finance/operations-closing",
+            isGlobal,
+            farmId,
+            variant: "pdf",
+            query: { start_date: pdfStart, end_date: pdfEnd, orientation: "portrait", format: "A4" },
+        });
+        const response = await configContext.axiosHelper.getBlob(url);
         const pdfBlob = new Blob([response.data], { type: "application/pdf" });
         return window.URL.createObjectURL(pdfBlob);
     };
 
     useEffect(() => {
         fetchData();
-    }, [startDate, endDate]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [startDate, endDate, scopeKey]);
 
     useEffect(() => {
         // Detect if selected range matches exactly a calendar month → check for existing closing
         const check = async () => {
-            if (!configContext || !userLogged) return;
+            if (!configContext || !userLogged || isGlobal) { setClosingInfo(null); return; }
             const start = new Date(startDate + "T00:00:00");
             const end = new Date(endDate + "T00:00:00");
             const isFirstOfMonth = start.getDate() === 1;
@@ -163,13 +178,20 @@ const OperationsClosingReport = () => {
         if (!configContext) return;
         try {
             setExcelLoading(true);
-            const response = await configContext.axiosHelper.getBlob(
-                `${configContext.apiUrl}/reports/finance/operations-closing/excel/${userLogged.farm_assigned}?start_date=${startDate}&end_date=${endDate}`
-            );
+            const url = buildReportUrl({
+                apiUrl: configContext.apiUrl,
+                basePath: "reports/finance/operations-closing",
+                isGlobal,
+                farmId,
+                variant: "excel",
+                query: { start_date: startDate, end_date: endDate },
+            });
+            const response = await configContext.axiosHelper.getBlob(url);
             const blob = new Blob([response.data], {
                 type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             });
-            saveAs(blob, `Cierre_Operacion_${startDate}_${endDate}.xlsx`);
+            const filePrefix = isGlobal ? "Cierre_Operacion_Global" : "Cierre_Operacion";
+            saveAs(blob, `${filePrefix}_${startDate}_${endDate}.xlsx`);
         } catch {
             setAlertConfig({ visible: true, color: "danger", message: "Error al generar el archivo Excel." });
         } finally {

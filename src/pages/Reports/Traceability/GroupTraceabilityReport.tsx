@@ -2,7 +2,8 @@ import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
 import { Badge, Card, CardBody, CardHeader, Col, Input, Row } from "reactstrap";
 import SimpleBar from "simplebar-react";
-import { getLoggedinUser } from "helpers/api_helper";
+import { useReportScope } from "hooks/useReportScope";
+import { buildReportUrl } from "helpers/reports_url_helper";
 import { Column } from "common/data/data_types";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
@@ -54,7 +55,7 @@ const GroupTraceabilityReport = () => {
     document.title = "Trazabilidad por Grupo | Reportes";
 
     const configContext = useContext(ConfigContext);
-    const userLogged = getLoggedinUser();
+    const { isGlobal, farmId, scopeKey } = useReportScope();
 
     const [loading, setLoading] = useState(false);
     const [loadingGroups, setLoadingGroups] = useState(false);
@@ -67,13 +68,28 @@ const GroupTraceabilityReport = () => {
     const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
 
     const fetchGroups = async () => {
-        if (!configContext || !userLogged) return;
+        if (!configContext) return;
         setLoadingGroups(true);
         try {
-            const res = await configContext.axiosHelper.get(
-                `${configContext.apiUrl}/reports/traceability/groups/${userLogged.farm_assigned}`
-            );
-            setGroups(res.data.data || []);
+            const url = buildReportUrl({
+                apiUrl: configContext.apiUrl,
+                basePath: "reports/traceability/groups",
+                isGlobal,
+                farmId,
+            });
+            const res = await configContext.axiosHelper.get(url);
+            if (isGlobal) {
+                const flat: GroupOption[] = [];
+                const farms = res.data.data || [];
+                farms.forEach((farm: any) => {
+                    (farm.groups || []).forEach((g: any) => {
+                        flat.push({ _id: g._id, name: `${g.name} — ${farm.farmName}`, stage: g.stage });
+                    });
+                });
+                setGroups(flat);
+            } else {
+                setGroups(res.data.data || []);
+            }
         } catch {
             setAlertConfig({ visible: true, color: "danger", message: "Error al cargar los grupos." });
         } finally {
@@ -109,7 +125,11 @@ const GroupTraceabilityReport = () => {
 
     useEffect(() => {
         fetchGroups();
-    }, []);
+        setSelectedGroupId("");
+        setGroupInfo(null);
+        setTimeline([]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [scopeKey]);
 
     useEffect(() => {
         if (selectedGroupId) {
