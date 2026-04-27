@@ -1,0 +1,276 @@
+$pig-pink: #f6b8c8;
+$pig-pink-dark: #e89bb0;
+$pig-snout: #ec9fb2;
+$pig-eye: #2b2538;
+$pig-mouth: #7a2b40;
+$pig-thought: #ffffff;
+$pig-thought-stroke: #c8cfdb;
+
+.ai-chat-pig {
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: block;
+    line-height: 0;
+    transition: width 0.3s ease, height 0.3s ease;
+
+    &:focus-visible {
+        outline: 2px solid #0ab39c;
+        outline-offset: 4px;
+        border-radius: 12px;
+    }
+
+    &__stage {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        overflow: visible;
+    }
+
+    &--idle {
+        width: 200px;
+        height: 110px;
+
+        .ai-chat-pig__stage {
+            overflow: hidden;
+        }
+    }
+
+    &--attentive,
+    &--thinking,
+    &--talking {
+        width: 140px;
+        height: 140px;
+    }
+
+    .pig {
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+        filter: drop-shadow(0 6px 12px rgba(64, 81, 137, 0.25));
+        transform-origin: 50% 70%;
+    }
+}
+
+/* ----- Base shapes ----- */
+.pig__body {
+    fill: $pig-pink;
+    stroke: $pig-pink-dark;
+    stroke-width: 1.2;
+}
+
+.pig__leg {
+    fill: $pig-pink-dark;
+    transform-origin: 50% 0%;
+}
+
+.pig__head-shape {
+    fill: $pig-pink;
+    stroke: $pig-pink-dark;
+    stroke-width: 1.2;
+}
+
+.pig__ear {
+    fill: $pig-pink-dark;
+}
+
+.pig__eye {
+    fill: $pig-eye;
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+.pig__snout-shape {
+    fill: $pig-snout;
+    stroke: $pig-pink-dark;
+    stroke-width: 1;
+}
+
+.pig__nostril {
+    fill: $pig-mouth;
+}
+
+.pig__mouth {
+    fill: $pig-mouth;
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+.pig__head {
+    transform-box: fill-box;
+    transform-origin: 74px 38px;
+}
+
+.pig__tail {
+    transform-box: fill-box;
+    transform-origin: 22px 46px;
+}
+
+/* ----- Thought bubble (hidden by default) ----- */
+.pig__thought {
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+
+    circle {
+        fill: $pig-thought;
+        stroke: $pig-thought-stroke;
+        stroke-width: 1;
+    }
+}
+
+.pig__thought-text {
+    fill: #405189;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    dominant-baseline: middle;
+}
+
+/* =====================================================
+   IDLE — pig walks back and forth
+   ===================================================== */
+.pig--idle {
+    animation: pig-walk 6s ease-in-out infinite alternate, pig-bob 0.5s ease-in-out infinite;
+
+    .pig__leg--fl,
+    .pig__leg--br {
+        animation: pig-leg-a 0.5s ease-in-out infinite;
+    }
+
+    .pig__leg--bl,
+    .pig__leg--fr {
+        animation: pig-leg-b 0.5s ease-in-out infinite;
+    }
+
+    .pig__tail {
+        animation: pig-tail 0.8s ease-in-out infinite;
+    }
+}
+
+@keyframes pig-walk {
+    0%   { transform: translateX(0) scaleX(1); }
+    45%  { transform: translateX(45px) scaleX(1); }
+    50%  { transform: translateX(45px) scaleX(-1); }
+    95%  { transform: translateX(0) scaleX(-1); }
+    100% { transform: translateX(0) scaleX(1); }
+}
+
+@keyframes pig-bob {
+    0%, 100% { translate: 0 0; }
+    50%      { translate: 0 -1.5px; }
+}
+
+@keyframes pig-leg-a {
+    0%, 100% { transform: rotate(-12deg); }
+    50%      { transform: rotate(12deg); }
+}
+
+@keyframes pig-leg-b {
+    0%, 100% { transform: rotate(12deg); }
+    50%      { transform: rotate(-12deg); }
+}
+
+@keyframes pig-tail {
+    0%, 100% { transform: rotate(-8deg); }
+    50%      { transform: rotate(8deg); }
+}
+
+/* =====================================================
+   ATTENTIVE — pig faces user, blinks, tiny head bob
+   ===================================================== */
+.pig--attentive {
+    .pig__eye {
+        animation: pig-blink 4s ease-in-out infinite;
+    }
+
+    .pig__head {
+        animation: pig-head-bob 3s ease-in-out infinite;
+    }
+}
+
+@keyframes pig-blink {
+    0%, 92%, 100% { transform: scaleY(1); }
+    95%, 97%      { transform: scaleY(0.1); }
+}
+
+@keyframes pig-head-bob {
+    0%, 100% { transform: rotate(-2deg); }
+    50%      { transform: rotate(2deg); }
+}
+
+/* =====================================================
+   THINKING — eyes look up, thought bubble appears
+   ===================================================== */
+.pig--thinking {
+    .pig__eye {
+        transform: translateY(-1px);
+        animation: pig-blink 4s ease-in-out infinite;
+    }
+
+    .pig__head {
+        animation: pig-think-tilt 2.4s ease-in-out infinite;
+    }
+
+    .pig__thought {
+        opacity: 1;
+        transform: translateY(0);
+        animation: pig-thought-float 2s ease-in-out infinite;
+    }
+}
+
+@keyframes pig-think-tilt {
+    0%, 100% { transform: rotate(-4deg); }
+    50%      { transform: rotate(4deg); }
+}
+
+@keyframes pig-thought-float {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-2px); }
+}
+
+/* =====================================================
+   TALKING — mouth opens/closes, slight head bounce
+   ===================================================== */
+.pig--talking {
+    .pig__mouth {
+        animation: pig-talk 0.28s ease-in-out infinite;
+    }
+
+    .pig__head {
+        animation: pig-head-bounce 0.55s ease-in-out infinite;
+    }
+
+    .pig__eye {
+        animation: pig-blink 4s ease-in-out infinite;
+    }
+}
+
+@keyframes pig-talk {
+    0%, 100% { transform: scaleY(1); }
+    50%      { transform: scaleY(4.5); }
+}
+
+@keyframes pig-head-bounce {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-1.5px); }
+}
+
+/* =====================================================
+   Reduced motion — disable all animations
+   ===================================================== */
+@media (prefers-reduced-motion: reduce) {
+    .pig--idle,
+    .pig--idle *,
+    .pig--attentive *,
+    .pig--thinking *,
+    .pig--talking * {
+        animation: none !important;
+    }
+
+    .pig--thinking .pig__thought {
+        opacity: 1;
+        transform: none;
+    }
+}
