@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button, Badge, Spinner } from "reactstrap";
 import { FiActivity, FiCalendar, FiCheckCircle } from "react-icons/fi";
 
@@ -9,23 +10,25 @@ interface ResolveHealthEventModalProps {
     onCancel: () => void;
 }
 
-const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-    active: { label: "Activo", color: "danger" },
-    controlled: { label: "Controlado", color: "warning" },
-    resolved: { label: "Resuelto", color: "success" },
-};
-
 const ResolveHealthEventModal = ({ isOpen, event, resolving, onConfirm, onCancel }: ResolveHealthEventModalProps) => {
+    const { t } = useTranslation();
+
+    const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
+        active: { label: t("shared.healthEvent.status.active"), color: "danger" },
+        controlled: { label: t("shared.healthEvent.status.controlled"), color: "warning" },
+        resolved: { label: t("shared.healthEvent.status.resolved"), color: "success" },
+    };
+
     return (
         <Modal isOpen={isOpen} toggle={() => !resolving && onCancel()} centered>
             <ModalHeader toggle={() => !resolving && onCancel()}>
-                Finalizar evento sanitario
+                {t("shared.healthEvent.resolve.title")}
             </ModalHeader>
             <ModalBody>
                 {event && (
                     <div>
                         <p className="mb-3">
-                            ¿Está seguro de marcar el evento <strong>{event.name}</strong> como <Badge color="success">Resuelto</Badge>?
+                            {t("shared.healthEvent.resolve.confirm", { name: event.name })} <Badge color="success">{t("shared.healthEvent.resolve.resolved")}</Badge>
                         </p>
                         <div className="border rounded p-3 bg-light">
                             <div className="d-flex align-items-center gap-2 mb-2">
@@ -37,11 +40,11 @@ const ResolveHealthEventModal = ({ isOpen, event, resolving, onConfirm, onCancel
                                     {STATUS_CONFIG[event.status]?.label}
                                 </Badge>
                                 <span className="text-muted">→</span>
-                                <Badge color="success">Resuelto</Badge>
+                                <Badge color="success">{t("shared.healthEvent.resolve.resolved")}</Badge>
                             </div>
                             <div className="text-muted fs-6 d-flex align-items-center gap-1">
                                 <FiCalendar />
-                                Fecha de término: <strong>{new Date().toLocaleDateString("es-MX")}</strong>
+                                {t("shared.healthEvent.resolve.endDate")} <strong>{new Date().toLocaleDateString()}</strong>
                             </div>
                         </div>
                     </div>
@@ -49,13 +52,13 @@ const ResolveHealthEventModal = ({ isOpen, event, resolving, onConfirm, onCancel
             </ModalBody>
             <ModalFooter>
                 <Button color="light" onClick={onCancel} disabled={resolving}>
-                    Cancelar
+                    {t("common.button.cancel")}
                 </Button>
                 <Button color="success" onClick={onConfirm} disabled={resolving}>
                     {resolving ? <Spinner size="sm" /> : (
                         <>
                             <FiCheckCircle className="me-1" />
-                            Confirmar
+                            {t("common.button.confirm")}
                         </>
                     )}
                 </Button>

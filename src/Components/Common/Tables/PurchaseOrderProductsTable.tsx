@@ -1,5 +1,6 @@
 import { categoryLabels } from "common/product_categories";
 import React, { useEffect, useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Input, Table } from "reactstrap";
 import SimpleBar from "simplebar-react";
 
@@ -10,6 +11,7 @@ interface PurchaseOrderProductsTableProps {
 }
 
 const PurchaseOrderProductsTable: React.FC<PurchaseOrderProductsTableProps> = ({ data, productsDelivered, onProductEdit }) => {
+    const { t } = useTranslation();
     const [filterText, setFilterText] = useState("");
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
     const [editingValues, setEditingValues] = useState<Record<string, { quantity: string; price: string; totalPrice: string }>>({});
@@ -17,9 +19,9 @@ const PurchaseOrderProductsTable: React.FC<PurchaseOrderProductsTableProps> = ({
     useEffect(() => {
         const initialValues = Object.fromEntries(
             productsDelivered.map(({ id, quantity, price, totalPrice }) => [
-                id, 
-                { 
-                    quantity: quantity.toString(), 
+                id,
+                {
+                    quantity: quantity.toString(),
                     price: price.toString(),
                     totalPrice: (totalPrice || 0).toString()
                 }
@@ -39,18 +41,16 @@ const PurchaseOrderProductsTable: React.FC<PurchaseOrderProductsTableProps> = ({
 
         const currentProduct = productsDelivered.find(p => p.id === id);
         if (!currentProduct) return;
-        
+
         let updatedProduct = { ...currentProduct, [field]: parsedValue };
 
         // Cálculo bidireccional
         if (field === "quantity" || field === "price") {
-            // Si cambia cantidad o precio unitario, calcular precio total
             const quantity = field === "quantity" ? parsedValue : (currentProduct.quantity || 0);
             const price = field === "price" ? parsedValue : (currentProduct.price || 0);
             updatedProduct.totalPrice = quantity * price;
             updatedProduct.price = price;
         } else if (field === "totalPrice") {
-            // Si cambia precio total, calcular precio unitario
             const quantity = currentProduct.quantity || 0;
             const price = quantity > 0 ? parsedValue / quantity : 0;
             updatedProduct.price = price;
@@ -58,7 +58,7 @@ const PurchaseOrderProductsTable: React.FC<PurchaseOrderProductsTableProps> = ({
 
         setEditingValues(prev => ({
             ...prev,
-            [id]: { 
+            [id]: {
                 quantity: updatedProduct.quantity?.toString() || "0",
                 price: updatedProduct.price?.toString() || "0",
                 totalPrice: updatedProduct.totalPrice?.toString() || "0"
@@ -85,7 +85,7 @@ const PurchaseOrderProductsTable: React.FC<PurchaseOrderProductsTableProps> = ({
     };
 
     const filteredData = sortedData
-        .filter(product => productsDelivered.some(p => p.id === product.id._id)) // Filtra solo los productos que están en productsDelivered
+        .filter(product => productsDelivered.some(p => p.id === product.id._id))
         .filter(product => {
             const filter = filterText.toLowerCase();
             return ["id.id", "id.name", "id.category", "id.unit_measurement"].some(key => {
@@ -93,6 +93,16 @@ const PurchaseOrderProductsTable: React.FC<PurchaseOrderProductsTableProps> = ({
                 return value?.toLowerCase().includes(filter);
             });
         });
+
+    const columnHeaders: Record<string, string> = {
+        id: t('common.field.code'),
+        name: t('common.field.name'),
+        category: t('warehouse.purchaseOrders.col.category', { defaultValue: 'Categoría' }),
+        requested_quantity: t('warehouse.orderDetails.col.requested', { defaultValue: 'Cantidad Solicitada' }),
+        quantity: t('warehouse.purchaseOrders.col.quantity', { defaultValue: 'Cantidad' }),
+        price: t('warehouse.purchaseOrders.col.unitPrice', { defaultValue: 'Precio Unitario' }),
+        totalPrice: t('warehouse.purchaseOrders.col.totalPrice', { defaultValue: 'Precio Total' }),
+    };
 
     return (
         <div className="table-responsive">
@@ -102,14 +112,7 @@ const PurchaseOrderProductsTable: React.FC<PurchaseOrderProductsTableProps> = ({
                     <tr>
                         {["id", "name", "category", "requested_quantity", "quantity", "price", "totalPrice"].map(key => (
                             <th key={key} onClick={() => requestSort(key)} style={{ cursor: "pointer", backgroundColor: key === "quantity" ? "#f0f0ff" : key === "price" ? "#e6f0ff" : key === "totalPrice" ? "#e6ffe6" : "" }}>
-                                {key === "requested_quantity" ? "Cantidad Solicitada" :
-                                    key === "id" ? "Código" :
-                                        key === "name" ? "Nombre" :
-                                            key === "category" ? "Categoría" :
-                                                key === "quantity" ? "Cantidad" :
-                                                    key === "price" ? "Precio Unitario" :
-                                                        key === "totalPrice" ? "Precio Total" :
-                                                            key.charAt(0).toUpperCase() + key.slice(1)}
+                                {columnHeaders[key] || key.charAt(0).toUpperCase() + key.slice(1)}
                                 {sortConfig?.key === key ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
                             </th>
                         ))}
@@ -124,7 +127,7 @@ const PurchaseOrderProductsTable: React.FC<PurchaseOrderProductsTableProps> = ({
                                 <tr key={productInfo._id}>
                                     <td>{productInfo.id}</td>
                                     <td>{productInfo.name}</td>
-                                    <td>{categoryLabels[productInfo.category]}</td>
+                                    <td>{t(`warehouse.common.productCategory.${productInfo.category}`, { defaultValue: categoryLabels[productInfo.category] || productInfo.category })}</td>
                                     <td>{requestedQuantity || "0"} {productInfo.unit_measurement}</td>
                                     <td style={{ backgroundColor: "#f0f0ff" }}>
                                         <div className="input-group">
@@ -171,7 +174,7 @@ const PurchaseOrderProductsTable: React.FC<PurchaseOrderProductsTableProps> = ({
                     ) : (
                         <tr>
                             <td colSpan={7} className="text-center">
-                                No hay productos disponibles.
+                                {t('warehouse.orderDetails.noProducts', { defaultValue: 'No hay productos disponibles.' })}
                             </td>
                         </tr>
                     )}

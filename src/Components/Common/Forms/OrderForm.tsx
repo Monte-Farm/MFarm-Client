@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Alert, Badge, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from 'reactstrap';
 import * as Yup from 'yup'
 import { useFormik } from 'formik';
@@ -26,42 +27,8 @@ interface OrderFormProps {
     onCancel: () => void;
 }
 
-const selectedProductColumns: Column<any>[] = [
-    { header: 'Código', accessor: 'code', isFilterable: false, type: 'text' },
-    { header: 'Producto', accessor: 'productName', isFilterable: false, type: 'text' },
-    { 
-        header: 'Cantidad Solicitada', 
-        accessor: 'quantity', 
-        isFilterable: false, 
-        type: 'number', 
-        bgColor: '#e3f2fd',
-        render: (_, row) => <span>{row.quantity} {row.unit_measurement}</span>
-    },
-    { 
-        header: 'Precio Promedio', 
-        accessor: 'price', 
-        isFilterable: false, 
-        type: 'currency', 
-        bgColor: '#f3e5f5' 
-    },
-    { 
-        header: 'Precio Total', 
-        accessor: 'totalPrice', 
-        isFilterable: false, 
-        type: 'currency', 
-        bgColor: '#e8f5e8' 
-    },
-    {
-        header: 'Observaciones',
-        accessor: 'observations',
-        isFilterable: false,
-        type: 'text',
-        bgColor: '#fff3e0',
-        render: (_, row) => row.observations === '' ? <span className="text-muted">Sin observaciones</span> : <span>{row.observations}</span>
-    },
-]
-
 const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext)
     const userLogged = getEffectiveUser();
     const [modals, setModals] = useState({ createWarehouse: false, cancel: false, success: false, error: false });
@@ -75,30 +42,65 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
     const [loading, setLoading] = useState<boolean>(true);
 
+    const selectedProductColumns: Column<any>[] = [
+        { header: t('common.field.code'), accessor: 'code', isFilterable: false, type: 'text' },
+        { header: t('warehouse.orderDetails.col.product', { defaultValue: 'Producto' }), accessor: 'productName', isFilterable: false, type: 'text' },
+        {
+            header: t('warehouse.orderDetails.col.requested', { defaultValue: 'Cantidad Solicitada' }),
+            accessor: 'quantity',
+            isFilterable: false,
+            type: 'number',
+            bgColor: '#e3f2fd',
+            render: (_, row) => <span>{row.quantity} {row.unit_measurement}</span>
+        },
+        {
+            header: t('warehouse.orderDetails.col.avgPrice', { defaultValue: 'Precio Promedio' }),
+            accessor: 'price',
+            isFilterable: false,
+            type: 'currency',
+            bgColor: '#f3e5f5'
+        },
+        {
+            header: t('common.field.totalPrice', { defaultValue: 'Precio Total' }),
+            accessor: 'totalPrice',
+            isFilterable: false,
+            type: 'currency',
+            bgColor: '#e8f5e8'
+        },
+        {
+            header: t('warehouse.orderDetails.col.observations', { defaultValue: 'Observaciones' }),
+            accessor: 'observations',
+            isFilterable: false,
+            type: 'text',
+            bgColor: '#fff3e0',
+            render: (_, row) => row.observations === '' ? <span className="text-muted">{t('warehouse.orderDetails.col.noObservations', { defaultValue: 'Sin observaciones' })}</span> : <span>{row.observations}</span>
+        },
+    ];
+
     const productColumns: Column<any>[] = [
         {
-            header: 'Código',
+            header: t('common.field.code'),
             accessor: 'id',
             isFilterable: true,
             type: 'text',
             render: (value, row) => <span>{row?.product?.id}</span>
         },
         {
-            header: 'Producto',
+            header: t('warehouse.orderDetails.col.product', { defaultValue: 'Producto' }),
             accessor: 'name',
             isFilterable: true,
             type: 'text',
             render: (value, row) => <span>{row?.product?.name}</span>
         },
         {
-            header: 'Cantidad disponible',
+            header: t('warehouse.orderDetails.col.availableQty', { defaultValue: 'Cantidad disponible' }),
             accessor: 'quantity',
             isFilterable: true,
             type: 'number',
             render: (value, row) => <span>{row?.quantity} {row?.product?.unit_measurement}</span>
         },
         {
-            header: "Cantidad solicitada",
+            header: t('warehouse.orderDetails.col.requested', { defaultValue: 'Cantidad solicitada' }),
             accessor: "quantity",
             type: "number",
             render: (value, row, isSelected) => {
@@ -142,7 +144,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
             },
         },
         {
-            header: "Observaciones",
+            header: t('warehouse.orderDetails.col.observations', { defaultValue: 'Observaciones' }),
             accessor: "observations",
             type: "text",
             render: (value, row, isSelected) => {
@@ -160,74 +162,42 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
                             setSelectedProducts(updatedProducts);
                         }}
                         onClick={(e) => e.stopPropagation()}
-                        placeholder="Observaciones..."
+                        placeholder={t('warehouse.orderDetails.col.observationsPlaceholder', { defaultValue: 'Observaciones...' })}
                     />
                 );
             },
         },
         {
-            header: 'Precio promedio',
+            header: t('warehouse.orderDetails.col.avgPrice', { defaultValue: 'Precio promedio' }),
             accessor: 'averagePrice',
             isFilterable: true,
             type: 'currency',
         },
         {
-            header: 'Categoría',
+            header: t('warehouse.purchaseOrders.col.category', { defaultValue: 'Categoría' }),
             accessor: 'category',
             isFilterable: true,
             type: 'text',
             render: (value, row) => {
                 let color = "secondary";
-                let label = row?.product?.category;
+                const category = row?.product?.category;
 
-                switch (row?.product?.category) {
-                    case "nutrition":
-                        color = "info";
-                        label = "Nutrición";
-                        break;
-                    case "medications":
-                        color = "warning";
-                        label = "Medicamentos";
-                        break;
-                    case "vaccines":
-                        color = "primary";
-                        label = "Vacunas";
-                        break;
+                switch (category) {
+                    case "nutrition": color = "info"; break;
+                    case "medications": color = "warning"; break;
+                    case "vaccines": color = "primary"; break;
                     case "vitamins":
-                        color = "success";
-                        label = "Vitaminas";
-                        break;
                     case "minerals":
-                        color = "success";
-                        label = "Minerales";
-                        break;
                     case "supplies":
-                        color = "success";
-                        label = "Insumos";
-                        break;
                     case "hygiene_cleaning":
-                        color = "success";
-                        label = "Higiene y desinfección";
-                        break;
                     case "equipment_tools":
-                        color = "success";
-                        label = "Equipamiento y herramientas";
-                        break;
                     case "spare_parts":
-                        color = "success";
-                        label = "Refacciones y repuestos";
-                        break;
                     case "office_supplies":
-                        color = "success";
-                        label = "Material de oficina";
-                        break;
                     case "others":
-                        color = "success";
-                        label = "Otros";
-                        break;
+                        color = "success"; break;
                 }
 
-                return <Badge color={color}>{label}</Badge>;
+                return <Badge color={color}>{t(`warehouse.common.productCategory.${category}`, { defaultValue: category })}</Badge>;
             },
         },
     ];
@@ -244,23 +214,23 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
     }
 
     const orderAttributes: Attribute[] = [
-        { key: 'id', label: 'No. de Pedido', type: 'text' },
-        { key: 'date', label: 'Fecha de pedido', type: 'date' },
+        { key: 'id', label: t('warehouse.orders.col.orderNumber', { defaultValue: 'No. de Pedido' }), type: 'text' },
+        { key: 'date', label: t('warehouse.orders.col.orderDate', { defaultValue: 'Fecha de pedido' }), type: 'date' },
         {
             key: 'user',
-            label: 'Pedido por',
+            label: t('warehouse.orders.col.orderedBy', { defaultValue: 'Pedido por' }),
             type: 'text',
             render: (value) => <span>{userLogged.name} {userLogged.lastname}</span>
         },
         {
             key: 'orderOrigin',
-            label: 'Pedido para',
+            label: t('warehouse.orders.col.orderFor', { defaultValue: 'Pedido para' }),
             type: 'text',
             render: (value) => <span>{orderOrigin}</span>
         },
         {
             key: 'orderDestiny',
-            label: 'Pedido hacia',
+            label: t('warehouse.orders.col.orderTo', { defaultValue: 'Pedido hacia' }),
             type: 'text',
             render: (value) => <span>{orderDestiny}</span>
         },
@@ -268,8 +238,8 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
 
     const validationSchema = Yup.object({
         id: Yup.string()
-            .required('Por favor, ingrese el ID')
-            .test('unique_id', 'Este identificador ya existe, por favor ingrese otro', async (value) => {
+            .required(t('warehouse.orderDetails.validation.idRequired', { defaultValue: 'Por favor, ingrese el ID' }))
+            .test('unique_id', t('warehouse.orderDetails.validation.idExists', { defaultValue: 'Este identificador ya existe, por favor ingrese otro' }), async (value) => {
                 if (!value) return false
                 try {
                     const result = await configContext?.axiosHelper.get(`${configContext.apiUrl}/orders/order_id_exists/${value}`)
@@ -279,8 +249,8 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
                     return false
                 }
             }),
-        date: Yup.string().required('Por favor, ingrese la fecha'),
-        user: Yup.string().required('Por favor, seleccione el tipo de salida'),
+        date: Yup.string().required(t('warehouse.orderDetails.validation.dateRequired', { defaultValue: 'Por favor, ingrese la fecha' })),
+        user: Yup.string().required(t('warehouse.orderDetails.validation.userRequired', { defaultValue: 'Por favor, seleccione el tipo de salida' })),
     })
 
     const formik = useFormik({
@@ -368,7 +338,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
             await validationSchema.validate(formik.values, { abortEarly: false });
             toggleArrowTab(2);
         } catch (err) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor ingrese todos los datos' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.orderDetails.validation.fillAll', { defaultValue: 'Por favor ingrese todos los datos' }) })
         }
     }
 
@@ -410,7 +380,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
                                 aria-controls="step-orderData-tab"
                                 disabled
                             >
-                                Información de pedido
+                                {t('warehouse.orderDetails.step.orderInfo', { defaultValue: 'Información de pedido' })}
                             </NavLink>
                         </NavItem>
 
@@ -427,7 +397,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
                                 aria-controls="step-products-tab"
                                 disabled
                             >
-                                Selección de productos
+                                {t('warehouse.orderDetails.step.productSelection', { defaultValue: 'Selección de productos' })}
                             </NavLink>
                         </NavItem>
 
@@ -443,7 +413,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
                                 aria-controls="step-summary-tab"
                                 disabled
                             >
-                                Resumen
+                                {t('warehouse.orderDetails.step.summary', { defaultValue: 'Resumen' })}
                             </NavLink>
                         </NavItem>
                     </Nav>
@@ -453,7 +423,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
                     <TabPane id='step-orderData-tab' tabId={1}>
                         <div className='d-flex gap-3'>
                             <div className="w-50">
-                                <Label htmlFor="idInput" className="form-label">Identificador</Label>
+                                <Label htmlFor="idInput" className="form-label">{t('warehouse.orders.col.orderNumber', { defaultValue: 'Identificador' })}</Label>
                                 <Input
                                     type="text"
                                     id="idInput"
@@ -467,7 +437,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
                             </div>
 
                             <div className="w-50">
-                                <Label htmlFor="dateInput" className="form-label">Fecha</Label>
+                                <Label htmlFor="dateInput" className="form-label">{t('common.field.date')}</Label>
                                 <DatePicker
                                     id="date"
                                     className={`form-control ${formik.touched.date && formik.errors.date ? 'is-invalid' : ''}`}
@@ -486,13 +456,13 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
                         {/* Información del Pedido */}
                         <Card className="mt-4" style={{ backgroundColor: '#f8f9fa', border: '1px solid #dee2e6' }}>
                             <CardBody>
-                                <h6 className="mb-3 text-muted">Información del Pedido</h6>
-                                
+                                <h6 className="mb-3 text-muted">{t('warehouse.orderDetails.attr.orderInfo', { defaultValue: 'Información del Pedido' })}</h6>
+
                                 <div className="mb-3">
                                     <div className="d-flex align-items-center">
                                         <i className="ri-user-line fs-18 text-primary me-2"></i>
                                         <div>
-                                            <small className="text-muted d-block">Solicitado por</small>
+                                            <small className="text-muted d-block">{t('warehouse.orders.col.orderedBy', { defaultValue: 'Solicitado por' })}</small>
                                             <span className="fw-medium">{userLogged?.name} {userLogged?.lastname}</span>
                                         </div>
                                     </div>
@@ -503,8 +473,8 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
                                         <div className="d-flex align-items-center">
                                             <i className="ri-store-2-line fs-18 text-success me-2"></i>
                                             <div>
-                                                <small className="text-muted d-block">Almacén de origen</small>
-                                                <span className="fw-medium">{orderOrigin || 'Cargando...'}</span>
+                                                <small className="text-muted d-block">{t('warehouse.orderDetails.attr.originWarehouse', { defaultValue: 'Almacén de origen' })}</small>
+                                                <span className="fw-medium">{orderOrigin || t('common.status.loading', { defaultValue: 'Cargando...' })}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -517,8 +487,8 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
                                         <div className="d-flex align-items-center">
                                             <i className="ri-building-line fs-18 text-info me-2"></i>
                                             <div>
-                                                <small className="text-muted d-block">Subalmacén destino</small>
-                                                <span className="fw-medium">{orderDestiny || 'Cargando...'}</span>
+                                                <small className="text-muted d-block">{t('warehouse.orderDetails.attr.destWarehouse', { defaultValue: 'Subalmacén destino' })}</small>
+                                                <span className="fw-medium">{orderDestiny || t('common.status.loading', { defaultValue: 'Cargando...' })}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -529,7 +499,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
                         <div className="d-flex mt-4">
                             <Button className="btn btn-success btn-label right ms-auto nexttab nexttab ms-auto farm-secondary-button" onClick={() => checkOrderData()}>
                                 <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
-                                Siguiente
+                                {t('common.button.next', { defaultValue: 'Siguiente' })}
                             </Button>
                         </div>
                     </TabPane>
@@ -564,11 +534,11 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
                             <div className="d-flex mt-4">
                                 <Button className="btn btn-light btn-label previestab farm-secondary-button" onClick={() => toggleArrowTab(activeStep - 1)}>
                                     <i className="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i>{" "}
-                                    Atras
+                                    {t('common.button.back', { defaultValue: 'Atras' })}
                                 </Button>
 
-                                <Button 
-                                    className="btn btn-success btn-label right ms-auto nexttab nexttab ms-auto farm-secondary-button" 
+                                <Button
+                                    className="btn btn-success btn-label right ms-auto nexttab nexttab ms-auto farm-secondary-button"
                                     onClick={() => toggleArrowTab(activeStep + 1)}
                                     disabled={
                                         selectedProducts.length === 0 ||
@@ -576,7 +546,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
                                     }
                                 >
                                     <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
-                                    Siguiente
+                                    {t('common.button.next', { defaultValue: 'Siguiente' })}
                                 </Button>
                             </div>
                         </div>
@@ -586,27 +556,27 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
                         <div className='d-flex gap-3 w-100'>
                             <Card className=''>
                                 <CardHeader style={{ backgroundColor: '#f0f4f8' }}>
-                                    <h5>Información del pedido</h5>
+                                    <h5>{t('warehouse.orderDetails.attr.orderInfo', { defaultValue: 'Información del pedido' })}</h5>
                                 </CardHeader>
                                 <CardBody className="pt-4">
-                                    <ObjectDetails 
-                                        attributes={orderAttributes} 
+                                    <ObjectDetails
+                                        attributes={orderAttributes}
                                         object={{
                                             ...formik.values,
                                             orderOrigin: orderOrigin,
                                             orderDestiny: orderDestiny
-                                        }} 
+                                        }}
                                     />
                                 </CardBody>
                             </Card>
 
                             <Card className='w-100'>
                                 <CardHeader style={{ backgroundColor: '#e8f5e8' }}>
-                                    <h5>Productos seleccionados</h5>
+                                    <h5>{t('warehouse.orderDetails.attr.selectedProducts', { defaultValue: 'Productos seleccionados' })}</h5>
                                 </CardHeader>
                                 <CardBody className="border border-0 d-flex flex-column flex-grow-1 p-0">
-                                    <CustomTable 
-                                        columns={selectedProductColumns} 
+                                    <CustomTable
+                                        columns={selectedProductColumns}
                                         data={selectedProducts.map(product => ({
                                             ...product,
                                             productName: (products as any[]).find(p => p.id === product.id)?.product?.name || 'N/A',
@@ -614,7 +584,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
                                             unit_measurement: (products as any[]).find(p => p.id === product.id)?.product?.unit_measurement || '',
                                             totalPrice: product.quantity * product.price
                                         }))}
-                                        showSearchAndFilter={false} 
+                                        showSearchAndFilter={false}
                                         showPagination={false}
                                     />
                                 </CardBody>
@@ -629,11 +599,11 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
                                 }}
                             >
                                 <i className="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i>{" "}
-                                Atras
+                                {t('common.button.back', { defaultValue: 'Atras' })}
                             </Button>
 
                             <Button className='farm-primary-button ms-auto' type='submit' disabled={formik.isSubmitting}>
-                                {formik.isSubmitting ? <Spinner /> : "Guardar"}
+                                {formik.isSubmitting ? <Spinner /> : t('common.button.save')}
                             </Button>
                         </div>
                     </TabPane>
@@ -642,17 +612,17 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
 
 
             <Modal isOpen={modals.cancel} centered toggle={() => toggleModal('cancel', false)}>
-                <ModalHeader>Confirmación</ModalHeader>
-                <ModalBody>¿Estás seguro de que deseas cancelar? Los datos no se guardarán.</ModalBody>
+                <ModalHeader>{t('common.button.confirm')}</ModalHeader>
+                <ModalBody>{t('warehouse.orderDetails.confirm.cancel', { defaultValue: '¿Estás seguro de que deseas cancelar? Los datos no se guardarán.' })}</ModalBody>
                 <ModalFooter>
-                    <Button color="danger" onClick={onCancel}>Sí, cancelar</Button>
-                    <Button color="success" onClick={() => toggleModal('cancel', false)}>No, continuar</Button>
+                    <Button color="danger" onClick={onCancel}>{t('warehouse.orderDetails.confirm.yes', { defaultValue: 'Sí, cancelar' })}</Button>
+                    <Button color="success" onClick={() => toggleModal('cancel', false)}>{t('warehouse.orderDetails.confirm.no', { defaultValue: 'No, continuar' })}</Button>
                 </ModalFooter>
             </Modal>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} />
-            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={'Pedido creado con exito'} />
-            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message={'El servicio no esta disponible, intentelo mas tarde'} />
+            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={t('warehouse.orderDetails.success.created', { defaultValue: 'Pedido creado con exito' })} />
+            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message={t('warehouse.orderDetails.error.service', { defaultValue: 'El servicio no esta disponible, intentelo mas tarde' })} />
         </>
     )
 }

@@ -1,5 +1,6 @@
 import { ConfigContext } from "App";
 import { useFormik } from "formik";
+import { useTranslation } from "react-i18next";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { FEED_PREPARATION_URLS, FEEDING_PACKAGE_URLS } from "helpers/feeding_urls";
 import { useContext, useEffect, useMemo, useState } from "react";
@@ -31,6 +32,7 @@ interface PreviewIngredient {
 }
 
 const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCancel }) => {
+    const { t } = useTranslation();
     const userLogged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
 
@@ -49,22 +51,22 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
     };
 
     const validationSchema = Yup.object({
-        recipeId: Yup.string().required('Seleccione una receta'),
-        subwarehouseId: Yup.string().required('Seleccione un subalmacén'),
+        recipeId: Yup.string().required(t('form.validation.required')),
+        subwarehouseId: Yup.string().required(t('form.validation.required')),
         batchSize: Yup.number()
-            .typeError('Debe ser un número')
-            .positive('Debe ser mayor a 0')
-            .required('Requerido'),
+            .typeError(t('form.validation.mustBeNumber'))
+            .positive(t('form.validation.positive'))
+            .required(t('form.validation.required')),
         actualYield: Yup.number()
-            .typeError('Debe ser un número')
-            .positive('Debe ser mayor a 0')
-            .required('Requerido')
-            .test('le-batch', 'No puede superar la cantidad de la mezcla', function (value) {
+            .typeError(t('form.validation.mustBeNumber'))
+            .positive(t('form.validation.positive'))
+            .required(t('form.validation.required'))
+            .test('le-batch', t('form.validation.exceedsStock'), function (value) {
                 const batch = this.parent.batchSize;
                 if (!batch || !value) return true;
                 return value <= batch;
             }),
-        date: Yup.date().required('Seleccione una fecha').nullable(),
+        date: Yup.date().required(t('form.validation.required')).nullable(),
     });
 
     const formik = useFormik({
@@ -95,7 +97,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
                 const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/${FEED_PREPARATION_URLS.create}`, payload);
                 if (response.status === HttpStatusCode.Created || response.status === HttpStatusCode.Ok) {
                     await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
-                        event: `Preparación de alimento registrada (${selectedRecipe?.name || ''})`,
+                        event: `Feed batch prepared (${selectedRecipe?.name || ''})`,
                     });
                     toggleModal('success', true);
                 }
@@ -111,7 +113,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
                     toggleModal('missingStock', true);
                     return;
                 }
-                const msg = error?.response?.data?.message || 'Ha ocurrido un error al registrar la preparación';
+                const msg = error?.response?.data?.message || t('feeding.preparation.form.error');
                 setAlertConfig({ visible: true, color: 'danger', message: msg });
                 toggleModal('error', true);
             }
@@ -139,7 +141,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
             setProductsMap(map);
         } catch (error) {
             console.error('Error fetching data:', error);
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al cargar recetas o subalmacenes' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('common.status.noData') });
         } finally {
             setLoading(false);
         }
@@ -198,33 +200,33 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
 
     const previewColumns: Column<PreviewIngredient>[] = [
         {
-            header: 'Ingrediente',
+            header: t('feeding.preparation.form.column.ingredient'),
             accessor: 'name',
             type: 'text',
             render: (_, row) => <span className="fw-semibold">{row.name}</span>,
         },
         {
-            header: '% receta',
+            header: t('feeding.preparation.form.column.recipePercent'),
             accessor: 'percentage',
             type: 'currency',
             render: (_, row) => <span>{row.percentage.toFixed(2)}%</span>,
         },
         {
-            header: 'Cantidad',
+            header: t('feeding.preparation.form.column.quantity'),
             accessor: 'quantity',
             type: 'currency',
             bgColor: '#e3f2fd',
             render: (_, row) => <span className="fw-medium">{row.quantity.toFixed(2)} {row.unit_measurement}</span>,
         },
         {
-            header: 'Precio prom.',
+            header: t('feeding.preparation.form.column.avgPrice'),
             accessor: 'unitPrice',
             type: 'currency',
             bgColor: '#f3e5f5',
             render: (_, row) => <span>${row.unitPrice.toFixed(2)}</span>,
         },
         {
-            header: 'Subtotal',
+            header: t('feeding.preparation.form.column.subtotal'),
             accessor: 'subtotal',
             type: 'currency',
             bgColor: '#e8f5e9',
@@ -250,7 +252,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
         <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }}>
             <div className="d-flex gap-3">
                 <div className="w-50">
-                    <Label className="form-label">Receta *</Label>
+                    <Label className="form-label">{t('feeding.preparation.form.field.recipe')}</Label>
                     <Input
                         type="select"
                         name="recipeId"
@@ -259,7 +261,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
                         onBlur={formik.handleBlur}
                         invalid={formik.touched.recipeId && !!formik.errors.recipeId}
                     >
-                        <option value="">Seleccione una receta</option>
+                        <option value="">{t('feeding.preparation.form.field.recipeSelect')}</option>
                         {recipes.map(r => (
                             <option key={r._id} value={r._id}>
                                 {r.code} — {r.name} ({r.expectedYield ?? 100}% rendimiento)
@@ -270,7 +272,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
                 </div>
 
                 <div className="w-50">
-                    <Label className="form-label">Subalmacén origen *</Label>
+                    <Label className="form-label">{t('feeding.preparation.form.field.subwarehouse')}</Label>
                     <Input
                         type="select"
                         name="subwarehouseId"
@@ -279,7 +281,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
                         onBlur={formik.handleBlur}
                         invalid={formik.touched.subwarehouseId && !!formik.errors.subwarehouseId}
                     >
-                        <option value="">Seleccione un subalmacén</option>
+                        <option value="">{t('feeding.preparation.form.field.subwarehouseSelect')}</option>
                         {subwarehouses.map(s => (
                             <option key={s._id} value={s._id}>{s.code} — {s.name}</option>
                         ))}
@@ -290,7 +292,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
 
             <div className="d-flex gap-3 mt-3">
                 <div className="w-50">
-                    <Label className="form-label">Cantidad de mezcla a preparar *</Label>
+                    <Label className="form-label">{t('feeding.preparation.form.field.mixAmount')}</Label>
                     <div className="input-group">
                         <Input
                             type="number"
@@ -310,7 +312,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
                 </div>
 
                 <div className="w-50">
-                    <Label className="form-label">Cantidad real producida (kg) *</Label>
+                    <Label className="form-label">{t('feeding.preparation.form.field.producedAmount')}</Label>
                     <div className="input-group">
                         <Input
                             type="number"
@@ -332,7 +334,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
 
             <div className="d-flex gap-3 mt-3">
                 <div className="w-50">
-                    <Label className="form-label">Fecha de preparación *</Label>
+                    <Label className="form-label">{t('feeding.preparation.form.field.date')}</Label>
                     <DatePicker
                         className={`form-control ${formik.touched.date && formik.errors.date ? 'is-invalid' : ''}`}
                         value={formik.values.date ?? undefined}
@@ -341,20 +343,20 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
                     />
                 </div>
                 <div className="w-50">
-                    <Label className="form-label">Responsable</Label>
+                    <Label className="form-label">{t('feeding.preparation.form.field.responsible')}</Label>
                     <Input type="text" value={`${userLogged.name} ${userLogged.lastname}`} disabled />
                 </div>
             </div>
 
             <div className="mt-3">
-                <Label className="form-label">Notas</Label>
+                <Label className="form-label">{t('feeding.preparation.form.field.notes')}</Label>
                 <Input
                     type="textarea"
                     name="notes"
                     rows={2}
                     value={formik.values.notes}
                     onChange={formik.handleChange}
-                    placeholder="Observaciones sobre la mezcla (opcional)"
+                    placeholder={t('feeding.preparation.form.field.notesPlaceholder')}
                 />
             </div>
 
@@ -363,10 +365,10 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
                 <Card className="mt-4 border-info border-opacity-25">
                     <CardHeader className="bg-info bg-opacity-10 d-flex justify-content-between align-items-center">
                         <h6 className="mb-0 text-info">
-                            <i className="ri-flask-line me-2" /> Preview de ingredientes
+                            <i className="ri-flask-line me-2" /> {t('feeding.preparation.form.ingredientPreview')}
                         </h6>
                         <Badge color="info" className="fs-5 px-3 py-2">
-                            Costo estimado: ${totalCostEstimated.toFixed(2)}
+                            {t('feeding.preparation.form.estimatedCost', { val: totalCostEstimated.toFixed(2) })}
                         </Badge>
                     </CardHeader>
                     <CardBody className="p-3">
@@ -381,7 +383,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
                     <div className="px-3 py-2 bg-light border-top">
                         <small className="text-muted">
                             <i className="ri-information-line me-1" />
-                            Costo estimado con precios promedio actuales. El costo real lo calcula el sistema al momento del registro según el subalmacén seleccionado.
+                            {t('feeding.preparation.form.costNote')}
                         </small>
                     </div>
                 </Card>
@@ -393,20 +395,20 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
                     <CardBody className="py-3">
                         <div className="row text-center">
                             <div className="col">
-                                <div className="text-muted small">Merma</div>
+                                <div className="text-muted small">{t('feeding.preparation.form.waste')}</div>
                                 <div className="fs-5 fw-bold text-warning">
                                     {shrinkage.toFixed(2)} kg
                                     <span className="ms-2 small">({shrinkagePercentage.toFixed(2)}%)</span>
                                 </div>
                             </div>
                             <div className="col border-start">
-                                <div className="text-muted small">Costo / kg producido</div>
+                                <div className="text-muted small">{t('feeding.preparation.form.costPerKgProduced')}</div>
                                 <div className="fs-5 fw-bold text-success">
                                     ${costPerKgEstimated.toFixed(2)}
                                 </div>
                             </div>
                             <div className="col border-start">
-                                <div className="text-muted small">Rendimiento real</div>
+                                <div className="text-muted small">{t('feeding.preparation.form.realYield')}</div>
                                 <div className="fs-5 fw-bold text-primary">
                                     {((formik.values.actualYield / formik.values.batchSize) * 100).toFixed(2)}%
                                 </div>
@@ -417,14 +419,14 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
             )}
 
             <div className="d-flex justify-content-end gap-2 mt-4">
-                <Button color="secondary" outline onClick={onCancel}>Cancelar</Button>
+                <Button color="secondary" outline onClick={onCancel}>{t('common.button.cancel')}</Button>
                 <Button color="success" onClick={() => formik.handleSubmit()} disabled={formik.isSubmitting}>
-                    {formik.isSubmitting ? <Spinner size="sm" /> : (<><i className="ri-check-line me-2" />Registrar preparación</>)}
+                    {formik.isSubmitting ? <Spinner size="sm" /> : (<><i className="ri-check-line me-2" />{t('feeding.administration.form.action.register')}</>)}
                 </Button>
             </div>
 
-            <SuccessModal isOpen={modals.success} onClose={onSave} message="Preparación registrada con éxito" />
-            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message="Ha ocurrido un error al registrar la preparación" />
+            <SuccessModal isOpen={modals.success} onClose={onSave} message={t('feeding.preparation.form.success')} />
+            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={t('feeding.preparation.form.error')} />
             <MissingStockModal isOpen={modals.missingStock} onClose={() => toggleModal('missingStock', false)} missingItems={missingItems} />
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} autoClose={4000} />
         </form>

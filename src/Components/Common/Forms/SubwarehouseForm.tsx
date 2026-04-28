@@ -11,8 +11,7 @@ import ErrorModal from '../Shared/ErrorModal';
 import classnames from "classnames";
 import SelectableTable from '../Tables/SelectableTable';
 import { Column } from 'common/data/data_types';
-import { roleLabels } from 'common/role_labels';
-import { userRoles } from 'common/user_roles';
+import { useTranslation } from 'react-i18next';
 import AlertMessage from '../Shared/AlertMesagge';
 import ObjectDetails from '../Details/ObjectDetails';
 import defaultImageProfila from '../../../assets/images/default-profile-mage.jpg'
@@ -23,10 +22,6 @@ interface SubwarehouseFormProps {
     onCancel: () => void;
     isCodeDisabled?: boolean
 }
-
-const roleLabelsMap: Record<string, string> = Object.fromEntries(
-    userRoles.map(r => [r.value, r.label])
-);
 
 const roleColorsMap: Record<string, string> = {
     Superadmin: "danger",
@@ -42,6 +37,7 @@ const roleColorsMap: Record<string, string> = {
 const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, isCodeDisabled }) => {
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
+    const { t } = useTranslation();
     const [modals, setModals] = useState({ success: false, error: false, cancel: false });
     const [users, setUsers] = useState<any[]>([])
     const [loading, setLoading] = useState<boolean>(true)
@@ -85,7 +81,7 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
                 return (
                     <div className="d-flex flex-wrap gap-2">
                         {roles.map((r: string) => {
-                            const label = roleLabelsMap[r] || r;
+                            const label = t(`roles.${r}`, { defaultValue: r });
                             const color = roleColorsMap[r] || "secondary";
 
                             return (
@@ -130,7 +126,7 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
                 return (
                     <div className="d-flex flex-wrap gap-2">
                         {roles.map((r: string) => {
-                            const label = roleLabelsMap[r] || r;
+                            const label = t(`roles.${r}`, { defaultValue: r });
                             const color = roleColorsMap[r] || "secondary";
 
                             return (

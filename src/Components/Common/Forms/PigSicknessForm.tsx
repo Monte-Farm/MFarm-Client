@@ -21,6 +21,7 @@ import MissingStockModal from "../Shared/MissingStockModal";
 import noImageUrl from '../../../assets/images/no-image.png'
 import SicknessSymptomsSelector from "../Shared/SicknessSymptomsSelector";
 import SicknessSymptomsSummary from "../Shared/SicknessSymptomsSummary";
+import { useTranslation } from "react-i18next";
 
 interface PigSicknessFormProps {
     pigId: string
@@ -28,6 +29,7 @@ interface PigSicknessFormProps {
 }
 
 const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
+    const { t } = useTranslation();
     const userLogged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -57,12 +59,12 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
     };
 
     const PigAttributes: Attribute[] = [
-        { key: "code", label: "Código", type: "text" },
-        { key: "birthdate", label: "Fecha de nacimiento", type: "date" },
-        { key: "breed", label: "Raza", type: "text" },
+        { key: "code", label: t('medical.sickness.form.pig.code', { defaultValue: 'Código' }), type: "text" },
+        { key: "birthdate", label: t('medical.sickness.form.pig.birthdate', { defaultValue: 'Fecha de nacimiento' }), type: "date" },
+        { key: "breed", label: t('medical.sickness.form.pig.breed', { defaultValue: 'Raza' }), type: "text" },
         {
             key: "origin",
-            label: "Origen",
+            label: t('medical.sickness.form.pig.origin', { defaultValue: 'Origen' }),
             type: "text",
             render: (value: string) => {
                 let color = 'secondary';
@@ -71,22 +73,22 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
                 switch (value) {
                     case 'born':
                         color = 'success';
-                        label = 'Nacido en la granja';
+                        label = t('medical.sickness.form.pig.origin_born', { defaultValue: 'Nacido en la granja' });
                         break;
 
                     case 'purchased':
                         color = 'warning';
-                        label = 'Comprado';
+                        label = t('medical.sickness.form.pig.origin_purchased', { defaultValue: 'Comprado' });
                         break;
 
                     case 'donated':
                         color = 'info';
-                        label = 'Donado';
+                        label = t('medical.sickness.form.pig.origin_donated', { defaultValue: 'Donado' });
                         break;
 
                     case 'other':
                         color = 'dark';
-                        label = 'Otro';
+                        label = t('medical.sickness.form.pig.origin_other', { defaultValue: 'Otro' });
                         break;
                 }
 
@@ -95,126 +97,72 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
         },
         {
             key: 'sex',
-            label: 'Sexo',
+            label: t('medical.sickness.form.pig.sex', { defaultValue: 'Sexo' }),
             render: (value: string) => (
                 <Badge color={value === 'male' ? "info" : "danger"}>
-                    {value === 'male' ? "♂ Macho" : "♀ Hembra"}
+                    {value === 'male'
+                        ? t('medical.sickness.form.pig.male', { defaultValue: '♂ Macho' })
+                        : t('medical.sickness.form.pig.female', { defaultValue: '♀ Hembra' })}
                 </Badge>
             ),
         },
         {
             key: 'currentStage',
-            label: 'Etapa',
+            label: t('medical.sickness.form.pig.stage', { defaultValue: 'Etapa' }),
             render: (value: string) => {
                 let color = "secondary";
-                let label = value;
-
-                switch (value) {
-                    case "piglet":
-                        color = "info";
-                        label = "Lechón";
-                        break;
-                    case "weaning":
-                        color = "warning";
-                        label = "Destete";
-                        break;
-                    case "fattening":
-                        color = "primary";
-                        label = "Engorda";
-                        break;
-                    case "breeder":
-                        color = "success";
-                        label = "Reproductor";
-                        break;
-                }
-
+                let label = t(`pigs.stage.${value}`, { defaultValue: value });
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { key: "weight", label: "Peso actual", type: "text" },
-        { key: "observations", label: "Observaciones", type: "text" },
+        { key: "weight", label: t('medical.sickness.form.pig.weight', { defaultValue: 'Peso actual' }), type: "text" },
+        { key: "observations", label: t('medical.sickness.form.pig.observations', { defaultValue: 'Observaciones' }), type: "text" },
     ];
 
     const selectedMedicationsColumns: Column<any>[] = [
-        { header: "Codigo", accessor: "code", type: "text", isFilterable: true },
-        { header: "Producto", accessor: "name", type: "text", isFilterable: true },
+        { header: t('medical.sickness.form.column.code', { defaultValue: 'Codigo' }), accessor: "code", type: "text", isFilterable: true },
+        { header: t('medical.sickness.form.column.product', { defaultValue: 'Producto' }), accessor: "name", type: "text", isFilterable: true },
         {
-            header: "Dosis",
+            header: t('medical.sickness.form.column.dose', { defaultValue: 'Dosis' }),
             accessor: "dose",
             type: "text",
             isFilterable: true,
             render: (_, row) => <span>{row.dose} {row.unit_measurement}</span>
         },
         {
-            header: "Administracion",
+            header: t('medical.sickness.form.column.adminRoute', { defaultValue: 'Administracion' }),
             accessor: "administration_route",
             type: "text",
             isFilterable: true,
             render: (value: string) => {
-                let color = "secondary";
-                let label = value;
-
-                switch (value) {
-                    case "oral":
-                        color = "info";
-                        label = "Oral";
-                        break;
-                    case "intramuscular":
-                        color = "primary";
-                        label = "Intramuscular";
-                        break;
-                    case "subcutaneous":
-                        color = "primary";
-                        label = "Subcutánea";
-                        break;
-                    case "intravenous":
-                        color = "primary";
-                        label = "Intravenosa";
-                        break;
-                    case "intranasal":
-                        color = "primary";
-                        label = "Intranasal";
-                        break;
-                    case "topical":
-                        color = "primary";
-                        label = "Tópica";
-                        break;
-                    case "rectal":
-                        color = "primary";
-                        label = "Rectal";
-                        break;
-                }
-
-                return <Badge color={color}>{label}</Badge>;
+                return <Badge color="primary">{t(`medical.medication.route.${value}`, { defaultValue: value })}</Badge>;
             },
         },
-        { header: 'Inicio', accessor: 'startDate', type: 'date', },
-        { header: 'Fin', accessor: 'endDate', type: 'date', },
+        { header: t('medical.sickness.form.column.startDate', { defaultValue: 'Inicio' }), accessor: 'startDate', type: 'date', },
+        { header: t('medical.sickness.form.column.endDate', { defaultValue: 'Fin' }), accessor: 'endDate', type: 'date', },
     ]
 
     const columns: Column<any>[] = [
         {
-            header: 'Imagen', accessor: 'image', render: (_, row) => (
+            header: t('medical.sickness.form.column.image', { defaultValue: 'Imagen' }), accessor: 'image', render: (_, row) => (
                 <img src={row.image || noImageUrl} alt="Imagen del Producto" style={{ height: "70px" }} />
             ),
         },
-        { header: "Codigo", accessor: "code", type: "text", isFilterable: true },
-        { header: "Producto", accessor: "name", type: "text", isFilterable: true },
+        { header: t('medical.sickness.form.column.code', { defaultValue: 'Codigo' }), accessor: "code", type: "text", isFilterable: true },
+        { header: t('medical.sickness.form.column.product', { defaultValue: 'Producto' }), accessor: "name", type: "text", isFilterable: true },
         {
-            header: 'Categoria',
+            header: t('medical.sickness.form.column.category', { defaultValue: 'Categoria' }),
             accessor: 'category',
             render: (value: string) => {
                 let color = "secondary";
-                let label = value;
+                let label = t(`medical.sickness.form.category.${value}`, { defaultValue: value });
 
                 switch (value) {
                     case "vaccines":
                         color = "info";
-                        label = "Vacunas";
                         break;
                     case "medications":
                         color = "primary";
-                        label = "Medicamentos";
                         break;
                 }
 
@@ -222,7 +170,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
             },
         },
         {
-            header: "Dosis",
+            header: t('medical.sickness.form.column.dose', { defaultValue: 'Dosis' }),
             accessor: "dose",
             type: "number",
             render: (value, row, isSelected) => {
@@ -252,7 +200,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
             },
         },
         {
-            header: "Vía de administración",
+            header: t('medical.sickness.form.column.adminRouteSelect', { defaultValue: 'Vía de administración' }),
             accessor: "administration_route",
             type: "text",
             render: (value, row, isSelected) => {
@@ -272,20 +220,20 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
                         }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <option value="">Seleccione...</option>
-                        <option value="oral">Oral</option>
-                        <option value="intramuscular">Intramuscular</option>
-                        <option value="subcutaneous">Subcutánea</option>
-                        <option value="intravenous">Intravenosa</option>
-                        <option value="intranasal">Intranasal</option>
-                        <option value="topical">Tópica</option>
-                        <option value="rectal">Rectal</option>
+                        <option value="">{t('medical.sickness.form.select', { defaultValue: 'Seleccione' })}...</option>
+                        <option value="oral">{t('medical.medication.route.oral', { defaultValue: 'Oral' })}</option>
+                        <option value="intramuscular">{t('medical.medication.route.intramuscular', { defaultValue: 'Intramuscular' })}</option>
+                        <option value="subcutaneous">{t('medical.medication.route.subcutaneous', { defaultValue: 'Subcutánea' })}</option>
+                        <option value="intravenous">{t('medical.medication.route.intravenous', { defaultValue: 'Intravenosa' })}</option>
+                        <option value="intranasal">{t('medical.medication.route.intranasal', { defaultValue: 'Intranasal' })}</option>
+                        <option value="topical">{t('medical.medication.route.topical', { defaultValue: 'Tópica' })}</option>
+                        <option value="rectal">{t('medical.medication.route.rectal', { defaultValue: 'Rectal' })}</option>
                     </Input>
                 );
             }
         },
         {
-            header: "Fecha de inicio",
+            header: t('medical.sickness.form.column.startDateSelect', { defaultValue: 'Fecha de inicio' }),
             accessor: "startDate",
             type: "text",
             render: (value, row, isSelected) => {
@@ -306,13 +254,13 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
                         options={{ dateFormat: 'd/m/Y' }}
                         disabled={!isSelected}
                         onClick={(e) => e.stopPropagation()}
-                        placeholder="Seleccione"
+                        placeholder={t('medical.sickness.form.select', { defaultValue: 'Seleccione' })}
                     />
                 );
             }
         },
         {
-            header: "Fecha de fin",
+            header: t('medical.sickness.form.column.endDateSelect', { defaultValue: 'Fecha de fin' }),
             accessor: "endDate",
             type: "text",
             render: (value, row, isSelected) => {
@@ -333,7 +281,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
                         options={{ dateFormat: 'd/m/Y' }}
                         disabled={!isSelected}
                         onClick={(e) => e.stopPropagation()}
-                        placeholder="Seleccione"
+                        placeholder={t('medical.sickness.form.select', { defaultValue: 'Seleccione' })}
                     />
                 );
             }
@@ -341,36 +289,21 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
     ];
 
     const sicknessAttributes: Attribute[] = [
-        { key: 'name', label: 'Enfermedad', type: 'text' },
+        { key: 'name', label: t('medical.sickness.form.field.disease', { defaultValue: 'Enfermedad' }), type: 'text' },
         {
             key: 'status',
-            label: 'Estado',
+            label: t('medical.sickness.form.field.status', { defaultValue: 'Estado' }),
             type: 'text',
             render: (value: string) => {
                 let color = "secondary";
-                let label = value;
+                const label = t(`medical.sickness.form.status.${value}`, { defaultValue: value });
 
                 switch (value) {
-                    case "suspected":
-                        color = "info";
-                        label = "Sospecha";
-                        break;
-                    case "confirmed":
-                        color = "success";
-                        label = "Confirmada";
-                        break;
-                    case "recovered":
-                        color = "primary";
-                        label = "Recuperada";
-                        break;
-                    case "chronic":
-                        color = "warning";
-                        label = "Cronica";
-                        break;
-                    case "dead":
-                        color = "black";
-                        label = "Muerte";
-                        break;
+                    case "suspected": color = "info"; break;
+                    case "confirmed": color = "success"; break;
+                    case "recovered": color = "primary"; break;
+                    case "chronic": color = "warning"; break;
+                    case "dead": color = "black"; break;
                 }
 
                 return <Badge color={color}>{label}</Badge>;
@@ -378,31 +311,22 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
         },
         {
             key: 'severity',
-            label: 'Severidad',
+            label: t('medical.sickness.form.field.severity', { defaultValue: 'Severidad' }),
             type: 'text',
             render: (value: string) => {
                 let color = "secondary";
-                let label = value;
+                const label = t(`medical.sickness.form.severity.${value}`, { defaultValue: value });
 
                 switch (value) {
-                    case "low":
-                        color = "success";
-                        label = "Baja";
-                        break;
-                    case "medium":
-                        color = "warning";
-                        label = "Media";
-                        break;
-                    case "high":
-                        color = "danger";
-                        label = "Alta";
-                        break;
+                    case "low": color = "success"; break;
+                    case "medium": color = "warning"; break;
+                    case "high": color = "danger"; break;
                 }
 
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { key: 'observations', label: 'Observaciones', type: 'text' },
+        { key: 'observations', label: t('medical.sickness.form.field.observations', { defaultValue: 'Observaciones' }), type: 'text' },
 
     ]
 
@@ -421,25 +345,25 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
             setProducts(productsWithId)
         } catch (error) {
             console.error('Error fetching data:', error);
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al cargar los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('medical.sickness.form.error.load', { defaultValue: 'Ha ocurrido un error al cargar los datos, intentelo mas tarde' }) })
         } finally {
             setLoading(false)
         }
     }
 
     const validationSchema = Yup.object({
-        name: Yup.string().required('El nombre de la enfermedad es obligatoria'),
-        status: Yup.string().required('El estado de la enfermedad es obligatorio'),
-        startDate: Yup.date().required('La fecha de inicio de la enfermedad es obligatoria'),
-        severity: Yup.string().required('La severidad de la informacion es obligatoria'),
+        name: Yup.string().required(t('medical.sickness.form.validation.nameRequired', { defaultValue: 'El nombre de la enfermedad es obligatoria' })),
+        status: Yup.string().required(t('medical.sickness.form.validation.statusRequired', { defaultValue: 'El estado de la enfermedad es obligatorio' })),
+        startDate: Yup.date().required(t('medical.sickness.form.validation.startDateRequired', { defaultValue: 'La fecha de inicio de la enfermedad es obligatoria' })),
+        severity: Yup.string().required(t('medical.sickness.form.validation.severityRequired', { defaultValue: 'La severidad de la informacion es obligatoria' })),
     })
 
     const treatmentValidation = Yup.object({
         medication: Yup.string().required(),
-        dose: Yup.number().moreThan(0, "Cantidad inválida").required("Cantidad requerida"),
-        administration_route: Yup.string().required("Vía requerida").notOneOf([""], "Debe seleccionar una vía"),
-        startDate: Yup.date().required('Fecha requerida'),
-        endDate: Yup.date().required('Fecha requerida'),
+        dose: Yup.number().moreThan(0, t('medical.sickness.form.validation.doseInvalid', { defaultValue: 'Cantidad inválida' })).required(t('medical.sickness.form.validation.doseRequired', { defaultValue: 'Cantidad requerida' })),
+        administration_route: Yup.string().required(t('medical.sickness.form.validation.routeRequired', { defaultValue: 'Vía requerida' })).notOneOf([""], t('medical.sickness.form.validation.routeSelect', { defaultValue: 'Debe seleccionar una vía' })),
+        startDate: Yup.date().required(t('medical.sickness.form.validation.dateRequired', { defaultValue: 'Fecha requerida' })),
+        endDate: Yup.date().required(t('medical.sickness.form.validation.dateRequired', { defaultValue: 'Fecha requerida' })),
     });
 
     const formik = useFormik<SicknessHistory>({
@@ -494,13 +418,13 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
             await validationSchema.validate(formik.values, { abortEarly: false });
             toggleArrowTab(activeStep + 1);
         } catch (error) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, llene todos los datos' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('medical.sickness.form.validation.fillAll', { defaultValue: 'Por favor, llene todos los datos' }) })
         }
     }
 
     const checkSymptomsData = () => {
         if (formik.values.symptoms?.length === 0) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, seleccione al menos 1 sintoma' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('medical.sickness.form.validation.selectSymptom', { defaultValue: 'Por favor, seleccione al menos 1 sintoma' }) })
         } else {
             toggleArrowTab(activeStep + 1);
         }
@@ -527,7 +451,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
         setTreatmentErrors(errors);
 
         if (Object.keys(errors).length > 0) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, llene todos los datos de los tratamientos seleccionados' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('medical.sickness.form.validation.fillTreatments', { defaultValue: 'Por favor, llene todos los datos de los tratamientos seleccionados' }) })
             return false;
         }
 
@@ -558,7 +482,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
                             aria-controls="step-packageSelect-tab"
                             disabled
                         >
-                            Informacion de enfermedad
+                            {t('medical.sickness.form.step.info', { defaultValue: 'Informacion de enfermedad' })}
                         </NavLink>
                     </NavItem>
 
@@ -571,7 +495,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
                             aria-selected={activeStep === 2}
                             disabled
                         >
-                            Sintomas
+                            {t('medical.sickness.form.step.symptoms', { defaultValue: 'Sintomas' })}
                         </NavLink>
                     </NavItem>
 
@@ -584,7 +508,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
                             aria-selected={activeStep === 3}
                             disabled
                         >
-                            Tratamiento
+                            {t('medical.sickness.form.step.treatment', { defaultValue: 'Tratamiento' })}
                         </NavLink>
                     </NavItem>
 
@@ -598,7 +522,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
                             aria-selected={activeStep === 4}
                             disabled
                         >
-                            Resumen
+                            {t('medical.sickness.form.step.summary', { defaultValue: 'Resumen' })}
                         </NavLink>
                     </NavItem>
                 </Nav>
@@ -608,7 +532,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
                 <TabPane tabId={1}>
                     <div className="d-flex gap-3">
                         <div className="w-100">
-                            <Label className="form-label">Enfermedad</Label>
+                            <Label className="form-label">{t('medical.sickness.form.field.disease', { defaultValue: 'Enfermedad' })}</Label>
                             <Input
                                 type="text"
                                 name="name"
@@ -623,7 +547,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
                         </div>
 
                         <div className="w-100">
-                            <Label htmlFor="severityInput" className="form-label">Severidad</Label>
+                            <Label htmlFor="severityInput" className="form-label">{t('medical.sickness.form.field.severity', { defaultValue: 'Severidad' })}</Label>
                             <Input
                                 type="select"
                                 id="severityInput"
@@ -633,10 +557,10 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
                                 onBlur={formik.handleBlur}
                                 invalid={formik.touched.severity && !!formik.errors.severity}
                             >
-                                <option value="">Seleccione un estado</option>
-                                <option value="low">Baja</option>
-                                <option value="medium">Media</option>
-                                <option value="high">Alta</option>
+                                <option value="">{t('medical.sickness.form.field.selectStatus', { defaultValue: 'Seleccione un estado' })}</option>
+                                <option value="low">{t('medical.sickness.form.severity.low', { defaultValue: 'Baja' })}</option>
+                                <option value="medium">{t('medical.sickness.form.severity.medium', { defaultValue: 'Media' })}</option>
+                                <option value="high">{t('medical.sickness.form.severity.high', { defaultValue: 'Alta' })}</option>
                             </Input>
                             {formik.touched.severity && formik.errors.severity && (
                                 <FormFeedback>{formik.errors.severity}</FormFeedback>
@@ -644,7 +568,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
                         </div>
 
                         <div className="w-100">
-                            <Label htmlFor="startDate" className="form-label">Fecha de inicio</Label>
+                            <Label htmlFor="startDate" className="form-label">{t('medical.sickness.form.field.startDate', { defaultValue: 'Fecha de inicio' })}</Label>
                             <DatePicker
                                 id="startDate"
                                 className={`form-control ${formik.touched.startDate && formik.errors.startDate ? 'is-invalid' : ''}`}
@@ -662,7 +586,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
 
                     <div className="d-flex gap-3 mt-4">
                         <div className="w-50">
-                            <Label htmlFor="statusInput" className="form-label">Estado</Label>
+                            <Label htmlFor="statusInput" className="form-label">{t('medical.sickness.form.field.status', { defaultValue: 'Estado' })}</Label>
                             <Input
                                 type="select"
                                 id="statusInput"
@@ -672,12 +596,12 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
                                 onBlur={formik.handleBlur}
                                 invalid={formik.touched.status && !!formik.errors.status}
                             >
-                                <option value="">Seleccione un estado</option>
-                                <option value="suspected">Sospecha</option>
-                                <option value="confirmed">Confirmada</option>
-                                <option value="recovered">Recuperada</option>
-                                <option value="chronic">Cronica</option>
-                                <option value="dead">Muerta</option>
+                                <option value="">{t('medical.sickness.form.field.selectStatus', { defaultValue: 'Seleccione un estado' })}</option>
+                                <option value="suspected">{t('medical.sickness.form.status.suspected', { defaultValue: 'Sospecha' })}</option>
+                                <option value="confirmed">{t('medical.sickness.form.status.confirmed', { defaultValue: 'Confirmada' })}</option>
+                                <option value="recovered">{t('medical.sickness.form.status.recovered', { defaultValue: 'Recuperada' })}</option>
+                                <option value="chronic">{t('medical.sickness.form.status.chronic', { defaultValue: 'Cronica' })}</option>
+                                <option value="dead">{t('medical.sickness.form.status.dead', { defaultValue: 'Muerta' })}</option>
                             </Input>
                             {formik.touched.status && formik.errors.status && (
                                 <FormFeedback>{formik.errors.status}</FormFeedback>
@@ -685,7 +609,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
                         </div>
 
                         <div className="w-50">
-                            <Label htmlFor="endDate" className="form-label">Fecha de termino</Label>
+                            <Label htmlFor="endDate" className="form-label">{t('medical.sickness.form.field.endDate', { defaultValue: 'Fecha de termino' })}</Label>
                             <DatePicker
                                 id="endDate"
                                 className={`form-control ${formik.touched.endDate && formik.errors.endDate ? 'is-invalid' : ''}`}
@@ -703,7 +627,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
 
                     <div className="d-flex gap-3 mt-4">
                         <div className="w-50">
-                            <Label htmlFor="user" className="form-label">Detectada por</Label>
+                            <Label htmlFor="user" className="form-label">{t('medical.sickness.form.field.detectedBy', { defaultValue: 'Detectada por' })}</Label>
                             <Input
                                 type="text"
                                 id="user"
@@ -714,7 +638,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
                         </div>
 
                         <div className="w-50">
-                            <Label className="form-label">Observaciones</Label>
+                            <Label className="form-label">{t('medical.sickness.form.field.observations', { defaultValue: 'Observaciones' })}</Label>
                             <Input
                                 type="text"
                                 name="observations"
@@ -732,7 +656,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
 
                     <div className="d-flex justify-content-between mt-4">
                         <Button className="btn btn-primary ms-auto" onClick={() => checkSicknessData()}>
-                            Siguiente
+                            {t('common.button.next', { defaultValue: 'Siguiente' })}
                             <i className="ri-arrow-right-line ms-1" />
                         </Button>
                     </div>
@@ -740,9 +664,9 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
 
                 <TabPane tabId={2}>
                     <div className="mb-3">
-                        <h5 className="mb-1">Síntomas observados</h5>
+                        <h5 className="mb-1">{t('medical.sickness.form.symptoms.title', { defaultValue: 'Síntomas observados' })}</h5>
                         <small className="text-muted">
-                            Seleccione todos los síntomas observados en el cerdo
+                            {t('medical.sickness.form.symptoms.subtitle', { defaultValue: 'Seleccione todos los síntomas observados en el cerdo' })}
                         </small>
                     </div>
 
@@ -751,11 +675,11 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
                     <div className="d-flex justify-content-between mt-4">
                         <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                             <i className="me-2 ri-arrow-left-line" />
-                            Anterior
+                            {t('common.button.back', { defaultValue: 'Anterior' })}
                         </Button>
 
                         <Button className="btn" onClick={() => checkSymptomsData()}>
-                            Siguiente
+                            {t('common.button.next', { defaultValue: 'Siguiente' })}
                             <i className="ms-2 ri-arrow-right-line" />
                         </Button>
                     </div>
@@ -790,7 +714,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
                     <div className="d-flex justify-content-between mt-4">
                         <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                             <i className="me-2 ri-arrow-left-line" />
-                            Anterior
+                            {t('common.button.back', { defaultValue: 'Anterior' })}
                         </Button>
 
                         <Button
@@ -801,7 +725,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
                                 toggleArrowTab(activeStep + 1);
                             }}
                         >
-                            Siguiente
+                            {t('common.button.next', { defaultValue: 'Siguiente' })}
                             <i className="ri-arrow-right-line ms-1" />
                         </Button>
                     </div>
@@ -812,7 +736,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
                         <div style={{ minWidth: 320 }}>
                             <Card className="shadow-sm h-100">
                                 <CardHeader className="bg-light fw-bold fs-5">
-                                    Información del cerdo
+                                    {t('medical.sickness.form.pigInfo', { defaultValue: 'Información del cerdo' })}
                                 </CardHeader>
                                 <CardBody>
                                     <ObjectDetails
@@ -827,7 +751,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
                             <div className="d-flex gap-3 align-items-stretch" style={{ flex: 1 }}>
                                 <Card className="shadow-sm w-50 h-100">
                                     <CardHeader className="bg-light fw-bold fs-5">
-                                        Información de enfermedad
+                                        {t('medical.sickness.form.sicknessInfo', { defaultValue: 'Información de enfermedad' })}
                                     </CardHeader>
                                     <CardBody>
                                         <ObjectDetails
@@ -839,7 +763,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
 
                                 <Card className="shadow-sm w-50 h-100">
                                     <CardHeader className="bg-light fw-bold fs-5">
-                                        Síntomas
+                                        {t('medical.sickness.form.step.symptoms', { defaultValue: 'Síntomas' })}
                                     </CardHeader>
 
                                     <CardBody className="d-flex flex-column">
@@ -848,7 +772,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
                                         ) : (
                                             <div className="text-muted fst-italic d-flex align-items-center justify-content-center flex-grow-1 gap-2">
                                                 <i className="fa-solid fa-circle-info" />
-                                                No se registraron síntomas
+                                                {t('medical.sickness.form.symptoms.noSymptoms', { defaultValue: 'No se registraron síntomas' })}
                                             </div>
                                         )}
                                     </CardBody>
@@ -858,7 +782,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
                             <div style={{ flex: 1 }}>
                                 <Card className="shadow-sm h-100">
                                     <CardHeader className="bg-light fw-bold fs-5">
-                                        Tratamiento
+                                        {t('medical.sickness.form.step.treatment', { defaultValue: 'Tratamiento' })}
                                     </CardHeader>
 
                                     <CardBody className="d-flex flex-column p-0">
@@ -876,7 +800,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
                                         ) : (
                                             <div className="text-muted fst-italic d-flex align-items-center justify-content-center flex-grow-1 gap-2">
                                                 <i className="fa-solid fa-pills" />
-                                                No se asignó tratamiento
+                                                {t('medical.sickness.form.treatment.noTreatment', { defaultValue: 'No se asignó tratamiento' })}
                                             </div>
                                         )}
                                     </CardBody>
@@ -891,7 +815,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
                             onClick={() => toggleArrowTab(activeStep - 1)}
                         >
                             <i className="ri-arrow-left-line me-2" />
-                            Atrás
+                            {t('common.button.back', { defaultValue: 'Atrás' })}
                         </Button>
 
                         <Button
@@ -904,7 +828,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
                             ) : (
                                 <>
                                     <i className="ri-check-line me-2" />
-                                    Asignar
+                                    {t('medical.sickness.form.assign', { defaultValue: 'Asignar' })}
                                 </>
                             )}
                         </Button>
@@ -915,8 +839,8 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
             </TabContent>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} autoClose={3000} />
-            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message={"Ha ocurrido un error, intentelo mas tarde"} />
-            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={"Plan de vacunacion asignado correctamente"} />
+            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message={t('medical.sickness.form.errorModal', { defaultValue: 'Ha ocurrido un error, intentelo mas tarde' })} />
+            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={t('medical.sickness.form.success.saved', { defaultValue: 'Plan de vacunacion asignado correctamente' })} />
             <MissingStockModal isOpen={modals.missingStock} onClose={() => toggleModal('missingStock', false)} missingItems={missingItems} />
         </>
     )

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Badge, Input, Table } from "reactstrap";
 import SimpleBar from "simplebar-react";
 
@@ -8,11 +9,12 @@ interface OrderProductsTableProps {
 }
 
 const OrderTable: React.FC<OrderProductsTableProps> = ({ data, onProductEdit }) => {
+  const { t } = useTranslation();
   const [filterText, setFilterText] = useState<string>("");
   const [editingValues, setEditingValues] = useState<Record<string, string>>({});
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
 
-  // 🔥 Enviar valores iniciales con quantity=0 si nadie edita
+  // Enviar valores iniciales con quantity=0 si nadie edita
   useEffect(() => {
     const initialProducts = data.map(p => ({
       id: p.id,
@@ -37,7 +39,7 @@ const OrderTable: React.FC<OrderProductsTableProps> = ({ data, onProductEdit }) 
 
     setEditingValues((prev) => ({ ...prev, [id]: parsedValue.toString() }));
 
-    // 🔁 Siempre enviamos todos los productos
+    // Siempre enviamos todos los productos
     const updatedProducts = data.map((p) => ({
       id: p.id,
       quantity: parseInt(editingValues[p.id] ?? (p.id === id ? parsedValue.toString() : "0"), 10),
@@ -91,22 +93,22 @@ const OrderTable: React.FC<OrderProductsTableProps> = ({ data, onProductEdit }) 
   });
 
   const renderCategoryBadge = (value: string) => {
-    const map: Record<string, { color: string; label: string }> = {
-      nutrition: { color: "info", label: "Nutrición" },
-      medications: { color: "warning", label: "Medicamentos" },
-      vaccines: { color: "primary", label: "Vacunas" },
-      vitamins: { color: "success", label: "Vitaminas" },
-      minerals: { color: "success", label: "Minerales" },
-      supplies: { color: "secondary", label: "Insumos" },
-      hygiene_cleaning: { color: "dark", label: "Higiene y desinfección" },
-      equipment_tools: { color: "info", label: "Equipamiento y herramientas" },
-      spare_parts: { color: "danger", label: "Refacciones y repuestos" },
-      office_supplies: { color: "secondary", label: "Material de oficina" },
-      others: { color: "secondary", label: "Otros" },
+    const map: Record<string, { color: string }> = {
+      nutrition: { color: "info" },
+      medications: { color: "warning" },
+      vaccines: { color: "primary" },
+      vitamins: { color: "success" },
+      minerals: { color: "success" },
+      supplies: { color: "secondary" },
+      hygiene_cleaning: { color: "dark" },
+      equipment_tools: { color: "info" },
+      spare_parts: { color: "danger" },
+      office_supplies: { color: "secondary" },
+      others: { color: "secondary" },
     };
 
-    const category = map[value] || { color: "secondary", label: value };
-    return <Badge color={category.color}>{category.label}</Badge>;
+    const category = map[value] || { color: "secondary" };
+    return <Badge color={category.color}>{t(`warehouse.common.productCategory.${value}`, { defaultValue: value })}</Badge>;
   };
 
   return (
@@ -116,19 +118,19 @@ const OrderTable: React.FC<OrderProductsTableProps> = ({ data, onProductEdit }) 
           <thead className="table-light sticky-top">
             <tr>
               <th onClick={() => requestSort("id")} style={{ cursor: "pointer" }}>
-                Código {sortConfig?.key === "id" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+                {t('common.field.code')} {sortConfig?.key === "id" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
               </th>
               <th onClick={() => requestSort("name")} style={{ cursor: "pointer" }}>
-                Producto {sortConfig?.key === "name" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+                {t('warehouse.orderDetails.col.product', { defaultValue: 'Producto' })} {sortConfig?.key === "name" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
               </th>
               <th onClick={() => requestSort("category")} style={{ cursor: "pointer" }}>
-                Categoría {sortConfig?.key === "category" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+                {t('warehouse.purchaseOrders.col.category', { defaultValue: 'Categoría' })} {sortConfig?.key === "category" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
               </th>
               <th onClick={() => requestSort("quantity")} style={{ cursor: "pointer" }}>
-                Solicitado {sortConfig?.key === "quantity" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+                {t('warehouse.orderDetails.col.requested', { defaultValue: 'Solicitado' })} {sortConfig?.key === "quantity" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
               </th>
-              <th>Entregado</th>
-              <th>Observaciones</th>
+              <th>{t('warehouse.orderDetails.col.delivered', { defaultValue: 'Entregado' })}</th>
+              <th>{t('warehouse.orderDetails.col.observations', { defaultValue: 'Observaciones' })}</th>
             </tr>
           </thead>
           <tbody>
@@ -156,7 +158,7 @@ const OrderTable: React.FC<OrderProductsTableProps> = ({ data, onProductEdit }) 
               ))
             ) : (
               <tr>
-                <td colSpan={7} className="text-center">No hay productos disponibles.</td>
+                <td colSpan={7} className="text-center">{t('warehouse.orderDetails.noProducts', { defaultValue: 'No hay productos disponibles.' })}</td>
               </tr>
             )}
           </tbody>

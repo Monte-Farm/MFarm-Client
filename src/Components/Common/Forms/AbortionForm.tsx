@@ -11,6 +11,7 @@ import { HttpStatusCode } from "axios";
 import FileUploader from "../Shared/FileUploader";
 import SuccessModal from "../Shared/SuccessModal";
 import AlertMessage from "../Shared/AlertMesagge";
+import { useTranslation } from "react-i18next";
 
 
 interface AbortionFormProps {
@@ -20,6 +21,7 @@ interface AbortionFormProps {
 }
 
 const AbortionForm = ({ pregnancy, onSave, onCancel }: AbortionFormProps) => {
+    const { t } = useTranslation();
     const userLogged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -27,8 +29,8 @@ const AbortionForm = ({ pregnancy, onSave, onCancel }: AbortionFormProps) => {
     const [fileToUpload, setFileToUpload] = useState<File | null>(null)
 
     const validationSchema = Yup.object({
-        probable_cause: Yup.string().required('El resultado es obligatorio'),
-        date: Yup.date().required('La fecha es obligatoria'),
+        probable_cause: Yup.string().required(t('reproduction.form.abortion.validationCause', { defaultValue: 'El resultado es obligatorio' })),
+        date: Yup.date().required(t('reproduction.form.abortion.validationDate', { defaultValue: 'La fecha es obligatoria' })),
     });
 
     const formik = useFormik({
@@ -69,7 +71,7 @@ const AbortionForm = ({ pregnancy, onSave, onCancel }: AbortionFormProps) => {
                 setSuccessModalOpen(true)
             } catch (error) {
                 console.error('Error saving data: ', { error })
-                setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al guardar los datos, intentelo mas tarde' })
+                setAlertConfig({ visible: true, color: 'danger', message: t('reproduction.form.abortion.errorSave', { defaultValue: 'Ha ocurrido un error al guardar los datos, intentelo mas tarde' }) })
             } finally {
                 setSubmitting(false)
             }
@@ -83,7 +85,7 @@ const AbortionForm = ({ pregnancy, onSave, onCancel }: AbortionFormProps) => {
             const uploadResponse = await configContext.axiosHelper.uploadImage(`${configContext.apiUrl}/upload/upload_file/`, file);
             formik.values.attachments.push(uploadResponse.data.data)
         } catch (error) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al subir el archivo, por favor intentelo más tarde' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('reproduction.form.abortion.errorUpload', { defaultValue: 'Ha ocurrido un error al subir el archivo, por favor intentelo más tarde' }) });
         }
     };
 
@@ -97,12 +99,12 @@ const AbortionForm = ({ pregnancy, onSave, onCancel }: AbortionFormProps) => {
             <form onSubmit={formik.handleSubmit} className="">
 
                 <div className="mt-4">
-                    <Label htmlFor="imageInput" className="form-label">Archivos de perdida</Label>
+                    <Label htmlFor="imageInput" className="form-label">{t('reproduction.form.abortion.attachmentsLabel', { defaultValue: 'Archivos de perdida' })}</Label>
                     <FileUploader acceptedFileTypes={['image/*', 'application/pdf']} maxFiles={1} onFileUpload={(file) => setFileToUpload(file)} />
                 </div>
 
                 <div className="mt-4">
-                    <Label htmlFor="probable_cause" className="form-label">Causa probable</Label>
+                    <Label htmlFor="probable_cause" className="form-label">{t('reproduction.form.abortion.probableCause', { defaultValue: 'Causa probable' })}</Label>
                     <Input
                         type="text"
                         id="probable_cause"
@@ -119,7 +121,7 @@ const AbortionForm = ({ pregnancy, onSave, onCancel }: AbortionFormProps) => {
 
                 <div className="d-flex gap-2 mt-4">
                     <div className="w-50">
-                        <Label htmlFor="date" className="form-label">Fecha de perdida</Label>
+                        <Label htmlFor="date" className="form-label">{t('reproduction.form.abortion.dateLoss', { defaultValue: 'Fecha de perdida' })}</Label>
                         <DatePicker
                             id="date"
                             className={`form-control ${formik.touched.date && formik.errors.date ? 'is-invalid' : ''}`}
@@ -135,7 +137,7 @@ const AbortionForm = ({ pregnancy, onSave, onCancel }: AbortionFormProps) => {
                     </div>
 
                     <div className="w-50">
-                        <Label htmlFor="responsible" className="form-label">Responsable</Label>
+                        <Label htmlFor="responsible" className="form-label">{t('reproduction.form.abortion.responsible', { defaultValue: 'Responsable' })}</Label>
                         <Input
                             type="text"
                             id="responsible"
@@ -147,7 +149,7 @@ const AbortionForm = ({ pregnancy, onSave, onCancel }: AbortionFormProps) => {
                 </div>
 
                 <div className="mt-4">
-                    <Label htmlFor="notes" className="form-label">Notas</Label>
+                    <Label htmlFor="notes" className="form-label">{t('reproduction.form.abortion.notes', { defaultValue: 'Notas' })}</Label>
                     <Input
                         type="text"
                         id="notes"
@@ -156,7 +158,7 @@ const AbortionForm = ({ pregnancy, onSave, onCancel }: AbortionFormProps) => {
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
                         invalid={formik.touched.notes && !!formik.errors.notes}
-                        placeholder="Ej: Perdida sospechosa"
+                        placeholder={t('reproduction.form.abortion.notesPlaceholder', { defaultValue: 'Ej: Perdida sospechosa' })}
                     />
                     {formik.touched.notes && formik.errors.notes && (
                         <FormFeedback>{formik.errors.notes}</FormFeedback>
@@ -172,7 +174,7 @@ const AbortionForm = ({ pregnancy, onSave, onCancel }: AbortionFormProps) => {
                         ) : (
                             <div>
                                 <i className="ri-check-line me-2" />
-                                Registrar
+                                {t('reproduction.form.abortion.register', { defaultValue: 'Registrar' })}
                             </div>
                         )}
                     </Button>
@@ -180,7 +182,7 @@ const AbortionForm = ({ pregnancy, onSave, onCancel }: AbortionFormProps) => {
             </form>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
-            <SuccessModal isOpen={successModalOpen} onClose={onSave} message={"Perdida registrada con éxito"} />
+            <SuccessModal isOpen={successModalOpen} onClose={onSave} message={t('reproduction.form.abortion.success', { defaultValue: 'Perdida registrada con éxito' })} />
         </>
     );
 };

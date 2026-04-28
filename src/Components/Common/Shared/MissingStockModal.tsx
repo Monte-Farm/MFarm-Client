@@ -1,5 +1,6 @@
+import { useTranslation } from "react-i18next";
 import { Button, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
-import WarningImg from "../../../assets/images/error-modal.png"; // Usa el mismo o cámbialo si tienes otro ícono
+import WarningImg from "../../../assets/images/error-modal.png";
 
 interface MissingStockModalProps {
     isOpen: boolean;
@@ -12,19 +13,20 @@ interface MissingStockModalProps {
 }
 
 const MissingStockModal: React.FC<MissingStockModalProps> = ({ isOpen, onClose, missingItems }) => {
+    const { t } = useTranslation();
     return (
         <Modal isOpen={isOpen} backdrop="static" keyboard={false} centered>
             <ModalHeader></ModalHeader>
 
             <ModalBody className="d-flex flex-column align-items-center text-center">
-                <img src={WarningImg} alt="Advertencia" style={{ height: "140px" }} />
+                <img src={WarningImg} alt="" style={{ height: "140px" }} />
 
                 <h4 className="mt-4 fw-bold" style={{ color: "#b30000" }}>
-                    Stock insuficiente
+                    {t("shared.missingStock.title")}
                 </h4>
 
                 <p className="mt-2 text-muted" style={{ fontSize: "14px", maxWidth: "300px" }}>
-                    No hay suficiente inventario para los siguientes productos:
+                    {t("shared.missingStock.message")}
                 </p>
 
                 <div
@@ -55,7 +57,7 @@ const MissingStockModal: React.FC<MissingStockModalProps> = ({ isOpen, onClose, 
 
             <ModalFooter className="justify-content-center">
                 <Button color="danger" onClick={onClose} style={{ padding: "8px 30px" }}>
-                    Cerrar
+                    {t("common.button.close")}
                 </Button>
             </ModalFooter>
         </Modal>

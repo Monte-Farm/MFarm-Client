@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { LitterEvent } from 'common/data_interfaces';
 import {
     FiAlertTriangle,
@@ -14,52 +15,50 @@ interface Props {
     events: LitterEvent[] | undefined;
 }
 
-const EVENT_CONFIG: Record<
-    LitterEvent['type'],
-    { label: string; icon: JSX.Element }
-> = {
-    MORTALITY_SUMMARY: {
-        label: 'Mortalidad',
-        icon: <FiAlertTriangle />
-    },
-    AVERAGE_WEIGHT: {
-        label: 'Peso promedio',
-        icon: <FiTrendingUp />
-    },
-    WEANING: {
-        label: 'Destete',
-        icon: <FiLogOut />
-    },
-    LOCATION_CHANGE: {
-        label: 'Cambio de ubicación',
-        icon: <FiMapPin />
-    },
-    GROUP_TREATMENT: {
-        label: 'Tratamiento grupal',
-        icon: <FiActivity />
-    },
-    DISCARD: {
-        label: 'Descarte',
-        icon: <FiAlertTriangle />
-    },
-    OBSERVATION: {
-        label: 'Observación',
-        icon: <FiMessageSquare />
-    },
-    '': {
-        label: 'Evento',
-        icon: <FiActivity />
-    }
-};
-
 const LitterEventsCard = ({ events }: Props) => {
+    const { t } = useTranslation();
     const hasEvents = events && events.length > 0;
+
+    const EVENT_CONFIG: Record<LitterEvent['type'], { label: string; icon: JSX.Element }> = {
+        MORTALITY_SUMMARY: {
+            label: t("shared.litterEvents.type.MORTALITY_SUMMARY"),
+            icon: <FiAlertTriangle />
+        },
+        AVERAGE_WEIGHT: {
+            label: t("shared.litterEvents.type.AVERAGE_WEIGHT"),
+            icon: <FiTrendingUp />
+        },
+        WEANING: {
+            label: t("shared.litterEvents.type.WEANING"),
+            icon: <FiLogOut />
+        },
+        LOCATION_CHANGE: {
+            label: t("shared.litterEvents.type.LOCATION_CHANGE"),
+            icon: <FiMapPin />
+        },
+        GROUP_TREATMENT: {
+            label: t("shared.litterEvents.type.GROUP_TREATMENT"),
+            icon: <FiActivity />
+        },
+        DISCARD: {
+            label: t("shared.litterEvents.type.DISCARD"),
+            icon: <FiAlertTriangle />
+        },
+        OBSERVATION: {
+            label: t("shared.litterEvents.type.OBSERVATION"),
+            icon: <FiMessageSquare />
+        },
+        '': {
+            label: t("shared.litterEvents.type.default"),
+            icon: <FiActivity />
+        }
+    };
 
     return (
         <div className="d-flex flex-column flex-fill">
             <Card className="flex-fill">
                 <CardHeader className="bg-white border-bottom">
-                    <h5 className="mb-0 text-dark fw-semibold">Eventos</h5>
+                    <h5 className="mb-0 text-dark fw-semibold">{t("shared.litterEvents.title")}</h5>
                 </CardHeader>
 
                 <CardBody
@@ -77,7 +76,7 @@ const LitterEventsCard = ({ events }: Props) => {
                                 style={{ marginBottom: 10 }}
                             />
                             <span className="fs-5 text-muted">
-                                Aún no hay eventos de la camada registrados
+                                {t("shared.litterEvents.empty")}
                             </span>
                         </>
                     ) : (
@@ -89,19 +88,20 @@ const LitterEventsCard = ({ events }: Props) => {
                                     new Date(a.date ?? 0).getTime()
                             )
                             .map((event, index) => {
-                                const config = EVENT_CONFIG[event.type] ?? { label: event.type, icon: <FiActivity /> };
+                                const config = EVENT_CONFIG[event.type] ?? {
+                                    label: event.type,
+                                    icon: <FiActivity />
+                                };
 
                                 return (
                                     <div
                                         key={index}
                                         className="d-flex gap-3 py-3 border-bottom"
                                     >
-                                        {/* Icono */}
                                         <div className="text-primary fs-4">
                                             {config.icon}
                                         </div>
 
-                                        {/* Contenido */}
                                         <div className="flex-grow-1">
                                             <div className="d-flex justify-content-between">
                                                 <strong>{config.label}</strong>

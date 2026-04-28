@@ -11,7 +11,6 @@ import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import { FiCalendar, FiFilter, FiTrendingUp, FiDollarSign, FiPackage, FiPieChart, FiBarChart2, FiUsers } from "react-icons/fi";
 import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector";
-import Select from "react-select";
 import {
     Alert,
     Button,
@@ -20,10 +19,8 @@ import {
     CardHeader,
     Col,
     Container,
-    Input,
     Label,
     Row,
-    Table,
     Badge,
     FormGroup,
     Modal,
@@ -31,6 +28,7 @@ import {
     ModalBody,
     ModalFooter
 } from "reactstrap";
+import { useTranslation } from "react-i18next";
 
 interface GroupOption {
     value: string;
@@ -53,12 +51,13 @@ interface LitterOption {
 type ViewMode = 'farm' | 'multiple' | 'litters';
 
 const ViewFeedingConsumption = () => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
-    
+
     const [loading, setLoading] = useState<boolean>(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    
+
     const [viewMode, setViewMode] = useState<ViewMode>('farm');
     const [dateFrom, setDateFrom] = useState<string>('');
     const [dateTo, setDateTo] = useState<string>('');
@@ -67,23 +66,23 @@ const ViewFeedingConsumption = () => {
     const [tempSelectedGroups, setTempSelectedGroups] = useState<GroupOption[]>([]);
     const [litterModalOpen, setLitterModalOpen] = useState<boolean>(false);
     const [tempSelectedLitters, setTempSelectedLitters] = useState<LitterOption[]>([]);
-    
+
     const [availableGroups, setAvailableGroups] = useState<GroupOption[]>([]);
     const [selectedGroups, setSelectedGroups] = useState<GroupOption[]>([]);
-    
+
     const [availableLitters, setAvailableLitters] = useState<LitterOption[]>([]);
     const [selectedLitters, setSelectedLitters] = useState<LitterOption[]>([]);
-    
+
     const [consumptionData, setConsumptionData] = useState<any>(null);
 
     useEffect(() => {
         const now = new Date();
         const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
         const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        
+
         setDateFrom(firstDay.toISOString().split('T')[0]);
         setDateTo(lastDay.toISOString().split('T')[0]);
-        
+
         fetchAvailableGroups();
         fetchAvailableLitters();
     }, []);
@@ -100,18 +99,16 @@ const ViewFeedingConsumption = () => {
             const response = await configContext.axiosHelper.get(
                 `${configContext.apiUrl}/group/find_by_farm/${userLogged.farm_assigned}`
             );
-            
-            console.log('Groups data:', response.data.data); // Debug log
-            
+
             const groups = response.data.data.map((g: any) => ({
                 value: g._id,
-                label: `${g.code} - ${g.name} (${g.pig_count || g.pigCount || 0} cerdos)`,
+                label: `${g.code} - ${g.name} (${g.pig_count || g.pigCount || 0})`,
                 code: g.code,
                 stage: g.stage,
                 pigCount: g.pig_count || g.pigCount || 0,
                 status: g.status || 'active'
             }));
-            
+
             setAvailableGroups(groups);
         } catch (error) {
             console.error('Error fetching groups:', error);
@@ -124,23 +121,20 @@ const ViewFeedingConsumption = () => {
             const response = await configContext.axiosHelper.get(
                 `${configContext.apiUrl}/litter/found_by_farm/${userLogged.farm_assigned}`
             );
-            
-            console.log('Litters data:', response.data.data); // Debug log
-            
-            // Filter litters with status 'active' or 'ready_to_wean'
-            const filteredLitters = response.data.data.filter((l: any) => 
+
+            const filteredLitters = response.data.data.filter((l: any) =>
                 l.status === 'active' || l.status === 'ready_to_wean'
             );
-            
+
             const litters = filteredLitters.map((l: any) => ({
                 value: l._id,
-                label: `${l.code} - ${l.sowCode} (${l.currentMale + l.currentFemale} lechones)`,
+                label: `${l.code} - ${l.sowCode} (${l.currentMale + l.currentFemale})`,
                 code: l.code,
                 pigCount: l.currentMale + l.currentFemale,
                 status: l.status,
                 sowId: l.sow
             }));
-            
+
             setAvailableLitters(litters);
         } catch (error) {
             console.error('Error fetching litters:', error);
@@ -149,12 +143,12 @@ const ViewFeedingConsumption = () => {
 
     const fetchConsumptionData = async () => {
         if (!configContext || !userLogged) return;
-        
+
         setLoading(true);
         try {
             let response;
             const params = `?from=${dateFrom}&to=${dateTo}`;
-            
+
             if (viewMode === 'farm') {
                 response = await configContext.axiosHelper.get(
                     `${configContext.apiUrl}/feeding_consumption/farm/${userLogged.farm_assigned}${params}`
@@ -166,22 +160,22 @@ const ViewFeedingConsumption = () => {
                     { groupIds }
                 );
             } else if (viewMode === 'litters' && selectedLitters.length > 0) {
-                // For litters, use the multiple_litters endpoint
                 const litterIds = selectedLitters.map(l => l.value);
                 response = await configContext.axiosHelper.create(
                     `${configContext.apiUrl}/feeding_consumption/multiple_litters${params}`,
                     { litterIds }
                 );
             } else if ((viewMode === 'multiple' && selectedGroups.length === 0) || (viewMode === 'litters' && selectedLitters.length === 0)) {
-                const entityType = viewMode === 'multiple' ? 'grupos' : 'camadas';
                 setAlertConfig({
                     visible: true,
                     color: 'warning',
-                    message: `Por favor selecciona uno o más ${entityType} para ver los datos`
+                    message: viewMode === 'multiple'
+                        ? t('feeding.consumption.empty.selectGroups')
+                        : t('feeding.consumption.empty.selectLitters')
                 });
                 return;
             }
-            
+
             if (response) {
                 setConsumptionData(response.data.data);
             }
@@ -190,7 +184,7 @@ const ViewFeedingConsumption = () => {
             setAlertConfig({
                 visible: true,
                 color: 'danger',
-                message: 'Error al cargar los datos de consumo'
+                message: t('feeding.consumption.error.load')
             });
         } finally {
             setLoading(false);
@@ -261,15 +255,15 @@ const ViewFeedingConsumption = () => {
     };
 
     const formatGroupsSelectedText = () => {
-        if (selectedGroups.length === 0) return 'Seleccionar grupos';
+        if (selectedGroups.length === 0) return t('feeding.consumption.modal.selectGroupsBtn');
         if (selectedGroups.length === 1) return `${selectedGroups[0].code} - ${selectedGroups[0].label.split(' - ')[1]?.split(' (')[0]}`;
-        return `${selectedGroups.length} grupos seleccionados`;
+        return `${selectedGroups.length} ${t('feeding.consumption.modal.groupsSelected')}`;
     };
 
     const formatLittersSelectedText = () => {
-        if (selectedLitters.length === 0) return 'Seleccionar camadas';
+        if (selectedLitters.length === 0) return t('feeding.consumption.modal.selectLittersBtn');
         if (selectedLitters.length === 1) return `${selectedLitters[0].code} - ${selectedLitters[0].label.split(' - ')[1]?.split(' (')[0]}`;
-        return `${selectedLitters.length} camadas seleccionadas`;
+        return `${selectedLitters.length} ${t('feeding.consumption.modal.littersSelected')}`;
     };
 
     const getStageColor = (stage: string) => {
@@ -285,18 +279,8 @@ const ViewFeedingConsumption = () => {
         return colors[stage] || 'secondary';
     };
 
-    const getStageName = (stage: string) => {
-        const names: any = {
-            'piglet': 'Lechón',
-            'weaning': 'Destete',
-            'fattening': 'Engorde',
-            'sale': 'Venta',
-            'sold': 'Vendido',
-            'lactation': 'Lactancia',
-            'gestation': 'Gestación'
-        };
-        return names[stage] || stage;
-    };
+    const getStageName = (stage: string) =>
+        t(`pigs.stage.${stage}`, { defaultValue: stage });
 
     const formatCurrency = (value: number) => {
         return `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -307,17 +291,17 @@ const ViewFeedingConsumption = () => {
     };
 
     const formatDateRange = () => {
-        if (!dateFrom || !dateTo) return 'Seleccionar rango de fechas';
-        
+        if (!dateFrom || !dateTo) return t('feeding.consumption.filter.selectDateRange');
+
         const formatDate = (dateStr: string) => {
             const date = new Date(dateStr + 'T00:00:00');
-            return date.toLocaleDateString('es-DO', { 
-                day: 'numeric', 
-                month: 'short', 
-                year: 'numeric' 
+            return date.toLocaleDateString('es-DO', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
             });
         };
-        
+
         return `${formatDate(dateFrom)} - ${formatDate(dateTo)}`;
     };
 
@@ -329,7 +313,7 @@ const ViewFeedingConsumption = () => {
 
     const prepareProductChartData = () => {
         if (!consumptionData) return [];
-        
+
         if (viewMode === 'farm') {
             return consumptionData.consumptionByProduct?.map((p: any) => ({
                 id: p.productName,
@@ -347,29 +331,29 @@ const ViewFeedingConsumption = () => {
 
     const prepareStageChartData = () => {
         if (!consumptionData || viewMode !== 'farm') return [];
-        
+        const kgLabel = t('feeding.consumption.chart.kg');
         return consumptionData.consumptionByStage?.map((s: any) => ({
             stage: getStageName(s.stage),
-            'Kg': s.totalKg,
-            'Costo': s.totalCost
+            [kgLabel]: s.totalKg,
         })) || [];
     };
 
     const prepareTimelineChartData = () => {
         if (!consumptionData) return [];
-        
+
+        const lineId = t('feeding.consumption.chart.consumptionKg');
+
         if (viewMode === 'farm' && consumptionData.monthlyTrend) {
             return [{
-                id: 'Consumo (Kg)',
+                id: lineId,
                 data: consumptionData.monthlyTrend.map((m: any) => ({
                     x: m.month,
                     y: m.totalKg
                 }))
             }];
         } else if (viewMode === 'multiple' && consumptionData.groupsDetail) {
-            // Consolidar todos los consumptionTimeline de todos los grupos
             const allTimeline: any[] = [];
-            
+
             consumptionData.groupsDetail.forEach((group: any) => {
                 if (group.consumptionTimeline) {
                     group.consumptionTimeline.forEach((timeline: any) => {
@@ -382,21 +366,19 @@ const ViewFeedingConsumption = () => {
                     });
                 }
             });
-            
-            // Ordenar por fecha
+
             allTimeline.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-            
+
             return [{
-                id: 'Consumo (Kg)',
+                id: lineId,
                 data: allTimeline.map((t: any) => ({
                     x: new Date(t.date).toLocaleDateString('es-DO', { month: 'short', day: 'numeric' }),
                     y: t.totalKg
                 }))
             }];
         } else if (viewMode === 'litters' && consumptionData.littersDetail) {
-            // Consolidar todos los consumptionTimeline de todas las camadas
             const allTimeline: any[] = [];
-            
+
             consumptionData.littersDetail.forEach((litter: any) => {
                 if (litter.consumptionTimeline) {
                     litter.consumptionTimeline.forEach((timeline: any) => {
@@ -409,12 +391,11 @@ const ViewFeedingConsumption = () => {
                     });
                 }
             });
-            
-            // Ordenar por fecha
+
             allTimeline.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-            
+
             return [{
-                id: 'Consumo (Kg)',
+                id: lineId,
                 data: allTimeline.map((t: any) => ({
                     x: new Date(t.date).toLocaleDateString('es-DO', { month: 'short', day: 'numeric' }),
                     y: t.totalKg
@@ -432,24 +413,17 @@ const ViewFeedingConsumption = () => {
         let totalCost = 0;
         let avgKgPerPig = 0;
         let totalPigs = 0;
-        let avgCostPerPig = 0;
-        let avgPricePerKg = 0;
 
         if (viewMode === 'farm') {
-            console.log('Farm mode consumptionData:', consumptionData); // Debug log
             totalKg = consumptionData.totalConsumption?.totalKg || 0;
             totalCost = consumptionData.totalConsumption?.totalCost || 0;
             avgKgPerPig = consumptionData.totalConsumption?.avgKgPerPig || 0;
             totalPigs = consumptionData.totalConsumption?.totalPigs || 0;
-            avgCostPerPig = consumptionData.totalConsumption?.avgCostPerPig || 0;
-            avgPricePerKg = consumptionData.totalConsumption?.avgPricePerKg || 0;
         } else if ((viewMode === 'multiple' || viewMode === 'litters') && consumptionData.summary) {
             totalKg = consumptionData.summary.totalKg || 0;
             totalCost = consumptionData.summary.totalCost || 0;
             avgKgPerPig = consumptionData.summary.avgKgPerPig || 0;
             totalPigs = consumptionData.summary.totalPigs || 0;
-            avgCostPerPig = consumptionData.summary.avgCostPerPig || 0;
-            avgPricePerKg = consumptionData.summary.avgPricePerKg || 0;
         }
 
         return (
@@ -459,7 +433,7 @@ const ViewFeedingConsumption = () => {
                         <CardBody>
                             <div className="d-flex align-items-center">
                                 <div className="flex-grow-1">
-                                    <p className="text-uppercase fw-medium text-muted mb-0">Consumo Total</p>
+                                    <p className="text-uppercase fw-medium text-muted mb-0">{t('feeding.consumption.kpi.totalConsumption')}</p>
                                     <h4 className="fs-22 fw-semibold mb-0">
                                         <span className="counter-value">{formatNumber(totalKg)} Kg</span>
                                     </h4>
@@ -473,13 +447,13 @@ const ViewFeedingConsumption = () => {
                         </CardBody>
                     </Card>
                 </Col>
-                
+
                 <Col xl={3} md={6}>
                     <Card className="card-animate">
                         <CardBody>
                             <div className="d-flex align-items-center">
                                 <div className="flex-grow-1">
-                                    <p className="text-uppercase fw-medium text-muted mb-0">Costo Total</p>
+                                    <p className="text-uppercase fw-medium text-muted mb-0">{t('feeding.consumption.kpi.totalCost')}</p>
                                     <h4 className="fs-22 fw-semibold mb-0">
                                         <span className="counter-value">{formatCurrency(totalCost)}</span>
                                     </h4>
@@ -493,13 +467,15 @@ const ViewFeedingConsumption = () => {
                         </CardBody>
                     </Card>
                 </Col>
-                
+
                 <Col xl={3} md={6}>
                     <Card className="card-animate">
                         <CardBody>
                             <div className="d-flex align-items-center">
                                 <div className="flex-grow-1">
-                                    <p className="text-uppercase fw-medium text-muted mb-0">Promedio por {viewMode === 'litters' ? 'Lechón' : 'Cerdo'}</p>
+                                    <p className="text-uppercase fw-medium text-muted mb-0">
+                                        {viewMode === 'litters' ? t('feeding.consumption.kpi.avgPerPiglet') : t('feeding.consumption.kpi.avgPerPig')}
+                                    </p>
                                     <h4 className="fs-22 fw-semibold mb-0">
                                         <span className="counter-value">{formatNumber(avgKgPerPig)} Kg</span>
                                     </h4>
@@ -513,13 +489,15 @@ const ViewFeedingConsumption = () => {
                         </CardBody>
                     </Card>
                 </Col>
-                
+
                 <Col xl={3} md={6}>
                     <Card className="card-animate">
                         <CardBody>
                             <div className="d-flex align-items-center">
                                 <div className="flex-grow-1">
-                                    <p className="text-uppercase fw-medium text-muted mb-0">Total {viewMode === 'litters' ? 'Lechones' : 'Cerdos'}</p>
+                                    <p className="text-uppercase fw-medium text-muted mb-0">
+                                        {viewMode === 'litters' ? t('feeding.consumption.kpi.totalPiglets') : t('feeding.consumption.kpi.totalPigs')}
+                                    </p>
                                     <h4 className="fs-22 fw-semibold mb-0">
                                         <span className="counter-value">{formatNumber(totalPigs)}</span>
                                     </h4>
@@ -540,20 +518,16 @@ const ViewFeedingConsumption = () => {
     const renderProductsTable = () => {
         if (!consumptionData) return null;
 
-        let products: any[] = [];
-        
-        if (viewMode === 'farm') {
-            products = consumptionData.consumptionByProduct || [];
-        } else {
-            products = consumptionData.consolidatedProducts || [];
-        }
+        const products: any[] = viewMode === 'farm'
+            ? consumptionData.consumptionByProduct || []
+            : consumptionData.consolidatedProducts || [];
 
         if (products.length === 0) return null;
 
         const columns: Column<any>[] = [
-            { 
-                header: 'Producto', 
-                accessor: 'productName', 
+            {
+                header: t('feeding.consumption.table.column.product'),
+                accessor: 'productName',
                 type: 'text',
                 render: (_, row) => (
                     <div>
@@ -564,38 +538,30 @@ const ViewFeedingConsumption = () => {
                     </div>
                 )
             },
-            { 
-                header: 'Cantidad (Kg)', 
-                accessor: 'totalKg', 
+            {
+                header: t('feeding.consumption.table.column.quantityKg'),
+                accessor: 'totalKg',
                 type: 'number',
                 bgColor: '#e3f2fd',
-                render: (_, row) => (
-                    <span className="fw-medium">
-                        {formatNumber(row.totalKg)}
-                    </span>
-                )
+                render: (_, row) => <span className="fw-medium">{formatNumber(row.totalKg)}</span>
             },
-            { 
-                header: 'Precio/Kg', 
-                accessor: 'avgPricePerKg', 
+            {
+                header: t('feeding.consumption.table.column.pricePerKg'),
+                accessor: 'avgPricePerKg',
                 type: 'number',
                 bgColor: '#f3e5f5',
                 render: (_, row) => formatCurrency(row.avgPricePerKg)
             },
-            { 
-                header: 'Costo Total', 
-                accessor: 'totalCost', 
+            {
+                header: t('feeding.consumption.table.column.totalCost'),
+                accessor: 'totalCost',
                 type: 'number',
                 bgColor: '#e8f5e9',
-                render: (_, row) => (
-                    <span className="fw-medium">
-                        {formatCurrency(row.totalCost)}
-                    </span>
-                )
+                render: (_, row) => <span className="fw-medium">{formatCurrency(row.totalCost)}</span>
             },
-            { 
-                header: '% del Total', 
-                accessor: 'percentage', 
+            {
+                header: t('feeding.consumption.table.column.percentTotal'),
+                accessor: 'percentage',
                 type: 'number',
                 render: (_, row) => `${formatNumber(row.percentage, 1)}%`
             }
@@ -606,7 +572,7 @@ const ViewFeedingConsumption = () => {
                 <CardHeader>
                     <h5 className="card-title mb-0">
                         <FiBarChart2 className="me-2" />
-                        Consumo por Producto
+                        {t('feeding.consumption.table.byProduct')}
                     </h5>
                 </CardHeader>
                 <CardBody>
@@ -626,9 +592,9 @@ const ViewFeedingConsumption = () => {
         if (viewMode !== 'multiple' || !consumptionData?.groupsDetail) return null;
 
         const columns: Column<any>[] = [
-            { 
-                header: 'Grupo', 
-                accessor: 'groupCode', 
+            {
+                header: t('feeding.consumption.table.column.group'),
+                accessor: 'groupCode',
                 type: 'text',
                 render: (_, row) => (
                     <div>
@@ -637,9 +603,9 @@ const ViewFeedingConsumption = () => {
                     </div>
                 )
             },
-            { 
-                header: 'Etapa', 
-                accessor: 'stage', 
+            {
+                header: t('feeding.consumption.table.column.stage'),
+                accessor: 'stage',
                 type: 'text',
                 render: (_, row) => (
                     <Badge color={getStageColor(row.stage)}>
@@ -647,32 +613,28 @@ const ViewFeedingConsumption = () => {
                     </Badge>
                 )
             },
-            { 
-                header: 'Cerdos', 
-                accessor: 'pigCount', 
+            {
+                header: t('feeding.consumption.table.column.pigs'),
+                accessor: 'pigCount',
                 type: 'number'
             },
-            { 
-                header: 'Total Kg', 
-                accessor: 'totalKg', 
+            {
+                header: t('feeding.consumption.table.column.totalKg'),
+                accessor: 'totalKg',
                 type: 'number',
                 bgColor: '#e3f2fd',
-                render: (_, row) => (
-                    <span className="fw-medium">
-                        {formatNumber(row.totalKg)}
-                    </span>
-                )
+                render: (_, row) => <span className="fw-medium">{formatNumber(row.totalKg)}</span>
             },
-            { 
-                header: 'Costo Total', 
-                accessor: 'totalCost', 
+            {
+                header: t('feeding.consumption.table.column.totalCost'),
+                accessor: 'totalCost',
                 type: 'number',
                 bgColor: '#e8f5e9',
                 render: (_, row) => formatCurrency(row.totalCost)
             },
-            { 
-                header: 'Kg/Cerdo', 
-                accessor: 'avgKgPerPig', 
+            {
+                header: t('feeding.consumption.table.column.kgPerPig'),
+                accessor: 'avgKgPerPig',
                 type: 'number',
                 render: (_, row) => formatNumber(row.avgKgPerPig)
             }
@@ -683,7 +645,7 @@ const ViewFeedingConsumption = () => {
                 <CardHeader>
                     <h5 className="card-title mb-0">
                         <FiUsers className="me-2" />
-                        Detalle por Grupo
+                        {t('feeding.consumption.table.byGroup')}
                     </h5>
                 </CardHeader>
                 <CardBody>
@@ -703,43 +665,39 @@ const ViewFeedingConsumption = () => {
         if (viewMode !== 'farm' || !consumptionData?.consumptionByStage) return null;
 
         const columns: Column<any>[] = [
-            { 
-                header: 'Etapa', 
-                accessor: 'stage', 
+            {
+                header: t('feeding.consumption.table.column.stage'),
+                accessor: 'stage',
                 type: 'text',
                 render: (_, row) => getStageName(row.stage)
             },
-            { 
-                header: 'Grupos', 
-                accessor: 'groupCount', 
+            {
+                header: t('feeding.consumption.table.column.groups'),
+                accessor: 'groupCount',
                 type: 'number'
             },
-            { 
-                header: 'Cerdos', 
-                accessor: 'pigCount', 
+            {
+                header: t('feeding.consumption.table.column.pigs'),
+                accessor: 'pigCount',
                 type: 'number'
             },
-            { 
-                header: 'Total Kg', 
-                accessor: 'totalKg', 
+            {
+                header: t('feeding.consumption.table.column.totalKg'),
+                accessor: 'totalKg',
                 type: 'number',
                 bgColor: '#e3f2fd',
-                render: (_, row) => (
-                    <span className="fw-medium">
-                        {formatNumber(row.totalKg)}
-                    </span>
-                )
+                render: (_, row) => <span className="fw-medium">{formatNumber(row.totalKg)}</span>
             },
-            { 
-                header: 'Costo Total', 
-                accessor: 'totalCost', 
+            {
+                header: t('feeding.consumption.table.column.totalCost'),
+                accessor: 'totalCost',
                 type: 'number',
                 bgColor: '#e8f5e9',
                 render: (_, row) => formatCurrency(row.totalCost)
             },
-            { 
-                header: '% del Total', 
-                accessor: 'percentage', 
+            {
+                header: t('feeding.consumption.table.column.percentTotal'),
+                accessor: 'percentage',
                 type: 'number',
                 render: (_, row) => `${formatNumber(row.percentage, 1)}%`
             }
@@ -750,7 +708,7 @@ const ViewFeedingConsumption = () => {
                 <CardHeader>
                     <h5 className="card-title mb-0">
                         <FiPieChart className="me-2" />
-                        Consumo por Etapa
+                        {t('feeding.consumption.table.byStage')}
                     </h5>
                 </CardHeader>
                 <CardBody>
@@ -769,9 +727,9 @@ const ViewFeedingConsumption = () => {
         if (viewMode !== 'farm' || !consumptionData?.topConsumingGroups || consumptionData.topConsumingGroups.length === 0) return null;
 
         const columns: Column<any>[] = [
-            { 
-                header: 'Grupo', 
-                accessor: 'groupCode', 
+            {
+                header: t('feeding.consumption.table.column.group'),
+                accessor: 'groupCode',
                 type: 'text',
                 render: (_, row) => (
                     <div>
@@ -780,9 +738,9 @@ const ViewFeedingConsumption = () => {
                     </div>
                 )
             },
-            { 
-                header: 'Etapa', 
-                accessor: 'stage', 
+            {
+                header: t('feeding.consumption.table.column.stage'),
+                accessor: 'stage',
                 type: 'text',
                 render: (_, row) => (
                     <Badge color={getStageColor(row.stage)}>
@@ -790,9 +748,9 @@ const ViewFeedingConsumption = () => {
                     </Badge>
                 )
             },
-            { 
-                header: 'Estado', 
-                accessor: 'status', 
+            {
+                header: t('feeding.consumption.table.column.status'),
+                accessor: 'status',
                 type: 'text',
                 render: (_, row) => {
                     const statusColors: any = {
@@ -800,44 +758,35 @@ const ViewFeedingConsumption = () => {
                         'sold': 'secondary',
                         'inactive': 'warning'
                     };
-                    const statusNames: any = {
-                        'active': 'Activo',
-                        'sold': 'Vendido',
-                        'inactive': 'Inactivo'
-                    };
                     return (
                         <Badge color={statusColors[row.status] || 'secondary'}>
-                            {statusNames[row.status] || row.status}
+                            {t(`feeding.consumption.status.${row.status}`, { defaultValue: row.status })}
                         </Badge>
                     );
                 }
             },
-            { 
-                header: 'Cerdos', 
-                accessor: 'pigCount', 
+            {
+                header: t('feeding.consumption.table.column.pigs'),
+                accessor: 'pigCount',
                 type: 'number'
             },
-            { 
-                header: 'Total Kg', 
-                accessor: 'totalKg', 
+            {
+                header: t('feeding.consumption.table.column.totalKg'),
+                accessor: 'totalKg',
                 type: 'number',
                 bgColor: '#e3f2fd',
-                render: (_, row) => (
-                    <span className="fw-medium">
-                        {formatNumber(row.totalKg)}
-                    </span>
-                )
+                render: (_, row) => <span className="fw-medium">{formatNumber(row.totalKg)}</span>
             },
-            { 
-                header: 'Costo Total', 
-                accessor: 'totalCost', 
+            {
+                header: t('feeding.consumption.table.column.totalCost'),
+                accessor: 'totalCost',
                 type: 'number',
                 bgColor: '#e8f5e9',
                 render: (_, row) => formatCurrency(row.totalCost)
             },
-            { 
-                header: 'Kg/Cerdo', 
-                accessor: 'avgKgPerPig', 
+            {
+                header: t('feeding.consumption.table.column.kgPerPig'),
+                accessor: 'avgKgPerPig',
                 type: 'number',
                 render: (_, row) => formatNumber(row.totalKg / row.pigCount)
             }
@@ -848,7 +797,7 @@ const ViewFeedingConsumption = () => {
                 <CardHeader>
                     <h5 className="card-title mb-0">
                         <FiTrendingUp className="me-2" />
-                        Top Grupos Consumidores
+                        {t('feeding.consumption.table.topGroups')}
                     </h5>
                 </CardHeader>
                 <CardBody>
@@ -874,32 +823,32 @@ const ViewFeedingConsumption = () => {
                 <CardHeader>
                     <h5 className="card-title mb-0">
                         <FiTrendingUp className="me-2" />
-                        Métricas de Eficiencia
+                        {t('feeding.consumption.table.efficiencyMetrics')}
                     </h5>
                 </CardHeader>
                 <CardBody>
                     <Row>
                         <Col md={6} lg={3}>
                             <div className="text-center p-3 border rounded">
-                                <p className="text-muted mb-2">FCR (Conversión)</p>
+                                <p className="text-muted mb-2">{t('feeding.consumption.table.column.fcr')}</p>
                                 <h4 className="mb-0">{formatNumber(efficiency.fcr)}</h4>
                             </div>
                         </Col>
                         <Col md={6} lg={3}>
                             <div className="text-center p-3 border rounded">
-                                <p className="text-muted mb-2">Costo/Kg Ganancia</p>
+                                <p className="text-muted mb-2">{t('feeding.consumption.table.column.costPerKgGain')}</p>
                                 <h4 className="mb-0">{formatCurrency(efficiency.feedCostPerKgGain)}</h4>
                             </div>
                         </Col>
                         <Col md={6} lg={3}>
                             <div className="text-center p-3 border rounded">
-                                <p className="text-muted mb-2">Ganancia Total (Kg)</p>
+                                <p className="text-muted mb-2">{t('feeding.consumption.table.column.totalGain')}</p>
                                 <h4 className="mb-0">{formatNumber(efficiency.totalWeightGain)}</h4>
                             </div>
                         </Col>
                         <Col md={6} lg={3}>
                             <div className="text-center p-3 border rounded">
-                                <p className="text-muted mb-2">Alimento Estimado (Kg)</p>
+                                <p className="text-muted mb-2">{t('feeding.consumption.table.column.estimatedFeed')}</p>
                                 <h4 className="mb-0">{formatNumber(efficiency.estimatedFeedKg)}</h4>
                             </div>
                         </Col>
@@ -913,9 +862,9 @@ const ViewFeedingConsumption = () => {
         if (viewMode !== 'litters' || !consumptionData?.littersDetail || consumptionData.littersDetail.length === 0) return null;
 
         const columns: Column<any>[] = [
-            { 
-                header: 'Camada', 
-                accessor: 'litterCode', 
+            {
+                header: t('feeding.consumption.table.column.litter'),
+                accessor: 'litterCode',
                 type: 'text',
                 render: (_, row) => (
                     <div>
@@ -924,46 +873,42 @@ const ViewFeedingConsumption = () => {
                     </div>
                 )
             },
-            { 
-                header: 'Estado', 
-                accessor: 'status', 
+            {
+                header: t('feeding.consumption.table.column.status'),
+                accessor: 'status',
                 type: 'text',
                 render: (_, row) => {
                     const statusColors: any = {
                         'active': 'success',
                         'ready_to_wean': 'warning'
                     };
-                    const statusNames: any = {
-                        'active': 'Activa',
-                        'ready_to_wean': 'Lista para Destete'
-                    };
                     return (
                         <Badge color={statusColors[row.status] || 'secondary'}>
-                            {statusNames[row.status] || row.status}
+                            {t(`feeding.consumption.status.${row.status === 'active' ? 'litterActive' : 'litterReady'}`, { defaultValue: row.status })}
                         </Badge>
                     );
                 }
             },
-            { 
-                header: 'Lechones', 
-                accessor: 'pigCount', 
+            {
+                header: t('feeding.consumption.table.column.piglets'),
+                accessor: 'pigCount',
                 type: 'number'
             },
-            { 
-                header: 'Total Kg', 
-                accessor: 'totalKg', 
+            {
+                header: t('feeding.consumption.table.column.totalKg'),
+                accessor: 'totalKg',
                 type: 'number',
                 bgColor: "#e3f2fd"
             },
-            { 
-                header: 'Costo Total', 
-                accessor: 'totalCost', 
+            {
+                header: t('feeding.consumption.table.column.totalCost'),
+                accessor: 'totalCost',
                 type: 'currency',
                 bgColor: "#f3e5f5"
             },
-            { 
-                header: 'Kg/Lechón', 
-                accessor: 'avgKgPerPig', 
+            {
+                header: t('feeding.consumption.table.column.kgPerPiglet'),
+                accessor: 'avgKgPerPig',
                 type: 'number',
                 bgColor: "#e8f5e9"
             }
@@ -974,7 +919,7 @@ const ViewFeedingConsumption = () => {
                 <CardHeader>
                     <h5 className="card-title mb-0">
                         <FiPackage className="me-2" />
-                        Desglose por Camadas
+                        {t('feeding.consumption.table.byLitter')}
                     </h5>
                 </CardHeader>
                 <CardBody>
@@ -994,12 +939,14 @@ const ViewFeedingConsumption = () => {
         return <LoadingAnimation />;
     }
 
+    const kgLabel = t('feeding.consumption.chart.kg');
+
     return (
         <>
             <div className="page-content">
                 <Container fluid>
-                    <BreadCrumb title="Consumo de Alimentos" pageTitle="Alimentación" />
-                    
+                    <BreadCrumb title={t('feeding.consumption.pageTitle')} pageTitle={t('menu.feeding')} />
+
                     {alertConfig.visible && (
                         <Alert color={alertConfig.color} toggle={() => setAlertConfig({ ...alertConfig, visible: false })}>
                             {alertConfig.message}
@@ -1013,20 +960,20 @@ const ViewFeedingConsumption = () => {
                                     <div>
                                         <h5 className="card-title mb-1">
                                             <FiFilter className="me-2" />
-                                            Filtros de Visualización
+                                            {t('feeding.consumption.filter.title')}
                                         </h5>
-                                        <p className="text-muted mb-0 small">Configura cómo deseas ver los datos</p>
+                                        <p className="text-muted mb-0 small">{t('feeding.consumption.filter.subtitle')}</p>
                                     </div>
                                 </Col>
                                 <Col md={6} lg={4}>
                                     <FormGroup className="mb-0">
-                                        <Label className="form-label small fw-medium text-muted">Rango de Fechas</Label>
+                                        <Label className="form-label small fw-medium text-muted">{t('feeding.consumption.filter.dateRange')}</Label>
                                         <div className="position-relative">
                                             <Button
                                                 color="white"
                                                 className="w-100 text-start d-flex align-items-center justify-content-between shadow-sm border-0"
                                                 onClick={() => setDateModalOpen(true)}
-                                                style={{ 
+                                                style={{
                                                     backgroundColor: '#f8f9fa',
                                                     padding: '0.6rem 1rem',
                                                     fontSize: '0.875rem',
@@ -1048,59 +995,59 @@ const ViewFeedingConsumption = () => {
                                 </Col>
                                 <Col md={6} lg={4}>
                                     <FormGroup className="mb-0">
-                                        <Label className="form-label small fw-medium text-muted">Modo de Vista</Label>
+                                        <Label className="form-label small fw-medium text-muted">{t('feeding.consumption.viewMode.label')}</Label>
                                         <div className="d-flex bg-light rounded p-1" style={{ minHeight: '42px' }}>
                                             <Button
                                                 color="transparent"
                                                 className={`flex-fill rounded border-0 ${viewMode === 'farm' ? 'bg-white shadow-sm' : ''}`}
                                                 onClick={() => handleViewModeChange('farm')}
-                                                style={{ 
+                                                style={{
                                                     fontSize: '0.875rem',
                                                     fontWeight: viewMode === 'farm' ? '600' : '400',
                                                     color: viewMode === 'farm' ? '#0f6efd' : '#6c757d'
                                                 }}
                                             >
-                                                General
+                                                {t('feeding.consumption.viewMode.general')}
                                             </Button>
                                             <Button
                                                 color="transparent"
                                                 className={`flex-fill rounded border-0 ${viewMode === 'multiple' ? 'bg-white shadow-sm' : ''}`}
                                                 onClick={() => handleViewModeChange('multiple')}
-                                                style={{ 
+                                                style={{
                                                     fontSize: '0.875rem',
                                                     fontWeight: viewMode === 'multiple' ? '600' : '400',
                                                     color: viewMode === 'multiple' ? '#0f6efd' : '#6c757d'
                                                 }}
                                             >
-                                                Grupos
+                                                {t('feeding.consumption.viewMode.groups')}
                                             </Button>
                                             <Button
                                                 color="transparent"
                                                 className={`flex-fill rounded border-0 ${viewMode === 'litters' ? 'bg-white shadow-sm' : ''}`}
                                                 onClick={() => handleViewModeChange('litters')}
-                                                style={{ 
+                                                style={{
                                                     fontSize: '0.875rem',
                                                     fontWeight: viewMode === 'litters' ? '600' : '400',
                                                     color: viewMode === 'litters' ? '#0f6efd' : '#6c757d'
                                                 }}
                                             >
-                                                Camadas
+                                                {t('feeding.consumption.viewMode.litters')}
                                             </Button>
                                         </div>
                                     </FormGroup>
                                 </Col>
                             </Row>
                         </CardHeader>
-                        
+
                         {viewMode === 'multiple' && (
                             <CardBody className="border-top">
                                 <FormGroup className="mb-0">
-                                    <Label className="form-label fw-medium">Selección de Grupos</Label>
+                                    <Label className="form-label fw-medium">{t('feeding.consumption.filter.selectGroups')}</Label>
                                     <Button
                                         color="white"
                                         className="w-100 text-start d-flex align-items-center justify-content-between shadow-sm border-0"
                                         onClick={handleGroupModalOpen}
-                                        style={{ 
+                                        style={{
                                             backgroundColor: '#f8f9fa',
                                             padding: '0.6rem 1rem',
                                             fontSize: '0.875rem',
@@ -1124,12 +1071,12 @@ const ViewFeedingConsumption = () => {
                         {viewMode === 'litters' && (
                             <CardBody className="border-top">
                                 <FormGroup className="mb-0">
-                                    <Label className="form-label fw-medium">Selección de Camadas</Label>
+                                    <Label className="form-label fw-medium">{t('feeding.consumption.filter.selectLitters')}</Label>
                                     <Button
                                         color="white"
                                         className="w-100 text-start d-flex align-items-center justify-content-between shadow-sm border-0"
                                         onClick={handleLitterModalOpen}
-                                        style={{ 
+                                        style={{
                                             backgroundColor: '#f8f9fa',
                                             padding: '0.6rem 1rem',
                                             fontSize: '0.875rem',
@@ -1160,7 +1107,7 @@ const ViewFeedingConsumption = () => {
                             <Row className="mb-3">
                                 <Col xl={6}>
                                     <BasicPieChart
-                                        title="Distribución por Producto"
+                                        title={t('feeding.consumption.chart.byProduct')}
                                         data={prepareProductChartData()}
                                         height={400}
                                     />
@@ -1168,20 +1115,20 @@ const ViewFeedingConsumption = () => {
                                 <Col xl={6}>
                                     {viewMode === 'farm' ? (
                                         <BasicBarChart
-                                            title="Consumo por Etapa"
+                                            title={t('feeding.consumption.chart.byStage')}
                                             data={prepareStageChartData()}
                                             indexBy="stage"
-                                            keys={['Kg']}
-                                            xLegend="Etapa"
-                                            yLegend="Kilogramos (Kg)"
+                                            keys={[kgLabel]}
+                                            xLegend={t('common.field.stage')}
+                                            yLegend={t('feeding.consumption.chart.consumptionUnit')}
                                             height={400}
                                         />
                                     ) : (
                                         <BasicLineChartCard
-                                            title="Evolución del Consumo"
+                                            title={t('feeding.consumption.chart.evolution')}
                                             data={prepareTimelineChartData()}
-                                            yLabel="Kilogramos (Kg)"
-                                            xLabel="Fecha"
+                                            yLabel={t('feeding.consumption.chart.consumptionUnit')}
+                                            xLabel={t('common.field.date')}
                                             height={400}
                                             enableArea={true}
                                             areaOpacity={0.2}
@@ -1194,10 +1141,10 @@ const ViewFeedingConsumption = () => {
                                 <Row className="mb-3">
                                     <Col xl={12}>
                                         <BasicLineChartCard
-                                            title="Tendencia Mensual de Consumo"
+                                            title={t('feeding.consumption.chart.monthlyTrend')}
                                             data={prepareTimelineChartData()}
-                                            yLabel="Kilogramos (Kg)"
-                                            xLabel="Mes"
+                                            yLabel={t('feeding.consumption.chart.consumptionUnit')}
+                                            xLabel={t('feeding.consumption.chart.month')}
                                             height={350}
                                             enableArea={true}
                                             areaOpacity={0.2}
@@ -1209,46 +1156,36 @@ const ViewFeedingConsumption = () => {
                             {renderEfficiencyMetrics()}
 
                             <Row className="mb-3">
-                                <Col xl={12}>
-                                    {renderProductsTable()}
-                                </Col>
+                                <Col xl={12}>{renderProductsTable()}</Col>
                             </Row>
 
                             <Row className="mb-3">
-                                <Col xl={12}>
-                                    {renderStageConsumption()}
-                                </Col>
+                                <Col xl={12}>{renderStageConsumption()}</Col>
                             </Row>
 
                             <Row className="mb-3">
-                                <Col xl={12}>
-                                    {renderTopConsumingGroups()}
-                                </Col>
+                                <Col xl={12}>{renderTopConsumingGroups()}</Col>
                             </Row>
 
                             <Row className="mb-3">
-                                <Col xl={12}>
-                                    {renderGroupsDetailTable()}
-                                </Col>
+                                <Col xl={12}>{renderGroupsDetailTable()}</Col>
                             </Row>
 
                             <Row className="mb-3">
-                                <Col xl={12}>
-                                    {renderLittersDetail()}
-                                </Col>
+                                <Col xl={12}>{renderLittersDetail()}</Col>
                             </Row>
                         </>
                     ) : (
                         <Card>
                             <CardBody className="text-center py-5">
                                 <FiPackage size={48} className="text-muted mb-3" />
-                                <h5 className="text-muted">No hay datos disponibles</h5>
+                                <h5 className="text-muted">{t('feeding.consumption.empty.title')}</h5>
                                 <p className="text-muted">
                                     {viewMode !== 'farm' && ((viewMode === 'multiple' && selectedGroups.length === 0) || (viewMode === 'litters' && selectedLitters.length === 0))
-                                        ? viewMode === 'litters' 
-                                            ? 'Selecciona una o más camadas para ver los datos de consumo'
-                                            : 'Selecciona uno o más grupos para ver los datos de consumo'
-                                        : 'Ajusta los filtros para ver los datos de consumo'}
+                                        ? viewMode === 'litters'
+                                            ? t('feeding.consumption.empty.selectLitters')
+                                            : t('feeding.consumption.empty.selectGroups')
+                                        : t('feeding.consumption.empty.adjustFilters')}
                                 </p>
                             </CardBody>
                         </Card>
@@ -1257,49 +1194,52 @@ const ViewFeedingConsumption = () => {
                     <Modal isOpen={dateModalOpen} toggle={() => setDateModalOpen(false)} centered>
                         <ModalHeader toggle={() => setDateModalOpen(false)}>
                             <FiCalendar className="me-2" />
-                            Seleccionar Rango de Fechas
+                            {t('feeding.consumption.modal.dateRange')}
                         </ModalHeader>
                         <ReportDateRangeSelector
                             onGenerate={handleDateRangeSelect}
                             onCancel={() => setDateModalOpen(false)}
-                            generateButtonText="Aplicar Filtro"
+                            generateButtonText={t('feeding.consumption.modal.applyFilter')}
                         />
                     </Modal>
 
                     <Modal isOpen={groupModalOpen} toggle={handleGroupModalCancel} size="lg" centered>
                         <ModalHeader toggle={handleGroupModalCancel}>
                             <FiUsers className="me-2" />
-                            Seleccionar Grupos
+                            {t('feeding.consumption.modal.selectGroups')}
                         </ModalHeader>
                         <ModalBody style={{ maxHeight: '500px' }}>
                             <div className="d-flex justify-content-between align-items-center mb-3">
                                 <h6 className="mb-0">
-                                    {tempSelectedGroups.length} de {availableGroups.length} grupos seleccionados
+                                    {t('feeding.consumption.modal.selectionSummaryGroups', {
+                                        selected: tempSelectedGroups.length,
+                                        total: availableGroups.length
+                                    })}
                                 </h6>
                                 <div className="d-flex gap-2">
-                                    <Button 
-                                        size="sm" 
+                                    <Button
+                                        size="sm"
                                         color="outline-primary"
                                         onClick={handleSelectAllGroups}
                                         disabled={tempSelectedGroups.length === availableGroups.length}
                                     >
-                                        Seleccionar Todo
+                                        {t('feeding.consumption.modal.selectAll')}
                                     </Button>
-                                    <Button 
-                                        size="sm" 
+                                    <Button
+                                        size="sm"
                                         color="outline-secondary"
                                         onClick={handleDeselectAllGroups}
                                         disabled={tempSelectedGroups.length === 0}
                                     >
-                                        Deseleccionar Todo
+                                        {t('feeding.consumption.modal.deselectAll')}
                                     </Button>
                                 </div>
                             </div>
                             <SelectableCustomTable
                                 columns={[
-                                    { 
-                                        header: 'Grupo', 
-                                        accessor: 'value', 
+                                    {
+                                        header: t('feeding.consumption.modal.column.group'),
+                                        accessor: 'value',
                                         type: 'text',
                                         render: (_, row) => (
                                             <div>
@@ -1308,9 +1248,9 @@ const ViewFeedingConsumption = () => {
                                             </div>
                                         )
                                     },
-                                    { 
-                                        header: 'Etapa', 
-                                        accessor: 'value', 
+                                    {
+                                        header: t('feeding.consumption.modal.column.stage'),
+                                        accessor: 'value',
                                         type: 'text',
                                         render: (_, row) => (
                                             <Badge color={getStageColor(row.stage)} className="badge-soft">
@@ -1318,15 +1258,15 @@ const ViewFeedingConsumption = () => {
                                             </Badge>
                                         )
                                     },
-                                    { 
-                                        header: 'Cerdos', 
-                                        accessor: 'value', 
+                                    {
+                                        header: t('feeding.consumption.modal.column.pigs'),
+                                        accessor: 'value',
                                         type: 'number',
                                         render: (_, row) => row.pigCount
                                     },
-                                    { 
-                                        header: 'Estado', 
-                                        accessor: 'value', 
+                                    {
+                                        header: t('feeding.consumption.modal.column.status'),
+                                        accessor: 'value',
                                         type: 'text',
                                         render: (_, row) => {
                                             const statusColors: any = {
@@ -1334,15 +1274,10 @@ const ViewFeedingConsumption = () => {
                                                 'sold': 'secondary',
                                                 'inactive': 'warning'
                                             };
-                                            const statusNames: any = {
-                                                'active': 'Activo',
-                                                'sold': 'Vendido',
-                                                'inactive': 'Inactivo'
-                                            };
                                             const status = row.status || 'active';
                                             return (
                                                 <Badge color={statusColors[status] || 'secondary'}>
-                                                    {statusNames[status] || status}
+                                                    {t(`feeding.consumption.status.${status}`, { defaultValue: status })}
                                                 </Badge>
                                             );
                                         }
@@ -1359,14 +1294,14 @@ const ViewFeedingConsumption = () => {
                         </ModalBody>
                         <ModalFooter>
                             <Button color="secondary" onClick={handleGroupModalCancel}>
-                                Cancelar
+                                {t('feeding.consumption.modal.cancel')}
                             </Button>
-                            <Button 
-                                color="primary" 
+                            <Button
+                                color="primary"
                                 onClick={handleGroupModalConfirm}
                                 disabled={tempSelectedGroups.length === 0}
                             >
-                                Aceptar ({tempSelectedGroups.length})
+                                {t('feeding.consumption.modal.accept', { count: tempSelectedGroups.length })}
                             </Button>
                         </ModalFooter>
                     </Modal>
@@ -1374,37 +1309,40 @@ const ViewFeedingConsumption = () => {
                     <Modal isOpen={litterModalOpen} toggle={handleLitterModalCancel} size="lg" centered>
                         <ModalHeader toggle={handleLitterModalCancel}>
                             <FiPackage className="me-2" />
-                            Seleccionar Camadas
+                            {t('feeding.consumption.modal.selectLitters')}
                         </ModalHeader>
                         <ModalBody style={{ maxHeight: '500px' }}>
                             <div className="d-flex justify-content-between align-items-center mb-3">
                                 <h6 className="mb-0">
-                                    {tempSelectedLitters.length} de {availableLitters.length} camadas seleccionadas
+                                    {t('feeding.consumption.modal.selectionSummaryLitters', {
+                                        selected: tempSelectedLitters.length,
+                                        total: availableLitters.length
+                                    })}
                                 </h6>
                                 <div className="d-flex gap-2">
-                                    <Button 
-                                        size="sm" 
+                                    <Button
+                                        size="sm"
                                         color="outline-primary"
                                         onClick={handleSelectAllLitters}
                                         disabled={tempSelectedLitters.length === availableLitters.length}
                                     >
-                                        Seleccionar Todo
+                                        {t('feeding.consumption.modal.selectAll')}
                                     </Button>
-                                    <Button 
-                                        size="sm" 
+                                    <Button
+                                        size="sm"
                                         color="outline-secondary"
                                         onClick={handleDeselectAllLitters}
                                         disabled={tempSelectedLitters.length === 0}
                                     >
-                                        Deseleccionar Todo
+                                        {t('feeding.consumption.modal.deselectAll')}
                                     </Button>
                                 </div>
                             </div>
                             <SelectableCustomTable
                                 columns={[
-                                    { 
-                                        header: 'Camada', 
-                                        accessor: 'value', 
+                                    {
+                                        header: t('feeding.consumption.modal.column.litter'),
+                                        accessor: 'value',
                                         type: 'text',
                                         render: (_, row) => (
                                             <div>
@@ -1413,29 +1351,25 @@ const ViewFeedingConsumption = () => {
                                             </div>
                                         )
                                     },
-                                    { 
-                                        header: 'Estado', 
-                                        accessor: 'value', 
+                                    {
+                                        header: t('feeding.consumption.modal.column.status'),
+                                        accessor: 'value',
                                         type: 'text',
                                         render: (_, row) => {
                                             const statusColors: any = {
                                                 'active': 'success',
                                                 'ready_to_wean': 'warning'
                                             };
-                                            const statusNames: any = {
-                                                'active': 'Activa',
-                                                'ready_to_wean': 'Lista para Destete'
-                                            };
                                             return (
                                                 <Badge color={statusColors[row.status] || 'secondary'}>
-                                                    {statusNames[row.status] || row.status}
+                                                    {t(`feeding.consumption.status.${row.status === 'active' ? 'litterActive' : 'litterReady'}`, { defaultValue: row.status })}
                                                 </Badge>
                                             );
                                         }
                                     },
-                                    { 
-                                        header: 'Lechones', 
-                                        accessor: 'value', 
+                                    {
+                                        header: t('feeding.consumption.modal.column.piglets'),
+                                        accessor: 'value',
                                         type: 'number',
                                         render: (_, row) => row.pigCount
                                     }
@@ -1451,14 +1385,14 @@ const ViewFeedingConsumption = () => {
                         </ModalBody>
                         <ModalFooter>
                             <Button color="secondary" onClick={handleLitterModalCancel}>
-                                Cancelar
+                                {t('feeding.consumption.modal.cancel')}
                             </Button>
-                            <Button 
-                                color="primary" 
+                            <Button
+                                color="primary"
                                 onClick={handleLitterModalConfirm}
                                 disabled={tempSelectedLitters.length === 0}
                             >
-                                Aceptar ({tempSelectedLitters.length})
+                                {t('feeding.consumption.modal.accept', { count: tempSelectedLitters.length })}
                             </Button>
                         </ModalFooter>
                     </Modal>

@@ -2,17 +2,19 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import defaultProfileImage from '../../../assets/images/default-profile-mage.jpg';
 import { getLoggedinUser } from 'helpers/api_helper';
 import { stopImpersonation } from 'helpers/impersonation_helper';
-import { userRoles } from 'common/user_roles';
 import { disconnectNotificationSocket } from 'helpers/socketService';
 import { changeLayoutMode } from 'slices/layouts/thunk';
 import { LAYOUT_MODE_TYPES } from 'Components/constants/layout';
+import LanguageSelector from './LanguageDropdown';
 
 const ProfileDropdown = () => {
     const dispatch: any = useDispatch();
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const userLogged = getLoggedinUser();
     const layoutModeType = useSelector((state: any) => state.Layout.layoutModeType);
     const [isProfileDropdown, setIsProfileDropdown] = useState(false);
@@ -37,10 +39,7 @@ const ProfileDropdown = () => {
         navigate('/login');
     }
 
-    const roleLabels = userLogged.role.map((role: string) => {
-        const match = userRoles.find(r => r.value === role);
-        return match ? match.label : role;
-    });
+    const roleLabels = userLogged.role.map((role: string) => t(`roles.${role}`, { defaultValue: role }));
 
     return (
         <>
@@ -92,7 +91,7 @@ const ProfileDropdown = () => {
                             <DropdownItem className='p-0'>
                                 <Link to="/users/view_users" className="dropdown-item d-flex align-items-center py-2">
                                     <i className="ri-user-line fs-18 me-2 text-primary"></i>
-                                    <span>Usuarios</span>
+                                    <span>{t('profile.users')}</span>
                                 </Link>
                             </DropdownItem>
                         )}
@@ -101,7 +100,7 @@ const ProfileDropdown = () => {
                             <DropdownItem className='p-0'>
                                 <Link to="/configurations/global" className="dropdown-item d-flex align-items-center py-2">
                                     <i className="mdi mdi-cog-outline fs-18 me-2 text-primary"></i>
-                                    <span>Configuración</span>
+                                    <span>{t('profile.settings')}</span>
                                 </Link>
                             </DropdownItem>
                         )}
@@ -109,10 +108,14 @@ const ProfileDropdown = () => {
                             <DropdownItem className='p-0'>
                                 <Link to="/configurations/farm" className="dropdown-item d-flex align-items-center py-2">
                                     <i className="mdi mdi-cog-outline fs-18 me-2 text-primary"></i>
-                                    <span>Configuración</span>
+                                    <span>{t('profile.settings')}</span>
                                 </Link>
                             </DropdownItem>
                         )}
+                    </div>
+
+                    <div className="border-top py-1">
+                        <LanguageSelector />
                     </div>
 
                     <div className="border-top py-1">
@@ -124,7 +127,7 @@ const ProfileDropdown = () => {
                             >
                                 <div className="d-flex align-items-center">
                                     <i className={`${layoutModeType === LAYOUT_MODE_TYPES.DARKMODE ? 'ri-sun-line' : 'ri-moon-line'} fs-18 me-2 text-primary`}></i>
-                                    <span>{layoutModeType === LAYOUT_MODE_TYPES.DARKMODE ? 'Modo Claro' : 'Modo Oscuro'}</span>
+                                    <span>{layoutModeType === LAYOUT_MODE_TYPES.DARKMODE ? t('profile.lightMode') : t('profile.darkMode')}</span>
                                 </div>
                             </div>
                         </DropdownItem>
@@ -134,7 +137,7 @@ const ProfileDropdown = () => {
                         <DropdownItem className='p-0'>
                             <Link onClick={() => toggleModal('logout')} className="dropdown-item d-flex align-items-center py-2" to={''}>
                                 <i className="mdi mdi-logout fs-18 me-2 text-danger"></i>
-                                <span className="text-danger">Cerrar Sesión</span>
+                                <span className="text-danger">{t('auth.logout')}</span>
                             </Link>
                         </DropdownItem>
                     </div>
@@ -142,14 +145,14 @@ const ProfileDropdown = () => {
             </Dropdown>
 
             <Modal isOpen={modals.logout} toggle={() => toggleModal('logout')} size="md" keyboard={false} backdrop="static" centered>
-                <ModalHeader toggle={() => toggleModal('logout')}>Cerrar Sesión</ModalHeader>
+                <ModalHeader toggle={() => toggleModal('logout')}>{t('auth.logout')}</ModalHeader>
                 <ModalBody>
-                    {`¿Estás seguro de que desea cerrar sesión?`}
+                    {t('auth.logoutConfirm')}
                 </ModalBody>
                 <ModalFooter>
-                    <Button className="farm-secondary-button" onClick={() => toggleModal('logout', false)}>Cancelar</Button>
+                    <Button className="farm-secondary-button" onClick={() => toggleModal('logout', false)}>{t('common.button.cancel')}</Button>
                     <Button className="farm-primary-button" onClick={clicLogout}>
-                        Cerrar Sesión
+                        {t('auth.logout')}
                     </Button>
                 </ModalFooter>
             </Modal>

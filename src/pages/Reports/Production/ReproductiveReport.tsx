@@ -1,5 +1,6 @@
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardBody, CardHeader, Col, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
 import { useReportScope } from "hooks/useReportScope";
 import { buildReportUrl } from "helpers/reports_url_helper";
@@ -56,7 +57,8 @@ interface ReproductiveKpis {
 }
 
 const ReproductiveReport = () => {
-    document.title = "Rendimiento Reproductivo | Reportes";
+    const { t } = useTranslation();
+    document.title = `${t("reports.reproductive.title")} | ${t("reports.title")}`;
 
     const configContext = useContext(ConfigContext);
     const { isGlobal, farmId, scopeKey } = useReportScope();
@@ -105,7 +107,7 @@ const ReproductiveReport = () => {
             setBornData(data.bornAliveVsDead || []);
             setKpis(data.kpis);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar los datos del reporte." });
+            setAlertConfig({ visible: true, color: "danger", message: t("reports.error.loadData") });
         } finally {
             setLoading(false);
         }
@@ -133,11 +135,11 @@ const ReproductiveReport = () => {
 
     // Columns
     const effectivenessColumns: Column<InseminationEffectiveness>[] = [
-        { header: "Mes", accessor: "month", type: "text" },
-        { header: "Total", accessor: "total", type: "number" },
-        { header: "Exitosas", accessor: "successful", type: "number", bgColor: "#e8f5e9" },
+        { header: t("reports.col.month"), accessor: "month", type: "text" },
+        { header: t("reports.col.total"), accessor: "total", type: "number" },
+        { header: t("reports.reproductive.col.successful"), accessor: "successful", type: "number", bgColor: "#e8f5e9" },
         {
-            header: "Efectividad", accessor: "rate", type: "text", bgColor: "#fff8e1",
+            header: t("reports.reproductive.col.effectiveness"), accessor: "rate", type: "text", bgColor: "#fff8e1",
             render: (v: number) => (
                 <span className={`fw-semibold ${v >= 85 ? "text-success" : v >= 70 ? "text-warning" : "text-danger"}`}>
                     {v?.toFixed(1)}%
@@ -147,11 +149,11 @@ const ReproductiveReport = () => {
     ];
 
     const intervalColumns: Column<WeaningInterval>[] = [
-        { header: "Cerda", accessor: "sowIdentifier", type: "text", isFilterable: true },
-        { header: "Fecha Destete", accessor: "lastWeaningDate", type: "date" },
-        { header: "Fecha Celo", accessor: "heatDate", type: "date" },
+        { header: t("reports.col.sow"), accessor: "sowIdentifier", type: "text", isFilterable: true },
+        { header: t("reports.reproductive.col.weaningDate"), accessor: "lastWeaningDate", type: "date" },
+        { header: t("reports.reproductive.col.heatDate"), accessor: "heatDate", type: "date" },
         {
-            header: "Intervalo (dias)", accessor: "intervalDays", type: "number", bgColor: "#e3f2fd",
+            header: t("reports.reproductive.col.intervalDays"), accessor: "intervalDays", type: "number", bgColor: "#e3f2fd",
             render: (v: number) => (
                 <span className={`fw-semibold ${v <= 7 ? "text-success" : v <= 14 ? "text-warning" : "text-danger"}`}>
                     {v} dias
@@ -161,18 +163,18 @@ const ReproductiveReport = () => {
     ];
 
     const birthsPerSowColumns: Column<BirthsPerSow>[] = [
-        { header: "Cerda", accessor: "sowIdentifier", type: "text", isFilterable: true },
-        { header: "Total Partos", accessor: "totalBirths", type: "number" },
+        { header: t("reports.col.sow"), accessor: "sowIdentifier", type: "text", isFilterable: true },
+        { header: t("reports.reproductive.col.totalBirths"), accessor: "totalBirths", type: "number" },
         {
-            header: "Prom. Vivos", accessor: "avgBornAlive", type: "text", bgColor: "#e8f5e9",
+            header: t("reports.reproductive.col.avgAlive"), accessor: "avgBornAlive", type: "text", bgColor: "#e8f5e9",
             render: (v: number) => <span>{v?.toFixed(1)}</span>,
         },
         {
-            header: "Prom. Muertos", accessor: "avgBornDead", type: "text", bgColor: "#ffebee",
+            header: t("reports.reproductive.col.avgDead"), accessor: "avgBornDead", type: "text", bgColor: "#ffebee",
             render: (v: number) => <span>{v?.toFixed(1)}</span>,
         },
-        { header: "Total Nacidos Vivos", accessor: "totalBornAlive", type: "number" },
-        { header: "Total Destetados", accessor: "totalWeanedPiglets", type: "number", bgColor: "#e3f2fd" },
+        { header: t("reports.reproductive.col.totalAlive"), accessor: "totalBornAlive", type: "number" },
+        { header: t("reports.reproductive.col.totalWeaned"), accessor: "totalWeanedPiglets", type: "number", bgColor: "#e3f2fd" },
     ];
 
     // Charts
@@ -193,10 +195,10 @@ const ReproductiveReport = () => {
 
     return (
         <ReportPageLayout
-            title="Rendimiento Reproductivo"
-            pageTitle="Reportes de Produccion"
+            title={t("reports.reproductive.title")}
+            pageTitle={t("reports.production")}
             onGeneratePdf={handleGeneratePdf}
-            pdfTitle="Reporte - Rendimiento Reproductivo"
+            pdfTitle={t("reports.reproductive.pdfTitle")}
             startDate={startDate}
             endDate={endDate}
             onDateChange={(s, e) => { setStartDate(s); setEndDate(e); }}
@@ -205,7 +207,7 @@ const ReproductiveReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Efectividad Inseminacion"
+                        title={t("reports.reproductive.kpi.effectiveness")}
                         value={kpis.inseminationEffectiveness}
                         icon={<i className="ri-check-double-line fs-4 text-success"></i>}
                         animateValue
@@ -216,7 +218,7 @@ const ReproductiveReport = () => {
                 </Col>
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Intervalo Destete-Celo"
+                        title={t("reports.reproductive.kpi.weaningHeatInterval")}
                         value={kpis.avgWeaningHeatInterval}
                         icon={<i className="ri-timer-line fs-4 text-info"></i>}
                         animateValue
@@ -227,7 +229,7 @@ const ReproductiveReport = () => {
                 </Col>
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Partos / Cerda"
+                        title={t("reports.reproductive.kpi.birthsPerSow")}
                         value={kpis.avgBirthsPerSow}
                         icon={<i className="mdi mdi-baby-bottle-outline fs-4 text-primary"></i>}
                         animateValue
@@ -236,7 +238,7 @@ const ReproductiveReport = () => {
                 </Col>
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Destetados / Cerda"
+                        title={t("reports.reproductive.kpi.weanedPerSow")}
                         value={kpis.avgWeanedPerSow}
                         icon={<i className="mdi mdi-baby-carriage fs-4 text-warning"></i>}
                         animateValue
@@ -249,7 +251,7 @@ const ReproductiveReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Prom. Nacidos Vivos"
+                        title={t("reports.reproductive.kpi.avgBornAlive")}
                         value={kpis.avgBornAlivePerBirth}
                         icon={<i className="ri-heart-2-line fs-4 text-success"></i>}
                         animateValue
@@ -260,7 +262,7 @@ const ReproductiveReport = () => {
                 </Col>
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Prom. Nacidos Muertos"
+                        title={t("reports.reproductive.kpi.avgBornDead")}
                         value={kpis.avgBornDeadPerBirth}
                         icon={<i className="ri-close-circle-line fs-4 text-danger"></i>}
                         animateValue
@@ -271,7 +273,7 @@ const ReproductiveReport = () => {
                 </Col>
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Total Inseminaciones"
+                        title={t("reports.reproductive.kpi.totalInseminations")}
                         value={kpis.totalInseminations}
                         icon={<i className="ri-heart-pulse-line fs-4 text-primary"></i>}
                         animateValue
@@ -279,7 +281,7 @@ const ReproductiveReport = () => {
                 </Col>
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Total Partos"
+                        title={t("reports.reproductive.kpi.totalBirths")}
                         value={kpis.totalBirths}
                         icon={<i className="ri-calendar-check-line fs-4 text-info"></i>}
                         animateValue
@@ -292,10 +294,10 @@ const ReproductiveReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={6}>
                     <BasicLineChartCard
-                        title="Efectividad de Inseminacion por Mes"
+                        title={t("reports.reproductive.chart.effectivenessByMonth")}
                         data={effectivenessLineData}
-                        yLabel="Efectividad %"
-                        xLabel="Mes"
+                        yLabel={t("reports.reproductive.col.effectiveness")}
+                        xLabel={t("reports.axis.month")}
                         height={280}
                         color="#10b981"
                         enableArea
@@ -304,12 +306,12 @@ const ReproductiveReport = () => {
                 </Col>
                 <Col xl={6}>
                     <BasicBarChart
-                        title="Nacidos Vivos vs Muertos por Mes"
+                        title={t("reports.reproductive.chart.bornAliveVsDead")}
                         data={bornBarData}
                         indexBy="month"
                         keys={["Nacidos Vivos", "Nacidos Muertos", "Momificados"]}
-                        xLegend="Mes"
-                        yLegend="Cantidad"
+                        xLegend={t("reports.axis.month")}
+                        yLegend={t("reports.axis.quantity")}
                         height={280}
                         colors={["#10b981", "#ef4444", "#6b7280"]}
                     />
@@ -326,7 +328,7 @@ const ReproductiveReport = () => {
                                 onClick={() => setActiveTab("1")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-check-double-line me-1"></i> Efectividad Inseminacion
+                                <i className="ri-check-double-line me-1"></i> {t("reports.reproductive.tab.effectiveness")}
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -335,7 +337,7 @@ const ReproductiveReport = () => {
                                 onClick={() => setActiveTab("2")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-timer-line me-1"></i> Intervalo Destete-Celo
+                                <i className="ri-timer-line me-1"></i> {t("reports.reproductive.tab.interval")}
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -344,7 +346,7 @@ const ReproductiveReport = () => {
                                 onClick={() => setActiveTab("3")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="mdi mdi-baby-bottle-outline me-1"></i> Partos por Cerda
+                                <i className="mdi mdi-baby-bottle-outline me-1"></i> {t("reports.reproductive.tab.birthsPerSow")}
                             </NavLink>
                         </NavItem>
                     </Nav>

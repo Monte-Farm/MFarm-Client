@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button, Label, FormGroup, ModalBody, ModalFooter, Spinner } from "reactstrap";
 import DatePicker from "react-flatpickr";
 
@@ -9,20 +10,37 @@ interface ReportDateRangeSelectorProps {
     generateButtonText?: string;
 }
 
-const ReportDateRangeSelector: React.FC<ReportDateRangeSelectorProps> = ({ 
-    onGenerate, 
-    onCancel, 
+const ReportDateRangeSelector: React.FC<ReportDateRangeSelectorProps> = ({
+    onGenerate,
+    onCancel,
     loading = false,
-    generateButtonText = "Generar PDF"
+    generateButtonText,
 }) => {
+    const { t } = useTranslation();
     const [selectedPreset, setSelectedPreset] = useState<string>('');
     const [customStartDate, setCustomStartDate] = useState<string>('');
     const [customEndDate, setCustomEndDate] = useState<string>('');
 
+    const buttonText = generateButtonText ?? t("shared.dateRangeSelector.generatePdf");
+
+    type Week7 = [string, string, string, string, string, string, string];
+    type Month12 = [string, string, string, string, string, string, string, string, string, string, string, string];
+    const calendarLocale = {
+        firstDayOfWeek: 0 as const,
+        weekdays: {
+            shorthand: t("shared.dateRangeSelector.calendar.weekdaysShort", { returnObjects: true }) as Week7,
+            longhand: t("shared.dateRangeSelector.calendar.weekdaysLong", { returnObjects: true }) as Week7,
+        },
+        months: {
+            shorthand: t("shared.dateRangeSelector.calendar.monthsShort", { returnObjects: true }) as Month12,
+            longhand: t("shared.dateRangeSelector.calendar.monthsLong", { returnObjects: true }) as Month12,
+        },
+    };
+
     const getDateRange = (preset: string) => {
         const now = new Date();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        
+
         switch (preset) {
             case 'today':
                 return {
@@ -81,64 +99,33 @@ const ReportDateRangeSelector: React.FC<ReportDateRangeSelectorProps> = ({
         <>
             <ModalBody>
                 <div className="mb-4">
-                    <Label className="form-label fw-bold">Períodos rápidos</Label>
+                    <Label className="form-label fw-bold">{t("shared.dateRangeSelector.quickPeriods")}</Label>
                     <div className="d-grid gap-2">
-                        <Button
-                            color={selectedPreset === 'today' ? 'primary' : 'light'}
-                            onClick={() => {
-                                setSelectedPreset('today');
-                                setCustomStartDate('');
-                                setCustomEndDate('');
-                            }}
-                            className="text-start d-flex align-items-center border"
-                        >
-                            <i className={`ri-calendar-line me-2 fs-5 ${selectedPreset === 'today' ? 'text-white' : 'text-primary'}`}></i>
-                            <span className={selectedPreset === 'today' ? 'text-white' : ''}>Hoy</span>
-                        </Button>
-                        <Button
-                            color={selectedPreset === 'week' ? 'primary' : 'light'}
-                            onClick={() => {
-                                setSelectedPreset('week');
-                                setCustomStartDate('');
-                                setCustomEndDate('');
-                            }}
-                            className="text-start d-flex align-items-center border"
-                        >
-                            <i className={`ri-calendar-2-line me-2 fs-5 ${selectedPreset === 'week' ? 'text-white' : 'text-primary'}`}></i>
-                            <span className={selectedPreset === 'week' ? 'text-white' : ''}>Esta semana</span>
-                        </Button>
-                        <Button
-                            color={selectedPreset === 'month' ? 'primary' : 'light'}
-                            onClick={() => {
-                                setSelectedPreset('month');
-                                setCustomStartDate('');
-                                setCustomEndDate('');
-                            }}
-                            className="text-start d-flex align-items-center border"
-                        >
-                            <i className={`ri-calendar-check-line me-2 fs-5 ${selectedPreset === 'month' ? 'text-white' : 'text-primary'}`}></i>
-                            <span className={selectedPreset === 'month' ? 'text-white' : ''}>Este mes</span>
-                        </Button>
-                        <Button
-                            color={selectedPreset === 'year' ? 'primary' : 'light'}
-                            onClick={() => {
-                                setSelectedPreset('year');
-                                setCustomStartDate('');
-                                setCustomEndDate('');
-                            }}
-                            className="text-start d-flex align-items-center border"
-                        >
-                            <i className={`ri-calendar-event-line me-2 fs-5 ${selectedPreset === 'year' ? 'text-white' : 'text-primary'}`}></i>
-                            <span className={selectedPreset === 'year' ? 'text-white' : ''}>Este año</span>
-                        </Button>
+                        {(['today', 'week', 'month', 'year'] as const).map((preset) => (
+                            <Button
+                                key={preset}
+                                color={selectedPreset === preset ? 'primary' : 'light'}
+                                onClick={() => {
+                                    setSelectedPreset(preset);
+                                    setCustomStartDate('');
+                                    setCustomEndDate('');
+                                }}
+                                className="text-start d-flex align-items-center border"
+                            >
+                                <i className={`ri-calendar${preset === 'today' ? '-line' : preset === 'week' ? '-2-line' : preset === 'month' ? '-check-line' : '-event-line'} me-2 fs-5 ${selectedPreset === preset ? 'text-white' : 'text-primary'}`}></i>
+                                <span className={selectedPreset === preset ? 'text-white' : ''}>
+                                    {t(`shared.dateRangeSelector.${preset}`)}
+                                </span>
+                            </Button>
+                        ))}
                     </div>
                 </div>
 
                 <div className="mb-4">
-                    <Label className="form-label fw-bold">Rango personalizado</Label>
+                    <Label className="form-label fw-bold">{t("shared.dateRangeSelector.customRange")}</Label>
                     <div className="row g-3">
                         <div className="col-6">
-                            <Label for="startDate">Fecha inicio</Label>
+                            <Label for="startDate">{t("shared.dateRangeSelector.startDate")}</Label>
                             <DatePicker
                                 id="startDate"
                                 className="form-control w-100"
@@ -151,22 +138,12 @@ const ReportDateRangeSelector: React.FC<ReportDateRangeSelectorProps> = ({
                                 }}
                                 options={{
                                     dateFormat: "Y-m-d",
-                                    locale: {
-                                        firstDayOfWeek: 0,
-                                        weekdays: {
-                                            shorthand: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
-                                            longhand: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
-                                        },
-                                        months: {
-                                            shorthand: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
-                                            longhand: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
-                                        },
-                                    },
+                                    locale: calendarLocale,
                                 }}
                             />
                         </div>
                         <div className="col-6">
-                            <Label for="endDate">Fecha fin</Label>
+                            <Label for="endDate">{t("shared.dateRangeSelector.endDate")}</Label>
                             <DatePicker
                                 id="endDate"
                                 className="form-control w-100"
@@ -179,17 +156,7 @@ const ReportDateRangeSelector: React.FC<ReportDateRangeSelectorProps> = ({
                                 }}
                                 options={{
                                     dateFormat: "Y-m-d",
-                                    locale: {
-                                        firstDayOfWeek: 0,
-                                        weekdays: {
-                                            shorthand: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
-                                            longhand: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
-                                        },
-                                        months: {
-                                            shorthand: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
-                                            longhand: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
-                                        },
-                                    },
+                                    locale: calendarLocale,
                                 }}
                             />
                         </div>
@@ -198,22 +165,22 @@ const ReportDateRangeSelector: React.FC<ReportDateRangeSelectorProps> = ({
             </ModalBody>
             <ModalFooter>
                 <Button color="secondary" onClick={onCancel}>
-                    Cancelar
+                    {t("common.button.cancel")}
                 </Button>
-                <Button 
-                    color="primary" 
+                <Button
+                    color="primary"
                     onClick={handleGenerate}
                     disabled={loading || !isValid}
                 >
                     {loading ? (
                         <>
                             <Spinner className="me-2" size='sm' />
-                            Generando...
+                            {t("shared.dateRangeSelector.generating")}
                         </>
                     ) : (
                         <>
                             <i className="ri-file-pdf-line me-2"></i>
-                            {generateButtonText}
+                            {buttonText}
                         </>
                     )}
                 </Button>

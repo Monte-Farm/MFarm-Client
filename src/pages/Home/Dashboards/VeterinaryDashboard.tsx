@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Badge, Card, CardBody, CardHeader, Col, Row } from "reactstrap";
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
@@ -32,12 +33,8 @@ interface VeterinaryData {
 
 const causeColors = ["#ef4444", "#f59e0b", "#8b5cf6", "#3b82f6", "#10b981", "#ec4899", "#6b7280"];
 
-const treatmentLabels: Record<string, { label: string; color: string }> = {
-    medication: { label: "Medicacion", color: "info" },
-    vaccination: { label: "Vacunacion", color: "success" },
-};
-
 const VeterinaryDashboard: React.FC<Props> = ({ startDate, endDate }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState(false);
@@ -53,7 +50,7 @@ const VeterinaryDashboard: React.FC<Props> = ({ startDate, endDate }) => {
             );
             setData(res.data.data);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar el dashboard." });
+            setAlertConfig({ visible: true, color: "danger", message: t("dashboard.error") });
         } finally {
             setLoading(false);
         }
@@ -71,29 +68,29 @@ const VeterinaryDashboard: React.FC<Props> = ({ startDate, endDate }) => {
 
     const stageBarData = data.deathsByStage.map(s => ({
         stage: s.stageLabel,
-        "Muertes": s.deaths,
+        [t("dashboard.veterinary.chart.deathsLabel")]: s.deaths,
     }));
 
     const treatColumns: Column<Treatment>[] = [
-        { header: "Fecha", accessor: "date", type: "date" },
-        { header: "Grupo", accessor: "groupName", type: "text", isFilterable: true },
+        { header: t("dashboard.veterinary.table.date"), accessor: "date", type: "date" },
+        { header: t("dashboard.veterinary.table.group"), accessor: "groupName", type: "text", isFilterable: true },
         {
-            header: "Tipo", accessor: "treatmentType", type: "text",
+            header: t("dashboard.veterinary.table.type"), accessor: "treatmentType", type: "text",
             render: (v: string) => {
-                const t = treatmentLabels[v] || { label: v, color: "secondary" };
-                return <Badge color={t.color}>{t.label}</Badge>;
+                const color = v === "medication" ? "info" : v === "vaccination" ? "success" : "secondary";
+                return <Badge color={color}>{t(`dashboard.veterinary.treatmentType.${v}`, { defaultValue: v })}</Badge>;
             },
         },
-        { header: "Producto", accessor: "productName", type: "text" },
-        { header: "Cerdos", accessor: "pigCount", type: "number", bgColor: "#e3f2fd" },
+        { header: t("dashboard.veterinary.table.product"), accessor: "productName", type: "text" },
+        { header: t("dashboard.veterinary.table.pigs"), accessor: "pigCount", type: "number", bgColor: "#e3f2fd" },
     ];
 
     const feedColumns: Column<FeedByGroup>[] = [
-        { header: "Grupo", accessor: "groupName", type: "text" },
-        { header: "Etapa", accessor: "stage", type: "text" },
-        { header: "Cerdos", accessor: "pigCount", type: "number" },
+        { header: t("dashboard.veterinary.table.group"), accessor: "groupName", type: "text" },
+        { header: t("dashboard.veterinary.table.stage"), accessor: "stage", type: "text" },
+        { header: t("dashboard.veterinary.table.pigs"), accessor: "pigCount", type: "number" },
         {
-            header: "Consumo/Cerdo", accessor: "avgPerPig", type: "text",
+            header: t("dashboard.veterinary.table.consumptionPerPig"), accessor: "avgPerPig", type: "text",
             render: (v: number, row) => <span>{v?.toFixed(2)} {row.unit}</span>,
             bgColor: "#e8f5e9",
         },
@@ -103,27 +100,27 @@ const VeterinaryDashboard: React.FC<Props> = ({ startDate, endDate }) => {
         <>
             <Row className="g-3 mb-3">
                 <Col xl={2} md={4} sm={6}>
-                    <StatKpiCard title="Tasa Mortalidad" value={data.kpis.mortalityRate} suffix="%" decimals={2}
+                    <StatKpiCard title={t("dashboard.veterinary.kpi.mortalityRate")} value={data.kpis.mortalityRate} suffix="%" decimals={2}
                         icon={<i className="ri-alert-line fs-4 text-danger"></i>}
                         iconBgColor="#FEE2E2" animateValue />
                 </Col>
                 <Col xl={2} md={4} sm={6}>
-                    <StatKpiCard title="Muertes Totales" value={data.kpis.totalDeaths}
+                    <StatKpiCard title={t("dashboard.veterinary.kpi.totalDeaths")} value={data.kpis.totalDeaths}
                         icon={<i className="ri-heart-line fs-4 text-danger"></i>}
                         iconBgColor="#FEE2E2" animateValue />
                 </Col>
                 <Col xl={2} md={4} sm={6}>
-                    <StatKpiCard title="Medicaciones" value={data.kpis.medicationsApplied}
+                    <StatKpiCard title={t("dashboard.veterinary.kpi.medications")} value={data.kpis.medicationsApplied}
                         icon={<i className="ri-capsule-line fs-4 text-info"></i>}
                         iconBgColor="#E0F7FA" animateValue />
                 </Col>
                 <Col xl={2} md={4} sm={6}>
-                    <StatKpiCard title="Vacunaciones" value={data.kpis.vaccinationsApplied}
+                    <StatKpiCard title={t("dashboard.veterinary.kpi.vaccinations")} value={data.kpis.vaccinationsApplied}
                         icon={<i className="ri-syringe-line fs-4 text-success"></i>}
                         iconBgColor="#E8F5E9" animateValue />
                 </Col>
                 <Col xl={2} md={4} sm={6}>
-                    <StatKpiCard title="Grupos con Alertas" value={data.kpis.groupsWithHealthAlerts}
+                    <StatKpiCard title={t("dashboard.veterinary.kpi.groupsWithAlerts")} value={data.kpis.groupsWithHealthAlerts}
                         icon={<i className="ri-error-warning-line fs-4 text-warning"></i>}
                         iconBgColor="#FFF8E1" animateValue />
                 </Col>
@@ -132,19 +129,19 @@ const VeterinaryDashboard: React.FC<Props> = ({ startDate, endDate }) => {
             <Row className="g-3 mb-3">
                 <Col xl={5}>
                     <DonutChartCard
-                        title="Mortalidad por Causa"
+                        title={t("dashboard.veterinary.chart.mortalityByCause")}
                         data={causesDonut}
                         height={320}
                     />
                 </Col>
                 <Col xl={7}>
                     <BasicBarChart
-                        title="Mortalidad por Etapa"
+                        title={t("dashboard.veterinary.chart.mortalityByStage")}
                         data={stageBarData}
                         indexBy="stage"
-                        keys={["Muertes"]}
-                        xLegend="Etapa"
-                        yLegend="Cantidad"
+                        keys={[t("dashboard.veterinary.chart.deathsLabel")]}
+                        xLegend={t("dashboard.veterinary.chart.xLabel")}
+                        yLegend={t("dashboard.veterinary.chart.yLabel")}
                         height={320}
                         colors={["#ef4444"]}
                     />
@@ -155,7 +152,7 @@ const VeterinaryDashboard: React.FC<Props> = ({ startDate, endDate }) => {
                 <Col xl={7}>
                     <Card className="h-100">
                         <CardHeader>
-                            <h6 className="mb-0 text-muted">Tratamientos Recientes</h6>
+                            <h6 className="mb-0 text-muted">{t("dashboard.veterinary.table.recentTreatments")}</h6>
                         </CardHeader>
                         <CardBody>
                             <CustomTable columns={treatColumns} data={data.recentTreatments || []} rowsPerPage={8} showSearchAndFilter />
@@ -165,7 +162,7 @@ const VeterinaryDashboard: React.FC<Props> = ({ startDate, endDate }) => {
                 <Col xl={5}>
                     <Card className="h-100">
                         <CardHeader>
-                            <h6 className="mb-0 text-muted">Consumo de Alimento por Grupo</h6>
+                            <h6 className="mb-0 text-muted">{t("dashboard.veterinary.table.feedConsumption")}</h6>
                         </CardHeader>
                         <CardBody>
                             <CustomTable columns={feedColumns} data={data.feedConsumptionByGroup || []} rowsPerPage={8} showSearchAndFilter={false} />

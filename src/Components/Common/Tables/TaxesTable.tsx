@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button, Input, Pagination, Table } from "reactstrap";
 import { Tax } from "common/data_interfaces";
 
@@ -10,6 +11,7 @@ interface TaxesTableProps {
 }
 
 const TaxesTable = ({ name, taxes, onChange }: TaxesTableProps) => {
+  const { t } = useTranslation();
   const [newTax, setNewTax] = useState<Tax>({ taxName: "", percentage: 0 });
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingTax, setEditingTax] = useState<Tax>({ taxName: "", percentage: 0 });
@@ -59,25 +61,25 @@ const TaxesTable = ({ name, taxes, onChange }: TaxesTableProps) => {
       <div className="d-flex gap-3 mt-1 mb-1">
         <Input
           type="text"
-          placeholder="Nombre del impuesto"
+          placeholder={t('warehouse.productForm.taxNamePlaceholder', { defaultValue: 'Nombre del impuesto' })}
           value={newTax.taxName}
           onChange={(e) => setNewTax({ ...newTax, taxName: e.target.value })}
         />
         <Input
           type="number"
-          placeholder="Porcentaje"
+          placeholder={t('warehouse.productForm.taxPercentagePlaceholder', { defaultValue: 'Porcentaje' })}
           value={newTax.percentage}
           onChange={(e) => setNewTax({ ...newTax, percentage: Number(e.target.value) })}
         />
-        <Button color="primary" onClick={handleAdd}>Agregar</Button>
+        <Button color="primary" onClick={handleAdd}>{t('warehouse.productForm.taxAdd', { defaultValue: 'Agregar' })}</Button>
       </div>
 
       <Table hover>
         <thead>
           <tr>
-            <th>Nombre</th>
-            <th>Porcentaje</th>
-            <th>Acciones</th>
+            <th>{t('common.field.name')}</th>
+            <th>{t('warehouse.productForm.taxPercentage', { defaultValue: 'Porcentaje' })}</th>
+            <th>{t('common.field.actions')}</th>
           </tr>
         </thead>
         <tbody>

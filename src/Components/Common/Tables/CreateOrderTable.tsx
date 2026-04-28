@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Input, Pagination, Table } from "reactstrap";
 import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
@@ -23,6 +24,7 @@ const CreateOrderTable: React.FC<CreateOrderTableProps> = ({
   showStock = false,
   showPagination = true,
 }) => {
+  const { t } = useTranslation();
   const [selectedProducts, setSelectedProducts] = useState<OrderItem[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [filterText, setFilterText] = useState<string>("");
@@ -123,10 +125,10 @@ const CreateOrderTable: React.FC<CreateOrderTableProps> = ({
       <div className="d-flex justify-content-between mb-3">
         <Input
           type="text"
-          placeholder="Buscar por Producto, Categoría o Unidad de medida..."
+          placeholder={t('warehouse.orderDetails.searchPlaceholder', { defaultValue: 'Buscar por Producto, Categoría o Unidad de medida...' })}
           value={filterText}
           onChange={(e) => setFilterText(e.target.value)}
-          aria-label="Buscar productos"
+          aria-label={t('warehouse.orderDetails.searchAria', { defaultValue: 'Buscar productos' })}
         />
       </div>
 
@@ -178,6 +180,8 @@ const TableHeader: React.FC<{
   requestSort: (key: string) => void;
   sortConfig: { key: string; direction: "asc" | "desc" } | null;
 }> = ({ showStock, requestSort, sortConfig }) => {
+  const { t } = useTranslation();
+
   const getSortIndicator = (key: string) => {
     if (sortConfig && sortConfig.key === key) {
       return sortConfig.direction === "asc" ? " ▲" : " ▼";
@@ -188,31 +192,31 @@ const TableHeader: React.FC<{
   return (
     <thead className="table-light sticky-top">
       <tr>
-        <th>Seleccionar</th>
+        <th>{t('warehouse.orderDetails.col.select', { defaultValue: 'Seleccionar' })}</th>
         <th onClick={() => requestSort("id")} style={{ cursor: "pointer" }}>
-          Código {getSortIndicator("id")}
+          {t('common.field.code')} {getSortIndicator("id")}
         </th>
         <th onClick={() => requestSort("name")} style={{ cursor: "pointer" }}>
-          Producto {getSortIndicator("name")}
+          {t('warehouse.orderDetails.col.product', { defaultValue: 'Producto' })} {getSortIndicator("name")}
         </th>
         <th onClick={() => requestSort("category")} style={{ cursor: "pointer" }}>
-          Categoría {getSortIndicator("category")}
+          {t('warehouse.purchaseOrders.col.category', { defaultValue: 'Categoría' })} {getSortIndicator("category")}
         </th>
         {showStock && <th onClick={() => requestSort("quantity")} style={{ cursor: "pointer" }}>
-          Existencias {getSortIndicator("quantity")}
+          {t('warehouse.orderDetails.col.stock', { defaultValue: 'Existencias' })} {getSortIndicator("quantity")}
         </th>}
-        <th>Cantidad</th>
+        <th>{t('warehouse.purchaseOrders.col.quantity', { defaultValue: 'Cantidad' })}</th>
         <th onClick={() => requestSort("unit_measurement")} style={{ cursor: "pointer" }}>
-          Unidad de medida {getSortIndicator("unit_measurement")}
+          {t('warehouse.orderDetails.col.unitMeasurement', { defaultValue: 'Unidad de medida' })} {getSortIndicator("unit_measurement")}
         </th>
         {showStock ? (
           <th onClick={() => requestSort("averagePrice")} style={{ cursor: "pointer" }}>
-            Precio Promedio {getSortIndicator("averagePrice")}
+            {t('warehouse.orderDetails.col.avgPrice', { defaultValue: 'Precio Promedio' })} {getSortIndicator("averagePrice")}
           </th>
         ) : (
-          <th>Precio Unitario</th>
+          <th>{t('warehouse.purchaseOrders.col.unitPrice', { defaultValue: 'Precio Unitario' })}</th>
         )}
-        <th>Observaciones</th>
+        <th>{t('warehouse.orderDetails.col.observations', { defaultValue: 'Observaciones' })}</th>
       </tr>
     </thead>
   );
@@ -226,72 +230,76 @@ const TableBody: React.FC<{
   handleCheckboxChange: (id: string, checked: boolean) => void;
   handleInputChange: (id: string, field: "quantity" | "price" | "observations", value: number | string) => void;
   showStock: boolean;
-}> = ({ data, selectedProducts, handleRowClick, handleCheckboxChange, handleInputChange, showStock }) => (
-  <tbody>
-    {data.length > 0 ? (
-      data.map((product) => {
-        const selectedProduct = selectedProducts.find((p) => p.id === product.id);
-        const isSelected = !!selectedProduct;
+}> = ({ data, selectedProducts, handleRowClick, handleCheckboxChange, handleInputChange, showStock }) => {
+  const { t } = useTranslation();
 
-        return (
-          <tr key={product.id} onClick={() => handleRowClick(product.id)} style={{ cursor: "pointer" }}>
-            <td>
-              <Input
-                type="checkbox"
-                checked={isSelected}
-                onChange={(e) => handleCheckboxChange(product.id, e.target.checked)}
-                onClick={(e) => e.stopPropagation()}
-                aria-label={`Seleccionar producto ${product.name}`}
-              />
-            </td>
-            <td>{product.id}</td>
-            <td>{product.name}</td>
-            <td>{product.category}</td>
-            {showStock && <td>{product.quantity}</td>}
-            <td>
-              <Input
-                type="number"
-                value={selectedProduct?.quantity || ""}
-                onChange={(e) => handleInputChange(product.id, "quantity", parseInt(e.target.value, 10))}
-                disabled={!isSelected}
-                onClick={(e) => e.stopPropagation()}
-              />
-            </td>
-            <td>{product.unit_measurement}</td>
-            {showStock ? (
-              <td>${product.averagePrice}</td>
-            ) : (
+  return (
+    <tbody>
+      {data.length > 0 ? (
+        data.map((product) => {
+          const selectedProduct = selectedProducts.find((p) => p.id === product.id);
+          const isSelected = !!selectedProduct;
+
+          return (
+            <tr key={product.id} onClick={() => handleRowClick(product.id)} style={{ cursor: "pointer" }}>
+              <td>
+                <Input
+                  type="checkbox"
+                  checked={isSelected}
+                  onChange={(e) => handleCheckboxChange(product.id, e.target.checked)}
+                  onClick={(e) => e.stopPropagation()}
+                  aria-label={`${t('warehouse.orderDetails.col.selectProduct', { defaultValue: 'Seleccionar producto' })} ${product.name}`}
+                />
+              </td>
+              <td>{product.id}</td>
+              <td>{product.name}</td>
+              <td>{product.category}</td>
+              {showStock && <td>{product.quantity}</td>}
               <td>
                 <Input
                   type="number"
-                  value={selectedProduct?.price || ""}
-                  onChange={(e) => handleInputChange(product.id, "price", parseFloat(e.target.value))}
+                  value={selectedProduct?.quantity || ""}
+                  onChange={(e) => handleInputChange(product.id, "quantity", parseInt(e.target.value, 10))}
                   disabled={!isSelected}
                   onClick={(e) => e.stopPropagation()}
                 />
               </td>
-            )}
-            <td>
-              <Input
-                type="text"
-                value={selectedProduct?.observations || ""}
-                onChange={(e) => handleInputChange(product.id, "observations", e.target.value)}
-                disabled={!isSelected}
-                onClick={(e) => e.stopPropagation()}
-                placeholder="Escribe observaciones..."
-              />
-            </td>
-          </tr>
-        );
-      })
-    ) : (
-      <tr>
-        <td colSpan={showStock ? 9 : 8} className="text-center">
-          No hay productos disponibles.
-        </td>
-      </tr>
-    )}
-  </tbody>
-);
+              <td>{product.unit_measurement}</td>
+              {showStock ? (
+                <td>${product.averagePrice}</td>
+              ) : (
+                <td>
+                  <Input
+                    type="number"
+                    value={selectedProduct?.price || ""}
+                    onChange={(e) => handleInputChange(product.id, "price", parseFloat(e.target.value))}
+                    disabled={!isSelected}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </td>
+              )}
+              <td>
+                <Input
+                  type="text"
+                  value={selectedProduct?.observations || ""}
+                  onChange={(e) => handleInputChange(product.id, "observations", e.target.value)}
+                  disabled={!isSelected}
+                  onClick={(e) => e.stopPropagation()}
+                  placeholder={t('warehouse.orderDetails.col.observationsPlaceholder', { defaultValue: 'Escribe observaciones...' })}
+                />
+              </td>
+            </tr>
+          );
+        })
+      ) : (
+        <tr>
+          <td colSpan={showStock ? 9 : 8} className="text-center">
+            {t('warehouse.orderDetails.noProducts', { defaultValue: 'No hay productos disponibles.' })}
+          </td>
+        </tr>
+      )}
+    </tbody>
+  );
+};
 
 export default CreateOrderTable;

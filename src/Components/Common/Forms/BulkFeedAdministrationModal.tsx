@@ -1,4 +1,5 @@
 import { Modal, ModalBody, ModalHeader } from "reactstrap";
+import { useTranslation } from "react-i18next";
 import FeedAdministrationForm from "./FeedAdministrationForm";
 
 interface BulkFeedAdministrationModalProps {
@@ -16,18 +17,19 @@ const BulkFeedAdministrationModal: React.FC<BulkFeedAdministrationModalProps> = 
     selectedTargets,
     onSuccess,
 }) => {
-    const targetIds = selectedTargets.map((t) => t._id || t.id).filter(Boolean);
-    const targetLabel = targetType === 'group' ? 'grupos' : 'camadas';
+    const { t } = useTranslation();
+    const targetIds = selectedTargets.map((tgt) => tgt._id || tgt.id).filter(Boolean);
+    const targetLabel = targetType === 'group' ? t('feeding.administration.target.groups') : t('feeding.administration.target.litters');
 
     return (
         <Modal size="lg" isOpen={isOpen} toggle={onClose} backdrop="static" keyboard={false} centered>
             <ModalHeader toggle={onClose}>
-                Administrar alimento a {selectedTargets.length} {targetLabel}
+                {t('feeding.administration.bulk.title', { count: selectedTargets.length, target: targetLabel })}
             </ModalHeader>
             <ModalBody>
                 {targetIds.length === 0 ? (
                     <div className="alert alert-warning">
-                        No hay {targetLabel} seleccionados.
+                        {t('feeding.administration.bulk.noTargets', { target: targetLabel })}
                     </div>
                 ) : (
                     <FeedAdministrationForm

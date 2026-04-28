@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Table, Input, Label } from "reactstrap";
 import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
@@ -61,6 +62,7 @@ function SelectableCustomTable<T extends { id: string }>(props: SelectableCustom
         initialSelectedIds,
     } = props;
 
+    const { t } = useTranslation();
     const [filterText, setFilterText] = useState<string>("");
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -185,7 +187,7 @@ function SelectableCustomTable<T extends { id: string }>(props: SelectableCustom
                 <div className="d-flex justify-content-between mb-3">
                     <Input
                         type="text"
-                        placeholder="Buscar..."
+                        placeholder={t("shared.table.search")}
                         value={filterText}
                         onChange={(e) => setFilterText(e.target.value)}
                         disabled={disabled}
@@ -282,7 +284,7 @@ function SelectableCustomTable<T extends { id: string }>(props: SelectableCustom
                         ) : (
                             <tr>
                                 <td colSpan={columns.length + 1} className="text-center">
-                                    No se encontraron datos
+                                    {t("shared.table.noData")}
                                 </td>
                             </tr>
                         )}

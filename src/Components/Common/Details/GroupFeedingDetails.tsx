@@ -11,6 +11,7 @@ import StatKpiCard from "../Graphics/StatKpiCard";
 import BasicLineChartCard from "../Graphics/BasicLineChartCard";
 import DonutChartCard from "../Graphics/DonutChartCard";
 import FeedAdministrationsCard from "../Shared/FeedAdministrationsCard";
+import { useTranslation } from "react-i18next";
 
 type Stage = 'piglet' | 'sow' | 'nursery' | 'grower' | 'finisher' | 'general';
 
@@ -21,29 +22,26 @@ interface GroupFeedingDetailsProps {
     groupStage?: Stage;
 }
 
-const TYPE_LABELS: Record<string, string> = {
-    nutrition: 'Nutrición',
-    medications: 'Medicamentos',
-    vaccines: 'Vacunas',
-    vitamins: 'Vitaminas',
-    minerals: 'Minerales',
-    supplies: 'Insumos',
-    hygiene_cleaning: 'Higiene y desinfección',
-    equipment_tools: 'Equipamiento y herramientas',
-    spare_parts: 'Refacciones y repuestos',
-    office_supplies: 'Material de oficina',
-    supplements: 'Suplementos',
-    medicated: 'Medicados',
-    others: 'Otros',
+const API_CATEGORY_KEY_MAP: Record<string, string> = {
+    hygiene_cleaning: 'hygiene',
+    equipment_tools: 'equipment',
+    spare_parts: 'spare',
+    office_supplies: 'office',
+    others: 'other',
+    pre_starter: 'preStarter',
 };
 
 const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId, onUpdate, isGroupSold = false, groupStage }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [administrations, setAdministrations] = useState<FeedAdministrationHistoryEntry[]>([]);
     const [feedingStats, setFeedingStats] = useState<any | null>(null);
+
+    const getCategoryLabel = (key: string) =>
+        t(`feeding.productCategory.${API_CATEGORY_KEY_MAP[key] ?? key}`, { defaultValue: key });
 
     const fetchFeedingInfo = async () => {
         if (!configContext || !userLogged) return;
@@ -58,7 +56,7 @@ const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId, onUp
             setFeedingStats(statsResponse.data.data);
         } catch (error) {
             console.error('Error fetching data: ', { error });
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al obtener la informacion de alimentacion, intentelo mas tarde' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('common.status.noData') });
         } finally {
             setLoading(false);
         }
@@ -76,11 +74,10 @@ const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId, onUp
 
     if (loading) return <LoadingAnimation />;
 
-    const translatedDist = (feedingStats?.distributionByType || []).map((d: any) => ({
-        ...d,
-        id: TYPE_LABELS[d.id] || TYPE_LABELS[d.label] || d.label || d.id,
-        label: TYPE_LABELS[d.label] || TYPE_LABELS[d.id] || d.label || d.id,
-    }));
+    const translatedDist = (feedingStats?.distributionByType || []).map((d: any) => {
+        const label = getCategoryLabel(d.id || d.label);
+        return { ...d, id: label, label };
+    });
 
     return (
         <>
@@ -89,7 +86,7 @@ const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId, onUp
                     <Row className="g-3 mb-3">
                         <Col md={6} lg>
                             <StatKpiCard
-                                title="Alimento Consumido"
+                                title={t('feeding.groupFeeding.kpi.consumed')}
                                 value={feedingStats.kpis?.totalConsumed || 0}
                                 suffix="kg"
                                 icon={<RiRestaurantLine size={20} style={{ color: '#f59e0b' }} />}
@@ -99,7 +96,7 @@ const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId, onUp
                         </Col>
                         <Col md={6} lg>
                             <StatKpiCard
-                                title="Consumo Diario Promedio"
+                                title={t('feeding.groupFeeding.kpi.dailyAvg')}
                                 value={feedingStats.kpis?.avgPerDay || 0}
                                 suffix="kg/día"
                                 icon={<RiScales3Line size={20} style={{ color: '#0ea5e9' }} />}
@@ -109,7 +106,7 @@ const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId, onUp
                         </Col>
                         <Col md={6} lg>
                             <StatKpiCard
-                                title="Promedio por Cerdo"
+                                title={t('feeding.groupFeeding.kpi.avgPerPig')}
                                 value={feedingStats.kpis?.avgPerPig || 0}
                                 suffix="kg/día"
                                 icon={<RiGroupLine size={20} style={{ color: '#8b5cf6' }} />}
@@ -119,7 +116,7 @@ const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId, onUp
                         </Col>
                         <Col md={6} lg>
                             <StatKpiCard
-                                title="Conversión Alimenticia"
+                                title={t('feeding.groupFeeding.kpi.fcr')}
                                 value={feedingStats.kpis?.fcr || feedingStats.kpis?.feedConversionRatio || 0}
                                 suffix="kg/kg"
                                 icon={<RiExchangeLine size={20} style={{ color: '#ef4444' }} />}
@@ -132,14 +129,14 @@ const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId, onUp
                     <Row className="g-3 mb-3">
                         <Col lg={8}>
                             <BasicLineChartCard
-                                title="Consumo Acumulado del Grupo"
+                                title={t('feeding.groupFeeding.chart.cumulativeTitle')}
                                 data={[{
-                                    id: 'Alimento (kg)',
+                                    id: t('feeding.groupFeeding.chart.feedLegend'),
                                     color: '#f59e0b',
                                     data: (feedingStats.cumulativeConsumption || []).map((p: any) => ({ x: p.date, y: p.value })),
                                 }]}
-                                yLabel="Kg acumulados"
-                                xLabel="Fecha"
+                                yLabel={t('feeding.groupFeeding.chart.yLabel')}
+                                xLabel={t('common.field.date')}
                                 height={280}
                                 curve="natural"
                                 pointSize={5}
@@ -154,7 +151,7 @@ const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId, onUp
                         </Col>
                         <Col lg={4}>
                             <DonutChartCard
-                                title="Distribución por Tipo"
+                                title={t('feeding.groupFeeding.chart.distributionTitle')}
                                 data={translatedDist}
                                 legendItems={translatedDist.map((d: any) => ({
                                     label: d.label,

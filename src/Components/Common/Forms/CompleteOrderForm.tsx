@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Alert, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from 'reactstrap';
 import * as Yup from 'yup'
 import { useFormik } from 'formik';
@@ -23,6 +24,7 @@ interface OrderFormProps {
 }
 
 const CompleteOrderForm: React.FC<OrderFormProps> = ({ orderId, onSave, onCancel }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [modals, setModals] = useState({ cancel: false, success: false, error: false });
@@ -36,23 +38,23 @@ const CompleteOrderForm: React.FC<OrderFormProps> = ({ orderId, onSave, onCancel
     };
 
     const orderAttributes: Attribute[] = [
-        { key: 'id', label: 'No. de Pedido', type: 'text' },
-        { key: 'date', label: 'Fecha de pedido', type: 'date' },
+        { key: 'id', label: t('warehouse.orders.col.orderNumber', { defaultValue: 'No. de Pedido' }), type: 'text' },
+        { key: 'date', label: t('warehouse.orders.col.orderDate', { defaultValue: 'Fecha de pedido' }), type: 'date' },
         {
             key: 'user',
-            label: 'Pedido por',
+            label: t('warehouse.orders.col.orderedBy', { defaultValue: 'Pedido por' }),
             type: 'text',
             render: (value, object) => <span>{object?.user?.name} {object?.user?.lastname}</span>
         },
         {
             key: 'orderOrigin',
-            label: 'Pedido para',
+            label: t('warehouse.orders.col.orderFor', { defaultValue: 'Pedido para' }),
             type: 'text',
             render: (value, object) => <span>{object?.orderOrigin?.name}</span>
         },
         {
             key: 'orderDestiny',
-            label: 'Pedido hacia',
+            label: t('warehouse.orders.col.orderTo', { defaultValue: 'Pedido hacia' }),
             type: 'text',
             render: (value, object) => <span>{object?.orderDestiny?.name}</span>
         },
@@ -124,7 +126,7 @@ const CompleteOrderForm: React.FC<OrderFormProps> = ({ orderId, onSave, onCancel
 
                 <div className='d-flex gap-3 mb-4'>
                     <div className="w-50">
-                        <Label htmlFor="userInput" className="form-label">Responsable</Label>
+                        <Label htmlFor="userInput" className="form-label">{t('warehouse.inventoryDetails.responsible', { defaultValue: 'Responsable' })}</Label>
                         <Input
                             type="text"
                             id="userInput"
@@ -135,7 +137,7 @@ const CompleteOrderForm: React.FC<OrderFormProps> = ({ orderId, onSave, onCancel
                     </div>
 
                     <div className="w-50">
-                        <Label htmlFor="dateInput" className="form-label">Fecha</Label>
+                        <Label htmlFor="dateInput" className="form-label">{t('common.field.date')}</Label>
                         <DatePicker
                             id="date"
                             className={`form-control ${formik.touched.date && formik.errors.date ? 'is-invalid' : ''}`}
@@ -151,12 +153,12 @@ const CompleteOrderForm: React.FC<OrderFormProps> = ({ orderId, onSave, onCancel
                     </div>
                 </div>
 
-                <Label htmlFor="dateInput" className="form-label">Productos entregados</Label>
+                <Label htmlFor="dateInput" className="form-label">{t('warehouse.orderDetails.col.delivered', { defaultValue: 'Productos entregados' })}</Label>
                 <OrderTable data={productsRequested} onProductEdit={(updatedProducts) => formik.setFieldValue('productsDelivered', updatedProducts)} />
 
                 <div className="d-flex mt-4 gap-2 justify-content-end">
                     <Button className='btn-danger' type='button' onClick={() => toggleModal('cancel')}>
-                        Cancelar
+                        {t('common.button.cancel')}
                     </Button>
 
                     <Button className='btn-success' type='submit' disabled={formik.isSubmitting}>
@@ -164,7 +166,7 @@ const CompleteOrderForm: React.FC<OrderFormProps> = ({ orderId, onSave, onCancel
                             : (
                                 <>
                                     <i className='ri-check-line me-2' />
-                                    Completar
+                                    {t('warehouse.orderDetails.button.complete', { defaultValue: 'Completar' })}
                                 </>
                             )
                         }
@@ -173,17 +175,17 @@ const CompleteOrderForm: React.FC<OrderFormProps> = ({ orderId, onSave, onCancel
             </form>
 
             <Modal isOpen={modals.cancel} centered toggle={() => toggleModal('cancel', false)}>
-                <ModalHeader>Confirmación</ModalHeader>
-                <ModalBody>¿Estás seguro de que deseas cancelar? Los datos no se guardarán.</ModalBody>
+                <ModalHeader>{t('common.button.confirm')}</ModalHeader>
+                <ModalBody>{t('warehouse.orderDetails.confirm.cancel', { defaultValue: '¿Estás seguro de que deseas cancelar? Los datos no se guardarán.' })}</ModalBody>
                 <ModalFooter>
-                    <Button className='farm-secondary-button' onClick={onCancel}>Sí, cancelar</Button>
-                    <Button className='farm-primary-button' onClick={() => toggleModal('cancel', false)}>No, continuar</Button>
+                    <Button className='farm-secondary-button' onClick={onCancel}>{t('warehouse.orderDetails.confirm.yes', { defaultValue: 'Sí, cancelar' })}</Button>
+                    <Button className='farm-primary-button' onClick={() => toggleModal('cancel', false)}>{t('warehouse.orderDetails.confirm.no', { defaultValue: 'No, continuar' })}</Button>
                 </ModalFooter>
             </Modal>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
-            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={'Pedido completado con exito'} />
-            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={'El servicio no esta disponible, intentelo mas tarde'} />
+            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={t('warehouse.orderDetails.success.completed', { defaultValue: 'Pedido completado con exito' })} />
+            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={t('warehouse.orderDetails.error.service', { defaultValue: 'El servicio no esta disponible, intentelo mas tarde' })} />
         </>
     )
 }

@@ -1,4 +1,5 @@
 import { useState, useRef, useContext, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { ConfigContext } from "App";
 import { Button, Input, Badge, Popover, PopoverHeader, PopoverBody, Row, Col, FormGroup, Label } from "reactstrap";
 import Select from "react-select";
@@ -17,6 +18,7 @@ interface ReproductionFiltersProps {
 }
 
 const ReproductionFilters: React.FC<ReproductionFiltersProps> = ({ history, setFilteredHistory }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const [searchTerm, setSearchTerm] = useState("");
     const [filters, setFilters] = useState({
@@ -29,11 +31,11 @@ const ReproductionFilters: React.FC<ReproductionFiltersProps> = ({ history, setF
     const togglePopover = () => setPopoverOpen(!popoverOpen);
 
     const typeOptions = [
-        { value: "", label: "Todos" },
-        { value: "celo", label: "Celo" },
-        { value: "inseminacion", label: "Inseminación" },
-        { value: "parto", label: "Parto" },
-        { value: "aborto", label: "Aborto" }
+        { value: "", label: t("reproduction.filter.all", { defaultValue: "Todos" }) },
+        { value: "celo", label: t("history.celo", { defaultValue: "Celo" }) },
+        { value: "inseminacion", label: t("reproduction.type.insemination", { defaultValue: "Inseminación" }) },
+        { value: "parto", label: t("reproduction.type.birth", { defaultValue: "Parto" }) },
+        { value: "aborto", label: t("reproduction.type.abortion", { defaultValue: "Aborto" }) },
     ];
 
     const handleFilterChange = (key: string, value: any) => {
@@ -87,7 +89,7 @@ const ReproductionFilters: React.FC<ReproductionFiltersProps> = ({ history, setF
                 <FiSearch className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" />
                 <Input
                     type="text"
-                    placeholder="Buscar responsable..."
+                    placeholder={t("history.searchResponsible", { defaultValue: "Buscar responsable..." })}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="form-control ps-5"
@@ -96,11 +98,11 @@ const ReproductionFilters: React.FC<ReproductionFiltersProps> = ({ history, setF
             </div>
 
             <Button innerRef={filterBtnRef} color="light" onClick={togglePopover} className="position-relative">
-                <FiFilter className="me-2" /> Filtros
+                <FiFilter className="me-2" /> {t("common.button.filter", { defaultValue: "Filtros" })}
                 {activeFilterCount > 0 && <Badge color="primary" pill className="position-absolute top-0 start-100 translate-middle">{activeFilterCount}</Badge>}
             </Button>
 
-            {activeFilterCount > 0 && <Button color="link" onClick={clearFilters} className="text-danger"><FiX className="me-1" /> Limpiar filtros</Button>}
+            {activeFilterCount > 0 && <Button color="link" onClick={clearFilters} className="text-danger"><FiX className="me-1" /> {t("common.button.clearFilters", { defaultValue: "Limpiar filtros" })}</Button>}
 
             <Popover
                 placement="bottom-end"
@@ -112,13 +114,13 @@ const ReproductionFilters: React.FC<ReproductionFiltersProps> = ({ history, setF
                 style={{ minWidth: "350px" }}
             >
                 <PopoverHeader className="d-flex justify-content-between align-items-center">
-                    <span className="text-black">Filtros reproductivos</span>
+                    <span className="text-black">{t("history.reproductiveFilters", { defaultValue: "Filtros reproductivos" })}</span>
                     <Button close onClick={togglePopover} />
                 </PopoverHeader>
                 <PopoverBody>
 
                     <FormGroup className="mb-3">
-                        <Label>Tipo de evento</Label>
+                        <Label>{t("history.eventType", { defaultValue: "Tipo de evento" })}</Label>
                         <Select
                             options={typeOptions}
                             value={typeOptions.find(opt => opt.value === filters.type)}
@@ -128,11 +130,11 @@ const ReproductionFilters: React.FC<ReproductionFiltersProps> = ({ history, setF
 
                     <div className="d-flex gap-3">
                         <FormGroup className="w-50">
-                            <Label>Fecha desde</Label>
+                            <Label>{t("reproduction.filter.from", { defaultValue: "Fecha desde" })}</Label>
                             <Input type="date" value={filters.dateRange[0] ? filters.dateRange[0].toISOString().split('T')[0] : ""} onChange={e => handleDateChange(0, e.target.value)} />
                         </FormGroup>
                         <FormGroup className="w-50">
-                            <Label>Fecha hasta</Label>
+                            <Label>{t("reproduction.filter.to", { defaultValue: "Fecha hasta" })}</Label>
                             <Input type="date" value={filters.dateRange[1] ? filters.dateRange[1].toISOString().split('T')[0] : ""} onChange={e => handleDateChange(1, e.target.value)} />
                         </FormGroup>
                     </div>
@@ -141,8 +143,8 @@ const ReproductionFilters: React.FC<ReproductionFiltersProps> = ({ history, setF
 
 
                     <div className="d-flex justify-content-between mt-3">
-                        <Button color="link" onClick={clearFilters} className="text-danger"><FiX className="me-1" /> Limpiar todo</Button>
-                        <Button color="primary" onClick={togglePopover}>Aplicar filtros</Button>
+                        <Button color="link" onClick={clearFilters} className="text-danger"><FiX className="me-1" /> {t("history.clearAll", { defaultValue: "Limpiar todo" })}</Button>
+                        <Button color="primary" onClick={togglePopover}>{t("history.applyFilters", { defaultValue: "Aplicar filtros" })}</Button>
                     </div>
                 </PopoverBody>
             </Popover>

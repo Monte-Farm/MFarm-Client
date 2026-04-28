@@ -1,5 +1,6 @@
 import { categoryLabels } from "common/product_categories";
 import React, { useEffect, useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Input, Pagination, Table } from "reactstrap";
 import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
@@ -19,6 +20,7 @@ const SelectTable: React.FC<SelectTableProps> = ({
   showStock = false,
   showPagination = true
 }) => {
+  const { t } = useTranslation();
   const [selectedProducts, setSelectedProducts] = useState<
     Array<{ id: string; quantity: number; price: number }>
   >([]);
@@ -27,7 +29,6 @@ const SelectTable: React.FC<SelectTableProps> = ({
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
   const rowsPerPage = 5;
 
-  // Función para manejar el cambio en los inputs
   const handleInputChange = useCallback(
     (id: string, field: "quantity" | "price", value: number) => {
       const product = data.find((p) => p.id === id);
@@ -50,7 +51,6 @@ const SelectTable: React.FC<SelectTableProps> = ({
     [selectedProducts, onProductSelect, data, showStock]
   );
 
-  // Función para manejar el cambio en los checkboxes
   const handleCheckboxChange = useCallback((id: string, checked: boolean) => {
     if (checked) {
       const product = data.find((p) => p.id === id);
@@ -63,13 +63,11 @@ const SelectTable: React.FC<SelectTableProps> = ({
     }
   }, [data, showStock]);
 
-  // Función para manejar el clic en una fila
   const handleRowClick = useCallback((id: string) => {
     const isSelected = selectedProducts.some((product) => product.id === id);
     handleCheckboxChange(id, !isSelected);
   }, [selectedProducts, handleCheckboxChange]);
 
-  // Función para ordenar los datos
   const sortedData = React.useMemo(() => {
     let sortableData = [...data];
     if (sortConfig !== null) {
@@ -86,7 +84,6 @@ const SelectTable: React.FC<SelectTableProps> = ({
     return sortableData;
   }, [data, sortConfig]);
 
-  // Función para manejar el clic en los encabezados de la tabla
   const requestSort = (key: string) => {
     let direction: "asc" | "desc" = "asc";
     if (sortConfig && sortConfig.key === key && sortConfig.direction === "asc") {
@@ -95,7 +92,6 @@ const SelectTable: React.FC<SelectTableProps> = ({
     setSortConfig({ key, direction });
   };
 
-  // Filtrar los datos basados en el texto de búsqueda
   const filteredData = sortedData.filter((product) => {
     const filter = filterText.toLowerCase();
     return (
@@ -106,12 +102,10 @@ const SelectTable: React.FC<SelectTableProps> = ({
     );
   });
 
-  // Datos paginados
   const paginatedData = showPagination
     ? filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage)
     : filteredData;
 
-  // Reiniciar la página actual cuando cambia el filtro
   useEffect(() => {
     setCurrentPage(1);
   }, [filterText]);
@@ -121,16 +115,16 @@ const SelectTable: React.FC<SelectTableProps> = ({
       <div className="d-flex justify-content-between mb-3">
         <Input
           type="text"
-          placeholder="Buscar por Producto, Categoría o Unidad de medida..."
+          placeholder={t("shared.table.searchProduct")}
           value={filterText}
           onChange={(e) => setFilterText(e.target.value)}
-          aria-label="Buscar productos"
+          aria-label={t("shared.table.searchProduct")}
         />
       </div>
 
       {showPagination ? (
         <Table className="table-hover align-middle table-nowrap mb-0" striped>
-          <TableHeader showStock={showStock} requestSort={requestSort} sortConfig={sortConfig} />
+          <TableHeader showStock={showStock} requestSort={requestSort} sortConfig={sortConfig} t={t} />
           <TableBody
             data={paginatedData}
             selectedProducts={selectedProducts}
@@ -138,12 +132,13 @@ const SelectTable: React.FC<SelectTableProps> = ({
             handleCheckboxChange={handleCheckboxChange}
             handleInputChange={handleInputChange}
             showStock={showStock}
+            t={t}
           />
         </Table>
       ) : (
         <SimpleBar style={{ height: "44vh" }}>
           <Table className="table-hover align-middle table-nowrap mb-0" striped>
-            <TableHeader showStock={showStock} requestSort={requestSort} sortConfig={sortConfig} />
+            <TableHeader showStock={showStock} requestSort={requestSort} sortConfig={sortConfig} t={t} />
             <TableBody
               data={paginatedData}
               selectedProducts={selectedProducts}
@@ -151,6 +146,7 @@ const SelectTable: React.FC<SelectTableProps> = ({
               handleCheckboxChange={handleCheckboxChange}
               handleInputChange={handleInputChange}
               showStock={showStock}
+              t={t}
             />
           </Table>
         </SimpleBar>
@@ -170,12 +166,12 @@ const SelectTable: React.FC<SelectTableProps> = ({
   );
 };
 
-// Componente TableHeader con soporte para ordenamiento
 const TableHeader: React.FC<{
   showStock: boolean;
   requestSort: (key: string) => void;
   sortConfig: { key: string; direction: "asc" | "desc" } | null;
-}> = ({ showStock, requestSort, sortConfig }) => {
+  t: (key: string, opts?: Record<string, any>) => string;
+}> = ({ showStock, requestSort, sortConfig, t }) => {
   const getSortIndicator = (key: string) => {
     if (sortConfig && sortConfig.key === key) {
       return sortConfig.direction === "asc" ? " ▲" : " ▼";
@@ -186,35 +182,34 @@ const TableHeader: React.FC<{
   return (
     <thead className="table-light sticky-top">
       <tr>
-        <th>Seleccionar</th>
+        <th>{t("shared.selectTable.col.select")}</th>
         <th onClick={() => requestSort("id")} style={{ cursor: "pointer" }}>
-          Código {getSortIndicator("id")}
+          {t("shared.selectTable.col.code")} {getSortIndicator("id")}
         </th>
         <th onClick={() => requestSort("name")} style={{ cursor: "pointer" }}>
-          Producto {getSortIndicator("name")}
+          {t("shared.selectTable.col.product")} {getSortIndicator("name")}
         </th>
         <th onClick={() => requestSort("category")} style={{ cursor: "pointer" }}>
-          Categoría {getSortIndicator("category")}
+          {t("shared.selectTable.col.category")} {getSortIndicator("category")}
         </th>
         {showStock && (
           <th onClick={() => requestSort("quantity")} style={{ cursor: "pointer" }}>
-            Existencias {getSortIndicator("quantity")}
+            {t("shared.selectTable.col.stock")} {getSortIndicator("quantity")}
           </th>
         )}
-        <th>Cantidad</th>
+        <th>{t("shared.selectTable.col.quantity")}</th>
         {showStock ? (
           <th onClick={() => requestSort("averagePrice")} style={{ cursor: "pointer" }}>
-            Precio Promedio {getSortIndicator("averagePrice")}
+            {t("shared.selectTable.col.avgPrice")} {getSortIndicator("averagePrice")}
           </th>
         ) : (
-          <th>Precio Unitario</th>
+          <th>{t("shared.selectTable.col.unitPrice")}</th>
         )}
       </tr>
     </thead>
   );
 };
 
-// Componente TableBody sin cambios
 const TableBody: React.FC<{
   data: any[];
   selectedProducts: any[];
@@ -222,7 +217,8 @@ const TableBody: React.FC<{
   handleCheckboxChange: (id: string, checked: boolean) => void;
   handleInputChange: (id: string, field: "quantity" | "price", value: number) => void;
   showStock: boolean;
-}> = ({ data, selectedProducts, handleRowClick, handleCheckboxChange, handleInputChange, showStock }) => (
+  t: (key: string, opts?: Record<string, any>) => string;
+}> = ({ data, selectedProducts, handleRowClick, handleCheckboxChange, handleInputChange, showStock, t }) => (
   <tbody>
     {data.length > 0 ? (
       data.map((product) => {
@@ -235,12 +231,12 @@ const TableBody: React.FC<{
                 checked={isSelected}
                 onChange={(e) => handleCheckboxChange(product.id, e.target.checked)}
                 onClick={(e) => e.stopPropagation()}
-                aria-label={`Seleccionar producto ${product.name}`}
+                aria-label={`${t("shared.selectTable.col.select")} ${product.name}`}
               />
             </td>
             <td>{product.id}</td>
             <td>{product.name}</td>
-            <td>{categoryLabels[product.category]}</td>
+            <td>{t(`warehouse.common.productCategory.${product.category}`, { defaultValue: categoryLabels[product.category] || product.category })}</td>
             {showStock && <td>{product.quantity}</td>}
             <td>
               <div className="input-group">
@@ -254,7 +250,6 @@ const TableBody: React.FC<{
                 />
                 <span className="input-group-text" id="unit-addon">{product.unit_measurement}</span>
               </div>
-
             </td>
             {showStock ? (
               <td>${product.averagePrice}</td>
@@ -275,7 +270,7 @@ const TableBody: React.FC<{
     ) : (
       <tr>
         <td colSpan={showStock ? 8 : 7} className="text-center">
-          No hay productos disponibles.
+          {t("shared.selectTable.noProducts")}
         </td>
       </tr>
     )}

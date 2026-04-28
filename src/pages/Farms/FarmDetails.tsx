@@ -3,29 +3,15 @@ import { Attribute, FarmData, UserData } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Card, CardBody, CardHeader, Col, Container, Label, Row } from "reactstrap";
+import { Card, CardBody, CardHeader, Col, Container, Row } from "reactstrap";
 import loadingGif from '../../assets/images/loading-gif.gif'
 import ObjectDetails from "Components/Common/Details/ObjectDetails";
 import farmDefaultImage from '../../assets/images/establo-cerdo.jpg'
 import managerDefaultImage from '../../assets/images/default-profile-mage.jpg'
-import { Column } from "common/data/data_types";
-
-const farmAttributes: Attribute[] = [
-    { key: 'code', label: 'Codigo', type: 'text' },
-    { key: 'name', label: 'Nombre', type: 'text' },
-    { key: 'location', label: 'Ubicación', type: 'text' },
-    { key: 'status', label: 'Estado', type: 'status' },
-]
-
-const managerAttributes: Attribute[] = [
-    { key: 'username', label: 'Usuario', type: 'text' },
-    { key: 'name', label: 'Nombre', type: 'text' },
-    { key: 'lastname', label: 'Apellido', type: 'text' },
-    { key: 'email', label: 'Email', type: 'text' },
-    { key: 'status', label: 'Estado', type: 'status' },
-]
+import { useTranslation } from "react-i18next";
 
 const FarmDetails = () => {
+    const { t } = useTranslation();
     const { farm_id } = useParams();
     const configContext = useContext(ConfigContext);
     const [farmData, setFarmData] = useState<FarmData | null>(null);
@@ -33,16 +19,24 @@ const FarmDetails = () => {
     const [loading, setLoading] = useState<boolean>(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" })
 
+    const farmAttributes: Attribute[] = [
+        { key: 'code', label: t('farms.details.attr.code'), type: 'text' },
+        { key: 'name', label: t('farms.details.attr.name'), type: 'text' },
+        { key: 'location', label: t('farms.details.attr.location'), type: 'text' },
+        { key: 'status', label: t('farms.details.attr.status'), type: 'status' },
+    ];
+
+    const managerAttributes: Attribute[] = [
+        { key: 'username', label: t('farms.details.attr.username'), type: 'text' },
+        { key: 'name', label: t('farms.details.attr.name'), type: 'text' },
+        { key: 'lastname', label: t('farms.details.attr.lastname'), type: 'text' },
+        { key: 'email', label: t('farms.details.attr.email'), type: 'text' },
+        { key: 'status', label: t('farms.details.attr.status'), type: 'status' },
+    ];
+
     const handleError = (error: any, message: string) => {
         console.error(message, error);
         setAlertConfig({ visible: true, color: 'danger', message })
-        setTimeout(() => {
-            setAlertConfig({ ...alertConfig, visible: false })
-        }, 5000);
-    }
-
-    const showAlert = (color: string, message: string) => {
-        setAlertConfig({ visible: true, color: color, message: message })
         setTimeout(() => {
             setAlertConfig({ ...alertConfig, visible: false })
         }, 5000);
@@ -57,7 +51,7 @@ const FarmDetails = () => {
             setFarmData(farmResponse)
             setManagerData(farmResponse.manager)
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al recuperar los datos')
+            handleError(error, t('farms.error.fetchDetails'))
         } finally {
             setLoading(false)
         }
@@ -79,13 +73,13 @@ const FarmDetails = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Detalles de granja"} pageTitle={"Granjas"} />
+                <BreadCrumb title={t('farms.details.breadcrumb')} pageTitle={t('farms.breadcrumbParent')} />
 
                 <Row>
                     <Col lg={3}>
                         <Card>
                             <CardHeader>
-                                <h4>Información general</h4>
+                                <h4>{t('farms.details.generalInfo')}</h4>
                             </CardHeader>
                             <CardBody>
                                 <ObjectDetails attributes={farmAttributes} object={farmData || {}} showImage={true} imageSrc={farmData?.image || farmDefaultImage} />
@@ -96,7 +90,7 @@ const FarmDetails = () => {
                     <Col lg={3}>
                         <Card>
                             <CardHeader>
-                                <h4>Información del gerente</h4>
+                                <h4>{t('farms.details.managerInfo')}</h4>
                             </CardHeader>
                             <CardBody>
                                 <ObjectDetails attributes={managerAttributes} object={managerData || {}} showImage={true} imageSrc={managerData?.profile_image || managerDefaultImage} />

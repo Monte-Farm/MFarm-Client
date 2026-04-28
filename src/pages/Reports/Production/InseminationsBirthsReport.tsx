@@ -1,5 +1,6 @@
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Badge, Card, CardBody, CardHeader, Col, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
 import { Column } from "common/data/data_types";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
@@ -44,14 +45,16 @@ interface ReportKpis {
     totalBornDead: number;
 }
 
-const resultLabels: Record<string, { label: string; color: string }> = {
-    success: { label: "Exitosa", color: "success" },
-    pending: { label: "Pendiente", color: "warning" },
-    failed: { label: "Fallida", color: "danger" },
-};
-
 const InseminationsBirthsReport = () => {
-    document.title = "Inseminaciones y Partos | Reportes";
+    const { t } = useTranslation();
+
+    const resultLabels: Record<string, { label: string; color: string }> = {
+        success: { label: t("reports.inseminationsBirths.result.success"), color: "success" },
+        pending: { label: t("reports.inseminationsBirths.result.pending"), color: "warning" },
+        failed: { label: t("reports.inseminationsBirths.result.failed"), color: "danger" },
+    };
+
+    document.title = `${t("reports.inseminationsBirths.title")} | ${t("reports.title")}`;
 
     const configContext = useContext(ConfigContext);
     const { isGlobal, farmId, scopeKey } = useReportScope();
@@ -98,7 +101,7 @@ const InseminationsBirthsReport = () => {
             setKpis(data.kpis);
             setMonthlyData(data.monthlyData || []);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar los datos del reporte." });
+            setAlertConfig({ visible: true, color: "danger", message: t("reports.error.loadData") });
         } finally {
             setLoading(false);
         }
@@ -125,12 +128,12 @@ const InseminationsBirthsReport = () => {
     }, [startDate, endDate, scopeKey]);
 
     const inseminationColumns: Column<InseminationRecord>[] = [
-        { header: "Fecha", accessor: "date", type: "date", isFilterable: true },
-        { header: "Cerda", accessor: "sowIdentifier", type: "text", isFilterable: true },
-        { header: "Berraco / Muestra", accessor: "boarOrSample", type: "text", isFilterable: true },
-        { header: "Tecnico", accessor: "technician", type: "text", isFilterable: true },
+        { header: t("reports.col.date"), accessor: "date", type: "date", isFilterable: true },
+        { header: t("reports.col.sow"), accessor: "sowIdentifier", type: "text", isFilterable: true },
+        { header: t("reports.inseminationsBirths.col.boarOrSample"), accessor: "boarOrSample", type: "text", isFilterable: true },
+        { header: t("reports.inseminationsBirths.col.technician"), accessor: "technician", type: "text", isFilterable: true },
         {
-            header: "Resultado",
+            header: t("reports.inseminationsBirths.col.result"),
             accessor: "result",
             type: "text",
             render: (value: string) => {
@@ -138,17 +141,17 @@ const InseminationsBirthsReport = () => {
                 return <Badge color={r.color}>{r.label}</Badge>;
             },
         },
-        { header: "Observaciones", accessor: "observations", type: "text" },
+        { header: t("reports.col.observations"), accessor: "observations", type: "text" },
     ];
 
     const birthColumns: Column<BirthRecord>[] = [
-        { header: "Fecha", accessor: "date", type: "date", isFilterable: true },
-        { header: "Cerda", accessor: "sowIdentifier", type: "text", isFilterable: true },
-        { header: "Nacidos Vivos", accessor: "bornAlive", type: "number", bgColor: "#e8f5e9" },
-        { header: "Nacidos Muertos", accessor: "bornDead", type: "number", bgColor: "#ffebee" },
-        { header: "Momificados", accessor: "mummified", type: "number" },
-        { header: "Total", accessor: "totalBorn", type: "number", bgColor: "#e3f2fd" },
-        { header: "Observaciones", accessor: "observations", type: "text" },
+        { header: t("reports.col.date"), accessor: "date", type: "date", isFilterable: true },
+        { header: t("reports.col.sow"), accessor: "sowIdentifier", type: "text", isFilterable: true },
+        { header: t("reports.inseminationsBirths.col.bornAlive"), accessor: "bornAlive", type: "number", bgColor: "#e8f5e9" },
+        { header: t("reports.inseminationsBirths.col.bornDead"), accessor: "bornDead", type: "number", bgColor: "#ffebee" },
+        { header: t("reports.inseminationsBirths.col.mummified"), accessor: "mummified", type: "number" },
+        { header: t("reports.col.total"), accessor: "totalBorn", type: "number", bgColor: "#e3f2fd" },
+        { header: t("reports.col.observations"), accessor: "observations", type: "text" },
     ];
 
     const birthsBarData = monthlyData.map((m: any) => ({
@@ -161,10 +164,10 @@ const InseminationsBirthsReport = () => {
 
     return (
         <ReportPageLayout
-            title="Inseminaciones y Partos"
-            pageTitle="Reportes de Produccion"
+            title={t("reports.inseminationsBirths.title")}
+            pageTitle={t("reports.production")}
             onGeneratePdf={handleGeneratePdf}
-            pdfTitle="Reporte - Inseminaciones y Partos"
+            pdfTitle={t("reports.inseminationsBirths.pdfTitle")}
             startDate={startDate}
             endDate={endDate}
             onDateChange={(s, e) => { setStartDate(s); setEndDate(e); }}
@@ -173,7 +176,7 @@ const InseminationsBirthsReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Total Inseminaciones"
+                        title={t("reports.inseminationsBirths.kpi.totalInseminations")}
                         value={kpis.totalInseminations}
                         icon={<i className="ri-heart-pulse-line fs-4 text-primary"></i>}
                         animateValue
@@ -181,7 +184,7 @@ const InseminationsBirthsReport = () => {
                 </Col>
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Efectividad"
+                        title={t("reports.inseminationsBirths.kpi.effectiveness")}
                         value={kpis.effectivenessRate}
                         icon={<i className="ri-check-double-line fs-4 text-success"></i>}
                         animateValue
@@ -192,7 +195,7 @@ const InseminationsBirthsReport = () => {
                 </Col>
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Total Partos"
+                        title={t("reports.inseminationsBirths.kpi.totalBirths")}
                         value={kpis.totalBirths}
                         icon={<i className="mdi mdi-baby-bottle-outline fs-4 text-info"></i>}
                         animateValue
@@ -201,7 +204,7 @@ const InseminationsBirthsReport = () => {
                 </Col>
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Prom. Nacidos Vivos"
+                        title={t("reports.inseminationsBirths.kpi.avgBornAlive")}
                         value={kpis.avgBornAlive}
                         icon={<i className="ri-heart-2-line fs-4 text-success"></i>}
                         animateValue
@@ -216,12 +219,12 @@ const InseminationsBirthsReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={12}>
                     <BasicBarChart
-                        title="Nacidos Vivos vs Muertos por Mes"
+                        title={t("reports.inseminationsBirths.chart.bornAliveVsDead")}
                         data={birthsBarData}
                         indexBy="month"
                         keys={["Nacidos Vivos", "Nacidos Muertos"]}
-                        xLegend="Mes"
-                        yLegend="Cantidad"
+                        xLegend={t("reports.axis.month")}
+                        yLegend={t("reports.axis.quantity")}
                         height={280}
                         colors={["#10b981", "#ef4444"]}
                     />
@@ -238,7 +241,7 @@ const InseminationsBirthsReport = () => {
                                 onClick={() => setActiveTab("1")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-heart-pulse-line me-1"></i> Inseminaciones ({inseminations.length})
+                                <i className="ri-heart-pulse-line me-1"></i> {t("reports.inseminationsBirths.tab.inseminations")} ({inseminations.length})
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -247,7 +250,7 @@ const InseminationsBirthsReport = () => {
                                 onClick={() => setActiveTab("2")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="mdi mdi-baby-bottle-outline me-1"></i> Partos ({births.length})
+                                <i className="mdi mdi-baby-bottle-outline me-1"></i> {t("reports.inseminationsBirths.tab.births")} ({births.length})
                             </NavLink>
                         </NavItem>
                     </Nav>

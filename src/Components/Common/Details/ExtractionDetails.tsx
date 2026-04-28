@@ -1,7 +1,8 @@
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
-import { Button, Col, Container, Row, Card, CardBody, CardHeader, Badge, Spinner, Modal, ModalBody, ModalHeader } from "reactstrap";
+import { useTranslation } from "react-i18next";
+import { Button, Col, Card, CardBody, CardHeader, Badge, Spinner, Modal, ModalBody, ModalHeader, Row } from "reactstrap";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import ObjectDetails from "./ObjectDetails";
@@ -14,35 +15,36 @@ interface ExtractionDetailsProps {
 }
 
 const ExtractionDetails: React.FC<ExtractionDetailsProps> = ({ extractionId }) => {
-    document.title = "Detalles de extracción | System Management";
+    const { t } = useTranslation();
+    document.title = t('laboratory.extraction.details.pageTitle');
     const configContext = useContext(ConfigContext);
     const userLoggged = getEffectiveUser();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [pdfLoading, setPdfLoading] = useState(false);
-    const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "", });
+    const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [extractionDetails, setExtractionDetails] = useState<any>({});
     const [boarDetails, setBoarDetails] = useState<any>({});
     const [modals, setModals] = useState({ viewPDF: false });
     const [fileURL, setFileURL] = useState<string>('');
 
     const ExtractionAttributes: Attribute[] = [
-        { key: "batch", label: "Lote", type: "text" },
-        { key: "date", label: "Fecha de extracción", type: "date" },
-        { key: "volume", label: "Volumen", type: "text" },
-        { key: "unit_measurement", label: "Unidad de medida", type: "text" },
-        { key: "extraction_location", label: "Ubicación", type: "text" },
-        { key: "appearance", label: "Apariencia", type: "text" },
-        { key: "notes", label: "Notas", type: "text" },
+        { key: "batch", label: t('laboratory.extraction.form.field.batch'), type: "text" },
+        { key: "date", label: t('laboratory.extraction.form.field.date'), type: "date" },
+        { key: "volume", label: t('laboratory.extraction.form.field.volume'), type: "text" },
+        { key: "unit_measurement", label: t('laboratory.extraction.form.field.unitMeasurement'), type: "text" },
+        { key: "extraction_location", label: t('laboratory.extraction.form.field.location'), type: "text" },
+        { key: "appearance", label: t('laboratory.extraction.form.field.appearance'), type: "text" },
+        { key: "notes", label: t('laboratory.extraction.form.field.notes'), type: "text" },
     ];
 
     const BoarAttributes: Attribute[] = [
-        { key: "code", label: "Código", type: "text" },
-        { key: "birthdate", label: "Fecha de nacimiento", type: "date" },
-        { key: "breed", label: "Raza", type: "text" },
+        { key: "code", label: t('common.field.code'), type: "text" },
+        { key: "birthdate", label: t('common.field.birthDate'), type: "date" },
+        { key: "breed", label: t('common.field.breed'), type: "text" },
         {
             key: "origin",
-            label: "Origen",
+            label: t('pigs.column.origin'),
             type: "text",
             render: (value: string) => {
                 let color = 'secondary';
@@ -51,45 +53,42 @@ const ExtractionDetails: React.FC<ExtractionDetailsProps> = ({ extractionId }) =
                 switch (value) {
                     case 'born':
                         color = 'success';
-                        label = 'Nacido en la granja';
+                        label = t('pigs.origin.born');
                         break;
-
                     case 'purchased':
                         color = 'warning';
-                        label = 'Comprado';
+                        label = t('pigs.origin.purchased');
                         break;
-
                     case 'donated':
                         color = 'info';
-                        label = 'Donado';
+                        label = t('pigs.origin.donated');
                         break;
-
                     case 'other':
                         color = 'dark';
-                        label = 'Otro';
+                        label = t('pigs.origin.other');
                         break;
                 }
 
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { key: "weight", label: "Peso actual", type: "text" },
+        { key: "weight", label: t('common.field.weight'), type: "text" },
         {
             key: "status",
-            label: "Estado",
+            label: t('common.field.status'),
             type: "text",
             render: (value: string) => {
                 let color = 'secondary';
                 let label = value;
                 switch (value) {
-                    case 'alive': color = 'success'; label = 'Vivo'; break;
-                    case 'discarded': color = 'warning'; label = 'Descartado'; break;
-                    case 'dead': color = 'danger'; label = 'Muerto'; break;
+                    case 'alive': color = 'success'; label = t('pigs.status.alive'); break;
+                    case 'discarded': color = 'warning'; label = t('pigs.status.discarded'); break;
+                    case 'dead': color = 'danger'; label = t('pigs.status.dead'); break;
                 }
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { key: "observations", label: "Observaciones", type: "text" },
+        { key: "observations", label: t('common.field.observations'), type: "text" },
     ];
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
@@ -98,22 +97,15 @@ const ExtractionDetails: React.FC<ExtractionDetailsProps> = ({ extractionId }) =
 
     const handlePrintExtraction = async () => {
         if (!configContext) return;
-
         try {
             setPdfLoading(true);
-            
-            // Usar axiosHelper.getBlob para mantener consistencia
             const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/extractions/${extractionId}`);
-            
-            // Crear blob con tipo MIME explícito para PDF
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
-            const url = window.URL.createObjectURL(pdfBlob);
-            
-            setFileURL(url);
+            setFileURL(window.URL.createObjectURL(pdfBlob));
             toggleModal('viewPDF');
         } catch (error) {
-            console.error('Error generating report: ', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' })
+            console.error('Error generating report: ', { error });
+            setAlertConfig({ visible: true, color: 'danger', message: t('laboratory.extraction.error.generatePdf') });
         } finally {
             setPdfLoading(false);
         }
@@ -124,45 +116,36 @@ const ExtractionDetails: React.FC<ExtractionDetailsProps> = ({ extractionId }) =
             if (!configContext || !userLoggged) return;
             try {
                 setLoading(true);
-
                 const extractionResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/extraction/find_by_id/${extractionId}`);
                 const extraction = extractionResponse.data.data;
                 setExtractionDetails(extraction);
-
                 const boarResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/pig/find_by_id/${extraction.boar._id}`);
                 setBoarDetails(boarResponse.data.data);
             } catch (error) {
                 console.error("Error cargando datos", error);
-                setAlertConfig({ visible: true, color: "danger", message: "Ha ocurrido un error al obtener los datos, intentelo más tarde", });
+                setAlertConfig({ visible: true, color: "danger", message: t('laboratory.extraction.error.fetchData') });
             } finally {
                 setLoading(false);
             }
         };
-
         fetchData();
     }, []);
 
-    if (loading) {
-        return <LoadingAnimation />;
-    }
+    if (loading) return <LoadingAnimation />;
 
     return (
         <div className="mt-2">
             <div className="d-flex gap-2 mb-4">
-                <Button 
-                    color="primary" 
-                    onClick={handlePrintExtraction}
-                    disabled={pdfLoading}
-                >
+                <Button color="primary" onClick={handlePrintExtraction} disabled={pdfLoading}>
                     {pdfLoading ? (
                         <>
                             <Spinner className="me-2" size='sm' />
-                            Generando PDF
+                            {t('common.button.generating')}
                         </>
                     ) : (
                         <>
-                            <i className="ri-file-pdf-line me-2"></i>
-                            Ver PDF
+                            <i className="ri-file-pdf-line me-2" />
+                            {t('common.button.exportPdf')}
                         </>
                     )}
                 </Button>
@@ -172,7 +155,7 @@ const ExtractionDetails: React.FC<ExtractionDetailsProps> = ({ extractionId }) =
                 <Card className="mb-4 shadow-sm bg-light">
                     <CardBody className="d-flex justify-content-between align-items-center">
                         <span className="text-black fs-5">
-                            <strong>Responsable: </strong>
+                            <strong>{t('laboratory.extraction.details.responsible')} </strong>
                             {extractionDetails.technician.name}{" "}
                             {extractionDetails.technician.lastname}
                         </span>
@@ -180,18 +163,14 @@ const ExtractionDetails: React.FC<ExtractionDetailsProps> = ({ extractionId }) =
                 </Card>
             )}
 
-
             <Row>
                 <Col lg={6} className="mb-3">
                     <Card className="shadow-sm h-100">
                         <CardHeader className="bg-light fw-bold fs-5">
-                            Información de la extracción
+                            {t('laboratory.extraction.details.cardExtraction')}
                         </CardHeader>
                         <CardBody>
-                            <ObjectDetails
-                                attributes={ExtractionAttributes}
-                                object={extractionDetails}
-                            />
+                            <ObjectDetails attributes={ExtractionAttributes} object={extractionDetails} />
                         </CardBody>
                     </Card>
                 </Col>
@@ -199,37 +178,29 @@ const ExtractionDetails: React.FC<ExtractionDetailsProps> = ({ extractionId }) =
                 <Col lg={6} className="mb-3">
                     <Card className="shadow-sm h-100">
                         <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
-                            Información del verraco
-
+                            {t('laboratory.extraction.details.cardBoar')}
                             <Button className="fs-6 p-0" color="link" onClick={() => navigate(`/pigs/pig_details/${boarDetails._id}`)}>
-                                Todos los detalles ↗
+                                {t('laboratory.extraction.details.allDetails')} ↗
                             </Button>
                         </CardHeader>
                         <CardBody>
-                            <ObjectDetails
-                                attributes={BoarAttributes}
-                                object={boarDetails}
-                            />
+                            <ObjectDetails attributes={BoarAttributes} object={boarDetails} />
                         </CardBody>
                     </Card>
                 </Col>
             </Row>
 
-            {/* Alerta */}
             {alertConfig.visible && (
                 <AlertMessage
                     color={alertConfig.color}
                     message={alertConfig.message}
                     visible={alertConfig.visible}
-                    onClose={() =>
-                        setAlertConfig({ ...alertConfig, visible: false })
-                    }
+                    onClose={() => setAlertConfig({ ...alertConfig, visible: false })}
                 />
             )}
 
-            {/* Modal PDF */}
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de extracción</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('laboratory.extraction.modal.extractionDetails')}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>

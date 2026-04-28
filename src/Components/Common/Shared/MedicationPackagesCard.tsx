@@ -6,6 +6,7 @@ import {
     FiCalendar,
     FiUser,
 } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
 
 interface Props {
     packages: any[];
@@ -15,14 +16,6 @@ interface Props {
     status?: string;
 }
 
-const STAGE_LABELS: Record<string, string> = {
-    piglet: "Lechón",
-    weaning: "Destete",
-    fattening: "Engorda",
-    breeder: "Reproductor",
-    general: "General",
-};
-
 const MedicationPackagesCard = ({
     packages,
     onAdd,
@@ -30,17 +23,18 @@ const MedicationPackagesCard = ({
     disabled = false,
     status
 }: Props) => {
+    const { t } = useTranslation();
     const hasData = packages && packages.length > 0;
 
     return (
         <Card className="w-100 flex-grow-1 h-100 m-0">
             <CardHeader className="bg-white d-flex justify-content-between align-items-center border-bottom">
                 <h5 className="mb-0 fw-semibold">
-                    Paquetes de medicación administrados
+                    {t('medical.medication.packagesTitle')}
                 </h5>
 
                 <Button size="sm" color="primary" onClick={onAdd} disabled={disabled}>
-                    Administrar paquete
+                    {t('medical.medication.action.adminPackage')}
                 </Button>
             </CardHeader>
 
@@ -56,7 +50,7 @@ const MedicationPackagesCard = ({
                     <>
                         <FiAlertCircle size={32} className="text-muted" />
                         <span className="fs-5 text-muted">
-                            No hay paquetes de medicación administrados
+                            {t('medical.medication.action.noPackages')}
                         </span>
                     </>
                 ) : (
@@ -94,7 +88,7 @@ const MedicationPackagesCard = ({
                                 {hasStage && (
                                     <div className="mb-2 fs-5">
                                         <Badge color="info">
-                                            {STAGE_LABELS[p.stage] ?? p.stage}
+                                            {t(`feeding.stage.${p.stage}`, { defaultValue: p.stage })}
                                         </Badge>
                                     </div>
                                 )}
@@ -105,7 +99,7 @@ const MedicationPackagesCard = ({
                                         <FiUser />
                                         {p.appliedBy
                                             ? `${p.appliedBy.name} ${p.appliedBy.lastname}`
-                                            : "Desconocido"}
+                                            : t('medical.medication.field.unknown')}
                                     </span>
 
                                     <span className="d-flex align-items-center gap-1">
@@ -117,7 +111,7 @@ const MedicationPackagesCard = ({
                                 {/* Observaciones */}
                                 {p.observations && p.observations.trim() !== "" && (
                                     <div className="fs-6">
-                                        <strong className="text-muted">Notas:</strong>{" "}
+                                        <strong className="text-muted">{t('medication.card.packages.notes')}</strong>{" "}
                                         {p.observations}
                                     </div>
                                 )}

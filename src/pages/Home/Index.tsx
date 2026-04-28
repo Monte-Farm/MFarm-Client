@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { Container } from "reactstrap";
 import { getEffectiveUser } from "helpers/impersonation_helper";
-import { roleLabels } from "common/role_labels";
-import { userRoles } from "common/user_roles";
+import { useTranslation } from "react-i18next";
 import DashboardHeader from "./DashboardHeader";
 import ExecutiveDashboard from "./Dashboards/ExecutiveDashboard";
 import WarehouseDashboard from "./Dashboards/WarehouseDashboard";
@@ -13,16 +12,13 @@ import WorkerDashboard from "./Dashboards/WorkerDashboard";
 import { getDefaultDateRange, resolveDashboardRole } from "./dashboardHelpers";
 import SuperadminDashboard from "./Dashboards/SuperadminDashboard";
 
-const getRoleLabel = (role: string): string => {
-    if (roleLabels[role]) return roleLabels[role];
-    const found = userRoles.find(r => r.value === role);
-    return found?.label || role;
-};
-
 const Home = () => {
     document.title = "Inicio | Pig System";
 
     const userLogged = getEffectiveUser();
+    const { t } = useTranslation();
+
+    const getRoleLabel = (role: string): string => t(`roles.${role}`, { defaultValue: role });
     const defaults = getDefaultDateRange();
     const [startDate, setStartDate] = useState(defaults.startDate);
     const [endDate, setEndDate] = useState(defaults.endDate);

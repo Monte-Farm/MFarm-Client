@@ -1,5 +1,6 @@
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Badge, Card, CardBody, CardHeader, Col, Input, Row } from "reactstrap";
 import SimpleBar from "simplebar-react";
 import { useReportScope } from "hooks/useReportScope";
@@ -38,21 +39,23 @@ interface GroupInfo {
     totalSales: number;
 }
 
-const eventTypeLabels: Record<string, { label: string; color: string; icon: string }> = {
-    creation: { label: "Creacion", color: "primary", icon: "ri-add-circle-line" },
-    movement: { label: "Movimiento", color: "info", icon: "ri-arrow-left-right-line" },
-    feeding: { label: "Alimentacion", color: "success", icon: "ri-plant-line" },
-    medication: { label: "Medicacion", color: "warning", icon: "mdi mdi-heart-pulse" },
-    vaccination: { label: "Vacunacion", color: "secondary", icon: "ri-syringe-line" },
-    weighing: { label: "Pesaje", color: "primary", icon: "ri-scales-3-line" },
-    death: { label: "Muerte", color: "danger", icon: "ri-skull-line" },
-    sale: { label: "Venta", color: "success", icon: "ri-money-dollar-circle-line" },
-    health_event: { label: "Evento de Salud", color: "danger", icon: "ri-stethoscope-line" },
-    stage_change: { label: "Cambio de Etapa", color: "info", icon: "ri-arrow-right-line" },
-};
-
 const GroupTraceabilityReport = () => {
-    document.title = "Trazabilidad por Grupo | Reportes";
+    const { t } = useTranslation();
+
+    const eventTypeLabels: Record<string, { label: string; color: string; icon: string }> = {
+        creation: { label: t("reports.traceability.event.creation"), color: "primary", icon: "ri-add-circle-line" },
+        movement: { label: t("reports.traceability.event.movement"), color: "info", icon: "ri-arrow-left-right-line" },
+        feeding: { label: t("reports.traceability.event.feeding"), color: "success", icon: "ri-plant-line" },
+        medication: { label: t("reports.traceability.event.medication"), color: "warning", icon: "mdi mdi-heart-pulse" },
+        vaccination: { label: t("reports.traceability.event.vaccination"), color: "secondary", icon: "ri-syringe-line" },
+        weighing: { label: t("reports.traceability.event.weighing"), color: "primary", icon: "ri-scales-3-line" },
+        death: { label: t("reports.traceability.event.death"), color: "danger", icon: "ri-skull-line" },
+        sale: { label: t("reports.traceability.event.sale"), color: "success", icon: "ri-money-dollar-circle-line" },
+        health_event: { label: t("reports.traceability.event.health_event"), color: "danger", icon: "ri-stethoscope-line" },
+        stage_change: { label: t("reports.traceability.event.stage_change"), color: "info", icon: "ri-arrow-right-line" },
+    };
+
+    document.title = `${t("reports.traceability.title")} | ${t("reports.title")}`;
 
     const configContext = useContext(ConfigContext);
     const { isGlobal, farmId, scopeKey } = useReportScope();
@@ -91,7 +94,7 @@ const GroupTraceabilityReport = () => {
                 setGroups(res.data.data || []);
             }
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar los grupos." });
+            setAlertConfig({ visible: true, color: "danger", message: t("reports.error.loadGroups") });
         } finally {
             setLoadingGroups(false);
         }
@@ -108,7 +111,7 @@ const GroupTraceabilityReport = () => {
             setGroupInfo(data.groupInfo);
             setTimeline(data.timeline || []);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar la trazabilidad del grupo." });
+            setAlertConfig({ visible: true, color: "danger", message: t("reports.error.loadTraceability") });
         } finally {
             setLoading(false);
         }
@@ -138,9 +141,9 @@ const GroupTraceabilityReport = () => {
     }, [selectedGroupId]);
 
     const timelineColumns: Column<TimelineEvent>[] = [
-        { header: "Fecha", accessor: "date", type: "date", isFilterable: true },
+        { header: t("reports.col.date"), accessor: "date", type: "date", isFilterable: true },
         {
-            header: "Tipo", accessor: "eventType", type: "text",
+            header: t("reports.traceability.col.eventType"), accessor: "eventType", type: "text",
             render: (value: string) => {
                 const e = eventTypeLabels[value] || { label: value, color: "secondary", icon: "ri-information-line" };
                 return (
@@ -150,19 +153,19 @@ const GroupTraceabilityReport = () => {
                 );
             },
         },
-        { header: "Descripcion", accessor: "description", type: "text", isFilterable: true },
-        { header: "Detalles", accessor: "details", type: "text" },
-        { header: "Usuario", accessor: "user", type: "text" },
+        { header: t("reports.traceability.col.description"), accessor: "description", type: "text", isFilterable: true },
+        { header: t("reports.traceability.col.details"), accessor: "details", type: "text" },
+        { header: t("reports.col.user"), accessor: "user", type: "text" },
     ];
 
     if (loadingGroups) return <LoadingAnimation />;
 
     return (
         <ReportPageLayout
-            title="Trazabilidad por Grupo"
-            pageTitle="Reportes"
+            title={t("reports.traceability.title")}
+            pageTitle={t("reports.title")}
             onGeneratePdf={selectedGroupId ? () => handleGeneratePdf() : undefined}
-            pdfTitle="Reporte - Trazabilidad de Grupo"
+            pdfTitle={t("reports.traceability.pdfTitle")}
             showDateFilter={false}
         >
             {/* Group selector */}
@@ -173,13 +176,13 @@ const GroupTraceabilityReport = () => {
                             <i className="ri-group-line fs-4 text-primary"></i>
                         </div>
                         <div>
-                            <h6 className="mb-0 fw-semibold">Seleccionar Grupo</h6>
-                            <small className="text-muted">Busca y selecciona un grupo para ver su trazabilidad</small>
+                            <h6 className="mb-0 fw-semibold">{t("reports.traceability.selectGroup")}</h6>
+                            <small className="text-muted">{t("reports.traceability.selectGroupHint")}</small>
                         </div>
                     </div>
                     <Input
                         type="text"
-                        placeholder="Buscar grupo por nombre..."
+                        placeholder={t("reports.traceability.searchPlaceholder")}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="mb-3"
@@ -217,7 +220,7 @@ const GroupTraceabilityReport = () => {
                                 ))
                             }
                             {groups.filter(g => g.name.toLowerCase().includes(searchTerm.toLowerCase()) || g.stage.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
-                                <span className="text-muted fst-italic">No se encontraron grupos</span>
+                                <span className="text-muted fst-italic">{t("reports.traceability.noGroupsFound")}</span>
                             )}
                         </div>
                     </SimpleBar>
@@ -231,7 +234,7 @@ const GroupTraceabilityReport = () => {
                     <Row className="g-3 mb-3">
                         <Col xl={3} md={6}>
                             <StatKpiCard
-                                title="Grupo"
+                                title={t("reports.traceability.kpi.group")}
                                 value={groupInfo.name}
                                 subtext={groupInfo.stage}
                                 icon={<i className="ri-group-line fs-4 text-primary"></i>}
@@ -239,7 +242,7 @@ const GroupTraceabilityReport = () => {
                         </Col>
                         <Col xl={3} md={6}>
                             <StatKpiCard
-                                title="Cerdos"
+                                title={t("reports.traceability.kpi.pigs")}
                                 value={groupInfo.pigCount}
                                 icon={<i className="bx bxs-dog fs-4 text-info"></i>}
                                 animateValue
@@ -248,7 +251,7 @@ const GroupTraceabilityReport = () => {
                         </Col>
                         <Col xl={3} md={6}>
                             <StatKpiCard
-                                title="Peso Promedio"
+                                title={t("reports.traceability.kpi.avgWeight")}
                                 value={groupInfo.avgWeight}
                                 icon={<i className="ri-scales-3-line fs-4 text-warning"></i>}
                                 animateValue
@@ -259,7 +262,7 @@ const GroupTraceabilityReport = () => {
                         </Col>
                         <Col xl={3} md={6}>
                             <StatKpiCard
-                                title="Fecha de Entrada"
+                                title={t("reports.traceability.kpi.entryDate")}
                                 value={groupInfo.entryDate ? new Date(groupInfo.entryDate).toLocaleDateString() : "—"}
                                 icon={<i className="ri-calendar-line fs-4 text-secondary"></i>}
                                 iconBgColor="#F5F5F5"
@@ -270,7 +273,7 @@ const GroupTraceabilityReport = () => {
                     <Row className="g-3 mb-3">
                         <Col xl={3} md={6}>
                             <StatKpiCard
-                                title="Alimento Consumido"
+                                title={t("reports.traceability.kpi.feedConsumed")}
                                 value={groupInfo.totalFeedConsumed}
                                 icon={<i className="ri-plant-line fs-4 text-success"></i>}
                                 animateValue
@@ -281,7 +284,7 @@ const GroupTraceabilityReport = () => {
                         </Col>
                         <Col xl={3} md={6}>
                             <StatKpiCard
-                                title="Medicaciones"
+                                title={t("reports.traceability.kpi.medications")}
                                 value={groupInfo.totalMedications}
                                 icon={<i className="mdi mdi-heart-pulse fs-4 text-warning"></i>}
                                 animateValue
@@ -290,7 +293,7 @@ const GroupTraceabilityReport = () => {
                         </Col>
                         <Col xl={3} md={6}>
                             <StatKpiCard
-                                title="Muertes"
+                                title={t("reports.traceability.kpi.deaths")}
                                 value={groupInfo.totalDeaths}
                                 icon={<i className="ri-skull-line fs-4 text-danger"></i>}
                                 animateValue
@@ -299,7 +302,7 @@ const GroupTraceabilityReport = () => {
                         </Col>
                         <Col xl={3} md={6}>
                             <StatKpiCard
-                                title="Ventas"
+                                title={t("reports.traceability.kpi.sales")}
                                 value={groupInfo.totalSales}
                                 icon={<i className="ri-money-dollar-circle-line fs-4 text-success"></i>}
                                 animateValue
@@ -312,7 +315,7 @@ const GroupTraceabilityReport = () => {
                         <CardHeader>
                             <h5 className="mb-0">
                                 <i className="ri-time-line me-2"></i>
-                                Historial Completo ({timeline.length} eventos)
+                                {t("reports.traceability.historyTitle")} ({timeline.length} eventos)
                             </h5>
                         </CardHeader>
                         <CardBody>
@@ -326,7 +329,7 @@ const GroupTraceabilityReport = () => {
                 <Card>
                     <CardBody className="text-center text-muted py-5">
                         <i className="ri-file-search-line" style={{ fontSize: "3rem" }}></i>
-                        <p className="mt-2">No se encontro informacion para este grupo.</p>
+                        <p className="mt-2">{t("reports.traceability.noDataForGroup")}</p>
                     </CardBody>
                 </Card>
             )}
@@ -335,7 +338,7 @@ const GroupTraceabilityReport = () => {
                 <Card>
                     <CardBody className="text-center text-muted py-5">
                         <i className="ri-group-line" style={{ fontSize: "3rem" }}></i>
-                        <p className="mt-2">Selecciona un grupo para ver su trazabilidad completa.</p>
+                        <p className="mt-2">{t("reports.traceability.selectGroupPrompt")}</p>
                     </CardBody>
                 </Card>
             )}

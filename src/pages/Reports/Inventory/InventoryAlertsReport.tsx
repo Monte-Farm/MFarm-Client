@@ -1,5 +1,6 @@
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardBody, CardHeader, Col, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
 import { useReportScope } from "hooks/useReportScope";
 import { buildReportUrl } from "helpers/reports_url_helper";
@@ -48,7 +49,8 @@ interface AlertsKpis {
 }
 
 const InventoryAlertsReport = () => {
-    document.title = "Analisis de Inventario | Reportes";
+    const { t } = useTranslation();
+    document.title = `${t("reports.invAlerts.title")} | ${t("reports.inventory")}`;
 
     const configContext = useContext(ConfigContext);
     const { isGlobal, farmId, scopeKey } = useReportScope();
@@ -88,7 +90,7 @@ const InventoryAlertsReport = () => {
             setShrinkage(data.shrinkage || []);
             setKpis(data.kpis);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar los datos del reporte." });
+            setAlertConfig({ visible: true, color: "danger", message: t("reports.error.loadData") });
         } finally {
             setLoading(false);
         }
@@ -115,22 +117,22 @@ const InventoryAlertsReport = () => {
     }, [startDate, endDate, scopeKey]);
 
     const rotationColumns: Column<RotationItem>[] = [
-        { header: "Producto", accessor: "productName", type: "text", isFilterable: true },
-        { header: "Almacen", accessor: "warehouse", type: "text", isFilterable: true },
+        { header: t("reports.col.product"), accessor: "productName", type: "text", isFilterable: true },
+        { header: t("reports.col.warehouse"), accessor: "warehouse", type: "text", isFilterable: true },
         {
-            header: "Entradas", accessor: "totalIn", type: "text",
+            header: t("reports.invAlerts.col.incomes"), accessor: "totalIn", type: "text",
             render: (v: number, row: RotationItem) => <span>{v?.toLocaleString()} {row.unit}</span>,
         },
         {
-            header: "Salidas", accessor: "totalOut", type: "text",
+            header: t("reports.invAlerts.col.outcomes"), accessor: "totalOut", type: "text",
             render: (v: number, row: RotationItem) => <span>{v?.toLocaleString()} {row.unit}</span>,
         },
         {
-            header: "Stock Prom.", accessor: "avgStock", type: "text",
+            header: t("reports.invAlerts.col.avgStock"), accessor: "avgStock", type: "text",
             render: (v: number, row: RotationItem) => <span>{v?.toFixed(1)} {row.unit}</span>,
         },
         {
-            header: "Indice de Rotacion", accessor: "rotationIndex", type: "text", bgColor: "#e3f2fd",
+            header: t("reports.invAlerts.col.rotationIndex"), accessor: "rotationIndex", type: "text", bgColor: "#e3f2fd",
             render: (v: number) => (
                 <span className={`fw-semibold ${v >= 4 ? "text-success" : v >= 2 ? "text-warning" : "text-danger"}`}>
                     {v?.toFixed(2)}
@@ -140,40 +142,40 @@ const InventoryAlertsReport = () => {
     ];
 
     const staleColumns: Column<StaleProduct>[] = [
-        { header: "Producto", accessor: "productName", type: "text", isFilterable: true },
-        { header: "Almacen", accessor: "warehouse", type: "text", isFilterable: true },
+        { header: t("reports.col.product"), accessor: "productName", type: "text", isFilterable: true },
+        { header: t("reports.col.warehouse"), accessor: "warehouse", type: "text", isFilterable: true },
         {
-            header: "Stock Actual", accessor: "currentStock", type: "text",
+            header: t("reports.invAlerts.col.currentStock"), accessor: "currentStock", type: "text",
             render: (v: number, row: StaleProduct) => <span>{v} {row.unit}</span>,
         },
-        { header: "Ultimo Movimiento", accessor: "lastMovementDate", type: "date" },
+        { header: t("reports.invAlerts.col.lastMovement"), accessor: "lastMovementDate", type: "date" },
         {
-            header: "Dias sin Movimiento", accessor: "daysSinceLastMovement", type: "number", bgColor: "#fff8e1",
+            header: t("reports.invAlerts.col.daysSince"), accessor: "daysSinceLastMovement", type: "number", bgColor: "#fff8e1",
             render: (v: number) => (
                 <span className={`fw-semibold ${v >= 90 ? "text-danger" : v >= 30 ? "text-warning" : ""}`}>
-                    {v} dias
+                    {v} {t("reports.axis.days")}
                 </span>
             ),
         },
     ];
 
     const shrinkageColumns: Column<ShrinkageItem>[] = [
-        { header: "Producto", accessor: "productName", type: "text", isFilterable: true },
-        { header: "Almacen", accessor: "warehouse", type: "text", isFilterable: true },
+        { header: t("reports.col.product"), accessor: "productName", type: "text", isFilterable: true },
+        { header: t("reports.col.warehouse"), accessor: "warehouse", type: "text", isFilterable: true },
         {
-            header: "Stock Esperado", accessor: "expectedStock", type: "text",
+            header: t("reports.invAlerts.col.expected"), accessor: "expectedStock", type: "text",
             render: (v: number, row: ShrinkageItem) => <span>{v?.toFixed(1)} {row.unit}</span>,
         },
         {
-            header: "Stock Real", accessor: "actualStock", type: "text",
+            header: t("reports.invAlerts.col.actual"), accessor: "actualStock", type: "text",
             render: (v: number, row: ShrinkageItem) => <span>{v?.toFixed(1)} {row.unit}</span>,
         },
         {
-            header: "Merma", accessor: "shrinkage", type: "text", bgColor: "#ffebee",
+            header: t("reports.invAlerts.col.shrinkage"), accessor: "shrinkage", type: "text", bgColor: "#ffebee",
             render: (v: number, row: ShrinkageItem) => <span className="text-danger fw-semibold">{v?.toFixed(1)} {row.unit}</span>,
         },
         {
-            header: "Merma %", accessor: "shrinkagePercent", type: "text", bgColor: "#ffebee",
+            header: t("reports.invAlerts.col.shrinkagePct"), accessor: "shrinkagePercent", type: "text", bgColor: "#ffebee",
             render: (v: number) => <span className="text-danger fw-semibold">{v?.toFixed(2)}%</span>,
         },
     ];
@@ -182,10 +184,10 @@ const InventoryAlertsReport = () => {
 
     return (
         <ReportPageLayout
-            title="Analisis de Inventario"
-            pageTitle="Reportes de Inventario"
+            title={t("reports.invAlerts.title")}
+            pageTitle={t("reports.inventory")}
             onGeneratePdf={handleGeneratePdf}
-            pdfTitle="Reporte - Analisis de Inventario"
+            pdfTitle={t("reports.invAlerts.pdfTitle")}
             startDate={startDate}
             endDate={endDate}
             onDateChange={(s, e) => { setStartDate(s); setEndDate(e); }}
@@ -193,7 +195,7 @@ const InventoryAlertsReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Rotacion Promedio"
+                        title={t("reports.invAlerts.kpi.avgRotation")}
                         value={kpis.avgRotationIndex}
                         icon={<i className="ri-refresh-line fs-4 text-primary"></i>}
                         animateValue
@@ -202,7 +204,7 @@ const InventoryAlertsReport = () => {
                 </Col>
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Productos sin Movimiento"
+                        title={t("reports.invAlerts.kpi.staleProducts")}
                         value={kpis.staleProductCount}
                         icon={<i className="ri-time-line fs-4 text-warning"></i>}
                         animateValue
@@ -211,7 +213,7 @@ const InventoryAlertsReport = () => {
                 </Col>
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Merma Total"
+                        title={t("reports.invAlerts.kpi.totalShrinkage")}
                         value={kpis.totalShrinkage}
                         icon={<i className="ri-arrow-down-circle-line fs-4 text-danger"></i>}
                         animateValue
@@ -222,7 +224,7 @@ const InventoryAlertsReport = () => {
                 </Col>
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Merma %"
+                        title={t("reports.invAlerts.kpi.shrinkagePct")}
                         value={kpis.shrinkagePercent}
                         icon={<i className="ri-percent-line fs-4 text-danger"></i>}
                         animateValue
@@ -242,7 +244,7 @@ const InventoryAlertsReport = () => {
                                 onClick={() => setActiveTab("1")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-refresh-line me-1"></i> Rotacion ({rotation.length})
+                                <i className="ri-refresh-line me-1"></i> {t("reports.invAlerts.tab.rotation")} ({rotation.length})
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -251,7 +253,7 @@ const InventoryAlertsReport = () => {
                                 onClick={() => setActiveTab("2")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-time-line me-1"></i> Sin Movimiento ({staleProducts.length})
+                                <i className="ri-time-line me-1"></i> {t("reports.invAlerts.tab.noMovement")} ({staleProducts.length})
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -260,7 +262,7 @@ const InventoryAlertsReport = () => {
                                 onClick={() => setActiveTab("3")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-arrow-down-circle-line me-1"></i> Mermas ({shrinkage.length})
+                                <i className="ri-arrow-down-circle-line me-1"></i> {t("reports.invAlerts.tab.shrinkage")} ({shrinkage.length})
                             </NavLink>
                         </NavItem>
                     </Nav>

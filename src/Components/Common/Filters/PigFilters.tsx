@@ -7,6 +7,7 @@ import {
     Button, Input, Popover, PopoverHeader,
     PopoverBody, Row, Col, FormGroup, Label, Badge
 } from "reactstrap";
+import { useTranslation } from "react-i18next";
 
 export interface PigFiltersState {
     status: string;
@@ -51,6 +52,7 @@ const PigFilters: React.FC<PigFiltersProps> = ({
         "Tamworth"
     ]
 }) => {
+    const { t } = useTranslation();
     const filterBtnRef = useRef(null);
 
     const activeFilterCount = Object.values(filters).filter(v =>
@@ -58,50 +60,49 @@ const PigFilters: React.FC<PigFiltersProps> = ({
     ).length;
 
     const statusOptions = [
-        { value: "", label: "Todos" },
-        { value: "alive", label: "Vivo" },
-        { value: "sold", label: "Vendido" },
-        { value: "slaughtered", label: "Sacrificado" },
-        { value: "dead", label: "Muerto" },
-        { value: "discarded", label: "Descartado" },
+        { value: "", label: t('pigs.filter.allStatus') },
+        { value: "alive", label: t('pigs.status.alive') },
+        { value: "sold", label: t('pigs.status.sold') },
+        { value: "slaughtered", label: t('pigs.status.slaughtered') },
+        { value: "dead", label: t('pigs.status.dead') },
+        { value: "discarded", label: t('pigs.status.discarded') },
     ];
 
     const stageOptions = [
-        { value: "", label: "Todas" },
-        { value: "piglet", label: "Lechón" },
-        { value: "weaning", label: "Destete" },
-        { value: "fattening", label: "Engorda" },
-        { value: "breeder", label: "Reproductor" },
-        { value: "gestation", label: "Gestación" }
+        { value: "", label: t('pigs.filter.allStages') },
+        { value: "piglet", label: t('pigs.stage.piglet') },
+        { value: "weaning", label: t('pigs.stage.weaning') },
+        { value: "fattening", label: t('pigs.stage.fattening') },
+        { value: "breeder", label: t('pigs.stage.breeder') },
+        { value: "gestation", label: t('pigs.stage.gestation') },
     ];
 
     const originOptions = [
-        { value: "", label: "Todos" },
-        { value: "born", label: "Nacido" },
-        { value: "purchased", label: "Comprado" },
-        { value: "donated", label: "Donado" },
-        { value: "other", label: "Otro" }
+        { value: "", label: t('pigs.filter.allOrigins') },
+        { value: "born", label: t('pigs.origin.born') },
+        { value: "purchased", label: t('pigs.origin.purchased') },
+        { value: "donated", label: t('pigs.origin.donated') },
+        { value: "other", label: t('pigs.origin.other') },
     ];
 
     const sexOptions = [
-        { value: "", label: "Todos" },
-        { value: "male", label: "Macho" },
-        { value: "female", label: "Hembra" }
+        { value: "", label: t('pigs.filter.allSex') },
+        { value: "male", label: t('pigs.sex.maleShort') },
+        { value: "female", label: t('pigs.sex.femaleShort') },
     ];
 
     const breedOptions = [
-        { value: "", label: "Todas" },
+        { value: "", label: t('pigs.filter.allBreeds') },
         ...predefinedBreeds.map(breed => ({ value: breed, label: breed }))
     ];
 
     return (
         <div className="d-flex flex-wrap align-items-center gap-3">
-            {/* Barra de búsqueda con icono */}
             <div className="position-relative flex-grow-1" style={{ maxWidth: "400px" }}>
                 <FiSearch className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" />
                 <Input
                     type="text"
-                    placeholder="Buscar cerdos..."
+                    placeholder={t('pigs.filter.search')}
                     value={searchTerm}
                     onChange={(e) => onSearchChange(e.target.value)}
                     className="form-control ps-5"
@@ -110,7 +111,7 @@ const PigFilters: React.FC<PigFiltersProps> = ({
 
             <Button innerRef={filterBtnRef} color="light" onClick={onTogglePopover} className="d-flex align-items-center position-relative">
                 <FiFilter className="me-2" />
-                Filtros
+                {t('pigs.filter.title')}
                 {activeFilterCount > 0 && (
                     <Badge color="primary" pill className="position-absolute top-0 start-100 translate-middle">
                         {activeFilterCount}
@@ -120,14 +121,14 @@ const PigFilters: React.FC<PigFiltersProps> = ({
 
             <Popover placement="bottom-end" isOpen={popoverOpen} target={filterBtnRef} toggle={onTogglePopover} trigger="legacy" className="filter-popover" style={{ minWidth: "450px" }}>
                 <PopoverHeader className="d-flex justify-content-between align-items-center popover-header">
-                    <span className="text-black">Filtrar cerdos</span>
+                    <span className="text-black">{t('pigs.filter.header')}</span>
                     <Button close onClick={onTogglePopover} />
                 </PopoverHeader>
                 <PopoverBody className="popover-body">
                     <Row className="g-3">
                         <Col md={6}>
                             <FormGroup>
-                                <Label>Estado</Label>
+                                <Label>{t('pigs.filter.status')}</Label>
                                 <Select
                                     options={statusOptions}
                                     value={statusOptions.find(opt => opt.value === filters.status)}
@@ -139,7 +140,7 @@ const PigFilters: React.FC<PigFiltersProps> = ({
                         </Col>
                         <Col md={6}>
                             <FormGroup>
-                                <Label>Etapa</Label>
+                                <Label>{t('pigs.filter.stage')}</Label>
                                 <Select
                                     options={stageOptions}
                                     value={stageOptions.find(opt => opt.value === filters.currentStage)}
@@ -151,7 +152,7 @@ const PigFilters: React.FC<PigFiltersProps> = ({
                         </Col>
                         <Col md={6}>
                             <FormGroup>
-                                <Label>Origen</Label>
+                                <Label>{t('pigs.filter.origin')}</Label>
                                 <Select
                                     options={originOptions}
                                     value={originOptions.find(opt => opt.value === filters.origin)}
@@ -163,7 +164,7 @@ const PigFilters: React.FC<PigFiltersProps> = ({
                         </Col>
                         <Col md={6}>
                             <FormGroup>
-                                <Label>Género</Label>
+                                <Label>{t('pigs.filter.sex')}</Label>
                                 <Select
                                     options={sexOptions}
                                     value={sexOptions.find(opt => opt.value === filters.sex)}
@@ -175,7 +176,7 @@ const PigFilters: React.FC<PigFiltersProps> = ({
                         </Col>
                         <Col md={6}>
                             <FormGroup>
-                                <Label>Raza</Label>
+                                <Label>{t('pigs.filter.breed')}</Label>
                                 <Select
                                     options={breedOptions}
                                     value={breedOptions.find(opt => opt.value === filters.breed)}
@@ -188,7 +189,7 @@ const PigFilters: React.FC<PigFiltersProps> = ({
                         <Col md={6}>
                             <FormGroup>
                                 <Label>
-                                    Peso (kg): {filters.weightRange[0]} - {filters.weightRange[1]}
+                                    {t('pigs.filter.weightRange', { min: filters.weightRange[0], max: filters.weightRange[1] })}
                                 </Label>
                                 <Slider
                                     range
@@ -209,7 +210,7 @@ const PigFilters: React.FC<PigFiltersProps> = ({
                     <div className="d-flex justify-content-end gap-2 mt-3">
                         <Button color="light" onClick={onClearFilters} className="d-flex align-items-center">
                             <FiX className="me-1" />
-                            Limpiar filtros
+                            {t('pigs.filter.clear')}
                         </Button>
                     </div>
                 </PopoverBody>

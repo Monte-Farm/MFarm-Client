@@ -2,7 +2,8 @@ import { ConfigContext } from "App";
 import { Attribute, MedicationPackage, ProductData } from "common/data_interfaces";
 import { useFormik } from "formik";
 import { getEffectiveUser } from "helpers/impersonation_helper";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Badge, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from "reactstrap";
 import * as Yup from "yup";
 import classnames from "classnames";
@@ -23,6 +24,7 @@ interface MedicationPackageFormProps {
 }
 
 const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, onCancel }) => {
+    const { t } = useTranslation();
     const userLogged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -51,42 +53,36 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
 
     const columns: Column<any>[] = [
         {
-            header: 'Imagen', accessor: 'image', render: (_, row) => (
+            header: t('feeding.package.form.column.image'), accessor: 'image', render: (_, row) => (
                 <img src={row.image || noImageUrl} alt="Imagen del Producto" style={{ height: "70px" }} />
             ),
         },
-        { header: "Codigo", accessor: "code", type: "text", isFilterable: true },
-        { header: "Producto", accessor: "name", type: "text", isFilterable: true },
+        { header: t('common.field.code'), accessor: "code", type: "text", isFilterable: true },
+        { header: t('feeding.package.form.column.product'), accessor: "name", type: "text", isFilterable: true },
         {
-            header: 'Categoria',
+            header: t('feeding.package.form.column.category'),
             accessor: 'category',
             render: (value: string) => {
                 let color = "secondary";
-                let label = value;
+                const label = t(`feeding.productCategory.${value}`, { defaultValue: value });
 
                 switch (value) {
-                    case "medications":
-                        color = "info";
-                        label = "Medicamentos";
-                        break;
-                    case "vaccines":
-                        color = "primary";
-                        label = "Vacunas";
-                        break;
+                    case "medications": color = "info"; break;
+                    case "vaccines": color = "primary"; break;
                 }
 
                 return <Badge color={color}>{label}</Badge>;
             },
         },
         {
-            header: "Precio Promedio",
+            header: t('feeding.package.form.column.avgPrice'),
             accessor: "averagePrice",
             render: (_, row) => (
                 <span>${(row.averagePrice ?? 0).toFixed(2)} / {row.unit_measurement}</span>
             ),
         },
         {
-            header: "Cantidad por cerdo",
+            header: t('medication.package.form.column.dosePerHead'),
             accessor: "quantity",
             type: "number",
             render: (_, row, isSelected) => {
@@ -114,7 +110,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
             },
         },
         {
-            header: "Vía de administración",
+            header: t('medical.medication.field.route'),
             accessor: "administration_route",
             type: "text",
             render: (value, row, isSelected) => {
@@ -134,14 +130,14 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                         }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <option value="">Seleccione...</option>
-                        <option value="oral">Oral</option>
-                        <option value="intramuscular">Intramuscular</option>
-                        <option value="subcutaneous">Subcutánea</option>
-                        <option value="intravenous">Intravenosa</option>
-                        <option value="intranasal">Intranasal</option>
-                        <option value="topical">Tópica</option>
-                        <option value="rectal">Rectal</option>
+                        <option value="">{t('form.pig.placeholder.selectOption')}</option>
+                        <option value="oral">{t('medical.medication.route.oral')}</option>
+                        <option value="intramuscular">{t('medical.medication.route.intramuscular')}</option>
+                        <option value="subcutaneous">{t('medical.medication.route.subcutaneous')}</option>
+                        <option value="intravenous">{t('medical.medication.route.intravenous')}</option>
+                        <option value="intranasal">{t('medical.medication.route.intranasal')}</option>
+                        <option value="topical">{t('medical.medication.route.topical')}</option>
+                        <option value="rectal">{t('medical.medication.route.rectal')}</option>
                     </Input>
                 );
             }
@@ -149,10 +145,10 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
     ];
 
     const selectedMedicationsColumns: Column<any>[] = [
-        { header: "Codigo", accessor: "code", type: "text", isFilterable: true },
-        { header: "Producto", accessor: "name", type: "text", isFilterable: true },
+        { header: t('common.field.code'), accessor: "code", type: "text", isFilterable: true },
+        { header: t('feeding.package.form.column.product'), accessor: "name", type: "text", isFilterable: true },
         {
-            header: "C. por cerdo",
+            header: t('medication.package.form.column.doseShort'),
             accessor: "quantity",
             type: "text",
             isFilterable: true,
@@ -161,14 +157,14 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
             ),
         },
         {
-            header: "Precio Promedio",
+            header: t('feeding.package.form.column.avgPrice'),
             accessor: "averagePrice",
             render: (_: any, row: any) => (
                 <span>${(row.averagePrice ?? 0).toFixed(2)} / {row.unit_measurement}</span>
             ),
         },
         {
-            header: "Costo por cerdo",
+            header: t('medication.package.form.column.costPerHead'),
             accessor: "costPerPig",
             render: (_: any, row: any) => {
                 const cost = (row.quantity ?? 0) * (row.averagePrice ?? 0);
@@ -176,43 +172,22 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
             },
         },
         {
-            header: "Via de administracion",
+            header: t('medical.medication.field.route'),
             accessor: "administration_route",
             type: "text",
             isFilterable: true,
             render: (value: string) => {
                 let color = "secondary";
-                let label = value;
+                const label = t(`medical.medication.route.${value}`, { defaultValue: value });
 
                 switch (value) {
-                    case "oral":
-                        color = "info";
-                        label = "Oral";
-                        break;
-                    case "intramuscular":
-                        color = "primary";
-                        label = "Intramuscular";
-                        break;
-                    case "subcutaneous":
-                        color = "primary";
-                        label = "Subcutánea";
-                        break;
-                    case "intravenous":
-                        color = "primary";
-                        label = "Intravenosa";
-                        break;
-                    case "intranasal":
-                        color = "primary";
-                        label = "Intranasal";
-                        break;
-                    case "topical":
-                        color = "primary";
-                        label = "Tópica";
-                        break;
-                    case "rectal":
-                        color = "primary";
-                        label = "Rectal";
-                        break;
+                    case "oral": color = "info"; break;
+                    case "intramuscular": color = "primary"; break;
+                    case "subcutaneous": color = "primary"; break;
+                    case "intravenous": color = "primary"; break;
+                    case "intranasal": color = "primary"; break;
+                    case "topical": color = "primary"; break;
+                    case "rectal": color = "primary"; break;
                 }
 
                 return <Badge color={color}>{label}</Badge>;
@@ -221,38 +196,23 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
     ]
 
     const medicationAttributes: Attribute[] = [
-        { key: 'code', label: 'Codigo', type: 'text' },
-        { key: 'name', label: 'Nombre', type: 'text' },
-        { key: 'creation_date', label: 'Fecha de creacion', type: 'date' },
+        { key: 'code', label: t('common.field.code'), type: 'text' },
+        { key: 'name', label: t('common.field.name'), type: 'text' },
+        { key: 'creation_date', label: t('medication.package.column.createdAt'), type: 'date' },
         {
             key: 'stage',
-            label: 'Etapa',
+            label: t('common.field.stage'),
             type: 'text',
             render: (_, row) => {
                 let color = "secondary";
-                let text = "Desconocido";
+                const text = t(`feeding.stage.${row.stage}`, { defaultValue: t('medical.medication.field.unknown') });
 
                 switch (row.stage) {
-                    case "general":
-                        color = "info";
-                        text = "General";
-                        break;
-                    case "piglet":
-                        color = "info";
-                        text = "Lechón";
-                        break;
-                    case "weaning":
-                        color = "warning";
-                        text = "Destete";
-                        break;
-                    case "fattening":
-                        color = "primary";
-                        text = "Engorda";
-                        break;
-                    case "breeder":
-                        color = "success";
-                        text = "Reproductor";
-                        break;
+                    case "general": color = "info"; break;
+                    case "piglet": color = "info"; break;
+                    case "weaning": color = "warning"; break;
+                    case "fattening": color = "primary"; break;
+                    case "breeder": color = "success"; break;
                 }
 
                 return <Badge color={color}>{text}</Badge>;
@@ -260,15 +220,15 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
         },
         {
             key: 'creation_responsible',
-            label: 'Responsable de registo',
+            label: t('medication.package.detail.responsible'),
             type: 'text',
             render: (_, obj) => (<span className="text-black">{userLogged.name} {userLogged.lastname}</span>)
         },
 
     ]
 
-    const validationSchema = Yup.object({
-        code: Yup.string().required('El código es obligatorio').test('unique_code', 'Este codigo ya existe, por favor ingrese otro', async (value) => {
+    const validationSchema = useMemo(() => Yup.object({
+        code: Yup.string().required(t('medication.package.form.validation.codeRequired')).test('unique_code', t('form.validation.codeExists'), async (value) => {
             if (!value) return false;
             if (!configContext) return true;
             try {
@@ -279,19 +239,19 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                 return false;
             }
         }),
-        name: Yup.string().required('El nombre es obligatorio'),
-        stage: Yup.string().required('La etapa es obligatoria'),
-    })
+        name: Yup.string().required(t('medication.package.form.validation.nameRequired')),
+        stage: Yup.string().required(t('medication.package.form.validation.stageRequired')),
+    }), [t]);
 
-    const medicationValidation = Yup.object({
+    const medicationValidation = useMemo(() => Yup.object({
         medication: Yup.string().required(),
         quantity: Yup.number()
-            .moreThan(0, "Cantidad inválida")
-            .required("Cantidad requerida"),
+            .moreThan(0, t('form.validation.positive'))
+            .required(t('form.validation.required')),
         administration_route: Yup.string()
-            .required("Vía requerida")
-            .notOneOf([""], "Debe seleccionar una vía"),
-    });
+            .required(t('form.validation.required'))
+            .notOneOf([""], t('form.validation.required')),
+    }), [t]);
 
     const formik = useFormik<MedicationPackage>({
         initialValues: {
@@ -333,7 +293,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                 }
             } catch (error) {
                 console.error('Error saving the information: ', { error })
-                setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al guardar los datos, intentelo mas tarde' })
+                setAlertConfig({ visible: true, color: 'danger', message: t('medication.package.error.save') })
             }
         }
     })
@@ -352,7 +312,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
             setProducts(productsResponse.data.data)
         } catch (error) {
             console.error('Error fetching information: ', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('medication.package.form.validation.loadError') })
         } finally {
             setLoading(false)
         }
@@ -370,7 +330,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
             await validationSchema.validate(formik.values, { abortEarly: false });
             toggleArrowTab(activeStep + 1);
         } catch (error) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, llene todos los datos' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('medication.package.form.validation.fillAllData') })
         }
     }
 
@@ -378,7 +338,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
         const errors: Record<string, any> = {};
 
         if (medicationsSelected.length === 0) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, seleccione al menos 1 medicamento' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('medication.package.form.validation.selectAtLeastOne') })
             return false;
         }
 
@@ -399,7 +359,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
         setMedicationErrors(errors);
 
         if (Object.keys(errors).length > 0) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, llene todos los datos de las medicaciones seleccionadas' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('medication.package.form.validation.fillMedicationData') })
             return false;
         }
 
@@ -428,7 +388,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                             aria-controls="step-medicationPackageData-tab"
                             disabled
                         >
-                            Información del paquete de medicación
+                            {t('medication.package.form.step.info')}
                         </NavLink>
                     </NavItem>
 
@@ -445,7 +405,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                             aria-controls="step-selecMedication-tab"
                             disabled
                         >
-                            Seleccion de medicacion
+                            {t('medication.package.form.step.medications')}
                         </NavLink>
                     </NavItem>
 
@@ -462,7 +422,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                             aria-controls="step-summary-tab"
                             disabled
                         >
-                            Resumen
+                            {t('medication.package.form.step.summary')}
                         </NavLink>
                     </NavItem>
                 </Nav>
@@ -472,7 +432,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                 <TabPane id="step-medicationPackageData-tab" tabId={1}>
                     <div className="d-flex gap-3">
                         <div className="mt-4 w-50">
-                            <Label htmlFor="code" className="form-label">Código</Label>
+                            <Label htmlFor="code" className="form-label">{t('common.field.code')}</Label>
                             <Input
                                 type="text"
                                 id="code"
@@ -489,7 +449,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                         </div>
 
                         <div className="mt-4 w-50">
-                            <Label htmlFor="name" className="form-label">Nombre del paquete</Label>
+                            <Label htmlFor="name" className="form-label">{t('medication.package.form.field.name')}</Label>
                             <Input
                                 type="text"
                                 id="name"
@@ -498,7 +458,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
                                 invalid={formik.touched.name && !!formik.errors.name}
-                                placeholder="Ej: Paquete inicial"
+                                placeholder={t('medication.package.form.field.namePlaceholder')}
                             />
                             {formik.touched.name && formik.errors.name && (
                                 <FormFeedback>{formik.errors.name}</FormFeedback>
@@ -507,7 +467,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                     </div>
 
                     <div className="mt-4 w-100">
-                        <Label htmlFor="stage" className="form-label">Etapa</Label>
+                        <Label htmlFor="stage" className="form-label">{t('common.field.stage')}</Label>
                         <Input
                             type="select"
                             id="stage"
@@ -517,12 +477,12 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                             onBlur={formik.handleBlur}
                             invalid={formik.touched.stage && !!formik.errors.stage}
                         >
-                            <option value="">Seleccione una etapa</option>
-                            <option value="general">General</option>
-                            <option value="piglet">Lechón</option>
-                            <option value="weaning">Destete</option>
-                            <option value="fattening">Engorda</option>
-                            <option value="breeder">Reproductor</option>
+                            <option value="">{t('feeding.package.form.field.stageSelect')}</option>
+                            <option value="general">{t('feeding.stage.general')}</option>
+                            <option value="piglet">{t('feeding.stage.piglet')}</option>
+                            <option value="weaning">{t('feeding.stage.weaning')}</option>
+                            <option value="fattening">{t('feeding.stage.fattening')}</option>
+                            <option value="breeder">{t('feeding.stage.breeder')}</option>
                         </Input>
                         {formik.touched.stage && formik.errors.stage && (
                             <FormFeedback>{formik.errors.stage}</FormFeedback>
@@ -531,7 +491,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
 
                     <div className="d-flex gap-3">
                         <div className="mt-4 w-50">
-                            <Label htmlFor="creation_date" className="form-label">Fecha de registro *</Label>
+                            <Label htmlFor="creation_date" className="form-label">{t('feeding.package.form.field.registrationDate')}</Label>
                             <DatePicker
                                 id="creation_date"
                                 className={`form-control ${formik.touched.creation_date && formik.errors.creation_date ? 'is-invalid' : ''}`}
@@ -547,7 +507,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                         </div>
 
                         <div className="mt-4 w-50">
-                            <Label htmlFor="user" className="form-label">Responsable del registro *</Label>
+                            <Label htmlFor="user" className="form-label">{t('feeding.package.form.field.responsible')}</Label>
                             <Input
                                 type="text"
                                 id="user"
@@ -559,7 +519,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                     </div>
 
                     <div className="mt-4">
-                        <Label htmlFor="description" className="form-label">Descripción</Label>
+                        <Label htmlFor="description" className="form-label">{t('feeding.package.form.field.description')}</Label>
                         <Input
                             type="text"
                             id="description"
@@ -568,7 +528,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                             onChange={formik.handleChange}
                             onBlur={formik.handleBlur}
                             invalid={formik.touched.description && !!formik.errors.description}
-                            placeholder="Observaciones sobre el grupo"
+                            placeholder={t('medication.package.form.field.descriptionPlaceholder')}
                         />
                         {formik.touched.description && formik.errors.description && (
                             <FormFeedback>{formik.errors.description}</FormFeedback>
@@ -577,7 +537,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
 
                     <div className="d-flex justify-content-between mt-4">
                         <Button className="btn btn-primary ms-auto" onClick={() => checkMedicationData()}>
-                            Siguiente
+                            {t('common.button.next')}
                             <i className="ri-arrow-right-line ms-1" />
                         </Button>
                     </div>
@@ -612,7 +572,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                             <div className="d-flex justify-content-between align-items-center">
                                 <div className="d-flex align-items-center gap-2 text-muted">
                                     <i className="ri-money-dollar-circle-line fs-4 text-primary" />
-                                    <span className="fw-semibold">Costo total por cerdo</span>
+                                    <span className="fw-semibold">{t('medication.package.form.cost.title')}</span>
                                     {medicationsSelected.length === 0 && (
                                         <small className="text-muted">(seleccione productos y llene las cantidades)</small>
                                     )}
@@ -626,7 +586,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                             </div>
                             <div className="d-flex align-items-center gap-1 mt-2">
                                 <i className="ri-information-line text-warning" />
-                                <small className="text-muted">Este costo se calcula con el precio promedio actual del inventario. Puede variar en el futuro conforme cambien los precios.</small>
+                                <small className="text-muted">{t('medication.package.form.cost.note')}</small>
                             </div>
                         </CardBody>
                     </Card>
@@ -634,7 +594,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                     <div className="d-flex justify-content-between mt-3">
                         <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                             <i className="ri-arrow-left-line me-2" />
-                            Atrás
+                            {t('common.button.back')}
                         </Button>
 
                         <Button
@@ -645,7 +605,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                                 toggleArrowTab(3);
                             }}
                         >
-                            Siguiente
+                            {t('common.button.next')}
                             <i className="ri-arrow-right-line ms-1" />
                         </Button>
                     </div>
@@ -657,7 +617,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                             <CardHeader className="bg-primary bg-opacity-10">
                                 <h5 className="mb-0 text-primary">
                                     <i className="ri-file-list-3-line me-2" />
-                                    Información del paquete
+                                    {t('medication.package.info.card')}
                                 </h5>
                             </CardHeader>
                             <CardBody>
@@ -669,7 +629,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                             <CardHeader className="bg-success bg-opacity-10">
                                 <h5 className="mb-0 text-success">
                                     <i className="ri-medicine-bottle-line me-2" />
-                                    Medicamentos seleccionados
+                                    {t('medication.package.form.medicationsSelectedCard')}
                                 </h5>
                             </CardHeader>
                             <CardBody className="p-0">
@@ -685,7 +645,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                                     <div className="d-flex justify-content-between align-items-center">
                                         <div className="d-flex align-items-center gap-2">
                                             <i className="ri-money-dollar-circle-line fs-4 text-success" />
-                                            <span className="fw-semibold text-success fs-6">Costo total por cerdo</span>
+                                            <span className="fw-semibold text-success fs-6">{t('medication.package.form.cost.title')}</span>
                                         </div>
                                         <span className="fs-4 fw-bold text-success">
                                             ${medicationsSelected.reduce((total, ms) => {
@@ -696,7 +656,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                                     </div>
                                     <div className="d-flex align-items-center gap-1 mt-1">
                                         <i className="ri-information-line text-warning" />
-                                        <small className="text-muted">Calculado con precios promedio al día de hoy ({new Date().toLocaleDateString('es-MX')}). Este costo puede variar en el futuro.</small>
+                                        <small className="text-muted">{t('medication.package.form.cost.noteWithDate', { date: new Date().toLocaleDateString('es-MX') })}</small>
                                     </div>
                                 </div>
                             </CardBody>
@@ -706,7 +666,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                     <div className="mt-4 d-flex">
                         <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                             <i className="ri-arrow-left-line me-2" />
-                            Atrás
+                            {t('common.button.back')}
                         </Button>
 
                         <Button className="ms-auto btn-success" onClick={() => formik.handleSubmit()} disabled={formik.isSubmitting}>
@@ -717,7 +677,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                             ) : (
                                 <div>
                                     <i className="ri-check-line me-2" />
-                                    Registrar
+                                    {t('form.pig.action.register')}
                                 </div>
                             )}
 
@@ -726,8 +686,8 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                 </TabPane>
             </TabContent>
 
-            <SuccessModal isOpen={modals.success} onClose={onSave} message={"Paquete de medicamentos registrado con exito"} />
-            <SuccessModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={"Ha ocurrido un error al registrar el paquete de medicamentos, intentelo mas tarde"} />
+            <SuccessModal isOpen={modals.success} onClose={onSave} message={t('medication.package.success.saved')} />
+            <SuccessModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={t('medication.package.error.save')} />
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} autoClose={3000} />
         </form>
     )

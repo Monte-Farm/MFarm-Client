@@ -1,5 +1,6 @@
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button, Card, CardBody, CardHeader, Col, Row, Table } from "reactstrap";
 import { useReportScope } from "hooks/useReportScope";
 import { buildReportUrl } from "helpers/reports_url_helper";
@@ -40,17 +41,19 @@ interface CashFlowKpis {
     outflowTransactions: number;
 }
 
-const flowTypeLabels: Record<string, string> = {
-    sale_payment: "Pago de venta",
-    purchase_payment: "Pago a proveedor",
-};
-
 const formatCurrency = (value: number): string => {
     return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
 };
 
 const CashFlowReport = () => {
-    document.title = "Flujo de Caja | Reportes";
+    const { t } = useTranslation();
+
+    const flowTypeLabels: Record<string, string> = {
+        sale_payment: t("reports.cashFlow.flowType.sale_payment"),
+        purchase_payment: t("reports.cashFlow.flowType.purchase_payment"),
+    };
+
+    document.title = `${t("reports.cashFlow.title")} | ${t("reports.title")}`;
 
     const configContext = useContext(ConfigContext);
     const { isGlobal, farmId, scopeKey } = useReportScope();
@@ -89,7 +92,7 @@ const CashFlowReport = () => {
             setPeriods(data.periods || []);
             setKpis(data.kpis);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar los datos del reporte." });
+            setAlertConfig({ visible: true, color: "danger", message: t("reports.error.loadData") });
         } finally {
             setLoading(false);
         }
@@ -116,26 +119,26 @@ const CashFlowReport = () => {
     }, [startDate, endDate, scopeKey]);
 
     const entryColumns: Column<CashFlowEntry>[] = [
-        { header: "Fecha", accessor: "date", type: "date", isFilterable: true },
+        { header: t("reports.col.date"), accessor: "date", type: "date", isFilterable: true },
         {
-            header: "Tipo", accessor: "type", type: "text",
+            header: t("reports.cashFlow.col.type"), accessor: "type", type: "text",
             render: (v: string) => <span>{flowTypeLabels[v] || v}</span>,
         },
-        { header: "Descripcion", accessor: "description", type: "text", isFilterable: true },
-        { header: "Referencia", accessor: "reference", type: "text", isFilterable: true },
+        { header: t("reports.col.description"), accessor: "description", type: "text", isFilterable: true },
+        { header: t("reports.cashFlow.col.reference"), accessor: "reference", type: "text", isFilterable: true },
         {
-            header: "Entrada", accessor: "inflow", type: "text", bgColor: "#e8f5e9",
+            header: t("reports.cashFlow.col.inflow"), accessor: "inflow", type: "text", bgColor: "#e8f5e9",
             render: (v: number) => v > 0 ? <span className="text-success fw-semibold">{formatCurrency(v)}</span> : <span className="text-muted">—</span>,
         },
         {
-            header: "Salida", accessor: "outflow", type: "text", bgColor: "#ffebee",
+            header: t("reports.cashFlow.col.outflow"), accessor: "outflow", type: "text", bgColor: "#ffebee",
             render: (v: number) => v > 0 ? <span className="text-danger fw-semibold">{formatCurrency(v)}</span> : <span className="text-muted">—</span>,
         },
     ];
 
     const flowTrendData = [
-        { id: "Entradas", data: periods.map(p => ({ x: p.period, y: p.totalInflows })), color: "#10b981" },
-        { id: "Salidas", data: periods.map(p => ({ x: p.period, y: p.totalOutflows })), color: "#ef4444" },
+        { id: t("reports.cashFlow.table.inflows"), data: periods.map(p => ({ x: p.period, y: p.totalInflows })), color: "#10b981" },
+        { id: t("reports.cashFlow.table.outflows"), data: periods.map(p => ({ x: p.period, y: p.totalOutflows })), color: "#ef4444" },
     ];
 
     const netFlowBarData = periods.map(p => ({
@@ -164,7 +167,7 @@ const CashFlowReport = () => {
             const filePrefix = isGlobal ? "Flujo_Caja_Global" : "Flujo_Caja";
             saveAs(blob, `${filePrefix}_${startDate}_${endDate}.xlsx`);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al generar el archivo Excel." });
+            setAlertConfig({ visible: true, color: "danger", message: t("reports.error.generateExcel") });
         } finally {
             setExcelLoading(false);
         }
@@ -174,19 +177,19 @@ const CashFlowReport = () => {
 
     return (
         <ReportPageLayout
-            title="Flujo de Caja"
-            pageTitle="Reportes Financieros"
+            title={t("reports.cashFlow.title")}
+            pageTitle={t("reports.financial")}
             onGeneratePdf={handleGeneratePdf}
-            pdfTitle="Reporte - Flujo de Caja"
+            pdfTitle={t("reports.cashFlow.pdfTitle")}
             startDate={startDate}
             endDate={endDate}
             onDateChange={(s, e) => { setStartDate(s); setEndDate(e); }}
             headerActions={
                 <Button color="success" onClick={handleExportExcel} disabled={excelLoading}>
                     {excelLoading ? (
-                        <><i className="ri-loader-4-line ri-spin me-1"></i> Generando...</>
+                        <><i className="ri-loader-4-line ri-spin me-1"></i> {t("reports.excel.generating")}</>
                     ) : (
-                        <><i className="ri-file-excel-2-line me-1"></i> Exportar Excel</>
+                        <><i className="ri-file-excel-2-line me-1"></i> {t("reports.excel.export")}</>
                     )}
                 </Button>
             }
@@ -194,9 +197,9 @@ const CashFlowReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Total Entradas"
+                        title={t("reports.cashFlow.kpi.totalInflows")}
                         value={kpis.totalInflows}
-                        subtext={`${kpis.inflowTransactions} transacciones`}
+                        subtext={t("reports.cashFlow.kpi.transactions", { count: kpis.inflowTransactions })}
                         icon={<i className="ri-arrow-up-circle-line fs-4 text-success"></i>}
                         animateValue
                         prefix="$"
@@ -206,9 +209,9 @@ const CashFlowReport = () => {
                 </Col>
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Total Salidas"
+                        title={t("reports.cashFlow.kpi.totalOutflows")}
                         value={kpis.totalOutflows}
-                        subtext={`${kpis.outflowTransactions} transacciones`}
+                        subtext={t("reports.cashFlow.kpi.transactions", { count: kpis.outflowTransactions })}
                         icon={<i className="ri-arrow-down-circle-line fs-4 text-danger"></i>}
                         animateValue
                         prefix="$"
@@ -218,7 +221,7 @@ const CashFlowReport = () => {
                 </Col>
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Flujo Neto"
+                        title={t("reports.cashFlow.kpi.netFlow")}
                         value={kpis.netCashFlow}
                         icon={<i className={`ri-money-dollar-box-line fs-4 ${kpis.netCashFlow >= 0 ? "text-success" : "text-danger"}`}></i>}
                         animateValue
@@ -229,7 +232,7 @@ const CashFlowReport = () => {
                 </Col>
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Prom. Entrada / Mes"
+                        title={t("reports.cashFlow.kpi.avgMonthlyInflow")}
                         value={kpis.avgMonthlyInflow}
                         icon={<i className="ri-calendar-line fs-4 text-info"></i>}
                         animateValue
@@ -243,22 +246,22 @@ const CashFlowReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={7}>
                     <BasicLineChartCard
-                        title="Entradas vs Salidas"
+                        title={t("reports.cashFlow.chart.inflowVsOutflow")}
                         data={flowTrendData}
-                        yLabel="Monto ($)"
-                        xLabel="Periodo"
+                        yLabel={t("reports.axis.amountUsd")}
+                        xLabel={t("reports.axis.period")}
                         height={300}
                         showLegend
                     />
                 </Col>
                 <Col xl={5}>
                     <BasicBarChart
-                        title="Flujo Neto por Periodo"
+                        title={t("reports.cashFlow.chart.netByPeriod")}
                         data={netFlowBarData}
                         indexBy="periodo"
                         keys={["Flujo Neto"]}
-                        xLegend="Periodo"
-                        yLegend="Monto ($)"
+                        xLegend={t("reports.axis.period")}
+                        yLegend={t("reports.axis.amountUsd")}
                         height={300}
                         colors={["#3b82f6"]}
                     />
@@ -270,17 +273,17 @@ const CashFlowReport = () => {
                 <CardHeader>
                     <h5 className="mb-0">
                         <i className="ri-calendar-line me-2"></i>
-                        Resumen por Periodo
+                        {t("reports.cashFlow.periodSummary")}
                     </h5>
                 </CardHeader>
                 <CardBody>
                     <Table className="table-hover align-middle mb-0">
                         <thead className="table-light">
                             <tr>
-                                <th>Periodo</th>
-                                <th className="text-end" style={{ backgroundColor: "#e8f5e9" }}>Entradas</th>
-                                <th className="text-end" style={{ backgroundColor: "#ffebee" }}>Salidas</th>
-                                <th className="text-end" style={{ backgroundColor: "#e3f2fd" }}>Flujo Neto</th>
+                                <th>{t("reports.cashFlow.table.period")}</th>
+                                <th className="text-end" style={{ backgroundColor: "#e8f5e9" }}>{t("reports.cashFlow.table.inflows")}</th>
+                                <th className="text-end" style={{ backgroundColor: "#ffebee" }}>{t("reports.cashFlow.table.outflows")}</th>
+                                <th className="text-end" style={{ backgroundColor: "#e3f2fd" }}>{t("reports.cashFlow.table.netFlow")}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -295,7 +298,7 @@ const CashFlowReport = () => {
                                 </tr>
                             ))}
                             <tr className="table-primary fw-bold">
-                                <td>TOTAL</td>
+                                <td>{t("reports.cashFlow.table.total")}</td>
                                 <td className="text-end">{formatCurrency(kpis.totalInflows)}</td>
                                 <td className="text-end">{formatCurrency(kpis.totalOutflows)}</td>
                                 <td className="text-end">{formatCurrency(kpis.netCashFlow)}</td>
@@ -310,7 +313,7 @@ const CashFlowReport = () => {
                 <CardHeader>
                     <h5 className="mb-0">
                         <i className="ri-list-check me-2"></i>
-                        Movimientos Detallados ({entries.length})
+                        {t("reports.cashFlow.detailedMovements")} ({entries.length})
                     </h5>
                 </CardHeader>
                 <CardBody>

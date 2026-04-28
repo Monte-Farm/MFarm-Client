@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Card, CardHeader, CardBody, Button, Badge } from "reactstrap";
 import {
     FiAlertCircle,
@@ -15,14 +16,6 @@ interface Props {
     disabled?: boolean;
 }
 
-const STAGE_LABELS: Record<string, string> = {
-    piglet: "Lechón",
-    sow: "Cerda",
-    nursery: "Destete",
-    grower: "Crecimiento",
-    finisher: "Finalización",
-};
-
 const VaccinationPlansCard = ({
     plans,
     onAdd,
@@ -30,17 +23,26 @@ const VaccinationPlansCard = ({
     status,
     disabled = false,
 }: Props) => {
+    const { t } = useTranslation();
     const hasData = plans && plans.length > 0;
+
+    const STAGE_LABELS: Record<string, string> = {
+        piglet: t("shared.vaccinationPlans.stage.piglet"),
+        sow: t("shared.vaccinationPlans.stage.sow"),
+        nursery: t("shared.vaccinationPlans.stage.nursery"),
+        grower: t("shared.vaccinationPlans.stage.grower"),
+        finisher: t("shared.vaccinationPlans.stage.finisher"),
+    };
 
     return (
         <Card className="w-100 flex-grow-1 h-100 m-0">
             <CardHeader className="bg-white d-flex justify-content-between align-items-center border-bottom">
                 <h5 className="mb-0 fw-semibold">
-                    Planes de vacunación asignados
+                    {t("shared.vaccinationPlans.title")}
                 </h5>
 
                 <Button size="sm" color="primary" onClick={onAdd} disabled={disabled}>
-                    Asignar plan
+                    {t("shared.vaccinationPlans.assign")}
                 </Button>
             </CardHeader>
 
@@ -56,12 +58,12 @@ const VaccinationPlansCard = ({
                     <>
                         <FiAlertCircle size={32} className="text-muted" />
                         <span className="fs-5 text-muted">
-                            No hay planes de vacunación asignados
+                            {t("shared.vaccinationPlans.empty")}
                         </span>
                     </>
                 ) : (
                     plans.map((p, index) => {
-                        const date = new Date(p.applicationDate).toLocaleString("es-MX", {
+                        const date = new Date(p.applicationDate).toLocaleString(undefined, {
                             dateStyle: "short",
                             timeStyle: "short",
                         });
@@ -74,7 +76,6 @@ const VaccinationPlansCard = ({
                                 className="border rounded p-3 position-relative"
                                 style={{ backgroundColor: "#eef2ff" }}
                             >
-                                {/* Ver detalles */}
                                 <Button
                                     size="sm"
                                     color="link"
@@ -84,13 +85,11 @@ const VaccinationPlansCard = ({
                                     <FiEye size={18} />
                                 </Button>
 
-                                {/* Título */}
                                 <div className="d-flex align-items-center gap-2 mb-2">
                                     <FiShield className="text-success" />
                                     <strong className="fs-5 pe-4">{p.name}</strong>
                                 </div>
 
-                                {/* Etapa (condicional) */}
                                 {hasStage && (
                                     <div className="mb-2">
                                         <Badge color="info">
@@ -99,13 +98,12 @@ const VaccinationPlansCard = ({
                                     </div>
                                 )}
 
-                                {/* Meta info */}
                                 <div className="d-flex justify-content-between flex-wrap gap-2 fs-6 text-muted mb-2">
                                     <span className="d-flex align-items-center gap-1">
                                         <FiUser />
                                         {p.appliedBy
                                             ? `${p.appliedBy.name} ${p.appliedBy.lastname}`
-                                            : "Desconocido"}
+                                            : t("shared.vaccinationPlans.unknown")}
                                     </span>
 
                                     <span className="d-flex align-items-center gap-1">
@@ -114,10 +112,9 @@ const VaccinationPlansCard = ({
                                     </span>
                                 </div>
 
-                                {/* Observaciones */}
                                 {p.observations && p.observations.trim() !== "" && (
                                     <div className="fs-6">
-                                        <strong className="text-muted">Notas:</strong>{" "}
+                                        <strong className="text-muted">{t("shared.vaccinationPlans.notes")}</strong>{" "}
                                         {p.observations}
                                     </div>
                                 )}

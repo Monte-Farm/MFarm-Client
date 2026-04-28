@@ -1,13 +1,12 @@
 import { ConfigContext } from "App"
-import { Attribute, UserData } from "common/data_interfaces"
+import { UserData } from "common/data_interfaces"
 import BreadCrumb from "Components/Common/Shared/BreadCrumb"
-import ObjectDetails from "Components/Common/Details/ObjectDetails"
 import { getEffectiveUser } from "helpers/impersonation_helper"
 import { useContext, useEffect, useMemo, useState } from "react"
-import { Badge, Button, Card, CardBody, CardHeader, Container, Input, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap"
+import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap"
 import { Column } from "common/data/data_types"
 import SelectableCustomTable from "Components/Common/Tables/SelectableTable"
-import { roleLabels } from "common/role_labels"
+import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation"
 import AlertMessage from "Components/Common/Shared/AlertMesagge"
@@ -16,7 +15,8 @@ import UserDetailsModal from "Components/Common/Details/UserDetails"
 import defaultProfile from '../../assets/images/default-profile-mage.jpg'
 
 const ViewUsers = () => {
-    document.title = 'Ver Usuarios | Usuarios'
+    const { t } = useTranslation();
+    document.title = t('users.pageTitle')
     const configContext = useContext(ConfigContext)
     const userLogged = getEffectiveUser();
 
@@ -28,12 +28,12 @@ const ViewUsers = () => {
     const [loading, setLoading] = useState<boolean>(true)
     const navigate = useNavigate();
 
-    const columns: Column<any>[] = [
+    const columns: Column<any>[] = useMemo(() => [
         {
-            header: 'Imagen', accessor: 'profile_image', render: (_, row) => (
+            header: t('users.column.image'), accessor: 'profile_image', render: (_, row) => (
                 <img
                     src={row.profile_image || defaultProfile}
-                    alt="Imagen de Perfil"
+                    alt={t('users.column.image')}
                     style={{
                         height: "50px",
                         width: "50px",
@@ -43,28 +43,28 @@ const ViewUsers = () => {
                 />
             ),
         },
-        { header: 'Usuario', accessor: 'username', isFilterable: true, type: 'text', bgColor: '#E3F2FD' },
-        { header: 'Nombre', accessor: 'name', isFilterable: true, type: 'text' },
-        { header: 'Apellido', accessor: 'lastname', isFilterable: true, type: 'text' },
+        { header: t('users.column.username'), accessor: 'username', isFilterable: true, type: 'text', bgColor: '#E3F2FD' },
+        { header: t('users.column.name'), accessor: 'name', isFilterable: true, type: 'text' },
+        { header: t('users.column.lastname'), accessor: 'lastname', isFilterable: true, type: 'text' },
         {
-            header: 'Rol',
+            header: t('users.column.role'),
             accessor: 'role',
             isFilterable: true,
             bgColor: '#E8F5E9',
-            render: (value: string) => roleLabels[value] || value,
+            render: (value: string) => t(`roles.${value}`, { defaultValue: value }),
         },
         {
-            header: 'Estado',
+            header: t('users.column.status'),
             accessor: 'status',
             isFilterable: true,
             render: (value: boolean) => (
                 <Badge color={value ? 'success' : 'danger'}>
-                    {value ? 'Activo' : 'Inactivo'}
+                    {value ? t('common.status.active') : t('common.status.inactive')}
                 </Badge>
             ),
         },
         {
-            header: "Acciones",
+            header: t('common.field.actions'),
             accessor: "action",
             render: (_, row: any) => (
                 <div className="d-flex gap-1">
@@ -73,7 +73,7 @@ const ViewUsers = () => {
                         color="secondary"
                         onClick={(e) => { e.stopPropagation(); handleClicModal("update", row); }}
                         disabled={row.status === false}
-                        title="Editar usuario"
+                        title={t('users.button.editTitle')}
                     >
                         <i className="ri-pencil-fill align-middle"></i>
                     </Button>
@@ -81,14 +81,14 @@ const ViewUsers = () => {
                         className="btn-icon"
                         color="primary"
                         onClick={(e) => { e.stopPropagation(); setSelecteduser(row); toggleModal('details'); }}
-                        title="Ver detalles"
+                        title={t('common.button.viewDetails')}
                     >
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
                 </div>
             ),
         },
-    ];
+    ], [t]);
 
     const handleSelectionChange = (selected: UserData[]) => {
         setSelectedUsers(selected);
@@ -144,7 +144,7 @@ const ViewUsers = () => {
 
         } catch (error) {
             console.error("Error fetching users:", error);
-            setAlertConfig({ visible: true, color: "danger", message: "Ha ocurrido un error al obtener a los usuarios", });
+            setAlertConfig({ visible: true, color: "danger", message: t('users.error.fetch') });
         } finally {
             setLoading(false);
         }
@@ -159,12 +159,12 @@ const ViewUsers = () => {
 
         try {
             await configContext.axiosHelper.delete(`${configContext.apiUrl}/user/delete_users`, { data: { userIds: activeUserIds } });
-            setAlertConfig({ visible: true, color: 'success', message: `${activeUserIds.length} usuarios desactivados con éxito` });
+            setAlertConfig({ visible: true, color: 'success', message: t('users.success.deactivated', { val: activeUserIds.length }) });
             handleFetchUsers();
             setSelectedUsers([]);
         } catch (error) {
             console.error('Error bulk deactivating users:', error);
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al desactivar los usuarios, intentelo más tarde' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('users.error.deactivate') });
         } finally {
             toggleModal('bulkDelete');
         }
@@ -179,12 +179,12 @@ const ViewUsers = () => {
 
         try {
             await configContext.axiosHelper.put(`${configContext.apiUrl}/user/activate_users`, { userIds: inactiveUserIds });
-            setAlertConfig({ visible: true, color: 'success', message: `${inactiveUserIds.length} usuarios activados con éxito` });
+            setAlertConfig({ visible: true, color: 'success', message: t('users.success.activated', { val: inactiveUserIds.length }) });
             handleFetchUsers();
             setSelectedUsers([]);
         } catch (error) {
             console.error('Error bulk activating users:', error);
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al activar los usuarios, intentelo más tarde' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('users.error.activate') });
         } finally {
             toggleModal('bulkActivate');
         }
@@ -203,7 +203,7 @@ const ViewUsers = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Usuarios Registrados"} pageTitle={"Usuarios"} />
+                <BreadCrumb title={t('users.breadcrumb')} pageTitle={t('users.breadcrumbParent')} />
 
                 <Card>
                     <CardHeader>
@@ -211,33 +211,33 @@ const ViewUsers = () => {
                             {selectedUsers.length > 0 && (
                                 <div className="d-flex align-items-center gap-2">
                                     <span className="text-muted">
-                                        {selectedUsers.length} {selectedUsers.length === 1 ? 'usuario seleccionado' : 'usuarios seleccionados'}
+                                        {selectedUsers.length} {selectedUsers.length === 1 ? t('users.selection.singular') : t('users.selection.plural')}
                                     </span>
                                     <div className="btn-group" role="group">
                                         <Button
                                             className="farm-secondary-button btn-sm"
                                             disabled={!hasActiveUsers}
-                                            title={!hasActiveUsers ? "No hay usuarios activos seleccionados" : undefined}
+                                            title={!hasActiveUsers ? t('users.selection.noActive') : undefined}
                                             onClick={() => toggleModal('bulkDelete')}
                                         >
                                             <i className="ri-forbid-line me-1"></i>
-                                            Desactivar
+                                            {t('users.button.deactivate')}
                                         </Button>
                                         <Button
                                             className="farm-secondary-button btn-sm"
                                             disabled={!hasInactiveUsers}
-                                            title={!hasInactiveUsers ? "No hay usuarios inactivos seleccionados" : undefined}
+                                            title={!hasInactiveUsers ? t('users.selection.noInactive') : undefined}
                                             onClick={() => toggleModal('bulkActivate')}
                                         >
                                             <i className="ri-check-line me-1"></i>
-                                            Activar
+                                            {t('users.button.activate')}
                                         </Button>
                                     </div>
                                 </div>
                             )}
                             <Button className="farm-primary-button ms-auto" onClick={() => toggleModal("create")}>
                                 <i className="ri-add-line me-2" />
-                                Registrar Usuario
+                                {t('users.button.register')}
                             </Button>
                         </div>
                     </CardHeader>
@@ -246,7 +246,7 @@ const ViewUsers = () => {
                         {users.length === 0 ? (
                             <>
                                 <i className="ri-user-unfollow-line text-muted mb-2" style={{ fontSize: "2rem" }} />
-                                <span className="fs-5 text-muted">Aún no hay usuarios registrados</span>
+                                <span className="fs-5 text-muted">{t('users.empty')}</span>
                             </>
                         ) : (
                             <SelectableCustomTable
@@ -263,7 +263,7 @@ const ViewUsers = () => {
 
                 {/* Modal Details */}
                 <Modal size="xl" isOpen={modals.details} toggle={() => { toggleModal("details"); handleFetchUsers(); }} backdrop='static' keyboard={false} centered>
-                    <ModalHeader toggle={() => toggleModal("details")}><h4>Detalles de Usuario</h4></ModalHeader>
+                    <ModalHeader toggle={() => toggleModal("details")}><h4>{t('users.modal.details')}</h4></ModalHeader>
                     <ModalBody>
                         <UserDetailsModal userId={selectedUser?._id} />
                     </ModalBody>
@@ -271,7 +271,7 @@ const ViewUsers = () => {
 
                 {/* Modal Create */}
                 <Modal isOpen={modals.create} toggle={() => toggleModal('create')} size="xl" keyboard={false} backdrop='static' centered>
-                    <ModalHeader toggle={() => toggleModal('create')}>Nuevo Usuario</ModalHeader>
+                    <ModalHeader toggle={() => toggleModal('create')}>{t('users.modal.create')}</ModalHeader>
                     <ModalBody>
                         <UserForm onSave={() => { toggleModal('create'); handleFetchUsers(); }} onCancel={() => toggleModal('create', false)} defaultRole={userLogged.role.includes('Superadmin') ? 'farm_manager' : ''} currentUserRole={userLogged.role} />
                     </ModalBody>
@@ -279,7 +279,7 @@ const ViewUsers = () => {
 
                 {/* Modal Update */}
                 <Modal isOpen={modals.update} toggle={() => toggleModal('update')} size="xl" keyboard={false} backdrop='static' centered>
-                    <ModalHeader toggle={() => toggleModal('update')}>Actualizar Usuario</ModalHeader>
+                    <ModalHeader toggle={() => toggleModal('update')}>{t('users.modal.update')}</ModalHeader>
                     <ModalBody>
                         <UserForm initialData={selectedUser} isUsernameDisable={true} onSave={() => { toggleModal('update'); handleFetchUsers(); }} onCancel={() => toggleModal('update', false)} currentUserRole={userLogged.role} />
                     </ModalBody>
@@ -287,35 +287,35 @@ const ViewUsers = () => {
 
                 {/* Modal Bulk Deactivate */}
                 <Modal isOpen={modals.bulkDelete} toggle={() => toggleModal("bulkDelete")} backdrop='static' keyboard={false} centered>
-                    <ModalHeader toggle={() => toggleModal("bulkDelete")}>Desactivar Usuarios</ModalHeader>
+                    <ModalHeader toggle={() => toggleModal("bulkDelete")}>{t('users.modal.bulkDeactivate.title')}</ModalHeader>
                     <ModalBody>
-                        ¿Desea desactivar {selectedUsers.filter(u => u.status === true).length} usuarios seleccionados?
+                        {t('users.modal.bulkDeactivate.body', { val: selectedUsers.filter(u => u.status === true).length })}
                         <div className="mt-2">
                             <small className="text-muted">
-                                Esta acción desactivará los usuarios y no podrán acceder al sistema.
+                                {t('users.modal.bulkDeactivate.warning')}
                             </small>
                         </div>
                     </ModalBody>
                     <ModalFooter>
-                        <Button className="farm-secondary-button" onClick={() => toggleModal("bulkDelete", false)}>Cancelar</Button>
-                        <Button className="farm-primary-button" onClick={handleBulkDeactivate}>Confirmar</Button>
+                        <Button className="farm-secondary-button" onClick={() => toggleModal("bulkDelete", false)}>{t('common.button.cancel')}</Button>
+                        <Button className="farm-primary-button" onClick={handleBulkDeactivate}>{t('common.button.confirm')}</Button>
                     </ModalFooter>
                 </Modal>
 
                 {/* Modal Bulk Activate */}
                 <Modal isOpen={modals.bulkActivate} toggle={() => toggleModal("bulkActivate")} backdrop='static' keyboard={false} centered>
-                    <ModalHeader toggle={() => toggleModal("bulkActivate")}>Activar Usuarios</ModalHeader>
+                    <ModalHeader toggle={() => toggleModal("bulkActivate")}>{t('users.modal.bulkActivate.title')}</ModalHeader>
                     <ModalBody>
-                        ¿Desea activar {selectedUsers.filter(u => u.status === false).length} usuarios seleccionados?
+                        {t('users.modal.bulkActivate.body', { val: selectedUsers.filter(u => u.status === false).length })}
                         <div className="mt-2">
                             <small className="text-muted">
-                                Esta acción activará los usuarios y podrán acceder al sistema.
+                                {t('users.modal.bulkActivate.warning')}
                             </small>
                         </div>
                     </ModalBody>
                     <ModalFooter>
-                        <Button className="farm-secondary-button" onClick={() => toggleModal("bulkActivate", false)}>Cancelar</Button>
-                        <Button className="farm-primary-button" onClick={handleBulkActivate}>Confirmar</Button>
+                        <Button className="farm-secondary-button" onClick={() => toggleModal("bulkActivate", false)}>{t('common.button.cancel')}</Button>
+                        <Button className="farm-primary-button" onClick={handleBulkActivate}>{t('common.button.confirm')}</Button>
                     </ModalFooter>
                 </Modal>
             </Container>

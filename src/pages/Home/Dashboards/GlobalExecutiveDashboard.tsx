@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardBody, CardHeader, Col, Row } from "reactstrap";
 import { ConfigContext } from "App";
 import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
@@ -28,6 +29,7 @@ interface ExecutiveData {
 const stageColors = ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899", "#14b8a6", "#ef4444"];
 
 const GlobalExecutiveDashboard: React.FC<Props> = ({ startDate, endDate }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const [loading, setLoading] = useState(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -46,7 +48,7 @@ const GlobalExecutiveDashboard: React.FC<Props> = ({ startDate, endDate }) => {
             const res = await configContext.axiosHelper.get(url);
             setData(res.data.data);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar el dashboard global." });
+            setAlertConfig({ visible: true, color: "danger", message: t("dashboard.error") });
         } finally {
             setLoading(false);
         }
@@ -61,8 +63,8 @@ const GlobalExecutiveDashboard: React.FC<Props> = ({ startDate, endDate }) => {
     if (!data) return null;
 
     const incomeVsCostLine = [
-        { id: "Ingresos", data: data.costVsIncomeMonthly.map(m => ({ x: m.month, y: m.totalIncome })), color: "#10b981" },
-        { id: "Costos", data: data.costVsIncomeMonthly.map(m => ({ x: m.month, y: m.totalCost })), color: "#ef4444" },
+        { id: t("dashboard.executive.chart.income"), data: data.costVsIncomeMonthly.map(m => ({ x: m.month, y: m.totalIncome })), color: "#10b981" },
+        { id: t("dashboard.executive.chart.costs"), data: data.costVsIncomeMonthly.map(m => ({ x: m.month, y: m.totalCost })), color: "#ef4444" },
     ];
 
     const stageDonut = (data.groupsByStage || []).map((s, idx) => ({
@@ -73,10 +75,10 @@ const GlobalExecutiveDashboard: React.FC<Props> = ({ startDate, endDate }) => {
     }));
 
     const clientColumns: Column<{ clientName: string; totalRevenue: number; margin: number }>[] = [
-        { header: "Cliente", accessor: "clientName", type: "text" },
-        { header: "Ingreso", accessor: "totalRevenue", type: "currency", bgColor: "#e8f5e9" },
+        { header: t("dashboard.executive.table.clientName"), accessor: "clientName", type: "text" },
+        { header: t("dashboard.executive.table.income"), accessor: "totalRevenue", type: "currency", bgColor: "#e8f5e9" },
         {
-            header: "Margen", accessor: "margin", type: "text",
+            header: t("dashboard.executive.table.margin"), accessor: "margin", type: "text",
             render: (v: number) => <span>{v?.toFixed(1)}%</span>,
         },
     ];
@@ -85,22 +87,22 @@ const GlobalExecutiveDashboard: React.FC<Props> = ({ startDate, endDate }) => {
         <>
             <Row className="g-3 mb-3">
                 <Col xl={3} md={6}>
-                    <StatKpiCard title="Ingreso Total" value={data.finance.totalIncome} prefix="$" decimals={2}
+                    <StatKpiCard title={t("dashboard.executive.kpi.totalIncome")} value={data.finance.totalIncome} prefix="$" decimals={2}
                         icon={<i className="ri-money-dollar-circle-line fs-4 text-success"></i>}
                         iconBgColor="#E8F5E9" animateValue />
                 </Col>
                 <Col xl={3} md={6}>
-                    <StatKpiCard title="Costos Totales" value={data.finance.totalCosts} prefix="$" decimals={2}
+                    <StatKpiCard title={t("dashboard.executive.kpi.totalCosts")} value={data.finance.totalCosts} prefix="$" decimals={2}
                         icon={<i className="ri-shopping-cart-2-line fs-4 text-danger"></i>}
                         iconBgColor="#FEE2E2" animateValue />
                 </Col>
                 <Col xl={3} md={6}>
-                    <StatKpiCard title="Resultado Operativo" value={data.finance.operatingResult} prefix="$" decimals={2}
+                    <StatKpiCard title={t("dashboard.executive.kpi.operatingResult")} value={data.finance.operatingResult} prefix="$" decimals={2}
                         icon={<i className="ri-line-chart-line fs-4 text-primary"></i>}
                         iconBgColor="#EEF2FF" animateValue />
                 </Col>
                 <Col xl={3} md={6}>
-                    <StatKpiCard title="Margen Operativo" value={data.finance.operatingMargin} suffix="%" decimals={2}
+                    <StatKpiCard title={t("dashboard.executive.kpi.operatingMargin")} value={data.finance.operatingMargin} suffix="%" decimals={2}
                         icon={<i className="ri-percent-line fs-4 text-warning"></i>}
                         iconBgColor="#FFF8E1" animateValue />
                 </Col>
@@ -108,22 +110,22 @@ const GlobalExecutiveDashboard: React.FC<Props> = ({ startDate, endDate }) => {
 
             <Row className="g-3 mb-3">
                 <Col xl={3} md={6}>
-                    <StatKpiCard title="Cerdos Activos" value={data.production.totalActivePigs}
+                    <StatKpiCard title={t("dashboard.executive.kpi.activePigs")} value={data.production.totalActivePigs}
                         icon={<i className="bx bxs-dog fs-4 text-info"></i>}
                         iconBgColor="#E0F7FA" animateValue />
                 </Col>
                 <Col xl={3} md={6}>
-                    <StatKpiCard title="Grupos Activos" value={data.production.totalActiveGroups}
+                    <StatKpiCard title={t("dashboard.executive.kpi.activeGroups")} value={data.production.totalActiveGroups}
                         icon={<i className="ri-group-line fs-4 text-primary"></i>}
                         animateValue />
                 </Col>
                 <Col xl={3} md={6}>
-                    <StatKpiCard title="Tasa de Mortalidad" value={data.production.mortalityRate} suffix="%" decimals={2}
+                    <StatKpiCard title={t("dashboard.executive.kpi.mortalityRate")} value={data.production.mortalityRate} suffix="%" decimals={2}
                         icon={<i className="ri-alert-line fs-4 text-danger"></i>}
                         iconBgColor="#FEE2E2" animateValue />
                 </Col>
                 <Col xl={3} md={6}>
-                    <StatKpiCard title="FCR Promedio" value={data.production.avgFcr} decimals={2}
+                    <StatKpiCard title={t("dashboard.executive.kpi.avgFcr")} value={data.production.avgFcr} decimals={2}
                         icon={<i className="ri-restaurant-line fs-4 text-warning"></i>}
                         iconBgColor="#FFF8E1" animateValue />
                 </Col>
@@ -132,10 +134,10 @@ const GlobalExecutiveDashboard: React.FC<Props> = ({ startDate, endDate }) => {
             <Row className="g-3 mb-3">
                 <Col xl={8}>
                     <BasicLineChartCard
-                        title="Ingresos vs Costos"
+                        title={t("dashboard.executive.chart.incomeVsCost")}
                         data={incomeVsCostLine}
-                        yLabel="Monto ($)"
-                        xLabel="Mes"
+                        yLabel={t("dashboard.executive.chart.yLabel")}
+                        xLabel={t("dashboard.executive.chart.xLabel")}
                         height={320}
                         enableArea
                         areaOpacity={0.08}
@@ -144,7 +146,7 @@ const GlobalExecutiveDashboard: React.FC<Props> = ({ startDate, endDate }) => {
                 </Col>
                 <Col xl={4}>
                     <DonutChartCard
-                        title="Cerdos por Etapa"
+                        title={t("dashboard.executive.chart.pigsByStage")}
                         data={stageDonut}
                         height={320}
                     />
@@ -155,7 +157,7 @@ const GlobalExecutiveDashboard: React.FC<Props> = ({ startDate, endDate }) => {
                 <Col xl={8}>
                     <Card className="h-100">
                         <CardHeader>
-                            <h6 className="mb-0 text-muted">Top Clientes (Ingresos)</h6>
+                            <h6 className="mb-0 text-muted">{t("dashboard.executive.table.topClients")}</h6>
                         </CardHeader>
                         <CardBody>
                             <CustomTable
@@ -170,26 +172,26 @@ const GlobalExecutiveDashboard: React.FC<Props> = ({ startDate, endDate }) => {
                 <Col xl={4}>
                     <Card className="h-100">
                         <CardHeader>
-                            <h6 className="mb-0 text-muted">Alertas de Inventario</h6>
+                            <h6 className="mb-0 text-muted">{t("dashboard.executive.table.inventoryAlerts")}</h6>
                         </CardHeader>
                         <CardBody>
                             <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
                                 <div>
-                                    <div className="text-muted" style={{ fontSize: "13px" }}>Productos con stock critico</div>
+                                    <div className="text-muted" style={{ fontSize: "13px" }}>{t("dashboard.executive.table.criticalStock")}</div>
                                     <div className="fw-bold fs-4 text-danger">{data.inventoryAlerts.criticalStockCount}</div>
                                 </div>
                                 <i className="ri-error-warning-line fs-1 text-danger"></i>
                             </div>
                             <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
                                 <div>
-                                    <div className="text-muted" style={{ fontSize: "13px" }}>Productos sin movimiento</div>
+                                    <div className="text-muted" style={{ fontSize: "13px" }}>{t("dashboard.executive.table.staleProducts")}</div>
                                     <div className="fw-bold fs-4 text-warning">{data.inventoryAlerts.staleProductCount}</div>
                                 </div>
                                 <i className="ri-time-line fs-1 text-warning"></i>
                             </div>
                             <div className="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <div className="text-muted" style={{ fontSize: "13px" }}>Merma general</div>
+                                    <div className="text-muted" style={{ fontSize: "13px" }}>{t("dashboard.executive.table.shrinkage")}</div>
                                     <div className="fw-bold fs-4 text-info">{data.inventoryAlerts.shrinkagePercent?.toFixed(2)}%</div>
                                 </div>
                                 <i className="ri-scales-line fs-1 text-info"></i>

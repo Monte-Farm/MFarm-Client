@@ -10,12 +10,14 @@ import PDFViewer from "../Shared/PDFViewer";
 import AlertMessage from "../Shared/AlertMesagge";
 import { useNavigate } from "react-router-dom";
 import { Attribute } from "common/data_interfaces";
+import { useTranslation } from "react-i18next";
 
 interface IncomeDetailsProps {
     incomeId: string;
 }
 
 const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const navigate = useNavigate();
@@ -33,29 +35,29 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
 
     const productsColumns: Column<any>[] = [
         {
-            header: 'Código',
+            header: t('common.field.code'),
             accessor: 'id',
             isFilterable: true,
             type: 'text',
             render: (_, row) => <span>{row?.id?.id}</span>
         },
         {
-            header: 'Producto',
+            header: t('common.field.name', { defaultValue: 'Producto' }),
             accessor: 'id',
             isFilterable: true,
             type: 'text',
             render: (_, row) => <span>{row?.id?.name}</span>
         },
         {
-            header: 'Cantidad',
+            header: t('common.field.qty', { defaultValue: 'Cantidad' }),
             accessor: 'quantity',
             isFilterable: true,
             type: 'number',
             render: (_, row) => <span>{row.quantity} {row.unit_measurement}</span>
         },
-        { header: 'Precio Unitario', accessor: 'price', type: 'currency' },
+        { header: t('common.field.unitPrice', { defaultValue: 'Precio Unitario' }), accessor: 'price', type: 'currency' },
         {
-            header: 'Precio Total',
+            header: t('common.field.totalPrice', { defaultValue: 'Precio Total' }),
             accessor: 'totalPrice',
             type: 'text',
             render: (_, row) => {
@@ -67,129 +69,101 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
             }
         },
         {
-            header: 'Categoria',
+            header: t('warehouse.products.attr.category', { defaultValue: 'Categoria' }),
             accessor: 'category',
             isFilterable: true,
             type: 'text',
             render: (_, row) => {
                 let color = "secondary";
-                let label = row.id.category;
 
                 switch (row.id.category) {
                     case "nutrition":
                         color = "info";
-                        label = "Nutrición";
                         break;
                     case "medications":
                         color = "warning";
-                        label = "Medicamentos";
                         break;
                     case "vaccines":
                         color = "primary";
-                        label = "Vacunas";
                         break;
                     case "vitamins":
-                        color = "success";
-                        label = "Vitaminas";
-                        break;
                     case "minerals":
-                        color = "success";
-                        label = "Minerales";
-                        break;
                     case "supplies":
-                        color = "success";
-                        label = "Insumos";
-                        break;
                     case "hygiene_cleaning":
-                        color = "success";
-                        label = "Higiene y desinfección";
-                        break;
                     case "equipment_tools":
-                        color = "success";
-                        label = "Equipamiento y herramientas";
-                        break;
                     case "spare_parts":
-                        color = "success";
-                        label = "Refacciones y repuestos";
-                        break;
                     case "office_supplies":
-                        color = "success";
-                        label = "Material de oficina";
-                        break;
                     case "others":
                         color = "success";
-                        label = "Otros";
                         break;
                 }
 
-                return <Badge color={color}>{label}</Badge>;
+                return <Badge color={color}>{t(`warehouse.common.productCategory.${row.id.category}`, { defaultValue: row.id.category })}</Badge>;
             },
         },
     ];
 
     const incomeAttributes: Attribute[] = [
-        { key: 'id', label: 'Código', type: 'text' },
-        { key: 'date', label: 'Fecha de Registro', type: 'date' },
-        { key: 'emissionDate', label: 'Fecha de Emisión', type: 'date' },
-        { key: 'warehouse.name', label: 'Almacén', type: 'text', },
-        { key: 'origin.id.name', label: 'Proveedor', type: 'text', },
+        { key: 'id', label: t('common.field.code'), type: 'text' },
+        { key: 'date', label: t('common.field.date', { defaultValue: 'Fecha de Registro' }), type: 'date' },
+        { key: 'emissionDate', label: t('warehouse.incomeForm.attr.emissionDate', { defaultValue: 'Fecha de Emisión' }), type: 'date' },
+        { key: 'warehouse.name', label: t('warehouse.orderDetails.attr.destWarehouse', { defaultValue: 'Almacén' }), type: 'text', },
+        { key: 'origin.id.name', label: t('warehouse.suppliers.col.supplier', { defaultValue: 'Proveedor' }), type: 'text', },
         {
             key: 'incomeType',
-            label: 'Tipo de Entrada',
+            label: t('warehouse.incomeForm.attr.incomeType', { defaultValue: 'Tipo de Entrada' }),
             type: 'text',
             render: (value: string) => {
                 let color = "secondary";
-                let label = value;
 
                 switch (value) {
                     case "internal_transfer":
                         color = "info";
-                        label = "Transferencia";
                         break;
                     case "purchase":
                         color = "warning";
-                        label = "Compra";
                         break;
                     case "warehouse_order":
                         color = "warning";
-                        label = "Pedido de Almacén";
                         break;
                 }
 
-                return <Badge color={color}>{label}</Badge>;
+                return <Badge color={color}>{t(`warehouse.common.incomeType.${value}`, { defaultValue: value })}</Badge>;
             },
         },
     ]
 
     const financialAttributes: Attribute[] = [
-        { key: 'totalPrice', label: 'Total', type: 'currency' },
+        { key: 'totalPrice', label: t('common.field.totalPrice', { defaultValue: 'Total' }), type: 'currency' },
         {
             key: 'tax',
-            label: 'Impuesto',
+            label: t('warehouse.incomeForm.attr.tax', { defaultValue: 'Impuesto' }),
             type: 'text',
             render: (value: number) => `${value}%`
         },
         {
             key: 'discount',
-            label: 'Descuento',
+            label: t('warehouse.incomeForm.attr.discount', { defaultValue: 'Descuento' }),
             type: 'text',
             render: (value: number) => `${value}%`
         },
-        { key: 'currency', label: 'Moneda', type: 'text' },
-        { key: 'invoiceNumber', label: 'Número de Factura', type: 'text' },
-        { key: 'fiscalRecord', label: 'Registro Fiscal', type: 'text' },
+        { key: 'currency', label: t('warehouse.incomeDetailsModal.attr.currency', { defaultValue: 'Moneda' }), type: 'text' },
+        { key: 'invoiceNumber', label: t('warehouse.incomeForm.attr.invoiceNumber', { defaultValue: 'Número de Factura' }), type: 'text' },
+        { key: 'fiscalRecord', label: t('warehouse.incomeForm.attr.fiscalRecord', { defaultValue: 'Registro Fiscal' }), type: 'text' },
     ]
 
     const purchaseOrderAttributes: Attribute[] = [
-        { key: 'code', label: 'Código de Orden', type: 'text' },
-        { key: 'date', label: 'Fecha de Orden', type: 'date' },
+        { key: 'code', label: t('warehouse.purchaseOrders.col.orderNumber', { defaultValue: 'Código de Orden' }), type: 'text' },
+        { key: 'date', label: t('common.field.date', { defaultValue: 'Fecha de Orden' }), type: 'date' },
         {
             key: 'status',
-            label: 'Estado',
+            label: t('common.field.status'),
             type: 'text',
             render: (value: boolean) => (
                 <Badge color={value ? 'success' : 'warning'}>
-                    {value ? 'Completada' : 'Pendiente'}
+                    {value
+                        ? t('warehouse.incomeDetailsModal.purchaseOrder.completed', { defaultValue: 'Completada' })
+                        : t('warehouse.incomeDetailsModal.purchaseOrder.pending', { defaultValue: 'Pendiente' })}
                 </Badge>
             ),
         },
@@ -206,7 +180,7 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
             setProducts(incomeDetailsResponse.products)
         } catch (error) {
             console.error('Error fetching data: ', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.incomeDetailsModal.error.fetch') })
         } finally {
             setLoading(false)
         }
@@ -217,22 +191,22 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
 
         try {
             setPdfLoading(true);
-            
+
             // Usar axiosHelper.getBlob para mantener consistencia
             const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/incomes/${incomeId}`);
-        
+
             // Crear blob con tipo MIME explícito para PDF
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
             const url = window.URL.createObjectURL(pdfBlob);
-            
+
             // Debug: Verificar la URL creada
             console.log('PDF URL created:', url);
-            
+
             setFileURL(url);
             toggleModal('viewPDF');
         } catch (error) {
             console.error('Error generating report: ', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.incomeDetailsModal.error.pdf') })
         } finally {
             setPdfLoading(false);
         }
@@ -259,12 +233,12 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
                     {pdfLoading ? (
                         <>
                             <Spinner className="me-2" size='sm' />
-                            Generando PDF
+                            {t('warehouse.incomeDetailsModal.generatingPdf', { defaultValue: 'Generando PDF' })}
                         </>
                     ) : (
                         <>
                             <i className="ri-file-pdf-line me-2"></i>
-                            Ver PDF
+                            {t('warehouse.incomeDetailsModal.viewPdf', { defaultValue: 'Ver PDF' })}
                         </>
                     )}
                 </Button>
@@ -273,7 +247,7 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
                 <div className="d-flex gap-3">
                     <Card>
                         <CardHeader className='bg-gradient bg-primary-subtle'>
-                            <h5 className="mb-0 text-primary">Información General</h5>
+                            <h5 className="mb-0 text-primary">{t('warehouse.incomeDetailsModal.section.generalInfo', { defaultValue: 'Información General' })}</h5>
                         </CardHeader>
                         <CardBody className="pt-4">
                             <ObjectDetails attributes={incomeAttributes} object={incomeDetails} />
@@ -282,7 +256,7 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
 
                     <Card className="flex-fill">
                         <CardHeader className='bg-gradient bg-success-subtle'>
-                            <h5 className="mb-0 text-success">Detalles Financieros</h5>
+                            <h5 className="mb-0 text-success">{t('warehouse.incomeDetailsModal.section.financialDetails', { defaultValue: 'Detalles Financieros' })}</h5>
                         </CardHeader>
                         <CardBody className="pt-4">
                             <ObjectDetails attributes={financialAttributes} object={incomeDetails} />
@@ -292,7 +266,7 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
                     {incomeDetails.purchaseOrder && (
                         <Card>
                             <CardHeader className='bg-gradient bg-info-subtle'>
-                                <h5 className="mb-0 text-info">Orden de Compra</h5>
+                                <h5 className="mb-0 text-info">{t('warehouse.incomeDetailsModal.section.purchaseOrder', { defaultValue: 'Orden de Compra' })}</h5>
                             </CardHeader>
                             <CardBody className="pt-4">
                                 <ObjectDetails attributes={purchaseOrderAttributes} object={incomeDetails.purchaseOrder} />
@@ -303,7 +277,7 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
 
                 <Card>
                     <CardHeader className='bg-gradient bg-secondary-subtle'>
-                        <h5 className="mb-0 text-secondary">Productos de la Entrada</h5>
+                        <h5 className="mb-0 text-secondary">{t('warehouse.incomeDetailsModal.section.products', { defaultValue: 'Productos de la Entrada' })}</h5>
                     </CardHeader>
                     <CardBody className="p-0">
                         <CustomTable columns={productsColumns} data={products} showPagination={true} rowsPerPage={5} showSearchAndFilter={false} />
@@ -314,14 +288,14 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
                 {incomeDetails.documents && incomeDetails.documents.length > 0 && (
                     <Card>
                         <CardHeader className='bg-gradient bg-dark-subtle'>
-                            <h5 className="mb-0 text-dark">Documentos Adjuntos</h5>
+                            <h5 className="mb-0 text-dark">{t('warehouse.incomeDetailsModal.section.documents', { defaultValue: 'Documentos Adjuntos' })}</h5>
                         </CardHeader>
                         <CardBody>
                             <div className="d-flex flex-wrap gap-2">
                                 {incomeDetails.documents.map((doc: any, index: number) => (
                                     <Badge key={index} color="info" className="p-2">
                                         <i className="ri-file-line me-1"></i>
-                                        {doc.name || `Documento ${index + 1}`}
+                                        {doc.name || `${t('warehouse.incomeDetailsModal.document', { defaultValue: 'Documento' })} ${index + 1}`}
                                     </Badge>
                                 ))}
                             </div>
@@ -331,7 +305,7 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
             </div>
 
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de entrada</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('warehouse.incomeDetailsModal.pdfModal.title', { defaultValue: 'Reporte de entrada' })}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>

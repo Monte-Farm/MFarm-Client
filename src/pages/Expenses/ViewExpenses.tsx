@@ -12,19 +12,31 @@ import PDFViewer from "Components/Common/Shared/PDFViewer";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
 import DonutChartCard, { DonutDataItem, DonutLegendItem } from "Components/Common/Graphics/DonutChartCard";
+import { useTranslation } from "react-i18next";
 
-const categoryConfig: Record<string, { label: string; color: string; badgeColor: string }> = {
-    LABOR: { label: "Sueldos y nómina", color: "#3b82f6", badgeColor: "primary" },
-    UTILITY: { label: "Servicios", color: "#f59e0b", badgeColor: "warning" },
-    MAINTENANCE: { label: "Mantenimiento", color: "#6b7280", badgeColor: "secondary" },
-    TRANSPORT: { label: "Transporte", color: "#8b5cf6", badgeColor: "info" },
-    LIVESTOCK_PURCHASE: { label: "Compra de ganado", color: "#10b981", badgeColor: "success" },
-    VETERINARY: { label: "Veterinario", color: "#ef4444", badgeColor: "danger" },
-    OTHER: { label: "Otro", color: "#ec4899", badgeColor: "dark" },
+const categoryBadgeColor: Record<string, string> = {
+    LABOR: "primary",
+    UTILITY: "warning",
+    MAINTENANCE: "secondary",
+    TRANSPORT: "info",
+    LIVESTOCK_PURCHASE: "success",
+    VETERINARY: "danger",
+    OTHER: "dark",
+};
+
+const categoryChartColor: Record<string, string> = {
+    LABOR: "#3b82f6",
+    UTILITY: "#f59e0b",
+    MAINTENANCE: "#6b7280",
+    TRANSPORT: "#8b5cf6",
+    LIVESTOCK_PURCHASE: "#10b981",
+    VETERINARY: "#ef4444",
+    OTHER: "#ec4899",
 };
 
 const ViewExpenses = () => {
-    document.title = "Gastos | MFarm";
+    const { t } = useTranslation();
+    document.title = t('finance.expense.pageTitle');
 
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
@@ -46,25 +58,26 @@ const ViewExpenses = () => {
     };
 
     const columns: Column<any>[] = [
-        { header: "Fecha", accessor: "date", type: "date", isFilterable: true },
+        { header: t('finance.expense.column.date'), accessor: "date", type: "date", isFilterable: true },
         {
-            header: "Categoría",
+            header: t('finance.expense.column.category'),
             accessor: "category",
             isFilterable: true,
             render: (value: string) => {
-                const config = categoryConfig[value] || { label: value, badgeColor: "secondary" };
-                return <Badge color={config.badgeColor}>{config.label}</Badge>;
+                const badgeColor = categoryBadgeColor[value] || "secondary";
+                const label = t(`finance.expense.category.${value}`, { defaultValue: value });
+                return <Badge color={badgeColor}>{label}</Badge>;
             },
         },
         {
-            header: "Descripción",
+            header: t('finance.expense.column.description'),
             accessor: "metadata",
             type: "text",
             render: (value: any) => <span>{value?.description || "-"}</span>,
         },
-        { header: "Monto", accessor: "amount", type: "currency", bgColor: "#FFEBEE" },
+        { header: t('finance.expense.column.amount'), accessor: "amount", type: "currency", bgColor: "#FFEBEE" },
         {
-            header: "Registrado por",
+            header: t('finance.expense.column.createdBy'),
             accessor: "createdBy",
             render: (value: any) =>
                 typeof value === "object" && value
@@ -85,7 +98,7 @@ const ViewExpenses = () => {
             setFileURL(window.URL.createObjectURL(pdfBlob));
             toggleModal('viewPDF');
         } catch (error) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('finance.expense.error.generatePdf') });
         } finally {
             setPdfLoading(false);
         }
@@ -101,7 +114,6 @@ const ViewExpenses = () => {
             const data = response.data.data;
             setEntries(data);
 
-            // Calcular estadísticas del lado del cliente
             const total = data.reduce((sum: number, e: any) => sum + (e.amount || 0), 0);
             const grouped: Record<string, { totalAmount: number; count: number }> = {};
             data.forEach((e: any) => {
@@ -121,7 +133,7 @@ const ViewExpenses = () => {
             });
         } catch (error) {
             console.error("Error fetching expenses:", { error });
-            setAlertConfig({ visible: true, color: "danger", message: "Error al obtener los gastos, inténtelo más tarde" });
+            setAlertConfig({ visible: true, color: "danger", message: t('finance.expense.error.fetchData') });
         } finally {
             setLoading(false);
         }
@@ -135,9 +147,9 @@ const ViewExpenses = () => {
         .filter((c) => c.totalAmount > 0)
         .map((c) => ({
             id: c.category,
-            label: categoryConfig[c.category]?.label || c.category,
+            label: t(`finance.expense.category.${c.category}`, { defaultValue: c.category }),
             value: c.totalAmount,
-            color: categoryConfig[c.category]?.color || "#999",
+            color: categoryChartColor[c.category] || "#999",
         }));
 
     const donutLegend: DonutLegendItem[] = statistics.byCategory
@@ -145,7 +157,7 @@ const ViewExpenses = () => {
         .map((c) => {
             const total = statistics.totalAmount || 1;
             return {
-                label: categoryConfig[c.category]?.label || c.category,
+                label: t(`finance.expense.category.${c.category}`, { defaultValue: c.category }),
                 value: `$${c.totalAmount.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`,
                 percentage: `${((c.totalAmount / total) * 100).toFixed(1)}%`,
             };
@@ -158,12 +170,12 @@ const ViewExpenses = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title="Gastos" pageTitle="Gastos" />
+                <BreadCrumb title={t('finance.expense.breadcrumb.title')} pageTitle={t('finance.expense.breadcrumb.parent')} />
 
                 <Row className="mb-3">
                     <Col xl={4} md={6}>
                         <StatKpiCard
-                            title="Gasto Total"
+                            title={t('finance.expense.kpi.total')}
                             value={statistics.totalAmount}
                             prefix="$"
                             decimals={2}
@@ -174,7 +186,7 @@ const ViewExpenses = () => {
                     </Col>
                     <Col xl={4} md={6}>
                         <StatKpiCard
-                            title="Gasto Promedio"
+                            title={t('finance.expense.kpi.avg')}
                             value={statistics.avgAmount}
                             prefix="$"
                             decimals={2}
@@ -185,7 +197,7 @@ const ViewExpenses = () => {
                     </Col>
                     <Col xl={4} md={6}>
                         <StatKpiCard
-                            title="Registros"
+                            title={t('finance.expense.kpi.count')}
                             value={statistics.count}
                             icon={<i className="ri-file-list-3-line fs-20 text-info"></i>}
                             iconBgColor="#E3F2FD"
@@ -197,7 +209,7 @@ const ViewExpenses = () => {
                 <Row className="mb-3">
                     <Col xl={12}>
                         <DonutChartCard
-                            title="Gastos por Categoría"
+                            title={t('finance.expense.chart.byCategory')}
                             data={donutData}
                             legendItems={donutLegend}
                             height={200}
@@ -208,17 +220,17 @@ const ViewExpenses = () => {
                 <Card>
                     <CardHeader>
                         <div className="d-flex gap-2 align-items-center">
-                            <h4 className="me-auto mb-0">Gastos</h4>
+                            <h4 className="me-auto mb-0">{t('finance.expense.cardTitle')}</h4>
                             <Button color="primary" onClick={() => toggleModal("dateRange")} disabled={pdfLoading}>
                                 {pdfLoading ? (
-                                    <><Spinner className="me-2" size="sm" />Generando...</>
+                                    <><Spinner className="me-2" size="sm" />{t('common.button.generating')}</>
                                 ) : (
-                                    <><i className="ri-file-pdf-line me-2" />Exportar PDF</>
+                                    <><i className="ri-file-pdf-line me-2" />{t('common.button.exportPdf')}</>
                                 )}
                             </Button>
                             <Button className="farm-primary-button" onClick={() => toggleModal("createExpense")}>
                                 <i className="ri-add-line me-2" />
-                                Registrar gasto
+                                {t('finance.expense.action.new')}
                             </Button>
                         </div>
                     </CardHeader>
@@ -226,7 +238,7 @@ const ViewExpenses = () => {
                         {entries.length === 0 ? (
                             <>
                                 <i className="ri-wallet-3-line text-muted mb-2" style={{ fontSize: "2rem" }} />
-                                <span className="fs-5 text-muted">No hay gastos registrados</span>
+                                <span className="fs-5 text-muted">{t('finance.expense.empty')}</span>
                             </>
                         ) : (
                             <CustomTable columns={columns} data={entries} showPagination rowsPerPage={10} />
@@ -236,24 +248,24 @@ const ViewExpenses = () => {
             </Container>
 
             <Modal size="lg" isOpen={modals.createExpense} toggle={() => toggleModal("createExpense")} backdrop="static" keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("createExpense")}>Registrar gasto</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("createExpense")}>{t('finance.expense.modal.create')}</ModalHeader>
                 <ModalBody>
                     <ExpenseForm onSave={() => { toggleModal("createExpense"); fetchData(); }} onCancel={() => toggleModal("createExpense")} />
                 </ModalBody>
             </Modal>
 
             <Modal size="md" isOpen={modals.dateRange} toggle={() => toggleModal("dateRange")} centered>
-                <ModalHeader toggle={() => toggleModal("dateRange")}>Seleccionar rango de fechas</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("dateRange")}>{t('finance.expense.modal.dateRange')}</ModalHeader>
                 <ReportDateRangeSelector
                     onGenerate={handleGeneratePDF}
                     onCancel={() => toggleModal("dateRange")}
                     loading={pdfLoading}
-                    generateButtonText="Generar PDF"
+                    generateButtonText={t('finance.expense.action.generatePdf')}
                 />
             </Modal>
 
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop="static" keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Gastos</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('finance.expense.modal.pdfReport')}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>

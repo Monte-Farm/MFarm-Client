@@ -16,23 +16,26 @@ import CustomTable from "Components/Common/Tables/CustomTable";
 import { Column } from "common/data/data_types";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
-
-const categoryConfig: Record<string, { color: string; label: string }> = {
-    nutrition: { color: "info", label: "Nutrición" },
-    medications: { color: "warning", label: "Medicamentos" },
-    vaccines: { color: "primary", label: "Vacunas" },
-    vitamins: { color: "success", label: "Vitaminas" },
-    minerals: { color: "success", label: "Minerales" },
-    supplies: { color: "success", label: "Insumos" },
-    hygiene_cleaning: { color: "success", label: "Higiene y desinfección" },
-    equipment_tools: { color: "success", label: "Equipamiento y herramientas" },
-    spare_parts: { color: "success", label: "Refacciones y repuestos" },
-    office_supplies: { color: "success", label: "Material de oficina" },
-    others: { color: "secondary", label: "Otros" },
-};
+import { useTranslation } from "react-i18next";
 
 const ProductDetails = () => {
-    document.title = 'Detalles de Producto | Almacén'
+    const { t } = useTranslation();
+    document.title = t('warehouse.inventoryDetails.breadcrumb', { defaultValue: 'Detalles de Producto' }) + ' | ' + t('warehouse.inventory.breadcrumb', { defaultValue: 'Inventario' });
+
+    const categoryConfig: Record<string, { color: string; label: string }> = {
+        nutrition: { color: "info", label: t('warehouse.products.category.nutrition', { defaultValue: 'Nutrición' }) },
+        medications: { color: "warning", label: t('warehouse.products.category.medications', { defaultValue: 'Medicamentos' }) },
+        vaccines: { color: "primary", label: t('warehouse.products.category.vaccines', { defaultValue: 'Vacunas' }) },
+        vitamins: { color: "success", label: t('warehouse.products.category.vitamins', { defaultValue: 'Vitaminas' }) },
+        minerals: { color: "success", label: t('warehouse.products.category.minerals', { defaultValue: 'Minerales' }) },
+        supplies: { color: "success", label: t('warehouse.products.category.supplies', { defaultValue: 'Insumos' }) },
+        hygiene_cleaning: { color: "success", label: t('warehouse.products.category.hygiene_cleaning', { defaultValue: 'Higiene y desinfección' }) },
+        equipment_tools: { color: "success", label: t('warehouse.products.category.equipment_tools', { defaultValue: 'Equipamiento y herramientas' }) },
+        spare_parts: { color: "success", label: t('warehouse.products.category.spare_parts', { defaultValue: 'Refacciones y repuestos' }) },
+        office_supplies: { color: "success", label: t('warehouse.products.category.office_supplies', { defaultValue: 'Material de oficina' }) },
+        others: { color: "secondary", label: t('warehouse.products.category.others', { defaultValue: 'Otros' }) },
+    };
+
     const configContext = useContext(ConfigContext);
     const history = useNavigate();
     const [searchParams] = useSearchParams();
@@ -49,6 +52,38 @@ const ProductDetails = () => {
     const [fileURL, setFileURL] = useState<string | null>(null);
     const [showPDFModal, setShowPDFModal] = useState(false);
 
+    const movementsColumns: Column<any>[] = [
+        { header: t('common.field.date', { defaultValue: 'Fecha' }), accessor: 'date', isFilterable: true, type: 'date' },
+        { header: t('common.field.code', { defaultValue: 'Código' }), accessor: 'code', isFilterable: true, type: 'text' },
+        {
+            header: t('warehouse.inventoryDetails.col.type', { defaultValue: 'Tipo' }),
+            accessor: 'type',
+            isFilterable: true,
+            type: 'text',
+            render: (value: string) => {
+                let color = 'secondary';
+                let text = t('warehouse.inventoryDetails.movementType.na', { defaultValue: 'N/A' });
+                switch (value) {
+                    case "income": color = "success"; text = t('warehouse.inventoryDetails.movementType.income', { defaultValue: 'Entrada' }); break;
+                    case "outcome": color = "danger"; text = t('warehouse.inventoryDetails.movementType.outcome', { defaultValue: 'Salida' }); break;
+                }
+                return <Badge color={color} className="px-2 py-1">{text}</Badge>;
+            },
+        },
+        { header: t('warehouse.inventoryDetails.kpi.stock', { defaultValue: 'Existencias' }), accessor: 'quantity', type: 'number' },
+        { header: t('warehouse.inventoryDetails.col.monetaryValue', { defaultValue: 'Valor Monetario' }), accessor: 'monetaryValue', type: 'currency' },
+        {
+            header: t('warehouse.inventoryDetails.col.origin', { defaultValue: 'Origen/Destino' }),
+            accessor: 'origin',
+            type: 'text',
+            render: (_, row) => {
+                if (row.type === 'income' && row.origin) return `${row.origin.name}`;
+                if (row.type === 'outcome' && row.destination) return `${row.destination.name}`;
+                return t('warehouse.inventoryDetails.movementType.na', { defaultValue: 'N/A' });
+            },
+        },
+    ];
+
     const calculatePriceVariation = () => {
         const lastPrice = productStatistics?.lastPrice || 0;
         const averagePrice = productStatistics?.averagePrice || 0;
@@ -60,38 +95,6 @@ const ProductDetails = () => {
     const productId = searchParams.get('product');
     const warehouseId = searchParams.get('warehouse');
     const categoryInfo = productDetails?.category ? categoryConfig[productDetails.category] : null;
-
-    const movementsColumns: Column<any>[] = [
-        { header: 'Fecha', accessor: 'date', isFilterable: true, type: 'date' },
-        { header: 'Código', accessor: 'code', isFilterable: true, type: 'text' },
-        {
-            header: 'Tipo',
-            accessor: 'type',
-            isFilterable: true,
-            type: 'text',
-            render: (value: string) => {
-                let color = 'secondary';
-                let text = 'N/A';
-                switch (value) {
-                    case "income": color = "success"; text = "Entrada"; break;
-                    case "outcome": color = "danger"; text = "Salida"; break;
-                }
-                return <Badge color={color} className="px-2 py-1">{text}</Badge>;
-            },
-        },
-        { header: 'Cantidad', accessor: 'quantity', type: 'number' },
-        { header: 'Valor Monetario', accessor: 'monetaryValue', type: 'currency' },
-        {
-            header: 'Origen/Destino',
-            accessor: 'origin',
-            type: 'text',
-            render: (_, row) => {
-                if (row.type === 'income' && row.origin) return `${row.origin.name}`;
-                if (row.type === 'outcome' && row.destination) return `${row.destination.name}`;
-                return 'N/A';
-            },
-        },
-    ];
 
     const toggleTab = (tab: string) => {
         if (activeTab !== tab) setActiveTab(tab);
@@ -109,7 +112,7 @@ const ProductDetails = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/product/find_product_id/${productId}`);
             setProductDetails(response.data.data);
         } catch (error) {
-            handleError(error, 'El servicio no está disponible, inténtelo más tarde');
+            handleError(error, t('warehouse.inventoryDetails.error.fetchProduct', { defaultValue: 'El servicio no está disponible, inténtelo más tarde' }));
         }
     };
 
@@ -119,7 +122,7 @@ const ProductDetails = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/product_statistics/${warehouseId}/${productId}`);
             setProductStatistics(response.data.data);
         } catch (error) {
-            handleError(error, 'Error al obtener las estadísticas del producto');
+            handleError(error, t('warehouse.inventoryDetails.error.fetchStats', { defaultValue: 'Error al obtener las estadísticas del producto' }));
         }
     };
 
@@ -129,7 +132,7 @@ const ProductDetails = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/product_historical_data/${warehouseId}/${productId}`);
             setHistoricalData(response.data.data);
         } catch (error) {
-            handleError(error, 'Error al obtener los datos históricos del producto');
+            handleError(error, t('warehouse.inventoryDetails.error.fetchHistory', { defaultValue: 'Error al obtener los datos históricos del producto' }));
         }
     };
 
@@ -139,7 +142,7 @@ const ProductDetails = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/product_movements/${warehouseId}/${productId}`);
             setMovements(response.data.data.movements);
         } catch (error) {
-            handleError(error, 'Error al obtener los movimientos del producto');
+            handleError(error, t('warehouse.inventoryDetails.error.fetchMovements', { defaultValue: 'Error al obtener los movimientos del producto' }));
         }
     };
 
@@ -149,7 +152,7 @@ const ProductDetails = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/product_movement_summary/${warehouseId}/${productId}`);
             setMovementsSummary(response.data.data.summary);
         } catch (error) {
-            handleError(error, 'Error al obtener los movimientos del producto');
+            handleError(error, t('warehouse.inventoryDetails.error.fetchMovements', { defaultValue: 'Error al obtener los movimientos del producto' }));
         }
     };
 
@@ -159,7 +162,7 @@ const ProductDetails = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/product_movement_charts/${warehouseId}/${productId}`);
             setMovementsCharts(response.data.data.charts);
         } catch (error) {
-            handleError(error, 'Error al obtener los movimientos del producto');
+            handleError(error, t('warehouse.inventoryDetails.error.fetchMovements', { defaultValue: 'Error al obtener los movimientos del producto' }));
         }
     };
 
@@ -174,7 +177,7 @@ const ProductDetails = () => {
             setShowPDFModal(true);
         } catch (error) {
             console.error('Error generating product inventory PDF: ', { error });
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF del inventario del producto' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.inventoryDetails.error.generatePdf', { defaultValue: 'Error al generar el PDF del inventario del producto' }) });
         } finally {
             setPdfLoading(false);
         }
@@ -193,7 +196,7 @@ const ProductDetails = () => {
                 handleFetchProductMovementsCharts(),
             ]);
         } catch (error) {
-            handleError(error, "Error al cargar los datos");
+            handleError(error, t('warehouse.inventoryDetails.error.load', { defaultValue: 'Error al cargar los datos' }));
         } finally {
             setLoading(false);
         }
@@ -210,20 +213,20 @@ const ProductDetails = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title="Detalles de Producto" pageTitle="Inventario" />
+                <BreadCrumb title={t('warehouse.inventoryDetails.breadcrumb', { defaultValue: 'Detalles de Producto' })} pageTitle={t('warehouse.inventory.breadcrumb', { defaultValue: 'Inventario' })} />
 
                 <div className="d-flex gap-2 mb-3">
                     <div className="flex-grow-1">
                         <Button className="farm-secondary-button" onClick={() => history(-1)}>
                             <i className="ri-arrow-left-line me-3"></i>
-                            Regresar
+                            {t('common.button.back', { defaultValue: 'Regresar' })}
                         </Button>
                     </div>
                     <Button color="primary" onClick={handlePrintProduct} disabled={pdfLoading}>
                         {pdfLoading ? (
-                            <><Spinner className="me-2" size='sm' />Generando...</>
+                            <><Spinner className="me-2" size='sm' />{t('common.button.generating', { defaultValue: 'Generando...' })}</>
                         ) : (
-                            <><i className="ri-file-pdf-line me-2"></i>Imprimir Reporte</>
+                            <><i className="ri-file-pdf-line me-2"></i>{t('warehouse.inventoryDetails.button.report', { defaultValue: 'Imprimir Reporte' })}</>
                         )}
                     </Button>
                 </div>
@@ -239,7 +242,7 @@ const ProductDetails = () => {
                                     onClick={() => toggleTab("1")}
                                 >
                                     <RiInformationLine className="me-1" />
-                                    Información General
+                                    {t('warehouse.inventoryDetails.tab.general', { defaultValue: 'Información General' })}
                                 </NavLink>
                             </NavItem>
                             <NavItem>
@@ -249,7 +252,7 @@ const ProductDetails = () => {
                                     onClick={() => toggleTab("2")}
                                 >
                                     <RiExchangeLine className="me-1" />
-                                    Movimientos
+                                    {t('warehouse.inventoryDetails.tab.movements', { defaultValue: 'Movimientos' })}
                                 </NavLink>
                             </NavItem>
                         </Nav>
@@ -263,7 +266,7 @@ const ProductDetails = () => {
                         <Row className="g-3 mb-3">
                             <Col md={6} lg>
                                 <StatKpiCard
-                                    title="Existencias"
+                                    title={t('warehouse.inventoryDetails.kpi.stock', { defaultValue: 'Existencias' })}
                                     value={productStatistics?.existences?.quantity || 0}
                                     suffix={productStatistics?.existences?.unitMeasurement || ''}
                                     icon={<RiBox3Line size={20} style={{ color: "#f59e0b" }} />}
@@ -273,7 +276,7 @@ const ProductDetails = () => {
                             </Col>
                             <Col md={6} lg>
                                 <StatKpiCard
-                                    title="Valor Total"
+                                    title={t('warehouse.inventoryDetails.kpi.totalValue', { defaultValue: 'Valor Total' })}
                                     value={productStatistics?.totalValue || 0}
                                     icon={<RiMoneyDollarCircleLine size={20} style={{ color: "#0ea5e9" }} />}
                                     animateValue={true}
@@ -283,7 +286,7 @@ const ProductDetails = () => {
                             </Col>
                             <Col md={6} lg>
                                 <StatKpiCard
-                                    title="Último Precio"
+                                    title={t('warehouse.inventoryDetails.kpi.lastPrice', { defaultValue: 'Último Precio' })}
                                     value={productStatistics?.lastPrice || 0}
                                     icon={<RiPriceTag3Line size={20} style={{ color: "#ef4444" }} />}
                                     animateValue={true}
@@ -293,7 +296,7 @@ const ProductDetails = () => {
                             </Col>
                             <Col md={6} lg>
                                 <StatKpiCard
-                                    title="Precio Promedio"
+                                    title={t('warehouse.inventoryDetails.kpi.avgPrice', { defaultValue: 'Precio Promedio' })}
                                     value={productStatistics?.averagePrice || 0}
                                     icon={<RiPercentLine size={20} style={{ color: "#3b82f6" }} />}
                                     animateValue={true}
@@ -303,7 +306,7 @@ const ProductDetails = () => {
                             </Col>
                             <Col md={6} lg>
                                 <StatKpiCard
-                                    title="Variación de Precio"
+                                    title={t('warehouse.inventoryDetails.kpi.priceVariation', { defaultValue: 'Variación de Precio' })}
                                     value={priceVariation}
                                     icon={priceVariation >= 0
                                         ? <RiArrowUpLine size={20} style={{ color: "#ef4444" }} />
@@ -360,7 +363,7 @@ const ProductDetails = () => {
                                                     style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }}
                                                 >
                                                     <div className="text-muted text-uppercase fw-semibold mb-1" style={{ fontSize: '0.7rem', letterSpacing: '0.5px' }}>
-                                                        Código
+                                                        {t('common.field.code', { defaultValue: 'Código' })}
                                                     </div>
                                                     <div className="fw-bold text-dark text-truncate" style={{ fontSize: '0.95rem' }}>
                                                         {productDetails?.id || '—'}
@@ -373,7 +376,7 @@ const ProductDetails = () => {
                                                     style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }}
                                                 >
                                                     <div className="text-muted text-uppercase fw-semibold mb-1" style={{ fontSize: '0.7rem', letterSpacing: '0.5px' }}>
-                                                        Unidad
+                                                        {t('warehouse.products.attr.unit', { defaultValue: 'Unidad' })}
                                                     </div>
                                                     <div className="fw-bold text-dark text-truncate" style={{ fontSize: '0.95rem' }}>
                                                         {productDetails?.unit_measurement || '—'}
@@ -385,7 +388,7 @@ const ProductDetails = () => {
                                         <div>
                                             <div className="text-muted text-uppercase fw-semibold mb-2" style={{ fontSize: '0.7rem', letterSpacing: '0.5px' }}>
                                                 <RiInformationLine className="me-1" />
-                                                Descripción
+                                                {t('warehouse.inventoryDetails.attr.description', { defaultValue: 'Descripción' })}
                                             </div>
                                             <p className="text-dark mb-0 small" style={{ lineHeight: 1.6 }}>
                                                 {productDetails?.description || 'Sin descripción disponible'}
@@ -399,10 +402,10 @@ const ProductDetails = () => {
                                 <Row className="g-3">
                                     <Col xs={12}>
                                         <BasicLineChartCard
-                                            title="Existencias Históricas"
-                                            data={transformQuantityData(historicalData?.quantityHistory, "Existencias", "#0d6efd")}
-                                            yLabel="Cantidad"
-                                            xLabel="Período"
+                                            title={t('warehouse.inventoryDetails.chart.historicalStock', { defaultValue: 'Existencias Históricas' })}
+                                            data={transformQuantityData(historicalData?.quantityHistory, t('warehouse.inventoryDetails.kpi.stock', { defaultValue: 'Existencias' }), "#0d6efd")}
+                                            yLabel={t('warehouse.inventoryDetails.kpi.stock', { defaultValue: 'Cantidad' })}
+                                            xLabel={t('warehouse.inventoryDetails.attr.period', { defaultValue: 'Período' })}
                                             height={280}
                                             curve="natural"
                                             pointSize={4}
@@ -416,13 +419,13 @@ const ProductDetails = () => {
                                     </Col>
                                     <Col xs={12}>
                                         <BasicLineChartCard
-                                            title="Precios Históricos"
+                                            title={t('warehouse.inventoryDetails.chart.historicalPrices', { defaultValue: 'Precios Históricos' })}
                                             data={combinePriceSeries([
-                                                { data: historicalData?.averagePriceHistory, serieId: "Precio Promedio", color: "#dc3545" },
-                                                { data: historicalData?.lastPriceHistory, serieId: "Último Precio de compra", color: "#198754" }
+                                                { data: historicalData?.averagePriceHistory, serieId: t('warehouse.inventoryDetails.kpi.avgPrice', { defaultValue: 'Precio Promedio' }), color: "#dc3545" },
+                                                { data: historicalData?.lastPriceHistory, serieId: t('warehouse.inventoryDetails.kpi.lastPrice', { defaultValue: 'Último Precio de compra' }), color: "#198754" }
                                             ])}
                                             yLabel="Precio (RD$)"
-                                            xLabel="Período"
+                                            xLabel={t('warehouse.inventoryDetails.attr.period', { defaultValue: 'Período' })}
                                             height={280}
                                             curve="natural"
                                             pointSize={4}
@@ -447,7 +450,7 @@ const ProductDetails = () => {
                         <Row className="g-3 mb-3">
                             <Col md={6} lg>
                                 <StatKpiCard
-                                    title="Total Entradas"
+                                    title={t('warehouse.inventoryDetails.kpi.totalIncomes', { defaultValue: 'Total Entradas' })}
                                     value={movementsSummary?.totalIncomes || 0}
                                     suffix={productDetails?.unit_measurement || 'unidades'}
                                     icon={<RiAddLine size={20} style={{ color: "#10b981" }} />}
@@ -457,7 +460,7 @@ const ProductDetails = () => {
                             </Col>
                             <Col md={6} lg>
                                 <StatKpiCard
-                                    title="Total Salidas"
+                                    title={t('warehouse.inventoryDetails.kpi.totalOutcomes', { defaultValue: 'Total Salidas' })}
                                     value={movementsSummary?.totalOutcomes || 0}
                                     suffix={productDetails?.unit_measurement || 'unidades'}
                                     icon={<RiSubtractLine size={20} style={{ color: "#ef4444" }} />}
@@ -467,7 +470,7 @@ const ProductDetails = () => {
                             </Col>
                             <Col md={6} lg>
                                 <StatKpiCard
-                                    title="Total Movimientos"
+                                    title={t('warehouse.inventoryDetails.kpi.totalMovements', { defaultValue: 'Total Movimientos' })}
                                     value={movementsSummary?.totalMovements || 0}
                                     icon={<RiExchangeLine size={20} style={{ color: "#3b82f6" }} />}
                                     animateValue={true}
@@ -476,7 +479,7 @@ const ProductDetails = () => {
                             </Col>
                             <Col md={6} lg>
                                 <StatKpiCard
-                                    title="Valor Entradas"
+                                    title={t('warehouse.inventoryDetails.kpi.incomesValue', { defaultValue: 'Valor Entradas' })}
                                     value={movementsSummary?.totalIncomeValue || 0}
                                     prefix="$"
                                     icon={<RiMoneyDollarCircleLine size={20} style={{ color: "#0ea5e9" }} />}
@@ -486,7 +489,7 @@ const ProductDetails = () => {
                             </Col>
                             <Col md={6} lg>
                                 <StatKpiCard
-                                    title="Valor Salidas"
+                                    title={t('warehouse.inventoryDetails.kpi.outcomesValue', { defaultValue: 'Valor Salidas' })}
                                     value={movementsSummary?.totalOutcomeValue || 0}
                                     prefix="$"
                                     icon={<RiMoneyDollarCircleLine size={20} style={{ color: "#ef4444" }} />}
@@ -500,18 +503,18 @@ const ProductDetails = () => {
                         <Row className="g-3 mb-3">
                             <Col lg={4}>
                                 <DonutChartCard
-                                    title="Distribución por Tipo"
+                                    title={t('warehouse.inventoryDetails.chart.distributionByType', { defaultValue: 'Distribución por Tipo' })}
                                     data={movementsCharts?.distribution || []}
                                     legendItems={[
                                         {
-                                            label: 'Entradas',
+                                            label: t('warehouse.inventoryDetails.movementType.income', { defaultValue: 'Entradas' }),
                                             value: `${movementsSummary?.totalIncomes || 0} ${productDetails?.unit_measurement || 'unidades'}`,
                                             percentage: movementsSummary?.totalIncomes && movementsSummary?.totalOutcomes
                                                 ? `${((movementsSummary.totalIncomes / (movementsSummary.totalIncomes + movementsSummary.totalOutcomes)) * 100).toFixed(1)}%`
                                                 : '0%'
                                         },
                                         {
-                                            label: 'Salidas',
+                                            label: t('warehouse.inventoryDetails.movementType.outcome', { defaultValue: 'Salidas' }),
                                             value: `${movementsSummary?.totalOutcomes || 0} ${productDetails?.unit_measurement || 'unidades'}`,
                                             percentage: movementsSummary?.totalIncomes && movementsSummary?.totalOutcomes
                                                 ? `${((movementsSummary.totalOutcomes / (movementsSummary.totalIncomes + movementsSummary.totalOutcomes)) * 100).toFixed(1)}%`
@@ -524,7 +527,7 @@ const ProductDetails = () => {
                             </Col>
                             <Col lg={4}>
                                 <BasicLineChartCard
-                                    title="Tendencia de Movimientos"
+                                    title={t('warehouse.inventoryDetails.chart.movementTrend', { defaultValue: 'Tendencia de Movimientos' })}
                                     data={combinePriceSeries(
                                         movementsCharts?.trend?.map((serie: any) => ({
                                             data: serie.data,
@@ -548,7 +551,7 @@ const ProductDetails = () => {
                             </Col>
                             <Col lg={4}>
                                 <StackedAreaChartCard
-                                    title="Valor Acumulado"
+                                    title={t('warehouse.inventoryDetails.chart.accumulatedValue', { defaultValue: 'Valor Acumulado' })}
                                     data={movementsCharts?.accumulatedValue || []}
                                     yLabel="Valor (RD$)"
                                     xLabel="Fecha"
@@ -571,7 +574,7 @@ const ProductDetails = () => {
                             <CardHeader className="bg-white border-bottom py-3">
                                 <h6 className="mb-0 fw-bold text-dark">
                                     <RiExchangeLine className="me-2 text-primary" />
-                                    Movimientos Recientes
+                                    {t('warehouse.inventoryDetails.tab.movements', { defaultValue: 'Movimientos Recientes' })}
                                 </h6>
                             </CardHeader>
                             <CardBody className="p-0">
@@ -580,7 +583,7 @@ const ProductDetails = () => {
                                 ) : (
                                     <div className="p-5 text-center">
                                         <RiExchangeLine size={48} className="text-muted mb-2" />
-                                        <p className="fs-6 text-muted mb-0">Aún no hay movimientos registrados</p>
+                                        <p className="fs-6 text-muted mb-0">{t('warehouse.inventoryDetails.empty', { defaultValue: 'Aún no hay movimientos registrados' })}</p>
                                     </div>
                                 )}
                             </CardBody>
@@ -589,7 +592,7 @@ const ProductDetails = () => {
                 </TabContent>
 
                 <Modal size="xl" isOpen={showPDFModal} toggle={() => setShowPDFModal(!showPDFModal)} backdrop='static' keyboard={false} centered fullscreen={true}>
-                    <ModalHeader toggle={() => setShowPDFModal(!showPDFModal)}>Reporte de Inventario del Producto</ModalHeader>
+                    <ModalHeader toggle={() => setShowPDFModal(!showPDFModal)}>{t('warehouse.inventoryDetails.modal.report', { defaultValue: 'Reporte de Inventario del Producto' })}</ModalHeader>
                     <ModalBody>
                         {fileURL && <PDFViewer fileUrl={fileURL} />}
                     </ModalBody>

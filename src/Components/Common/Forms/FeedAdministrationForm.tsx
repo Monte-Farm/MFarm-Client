@@ -1,5 +1,6 @@
 import { ConfigContext } from "App";
 import { useFormik } from "formik";
+import { Trans, useTranslation } from "react-i18next";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { FEED_ADMINISTRATION_URLS, PREPARED_FEED_URLS } from "helpers/feeding_urls";
 import { useContext, useEffect, useMemo, useState } from "react";
@@ -34,6 +35,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
     onSave,
     onCancel,
 }) => {
+    const { t } = useTranslation();
     const userLogged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
 
@@ -47,12 +49,12 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
     };
 
     const validationSchema = Yup.object({
-        preparedProductId: Yup.string().required('Seleccione un alimento preparado'),
+        preparedProductId: Yup.string().required(t('form.validation.required')),
         quantity: Yup.number()
-            .typeError('Debe ser un número')
-            .positive('Debe ser mayor a 0')
-            .required('Requerido'),
-        date: Yup.date().required('Seleccione una fecha').nullable(),
+            .typeError(t('form.validation.mustBeNumber'))
+            .positive(t('form.validation.positive'))
+            .required(t('form.validation.required')),
+        date: Yup.date().required(t('form.validation.required')).nullable(),
     });
 
     const formik = useFormik({
@@ -104,7 +106,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
                 const response = await configContext.axiosHelper.create(url, payload);
                 if (response.status === HttpStatusCode.Created || response.status === HttpStatusCode.Ok) {
                     const targetLabel = isBulk
-                        ? `${bulkTargets.length} ${targetType === 'group' ? 'grupos' : 'camadas'}`
+                        ? `${bulkTargets.length} ${targetType === 'group' ? t('feeding.administration.target.groups') : t('feeding.administration.target.litters')}`
                         : `1 ${targetType}`;
                     await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
                         event: `Administración de alimento registrada (${targetLabel})`,
@@ -113,7 +115,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
                 }
             } catch (error: any) {
                 console.error('Error creating administration:', error);
-                const msg = error?.response?.data?.message || 'Ha ocurrido un error al registrar la administración';
+                const msg = error?.response?.data?.message || t('feeding.administration.form.error');
                 setAlertConfig({ visible: true, color: 'danger', message: msg });
                 toggleModal('error', true);
             }
@@ -131,7 +133,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
             setPreparedProducts(response.data.data || []);
         } catch (error) {
             console.error('Error fetching prepared products:', error);
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al cargar alimentos preparados' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('common.status.noData') });
         } finally {
             setLoading(false);
         }
@@ -157,13 +159,13 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
             {isBulk && (
                 <div className="alert alert-info py-2 mb-3 small">
                     <i className="ri-information-line me-1" />
-                    Se aplicará la misma cantidad a <strong>{bulkTargets.length}</strong> {targetType === 'group' ? 'grupos' : 'camadas'} seleccionados.
+                    <Trans i18nKey="feeding.administration.form.bulkInfo" values={{ count: bulkTargets.length, target: targetType === 'group' ? t('feeding.administration.target.groups') : t('feeding.administration.target.litters') }} components={{ 1: <strong /> }} />
                 </div>
             )}
 
             <div className="d-flex gap-3">
                 <div className="w-50">
-                    <Label className="form-label">Alimento preparado *</Label>
+                    <Label className="form-label">{t('feeding.administration.form.field.preparedFeed')}</Label>
                     <Input
                         type="select"
                         name="preparedProductId"
@@ -172,7 +174,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
                         onBlur={formik.handleBlur}
                         invalid={formik.touched.preparedProductId && !!formik.errors.preparedProductId}
                     >
-                        <option value="">Seleccione un alimento preparado</option>
+                        <option value="">{t('feeding.administration.form.field.preparedFeedSelect')}</option>
                         {preparedProducts.map(p => (
                             <option key={p._id || p.id} value={p._id || p.id}>
                                 {p.name} — Stock: {(p.totalStock ?? p.quantity ?? 0).toFixed(2)} {p.unit_measurement || 'kg'}
@@ -185,13 +187,13 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
                     {preparedProducts.length === 0 && (
                         <div className="text-warning small mt-1">
                             <i className="ri-alert-line me-1" />
-                            No hay alimentos preparados disponibles. Realice una preparación primero.
+                            {t('feeding.administration.form.warning.noPreparedFeed')}
                         </div>
                     )}
                 </div>
 
                 <div className="w-50">
-                    <Label className="form-label">Cantidad a administrar *</Label>
+                    <Label className="form-label">{t('feeding.administration.form.field.quantity')}</Label>
                     <div className="input-group">
                         <Input
                             type="number"
@@ -210,7 +212,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
                     )}
                     {exceedsStock && selectedProduct && !isBulk && (
                         <div className="text-danger small mt-1">
-                            La cantidad supera el stock disponible ({stockAvailable.toFixed(2)} kg).
+                            {t('feeding.administration.form.warning.exceedsStock', { val: stockAvailable.toFixed(2) })}
                         </div>
                     )}
                 </div>
@@ -220,7 +222,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
                 <div className="mt-3">
                     <div className="bg-light rounded p-3 d-flex justify-content-between align-items-center">
                         <div>
-                            <small className="text-muted">Stock disponible</small>
+                            <small className="text-muted">{t('feeding.administration.form.field.stockAvailable')}</small>
                             <div className="fs-5 fw-bold">{stockAvailable.toFixed(2)} kg</div>
                         </div>
                         <i className="ri-archive-line fs-3 text-muted opacity-75" />
@@ -230,7 +232,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
 
             <div className="d-flex gap-3 mt-3">
                 <div className="w-50">
-                    <Label className="form-label">Fecha *</Label>
+                    <Label className="form-label">{t('feeding.administration.form.field.date')}</Label>
                     <DatePicker
                         className={`form-control ${formik.touched.date && formik.errors.date ? 'is-invalid' : ''}`}
                         value={formik.values.date ?? undefined}
@@ -239,32 +241,32 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
                     />
                 </div>
                 <div className="w-50">
-                    <Label className="form-label">Responsable</Label>
+                    <Label className="form-label">{t('feeding.administration.form.field.responsible')}</Label>
                     <Input type="text" value={`${userLogged.name} ${userLogged.lastname}`} disabled />
                 </div>
             </div>
 
             <div className="mt-3">
-                <Label className="form-label">Observaciones</Label>
+                <Label className="form-label">{t('feeding.administration.form.field.observations')}</Label>
                 <Input
                     type="textarea"
                     name="observations"
                     rows={2}
                     value={formik.values.observations}
                     onChange={formik.handleChange}
-                    placeholder="Notas sobre la administración (opcional)"
+                    placeholder={t('feeding.administration.form.field.observationsPlaceholder')}
                 />
             </div>
 
             <div className="d-flex justify-content-end gap-2 mt-4">
-                <Button color="secondary" outline onClick={onCancel}>Cancelar</Button>
+                <Button color="secondary" outline onClick={onCancel}>{t('feeding.administration.form.action.cancel')}</Button>
                 <Button
                     color="success"
                     onClick={() => formik.handleSubmit()}
                     disabled={formik.isSubmitting || preparedProducts.length === 0 || (exceedsStock && !isBulk)}
                 >
                     {formik.isSubmitting ? <Spinner size="sm" /> : (
-                        <><i className="ri-check-line me-2" />Registrar administración</>
+                        <><i className="ri-check-line me-2" />{t('feeding.administration.form.action.register')}</>
                     )}
                 </Button>
             </div>
@@ -273,10 +275,10 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
                 isOpen={modals.success}
                 onClose={onSave}
                 message={isBulk
-                    ? `Administración registrada en ${bulkTargets.length} ${targetType === 'group' ? 'grupos' : 'camadas'}`
-                    : "Administración registrada con éxito"}
+                    ? t('feeding.administration.form.success.bulk', { count: bulkTargets.length, target: targetType === 'group' ? t('feeding.administration.target.groups') : t('feeding.administration.target.litters') })
+                    : t('feeding.administration.form.success.single')}
             />
-            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message="Ha ocurrido un error al registrar la administración" />
+            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={t('feeding.administration.form.error')} />
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} autoClose={4000} />
         </form>
     );

@@ -23,11 +23,13 @@ import { fetchFarmConfig, updateFarmConfig } from 'slices/configurations/thunk';
 import { DEFAULT_FARM_CONFIG } from 'common/configuration_defaults';
 import { FarmConfiguration as FarmConfigType } from 'common/data_interfaces';
 import { getEffectiveUser } from "helpers/impersonation_helper";
+import { useTranslation } from 'react-i18next';
 
 type SectionKey = 'gestation' | 'lactation' | 'weaning' | 'fattening' | 'replacement' | 'notifications';
 
 const FarmConfiguration = () => {
-    document.title = 'Configuración de Granja | System Pig';
+    const { t } = useTranslation();
+    document.title = t('config.farm.pageTitle');
     const dispatch: any = useDispatch();
     const farmConfig: FarmConfigType | null = useSelector((s: any) => s.Configurations.farmConfig);
     const loading: boolean = useSelector((s: any) => s.Configurations.loadingFarm);
@@ -68,45 +70,45 @@ const FarmConfiguration = () => {
     const validationSchema = Yup.object({
         productionCycles: Yup.object({
             gestation: Yup.object({
-                closeToFarrowDays: Yup.number().integer().min(1).required('Requerido'),
-                farrowingPendingDays: Yup.number().integer().min(1).required('Requerido'),
-                overdueFarrowingDays: Yup.number().integer().min(1).required('Requerido'),
+                closeToFarrowDays: Yup.number().integer().min(1).required(t('config.farm.validation.required')),
+                farrowingPendingDays: Yup.number().integer().min(1).required(t('config.farm.validation.required')),
+                overdueFarrowingDays: Yup.number().integer().min(1).required(t('config.farm.validation.required')),
             }).test('gestation-order', 'closeToFarrow < farrowingPending < overdueFarrowing', (v) => {
                 if (!v) return true;
                 return v.closeToFarrowDays < v.farrowingPendingDays && v.farrowingPendingDays < v.overdueFarrowingDays;
             }),
             lactation: Yup.object({
-                weanReadyDays: Yup.number().integer().min(1).required('Requerido'),
-                weanOverdueDays: Yup.number().integer().min(1).required('Requerido'),
+                weanReadyDays: Yup.number().integer().min(1).required(t('config.farm.validation.required')),
+                weanOverdueDays: Yup.number().integer().min(1).required(t('config.farm.validation.required')),
             }).test('lactation-order', 'weanReady < weanOverdue', (v) => {
                 if (!v) return true;
                 return v.weanReadyDays < v.weanOverdueDays;
             }),
             weaning: Yup.object({
-                fatteningReadyDays: Yup.number().integer().min(1).required('Requerido'),
-                fatteningOverdueDays: Yup.number().integer().min(1).required('Requerido'),
+                fatteningReadyDays: Yup.number().integer().min(1).required(t('config.farm.validation.required')),
+                fatteningOverdueDays: Yup.number().integer().min(1).required(t('config.farm.validation.required')),
             }).test('weaning-order', 'fatteningReady < fatteningOverdue', (v) => {
                 if (!v) return true;
                 return v.fatteningReadyDays < v.fatteningOverdueDays;
             }),
             fattening: Yup.object({
-                saleReadyDays: Yup.number().integer().min(1).required('Requerido'),
-                saleOverdueDays: Yup.number().integer().min(1).required('Requerido'),
+                saleReadyDays: Yup.number().integer().min(1).required(t('config.farm.validation.required')),
+                saleOverdueDays: Yup.number().integer().min(1).required(t('config.farm.validation.required')),
             }).test('fattening-order', 'saleReady < saleOverdue', (v) => {
                 if (!v) return true;
                 return v.saleReadyDays < v.saleOverdueDays;
             }),
             replacement: Yup.object({
-                minAge: Yup.number().integer().min(1).required('Requerido'),
-                maxAge: Yup.number().integer().min(1).required('Requerido'),
+                minAge: Yup.number().integer().min(1).required(t('config.farm.validation.required')),
+                maxAge: Yup.number().integer().min(1).required(t('config.farm.validation.required')),
             }).test('replacement-order', 'minAge < maxAge', (v) => {
                 if (!v) return true;
                 return v.minAge < v.maxAge;
             }),
         }),
         notifications: Yup.object({
-            farrowingAdvanceNotificationDays: Yup.number().integer().min(0).required('Requerido'),
-            stageChangeAdvanceNotificationDays: Yup.number().integer().min(0).required('Requerido'),
+            farrowingAdvanceNotificationDays: Yup.number().integer().min(0).required(t('config.farm.validation.required')),
+            stageChangeAdvanceNotificationDays: Yup.number().integer().min(0).required(t('config.farm.validation.required')),
         }),
     });
 
@@ -122,7 +124,7 @@ const FarmConfiguration = () => {
             if (result?.ok) {
                 toggleModal('success', true);
             } else {
-                setErrorMessage(result?.error?.response?.data?.message ?? 'Error al guardar la configuración');
+                setErrorMessage(result?.error?.response?.data?.message ?? t('config.farm.error.save'));
                 toggleModal('error', true);
             }
         },
@@ -158,12 +160,12 @@ const FarmConfiguration = () => {
         return (
             <div className="page-content">
                 <Container fluid>
-                    <BreadCrumb title="Configuración de Granja" pageTitle="Configuración" />
+                    <BreadCrumb title={t('config.farm.breadcrumb')} pageTitle={t('config.farm.breadcrumbParent')} />
                     <Card>
                         <CardBody className="text-center py-5">
                             <i className="ri-alert-line fs-1 text-warning"></i>
-                            <h5 className="mt-3">No tienes una granja asignada</h5>
-                            <p className="text-muted">Contacta al Superadmin para que te asigne una granja.</p>
+                            <h5 className="mt-3">{t('config.farm.noFarm.title')}</h5>
+                            <p className="text-muted">{t('config.farm.noFarm.message')}</p>
                         </CardBody>
                     </Card>
                 </Container>
@@ -235,7 +237,7 @@ const FarmConfiguration = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title="Configuración de Granja" pageTitle="Configuración" />
+                <BreadCrumb title={t('config.farm.breadcrumb')} pageTitle={t('config.farm.breadcrumbParent')} />
 
                 <form
                     onSubmit={(e) => {
@@ -246,43 +248,43 @@ const FarmConfiguration = () => {
                     <Card className="mb-3">
                         <CardBody className="d-flex justify-content-between align-items-center">
                             <div>
-                                <h5 className="mb-1">Umbrales por ciclo productivo</h5>
+                                <h5 className="mb-1">{t('config.farm.header.title')}</h5>
                                 <small className="text-muted">
-                                    Estos valores controlan cuándo el sistema actualiza estados y dispara notificaciones.
+                                    {t('config.farm.header.subtitle')}
                                 </small>
                             </div>
                             <div className="d-flex gap-2">
                                 <Button type="button" color="primary" onClick={restoreDefaults}>
-                                    <i className="ri-refresh-line me-1" /> Restaurar valores por defecto
+                                    <i className="ri-refresh-line me-1" /> {t('config.farm.button.restoreDefaults')}
                                 </Button>
                                 <Button type="submit" color="success" disabled={loading}>
-                                    {loading ? 'Guardando...' : 'Guardar'}
+                                    {loading ? t('common.button.saving') : t('common.button.save')}
                                 </Button>
                             </div>
                         </CardBody>
                     </Card>
 
                     <Card className="mb-3">
-                        {renderSectionHeader('gestation', 'Gestación', 'Días desde la inseminación')}
+                        {renderSectionHeader('gestation', t('config.farm.section.gestation'), t('config.farm.section.gestationHelper'))}
                         <Collapse isOpen={openSections.gestation}>
                             <CardBody>
                                 <Row className="g-3">
                                     {numberField(
                                         'productionCycles.gestation.closeToFarrowDays',
-                                        'Cerca de parir (días)',
-                                        'Valor por defecto: 107',
+                                        t('config.farm.field.closeToFarrowDays'),
+                                        t('config.farm.field.closeToFarrowDaysHelper'),
                                         fieldError('gestation', 'closeToFarrowDays'),
                                     )}
                                     {numberField(
                                         'productionCycles.gestation.farrowingPendingDays',
-                                        'Parto pendiente (días)',
-                                        'Valor por defecto: 112',
+                                        t('config.farm.field.farrowingPendingDays'),
+                                        t('config.farm.field.farrowingPendingDaysHelper'),
                                         fieldError('gestation', 'farrowingPendingDays'),
                                     )}
                                     {numberField(
                                         'productionCycles.gestation.overdueFarrowingDays',
-                                        'Parto retrasado (días)',
-                                        'Valor por defecto: 117',
+                                        t('config.farm.field.overdueFarrowingDays'),
+                                        t('config.farm.field.overdueFarrowingDaysHelper'),
                                         fieldError('gestation', 'overdueFarrowingDays'),
                                     )}
                                 </Row>
@@ -294,20 +296,20 @@ const FarmConfiguration = () => {
                     </Card>
 
                     <Card className="mb-3">
-                        {renderSectionHeader('lactation', 'Lactancia', 'Días desde el parto')}
+                        {renderSectionHeader('lactation', t('config.farm.section.lactation'), t('config.farm.section.lactationHelper'))}
                         <Collapse isOpen={openSections.lactation}>
                             <CardBody>
                                 <Row className="g-3">
                                     {numberField(
                                         'productionCycles.lactation.weanReadyDays',
-                                        'Lista para destete (días)',
-                                        'Valor por defecto: 21',
+                                        t('config.farm.field.weanReadyDays'),
+                                        t('config.farm.field.weanReadyDaysHelper'),
                                         fieldError('lactation', 'weanReadyDays'),
                                     )}
                                     {numberField(
                                         'productionCycles.lactation.weanOverdueDays',
-                                        'Destete retrasado (días)',
-                                        'Valor por defecto: 28',
+                                        t('config.farm.field.weanOverdueDays'),
+                                        t('config.farm.field.weanOverdueDaysHelper'),
                                         fieldError('lactation', 'weanOverdueDays'),
                                     )}
                                 </Row>
@@ -319,20 +321,20 @@ const FarmConfiguration = () => {
                     </Card>
 
                     <Card className="mb-3">
-                        {renderSectionHeader('weaning', 'Destete → Engorda', 'Días desde que el grupo entró a la etapa weaning')}
+                        {renderSectionHeader('weaning', t('config.farm.section.weaning'), t('config.farm.section.weaningHelper'))}
                         <Collapse isOpen={openSections.weaning}>
                             <CardBody>
                                 <Row className="g-3">
                                     {numberField(
                                         'productionCycles.weaning.fatteningReadyDays',
-                                        'Listo para engorda (días)',
-                                        'Valor por defecto: 42',
+                                        t('config.farm.field.fatteningReadyDays'),
+                                        t('config.farm.field.fatteningReadyDaysHelper'),
                                         fieldError('weaning', 'fatteningReadyDays'),
                                     )}
                                     {numberField(
                                         'productionCycles.weaning.fatteningOverdueDays',
-                                        'Paso a engorda retrasado (días)',
-                                        'Valor por defecto: 56',
+                                        t('config.farm.field.fatteningOverdueDays'),
+                                        t('config.farm.field.fatteningOverdueDaysHelper'),
                                         fieldError('weaning', 'fatteningOverdueDays'),
                                     )}
                                 </Row>
@@ -344,20 +346,20 @@ const FarmConfiguration = () => {
                     </Card>
 
                     <Card className="mb-3">
-                        {renderSectionHeader('fattening', 'Engorda → Venta', 'Días desde que el grupo entró a la etapa fattening')}
+                        {renderSectionHeader('fattening', t('config.farm.section.fattening'), t('config.farm.section.fatteningHelper'))}
                         <Collapse isOpen={openSections.fattening}>
                             <CardBody>
                                 <Row className="g-3">
                                     {numberField(
                                         'productionCycles.fattening.saleReadyDays',
-                                        'Listo para venta (días)',
-                                        'Valor por defecto: 84',
+                                        t('config.farm.field.saleReadyDays'),
+                                        t('config.farm.field.saleReadyDaysHelper'),
                                         fieldError('fattening', 'saleReadyDays'),
                                     )}
                                     {numberField(
                                         'productionCycles.fattening.saleOverdueDays',
-                                        'Venta retrasada (días)',
-                                        'Valor por defecto: 112',
+                                        t('config.farm.field.saleOverdueDays'),
+                                        t('config.farm.field.saleOverdueDaysHelper'),
                                         fieldError('fattening', 'saleOverdueDays'),
                                     )}
                                 </Row>
@@ -369,20 +371,20 @@ const FarmConfiguration = () => {
                     </Card>
 
                     <Card className="mb-3">
-                        {renderSectionHeader('replacement', 'Reemplazo', 'Edad del cerdo desde el nacimiento (no días en etapa)')}
+                        {renderSectionHeader('replacement', t('config.farm.section.replacement'), t('config.farm.section.replacementHelper'))}
                         <Collapse isOpen={openSections.replacement}>
                             <CardBody>
                                 <Row className="g-3">
                                     {numberField(
                                         'productionCycles.replacement.minAge',
-                                        'Edad mínima (días)',
-                                        'Valor por defecto: 140',
+                                        t('config.farm.field.minAge'),
+                                        t('config.farm.field.minAgeHelper'),
                                         fieldError('replacement', 'minAge'),
                                     )}
                                     {numberField(
                                         'productionCycles.replacement.maxAge',
-                                        'Edad máxima (días)',
-                                        'Valor por defecto: 170',
+                                        t('config.farm.field.maxAge'),
+                                        t('config.farm.field.maxAgeHelper'),
                                         fieldError('replacement', 'maxAge'),
                                     )}
                                 </Row>
@@ -394,13 +396,13 @@ const FarmConfiguration = () => {
                     </Card>
 
                     <Card className="mb-3">
-                        {renderSectionHeader('notifications', 'Notificaciones', 'Días de anticipación para avisos visuales')}
+                        {renderSectionHeader('notifications', t('config.farm.section.notifications'), t('config.farm.section.notificationsHelper'))}
                         <Collapse isOpen={openSections.notifications}>
                             <CardBody>
                                 <Row className="g-3">
                                     <Col md={6} lg={4}>
                                         <Label htmlFor="notifications.farrowingAdvanceNotificationDays" className="form-label">
-                                            Anticipación de parto (días)
+                                            {t('config.farm.field.farrowingAdvanceNotificationDays')}
                                         </Label>
                                         <Input
                                             id="notifications.farrowingAdvanceNotificationDays"
@@ -413,14 +415,14 @@ const FarmConfiguration = () => {
                                             onBlur={formik.handleBlur}
                                             invalid={!!notifError('farrowingAdvanceNotificationDays')}
                                         />
-                                        <small className="text-muted">Valor por defecto: 5</small>
+                                        <small className="text-muted">{t('config.farm.field.farrowingAdvanceNotificationDaysHelper')}</small>
                                         {notifError('farrowingAdvanceNotificationDays') && (
                                             <FormFeedback>{notifError('farrowingAdvanceNotificationDays')}</FormFeedback>
                                         )}
                                     </Col>
                                     <Col md={6} lg={4}>
                                         <Label htmlFor="notifications.stageChangeAdvanceNotificationDays" className="form-label">
-                                            Anticipación de cambio de etapa (días)
+                                            {t('config.farm.field.stageChangeAdvanceNotificationDays')}
                                         </Label>
                                         <Input
                                             id="notifications.stageChangeAdvanceNotificationDays"
@@ -433,7 +435,7 @@ const FarmConfiguration = () => {
                                             onBlur={formik.handleBlur}
                                             invalid={!!notifError('stageChangeAdvanceNotificationDays')}
                                         />
-                                        <small className="text-muted">Valor por defecto: 3</small>
+                                        <small className="text-muted">{t('config.farm.field.stageChangeAdvanceNotificationDaysHelper')}</small>
                                         {notifError('stageChangeAdvanceNotificationDays') && (
                                             <FormFeedback>{notifError('stageChangeAdvanceNotificationDays')}</FormFeedback>
                                         )}
@@ -449,12 +451,12 @@ const FarmConfiguration = () => {
             <SuccessModal
                 isOpen={modals.success}
                 onClose={() => toggleModal('success', false)}
-                message="Configuración de granja actualizada correctamente"
+                message={t('config.farm.success')}
             />
             <ErrorModal
                 isOpen={modals.error}
                 onClose={() => toggleModal('error', false)}
-                message={errorMessage || 'Error al actualizar la configuración'}
+                message={errorMessage || t('config.farm.error.update')}
             />
         </div>
     );

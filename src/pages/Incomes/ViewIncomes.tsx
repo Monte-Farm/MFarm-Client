@@ -14,10 +14,25 @@ import DonutChartCard, { DonutDataItem, DonutLegendItem } from "Components/Commo
 import IncomeDetails from "Components/Common/Details/IncomeDetailsModal"
 import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector"
 import PDFViewer from "Components/Common/Shared/PDFViewer"
+import { useTranslation } from "react-i18next"
 
+const incomeTypeColor: Record<string, string> = {
+    purchase: "success",
+    donacion: "warning",
+    internal_transfer: "info",
+    own_production: "secondary",
+};
+
+const chartTypeColor: Record<string, string> = {
+    purchase: '#10b981',
+    donacion: '#f59e0b',
+    transfer: '#3b82f6',
+    own_production: '#6b7280',
+};
 
 const ViewIncomes = () => {
-    document.title = 'Ver Entradas | Almacén'
+    const { t } = useTranslation();
+    document.title = t('finance.income.pageTitle')
     const navigate = useNavigate()
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
@@ -42,36 +57,29 @@ const ViewIncomes = () => {
     });
 
     const columns: Column<any>[] = [
-        { header: 'Identificador', accessor: 'id', isFilterable: true, type: 'text' },
+        { header: t('finance.income.column.id'), accessor: 'id', isFilterable: true, type: 'text' },
         {
-            header: 'Proveedor',
+            header: t('finance.income.column.supplier'),
             accessor: 'originName',
             isFilterable: true,
             type: 'text',
             render: (_, row) => <span>{row.origin?.id?.name ?? 'N/A'}</span>
         },
-        { header: 'Fecha de entrada', accessor: 'date', isFilterable: true, type: 'date' },
+        { header: t('finance.income.column.date'), accessor: 'date', isFilterable: true, type: 'date' },
         {
-            header: 'Tipo de entrada',
+            header: t('finance.income.column.type'),
             accessor: 'incomeType',
             isFilterable: true,
             type: 'text',
             render: (_, row) => {
-                let color = 'secondary';
-                let text = 'N/A';
-
-                switch (row.incomeType) {
-                    case "purchase": color = "success"; text = "Compra"; break;
-                    case "donacion": color = "warning"; text = "Donacion"; break;
-                    case "internal_transfer": color = "info"; text = "Transferencia interna"; break;
-                    case "own_production": color = "secondary"; text = "Producción"; break;
-                }
+                const color = incomeTypeColor[row.incomeType] || 'secondary';
+                const text = t(`finance.income.incomeType.${row.incomeType}`, { defaultValue: row.incomeType });
                 return <Badge color={color}>{text}</Badge>;
             },
         },
-        { header: 'Precio Total', accessor: 'totalPrice', type: 'currency', bgColor: '#E8F5E9' },
+        { header: t('finance.income.column.totalPrice'), accessor: 'totalPrice', type: 'currency', bgColor: '#E8F5E9' },
         {
-            header: "Acciones",
+            header: t('common.field.actions'),
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
@@ -99,7 +107,7 @@ const ViewIncomes = () => {
             setFileURL(window.URL.createObjectURL(pdfBlob));
             toggleModal('viewPDF');
         } catch (error) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('finance.income.error.generatePdf') });
         } finally {
             setPdfLoading(false);
         }
@@ -124,7 +132,7 @@ const ViewIncomes = () => {
             setIncomes(incomesData);
         } catch (error) {
             console.error('Error fetching data: ', { error })
-            setAlertConfig({ visible: false, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: false, color: 'danger', message: t('finance.income.error.generatePdf') })
         } finally {
             setLoading(false)
         }
@@ -145,27 +153,19 @@ const ViewIncomes = () => {
         try {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/incomes/income_charts/${mainWarehouseId}`);
             const chartDataResponse = response.data.data;
-            
-            // Transformar datos para las gráficas de dona - solo incluir tipos que tienen datos
+
             const entriesByType: DonutDataItem[] = [];
             const valueByType: DonutDataItem[] = [];
-
-            const typeConfig: Record<string, { label: string; color: string }> = {
-                purchase: { label: 'Compra', color: '#10b981' },
-                donacion: { label: 'Donación', color: '#f59e0b' },
-                transfer: { label: 'Transferencia', color: '#3b82f6' },
-                own_production: { label: 'Producción Propia', color: '#6b7280' }
-            };
 
             if (chartDataResponse.entriesByType) {
                 Object.entries(chartDataResponse.entriesByType).forEach(([type, value]) => {
                     const numericValue = Number(value);
-                    if (numericValue > 0 && typeConfig[type]) {
+                    if (numericValue > 0 && chartTypeColor[type]) {
                         entriesByType.push({
                             id: type,
-                            label: typeConfig[type].label,
+                            label: t(`finance.income.chart.type.${type}`, { defaultValue: type }),
                             value: numericValue,
-                            color: typeConfig[type].color
+                            color: chartTypeColor[type]
                         });
                     }
                 });
@@ -174,12 +174,12 @@ const ViewIncomes = () => {
             if (chartDataResponse.valueByType) {
                 Object.entries(chartDataResponse.valueByType).forEach(([type, value]) => {
                     const numericValue = Number(value);
-                    if (numericValue > 0 && typeConfig[type]) {
+                    if (numericValue > 0 && chartTypeColor[type]) {
                         valueByType.push({
                             id: type,
-                            label: typeConfig[type].label,
+                            label: t(`finance.income.chart.type.${type}`, { defaultValue: type }),
                             value: numericValue,
-                            color: typeConfig[type].color
+                            color: chartTypeColor[type]
                         });
                     }
                 });
@@ -209,9 +209,9 @@ const ViewIncomes = () => {
 
     const fetchWarehouseData = async () => {
         if (!mainWarehouseId || !configContext) return;
-        
+
         try {
-            const [incomesResponse, statisticsResponse, chartDataResponse] = await Promise.all([
+            await Promise.all([
                 handleFetchIncomes(),
                 fetchIncomeStatistics(),
                 fetchIncomeChartData()
@@ -235,13 +235,12 @@ const ViewIncomes = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Ver Entradas"} pageTitle={"Entradas"} />
+                <BreadCrumb title={t('finance.income.breadcrumb.title')} pageTitle={t('finance.income.breadcrumb.parent')} />
 
-                {/* KPIs Section */}
                 <div className="row mb-3">
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
-                            title="Valor Total de Entradas"
+                            title={t('finance.income.kpi.totalValue')}
                             value={incomeStatistics.totalValue}
                             prefix="$"
                             decimals={2}
@@ -253,7 +252,7 @@ const ViewIncomes = () => {
                     </div>
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
-                            title="Total de Entradas"
+                            title={t('finance.income.kpi.total')}
                             value={incomeStatistics.totalEntries}
                             icon={<i className="ri-file-list-3-line fs-20 text-info"></i>}
                             iconBgColor="#E3F2FD"
@@ -263,7 +262,7 @@ const ViewIncomes = () => {
                     </div>
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
-                            title="Valor Promedio por Entrada"
+                            title={t('finance.income.kpi.avgValue')}
                             value={incomeStatistics.averageValuePerEntry}
                             prefix="$"
                             decimals={2}
@@ -275,11 +274,10 @@ const ViewIncomes = () => {
                     </div>
                 </div>
 
-                {/* Charts Section */}
                 <div className="row mb-4">
                     <div className="col-xl-6">
                         <DonutChartCard
-                            title="Entradas por Tipo"
+                            title={t('finance.income.chart.byType')}
                             data={chartData.entriesByType}
                             legendItems={chartData.entriesLegendItems}
                             height={200}
@@ -287,7 +285,7 @@ const ViewIncomes = () => {
                     </div>
                     <div className="col-xl-6">
                         <DonutChartCard
-                            title="Valor de Entradas por Tipo"
+                            title={t('finance.income.chart.valueByType')}
                             data={chartData.valueByType}
                             legendItems={chartData.valueLegendItems}
                             height={200}
@@ -298,17 +296,17 @@ const ViewIncomes = () => {
                 <Card>
                     <CardHeader>
                         <div className="d-flex gap-2">
-                            <h4 className="me-auto">Entradas</h4>
+                            <h4 className="me-auto">{t('finance.income.cardTitle')}</h4>
                             <Button color="primary" onClick={() => toggleModal('dateRange')} disabled={pdfLoading}>
                                 {pdfLoading ? (
-                                    <><Spinner className="me-2" size="sm" />Generando...</>
+                                    <><Spinner className="me-2" size="sm" />{t('common.button.generating')}</>
                                 ) : (
-                                    <><i className="ri-file-pdf-line me-2" />Exportar PDF</>
+                                    <><i className="ri-file-pdf-line me-2" />{t('common.button.exportPdf')}</>
                                 )}
                             </Button>
                             <Button className="farm-primary-button" onClick={() => toggleModal('createIncome')}>
                                 <i className="ri-add-line me-3" />
-                                Nueva Entrada
+                                {t('finance.income.action.new')}
                             </Button>
                         </div>
                     </CardHeader>
@@ -316,7 +314,7 @@ const ViewIncomes = () => {
                         {incomes.length === 0 ? (
                             <>
                                 <i className="ri-drop-line text-muted mb-2" style={{ fontSize: "2rem" }} />
-                                <span className="fs-5 text-muted">Aún no hay productos registrados en el inventario</span>
+                                <span className="fs-5 text-muted">{t('finance.income.empty')}</span>
                             </>
                         ) : (
                             <CustomTable columns={columns} data={incomes} showPagination={false} />
@@ -326,32 +324,31 @@ const ViewIncomes = () => {
             </Container>
 
             <Modal size="xl" isOpen={modals.createIncome} toggle={() => toggleModal("createIncome")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("createIncome")}>Nueva entrada</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("createIncome")}>{t('finance.income.modal.create')}</ModalHeader>
                 <ModalBody>
                     <IncomeForm onSave={() => { toggleModal('createIncome'); fetchWarehouseData() }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("details")}>Detalles de entrada</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("details")}>{t('finance.income.modal.details')}</ModalHeader>
                 <ModalBody>
                     <IncomeDetails incomeId={selectedIncome?._id} />
                 </ModalBody>
             </Modal>
 
-
             <Modal size="md" isOpen={modals.dateRange} toggle={() => toggleModal("dateRange")} centered>
-                <ModalHeader toggle={() => toggleModal("dateRange")}>Seleccionar rango de fechas</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("dateRange")}>{t('finance.income.modal.dateRange')}</ModalHeader>
                 <ReportDateRangeSelector
                     onGenerate={handleGeneratePDF}
                     onCancel={() => toggleModal("dateRange")}
                     loading={pdfLoading}
-                    generateButtonText="Generar PDF"
+                    generateButtonText={t('finance.income.action.generatePdf')}
                 />
             </Modal>
 
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop="static" keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Entradas</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('finance.income.modal.pdfReport')}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>

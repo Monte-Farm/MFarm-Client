@@ -18,6 +18,7 @@ import SimpleBar from "simplebar-react"
 import CustomTable from "../Tables/CustomTable"
 import SelectableTable from "../Tables/SelectableTable"
 import AlertMessage from "../Shared/AlertMesagge"
+import { useTranslation } from "react-i18next"
 
 interface BirthFormProps {
     pregnancy?: any
@@ -26,6 +27,7 @@ interface BirthFormProps {
 }
 
 const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) => {
+    const { t } = useTranslation()
     const configContext = useContext(ConfigContext)
     const userLogged = getEffectiveUser()
     const [upcomingBirths, setUpcomingBirths] = useState<any[]>([]);
@@ -67,7 +69,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
 
     const upcomingBirthsColumns: Column<any>[] = [
         {
-            header: 'Cerda',
+            header: t('birth.column.sow', { defaultValue: 'Cerda' }),
             accessor: 'sow',
             type: 'text',
             isFilterable: true,
@@ -85,44 +87,27 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                 </Button>
             )
         },
-        { header: 'Fecha de inseminación', accessor: 'start_date', type: 'date', isFilterable: true },
-        { header: 'Fecha estimada de parto', accessor: 'estimated_farrowing_date', type: 'date', isFilterable: true },
+        { header: t('birth.column.inseminationDate', { defaultValue: 'Fecha de inseminación' }), accessor: 'start_date', type: 'date', isFilterable: true },
+        { header: t('birth.column.estimatedFarrowing', { defaultValue: 'Fecha estimada de parto' }), accessor: 'estimated_farrowing_date', type: 'date', isFilterable: true },
     ]
 
     const BirthAttributes: Attribute[] = [
-        { key: 'birth_date', label: 'Fecha de parto', type: 'date' },
+        { key: 'birth_date', label: t('birth.form.birthDate', { defaultValue: 'Fecha de parto' }), type: 'date' },
         {
             key: 'birth_type',
-            label: 'Tipo de parto',
+            label: t('birth.form.birthType', { defaultValue: 'Tipo de parto' }),
             type: 'text',
             render: (value: string) => {
                 let color = '';
-                let label = '';
+                const label = t(`birth.type.${value}`, { defaultValue: value });
 
                 switch (value) {
-                    case 'normal':
-                        color = 'success';
-                        label = 'Normal';
-                        break;
-                    case 'cesarean':
-                        color = 'primary';
-                        label = 'Cesárea';
-                        break;
-                    case 'abortive':
-                        color = 'danger';
-                        label = 'Abortivo';
-                        break;
-                    case 'dystocia':
-                        color = 'warning';
-                        label = 'Distócico';
-                        break;
-                    case 'induced':
-                        color = 'info';
-                        label = 'Inducido';
-                        break;
-                    default:
-                        color = 'secondary';
-                        label = 'Sin especificar';
+                    case 'normal': color = 'success'; break;
+                    case 'cesarean': color = 'primary'; break;
+                    case 'abortive': color = 'danger'; break;
+                    case 'dystocia': color = 'warning'; break;
+                    case 'induced': color = 'info'; break;
+                    default: color = 'secondary';
                 }
 
                 return <Badge color={color}>{label}</Badge>;
@@ -130,57 +115,58 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
         },
         {
             key: 'assisted',
-            label: 'Asistido',
+            label: t('birth.form.assisted', { defaultValue: 'Asistido' }),
             type: 'boolean',
             render: (_, obj) => (
-                <Badge color={obj.assisted ? 'success' : 'warning'}>{obj.assisted ? 'Si' : 'No'}</Badge>
+                <Badge color={obj.assisted ? 'success' : 'warning'}>
+                    {obj.assisted ? t('birth.assisted.yes', { defaultValue: 'Si' }) : t('birth.assisted.no', { defaultValue: 'No' })}
+                </Badge>
             )
         },
-        { key: 'observations', label: 'Observaciones', type: 'text' },
+        { key: 'observations', label: t('birth.form.observations', { defaultValue: 'Observaciones' }), type: 'text' },
         {
             key: 'responsible',
-            label: 'Responsable',
+            label: t('birth.field.responsible', { defaultValue: 'Responsable' }),
             type: 'text',
             render: (_, obj) => (
                 <span className="text-black">{userLogged.name} {userLogged.lastname}</span>
             )
         },
-        { key: 'stillborn', label: 'Nacidos muertos', type: 'text' },
-        { key: 'mummies', label: 'Momias', type: 'text' },
-
+        { key: 'stillborn', label: t('birth.form.stillborn', { defaultValue: 'Nacidos muertos' }), type: 'text' },
+        { key: 'mummies', label: t('birth.form.mummies', { defaultValue: 'Momias' }), type: 'text' },
     ]
 
     const sowAttributes: Attribute[] = [
-        { key: "code", label: "Código", type: "text" },
-        { key: "birthdate", label: "Fecha de nacimiento", type: "date" },
-        { key: "breed", label: "Raza", type: "text" },
-        { key: "origin", label: "Origen", type: "text" },
-        { key: "weight", label: "Peso actual", type: "text" },
+        { key: "code", label: t('common.field.code', { defaultValue: 'Código' }), type: "text" },
+        { key: "birthdate", label: t('common.field.birthDate', { defaultValue: 'Fecha de nacimiento' }), type: "date" },
+        { key: "breed", label: t('common.field.breed', { defaultValue: 'Raza' }), type: "text" },
+        { key: "origin", label: t('pigs.field.origin', { defaultValue: 'Origen' }), type: "text" },
+        { key: "weight", label: t('common.field.weightCurrent', { defaultValue: 'Peso actual' }), type: "text" },
     ]
 
     const pigletsColumns: Column<any>[] = [
         {
-            header: 'Lechón',
+            header: t('birth.form.pigletNumber', { number: '', defaultValue: 'Lechón' }),
             accessor: '',
             type: 'text',
-            render: (_, row,) => <span className="text-black">Lechón #{pigletsArray.indexOf(row) + 1}</span>
+            render: (_, row,) => <span className="text-black">{t('birth.form.pigletNumber', { number: pigletsArray.indexOf(row) + 1, defaultValue: `Lechón #${pigletsArray.indexOf(row) + 1}` })}</span>
         },
         {
-            header: 'Sexo',
+            header: t('litter.pigletColumn.sex', { defaultValue: 'Sexo' }),
             accessor: 'sex',
             render: (value: string) => (
                 <Badge color={value === 'male' ? "info" : "danger"}>
-                    {value === 'male' ? "♂ Macho" : "♀ Hembra"}
+                    {t(`common.sex.${value}`, { defaultValue: value === 'male' ? '♂ Macho' : '♀ Hembra' })}
                 </Badge>
             ),
         },
-        { header: 'Peso', accessor: 'weight', type: 'text' },
+        { header: t('litter.pigletColumn.weight', { defaultValue: 'Peso (kg)' }), accessor: 'weight', type: 'text' },
     ]
 
     const validationSchema = Yup.object({
-        birth_date: Yup.date().required('Por favor ingrese la fecha del parto'),
-        birth_type: Yup.string().required('Por favor, seleccione el tipo de parto'),
-        responsible: Yup.string().required('Por favor, seleccione al responsable del parto'),
+        birth_date: Yup.date().required(t('birth.form.validationBirthDate', { defaultValue: 'Por favor ingrese la fecha del parto' })),
+        birth_type: Yup.string().required(t('birth.form.validationBirthType', { defaultValue: 'Por favor, seleccione el tipo de parto' })),
+        responsible: Yup.string().required(t('birth.form.validationResponsible', { defaultValue: 'Por favor, seleccione al responsable del parto' })),
         assisted: Yup.boolean(),
         observations: Yup.string(),
     })
@@ -396,7 +382,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                     aria-selected={activeStep === 1}
                                     aria-controls="step-inseminationSelect-tab"
                                 >
-                                    Selección inseminación
+                                    {t('birth.form.step1', { defaultValue: 'Selección inseminación' })}
                                 </NavLink>
                             </NavItem>
                         )}
@@ -413,7 +399,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                 aria-selected={activeStep === 2}
                                 aria-controls="step-birthinfo-tab"
                             >
-                                Información del parto
+                                {t('birth.form.step2', { defaultValue: 'Información del parto' })}
                             </NavLink>
                         </NavItem>
 
@@ -429,7 +415,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                 aria-selected={activeStep === 3}
                                 aria-controls="step-birthinfo-tab"
                             >
-                                Camada
+                                {t('birth.form.step3', { defaultValue: 'Camada' })}
                             </NavLink>
                         </NavItem>
 
@@ -445,7 +431,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                 aria-selected={activeStep === 4}
                                 aria-controls="step-summary-tab"
                             >
-                                Resumen
+                                {t('birth.form.step4', { defaultValue: 'Resumen' })}
                             </NavLink>
                         </NavItem>
                     </Nav>
@@ -457,17 +443,17 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
 
                         <div className="mt-4 d-flex">
                             <Button className="ms-auto" onClick={() => checkInseminationSelected()}>
-                                Siguiente
+                                {t('common.button.next', { defaultValue: 'Siguiente' })}
                                 <i className="ri-arrow-right-line" />
                             </Button>
                         </div>
 
-                        <AlertMessage color={"danger"} message={"Debe seleccionar una inseminación de la tabla para poder avanzar al siguiente paso"} visible={alerts.inseminationEmpty} onClose={() => toggleAlerts('inseminationEmpty', false)} autoClose={3000} absolutePosition={false} />
+                        <AlertMessage color={"danger"} message={t('birth.form.alertSelectInsemination', { defaultValue: 'Debe seleccionar una inseminación de la tabla para poder avanzar al siguiente paso' })} visible={alerts.inseminationEmpty} onClose={() => toggleAlerts('inseminationEmpty', false)} autoClose={3000} absolutePosition={false} />
                     </TabPane>
 
                     <TabPane id="step-birthinfo-tab" tabId={2}>
                         <div className="mt-4 w-100">
-                            <Label htmlFor="date" className="form-label">Fecha de parto</Label>
+                            <Label htmlFor="date" className="form-label">{t('birth.form.birthDate', { defaultValue: 'Fecha de parto' })}</Label>
                             <DatePicker
                                 id="date"
                                 className={`form-control ${formik.touched.birth_date && formik.errors.birth_date ? 'is-invalid' : ''}`}
@@ -484,7 +470,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
 
                         <div className="d-flex gap-2">
                             <div className="mt-4 w-50">
-                                <Label htmlFor="birth_type" className="form-label">Tipo de parto</Label>
+                                <Label htmlFor="birth_type" className="form-label">{t('birth.form.birthType', { defaultValue: 'Tipo de parto' })}</Label>
                                 <Input
                                     type="select"
                                     id="birth_type"
@@ -494,12 +480,12 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                     onBlur={formik.handleBlur}
                                     invalid={formik.touched.birth_type && !!formik.errors.birth_type}
                                 >
-                                    <option value="">Seleccione un tipo</option>
-                                    <option value="normal">Normal</option>
-                                    <option value="cesarean">Cesárea</option>
-                                    <option value="abortive">Abortivo</option>
-                                    <option value="dystocia">Distócico</option>
-                                    <option value="induced">Inducido</option>
+                                    <option value="">{t('birth.form.birthTypeSelect', { defaultValue: 'Seleccione un tipo' })}</option>
+                                    <option value="normal">{t('birth.type.normal', { defaultValue: 'Normal' })}</option>
+                                    <option value="cesarean">{t('birth.type.cesarean', { defaultValue: 'Cesárea' })}</option>
+                                    <option value="abortive">{t('birth.type.abortive', { defaultValue: 'Abortivo' })}</option>
+                                    <option value="dystocia">{t('birth.type.dystocia', { defaultValue: 'Distócico' })}</option>
+                                    <option value="induced">{t('birth.type.induced', { defaultValue: 'Inducido' })}</option>
                                 </Input>
                                 {formik.touched.birth_type && formik.errors.birth_type && (
                                     <FormFeedback>{formik.errors.birth_type}</FormFeedback>
@@ -507,7 +493,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                             </div>
 
                             <div className="mt-4 w-50">
-                                <Label htmlFor="assisted" className="form-label">Parto asistido</Label>
+                                <Label htmlFor="assisted" className="form-label">{t('birth.form.assisted', { defaultValue: 'Parto asistido' })}</Label>
                                 <Input
                                     type="select"
                                     id="assisted"
@@ -519,9 +505,9 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                     onBlur={formik.handleBlur}
                                     invalid={formik.touched.assisted && !!formik.errors.assisted}
                                 >
-                                    <option value="">Seleccione una opción</option>
-                                    <option value="true">Sí</option>
-                                    <option value="false">No</option>
+                                    <option value="">{t('birth.form.assistedSelect', { defaultValue: 'Seleccione una opción' })}</option>
+                                    <option value="true">{t('birth.form.assistedYes', { defaultValue: 'Sí' })}</option>
+                                    <option value="false">{t('birth.form.assistedNo', { defaultValue: 'No' })}</option>
                                 </Input>
                                 {formik.touched.assisted && formik.errors.assisted && (
                                     <FormFeedback>{formik.errors.assisted}</FormFeedback>
@@ -530,7 +516,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                         </div>
 
                         <div className="mt-4">
-                            <Label htmlFor="observations" className="form-label">Observaciones</Label>
+                            <Label htmlFor="observations" className="form-label">{t('birth.form.observations', { defaultValue: 'Observaciones' })}</Label>
                             <Input
                                 type="textarea"
                                 id="observations"
@@ -539,7 +525,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
                                 invalid={formik.touched.observations && !!formik.errors.observations}
-                                placeholder="Ej: Parto normal"
+                                placeholder={t('birth.form.observationsPlaceholder', { defaultValue: 'Ej: Parto normal' })}
                             />
                             {formik.touched.observations && formik.errors.observations && (
                                 <FormFeedback>{formik.errors.observations}</FormFeedback>
@@ -550,11 +536,11 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                         <div className="mt-4 d-flex">
                             <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                                 <i className="ri-arrow-left-line me-2" />
-                                Atras
+                                {t('common.button.back', { defaultValue: 'Volver' })}
                             </Button>
 
                             <Button className="ms-auto" onClick={() => checkBirthData()}>
-                                Siguiente
+                                {t('common.button.next', { defaultValue: 'Siguiente' })}
                                 <i className="ri-arrow-right-line ms-2" />
                             </Button>
                         </div>
@@ -562,7 +548,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                         {alerts.birthDataEmpty && (
                             <Alert color='danger' className="d-flex align-items-center gap-2 shadow rounded-3 p-3 mt-3">
                                 <FiXCircle size={22} />
-                                <span className="flex-grow-1 text-black">Por favor, llene todos los datos requeridos</span>
+                                <span className="flex-grow-1 text-black">{t('birth.form.alertFillData', { defaultValue: 'Por favor, llene todos los datos requeridos' })}</span>
                                 <Button close onClick={() => toggleAlerts('birthDataEmpty')} />
                             </Alert>
                         )}
@@ -571,14 +557,14 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                     <TabPane id="step-litter-tab" tabId={3}>
                         <Card className="shadow-sm mb-3">
                             <CardHeader className="bg-light">
-                                <h5 className="mb-0 text-primary">Información de la Camada</h5>
+                                <h5 className="mb-0 text-primary">{t('birth.form.cardLitterInfo', { defaultValue: 'Información de la Camada' })}</h5>
                             </CardHeader>
                             <CardBody>
                                 <div className="d-flex gap-2 mb-3">
                                     <div className="w-50">
                                         <Label htmlFor="femaleCount" className="form-label fw-semibold">
                                             <i className="ri-women-line me-1 text-danger"></i>
-                                            Hembras vivas
+                                            {t('birth.form.femaleLive', { defaultValue: 'Hembras vivas' })}
                                         </Label>
                                         <Input
                                             type="number"
@@ -600,7 +586,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                     <div className="w-50">
                                         <Label htmlFor="maleCount" className="form-label fw-semibold">
                                             <i className="ri-men-line me-1 text-info"></i>
-                                            Machos vivos
+                                            {t('birth.form.maleLive', { defaultValue: 'Machos vivos' })}
                                         </Label>
                                         <Input
                                             type="number"
@@ -624,7 +610,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                     <div className="w-50">
                                         <Label htmlFor="stillborn" className="form-label fw-semibold">
                                             <i className="ri-close-circle-line me-1 text-secondary"></i>
-                                            Nacidos muertos
+                                            {t('birth.form.stillborn', { defaultValue: 'Nacidos muertos' })}
                                         </Label>
                                         <Input
                                             type="number"
@@ -640,7 +626,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                     <div className="w-50">
                                         <Label htmlFor="mummies" className="form-label fw-semibold">
                                             <i className="ri-skull-line me-1 text-warning"></i>
-                                            Momias
+                                            {t('birth.form.mummies', { defaultValue: 'Momias' })}
                                         </Label>
                                         <Input
                                             type="number"
@@ -657,7 +643,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                 {(Number(maleCount) + Number(femaleCount)) > 0 && (
                                     <div className="alert alert-info mt-3 mb-0">
                                         <i className="ri-information-line me-2"></i>
-                                        <strong>Total de lechones vivos: {Number(maleCount) + Number(femaleCount)}</strong>
+                                        <strong>{t('birth.form.totalLivePiglets', { count: Number(maleCount) + Number(femaleCount), defaultValue: `Total de lechones vivos: ${Number(maleCount) + Number(femaleCount)}` })}</strong>
                                     </div>
                                 )}
                             </CardBody>
@@ -666,7 +652,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                         {(Number(maleCount) + Number(femaleCount)) > 0 && (
                             <Card className="shadow-sm mb-3">
                                 <CardHeader className="bg-light">
-                                    <h5 className="mb-0 text-primary">Registro de Peso</h5>
+                                    <h5 className="mb-0 text-primary">{t('birth.form.cardWeightRecord', { defaultValue: 'Registro de Peso' })}</h5>
                                 </CardHeader>
                                 <CardBody>
                                     <div className="form-check form-switch mb-3">
@@ -678,7 +664,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                             onChange={(e) => setUseIndividualWeight(e.target.checked)}
                                         />
                                         <Label className="form-check-label fw-semibold" htmlFor="useIndividualWeight">
-                                            Ingresar peso individual por lechón
+                                            {t('birth.form.switchIndividualWeight', { defaultValue: 'Ingresar peso individual por lechón' })}
                                         </Label>
                                     </div>
 
@@ -686,7 +672,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                         <div>
                                             <Label htmlFor="totalLitterWeight" className="form-label fw-semibold">
                                                 <i className="ri-scales-3-line me-1 text-success"></i>
-                                                Peso total de la camada (kg)
+                                                {t('birth.form.litterWeight', { defaultValue: 'Peso total de la camada (kg)' })}
                                             </Label>
                                             <Input
                                                 type="number"
@@ -707,7 +693,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                             {Number(totalLitterWeight) > 0 && (
                                                 <small className="text-muted d-block mt-2">
                                                     <i className="ri-calculator-line me-1"></i>
-                                                    Peso promedio por lechón: <strong>{(Number(totalLitterWeight) / pigletsArray.length).toFixed(2)} kg</strong>
+                                                    {t('birth.form.avgWeightPerPiglet', { defaultValue: 'Peso promedio por lechón:' })} <strong>{(Number(totalLitterWeight) / pigletsArray.length).toFixed(2)} kg</strong>
                                                 </small>
                                             )}
                                         </div>
@@ -715,22 +701,22 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                         <div>
                                             <Label className="form-label fw-semibold mb-3">
                                                 <i className="ri-list-check me-1 text-primary"></i>
-                                                Peso individual de cada lechón
+                                                {t('birth.form.individualWeight', { defaultValue: 'Peso individual de cada lechón' })}
                                             </Label>
                                             <SimpleBar style={{ maxHeight: 400, paddingRight: 10 }}>
                                                 {pigletsArray.map((piglet, index) => (
                                                     <div key={index} className="border rounded p-3 mb-2 bg-light">
                                                         <div className="d-flex align-items-center justify-content-between mb-2">
                                                             <span className="fw-bold">
-                                                                Lechón #{index + 1}
+                                                                {t('birth.form.pigletNumber', { number: index + 1, defaultValue: `Lechón #${index + 1}` })}
                                                             </span>
                                                             <Badge color={piglet.sex === 'male' ? "info" : "danger"}>
-                                                                {piglet.sex === 'male' ? "♂ Macho" : "♀ Hembra"}
+                                                                {t(`common.sex.${piglet.sex}`, { defaultValue: piglet.sex === 'male' ? '♂ Macho' : '♀ Hembra' })}
                                                             </Badge>
                                                         </div>
 
                                                         <div>
-                                                            <label className="form-label">Peso (kg)</label>
+                                                            <label className="form-label">{t('birth.form.weightKg', { defaultValue: 'Peso (kg)' })}</label>
                                                             <input
                                                                 type="number"
                                                                 step="0.01"
@@ -778,23 +764,23 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                         <div className="mt-4 d-flex">
                             <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                                 <i className="ri-arrow-left-line me-2" />
-                                Atrás
+                                {t('common.button.back', { defaultValue: 'Volver' })}
                             </Button>
 
                             <Button className="ms-auto" onClick={() => checkLitterData()}>
-                                Siguiente
+                                {t('common.button.next', { defaultValue: 'Siguiente' })}
                                 <i className="ri-arrow-right-line ms-2" />
                             </Button>
                         </div>
 
-                        <AlertMessage color={"danger"} message={"Debe registrar al menos 1 lechón vivo"} visible={alerts.litterEmpty} onClose={() => toggleAlerts('litterEmpty')} autoClose={3000} absolutePosition={false} />
+                        <AlertMessage color={"danger"} message={t('birth.form.alertMinPiglet', { defaultValue: 'Debe registrar al menos 1 lechón vivo' })} visible={alerts.litterEmpty} onClose={() => toggleAlerts('litterEmpty')} autoClose={3000} absolutePosition={false} />
                     </TabPane>
 
                     <TabPane id="step-summary-tab" tabId={4}>
                         <div className="d-flex gap-3">
                             <Card className="w-100">
                                 <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
-                                    <span className="text-black">Información del parto</span>
+                                    <span className="text-black">{t('birth.form.cardSumBirthInfo', { defaultValue: 'Información del parto' })}</span>
                                 </CardHeader>
                                 <CardBody className="flex-fill">
                                     <ObjectDetails attributes={BirthAttributes} object={formik.values} />
@@ -803,7 +789,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
 
                             <Card className="w-100">
                                 <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
-                                    <span className="text-black">Información de la cerda</span>
+                                    <span className="text-black">{t('birth.form.cardSumSowInfo', { defaultValue: 'Información de la cerda' })}</span>
                                 </CardHeader>
                                 <CardBody className="flex-fill">
                                     <ObjectDetails attributes={sowAttributes} object={sowDetails} />
@@ -813,7 +799,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
 
                         <Card className="w-100 mt-3">
                             <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
-                                <span className="text-black">Resumen de la Camada</span>
+                                <span className="text-black">{t('birth.form.cardSumLitter', { defaultValue: 'Resumen de la Camada' })}</span>
                             </CardHeader>
                             <CardBody>
                                 <div className="row g-3">
@@ -821,7 +807,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                         <div className="border rounded p-3 text-center bg-light">
                                             <div className="d-flex align-items-center justify-content-center mb-2">
                                                 <i className="ri-parent-line fs-4 text-primary me-2"></i>
-                                                <h6 className="mb-0 text-muted">Total Vivos</h6>
+                                                <h6 className="mb-0 text-muted">{t('birth.form.summaryTotalAlive', { defaultValue: 'Total Vivos' })}</h6>
                                             </div>
                                             <h3 className="mb-0 text-primary fw-bold">{Number(maleCount) + Number(femaleCount)}</h3>
                                         </div>
@@ -831,7 +817,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                         <div className="border rounded p-3 text-center bg-light">
                                             <div className="d-flex align-items-center justify-content-center mb-2">
                                                 <i className="ri-men-line fs-4 text-info me-2"></i>
-                                                <h6 className="mb-0 text-muted">Machos</h6>
+                                                <h6 className="mb-0 text-muted">{t('birth.form.summaryMales', { defaultValue: 'Machos' })}</h6>
                                             </div>
                                             <h3 className="mb-0 text-info fw-bold">{maleCount}</h3>
                                         </div>
@@ -841,7 +827,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                         <div className="border rounded p-3 text-center bg-light">
                                             <div className="d-flex align-items-center justify-content-center mb-2">
                                                 <i className="ri-women-line fs-4 text-danger me-2"></i>
-                                                <h6 className="mb-0 text-muted">Hembras</h6>
+                                                <h6 className="mb-0 text-muted">{t('birth.form.summaryFemales', { defaultValue: 'Hembras' })}</h6>
                                             </div>
                                             <h3 className="mb-0 text-danger fw-bold">{femaleCount}</h3>
                                         </div>
@@ -851,10 +837,10 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                         <div className="border rounded p-3 text-center bg-light">
                                             <div className="d-flex align-items-center justify-content-center mb-2">
                                                 <i className="ri-scales-3-line fs-4 text-success me-2"></i>
-                                                <h6 className="mb-0 text-muted">Peso Promedio</h6>
+                                                <h6 className="mb-0 text-muted">{t('birth.form.summaryAvgWeight', { defaultValue: 'Peso Promedio' })}</h6>
                                             </div>
                                             <h3 className="mb-0 text-success fw-bold">
-                                                {pigletsArray.length > 0 
+                                                {pigletsArray.length > 0
                                                     ? (pigletsArray.reduce((acc, p) => Number(acc) + Number(p.weight), 0) / pigletsArray.length).toFixed(2)
                                                     : '0.00'
                                                 } kg
@@ -868,7 +854,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                         <div className="border rounded p-3 text-center">
                                             <div className="d-flex align-items-center justify-content-center mb-2">
                                                 <i className="ri-close-circle-line fs-5 text-secondary me-2"></i>
-                                                <span className="text-muted">Nacidos Muertos</span>
+                                                <span className="text-muted">{t('birth.form.summaryStillborn', { defaultValue: 'Nacidos Muertos' })}</span>
                                             </div>
                                             <h4 className="mb-0 fw-bold">{formik.values.stillborn}</h4>
                                         </div>
@@ -878,7 +864,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                         <div className="border rounded p-3 text-center">
                                             <div className="d-flex align-items-center justify-content-center mb-2">
                                                 <i className="ri-skull-line fs-5 text-warning me-2"></i>
-                                                <span className="text-muted">Momias</span>
+                                                <span className="text-muted">{t('birth.form.summaryMummies', { defaultValue: 'Momias' })}</span>
                                             </div>
                                             <h4 className="mb-0 fw-bold">{formik.values.mummies}</h4>
                                         </div>
@@ -888,7 +874,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                         <div className="border rounded p-3 text-center">
                                             <div className="d-flex align-items-center justify-content-center mb-2">
                                                 <i className="ri-calculator-line fs-5 text-primary me-2"></i>
-                                                <span className="text-muted">Peso Total</span>
+                                                <span className="text-muted">{t('birth.form.summaryTotalWeight', { defaultValue: 'Peso Total' })}</span>
                                             </div>
                                             <h4 className="mb-0 fw-bold">
                                                 {pigletsArray.reduce((acc, p) => Number(acc) + Number(p.weight), 0).toFixed(2)} kg
@@ -900,8 +886,8 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                 {pigletsArray.length > 0 && (
                                     <div className="mt-3">
                                         <div className="d-flex justify-content-between align-items-center mb-2">
-                                            <small className="text-muted fw-semibold">Distribución de pesos:</small>
-                                            <small className="text-muted">{pigletsArray.length} lechones registrados</small>
+                                            <small className="text-muted fw-semibold">{t('birth.form.weightDistribution', { defaultValue: 'Distribución de pesos:' })}</small>
+                                            <small className="text-muted">{t('birth.form.litterRegistered', { count: pigletsArray.length, defaultValue: `${pigletsArray.length} lechones registrados` })}</small>
                                         </div>
                                         <div className="d-flex gap-2 flex-wrap">
                                             {pigletsArray.map((piglet, index) => (
@@ -922,7 +908,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                         <div className="mt-4 d-flex">
                             <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                                 <i className="ri-arrow-left-line me-2" />
-                                Atrás
+                                {t('common.button.back', { defaultValue: 'Volver' })}
                             </Button>
 
                             <Button className="ms-auto btn-success" onClick={() => formik.handleSubmit()} disabled={formik.isSubmitting}>
@@ -933,7 +919,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                 ) : (
                                     <div>
                                         <i className="ri-check-line me-2" />
-                                        Registrar
+                                        {t('birth.form.register', { defaultValue: 'Registrar' })}
                                     </div>
                                 )}
 
@@ -946,15 +932,15 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
 
             <Modal isOpen={modals.sowDetails} toggle={() => toggleModal('sowDetails')} size="lg" centered className="border-0">
                 <ModalHeader toggle={() => toggleModal('sowDetails')} className="border-0 pb-0">
-                    <h4 className="modal-title text-primary fw-bold">Detalles de la extracción</h4>
+                    <h4 className="modal-title text-primary fw-bold">{t('birth.form.modalExtractionTitle', { defaultValue: 'Detalles de la extracción' })}</h4>
                 </ModalHeader>
                 <ModalBody className="p-4">
                     <PigDetailsModal pigId={selectedSow} showAllDetailsButton={false} />
                 </ModalBody>
             </Modal>
 
-            <SuccessModal isOpen={successModalOpen} onClose={onSave} message={"Parto registrado con éxito"} />
-            <ErrorModal isOpen={errorModalOpen} onClose={() => setErrorModalOpen(false)} message={"Ha ocurrido un error al registrar el parto, intentelo mas tarde"} />
+            <SuccessModal isOpen={successModalOpen} onClose={onSave} message={t('birth.form.success', { defaultValue: 'Parto registrado con éxito' })} />
+            <ErrorModal isOpen={errorModalOpen} onClose={() => setErrorModalOpen(false)} message={t('birth.form.error', { defaultValue: 'Ha ocurrido un error al registrar el parto, intentelo mas tarde' })} />
         </>
     )
 }

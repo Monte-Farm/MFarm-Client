@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { ConfigContext } from "App";
 import { Attribute, SubwarehouseData } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
@@ -17,14 +18,9 @@ import OutcomeDetails from "Components/Common/Details/OutcomeDetails";
 import { OUTCOME_TYPES, getOutcomeTypeLabel } from "common/enums/outcomes.enums";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
 
-const subwarehouseAttributes: Attribute[] = [
-    { key: 'name', label: 'Nombre', type: 'text' },
-    { key: 'manager', label: 'Responsable', type: 'text' },
-    { key: 'location', label: 'Ubicación', type: 'text' },
-]
-
 const SubwarehouseDetails = () => {
-    document.title = "Detalles de Subalmacén | Subalmacén"
+    const { t } = useTranslation();
+    document.title = t('warehouse.subwarehouseDetails.pageTitle')
     const { id_subwarehouse } = useParams();
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
@@ -64,6 +60,12 @@ const SubwarehouseDetails = () => {
     const [fileURL, setFileURL] = useState<string>('')
     const [pdfLoading, setPdfLoading] = useState(false);
 
+    const subwarehouseAttributes: Attribute[] = [
+        { key: 'name', label: t('warehouse.subwarehouseDetails.attr.name'), type: 'text' },
+        { key: 'manager', label: t('warehouse.subwarehouseDetails.attr.manager'), type: 'text' },
+        { key: 'location', label: t('warehouse.subwarehouseDetails.attr.location'), type: 'text' },
+    ]
+
     function toggleArrowTab(tab: string) {
         if (activeStep !== tab) {
             setActiveStep(tab);
@@ -76,21 +78,21 @@ const SubwarehouseDetails = () => {
 
     const inventoryColumns: Column<any>[] = [
         {
-            header: "Código",
+            header: t('common.field.code'),
             accessor: "id",
             isFilterable: true,
             type: 'text',
             render: (value, row) => <span className="text-black">{row.product?.id || row.id}</span>
         },
         {
-            header: "Producto",
+            header: t('common.field.name'),
             accessor: "name",
             isFilterable: true,
             type: 'text',
             render: (value, row) => <span className="text-black">{row.product?.name || row.name}</span>
         },
         {
-            header: 'Existencias',
+            header: t('warehouse.inventoryDetails.kpi.stock'),
             accessor: 'quantity',
             isFilterable: true,
             type: 'number',
@@ -98,14 +100,14 @@ const SubwarehouseDetails = () => {
             bgColor: '#E8F5E9'
         },
         {
-            header: 'Precio Promedio',
+            header: t('warehouse.inventoryDetails.kpi.avgPrice'),
             accessor: 'averagePrice',
             isFilterable: true,
             type: 'currency',
             bgColor: '#E3F2FD'
         },
         {
-            header: 'Valor Total',
+            header: t('warehouse.inventory.kpi.totalValue'),
             accessor: 'totalValue',
             isFilterable: true,
             type: 'currency',
@@ -116,7 +118,7 @@ const SubwarehouseDetails = () => {
             bgColor: '#FFF3E0'
         },
         {
-            header: "Acciones",
+            header: t('common.field.actions'),
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
@@ -129,36 +131,36 @@ const SubwarehouseDetails = () => {
     ]
 
     const incomesColumns: Column<any>[] = [
-        { header: 'Identificador', accessor: 'id', isFilterable: true, type: 'text' },
+        { header: t('common.field.code'), accessor: 'id', isFilterable: true, type: 'text' },
         {
-            header: 'Proveedor',
+            header: t('warehouse.subwarehouseDetails.col.supplier'),
             accessor: 'originName',
             isFilterable: true,
             type: 'text',
             render: (_, row) => <span>{row.origin?.id?.name || 'N/A'}</span>
         },
-        { header: 'Fecha de entrada', accessor: 'date', isFilterable: true, type: 'date' },
+        { header: t('common.field.date'), accessor: 'date', isFilterable: true, type: 'date' },
         {
-            header: 'Tipo de entrada',
+            header: t('warehouse.subwarehouseDetails.tab.incomes'),
             accessor: 'incomeType',
             isFilterable: true,
             type: 'text',
             render: (_, row) => {
                 let color = 'secondary';
-                let text = 'N/A';
+                const text = t(`warehouse.common.incomeType.${row.incomeType}`, { defaultValue: row.incomeType });
 
                 switch (row.incomeType) {
-                    case "purchase": color = "success"; text = "Compra"; break;
-                    case "donacion": color = "warning"; text = "Donacion"; break;
-                    case "transfer": color = "info"; text = "Transferencia"; break;
-                    case "own_production": color = "secondary"; text = "Producción"; break;
+                    case "purchase": color = "success"; break;
+                    case "donacion": color = "warning"; break;
+                    case "transfer": color = "info"; break;
+                    case "own_production": color = "secondary"; break;
                 }
                 return <Badge color={color}>{text}</Badge>;
             },
         },
-        { header: 'Precio Total', accessor: 'totalPrice', type: 'currency', bgColor: '#E8F5E9' },
+        { header: t('warehouse.subwarehouseDetails.col.totalPrice'), accessor: 'totalPrice', type: 'currency', bgColor: '#E8F5E9' },
         {
-            header: "Acciones",
+            header: t('common.field.actions'),
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
@@ -171,16 +173,16 @@ const SubwarehouseDetails = () => {
     ]
 
     const outcomesColumns: Column<any>[] = [
-        { header: 'Identificador', accessor: 'code', isFilterable: true, type: 'text' },
-        { header: 'Fecha de Salida', accessor: 'date', isFilterable: true, type: 'date' },
+        { header: t('common.field.code'), accessor: 'code', isFilterable: true, type: 'text' },
+        { header: t('common.field.date'), accessor: 'date', isFilterable: true, type: 'date' },
         {
-            header: 'Tipo de salida',
+            header: t('warehouse.subwarehouseDetails.tab.outcomes'),
             accessor: 'outcomeType',
             isFilterable: true,
             type: 'text',
             render: (_, row) => {
                 let color = 'secondary';
-                let label = getOutcomeTypeLabel(row.outcomeType);
+                const label = t(`warehouse.common.outcomeType.${row.outcomeType}`, { defaultValue: getOutcomeTypeLabel(row.outcomeType) });
 
                 switch (row.outcomeType) {
                     case OUTCOME_TYPES.TRANSFER:
@@ -209,15 +211,15 @@ const SubwarehouseDetails = () => {
             },
         },
         {
-            header: 'Subalmacén de destino',
+            header: t('warehouse.subwarehouseDetails.col.destWarehouse'),
             accessor: 'warehouseDestiny',
             isFilterable: true,
             type: 'text',
             render: (_, row) => <span>{row.warehouseDestiny?.name || "N/A"}</span>
         },
-        { header: 'Valor', accessor: 'totalPrice', isFilterable: true, type: 'currency' },
+        { header: t('warehouse.subwarehouseDetails.col.value'), accessor: 'totalPrice', isFilterable: true, type: 'currency' },
         {
-            header: 'Acciones',
+            header: t('common.field.actions'),
             accessor: 'actions',
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
@@ -242,7 +244,7 @@ const SubwarehouseDetails = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_id/${id_subwarehouse}`);
             setSubwarehouseDetails(response.data.data);
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al obtener la información del subalmacén, intentelo más tarde');
+            handleError(error, t('warehouse.subwarehouseDetails.error.fetchDetails'));
         }
     };
 
@@ -253,7 +255,7 @@ const SubwarehouseDetails = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/get_inventory/${id_subwarehouse}`);
             setSubwarehouseInventory(response.data.data);
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al obtener el inventario del subalmacén, intentelo más tarde');
+            handleError(error, t('warehouse.subwarehouseDetails.error.fetchInventory'));
         }
     };
 
@@ -264,7 +266,7 @@ const SubwarehouseDetails = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/warehouse_statistics/${id_subwarehouse}`);
             setSubwarehouseStatistics(response.data.data.statistics);
         } catch (error) {
-            handleError(error, 'Error al obtener las estadísticas del subalmacén');
+            handleError(error, t('warehouse.subwarehouseDetails.error.fetchInventory'));
         }
     };
 
@@ -275,7 +277,7 @@ const SubwarehouseDetails = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/incomes/find_warehouse_incomes/${id_subwarehouse}`);
             setSubwarehouseIncomes(response.data.data);
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al obtener las entradas, intentelo más tarde');
+            handleError(error, t('warehouse.subwarehouseDetails.error.fetchIncomes'));
         }
     };
 
@@ -285,7 +287,7 @@ const SubwarehouseDetails = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/incomes/income_statistics/${id_subwarehouse}`);
             setIncomeStatistics(response.data.data.statistics);
         } catch (error) {
-            handleError(error, 'Error al obtener las estadísticas de entradas');
+            handleError(error, t('warehouse.subwarehouseDetails.error.fetchIncomes'));
         }
     };
 
@@ -299,11 +301,11 @@ const SubwarehouseDetails = () => {
             const entriesByType: DonutDataItem[] = [];
             const valueByType: DonutDataItem[] = [];
 
-            const typeConfig: Record<string, { label: string; color: string }> = {
-                purchase: { label: 'Compra', color: '#10b981' },
-                donacion: { label: 'Donación', color: '#f59e0b' },
-                transfer: { label: 'Transferencia', color: '#3b82f6' },
-                own_production: { label: 'Producción Propia', color: '#6b7280' }
+            const typeConfig: Record<string, { color: string }> = {
+                purchase: { color: '#10b981' },
+                donacion: { color: '#f59e0b' },
+                transfer: { color: '#3b82f6' },
+                own_production: { color: '#6b7280' }
             };
 
             if (chartDataResponse.entriesByType) {
@@ -312,7 +314,7 @@ const SubwarehouseDetails = () => {
                     if (numericValue > 0 && typeConfig[type]) {
                         entriesByType.push({
                             id: type,
-                            label: typeConfig[type].label,
+                            label: t(`warehouse.common.incomeType.${type}`, { defaultValue: type }),
                             value: numericValue,
                             color: typeConfig[type].color
                         });
@@ -326,7 +328,7 @@ const SubwarehouseDetails = () => {
                     if (numericValue > 0 && typeConfig[type]) {
                         valueByType.push({
                             id: type,
-                            label: typeConfig[type].label,
+                            label: t(`warehouse.common.incomeType.${type}`, { defaultValue: type }),
                             value: numericValue,
                             color: typeConfig[type].color
                         });
@@ -359,7 +361,7 @@ const SubwarehouseDetails = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/outcomes/find_warehouse_outcomes/${id_subwarehouse}`);
             setSubwarehouseOutcomes(response.data.data);
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al obtener las salidas, intentelo más tarde');
+            handleError(error, t('warehouse.subwarehouseDetails.error.fetchOutcomes'));
         }
     };
 
@@ -369,7 +371,7 @@ const SubwarehouseDetails = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/outcomes/outcome_statistics/${id_subwarehouse}`);
             setOutcomeStatistics(response.data.data.statistics);
         } catch (error) {
-            handleError(error, 'Error al obtener las estadísticas de salidas');
+            handleError(error, t('warehouse.subwarehouseDetails.error.fetchOutcomes'));
         }
     };
 
@@ -384,14 +386,14 @@ const SubwarehouseDetails = () => {
             const valueByType: DonutDataItem[] = [];
 
             // Mapeo de tipos con sus colores y etiquetas
-            const typeConfig: Record<string, { label: string; color: string }> = {
-                [OUTCOME_TYPES.TRANSFER]: { label: 'Transferencia', color: '#3b82f6' },
-                [OUTCOME_TYPES.SALE]: { label: 'Venta', color: '#10b981' },
-                [OUTCOME_TYPES.LOSS]: { label: 'Pérdida', color: '#ef4444' },
-                [OUTCOME_TYPES.ADJUSTMENT]: { label: 'Ajuste', color: '#f59e0b' },
-                [OUTCOME_TYPES.RETURN]: { label: 'Devolución', color: '#6366f1' },
-                [OUTCOME_TYPES.CONSUMPTION]: { label: 'Consumo', color: '#6b7280' },
-                [OUTCOME_TYPES.WAREHOUSE_ORDER]: { label: 'Orden de Almacén', color: '#8b5cf6' }
+            const typeConfig: Record<string, { color: string }> = {
+                [OUTCOME_TYPES.TRANSFER]: { color: '#3b82f6' },
+                [OUTCOME_TYPES.SALE]: { color: '#10b981' },
+                [OUTCOME_TYPES.LOSS]: { color: '#ef4444' },
+                [OUTCOME_TYPES.ADJUSTMENT]: { color: '#f59e0b' },
+                [OUTCOME_TYPES.RETURN]: { color: '#6366f1' },
+                [OUTCOME_TYPES.CONSUMPTION]: { color: '#6b7280' },
+                [OUTCOME_TYPES.WAREHOUSE_ORDER]: { color: '#8b5cf6' }
             };
 
             if (chartDataResponse.outcomesByType) {
@@ -400,7 +402,7 @@ const SubwarehouseDetails = () => {
                     if (numericValue > 0 && typeConfig[type]) {
                         outcomesByType.push({
                             id: type,
-                            label: typeConfig[type].label,
+                            label: t(`warehouse.common.outcomeType.${type}`, { defaultValue: type }),
                             value: numericValue,
                             color: typeConfig[type].color
                         });
@@ -414,7 +416,7 @@ const SubwarehouseDetails = () => {
                     if (numericValue > 0 && typeConfig[type]) {
                         valueByType.push({
                             id: type,
-                            label: typeConfig[type].label,
+                            label: t(`warehouse.common.outcomeType.${type}`, { defaultValue: type }),
                             value: numericValue,
                             color: typeConfig[type].color
                         });
@@ -453,7 +455,7 @@ const SubwarehouseDetails = () => {
             toggleModal('viewPDF');
         } catch (error) {
             console.error('Error generating inventory report:', error);
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el reporte de inventario.' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.subwarehouseDetails.error.generateReport') });
         } finally {
             setPdfLoading(false);
         }
@@ -505,12 +507,12 @@ const SubwarehouseDetails = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={`Detalles de ${subwarehouseDetails?.name}`} pageTitle={"Subalmacénes"} />
+                <BreadCrumb title={`${t('warehouse.subwarehouseDetails.breadcrumbTitle')} ${subwarehouseDetails?.name}`} pageTitle={t('warehouse.subwarehouse.breadcrumb')} />
 
                 <div className="d-flex gap-2 mb-3">
                     <Button className="farm-secondary-button" onClick={handleReturn}>
                         <i className="ri-arrow-left-line me-2"></i>
-                        Regresar
+                        {t('common.button.back')}
                     </Button>
                 </div>
 
@@ -522,7 +524,7 @@ const SubwarehouseDetails = () => {
                                 className={classnames({ active: activeStep === "1" })}
                                 onClick={() => toggleArrowTab("1")}
                             >
-                                Inventario
+                                {t('warehouse.subwarehouseDetails.tab.inventory')}
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -531,7 +533,7 @@ const SubwarehouseDetails = () => {
                                 className={classnames({ active: activeStep === "2" })}
                                 onClick={() => toggleArrowTab("2")}
                             >
-                                Entradas
+                                {t('warehouse.subwarehouseDetails.tab.incomes')}
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -540,7 +542,7 @@ const SubwarehouseDetails = () => {
                                 className={classnames({ active: activeStep === "3" })}
                                 onClick={() => toggleArrowTab("3")}
                             >
-                                Salidas
+                                {t('warehouse.subwarehouseDetails.tab.outcomes')}
                             </NavLink>
                         </NavItem>
                     </Nav>
@@ -552,7 +554,7 @@ const SubwarehouseDetails = () => {
                         <div className="row mb-3">
                             <div className="col-xl-3 col-md-6">
                                 <StatKpiCard
-                                    title="Valor Total del Inventario"
+                                    title={t('warehouse.subwarehouseDetails.kpi.inventory.totalValue')}
                                     value={subwarehouseStatistics.totalValue || 0}
                                     prefix="$"
                                     decimals={2}
@@ -564,7 +566,7 @@ const SubwarehouseDetails = () => {
                             </div>
                             <div className="col-xl-3 col-md-6">
                                 <StatKpiCard
-                                    title="Total de Productos"
+                                    title={t('warehouse.subwarehouseDetails.kpi.inventory.totalProducts')}
                                     value={subwarehouseStatistics.uniqueProducts || 0}
                                     icon={<i className="ri-shopping-bag-3-line fs-20 text-info"></i>}
                                     iconBgColor="#E3F2FD"
@@ -574,7 +576,7 @@ const SubwarehouseDetails = () => {
                             </div>
                             <div className="col-xl-3 col-md-6">
                                 <StatKpiCard
-                                    title="Total de Unidades"
+                                    title={t('warehouse.subwarehouseDetails.kpi.inventory.totalUnits')}
                                     value={subwarehouseStatistics.totalUnits || 0}
                                     icon={<i className="ri-stack-line fs-20 text-warning"></i>}
                                     iconBgColor="#FFF3E0"
@@ -584,7 +586,7 @@ const SubwarehouseDetails = () => {
                             </div>
                             <div className="col-xl-3 col-md-6">
                                 <StatKpiCard
-                                    title="Valor Promedio por Producto"
+                                    title={t('warehouse.subwarehouseDetails.kpi.inventory.avgValuePerProduct')}
                                     value={subwarehouseStatistics.averageValuePerProduct || 0}
                                     prefix="$"
                                     decimals={2}
@@ -599,7 +601,7 @@ const SubwarehouseDetails = () => {
                         <Card className="rounded">
                             <CardHeader>
                                 <div className="d-flex gap-2 justify-content-between">
-                                    <h4 className="">Productos</h4>
+                                    <h4 className="">{t('warehouse.subwarehouseDetails.productsTitle')}</h4>
                                     <div>
                                         <Button
                                             className="farm-primary-button"
@@ -609,12 +611,12 @@ const SubwarehouseDetails = () => {
                                             {pdfLoading ? (
                                                 <>
                                                     <Spinner className="me-2" size='sm' />
-                                                    Generando...
+                                                    {t('common.button.generating')}
                                                 </>
                                             ) : (
                                                 <>
                                                     <i className="ri-file-pdf-line pe-2" />
-                                                    Reporte de Inventario
+                                                    {t('warehouse.subwarehouseDetails.button.report')}
                                                 </>
                                             )}
                                         </Button>
@@ -626,7 +628,7 @@ const SubwarehouseDetails = () => {
                                 {subwarehouseInventory.length === 0 ? (
                                     <>
                                         <i className="ri-drop-line text-muted mb-2" style={{ fontSize: "2rem" }} />
-                                        <span className="fs-5 text-muted">Aún no hay productos registrados en el inventario</span>
+                                        <span className="fs-5 text-muted">{t('warehouse.subwarehouseDetails.empty.inventory')}</span>
                                     </>
                                 ) : (
                                     <CustomTable
@@ -646,7 +648,7 @@ const SubwarehouseDetails = () => {
                         <div className="row mb-3">
                             <div className="col-xl-3 col-md-6">
                                 <StatKpiCard
-                                    title="Valor Total de Entradas"
+                                    title={t('warehouse.subwarehouseDetails.kpi.incomes.totalValue')}
                                     value={incomeStatistics.totalValue}
                                     prefix="$"
                                     decimals={2}
@@ -658,7 +660,7 @@ const SubwarehouseDetails = () => {
                             </div>
                             <div className="col-xl-3 col-md-6">
                                 <StatKpiCard
-                                    title="Total de Entradas"
+                                    title={t('warehouse.subwarehouseDetails.kpi.incomes.totalEntries')}
                                     value={incomeStatistics.totalEntries}
                                     icon={<i className="ri-file-list-3-line fs-20 text-info"></i>}
                                     iconBgColor="#E3F2FD"
@@ -668,7 +670,7 @@ const SubwarehouseDetails = () => {
                             </div>
                             <div className="col-xl-3 col-md-6">
                                 <StatKpiCard
-                                    title="Valor Promedio por Entrada"
+                                    title={t('warehouse.subwarehouseDetails.kpi.incomes.avgValuePerEntry')}
                                     value={incomeStatistics.averageValuePerEntry}
                                     prefix="$"
                                     decimals={2}
@@ -684,7 +686,7 @@ const SubwarehouseDetails = () => {
                         <div className="row mb-4">
                             <div className="col-xl-6">
                                 <DonutChartCard
-                                    title="Entradas por Tipo"
+                                    title={t('warehouse.subwarehouseDetails.chart.incomesByType')}
                                     data={incomeChartData.entriesByType}
                                     legendItems={incomeChartData.entriesLegendItems}
                                     height={200}
@@ -692,7 +694,7 @@ const SubwarehouseDetails = () => {
                             </div>
                             <div className="col-xl-6">
                                 <DonutChartCard
-                                    title="Valor de Entradas por Tipo"
+                                    title={t('warehouse.subwarehouseDetails.chart.incomeValueByType')}
                                     data={incomeChartData.valueByType}
                                     legendItems={incomeChartData.valueLegendItems}
                                     height={200}
@@ -703,14 +705,14 @@ const SubwarehouseDetails = () => {
                         <Card>
                             <CardHeader>
                                 <div className="d-flex gap-2">
-                                    <h4 className="me-auto">Entradas</h4>
+                                    <h4 className="me-auto">{t('warehouse.subwarehouseDetails.tab.incomes')}</h4>
                                 </div>
                             </CardHeader>
                             <CardBody className={subwarehouseIncomes.length === 0 ? "d-flex flex-column justify-content-center align-items-center text-center" : "d-flex flex-column flex-grow-1"}>
                                 {subwarehouseIncomes.length === 0 ? (
                                     <>
                                         <i className="ri-drop-line text-muted mb-2" style={{ fontSize: "2rem" }} />
-                                        <span className="fs-5 text-muted">Aún no hay entradas registradas</span>
+                                        <span className="fs-5 text-muted">{t('warehouse.subwarehouseDetails.empty.incomes')}</span>
                                     </>
                                 ) : (
                                     <CustomTable columns={incomesColumns} data={subwarehouseIncomes} showPagination={false} />
@@ -724,7 +726,7 @@ const SubwarehouseDetails = () => {
                         <div className="row mb-3">
                             <div className="col-xl-3 col-md-6">
                                 <StatKpiCard
-                                    title="Valor Total de Salidas"
+                                    title={t('warehouse.subwarehouseDetails.kpi.outcomes.totalValue')}
                                     value={outcomeStatistics.totalValue}
                                     prefix="$"
                                     decimals={2}
@@ -736,7 +738,7 @@ const SubwarehouseDetails = () => {
                             </div>
                             <div className="col-xl-3 col-md-6">
                                 <StatKpiCard
-                                    title="Total de Salidas"
+                                    title={t('warehouse.subwarehouseDetails.kpi.outcomes.totalOutcomes')}
                                     value={outcomeStatistics.totalOutcomes}
                                     icon={<i className="ri-file-list-3-line fs-20 text-info"></i>}
                                     iconBgColor="#E3F2FD"
@@ -746,7 +748,7 @@ const SubwarehouseDetails = () => {
                             </div>
                             <div className="col-xl-3 col-md-6">
                                 <StatKpiCard
-                                    title="Valor Promedio por Salida"
+                                    title={t('warehouse.subwarehouseDetails.kpi.outcomes.avgValuePerOutcome')}
                                     value={outcomeStatistics.averageValuePerOutcome}
                                     prefix="$"
                                     decimals={2}
@@ -762,7 +764,7 @@ const SubwarehouseDetails = () => {
                         <div className="row mb-4">
                             <div className="col-xl-6">
                                 <DonutChartCard
-                                    title="Salidas por Tipo"
+                                    title={t('warehouse.subwarehouseDetails.chart.outcomesByType')}
                                     data={outcomeChartData.outcomesByType}
                                     legendItems={outcomeChartData.outcomesLegendItems}
                                     height={200}
@@ -770,7 +772,7 @@ const SubwarehouseDetails = () => {
                             </div>
                             <div className="col-xl-6">
                                 <DonutChartCard
-                                    title="Valor de Salidas por Tipo"
+                                    title={t('warehouse.subwarehouseDetails.chart.outcomeValueByType')}
                                     data={outcomeChartData.valueByType}
                                     legendItems={outcomeChartData.valueLegendItems}
                                     height={200}
@@ -781,14 +783,14 @@ const SubwarehouseDetails = () => {
                         <Card>
                             <CardHeader>
                                 <div className="d-flex">
-                                    <h4>Salidas</h4>
+                                    <h4>{t('warehouse.subwarehouseDetails.tab.outcomes')}</h4>
                                 </div>
                             </CardHeader>
                             <CardBody className={subwarehouseOutcomes.length === 0 ? "d-flex flex-column justify-content-center align-items-center text-center" : "d-flex flex-column flex-grow-1"}>
                                 {subwarehouseOutcomes.length === 0 ? (
                                     <>
                                         <i className="ri-archive-line text-muted mb-2" style={{ fontSize: "2rem" }} />
-                                        <span className="fs-5 text-muted">Aún no hay salidas de inventario registradas</span>
+                                        <span className="fs-5 text-muted">{t('warehouse.subwarehouseDetails.empty.outcomes')}</span>
                                     </>
                                 ) : (
                                     <CustomTable columns={outcomesColumns} data={subwarehouseOutcomes} showSearchAndFilter={true} showPagination={false} />
@@ -801,21 +803,21 @@ const SubwarehouseDetails = () => {
             </Container>
 
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Inventario</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('warehouse.subwarehouseDetails.modal.report')}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.incomeDetails} toggle={() => toggleModal("incomeDetails")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("incomeDetails")}>Detalles de entrada</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("incomeDetails")}>{t('warehouse.subwarehouseDetails.modal.incomeDetails')}</ModalHeader>
                 <ModalBody>
                     <IncomeDetails incomeId={selectedIncome?._id} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.outcomeDetails} toggle={() => toggleModal("outcomeDetails")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("outcomeDetails")}>Detalles de salida</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("outcomeDetails")}>{t('warehouse.subwarehouseDetails.modal.outcomeDetails')}</ModalHeader>
                 <ModalBody>
                     <OutcomeDetails outcomeId={selectedOutcome._id} />
                 </ModalBody>

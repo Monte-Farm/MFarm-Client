@@ -11,9 +11,11 @@ import { useNavigate } from "react-router-dom";
 import FarmForm from "Components/Common/Forms/FarmForm";
 import { startImpersonation } from "helpers/impersonation_helper";
 import { getEffectiveUser } from "helpers/impersonation_helper";
+import { useTranslation } from "react-i18next";
 
 const ViewFarms = () => {
-    document.title = 'Granjas | System Pig'
+    const { t } = useTranslation();
+    document.title = t('farms.pageTitle')
     const configContext = useContext(ConfigContext);
     const navigate = useNavigate();
     const realUser = getEffectiveUser();
@@ -27,21 +29,21 @@ const ViewFarms = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [selectedFarm, setSelectedFarm] = useState<FarmData | null>(null);
 
-    const farmColumns: Column<FarmData>[] = [
-        { accessor: "name", header: "Nombre" },
-        { accessor: "code", header: "Código" },
-        { accessor: "location", header: "Ubicación" },
+    const farmColumns: Column<FarmData>[] = useMemo(() => [
+        { accessor: "name", header: t('farms.column.name') },
+        { accessor: "code", header: t('farms.column.code') },
+        { accessor: "location", header: t('farms.column.location') },
         {
-            header: 'Estado',
+            header: t('farms.column.status'),
             accessor: 'status',
             isFilterable: true,
             render: (value: boolean) => (
                 <Badge color={value ? 'success' : 'danger'}>
-                    {value ? 'Activo' : 'Inactivo'}
+                    {value ? t('common.status.active') : t('common.status.inactive')}
                 </Badge>
             ),
         },
-    ];
+    ], [t]);
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -66,7 +68,7 @@ const ViewFarms = () => {
             setFarms(response.data.data)
         } catch (error) {
             console.error('Error fetching the farms:', error);
-            handleError(error, 'Ha ocurrido un error al recuperar las granjas, intentelo más tarde');
+            handleError(error, t('farms.error.fetch'));
         } finally {
             setLoading(false);
         }
@@ -99,13 +101,13 @@ const ViewFarms = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Ver granjas"} pageTitle={"Granjas"} />
+                <BreadCrumb title={t('farms.breadcrumb')} pageTitle={t('farms.breadcrumbParent')} />
 
                 <Card style={{ minHeight: "calc(100vh - 262px)" }}>
                     <CardHeader>
                         <div className="d-flex gap-3">
                             <Input
-                                placeholder="Buscar granja..."
+                                placeholder={t('farms.search')}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="fs-5"
@@ -116,7 +118,7 @@ const ViewFarms = () => {
                                 style={{ width: '200px' }}
                             >
                                 <i className="ri-add-line me-3" />
-                                Nueva granja
+                                {t('farms.button.new')}
                             </Button>
                         </div>
                     </CardHeader>
@@ -144,13 +146,13 @@ const ViewFarms = () => {
 
             {/* Modal Crear */}
             <Modal isOpen={modals.create} toggle={() => toggleModal('create')} size="xl" keyboard={false} backdrop='static' centered>
-                <ModalHeader toggle={() => toggleModal('create')}>Nueva Granja</ModalHeader>
+                <ModalHeader toggle={() => toggleModal('create')}>{t('farms.modal.create')}</ModalHeader>
                 <ModalBody>
                     <FarmForm
                         onSave={() => {
                             toggleModal('create');
                             fetchFarms();
-                            showAlert('success', 'Granja creada correctamente');
+                            showAlert('success', t('farms.success.created'));
                         }}
                         onCancel={() => toggleModal('create')}
                     />
@@ -159,14 +161,14 @@ const ViewFarms = () => {
 
             {/* Modal Editar */}
             <Modal isOpen={modals.update} toggle={() => toggleModal('update')} size="xl" keyboard={false} backdrop='static' centered>
-                <ModalHeader toggle={() => toggleModal('update')}>Editar Granja</ModalHeader>
+                <ModalHeader toggle={() => toggleModal('update')}>{t('farms.modal.update')}</ModalHeader>
                 <ModalBody>
                     <FarmForm
                         data={selectedFarm || undefined}
                         onSave={() => {
                             toggleModal('update');
                             fetchFarms();
-                            showAlert('success', 'Granja actualizada correctamente');
+                            showAlert('success', t('farms.success.updated'));
                             setSelectedFarm(null);
                         }}
                         onCancel={() => {

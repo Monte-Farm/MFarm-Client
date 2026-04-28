@@ -19,8 +19,17 @@ import { FaMars } from "react-icons/fa"
 import KPI from "Components/Common/Graphics/Kpi"
 import BasicPieChart from "Components/Common/Graphics/BasicPieChart"
 import PigFilters, { PigFiltersState } from "Components/Common/Filters/PigFilters"
+import { useTranslation } from "react-i18next"
+
+const STAGE_COLORS: Record<string, string> = {
+    piglet: 'info', weaning: 'warning', fattening: 'primary', breeder: 'success',
+};
+const STATUS_COLORS: Record<string, string> = {
+    alive: 'success', discarded: 'warning', dead: 'danger',
+};
 
 const ViewBoars = () => {
+    const { t } = useTranslation();
     const [modals, setModals] = useState({ selectCreationMode: false, createSingle: false, createBatch: false, update: false, viewPDF: false });
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
@@ -44,77 +53,50 @@ const ViewBoars = () => {
     const navigate = useNavigate();
     const [selectedPig, setSelectedPig] = useState<PigData | null>(null)
 
+    const predefinedBreeds = [
+        "Yorkshire", "Landrace", "Duroc", "Hampshire", "Pietrain",
+        "Berkshire", "Large White", "Chester White", "Poland China", "Tamworth"
+    ]
+
+    const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
+        setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
+    };
+
     const pigColumns: Column<any>[] = [
-        { header: 'Codigo', accessor: 'code', type: 'text' },
-        { header: 'Raza', accessor: 'breed', type: 'text' },
-        { header: 'Fecha de N.', accessor: 'birthdate', type: 'date' },
+        { header: t('replacement.column.code'), accessor: 'code', type: 'text' },
+        { header: t('replacement.column.breed'), accessor: 'breed', type: 'text' },
+        { header: t('replacement.column.birthdate'), accessor: 'birthdate', type: 'date' },
         {
-            header: 'Sexo',
+            header: t('replacement.column.sex'),
             accessor: 'sex',
             render: (value: string) => (
                 <Badge color={value === 'male' ? "info" : "danger"}>
-                    {value === 'male' ? "♂ Macho" : "♀ Hembra"}
+                    {value === 'male' ? "♂ " + t('common.sex.male') : "♀ " + t('common.sex.female')}
                 </Badge>
             ),
         },
         {
-            header: 'Etapa',
+            header: t('replacement.column.stage'),
             accessor: 'currentStage',
             render: (value: string) => {
-                let color = "secondary";
-                let label = value;
-
-                switch (value) {
-                    case "piglet":
-                        color = "info";
-                        label = "Lechón";
-                        break;
-                    case "weaning":
-                        color = "warning";
-                        label = "Destete";
-                        break;
-                    case "fattening":
-                        color = "primary";
-                        label = "Engorda";
-                        break;
-                    case "breeder":
-                        color = "success";
-                        label = "Reproductor";
-                        break;
-                }
-
+                const color = STAGE_COLORS[value] || 'secondary';
+                const label = t(`replacement.stage.${value}`, { defaultValue: value });
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { header: 'Peso actual', accessor: 'weight', type: 'number' },
+        { header: t('replacement.column.weight'), accessor: 'weight', type: 'number' },
         {
-            header: 'Estado',
+            header: t('replacement.column.status'),
             accessor: 'status',
             isFilterable: true,
             render: (value: string) => {
-                let color = 'secondary';
-                let label = value;
-
-                switch (value) {
-                    case 'alive':
-                        color = 'success';
-                        label = 'Vivo';
-                        break;
-                    case 'discarded':
-                        color = 'warning';
-                        label = 'Descartado';
-                        break;
-                    case 'dead':
-                        color = 'danger';
-                        label = 'Muerto';
-                        break;
-                }
-
+                const color = STATUS_COLORS[value] || 'secondary';
+                const label = t(`replacement.status.${value}`, { defaultValue: value });
                 return <Badge color={color}>{label}</Badge>;
             },
         },
         {
-            header: "Acciones",
+            header: t('replacement.column.actions'),
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
@@ -128,23 +110,6 @@ const ViewBoars = () => {
             ),
         },
     ]
-
-    const predefinedBreeds = [
-        "Yorkshire",
-        "Landrace",
-        "Duroc",
-        "Hampshire",
-        "Pietrain",
-        "Berkshire",
-        "Large White",
-        "Chester White",
-        "Poland China",
-        "Tamworth"
-    ]
-
-    const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
-        setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
-    };
 
     const fetchData = async () => {
         if (!configContext) return
@@ -160,7 +125,7 @@ const ViewBoars = () => {
             setStats(statsResponse.data.data)
         } catch (error) {
             console.error('Error fetching pigs: ', { error });
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('replacement.error.load') })
         } finally {
             setLoading(false)
         }
@@ -177,12 +142,12 @@ const ViewBoars = () => {
 
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
             const url = window.URL.createObjectURL(pdfBlob);
-            
+
             setFileURL(url);
             toggleModal('viewPDF');
         } catch (error) {
             console.error('Error generating PDF: ', { error });
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('replacement.error.pdf') })
         } finally {
             setGeneratingReport(false);
         }
@@ -208,21 +173,11 @@ const ViewBoars = () => {
             )
         }
 
-        if (filters.status) {
-            result = result.filter(pig => pig.status === filters.status)
-        }
-        if (filters.currentStage) {
-            result = result.filter(pig => pig.currentStage === filters.currentStage)
-        }
-        if (filters.origin) {
-            result = result.filter(pig => pig.origin === filters.origin)
-        }
-        if (filters.sex) {
-            result = result.filter(pig => pig.sex === filters.sex)
-        }
-        if (filters.breed) {
-            result = result.filter(pig => pig.breed === filters.breed)
-        }
+        if (filters.status) result = result.filter(pig => pig.status === filters.status)
+        if (filters.currentStage) result = result.filter(pig => pig.currentStage === filters.currentStage)
+        if (filters.origin) result = result.filter(pig => pig.origin === filters.origin)
+        if (filters.sex) result = result.filter(pig => pig.sex === filters.sex)
+        if (filters.breed) result = result.filter(pig => pig.breed === filters.breed)
         if (filters.weightRange) {
             result = result.filter(pig =>
                 Number(pig.weight) >= filters.weightRange[0] &&
@@ -234,31 +189,18 @@ const ViewBoars = () => {
     }
 
     const handleFilterChange = (filterName: string, value: any) => {
-        setFilters(prev => ({
-            ...prev,
-            [filterName]: value
-        }))
+        setFilters(prev => ({ ...prev, [filterName]: value }))
     }
 
     const handleWeightRangeChange = (value: number | number[]) => {
         if (Array.isArray(value)) {
-            setFilters(prev => ({
-                ...prev,
-                weightRange: value as [number, number]
-            }))
+            setFilters(prev => ({ ...prev, weightRange: value as [number, number] }))
         }
     }
 
     const clearFilters = () => {
         setSearchTerm("")
-        setFilters({
-            status: "",
-            currentStage: "",
-            origin: "",
-            sex: "",
-            breed: "",
-            weightRange: [0, 500]
-        })
+        setFilters({ status: "", currentStage: "", origin: "", sex: "", breed: "", weightRange: [0, 500] })
         setPopoverOpen(false)
     }
 
@@ -271,11 +213,11 @@ const ViewBoars = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Ver Berracos"} pageTitle={"Reemplazo"} />
+                <BreadCrumb title={t('replacement.breadcrumb.boarTitle')} pageTitle={t('replacement.breadcrumb.boarParent')} />
 
                 <div className="d-flex gap-3 flex-wrap">
                     <KPI
-                        title="Berracos totales"
+                        title={t('replacement.kpi.totalBoars')}
                         value={stats?.generalStats[0]?.totalAlive ?? 0}
                         icon={FiCheckCircle}
                         bgColor="#e6f7e6"
@@ -283,7 +225,7 @@ const ViewBoars = () => {
                     />
 
                     <KPI
-                        title="Peso promedio"
+                        title={t('replacement.kpi.avgWeight')}
                         icon={FaMars}
                         bgColor="#e6f0ff"
                         iconColor="#0d6efd"
@@ -292,22 +234,20 @@ const ViewBoars = () => {
                 </div>
 
                 <div className="d-flex gap-3">
-                    <BasicPieChart title={"Berracos por raza"}
+                    <BasicPieChart title={t('replacement.chart.byBreed')}
                         data={stats?.pigsByBreed?.map((s: { _id: any; count: any }) => ({
                             id: s._id,
                             value: s.count,
                         })) ?? []}
                     />
 
-                    <BasicPieChart title={"Berracos por origen"}
+                    <BasicPieChart title={t('replacement.chart.byOrigin')}
                         data={stats?.pigsByOrigin?.map((s: { _id: any; count: any }) => ({
-                            id: s._id === 'born' ? 'Nacidos' : s._id === 'purchased' ? 'Comprados' : s._id,
+                            id: s._id === 'born' ? t('replacement.chart.born') : s._id === 'purchased' ? t('replacement.chart.purchased') : s._id,
                             value: s.count,
                         })) ?? []}
                     />
                 </div>
-
-
 
                 <Card>
                     <CardHeader>
@@ -324,21 +264,21 @@ const ViewBoars = () => {
                                 predefinedBreeds={predefinedBreeds}
                             />
 
-                            <Button 
-                                color="secondary" 
-                                className="ms-auto" 
-                                onClick={handleGeneratePDF} 
+                            <Button
+                                color="secondary"
+                                className="ms-auto"
+                                onClick={handleGeneratePDF}
                                 disabled={generatingReport}
                             >
                                 {generatingReport ? (
                                     <>
                                         <Spinner className="me-2" size='sm' />
-                                        Generando...
+                                        {t('replacement.action.generating')}
                                     </>
                                 ) : (
                                     <>
                                         <i className="ri-file-pdf-line me-2"></i>
-                                        Exportar PDF
+                                        {t('replacement.action.exportPdf')}
                                     </>
                                 )}
                             </Button>
@@ -350,7 +290,7 @@ const ViewBoars = () => {
                             <>
                                 <FiAlertCircle className="text-muted" size={22} />
                                 <span className="fs-5 text-black text-muted text-center rounded-5 ms-2">
-                                    No hay berracos registrados
+                                    {t('replacement.empty.noBoars')}
                                 </span>
                             </>
                         ) : (
@@ -361,7 +301,7 @@ const ViewBoars = () => {
             </Container>
 
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de berracos</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('replacement.modal.boarReport')}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>

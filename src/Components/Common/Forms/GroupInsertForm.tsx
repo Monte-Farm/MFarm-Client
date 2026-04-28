@@ -15,6 +15,7 @@ import AlertMessage from "../Shared/AlertMesagge";
 import ObjectDetails from "../Details/ObjectDetails";
 import { Attribute } from "common/data_interfaces";
 import CustomTable from "../Tables/CustomTable";
+import { useTranslation } from "react-i18next";
 
 interface GroupInsertFormProps {
     groupId: string;
@@ -22,6 +23,7 @@ interface GroupInsertFormProps {
 }
 
 const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true);
@@ -54,34 +56,33 @@ const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) =>
     });
 
     const pigsColumns: Column<any>[] = [
-        { header: 'Codigo', accessor: 'code', },
+        { header: t('groups.column.code', { defaultValue: 'Codigo' }), accessor: 'code', },
         {
-            header: 'Sexo',
+            header: t('groups.column.sex', { defaultValue: 'Sexo' }),
             accessor: 'sex',
             render: (value: string) => (
                 <Badge color={value === 'male' ? "info" : "danger"}>
-                    {value === 'male' ? "♂ Macho" : "♀ Hembra"}
+                    {value === 'male' ? `♂ ${t('pigs.sex.male', { defaultValue: 'Macho' })}` : `♀ ${t('pigs.sex.female', { defaultValue: 'Hembra' })}`}
                 </Badge>
             ),
         },
-        { header: 'Raza', accessor: 'breed', type: 'text', isFilterable: true },
-        { header: 'Peso actual', accessor: 'weight', type: 'number', isFilterable: true },
-        { header: 'Etapa actual', accessor: 'currentStage', type: 'text', isFilterable: true },
-        { header: 'Fecha de N.', accessor: 'birthdate', type: 'date' },
-    ]
+        { header: t('groups.column.breed', { defaultValue: 'Raza' }), accessor: 'breed', type: 'text', isFilterable: true },
+        { header: t('groups.column.weight', { defaultValue: 'Peso actual' }), accessor: 'weight', type: 'number', isFilterable: true },
+        { header: t('groups.metric.currentStage', { defaultValue: 'Etapa actual' }), accessor: 'currentStage', type: 'text', isFilterable: true },
+        { header: t('groups.column.birthDate', { defaultValue: 'Fecha de N.' }), accessor: 'birthdate', type: 'date' },
+    ];
 
     const insertAttributes: Attribute[] = [
-        { key: 'date', label: 'Fecha del ingreso', type: 'date' },
-        { key: 'maleCount', label: 'Machos', type: 'text' },
-        { key: 'femaleCount', label: 'Hembras', type: 'text' },
+        { key: 'date', label: t('groups.form.insert.dateLabel', { defaultValue: 'Fecha del ingreso' }), type: 'date' },
+        { key: 'maleCount', label: t('groups.kpi.males', { defaultValue: 'Machos' }), type: 'text' },
+        { key: 'femaleCount', label: t('groups.kpi.females', { defaultValue: 'Hembras' }), type: 'text' },
         {
             key: 'responsible',
-            label: 'Responsable',
+            label: t('common.field.responsible', { defaultValue: 'Responsable' }),
             type: 'text',
             render: (_, obj) => <span>{userLogged.name} {userLogged.lastname}</span>
         },
-
-    ]
+    ];
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -129,7 +130,7 @@ const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) =>
             }
         } catch (error) {
             console.error("Error fetching data", { error });
-            setAlertConfig({ visible: true, color: "danger", message: "Ha ocurrido un error al obtener los datos, inténtelo más tarde", });
+            setAlertConfig({ visible: true, color: "danger", message: t('groups.form.insert.loadError', { defaultValue: 'Ha ocurrido un error al obtener los datos, inténtelo más tarde' }) });
         } finally {
             setLoading(false);
         }
@@ -161,13 +162,13 @@ const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) =>
     const checkInsertData = () => {
         if (insertMode === 'tracked') {
             if (trackedPigsInsert.pigsSelected.length === 0) {
-                setAlertConfig({ visible: true, message: 'Por favor, ingrese todos los campos o seleccione al menos 1 cerdo', color: 'danger' })
+                setAlertConfig({ visible: true, message: t('groups.form.insert.validationSelect', { defaultValue: 'Por favor, ingrese todos los campos o seleccione al menos 1 cerdo' }), color: 'danger' })
             } else {
                 toggleArrowTab(activeStep + 1)
             }
         } else {
             if ((untrackedPigsInsert.femaleCount === 0 && untrackedPigsInsert.maleCount === 0)) {
-                setAlertConfig({ visible: true, message: 'Por favor, ingrese todos los campos o retire al menos un cerdo', color: 'danger' });
+                setAlertConfig({ visible: true, message: t('groups.form.insert.validationCount', { defaultValue: 'Por favor, ingrese todos los campos o retire al menos un cerdo' }), color: 'danger' });
             } else {
                 toggleArrowTab(activeStep + 1);
             }
@@ -207,7 +208,7 @@ const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) =>
                             aria-controls="step-pigselect-tab"
                             disabled
                         >
-                            Selección de cerdos
+                            {t('groups.form.insert.step.pigSelect', { defaultValue: 'Selección de cerdos' })}
                         </NavLink>
                     </NavItem>
 
@@ -224,7 +225,7 @@ const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) =>
                             aria-controls="step-summary-tab"
                             disabled
                         >
-                            Resumen
+                            {t('groups.form.step3', { defaultValue: 'Resumen' })}
                         </NavLink>
                     </NavItem>
                 </Nav>
@@ -234,7 +235,7 @@ const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) =>
                 <TabPane id="step-pigselect-tab" tabId={1}>
                     {groupData.pigsInGroup.length === 0 && groupData.maleCount === 0 && groupData.femaleCount === 0 && insertMode === null ? (
                         <div className="text-center py-5">
-                            <h5 className="mb-4 text-muted">El grupo no tiene cerdos registrados. ¿Cómo deseas ingresarlos?</h5>
+                            <h5 className="mb-4 text-muted">{t('groups.form.insert.noTracked', { defaultValue: 'El grupo no tiene cerdos registrados. ¿Cómo deseas ingresarlos?' })}</h5>
                             <div className="d-flex justify-content-center gap-4">
                                 <Button
                                     color="primary"
@@ -243,7 +244,7 @@ const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) =>
                                     onClick={() => setInsertMode("tracked")}
                                 >
                                     <FaListUl size={32} className="mb-2" />
-                                    <span>Ingreso con selección</span>
+                                    <span>{t('groups.form.insert.insertWithSelection', { defaultValue: 'Ingreso con selección' })}</span>
                                 </Button>
 
                                 <Button
@@ -253,7 +254,7 @@ const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) =>
                                     onClick={() => setInsertMode("untracked")}
                                 >
                                     <FaKeyboard size={32} className="mb-2" />
-                                    <span>Ingreso manual</span>
+                                    <span>{t('groups.form.insert.insertManual', { defaultValue: 'Ingreso manual' })}</span>
                                 </Button>
                             </div>
                         </div>
@@ -262,14 +263,14 @@ const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) =>
                             {insertMode === "tracked" ? (
                                 <>
                                     <div className="d-flex gap-2">
-                                        <KPI title={"Cerdos machos"} value={groupData.maleCount} icon={FaMars} bgColor="#E0F2FF" iconColor="#007BFF" />
-                                        <KPI title={"Cerdos hembras"} value={groupData.femaleCount} icon={FaVenus} bgColor="#FFE0F0" iconColor="#FF007B" />
-                                        <KPI title={"Cerdos totales"} value={groupData.pigCount} icon={FaPiggyBank} bgColor="#F0F0F0" iconColor="#6C757D" />
+                                        <KPI title={t('groups.kpi.males', { defaultValue: 'Cerdos machos' })} value={groupData.maleCount} icon={FaMars} bgColor="#E0F2FF" iconColor="#007BFF" />
+                                        <KPI title={t('groups.kpi.females', { defaultValue: 'Cerdos hembras' })} value={groupData.femaleCount} icon={FaVenus} bgColor="#FFE0F0" iconColor="#FF007B" />
+                                        <KPI title={t('groups.kpi.totalPigs', { defaultValue: 'Cerdos totales' })} value={groupData.pigCount} icon={FaPiggyBank} bgColor="#F0F0F0" iconColor="#6C757D" />
                                     </div>
 
                                     <div className="d-flex gap-2">
                                         <div className="w-50">
-                                            <Label htmlFor="date" className="form-label">Fecha de ingreso</Label>
+                                            <Label htmlFor="date" className="form-label">{t('groups.form.insert.dateLabel', { defaultValue: 'Fecha de ingreso' })}</Label>
                                             <DatePicker
                                                 id="date"
                                                 className="form-control"
@@ -287,7 +288,7 @@ const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) =>
                                         </div>
 
                                         <div className="w-50">
-                                            <Label htmlFor="responsible" className="form-label">Responsable del ingreso</Label>
+                                            <Label htmlFor="responsible" className="form-label">{t('groups.form.insert.responsibleLabel', { defaultValue: 'Responsable del ingreso' })}</Label>
                                             <Input
                                                 type="text"
                                                 id="responsible"
@@ -300,17 +301,17 @@ const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) =>
 
                                     <div className="d-flex gap-2 mt-3">
                                         <div className="w-50">
-                                            <Label htmlFor="femaleCount" className="form-label">Hembras a ingresar</Label>
+                                            <Label htmlFor="femaleCount" className="form-label">{t('groups.form.insert.femalesInsert', { defaultValue: 'Hembras a ingresar' })}</Label>
                                             <Input type="number" id="femaleCount" name="femaleCount" value={trackedPigsInsert.femaleCount} disabled />
                                         </div>
                                         <div className="w-50">
-                                            <Label htmlFor="maleCount" className="form-label">Machos a insertar</Label>
+                                            <Label htmlFor="maleCount" className="form-label">{t('groups.form.insert.malesInsert', { defaultValue: 'Machos a insertar' })}</Label>
                                             <Input type="number" id="maleCount" name="maleCount" value={trackedPigsInsert.maleCount} disabled />
                                         </div>
                                     </div>
 
                                     <div className="mt-3">
-                                        <Label htmlFor="maleCount" className="form-label">Seleccion de cerdos</Label>
+                                        <Label htmlFor="maleCount" className="form-label">{t('groups.form.insert.pigSelection', { defaultValue: 'Seleccion de cerdos' })}</Label>
                                         <SelectableTable
                                             columns={pigsColumns}
                                             data={pigs}
@@ -324,7 +325,7 @@ const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) =>
 
                                     <div className="d-flex mt-3 justify-content-end">
                                         <Button type="button" onClick={() => checkInsertData()}>
-                                            Siguiente
+                                            {t('common.button.next', { defaultValue: 'Siguiente' })}
                                             <i className="ri-arrow-right-line ms-2" />
                                         </Button>
                                     </div>
@@ -332,14 +333,14 @@ const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) =>
                             ) : insertMode === "untracked" ? (
                                 <>
                                     <div className="d-flex gap-2">
-                                        <KPI title={"Cerdos machos"} value={groupData.maleCount} icon={FaMars} bgColor="#E0F2FF" iconColor="#007BFF" />
-                                        <KPI title={"Cerdos hembras"} value={groupData.femaleCount} icon={FaVenus} bgColor="#FFE0F0" iconColor="#FF007B" />
-                                        <KPI title={"Cerdos totales"} value={groupData.pigCount} icon={FaPiggyBank} bgColor="#F0F0F0" iconColor="#6C757D" />
+                                        <KPI title={t('groups.kpi.males', { defaultValue: 'Cerdos machos' })} value={groupData.maleCount} icon={FaMars} bgColor="#E0F2FF" iconColor="#007BFF" />
+                                        <KPI title={t('groups.kpi.females', { defaultValue: 'Cerdos hembras' })} value={groupData.femaleCount} icon={FaVenus} bgColor="#FFE0F0" iconColor="#FF007B" />
+                                        <KPI title={t('groups.kpi.totalPigs', { defaultValue: 'Cerdos totales' })} value={groupData.pigCount} icon={FaPiggyBank} bgColor="#F0F0F0" iconColor="#6C757D" />
                                     </div>
 
                                     <div className="d-flex gap-2 mb-3">
                                         <div className="w-50">
-                                            <Label htmlFor="femaleCount" className="form-label">Hembras a ingresar</Label>
+                                            <Label htmlFor="femaleCount" className="form-label">{t('groups.form.insert.femalesInsert', { defaultValue: 'Hembras a ingresar' })}</Label>
                                             <Input
                                                 type="number"
                                                 id="femaleCount"
@@ -361,7 +362,7 @@ const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) =>
                                         </div>
 
                                         <div className="w-50">
-                                            <Label htmlFor="maleCount" className="form-label">Machos a ingresar</Label>
+                                            <Label htmlFor="maleCount" className="form-label">{t('groups.form.insert.malesInsertAlt', { defaultValue: 'Machos a ingresar' })}</Label>
                                             <Input
                                                 type="number"
                                                 id="maleCount"
@@ -385,7 +386,7 @@ const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) =>
 
                                     <div className="d-flex gap-2">
                                         <div className="w-50">
-                                            <Label htmlFor="date" className="form-label">Fecha de ingreso</Label>
+                                            <Label htmlFor="date" className="form-label">{t('groups.form.insert.dateLabel', { defaultValue: 'Fecha de ingreso' })}</Label>
                                             <DatePicker
                                                 id="date"
                                                 className="form-control"
@@ -403,7 +404,7 @@ const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) =>
                                         </div>
 
                                         <div className="w-50">
-                                            <Label htmlFor="responsible" className="form-label">Responsable del retiro</Label>
+                                            <Label htmlFor="responsible" className="form-label">{t('groups.form.insert.responsibleWithdraw', { defaultValue: 'Responsable del retiro' })}</Label>
                                             <Input
                                                 type="text"
                                                 id="responsible"
@@ -416,7 +417,7 @@ const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) =>
 
                                     <div className="d-flex mt-3 justify-content-end">
                                         <Button type="button" onClick={() => checkInsertData()}>
-                                            Siguiente
+                                            {t('common.button.next', { defaultValue: 'Siguiente' })}
                                             <i className="ri-arrow-right-line ms-2" />
                                         </Button>
                                     </div>
@@ -430,14 +431,14 @@ const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) =>
                     {insertMode === 'tracked' ? (
                         <>
                             <div className="d-flex gap-2">
-                                <KPI title={"Machos para ingresar"} value={trackedPigsInsert.maleCount} icon={FaMars} bgColor="#E0F2FF" iconColor="#007BFF" />
-                                <KPI title={"Hembras para ingresar"} value={trackedPigsInsert.femaleCount} icon={FaVenus} bgColor="#FFE0F0" iconColor="#FF007B" />
-                                <KPI title={"Total para ingresar"} value={trackedPigsInsert.maleCount + trackedPigsInsert.femaleCount} icon={FaPiggyBank} bgColor="#F0F0F0" iconColor="#6C757D" />
+                                <KPI title={t('groups.form.insert.malesSummary', { defaultValue: 'Machos para ingresar' })} value={trackedPigsInsert.maleCount} icon={FaMars} bgColor="#E0F2FF" iconColor="#007BFF" />
+                                <KPI title={t('groups.form.insert.femalesSummary', { defaultValue: 'Hembras para ingresar' })} value={trackedPigsInsert.femaleCount} icon={FaVenus} bgColor="#FFE0F0" iconColor="#FF007B" />
+                                <KPI title={t('groups.form.insert.totalSummary', { defaultValue: 'Total para ingresar' })} value={trackedPigsInsert.maleCount + trackedPigsInsert.femaleCount} icon={FaPiggyBank} bgColor="#F0F0F0" iconColor="#6C757D" />
                             </div>
                             <div className="d-flex gap-3">
                                 <Card className="w-25">
                                     <CardHeader className="bg-light text-white fs-5">
-                                        <h5>Informacion del ingreso</h5>
+                                        <h5>{t('groups.form.insert.insertInfo', { defaultValue: 'Informacion del ingreso' })}</h5>
                                     </CardHeader>
                                     <CardBody>
                                         <ObjectDetails attributes={insertAttributes} object={trackedPigsInsert} />
@@ -446,7 +447,7 @@ const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) =>
 
                                 <Card className="w-75">
                                     <CardHeader className="bg-light text-white fs-5">
-                                        <h5>Cerdos seleccionados</h5>
+                                        <h5>{t('groups.form.insert.pigsSelected', { defaultValue: 'Cerdos seleccionados' })}</h5>
                                     </CardHeader>
                                     <CardBody className="p-0">
                                         <CustomTable columns={pigsColumns} data={trackedPigsInsert.pigsSelected} showSearchAndFilter={false} showPagination={false} />
@@ -457,14 +458,14 @@ const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) =>
                     ) : (
                         <>
                             <div className="d-flex gap-2">
-                                <KPI title={"Machos para ingresar"} value={untrackedPigsInsert.maleCount} icon={FaMars} bgColor="#E0F2FF" iconColor="#007BFF" />
-                                <KPI title={"Hembras para ingresar"} value={untrackedPigsInsert.femaleCount} icon={FaVenus} bgColor="#FFE0F0" iconColor="#FF007B" />
-                                <KPI title={"Total para ingresar"} value={untrackedPigsInsert.maleCount + untrackedPigsInsert.femaleCount} icon={FaPiggyBank} bgColor="#F0F0F0" iconColor="#6C757D" />
+                                <KPI title={t('groups.form.insert.malesSummary', { defaultValue: 'Machos para ingresar' })} value={untrackedPigsInsert.maleCount} icon={FaMars} bgColor="#E0F2FF" iconColor="#007BFF" />
+                                <KPI title={t('groups.form.insert.femalesSummary', { defaultValue: 'Hembras para ingresar' })} value={untrackedPigsInsert.femaleCount} icon={FaVenus} bgColor="#FFE0F0" iconColor="#FF007B" />
+                                <KPI title={t('groups.form.insert.totalSummary', { defaultValue: 'Total para ingresar' })} value={untrackedPigsInsert.maleCount + untrackedPigsInsert.femaleCount} icon={FaPiggyBank} bgColor="#F0F0F0" iconColor="#6C757D" />
                             </div>
                             <div>
                                 <Card className="">
                                     <CardHeader className="bg-light text-white fs-5">
-                                        <h5>Informacion del ingreso</h5>
+                                        <h5>{t('groups.form.insert.insertInfo', { defaultValue: 'Informacion del ingreso' })}</h5>
                                     </CardHeader>
                                     <CardBody>
                                         <ObjectDetails attributes={insertAttributes} object={untrackedPigsInsert} />
@@ -478,18 +479,18 @@ const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) =>
                     <div className="d-flex mt-3 justify-content-between">
                         <Button type="button" onClick={() => toggleArrowTab(activeStep - 1)}>
                             <i className="ri-arrow-left-line me-2" />
-                            Atras
+                            {t('common.button.back', { defaultValue: 'Atras' })}
                         </Button>
 
                         <Button className="btn-success d-flex align-items-center" type="button" onClick={() => handleInsertPigs()} disabled={isSubmitting}>
                             {isSubmitting ? (
                                 <>
                                     <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                    Guardando...
+                                    {t('groups.form.saving', { defaultValue: 'Guardando...' })}
                                 </>
                             ) : (
                                 <>
-                                    Confirmar
+                                    {t('groups.form.confirm', { defaultValue: 'Confirmar' })}
                                     <i className="ri-check-line ms-2" />
                                 </>
                             )}
@@ -498,8 +499,8 @@ const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) =>
                 </TabPane>
             </TabContent>
 
-            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={"Cerdos ingresados con exito"} />
-            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message={"Ha ocurrido un error al ingresar los cerdos, intentelo mas tarde"} />
+            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={t('groups.form.insert.success', { defaultValue: 'Cerdos ingresados con exito' })} />
+            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message={t('groups.form.insert.error', { defaultValue: 'Ha ocurrido un error al ingresar los cerdos, intentelo mas tarde' })} />
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} />
         </>
     )

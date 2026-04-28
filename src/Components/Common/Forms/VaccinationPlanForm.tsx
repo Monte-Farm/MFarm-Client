@@ -16,6 +16,7 @@ import ObjectDetails from "../Details/ObjectDetails";
 import CustomTable from "../Tables/CustomTable";
 import SuccessModal from "../Shared/SuccessModal";
 import { HttpStatusCode } from "axios";
+import { useTranslation } from "react-i18next";
 
 interface VaccinationPlanFormProps {
     onSave: () => void;
@@ -23,6 +24,7 @@ interface VaccinationPlanFormProps {
 }
 
 const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCancel }) => {
+    const { t } = useTranslation();
     const userLogged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -51,14 +53,14 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
 
     const columns: Column<any>[] = [
         {
-            header: 'Imagen', accessor: 'image', render: (_, row) => (
+            header: t('medication.vaccinePlan.form.column.image', { defaultValue: 'Imagen' }), accessor: 'image', render: (_, row) => (
                 <img src={row.image || noImageUrl} alt="Imagen del Producto" style={{ height: "70px" }} />
             ),
         },
-        { header: "Codigo", accessor: "code", type: "text", isFilterable: true },
-        { header: "Vacuna", accessor: "name", type: "text", isFilterable: true },
+        { header: t('medication.vaccinePlan.form.column.code', { defaultValue: 'Codigo' }), accessor: "code", type: "text", isFilterable: true },
+        { header: t('medication.vaccinePlan.form.column.vaccine', { defaultValue: 'Vacuna' }), accessor: "name", type: "text", isFilterable: true },
         {
-            header: "Dosis",
+            header: t('medication.vaccinePlan.form.column.dose', { defaultValue: 'Dosis' }),
             accessor: "dose",
             type: "number",
             render: (value, row, isSelected) => {
@@ -88,7 +90,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
             },
         },
         {
-            header: "Edad objetivo",
+            header: t('medication.vaccinePlan.form.column.ageObjective', { defaultValue: 'Edad objetivo' }),
             accessor: "age_objetive",
             type: "number",
             render: (value, row, isSelected) => {
@@ -111,13 +113,13 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
                             onClick={(e) => e.stopPropagation()}
                             aria-describedby="age-addon"
                         />
-                        <span className="input-group-text" id="age-addon">dias</span>
+                        <span className="input-group-text" id="age-addon">{t('medication.vaccinePlan.form.days', { defaultValue: 'dias' })}</span>
                     </div>
                 );
             },
         },
         {
-            header: "Vía de administración",
+            header: t('medication.vaccinePlan.form.column.adminRoute', { defaultValue: 'Vía de administración' }),
             accessor: "administration_route",
             type: "text",
             render: (value, row, isSelected) => {
@@ -137,17 +139,17 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
                         }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <option value="">Seleccione...</option>
-                        <option value="intramuscular">Intramuscular</option>
-                        <option value="subcutaneous">Subcutánea</option>
-                        <option value="intranasal">Intranasal</option>
-                        <option value="oral">Oral</option>
+                        <option value="">{t('medication.vaccinePlan.form.select', { defaultValue: 'Seleccione...' })}</option>
+                        <option value="intramuscular">{t('medication.vaccinePlan.form.adminRoute.intramuscular', { defaultValue: 'Intramuscular' })}</option>
+                        <option value="subcutaneous">{t('medication.vaccinePlan.form.adminRoute.subcutaneous', { defaultValue: 'Subcutánea' })}</option>
+                        <option value="intranasal">{t('medication.vaccinePlan.form.adminRoute.intranasal', { defaultValue: 'Intranasal' })}</option>
+                        <option value="oral">{t('medication.vaccinePlan.form.adminRoute.oral', { defaultValue: 'Oral' })}</option>
                     </Input>
                 );
             }
         },
         {
-            header: "Frecuencia",
+            header: t('medication.vaccinePlan.form.column.frequency', { defaultValue: 'Frecuencia' }),
             accessor: "frequency",
             type: "text",
             render: (value, row, isSelected) => {
@@ -167,14 +169,14 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
                         }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <option value="">Seleccione...</option>
-                        <option value="single">Única dosis</option>
-                        <option value="single_booster">Única dosis + refuerzo</option>
-                        <option value="3_weeks">Cada 3 semanas</option>
-                        <option value="4_weeks">Cada 4 semanas</option>
-                        <option value="6_months">Cada 6 meses</option>
-                        <option value="12_months">Cada 12 meses</option>
-                        <option value="protocol">Según protocolo</option>
+                        <option value="">{t('medication.vaccinePlan.form.select', { defaultValue: 'Seleccione...' })}</option>
+                        <option value="single">{t('medication.vaccinePlan.form.frequency.single', { defaultValue: 'Única dosis' })}</option>
+                        <option value="single_booster">{t('medication.vaccinePlan.form.frequency.single_booster', { defaultValue: 'Única dosis + refuerzo' })}</option>
+                        <option value="3_weeks">{t('medication.vaccinePlan.form.frequency.3_weeks', { defaultValue: 'Cada 3 semanas' })}</option>
+                        <option value="4_weeks">{t('medication.vaccinePlan.form.frequency.4_weeks', { defaultValue: 'Cada 4 semanas' })}</option>
+                        <option value="6_months">{t('medication.vaccinePlan.form.frequency.6_months', { defaultValue: 'Cada 6 meses' })}</option>
+                        <option value="12_months">{t('medication.vaccinePlan.form.frequency.12_months', { defaultValue: 'Cada 12 meses' })}</option>
+                        <option value="protocol">{t('medication.vaccinePlan.form.frequency.protocol', { defaultValue: 'Según protocolo' })}</option>
                     </Input>
                 );
             }
@@ -182,108 +184,63 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
     ];
 
     const selectedVaccinesColumns: Column<any>[] = [
-        // {
-        //     header: 'Imagen', accessor: 'image', render: (_, row) => (
-        //         <img src={row.image || noImageUrl} alt="Imagen del Producto" style={{ height: "70px" }} />
-        //     ),
-        // },
-        { header: "Codigo", accessor: "code", type: "text", isFilterable: true },
-        { header: "Producto", accessor: "name", type: "text", isFilterable: true },
+        { header: t('medication.vaccinePlan.form.column.code', { defaultValue: 'Codigo' }), accessor: "code", type: "text", isFilterable: true },
+        { header: t('medication.vaccinePlan.form.column.product', { defaultValue: 'Producto' }), accessor: "name", type: "text", isFilterable: true },
         {
-            header: "Cantidad",
+            header: t('medication.vaccinePlan.form.column.quantity', { defaultValue: 'Cantidad' }),
             accessor: "quantity",
             type: "text",
             isFilterable: true,
             render: (_, row) => <span>{row.dose} {row.unit_measurement}</span>
         },
         {
-            header: "Administracion",
+            header: t('medication.vaccinePlan.form.column.adminRouteDisplay', { defaultValue: 'Administracion' }),
             accessor: "administration_route",
             type: "text",
             isFilterable: true,
             render: (value: string) => {
                 let color = "secondary";
-                let label = value;
+                const label = t(`medication.vaccinePlan.form.adminRouteDisplay.${value}`, { defaultValue: value });
 
                 switch (value) {
-                    case "oral":
-                        color = "info";
-                        label = "Oral";
-                        break;
+                    case "oral": color = "info"; break;
                     case "intramuscular":
-                        color = "primary";
-                        label = "Intramuscular";
-                        break;
                     case "subcutaneous":
-                        color = "primary";
-                        label = "Subcutánea";
-                        break;
                     case "intravenous":
-                        color = "primary";
-                        label = "Intravenosa";
-                        break;
                     case "intranasal":
-                        color = "primary";
-                        label = "Intranasal";
-                        break;
                     case "topical":
-                        color = "primary";
-                        label = "Tópica";
-                        break;
                     case "protocol":
-                        color = "primary";
-                        label = "Protocolo";
-                        break;
+                        color = "primary"; break;
                 }
 
                 return <Badge color={color}>{label}</Badge>;
             },
         },
         {
-            header: "Edad objetivo",
+            header: t('medication.vaccinePlan.form.column.ageObjectiveDisplay', { defaultValue: 'Edad objetivo' }),
             accessor: "age_objective",
             type: "text",
             isFilterable: true,
-            render: (_, row) => <span>{row.age_objective} dias</span>
+            render: (_, row) => <span>{row.age_objective} {t('medication.vaccinePlan.form.days', { defaultValue: 'dias' })}</span>
         },
         {
-            header: "Frecuencia",
+            header: t('medication.vaccinePlan.form.column.frequency', { defaultValue: 'Frecuencia' }),
             accessor: "frequency",
             type: "text",
             isFilterable: true,
             render: (value: string) => {
                 let color = "secondary";
-                let label = value;
+                const label = t(`medication.vaccinePlan.form.frequencyDisplay.${value}`, { defaultValue: value });
 
                 switch (value) {
-                    case "single":
-                        color = "info";
-                        label = "Única dosis";
-                        break;
+                    case "single": color = "info"; break;
                     case "single_booster":
-                        color = "primary";
-                        label = "Única dosis + refuerzo";
-                        break;
                     case "3_weeks":
-                        color = "primary";
-                        label = "Cada 3 semanas";
-                        break;
                     case "4_weeks":
-                        color = "primary";
-                        label = "Cada 4 semanas";
-                        break;
                     case "6_weeks":
-                        color = "primary";
-                        label = "Cada 6 semanas";
-                        break;
                     case "12_weeks":
-                        color = "primary";
-                        label = "Cada 12 semanas";
-                        break;
                     case "rectal":
-                        color = "primary";
-                        label = "Rectal";
-                        break;
+                        color = "primary"; break;
                 }
 
                 return <Badge color={color}>{label}</Badge>;
@@ -292,33 +249,33 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
     ]
 
     const vaccinationPlanAttributes: Attribute[] = [
-        { key: 'code', label: 'Codigo', type: 'text' },
-        { key: 'name', label: 'Nombre', type: 'text' },
-        { key: 'creation_date', label: 'Fecha de creacion', type: 'date' },
+        { key: 'code', label: t('medication.vaccinePlan.form.planAttribute.code', { defaultValue: 'Codigo' }), type: 'text' },
+        { key: 'name', label: t('medication.vaccinePlan.form.planAttribute.name', { defaultValue: 'Nombre' }), type: 'text' },
+        { key: 'creation_date', label: t('medication.vaccinePlan.form.planAttribute.creationDate', { defaultValue: 'Fecha de creacion' }), type: 'date' },
         {
             key: 'stage',
-            label: 'Etapa',
+            label: t('medication.vaccinePlan.form.planAttribute.stage', { defaultValue: 'Etapa' }),
             type: 'text',
             render: (_, row) => {
                 let color = "secondary";
-                let text = "Desconocido";
+                let text = t('medication.vaccinePlan.form.planAttribute.stageUnknown', { defaultValue: 'Desconocido' });
 
                 switch (row.stage) {
                     case "piglet":
                         color = "info";
-                        text = "Lechon";
+                        text = t('medication.vaccinePlan.form.planAttribute.stage_piglet', { defaultValue: 'Lechon' });
                         break;
                     case "weaning":
                         color = "info";
-                        text = "Destete";
+                        text = t('medication.vaccinePlan.form.planAttribute.stage_weaning', { defaultValue: 'Destete' });
                         break;
                     case "fattening":
                         color = "primary";
-                        text = "Engorda";
+                        text = t('medication.vaccinePlan.form.planAttribute.stage_fattening', { defaultValue: 'Engorda' });
                         break;
                     case "breeder":
                         color = "primary";
-                        text = "Reproductor";
+                        text = t('medication.vaccinePlan.form.planAttribute.stage_breeder', { defaultValue: 'Reproductor' });
                         break;
                 }
 
@@ -327,7 +284,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
         },
         {
             key: 'creation_responsible',
-            label: 'Responsable de registo',
+            label: t('medication.vaccinePlan.form.planAttribute.responsible', { defaultValue: 'Responsable de registo' }),
             type: 'text',
             render: (_, obj) => (<span className="text-black">{userLogged.name} {userLogged.lastname}</span>)
         },
@@ -335,7 +292,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
     ]
 
     const validationSchema = Yup.object({
-        code: Yup.string().required('El código es obligatorio').test('unique_code', 'Este codigo ya existe, por favor ingrese otro', async (value) => {
+        code: Yup.string().required(t('medication.vaccinePlan.form.validation.codeRequired', { defaultValue: 'El código es obligatorio' })).test('unique_code', t('medication.vaccinePlan.form.validation.codeExists', { defaultValue: 'Este codigo ya existe, por favor ingrese otro' }), async (value) => {
             if (!value) return false;
             if (!configContext) return true;
             try {
@@ -346,16 +303,16 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
                 return false;
             }
         }),
-        name: Yup.string().required('El nombre es obligatorio'),
-        stage: Yup.string().required('El area de destino es obligatoria'),
+        name: Yup.string().required(t('medication.vaccinePlan.form.validation.nameRequired', { defaultValue: 'El nombre es obligatorio' })),
+        stage: Yup.string().required(t('medication.vaccinePlan.form.validation.stageRequired', { defaultValue: 'El area de destino es obligatoria' })),
     })
 
     const vaccineValidation = Yup.object({
         vaccine: Yup.string().required(),
-        dose: Yup.number().moreThan(0, "Dosis inválida").required("Dosis requerida"),
-        administration_route: Yup.string().required("Vía requerida").notOneOf([""], "Debe seleccionar una vía"),
-        age_objective: Yup.number().moreThan(0, "Edad invalida").required("Edad requerida"),
-        frequency: Yup.string().required("Frecuencia requerida").notOneOf([""], "Debe seleccionar una frecuencia"),
+        dose: Yup.number().moreThan(0, t('medication.vaccinePlan.form.validation.doseInvalid', { defaultValue: 'Dosis inválida' })).required(t('medication.vaccinePlan.form.validation.doseRequired', { defaultValue: 'Dosis requerida' })),
+        administration_route: Yup.string().required(t('medication.vaccinePlan.form.validation.routeRequired', { defaultValue: 'Vía requerida' })).notOneOf([""], t('medication.vaccinePlan.form.validation.routeSelect', { defaultValue: 'Debe seleccionar una vía' })),
+        age_objective: Yup.number().moreThan(0, t('medication.vaccinePlan.form.validation.ageInvalid', { defaultValue: 'Edad invalida' })).required(t('medication.vaccinePlan.form.validation.ageRequired', { defaultValue: 'Edad requerida' })),
+        frequency: Yup.string().required(t('medication.vaccinePlan.form.validation.frequencyRequired', { defaultValue: 'Frecuencia requerida' })).notOneOf([""], t('medication.vaccinePlan.form.validation.frequencySelect', { defaultValue: 'Debe seleccionar una frecuencia' })),
     });
 
     const formik = useFormik<VaccinationPlan>({
@@ -392,7 +349,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
                 }
             } catch (error) {
                 console.error('Error saving the information: ', { error })
-                setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al guardar los datos, intentelo mas tarde' })
+                setAlertConfig({ visible: true, color: 'danger', message: t('medication.vaccinePlan.form.error.save', { defaultValue: 'Ha ocurrido un error al guardar los datos, intentelo mas tarde' }) })
             }
         }
     })
@@ -412,7 +369,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
             setProducts(productsWithId)
         } catch (error) {
             console.error('Error fetching information: ', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('medication.vaccinePlan.form.error.load', { defaultValue: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' }) })
         } finally {
             setLoading(false)
         }
@@ -430,7 +387,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
             await validationSchema.validate(formik.values, { abortEarly: false });
             toggleArrowTab(activeStep + 1);
         } catch (error) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, llene todos los datos' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('medication.vaccinePlan.form.validation.fillAll', { defaultValue: 'Por favor, llene todos los datos' }) })
         }
     }
 
@@ -454,7 +411,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
         setVaccinesErrors(errors);
 
         if (Object.keys(errors).length > 0) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, llene todos los datos de las vacunas seleccionadas' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('medication.vaccinePlan.form.validation.fillVaccines', { defaultValue: 'Por favor, llene todos los datos de las vacunas seleccionadas' }) })
             return false;
         }
 
@@ -484,7 +441,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
                             aria-controls="step-medicationPackageData-tab"
                             disabled
                         >
-                            Información del paquete de medicación
+                            {t('medication.vaccinePlan.form.step.info', { defaultValue: 'Información del paquete de medicación' })}
                         </NavLink>
                     </NavItem>
 
@@ -501,7 +458,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
                             aria-controls="step-selecMedication-tab"
                             disabled
                         >
-                            Seleccion de medicacion
+                            {t('medication.vaccinePlan.form.step.vaccines', { defaultValue: 'Seleccion de medicacion' })}
                         </NavLink>
                     </NavItem>
 
@@ -518,7 +475,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
                             aria-controls="step-summary-tab"
                             disabled
                         >
-                            Seleccion de medicacion
+                            {t('medication.vaccinePlan.form.step.summary', { defaultValue: 'Resumen' })}
                         </NavLink>
                     </NavItem>
                 </Nav>
@@ -528,7 +485,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
                 <TabPane id="step-medicationPackageData-tab" tabId={1}>
                     <div className="d-flex gap-3">
                         <div className="mt-4 w-50">
-                            <Label htmlFor="code" className="form-label">Código</Label>
+                            <Label htmlFor="code" className="form-label">{t('medication.vaccinePlan.form.field.code', { defaultValue: 'Código' })}</Label>
                             <Input
                                 type="text"
                                 id="code"
@@ -545,7 +502,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
                         </div>
 
                         <div className="mt-4 w-50">
-                            <Label htmlFor="name" className="form-label">Nombre del plan de vacunacion</Label>
+                            <Label htmlFor="name" className="form-label">{t('medication.vaccinePlan.form.field.name', { defaultValue: 'Nombre del plan de vacunacion' })}</Label>
                             <Input
                                 type="text"
                                 id="name"
@@ -554,7 +511,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
                                 invalid={formik.touched.name && !!formik.errors.name}
-                                placeholder="Ej: Vacunacion inicial"
+                                placeholder={t('medication.vaccinePlan.form.field.namePlaceholder', { defaultValue: 'Ej: Vacunacion inicial' })}
                             />
                             {formik.touched.name && formik.errors.name && (
                                 <FormFeedback>{formik.errors.name}</FormFeedback>
@@ -563,7 +520,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
                     </div>
 
                     <div className="mt-4">
-                        <Label htmlFor="stage" className="form-label">Etapa</Label>
+                        <Label htmlFor="stage" className="form-label">{t('medication.vaccinePlan.form.field.stage', { defaultValue: 'Etapa' })}</Label>
                         <Input
                             type="select"
                             id="stage"
@@ -573,12 +530,12 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
                             onBlur={formik.handleBlur}
                             invalid={formik.touched.stage && !!formik.errors.stage}
                         >
-                            <option value="">Seleccione una etapa</option>
-                            <option value="general">General</option>
-                            <option value="piglet">Lechón</option>
-                            <option value="weaning">Destete</option>
-                            <option value="fattening">Engorda</option>
-                            <option value="breeder">Reproductor</option>
+                            <option value="">{t('medication.vaccinePlan.form.field.selectStage', { defaultValue: 'Seleccione una etapa' })}</option>
+                            <option value="general">{t('medication.vaccinePlan.form.stage.general', { defaultValue: 'General' })}</option>
+                            <option value="piglet">{t('medication.vaccinePlan.form.stage.piglet', { defaultValue: 'Lechón' })}</option>
+                            <option value="weaning">{t('medication.vaccinePlan.form.stage.weaning', { defaultValue: 'Destete' })}</option>
+                            <option value="fattening">{t('medication.vaccinePlan.form.stage.fattening', { defaultValue: 'Engorda' })}</option>
+                            <option value="breeder">{t('medication.vaccinePlan.form.stage.breeder', { defaultValue: 'Reproductor' })}</option>
                         </Input>
                         {formik.touched.stage && formik.errors.stage && (
                             <FormFeedback>{formik.errors.stage}</FormFeedback>
@@ -587,7 +544,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
 
                     <div className="d-flex gap-3">
                         <div className="mt-4 w-50">
-                            <Label htmlFor="creation_date" className="form-label">Fecha de registro *</Label>
+                            <Label htmlFor="creation_date" className="form-label">{t('medication.vaccinePlan.form.field.creationDate', { defaultValue: 'Fecha de registro *' })}</Label>
                             <DatePicker
                                 id="creation_date"
                                 className={`form-control ${formik.touched.creation_date && formik.errors.creation_date ? 'is-invalid' : ''}`}
@@ -603,7 +560,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
                         </div>
 
                         <div className="mt-4 w-50">
-                            <Label htmlFor="user" className="form-label">Responsable del registro *</Label>
+                            <Label htmlFor="user" className="form-label">{t('medication.vaccinePlan.form.field.responsible', { defaultValue: 'Responsable del registro *' })}</Label>
                             <Input
                                 type="text"
                                 id="user"
@@ -615,7 +572,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
                     </div>
 
                     <div className="mt-4">
-                        <Label htmlFor="description" className="form-label">Descripción</Label>
+                        <Label htmlFor="description" className="form-label">{t('medication.vaccinePlan.form.field.description', { defaultValue: 'Descripción' })}</Label>
                         <Input
                             type="text"
                             id="description"
@@ -624,7 +581,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
                             onChange={formik.handleChange}
                             onBlur={formik.handleBlur}
                             invalid={formik.touched.description && !!formik.errors.description}
-                            placeholder="Observaciones sobre el grupo"
+                            placeholder={t('medication.vaccinePlan.form.field.descriptionPlaceholder', { defaultValue: 'Observaciones sobre el grupo' })}
                         />
                         {formik.touched.description && formik.errors.description && (
                             <FormFeedback>{formik.errors.description}</FormFeedback>
@@ -633,7 +590,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
 
                     <div className="d-flex justify-content-between mt-4">
                         <Button className="btn btn-primary ms-auto" onClick={() => checkVaccinationData()}>
-                            Siguiente
+                            {t('common.button.next', { defaultValue: 'Siguiente' })}
                             <i className="ri-arrow-right-line ms-1" />
                         </Button>
                     </div>
@@ -651,7 +608,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
                     <div className="d-flex justify-content-between mt-4">
                         <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                             <i className="ri-arrow-left-line me-2" />
-                            Atrás
+                            {t('common.button.back', { defaultValue: 'Atrás' })}
                         </Button>
 
 
@@ -663,7 +620,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
                                 toggleArrowTab(3);
                             }}
                         >
-                            Siguiente
+                            {t('common.button.next', { defaultValue: 'Siguiente' })}
                             <i className="ri-arrow-right-line ms-1" />
                         </Button>
                     </div>
@@ -673,7 +630,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
                     <div className="d-flex gap-3">
                         <Card className="">
                             <CardHeader>
-                                <h5>Informacion del paquete de medicacion</h5>
+                                <h5>{t('medication.vaccinePlan.form.summary.planInfo', { defaultValue: 'Informacion del paquete de medicacion' })}</h5>
                             </CardHeader>
                             <CardBody>
                                 <ObjectDetails attributes={vaccinationPlanAttributes} object={formik.values} />
@@ -682,7 +639,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
 
                         <Card className="w-100">
                             <CardHeader>
-                                <h5>Medicamentos seleccionados</h5>
+                                <h5>{t('medication.vaccinePlan.form.summary.vaccinesSelected', { defaultValue: 'Medicamentos seleccionados' })}</h5>
                             </CardHeader>
                             <CardBody className="p-0">
                                 <CustomTable
@@ -700,7 +657,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
                     <div className="mt-4 d-flex">
                         <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                             <i className="ri-arrow-left-line me-2" />
-                            Atrás
+                            {t('common.button.back', { defaultValue: 'Atrás' })}
                         </Button>
 
                         <Button className="ms-auto btn-success" onClick={() => formik.handleSubmit()} disabled={formik.isSubmitting}>
@@ -711,7 +668,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
                             ) : (
                                 <div>
                                     <i className="ri-check-line me-2" />
-                                    Registrar
+                                    {t('medication.vaccinePlan.form.register', { defaultValue: 'Registrar' })}
                                 </div>
                             )}
 
@@ -720,8 +677,8 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
                 </TabPane>
             </TabContent>
 
-            <SuccessModal isOpen={modals.success} onClose={onSave} message={"Paquete de medicamentos registrado con exito"} />
-            <SuccessModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={"Ha ocurrido un error al registrar el paquete de medicamentos, intentelo mas tarde"} />
+            <SuccessModal isOpen={modals.success} onClose={onSave} message={t('medication.vaccinePlan.form.success', { defaultValue: 'Paquete de medicamentos registrado con exito' })} />
+            <SuccessModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={t('medication.vaccinePlan.form.errorSuccess', { defaultValue: 'Ha ocurrido un error al registrar el paquete de medicamentos, intentelo mas tarde' })} />
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} autoClose={3000} />
         </form>
     )

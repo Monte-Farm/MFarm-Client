@@ -1,6 +1,7 @@
 import React from "react";
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { Alert, Button, Card, CardBody, CardHeader, Col, Row, Table } from "reactstrap";
 import { useReportScope } from "hooks/useReportScope";
@@ -50,6 +51,7 @@ const formatCurrency = (value: number): string => {
 };
 
 const OperationsClosingReport = () => {
+    const { t } = useTranslation();
     document.title = "Estado de Resultados | Reportes";
 
     const configContext = useContext(ConfigContext);
@@ -93,7 +95,7 @@ const OperationsClosingReport = () => {
             setSalesSummary(data.salesSummary || []);
             setMonthlySummary(data.monthlySummary || []);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar los datos del reporte." });
+            setAlertConfig({ visible: true, color: "danger", message: t("reports.error.loadData") });
         } finally {
             setLoading(false);
         }
@@ -193,7 +195,7 @@ const OperationsClosingReport = () => {
             const filePrefix = isGlobal ? "Cierre_Operacion_Global" : "Cierre_Operacion";
             saveAs(blob, `${filePrefix}_${startDate}_${endDate}.xlsx`);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al generar el archivo Excel." });
+            setAlertConfig({ visible: true, color: "danger", message: t("reports.error.generateExcel") });
         } finally {
             setExcelLoading(false);
         }
@@ -203,19 +205,19 @@ const OperationsClosingReport = () => {
 
     return (
         <ReportPageLayout
-            title="Estado de Resultados"
-            pageTitle="Reportes Financieros"
+            title={t("reports.operationsClosing.title")}
+            pageTitle={t("reports.pageTitle")}
             onGeneratePdf={handleGeneratePdf}
-            pdfTitle="Estado de Resultados"
+            pdfTitle={t("reports.operationsClosing.title")}
             startDate={startDate}
             endDate={endDate}
             onDateChange={(s, e) => { setStartDate(s); setEndDate(e); }}
             headerActions={
                 <Button color="success" onClick={handleExportExcel} disabled={excelLoading}>
                     {excelLoading ? (
-                        <><i className="ri-loader-4-line ri-spin me-1"></i> Generando...</>
+                        <><i className="ri-loader-4-line ri-spin me-1"></i> {t("reports.excel.generating")}</>
                     ) : (
-                        <><i className="ri-file-excel-2-line me-1"></i> Exportar Excel</>
+                        <><i className="ri-file-excel-2-line me-1"></i> {t("reports.excel.export")}</>
                     )}
                 </Button>
             }
@@ -227,20 +229,20 @@ const OperationsClosingReport = () => {
                         <i className={`${closingInfo.status === "closed" ? "ri-lock-line" : "ri-lock-unlock-line"} me-2`} />
                         {closingInfo.status === "closed" ? (
                             <>
-                                Este mes ya fue <strong>cerrado</strong>
-                                {closingInfo.closedBy && <> por {closingInfo.closedBy.name} {closingInfo.closedBy.lastname}</>}
-                                {closingInfo.closedAt && <> el {new Date(closingInfo.closedAt).toLocaleDateString("es-MX")}</>}.
+                                {t("reports.operationsClosing.banner.closed")} <strong>{t("reports.operationsClosing.banner.closedWord")}</strong>
+                                {closingInfo.closedBy && <> {t("reports.operationsClosing.banner.closedByPrefix")} {closingInfo.closedBy.name} {closingInfo.closedBy.lastname}</>}
+                                {closingInfo.closedAt && <> {t("reports.operationsClosing.banner.closedAtPrefix")} {new Date(closingInfo.closedAt).toLocaleDateString("es-MX")}</>}.
                             </>
                         ) : (
                             <>
-                                Este mes fue <strong>reabierto</strong>
-                                {closingInfo.reopenedBy && <> por {closingInfo.reopenedBy.name} {closingInfo.reopenedBy.lastname}</>}
-                                {closingInfo.reopenReason && <> — Razón: {closingInfo.reopenReason}</>}
+                                {t("reports.operationsClosing.banner.reopened")} <strong>{t("reports.operationsClosing.banner.reopenedWord")}</strong>
+                                {closingInfo.reopenedBy && <> {t("reports.operationsClosing.banner.closedByPrefix")} {closingInfo.reopenedBy.name} {closingInfo.reopenedBy.lastname}</>}
+                                {closingInfo.reopenReason && <> — {t("reports.operationsClosing.banner.reasonPrefix")} {closingInfo.reopenReason}</>}
                             </>
                         )}
                     </div>
                     <Link to={`/finance/period-closing/${closingInfo._id}`} className="btn btn-sm btn-light">
-                        Ver cierre oficial
+                        {t("reports.operationsClosing.banner.viewClosure")}
                     </Link>
                 </Alert>
             )}
@@ -249,7 +251,7 @@ const OperationsClosingReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Ingresos"
+                        title={t("reports.operationsClosing.kpi.income")}
                         value={kpis.totalIncome}
                         icon={<i className="ri-arrow-up-circle-line fs-4 text-success"></i>}
                         animateValue
@@ -260,7 +262,7 @@ const OperationsClosingReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Costos"
+                        title={t("reports.operationsClosing.kpi.costs")}
                         value={kpis.totalCosts}
                         icon={<i className="ri-arrow-down-circle-line fs-4 text-danger"></i>}
                         animateValue
@@ -271,7 +273,7 @@ const OperationsClosingReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Resultado Operativo"
+                        title={t("reports.operationsClosing.kpi.operatingResult")}
                         value={kpis.operatingResult}
                         icon={<i className={`ri-money-dollar-box-line fs-4 ${kpis.operatingResult >= 0 ? "text-success" : "text-danger"}`}></i>}
                         animateValue
@@ -282,7 +284,7 @@ const OperationsClosingReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Margen Operativo"
+                        title={t("reports.operationsClosing.kpi.operatingMargin")}
                         value={kpis.operatingMargin}
                         icon={<i className="ri-percent-line fs-4 text-info"></i>}
                         animateValue
@@ -293,7 +295,7 @@ const OperationsClosingReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Cerdos Vendidos"
+                        title={t("reports.operationsClosing.kpi.pigsSold")}
                         value={kpis.totalPigsSold}
                         icon={<i className="bx bxs-dog fs-4 text-primary"></i>}
                         animateValue
@@ -301,7 +303,7 @@ const OperationsClosingReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Kilos Vendidos"
+                        title={t("reports.operationsClosing.kpi.kgSold")}
                         value={kpis.totalKgSold}
                         icon={<i className="ri-scales-3-line fs-4 text-warning"></i>}
                         animateValue
@@ -316,24 +318,24 @@ const OperationsClosingReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={7}>
                     <BasicBarChart
-                        title="Ingresos vs Costos por Mes"
+                        title={t("reports.operationsClosing.chart.incomeVsCosts")}
                         data={barData}
                         indexBy="month"
                         keys={["Ingresos", "Costos"]}
-                        xLegend="Mes"
-                        yLegend="Monto ($)"
+                        xLegend={t("reports.axis.month")}
+                        yLegend={t("reports.axis.amountUsd")}
                         height={300}
                         colors={["#10b981", "#ef4444"]}
                     />
                 </Col>
                 <Col xl={5}>
                     <BasicBarChart
-                        title="Costos por Categoria"
+                        title={t("reports.operationsClosing.chart.costsByCategory")}
                         data={costBarData}
                         indexBy="categoria"
                         keys={["Monto"]}
-                        xLegend="Categoria"
-                        yLegend="Monto ($)"
+                        xLegend={t("reports.col.category")}
+                        yLegend={t("reports.axis.amountUsd")}
                         height={300}
                         colors={["#3b82f6"]}
                     />
@@ -345,18 +347,18 @@ const OperationsClosingReport = () => {
                 <CardHeader>
                     <h5 className="mb-0">
                         <i className="ri-money-dollar-circle-line me-2 text-success"></i>
-                        Ingresos por Ventas
+                        {t("reports.operationsClosing.salesSummary")}
                     </h5>
                 </CardHeader>
                 <CardBody>
                     <Table className="table-hover align-middle mb-0">
                         <thead className="table-light">
                             <tr>
-                                <th>Tipo</th>
-                                <th className="text-end">Cerdos</th>
-                                <th className="text-end">Peso Total (kg)</th>
-                                <th className="text-end">Precio Prom. / kg</th>
-                                <th className="text-end" style={{ backgroundColor: "#e8f5e9" }}>Monto Total</th>
+                                <th>{t("reports.col.type")}</th>
+                                <th className="text-end">{t("reports.col.pigs")}</th>
+                                <th className="text-end">{t("reports.operationsClosing.table.totalWeight")}</th>
+                                <th className="text-end">{t("reports.operationsClosing.table.avgPricePerKg")}</th>
+                                <th className="text-end" style={{ backgroundColor: "#e8f5e9" }}>{t("reports.operationsClosing.table.totalAmount")}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -372,7 +374,7 @@ const OperationsClosingReport = () => {
                                 </tr>
                             ))}
                             <tr className="table-success fw-bold">
-                                <td>TOTAL INGRESOS</td>
+                                <td>{t("reports.operationsClosing.table.totalIncome")}</td>
                                 <td className="text-end">{kpis.totalPigsSold}</td>
                                 <td className="text-end">{kpis.totalKgSold?.toFixed(1)}</td>
                                 <td></td>
@@ -388,15 +390,15 @@ const OperationsClosingReport = () => {
                 <CardHeader>
                     <h5 className="mb-0">
                         <i className="ri-file-list-3-line me-2 text-danger"></i>
-                        Desglose de Costos
+                        {t("reports.operationsClosing.costBreakdown")}
                     </h5>
                 </CardHeader>
                 <CardBody>
                     <Table className="table-hover align-middle mb-0">
                         <thead className="table-light">
                             <tr>
-                                <th>Descripcion</th>
-                                <th className="text-end" style={{ width: "180px", backgroundColor: "#ffebee" }}>Monto</th>
+                                <th>{t("reports.col.description")}</th>
+                                <th className="text-end" style={{ width: "180px", backgroundColor: "#ffebee" }}>{t("reports.col.amount")}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -424,7 +426,7 @@ const OperationsClosingReport = () => {
                                 );
                             })}
                             <tr className="table-danger fw-bold">
-                                <td>TOTAL COSTOS</td>
+                                <td>{t("reports.operationsClosing.table.totalCosts")}</td>
                                 <td className="text-end">{formatCurrency(totalCostsFromItems)}</td>
                             </tr>
                         </tbody>
@@ -437,28 +439,28 @@ const OperationsClosingReport = () => {
                 <CardHeader>
                     <h5 className="mb-0">
                         <i className="ri-bar-chart-box-line me-2 text-primary"></i>
-                        Resultado de Operacion
+                        {t("reports.operationsClosing.operatingResult")}
                     </h5>
                 </CardHeader>
                 <CardBody>
                     <Table className="align-middle mb-0" style={{ maxWidth: "500px" }}>
                         <tbody>
                             <tr>
-                                <td className="fw-semibold">Total Ingresos</td>
+                                <td className="fw-semibold">{t("reports.operationsClosing.result.totalIncome")}</td>
                                 <td className="text-end text-success fw-bold fs-5">{formatCurrency(kpis.totalIncome)}</td>
                             </tr>
                             <tr>
-                                <td className="fw-semibold">Total Costos</td>
+                                <td className="fw-semibold">{t("reports.operationsClosing.result.totalCosts")}</td>
                                 <td className="text-end text-danger fw-bold fs-5">({formatCurrency(kpis.totalCosts)})</td>
                             </tr>
                             <tr className={kpis.operatingResult >= 0 ? "table-success" : "table-danger"}>
-                                <td className="fw-bold fs-5">Resultado Operativo</td>
+                                <td className="fw-bold fs-5">{t("reports.operationsClosing.result.operating")}</td>
                                 <td className={`text-end fw-bold fs-5 ${kpis.operatingResult >= 0 ? "text-success" : "text-danger"}`}>
                                     {formatCurrency(kpis.operatingResult)}
                                 </td>
                             </tr>
                             <tr>
-                                <td className="fw-semibold">Margen Operativo</td>
+                                <td className="fw-semibold">{t("reports.operationsClosing.result.margin")}</td>
                                 <td className={`text-end fw-bold ${kpis.operatingMargin >= 0 ? "text-success" : "text-danger"}`}>
                                     {kpis.operatingMargin?.toFixed(1)}%
                                 </td>

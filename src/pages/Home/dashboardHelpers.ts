@@ -8,11 +8,11 @@ export const getDefaultDateRange = () => {
     };
 };
 
-export const getGreeting = (): string => {
+export const getGreeting = (t: (key: string) => string): string => {
     const hour = new Date().getHours();
-    if (hour < 12) return "Buenos dias";
-    if (hour < 19) return "Buenas tardes";
-    return "Buenas noches";
+    if (hour < 12) return t("dashboard.greeting.morning");
+    if (hour < 19) return t("dashboard.greeting.afternoon");
+    return t("dashboard.greeting.evening");
 };
 
 export const resolveDashboardRole = (roles: string[] | undefined): string => {

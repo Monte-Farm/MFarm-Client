@@ -1,4 +1,5 @@
 import { useContext, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Badge, Button, Card, CardBody, CardHeader, Col, Container, Row } from "reactstrap";
@@ -16,37 +17,15 @@ import { formatCurrency } from "utils/closingFormatters";
 import ClosePeriodModal from "./ClosePeriodModal";
 import CloseYearModal from "./CloseYearModal";
 
-const MONTHS_ES = [
-    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
-];
-
-const formatPeriod = (row: PeriodClosingListItem) => {
-    if (row.periodType === "annual") return `${row.year}`;
-    return row.month ? `${MONTHS_ES[row.month - 1]} ${row.year}` : `${row.year}`;
-};
-
 const formatDate = (iso: string): string => {
     if (!iso) return "-";
     const d = new Date(iso);
     return d.toLocaleDateString("es-MX", { day: "2-digit", month: "2-digit", year: "numeric" });
 };
 
-const statusBadge = (status: PeriodClosingStatus) => {
-    switch (status) {
-        case "closed":
-            return <Badge color="success"><i className="ri-lock-line me-1" />Cerrado</Badge>;
-        case "reopened":
-            return <Badge color="warning"><i className="ri-lock-unlock-line me-1" />Reabierto</Badge>;
-        case "archived":
-            return <Badge color="secondary"><i className="ri-archive-line me-1" />Archivado</Badge>;
-        default:
-            return <Badge color="light">{status}</Badge>;
-    }
-};
-
 const PeriodClosingList = () => {
-    document.title = "Cierre de Periodos | MFarm";
+    const { t } = useTranslation();
+    document.title = t("finance.periodClosing.list.pageTitle");
 
     const dispatch = useDispatch<any>();
     const navigate = useNavigate();
@@ -62,6 +41,26 @@ const PeriodClosingList = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
 
     const farmId = userLogged?.farm_assigned;
+
+    const MONTHS = t("finance.periodClosing.months", { returnObjects: true }) as string[];
+
+    const formatPeriod = (row: PeriodClosingListItem) => {
+        if (row.periodType === "annual") return `${row.year}`;
+        return row.month ? `${MONTHS[row.month - 1]} ${row.year}` : `${row.year}`;
+    };
+
+    const statusBadge = (status: PeriodClosingStatus) => {
+        switch (status) {
+            case "closed":
+                return <Badge color="success"><i className="ri-lock-line me-1" />{t("finance.periodClosing.status.closed")}</Badge>;
+            case "reopened":
+                return <Badge color="warning"><i className="ri-lock-unlock-line me-1" />{t("finance.periodClosing.status.reopened")}</Badge>;
+            case "archived":
+                return <Badge color="secondary"><i className="ri-archive-line me-1" />{t("finance.periodClosing.status.archived")}</Badge>;
+            default:
+                return <Badge color="light">{status}</Badge>;
+        }
+    };
 
     const loadList = () => {
         if (!farmId) return;
@@ -81,36 +80,38 @@ const PeriodClosingList = () => {
 
     const columns: Column<PeriodClosingListItem>[] = useMemo(() => [
         {
-            header: "Periodo",
+            header: t("finance.periodClosing.list.column.period"),
             accessor: "year",
             render: (_: any, row: PeriodClosingListItem) => (
                 <span className="fw-semibold">{formatPeriod(row)}</span>
             ),
         },
         {
-            header: "Tipo",
+            header: t("finance.periodClosing.list.column.type"),
             accessor: "periodType",
-            render: (value: string) => value === "annual" ? "Anual" : "Mensual",
+            render: (value: string) => value === "annual"
+                ? t("finance.periodClosing.list.periodType.annual")
+                : t("finance.periodClosing.list.periodType.monthly"),
         },
         {
-            header: "Estado",
+            header: t("finance.periodClosing.list.column.status"),
             accessor: "status",
             render: (value: PeriodClosingStatus) => statusBadge(value),
         },
         {
-            header: "Ingresos",
+            header: t("finance.periodClosing.list.column.income"),
             accessor: "kpis",
             bgColor: "#E8F5E9",
             render: (_: any, row: PeriodClosingListItem) => formatCurrency(row.kpis?.totalIncome),
         },
         {
-            header: "Costos",
+            header: t("finance.periodClosing.list.column.costs"),
             accessor: "kpis",
             bgColor: "#FFEBEE",
             render: (_: any, row: PeriodClosingListItem) => formatCurrency(row.kpis?.totalCosts),
         },
         {
-            header: "Resultado",
+            header: t("finance.periodClosing.list.column.result"),
             accessor: "kpis",
             bgColor: "#FFF8E1",
             render: (_: any, row: PeriodClosingListItem) => {
@@ -119,18 +120,18 @@ const PeriodClosingList = () => {
             },
         },
         {
-            header: "Cerrado por",
+            header: t("finance.periodClosing.list.column.closedBy"),
             accessor: "closedBy",
             render: (_: any, row: PeriodClosingListItem) =>
                 row.closedBy ? `${row.closedBy.name} ${row.closedBy.lastname}` : "-",
         },
         {
-            header: "Fecha de cierre",
+            header: t("finance.periodClosing.list.column.closedAt"),
             accessor: "closedAt",
             render: (value: string) => formatDate(value),
         },
         {
-            header: "Acciones",
+            header: t("finance.periodClosing.list.column.actions"),
             accessor: "_id",
             render: (_: any, row: PeriodClosingListItem) => (
                 <div className="d-flex gap-1">
@@ -143,7 +144,8 @@ const PeriodClosingList = () => {
                 </div>
             ),
         },
-    ], [navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    ], [navigate, t]);
 
     const currentYear = new Date().getFullYear();
     const yearOptions: number[] = [];
@@ -151,13 +153,13 @@ const PeriodClosingList = () => {
 
     const handleCloseSuccess = () => {
         setShowCloseModal(false);
-        setAlertConfig({ visible: true, color: "success", message: "Periodo cerrado correctamente." });
+        setAlertConfig({ visible: true, color: "success", message: t("finance.periodClosing.list.success.closed") });
         loadList();
     };
 
     const handleCloseYearSuccess = () => {
         setShowCloseYearModal(false);
-        setAlertConfig({ visible: true, color: "success", message: "Año cerrado correctamente." });
+        setAlertConfig({ visible: true, color: "success", message: t("finance.periodClosing.list.success.yearClosed") });
         loadList();
     };
 
@@ -166,14 +168,14 @@ const PeriodClosingList = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title="Cierre de Periodos" pageTitle="Administración" />
+                <BreadCrumb title={t("finance.periodClosing.list.breadcrumb")} pageTitle="Administración" />
 
                 <Card>
                     <CardHeader>
                         <div className="d-flex align-items-center gap-2 flex-wrap">
                             <div className="me-auto">
-                                <h4 className="mb-0">Cierres registrados</h4>
-                                <small className="text-muted">Historial de cierres mensuales de la granja</small>
+                                <h4 className="mb-0">{t("finance.periodClosing.list.cardHeader")}</h4>
+                                <small className="text-muted">{t("finance.periodClosing.list.cardSubheader")}</small>
                             </div>
                             <PeriodClosingFilters
                                 filters={filters}
@@ -184,10 +186,10 @@ const PeriodClosingList = () => {
                                 yearOptions={yearOptions}
                             />
                             <Button color="info" onClick={() => setShowCloseYearModal(true)}>
-                                <i className="ri-calendar-2-line me-1" />Cerrar año
+                                <i className="ri-calendar-2-line me-1" />{t("finance.periodClosing.list.button.closeYear")}
                             </Button>
                             <Button className="farm-primary-button" onClick={() => setShowCloseModal(true)}>
-                                <i className="ri-add-line me-1" />Cerrar mes
+                                <i className="ri-add-line me-1" />{t("finance.periodClosing.list.button.closeMonth")}
                             </Button>
                         </div>
                     </CardHeader>
@@ -197,8 +199,8 @@ const PeriodClosingList = () => {
                         ) : items.length === 0 ? (
                             <>
                                 <i className="ri-file-lock-line text-muted mb-2" style={{ fontSize: "2rem" }} />
-                                <span className="fs-5 text-muted">No hay cierres registrados</span>
-                                <small className="text-muted mt-1">Usa "Cerrar mes" para crear el primero.</small>
+                                <span className="fs-5 text-muted">{t("finance.periodClosing.list.empty.title")}</span>
+                                <small className="text-muted mt-1">{t("finance.periodClosing.list.empty.hint")}</small>
                             </>
                         ) : (
                             <CustomTable columns={columns} data={items} showPagination rowsPerPage={10} />

@@ -1,5 +1,6 @@
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardBody, CardHeader, Col, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
 import { useReportScope } from "hooks/useReportScope";
 import { buildReportUrl } from "helpers/reports_url_helper";
@@ -63,7 +64,8 @@ interface MonthlyWeight {
 }
 
 const FeedWeightReport = () => {
-    document.title = "Conversion Alimenticia y Peso | Reportes";
+    const { t } = useTranslation();
+    document.title = `${t("reports.feedWeight.title")} | ${t("reports.title")}`;
 
     const configContext = useContext(ConfigContext);
     const { isGlobal, farmId, scopeKey } = useReportScope();
@@ -107,7 +109,7 @@ const FeedWeightReport = () => {
             setKpis(data.kpis);
             setMonthlyTrend(data.monthlyTrend || []);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar los datos del reporte." });
+            setAlertConfig({ visible: true, color: "danger", message: t("reports.error.loadData") });
         } finally {
             setLoading(false);
         }
@@ -135,18 +137,18 @@ const FeedWeightReport = () => {
 
     // Columns
     const fcrColumns: Column<FcrRecord>[] = [
-        { header: "Grupo", accessor: "groupName", type: "text", isFilterable: true },
-        { header: "Etapa", accessor: "stage", type: "text" },
+        { header: t("reports.col.group"), accessor: "groupName", type: "text", isFilterable: true },
+        { header: t("reports.col.stage"), accessor: "stage", type: "text" },
         {
-            header: "Alimento (kg)", accessor: "feedConsumed", type: "text",
+            header: t("reports.feedWeight.col.feed"), accessor: "feedConsumed", type: "text",
             render: (v: number) => <span>{v?.toLocaleString()} kg</span>,
         },
         {
-            header: "Peso Ganado (kg)", accessor: "weightGained", type: "text", bgColor: "#e8f5e9",
+            header: t("reports.feedWeight.col.weightGained"), accessor: "weightGained", type: "text", bgColor: "#e8f5e9",
             render: (v: number) => <span>{v?.toLocaleString()} kg</span>,
         },
         {
-            header: "FCR", accessor: "fcr", type: "text", bgColor: "#fff8e1",
+            header: t("reports.feedWeight.col.fcr"), accessor: "fcr", type: "text", bgColor: "#fff8e1",
             render: (v: number) => (
                 <span className={`fw-semibold ${v <= 2.5 ? "text-success" : v <= 3.5 ? "text-warning" : "text-danger"}`}>
                     {v?.toFixed(2)}
@@ -156,20 +158,20 @@ const FeedWeightReport = () => {
     ];
 
     const adgColumns: Column<AdgRecord>[] = [
-        { header: "Grupo", accessor: "groupName", type: "text", isFilterable: true },
+        { header: t("reports.col.group"), accessor: "groupName", type: "text", isFilterable: true },
         {
-            header: "Peso Inicial (kg)", accessor: "initialWeight", type: "text",
+            header: t("reports.feedWeight.col.initialWeight"), accessor: "initialWeight", type: "text",
             render: (v: number) => <span>{v?.toFixed(1)} kg</span>,
         },
         {
-            header: "Peso Actual (kg)", accessor: "currentWeight", type: "text", bgColor: "#e8f5e9",
+            header: t("reports.feedWeight.col.currentWeight"), accessor: "currentWeight", type: "text", bgColor: "#e8f5e9",
             render: (v: number) => <span>{v?.toFixed(1)} kg</span>,
         },
         {
-            header: "Dias", accessor: "days", type: "number",
+            header: t("reports.feedWeight.col.days"), accessor: "days", type: "number",
         },
         {
-            header: "ADG (kg/dia)", accessor: "adg", type: "text", bgColor: "#e3f2fd",
+            header: t("reports.feedWeight.col.adg"), accessor: "adg", type: "text", bgColor: "#e3f2fd",
             render: (v: number) => (
                 <span className={`fw-semibold ${v >= 0.8 ? "text-success" : v >= 0.5 ? "text-warning" : "text-danger"}`}>
                     {v?.toFixed(3)}
@@ -179,30 +181,30 @@ const FeedWeightReport = () => {
     ];
 
     const weightColumns: Column<WeightByGroup>[] = [
-        { header: "Grupo", accessor: "groupName", type: "text", isFilterable: true },
-        { header: "Etapa", accessor: "stage", type: "text" },
-        { header: "Cerdos", accessor: "pigCount", type: "number" },
+        { header: t("reports.col.group"), accessor: "groupName", type: "text", isFilterable: true },
+        { header: t("reports.col.stage"), accessor: "stage", type: "text" },
+        { header: t("reports.col.pigs"), accessor: "pigCount", type: "number" },
         {
-            header: "Peso Prom. (kg)", accessor: "avgWeight", type: "text", bgColor: "#e3f2fd",
+            header: t("reports.feedWeight.col.avgWeight"), accessor: "avgWeight", type: "text", bgColor: "#e3f2fd",
             render: (v: number) => <span className="fw-semibold">{v?.toFixed(1)} kg</span>,
         },
         {
-            header: "Min (kg)", accessor: "minWeight", type: "text",
+            header: t("reports.feedWeight.col.min"), accessor: "minWeight", type: "text",
             render: (v: number) => <span>{v?.toFixed(1)} kg</span>,
         },
         {
-            header: "Max (kg)", accessor: "maxWeight", type: "text",
+            header: t("reports.feedWeight.col.max"), accessor: "maxWeight", type: "text",
             render: (v: number) => <span>{v?.toFixed(1)} kg</span>,
         },
     ];
 
     const daysColumns: Column<DaysInStage>[] = [
-        { header: "Etapa", accessor: "stageLabel", type: "text" },
-        { header: "Dias Prom.", accessor: "avgDays", type: "number", bgColor: "#e3f2fd" },
-        { header: "Min", accessor: "minDays", type: "number" },
-        { header: "Max", accessor: "maxDays", type: "number" },
+        { header: t("reports.col.stage"), accessor: "stageLabel", type: "text" },
+        { header: t("reports.feedWeight.col.daysAvg"), accessor: "avgDays", type: "number", bgColor: "#e3f2fd" },
+        { header: t("reports.feedWeight.col.min"), accessor: "minDays", type: "number" },
+        { header: t("reports.feedWeight.col.max"), accessor: "maxDays", type: "number" },
         {
-            header: "Objetivo", accessor: "targetDays", type: "number", bgColor: "#e8f5e9",
+            header: t("reports.feedWeight.col.target"), accessor: "targetDays", type: "number", bgColor: "#e8f5e9",
         },
     ];
 
@@ -221,10 +223,10 @@ const FeedWeightReport = () => {
 
     return (
         <ReportPageLayout
-            title="Conversion Alimenticia y Peso"
-            pageTitle="Reportes de Produccion"
+            title={t("reports.feedWeight.title")}
+            pageTitle={t("reports.production")}
             onGeneratePdf={handleGeneratePdf}
-            pdfTitle="Reporte - Conversion Alimenticia y Peso"
+            pdfTitle={t("reports.feedWeight.pdfTitle")}
             startDate={startDate}
             endDate={endDate}
             onDateChange={(s, e) => { setStartDate(s); setEndDate(e); }}
@@ -233,7 +235,7 @@ const FeedWeightReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="FCR Promedio"
+                        title={t("reports.feedWeight.kpi.avgFcr")}
                         value={kpis.avgFcr}
                         icon={<i className="ri-restaurant-line fs-4 text-warning"></i>}
                         animateValue
@@ -243,7 +245,7 @@ const FeedWeightReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Mejor FCR"
+                        title={t("reports.feedWeight.kpi.bestFcr")}
                         value={kpis.bestFcr}
                         icon={<i className="ri-trophy-line fs-4 text-success"></i>}
                         animateValue
@@ -253,7 +255,7 @@ const FeedWeightReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="ADG Promedio"
+                        title={t("reports.feedWeight.kpi.avgAdg")}
                         value={kpis.avgAdg}
                         icon={<i className="ri-line-chart-line fs-4 text-primary"></i>}
                         animateValue
@@ -263,7 +265,7 @@ const FeedWeightReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Mejor ADG"
+                        title={t("reports.feedWeight.kpi.bestAdg")}
                         value={kpis.bestAdg}
                         icon={<i className="ri-rocket-line fs-4 text-success"></i>}
                         animateValue
@@ -274,7 +276,7 @@ const FeedWeightReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Peso Promedio"
+                        title={t("reports.feedWeight.kpi.avgWeight")}
                         value={kpis.avgWeight}
                         icon={<i className="ri-scales-3-line fs-4 text-info"></i>}
                         animateValue
@@ -285,7 +287,7 @@ const FeedWeightReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Alimento Total"
+                        title={t("reports.feedWeight.kpi.totalFeed")}
                         value={kpis.totalFeedConsumed}
                         icon={<i className="ri-plant-line fs-4 text-success"></i>}
                         animateValue
@@ -299,10 +301,10 @@ const FeedWeightReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={6}>
                     <BasicLineChartCard
-                        title="Tendencia de Peso Promedio"
+                        title={t("reports.feedWeight.chart.weightTrend")}
                         data={weightTrendData}
-                        yLabel="Peso (kg)"
-                        xLabel="Mes"
+                        yLabel={t("reports.axis.weight")}
+                        xLabel={t("reports.axis.month")}
                         height={280}
                         color="#3b82f6"
                         enableArea
@@ -311,12 +313,12 @@ const FeedWeightReport = () => {
                 </Col>
                 <Col xl={6}>
                     <BasicBarChart
-                        title="FCR por Grupo"
+                        title={t("reports.feedWeight.chart.fcrByGroup")}
                         data={fcrBarData}
                         indexBy="grupo"
                         keys={["FCR"]}
-                        xLegend="Grupo"
-                        yLegend="FCR"
+                        xLegend={t("reports.axis.group")}
+                        yLegend={t("reports.feedWeight.col.fcr")}
                         height={280}
                         colors={["#f59e0b"]}
                     />
@@ -333,7 +335,7 @@ const FeedWeightReport = () => {
                                 onClick={() => setActiveTab("1")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-restaurant-line me-1"></i> FCR por Grupo
+                                <i className="ri-restaurant-line me-1"></i> {t("reports.feedWeight.tab.fcr")}
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -342,7 +344,7 @@ const FeedWeightReport = () => {
                                 onClick={() => setActiveTab("2")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-line-chart-line me-1"></i> ADG por Grupo
+                                <i className="ri-line-chart-line me-1"></i> {t("reports.feedWeight.tab.adg")}
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -351,7 +353,7 @@ const FeedWeightReport = () => {
                                 onClick={() => setActiveTab("3")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-scales-3-line me-1"></i> Peso por Grupo
+                                <i className="ri-scales-3-line me-1"></i> {t("reports.feedWeight.tab.weight")}
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -360,7 +362,7 @@ const FeedWeightReport = () => {
                                 onClick={() => setActiveTab("4")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-calendar-line me-1"></i> Dias por Etapa
+                                <i className="ri-calendar-line me-1"></i> {t("reports.feedWeight.tab.daysInStage")}
                             </NavLink>
                         </NavItem>
                     </Nav>

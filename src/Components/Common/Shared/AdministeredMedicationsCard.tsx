@@ -1,5 +1,6 @@
 import { Card, CardHeader, CardBody, Button, Badge } from "reactstrap";
 import { FiAlertCircle, FiDroplet, FiCalendar, FiUser } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
 
 interface Props {
     medications: any[];
@@ -7,26 +8,17 @@ interface Props {
     status?: string;
 }
 
-const ROUTE_LABELS: Record<string, string> = {
-    oral: "Oral",
-    intramuscular: "Intramuscular",
-    subcutaneous: "Subcutánea",
-    intravenous: "Intravenosa",
-    intranasal: "Intranasal",
-    topical: "Tópica",
-    rectal: "Rectal",
-};
-
 const AdministeredMedicationsCard = ({ medications, onAdd, status }: Props) => {
+    const { t } = useTranslation();
     const hasData = medications && medications.length > 0;
 
     return (
         <Card className="w-100 flex-grow-1 h-100 m-0">
             <CardHeader className="bg-white d-flex justify-content-between align-items-center border-bottom">
-                <h5 className="mb-0 fw-semibold">Medicamentos administrados</h5>
+                <h5 className="mb-0 fw-semibold">{t('medical.medication.title')}</h5>
 
                 <Button size="sm" color="primary" onClick={onAdd} disabled={status === 'weaned'}>
-                    Administrar medicamento
+                    {t('medical.medication.action.administer')}
                 </Button>
             </CardHeader>
 
@@ -42,7 +34,7 @@ const AdministeredMedicationsCard = ({ medications, onAdd, status }: Props) => {
                     <>
                         <FiAlertCircle size={32} className="text-muted" />
                         <span className="fs-5 text-muted">
-                            No hay medicamentos administrados
+                            {t('medical.medication.action.noRecords')}
                         </span>
                     </>
                 ) : (
@@ -68,8 +60,7 @@ const AdministeredMedicationsCard = ({ medications, onAdd, status }: Props) => {
                                 {/* Badges */}
                                 <div className="d-flex gap-2 flex-wrap mb-2 fs-5">
                                     <Badge color="info">
-                                        {ROUTE_LABELS[m.administrationRoute] ??
-                                            m.administrationRoute}
+                                        {t(`medical.medication.route.${m.administrationRoute}`, { defaultValue: m.administrationRoute })}
                                     </Badge>
                                     <Badge color="secondary">
                                         {m.medication.unit_measurement}
@@ -79,12 +70,12 @@ const AdministeredMedicationsCard = ({ medications, onAdd, status }: Props) => {
                                 {/* Dosis */}
                                 <div className="d-flex justify-content-between flex-wrap fs-6 mb-2">
                                     <span>
-                                        <strong className="text-muted">Dosis total:</strong>{" "}
+                                        <strong className="text-muted">{t('medication.card.medications.totalDose')}</strong>{" "}
                                         {m.totalDose} {m.medication.unit_measurement}
                                     </span>
 
                                     <span>
-                                        <strong className="text-muted">Por cerdo:</strong>{" "}
+                                        <strong className="text-muted">{t('medication.card.medications.perHead')}</strong>{" "}
                                         {m.dosePerPig} {m.medication.unit_measurement}
                                     </span>
                                 </div>
@@ -95,7 +86,7 @@ const AdministeredMedicationsCard = ({ medications, onAdd, status }: Props) => {
                                         <FiUser />
                                         {m.appliedBy
                                             ? `${m.appliedBy.name} ${m.appliedBy.lastname}`
-                                            : "Desconocido"}
+                                            : t('medical.medication.field.unknown')}
                                     </span>
 
                                     <span className="d-flex align-items-center gap-1">
@@ -107,7 +98,7 @@ const AdministeredMedicationsCard = ({ medications, onAdd, status }: Props) => {
                                 {/* Observaciones */}
                                 {m.observations && m.observations.trim() !== "" && (
                                     <div className="fs-6">
-                                        <strong className="text-muted">Notas:</strong>{" "}
+                                        <strong className="text-muted">{t('medication.card.medications.notes')}</strong>{" "}
                                         {m.observations}
                                     </div>
                                 )}

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
@@ -20,6 +21,7 @@ interface ProcessPigSaleFormProps {
 }
 
 const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [modals, setModals] = useState({ confirm: false, success: false, error: false });
@@ -52,21 +54,21 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
     }
 
     const groupsColumns: Column<any>[] = [
-        { header: 'Codigo', accessor: 'code', type: 'text', isFilterable: true },
-        { header: 'Nombre', accessor: 'name', type: 'text', isFilterable: true },
+        { header: t("common.field.code", { defaultValue: "Código" }), accessor: 'code', type: 'text', isFilterable: true },
+        { header: t("common.field.name", { defaultValue: "Nombre" }), accessor: 'name', type: 'text', isFilterable: true },
         {
-            header: 'Área',
+            header: t("groups.column.area", { defaultValue: "Área" }),
             accessor: 'area',
             type: 'text',
             isFilterable: true,
             render: (_, row) => {
                 let color = "secondary";
-                let text = "Desconocido";
+                let text = t("groups.area.unknown", { defaultValue: "Desconocido" });
 
                 switch (row.area) {
                     case "shipping":
                         color = "secondary";
-                        text = "Corrales de venta / embarque";
+                        text = t("groups.area.shipping", { defaultValue: "Corrales de venta / embarque" });
                         break;
                 }
 
@@ -74,46 +76,46 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
             },
         },
         {
-            header: 'Etapa',
+            header: t("common.field.stage", { defaultValue: "Etapa" }),
             accessor: 'currentStage',
             render: (value, obj) => {
                 let color = "secondary";
-                let label = obj.stage;
+                let label = t(`pigs.stage.${obj.stage}`, { defaultValue: obj.stage });
 
                 switch (obj.stage) {
                     case "sale":
                         color = "warning";
-                        label = "Venta";
+                        label = t("pigs.stage.sale", { defaultValue: "En Venta" });
                         break;
                 }
 
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { header: 'Fecha de creación', accessor: 'creationDate', type: 'date', isFilterable: true },
-        { header: 'No. de hembras', accessor: 'femaleCount', type: 'text', isFilterable: true },
-        { header: 'No. de machos', accessor: 'maleCount', type: 'text', isFilterable: true },
+        { header: t("groups.column.creationDate", { defaultValue: "Fecha de creación" }), accessor: 'creationDate', type: 'date', isFilterable: true },
+        { header: t("groups.column.femaleCount", { defaultValue: "No. de hembras" }), accessor: 'femaleCount', type: 'text', isFilterable: true },
+        { header: t("groups.column.maleCount", { defaultValue: "No. de machos" }), accessor: 'maleCount', type: 'text', isFilterable: true },
     ];
 
     const groupAttributes: Attribute[] = [
-        { key: "code", label: "Codigo", type: "text" },
-        { key: "name", label: "Nombre", type: "text" },
+        { key: "code", label: t("common.field.code", { defaultValue: "Código" }), type: "text" },
+        { key: "name", label: t("common.field.name", { defaultValue: "Nombre" }), type: "text" },
         {
             key: "area",
-            label: "Area",
+            label: t("groups.column.area", { defaultValue: "Área" }),
             type: "text",
             render: (_, row) => {
                 let color = "secondary";
-                let text = "Desconocido";
+                let text = t("groups.area.unknown", { defaultValue: "Desconocido" });
 
                 switch (row?.area) {
                     case "fattening":
                         color = "dark";
-                        text = "Ceba / Engorda";
+                        text = t("groups.area.fattening", { defaultValue: "Ceba / Engorda" });
                         break;
                     case "shipping":
                         color = "secondary";
-                        text = "Corrales de venta / embarque";
+                        text = t("groups.area.shipping", { defaultValue: "Corrales de venta / embarque" });
                         break;
                 }
 
@@ -122,52 +124,52 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
         },
         {
             key: "status",
-            label: "Estado",
+            label: t("common.field.status", { defaultValue: "Estado" }),
             type: "text",
             render: (_, row) => {
                 let color = "secondary";
-                let text = "Desconocido";
+                let text = t("groups.status.unknown", { defaultValue: "Desconocido" });
 
                 switch (row?.status) {
                     case "weaning":
                         color = "info";
-                        text = "En destete";
+                        text = t("groups.status.weaning", { defaultValue: "En destete" });
                         break;
                     case "ready_to_grow":
                         color = "primary";
-                        text = "Listo para crecimiento";
+                        text = t("groups.status.ready_to_grow", { defaultValue: "Listo para crecimiento" });
                         break;
                     case "grow_overdue":
                         color = "warning";
-                        text = "Retradado en crecimiento";
+                        text = t("groups.status.grow_overdue", { defaultValue: "Retrasado en crecimiento" });
                         break;
                     case "growing":
                         color = "success";
-                        text = "En crecimiento y ceba";
+                        text = t("groups.status.growing", { defaultValue: "En crecimiento y ceba" });
                         break;
                     case "replacement":
                         color = "secondary";
-                        text = "Reemplazo";
+                        text = t("groups.status.replacement", { defaultValue: "Reemplazo" });
                         break;
                     case "ready_for_sale":
                         color = "success";
-                        text = "Listo para venta";
+                        text = t("groups.status.ready_for_sale", { defaultValue: "Listo para venta" });
                         break;
                     case "sale":
                         color = "success";
-                        text = "En venta";
+                        text = t("groups.status.sale", { defaultValue: "En venta" });
                         break;
                     case "sold":
                         color = "success";
-                        text = "Vendido";
+                        text = t("groups.status.sold", { defaultValue: "Vendido" });
                         break;
                 }
 
                 return <Badge color={color}>{text}</Badge>;
             },
         },
-        { key: "creationDate", label: "Fecha de creacion", type: "date" },
-        { key: "observations", label: "Observaciones", type: "text" },
+        { key: "creationDate", label: t("groups.column.creationDate", { defaultValue: "Fecha de creación" }), type: "date" },
+        { key: "observations", label: t("groups.column.observations", { defaultValue: "Observaciones" }), type: "text" },
     ];
 
     const fetchGroup = async () => {
@@ -348,7 +350,7 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
         }
 
         if (!selectedSaleCompatibleGroup && !newSalesGroup) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor seleccione un grupo para integrar a los cerdos de venta' });
+            setAlertConfig({ visible: true, color: 'danger', message: t("processSale.validation.selectSaleGroup", { defaultValue: "Por favor seleccione un grupo para integrar a los cerdos de venta" }) });
         } else {
             toggleArrowTab(activeStep + 1);
         }
@@ -392,7 +394,7 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
                             aria-controls="step-weight-tab"
                             disabled
                         >
-                            Peso de cerdos
+                            {t("processSale.step.pigWeight", { defaultValue: "Peso de cerdos" })}
                         </NavLink>
                     </NavItem>
 
@@ -408,7 +410,7 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
                             aria-controls="step-groupIntegration-tab"
                             disabled
                         >
-                            Integración a grupo de venta
+                            {t("processSale.step.groupIntegration", { defaultValue: "Integración a grupo de venta" })}
                         </NavLink>
                     </NavItem>
 
@@ -424,7 +426,7 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
                             aria-controls="step-summary-tab"
                             disabled
                         >
-                            Resumen
+                            {t("processSale.step.summary", { defaultValue: "Resumen" })}
                         </NavLink>
                     </NavItem>
                 </Nav>
@@ -433,8 +435,8 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
             <TabContent activeTab={activeStep}>
                 <TabPane tabId={1}>
                     <div className="mb-4">
-                        <h5 className="fw-bold mb-1 text-dark">Registro de Peso</h5>
-                        <p className="text-muted small">Actualiza el pesaje de los cerdos para venta.</p>
+                        <h5 className="fw-bold mb-1 text-dark">{t("processSale.title.weightRecord", { defaultValue: "Registro de Peso" })}</h5>
+                        <p className="text-muted small">{t("processSale.subtitle.weightRecord", { defaultValue: "Actualiza el pesaje de los cerdos para venta." })}</p>
                     </div>
 
                     <div className="card border-2 border-primary bg-primary-subtle mb-3" role="button" onClick={() => setUseIndividualWeight(!useIndividualWeight)}>
@@ -448,12 +450,12 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
                             <FaQuestionCircle className="text-primary" size={20} />
                             <div>
                                 <div className="fw-semibold">
-                                    Ingresar peso individual de cada cerdo
+                                    {t("processSale.label.individualWeight", { defaultValue: "Ingresar peso individual de cada cerdo" })}
                                 </div>
                                 <div className="small text-muted">
                                     {useIndividualWeight
-                                        ? "Ingresa el peso de cada cerdo individualmente"
-                                        : "Ingresa el peso total del grupo y se asignará el peso promedio a cada cerdo"}
+                                        ? t("processSale.hint.individualWeightOn", { defaultValue: "Ingresa el peso de cada cerdo individualmente" })
+                                        : t("processSale.hint.individualWeightOff", { defaultValue: "Ingresa el peso total del grupo y se asignará el peso promedio a cada cerdo" })}
                                 </div>
                             </div>
                         </div>
@@ -464,7 +466,7 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
                             <div className="card-body">
                                 <div className="row">
                                     <div className="col-md-6">
-                                        <label className="form-label fw-semibold">Peso total del grupo (kg)</label>
+                                        <label className="form-label fw-semibold">{t("processSale.label.totalGroupWeight", { defaultValue: "Peso total del grupo (kg)" })}</label>
                                         <input
                                             type="number"
                                             step="0.01"
@@ -478,7 +480,7 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
                                         <div className="mt-4">
                                             <div className="d-flex align-items-center gap-2">
                                                 <i className="ri-calculator-line text-primary"></i>
-                                                <span className="text-muted">Peso promedio por cerdo:</span>
+                                                <span className="text-muted">{t("processSale.label.avgWeightPerPig", { defaultValue: "Peso promedio por cerdo:" })}</span>
                                                 <span className="fw-bold text-primary">
                                                     {totalGroupWeight && pigsArray.length > 0
                                                         ? (Number(totalGroupWeight) / pigsArray.length).toFixed(2)
@@ -488,7 +490,7 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
                                             </div>
                                             <div className="d-flex align-items-center gap-2 mt-1">
                                                 <i className="ri-group-line text-info"></i>
-                                                <span className="text-muted">Total de cerdos:</span>
+                                                <span className="text-muted">{t("processSale.label.totalPigs", { defaultValue: "Total de cerdos:" })}</span>
                                                 <span className="fw-bold text-info">{pigsArray.length}</span>
                                             </div>
                                         </div>
@@ -515,15 +517,15 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
                                                 </div>
 
                                                 <div className="col">
-                                                    <h6 className="mb-0 fw-bold text-dark">Cerdo {pig.code}</h6>
+                                                    <h6 className="mb-0 fw-bold text-dark">{t("processSale.label.pig", { defaultValue: "Cerdo" })} {pig.code}</h6>
                                                     <span className={`badge bg-${accentColor} bg-opacity-25 text-${accentColor} text-uppercase px-2`} style={{ fontSize: '0.65rem', fontWeight: '700' }}>
-                                                        {isMale ? 'Macho' : 'Hembra'}
+                                                        {isMale ? t("pigs.sex.male", { defaultValue: "Macho" }) : t("pigs.sex.female", { defaultValue: "Hembra" })}
                                                     </span>
                                                 </div>
 
                                                 <div className="col-sm-5 col-12 mt-3 mt-sm-0">
                                                     <small className="text-muted">
-                                                        Actual: {pig.weight} kg
+                                                        {t("processSale.label.currentWeight", { defaultValue: "Actual:" })} {pig.weight} kg
                                                     </small>
 
                                                     <div className="input-group">
@@ -570,10 +572,10 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
 
                     <div className="mt-4 pt-2 border-top d-flex align-items-center justify-content-between">
                         <span className="text-muted small">
-                            Total registros: <strong>{pigsArray.length}</strong>
+                            {t("processSale.label.totalRecords", { defaultValue: "Total registros:" })} <strong>{pigsArray.length}</strong>
                         </span>
                         <Button className="ms-auto shadow-sm px-4" color="primary" onClick={() => setActiveStep(activeStep + 1)}>
-                            Siguiente
+                            {t("common.button.next", { defaultValue: "Siguiente" })}
                             <i className="ri-arrow-right-line ms-2" />
                         </Button>
                     </div>
@@ -587,10 +589,10 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
 
                                 <div>
                                     <div className="fw-semibold">
-                                        No hay grupos de venta compatibles
+                                        {t("processSale.label.noCompatibleGroups", { defaultValue: "No hay grupos de venta compatibles" })}
                                     </div>
                                     <div className="small">
-                                        Se creará un nuevo grupo de venta
+                                        {t("processSale.label.willCreateNewGroup", { defaultValue: "Se creará un nuevo grupo de venta" })}
                                     </div>
                                 </div>
                             </div>
@@ -609,10 +611,10 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
 
                                         <div>
                                             <div className="fw-semibold">
-                                                Crear nuevo grupo de venta
+                                                {t("processSale.label.createNewSaleGroup", { defaultValue: "Crear nuevo grupo de venta" })}
                                             </div>
                                             <div className="small text-muted">
-                                                Los cerdos no se mezclarán con grupos existentes
+                                                {t("processSale.label.pigsWontMix", { defaultValue: "Los cerdos no se mezclarán con grupos existentes" })}
                                             </div>
                                         </div>
                                     </div>
@@ -633,11 +635,11 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
                     <div className="mt-4 d-flex">
                         <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                             <i className="ri-arrow-left-line me-2" />
-                            Atrás
+                            {t("common.button.back", { defaultValue: "Volver" })}
                         </Button>
 
                         <Button className="ms-auto" onClick={() => checkSelectedSaleGroup()}>
-                            Siguiente
+                            {t("common.button.next", { defaultValue: "Siguiente" })}
                             <i className="ri-arrow-right-line ms-2" />
                         </Button>
                     </div>
@@ -648,7 +650,7 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
                         <div className="d-flex flex-column w-50">
                             <Card className="w-100">
                                 <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
-                                    <span className="text-black">Información del grupo</span>
+                                    <span className="text-black">{t("processSale.card.groupInfo", { defaultValue: "Información del grupo" })}</span>
                                 </CardHeader>
                                 <CardBody className="flex-fill">
                                     <ObjectDetails attributes={groupAttributes} object={group} />
@@ -657,7 +659,7 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
 
                             <Card className="w-100 m-0">
                                 <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
-                                    <span className="text-black">Grupo de venta destino</span>
+                                    <span className="text-black">{t("processSale.card.targetSaleGroup", { defaultValue: "Grupo de venta destino" })}</span>
                                 </CardHeader>
                                 <CardBody className="flex-fill">
                                     {newSalesGroup && newSalesGroup === true ? (
@@ -666,10 +668,10 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
 
                                             <div>
                                                 <div className="fw-semibold">
-                                                    Nuevo grupo de venta
+                                                    {t("processSale.label.newSaleGroup", { defaultValue: "Nuevo grupo de venta" })}
                                                 </div>
                                                 <div className="small">
-                                                    Se creará un nuevo grupo de venta al procesar
+                                                    {t("processSale.label.newGroupWillBeCreated", { defaultValue: "Se creará un nuevo grupo de venta al procesar" })}
                                                 </div>
                                             </div>
                                         </div>
@@ -683,7 +685,7 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
                         <div className="d-flex flex-column w-50 gap-3">
                             <Card className="w-100 h-100 m-0">
                                 <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
-                                    <span className="text-black">Peso de los cerdos</span>
+                                    <span className="text-black">{t("processSale.card.pigWeights", { defaultValue: "Peso de los cerdos" })}</span>
                                 </CardHeader>
                                 <CardBody className='p-3'>
                                     <div className="row g-2 mb-3">
@@ -691,7 +693,7 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
                                             <div className="border rounded p-2 text-center">
                                                 <div className="d-flex align-items-center justify-content-center mb-1">
                                                     <i className="ri-parent-line fs-5 text-primary me-1"></i>
-                                                    <span className="text-muted fw-semibold">Total</span>
+                                                    <span className="text-muted fw-semibold">{t("processSale.label.total", { defaultValue: "Total" })}</span>
                                                 </div>
                                                 <h4 className="mb-0 text-primary fw-bold">{pigsArray.length}</h4>
                                             </div>
@@ -700,7 +702,7 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
                                             <div className="border rounded p-2 text-center">
                                                 <div className="d-flex align-items-center justify-content-center mb-1">
                                                     <i className="ri-scales-3-line fs-5 text-success me-1"></i>
-                                                    <span className="text-muted fw-semibold">Peso Promedio</span>
+                                                    <span className="text-muted fw-semibold">{t("processSale.label.avgWeight", { defaultValue: "Peso Promedio" })}</span>
                                                 </div>
                                                 <h4 className="mb-0 text-success fw-bold">
                                                     {pigsArray.length > 0
@@ -712,15 +714,15 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
                                         </div>
                                     </div>
 
-                                    <div className="text-muted fw-semibold mb-2">Detalles de cerdos:</div>
+                                    <div className="text-muted fw-semibold mb-2">{t("processSale.label.pigDetails", { defaultValue: "Detalles de cerdos:" })}</div>
 
                                     <SimpleBar style={{ maxHeight: '300px' }}>
                                         <table className="table table-hover table-sm">
                                             <thead className="table-light">
                                                 <tr>
                                                     <th className="text-center">#</th>
-                                                    <th className="text-center">Sexo</th>
-                                                    <th className="text-center">Peso</th>
+                                                    <th className="text-center">{t("sellPigs.column.sex", { defaultValue: "Sexo" })}</th>
+                                                    <th className="text-center">{t("common.field.weight", { defaultValue: "Peso" })}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -746,7 +748,7 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
                     <div className="mt-4 d-flex">
                         <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                             <i className="ri-arrow-left-line me-2" />
-                            Atrás
+                            {t("common.button.back", { defaultValue: "Volver" })}
                         </Button>
 
                         <Button className="ms-auto btn-success" disabled={isSubmitting} onClick={() => toggleModal('confirm')}>
@@ -757,7 +759,7 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
                             ) : (
                                 <div>
                                     <i className="ri-check-line me-2" />
-                                    Procesar venta
+                                    {t("groups.button.processSale", { defaultValue: "Procesar venta" })}
                                 </div>
                             )}
                         </Button>
@@ -766,23 +768,23 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
             </TabContent>
 
             <Modal size="md" isOpen={modals.confirm} toggle={() => toggleModal("confirm")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("confirm")}>Procesar venta</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("confirm")}>{t("groups.button.processSale", { defaultValue: "Procesar venta" })}</ModalHeader>
                 <ModalBody>
                     <div className="d-flex justify-content-center mb-3">
                         <FaQuestionCircle size={56} className="text-primary opacity-75" />
                     </div>
 
                     <div className="text-center mb-2">
-                        <h4 className="fw-semibold mb-1">¿Deseas procesar la venta de este grupo?</h4>
+                        <h4 className="fw-semibold mb-1">{t("processSale.modal.question", { defaultValue: "¿Deseas procesar la venta de este grupo?" })}</h4>
                     </div>
 
                     <div className="text-center text-muted fs-5 mb-4">
-                        Al confirmar, los cerdos serán transferidos al grupo de venta.
+                        {t("processSale.modal.body", { defaultValue: "Al confirmar, los cerdos serán transferidos al grupo de venta." })}
                         <br />
                     </div>
 
                     <div className="border rounded p-3 bg-light-subtle text-center mb-4">
-                        <strong>Asegúrate de que toda la información esté correcta antes de continuar.</strong>
+                        <strong>{t("processSale.modal.verifyInfo", { defaultValue: "Asegúrate de que toda la información esté correcta antes de continuar." })}</strong>
                     </div>
                 </ModalBody>
 
@@ -793,7 +795,7 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
                         ) : (
                             <>
                                 <i className="ri ri-check-line me-2" />
-                                Confirmar
+                                {t("common.button.confirm", { defaultValue: "Confirmar" })}
                             </>
                         )}
                     </Button>
@@ -802,8 +804,8 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} autoClose={3000} />
 
-            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={"Venta procesada con éxito"} />
-            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={"Ha ocurrido un error al procesar la venta, inténtelo más tarde"} />
+            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={t("processSale.success.message", { defaultValue: "Venta procesada con éxito" })} />
+            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={t("processSale.error.message", { defaultValue: "Ha ocurrido un error al procesar la venta, inténtelo más tarde" })} />
         </>
     );
 };

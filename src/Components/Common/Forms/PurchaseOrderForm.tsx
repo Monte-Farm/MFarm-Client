@@ -1,7 +1,8 @@
 import { Attribute, ProductData, PurchaseOrderData, SupplierData } from "common/data_interfaces";
-import { SUPPLIER_TYPES, getSupplierTypeLabel } from "common/enums/suppliers.enums";
+import { SUPPLIER_TYPES } from "common/enums/suppliers.enums";
 import classnames from "classnames";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Badge, Button, Card, CardBody, CardHeader, Col, FormFeedback, Input, Label, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Row, Spinner, TabContent, TabPane } from "reactstrap";
 import { ConfigContext } from "App";
 import * as Yup from "yup";
@@ -23,135 +24,8 @@ interface PurchaseOrderFormProps {
     onCancel: () => void;
 }
 
-const purchaseOrderAttributes: Attribute[] = [
-    { key: 'code', label: 'Identificador' },
-    { key: 'date', label: 'Fecha de registro', type: 'date' },
-    { key: 'supplier', label: 'Proveedor' }
-];
-
-const summaryProductColumns: Column<any>[] = [
-    { header: 'Código', accessor: 'id', type: 'text' },
-    { header: 'Producto', accessor: 'name', type: 'text' },
-    {
-        header: 'Categoría',
-        accessor: 'category',
-        type: 'text',
-        render: (value: string) => {
-            let color = "secondary";
-            let label = value;
-
-            switch (value) {
-                case "nutrition":
-                    color = "info";
-                    label = "Nutrición";
-                    break;
-                case "medications":
-                    color = "warning";
-                    label = "Medicamentos";
-                    break;
-                case "vaccines":
-                    color = "primary";
-                    label = "Vacunas";
-                    break;
-                case "vitamins":
-                    color = "success";
-                    label = "Vitaminas";
-                    break;
-                case "minerals":
-                    color = "success";
-                    label = "Minerales";
-                    break;
-                case "supplies":
-                    color = "success";
-                    label = "Insumos";
-                    break;
-                case "hygiene_cleaning":
-                    color = "success";
-                    label = "Higiene y desinfección";
-                    break;
-                case "equipment_tools":
-                    color = "success";
-                    label = "Equipamiento y herramientas";
-                    break;
-                case "spare_parts":
-                    color = "success";
-                    label = "Refacciones y repuestos";
-                    break;
-                case "office_supplies":
-                    color = "success";
-                    label = "Material de oficina";
-                    break;
-                case "others":
-                    color = "success";
-                    label = "Otros";
-                    break;
-            }
-
-            return <Badge color={color}>{label}</Badge>;
-        },
-    },
-    {
-        header: 'Cantidad',
-        accessor: 'quantity',
-        type: 'number',
-        render: (value: number, row: any) => `${value} ${row.unit_measurement || ''}`,
-        bgColor: '#f0f0ff'
-    },
-    { 
-        header: 'Precio Unitario', 
-        accessor: 'unitPrice', 
-        type: 'currency',
-        bgColor: '#e6f0ff'
-    },
-    {
-        header: 'Precio Total',
-        accessor: 'totalPrice',
-        type: 'currency',
-        bgColor: '#e6ffe6'
-    },
-];
-
-const supplierColumns: Column<any>[] = [
-    { header: 'Nombre', accessor: 'name', isFilterable: true, type: "text" },
-    { header: 'RNC', accessor: 'rnc', isFilterable: true, type: "text" },
-    { header: 'Dirección', accessor: 'address', isFilterable: true, type: "text" },
-    { header: 'Teléfono', accessor: 'phone_number', isFilterable: true, type: "text" },
-    {
-        header: 'Tipo de Proveedor',
-        accessor: 'supplier_type',
-        isFilterable: true,
-        type: "text",
-        render: (value: string) => {
-            let color = "secondary";
-            let label = getSupplierTypeLabel(value);
-
-            switch (value) {
-                case SUPPLIER_TYPES.CLEANING_PRODUCTS:
-                    color = "info";
-                    break;
-                case SUPPLIER_TYPES.FOOD_AND_FEED:
-                    color = "success";
-                    break;
-                case SUPPLIER_TYPES.MEDICINES_AND_VETERINARY:
-                    color = "warning";
-                    break;
-                case SUPPLIER_TYPES.EQUIPMENT_AND_TOOLS:
-                    color = "primary";
-                    break;
-                case SUPPLIER_TYPES.SERVICES:
-                    color = "secondary";
-                    break;
-                default:
-                    color = "secondary";
-                    break;
-            }
-
-            return <Badge color={color}>{label}</Badge>;
-        },
-    },
-];
-
 const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSave, onCancel }) => {
+    const { t } = useTranslation();
     const userLogged = getEffectiveUser();
     const [suppliers, setSuppliers] = useState<any[]>([]);
     const [selectedSupplier, setSelectedSupplier] = useState<SupplierData | null>(null);
@@ -165,6 +39,88 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
 
+    const purchaseOrderAttributes: Attribute[] = [
+        { key: 'code', label: t('warehouse.purchaseOrders.attr.identifier', { defaultValue: 'Identificador' }) },
+        { key: 'date', label: t('warehouse.purchaseOrders.attr.registrationDate', { defaultValue: 'Fecha de registro' }), type: 'date' },
+        { key: 'supplier', label: t('warehouse.suppliers.col.supplier', { defaultValue: 'Proveedor' }) }
+    ];
+
+    const summaryProductColumns: Column<any>[] = [
+        { header: t('common.field.code'), accessor: 'id', type: 'text' },
+        { header: t('common.field.name'), accessor: 'name', type: 'text' },
+        {
+            header: t('warehouse.purchaseOrders.col.category', { defaultValue: 'Categoría' }),
+            accessor: 'category',
+            type: 'text',
+            render: (value: string) => {
+                let color = "secondary";
+
+                switch (value) {
+                    case "nutrition": color = "info"; break;
+                    case "medications": color = "warning"; break;
+                    case "vaccines": color = "primary"; break;
+                    case "vitamins":
+                    case "minerals":
+                    case "supplies":
+                    case "hygiene_cleaning":
+                    case "equipment_tools":
+                    case "spare_parts":
+                    case "office_supplies":
+                    case "others":
+                        color = "success"; break;
+                }
+
+                return <Badge color={color}>{t(`warehouse.common.productCategory.${value}`, { defaultValue: value })}</Badge>;
+            },
+        },
+        {
+            header: t('warehouse.purchaseOrders.col.quantity', { defaultValue: 'Cantidad' }),
+            accessor: 'quantity',
+            type: 'number',
+            render: (value: number, row: any) => `${value} ${row.unit_measurement || ''}`,
+            bgColor: '#f0f0ff'
+        },
+        {
+            header: t('warehouse.purchaseOrders.col.unitPrice', { defaultValue: 'Precio Unitario' }),
+            accessor: 'unitPrice',
+            type: 'currency',
+            bgColor: '#e6f0ff'
+        },
+        {
+            header: t('warehouse.purchaseOrders.col.totalPrice', { defaultValue: 'Precio Total' }),
+            accessor: 'totalPrice',
+            type: 'currency',
+            bgColor: '#e6ffe6'
+        },
+    ];
+
+    const supplierColumns: Column<any>[] = [
+        { header: t('common.field.name'), accessor: 'name', isFilterable: true, type: "text" },
+        { header: t('warehouse.supplierForm.field.rnc', { defaultValue: 'RNC' }), accessor: 'rnc', isFilterable: true, type: "text" },
+        { header: t('warehouse.supplierForm.field.address', { defaultValue: 'Dirección' }), accessor: 'address', isFilterable: true, type: "text" },
+        { header: t('warehouse.supplierForm.field.phone', { defaultValue: 'Teléfono' }), accessor: 'phone_number', isFilterable: true, type: "text" },
+        {
+            header: t('warehouse.suppliers.attr.supplierType', { defaultValue: 'Tipo de Proveedor' }),
+            accessor: 'supplier_type',
+            isFilterable: true,
+            type: "text",
+            render: (value: string) => {
+                let color = "secondary";
+
+                switch (value) {
+                    case SUPPLIER_TYPES.CLEANING_PRODUCTS: color = "info"; break;
+                    case SUPPLIER_TYPES.FOOD_AND_FEED: color = "success"; break;
+                    case SUPPLIER_TYPES.MEDICINES_AND_VETERINARY: color = "warning"; break;
+                    case SUPPLIER_TYPES.EQUIPMENT_AND_TOOLS: color = "primary"; break;
+                    case SUPPLIER_TYPES.SERVICES: color = "secondary"; break;
+                    default: color = "secondary"; break;
+                }
+
+                return <Badge color={color}>{t(`warehouse.common.supplierType.${value}`, { defaultValue: value })}</Badge>;
+            },
+        },
+    ];
+
     function toggleArrowTab(tab: any) {
         if (activeStep !== tab) {
             var modifiedSteps = [...passedarrowSteps, tab];
@@ -177,15 +133,14 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
     }
 
     const productColumns: Column<any>[] = [
-        { header: 'Código', accessor: 'id', isFilterable: true, type: 'text' },
-        { header: 'Producto', accessor: 'name', isFilterable: true, type: 'text' },
+        { header: t('common.field.code'), accessor: 'id', isFilterable: true, type: 'text' },
+        { header: t('common.field.name'), accessor: 'name', isFilterable: true, type: 'text' },
         {
-            header: "Cantidad",
+            header: t('warehouse.purchaseOrders.col.quantity', { defaultValue: 'Cantidad' }),
             accessor: "quantity",
             type: "number",
             render: (value, row, isSelected) => {
                 const selected = selectedProducts.find(p => p.id === row._id);
-                const realValue = selected?.quantity ?? "";
 
                 return (
                     <div className="input-group">
@@ -205,7 +160,6 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                                 });
                                 setSelectedProducts(updatedProducts);
 
-                                // Clear error for this field if value is valid
                                 if (newValue > 0) {
                                     setProductErrors(prev => {
                                         const newErrors = { ...prev };
@@ -229,7 +183,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
             },
         },
         {
-            header: 'Precio Unitario',
+            header: t('warehouse.purchaseOrders.col.unitPrice', { defaultValue: 'Precio Unitario' }),
             accessor: 'price',
             type: 'number',
             render: (value, row, isSelected) => {
@@ -275,7 +229,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
             },
         },
         {
-            header: 'Precio Total',
+            header: t('warehouse.purchaseOrders.col.totalPrice', { defaultValue: 'Precio Total' }),
             accessor: 'totalPrice',
             type: 'number',
             render: (value, row, isSelected) => {
@@ -294,7 +248,6 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                                 const newValue = e.target.value === "" ? 0 : Number(e.target.value);
                                 const updatedProducts = selectedProducts.map(p => {
                                     if (p.id === row._id) {
-                                        // Calcular precio unitario basado en el precio total
                                         const unitPrice = (p.quantity && p.quantity > 0) ? newValue / p.quantity : 0;
                                         return { ...p, totalPrice: newValue, unitPrice };
                                     }
@@ -322,70 +275,37 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
             }
         },
         {
-            header: 'Categoria',
+            header: t('warehouse.purchaseOrders.col.category', { defaultValue: 'Categoría' }),
             accessor: 'category',
             isFilterable: true,
             type: 'text',
             render: (value: string) => {
                 let color = "secondary";
-                let label = value;
 
                 switch (value) {
-                    case "nutrition":
-                        color = "info";
-                        label = "Nutrición";
-                        break;
-                    case "medications":
-                        color = "warning";
-                        label = "Medicamentos";
-                        break;
-                    case "vaccines":
-                        color = "primary";
-                        label = "Vacunas";
-                        break;
+                    case "nutrition": color = "info"; break;
+                    case "medications": color = "warning"; break;
+                    case "vaccines": color = "primary"; break;
                     case "vitamins":
-                        color = "success";
-                        label = "Vitaminas";
-                        break;
                     case "minerals":
-                        color = "success";
-                        label = "Minerales";
-                        break;
                     case "supplies":
-                        color = "success";
-                        label = "Insumos";
-                        break;
                     case "hygiene_cleaning":
-                        color = "success";
-                        label = "Higiene y desinfección";
-                        break;
                     case "equipment_tools":
-                        color = "success";
-                        label = "Equipamiento y herramientas";
-                        break;
                     case "spare_parts":
-                        color = "success";
-                        label = "Refacciones y repuestos";
-                        break;
                     case "office_supplies":
-                        color = "success";
-                        label = "Material de oficina";
-                        break;
                     case "others":
-                        color = "success";
-                        label = "Otros";
-                        break;
+                        color = "success"; break;
                 }
 
-                return <Badge color={color}>{label}</Badge>;
+                return <Badge color={color}>{t(`warehouse.common.productCategory.${value}`, { defaultValue: value })}</Badge>;
             },
         },
     ];
 
     const validationSchema = Yup.object({
         code: Yup.string()
-            .required("Por favor, ingrese el codigo")
-            .test('unique_id', "Este codigo ya existe, por favor ingrese otro", async (value) => {
+            .required(t('warehouse.purchaseOrders.validation.codeRequired', { defaultValue: 'Por favor, ingrese el codigo' }))
+            .test('unique_id', t('warehouse.purchaseOrders.validation.codeExists', { defaultValue: 'Este codigo ya existe, por favor ingrese otro' }), async (value) => {
                 if (!value) return false;
                 try {
                     const result = await configContext?.axiosHelper.get(`${configContext.apiUrl}/purchase_orders/purchase_order_id_exists/${value}`);
@@ -395,8 +315,8 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                     return false;
                 }
             }),
-        date: Yup.date().required("Por favor, ingrese la fecha"),
-        supplier: Yup.string().required("Por favor, seleccione un proveedor"),
+        date: Yup.date().required(t('warehouse.purchaseOrders.validation.dateRequired', { defaultValue: 'Por favor, ingrese la fecha' })),
+        supplier: Yup.string().required(t('warehouse.purchaseOrders.validation.supplierRequired', { defaultValue: 'Por favor, seleccione un proveedor' })),
     });
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
@@ -454,13 +374,13 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
             if (product.quantity === 0 || product.quantity === "" || !product.quantity) {
                 errors[product.id] = {
                     ...errors[product.id],
-                    quantity: "La cantidad es requerida"
+                    quantity: t('warehouse.purchaseOrders.validation.quantityRequired', { defaultValue: 'La cantidad es requerida' })
                 };
             }
             if (product.unitPrice === 0 || product.unitPrice === "" || !product.unitPrice) {
                 errors[product.id] = {
                     ...errors[product.id],
-                    unitPrice: "El precio es requerido"
+                    unitPrice: t('warehouse.purchaseOrders.validation.priceRequired', { defaultValue: 'El precio es requerido' })
                 };
             }
         });
@@ -490,7 +410,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                 toggleModal('success')
             } catch (error) {
                 console.error("Error al enviar el formulario:", error);
-                setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al guardar los datos, intentelo mas tarde' })
+                setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.purchaseOrders.error.save', { defaultValue: 'Ha ocurrido un error al guardar los datos, intentelo mas tarde' }) })
             } finally {
                 setSubmitting(false);
             }
@@ -546,7 +466,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                                 aria-controls="step-purchaseOrderData-tab"
                                 disabled
                             >
-                                Informacion de Orden de Compra
+                                {t('warehouse.purchaseOrders.step.orderInfo', { defaultValue: 'Informacion de Orden de Compra' })}
                             </NavLink>
                         </NavItem>
 
@@ -563,7 +483,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                                 aria-controls="step-products-tab"
                                 disabled
                             >
-                                Selección de productos
+                                {t('warehouse.purchaseOrders.step.productSelection', { defaultValue: 'Selección de productos' })}
                             </NavLink>
                         </NavItem>
 
@@ -579,7 +499,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                                 aria-controls="step-summary-tab"
                                 disabled
                             >
-                                Resumen
+                                {t('warehouse.purchaseOrders.step.summary', { defaultValue: 'Resumen' })}
                             </NavLink>
                         </NavItem>
                     </Nav>
@@ -589,7 +509,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                     <TabPane id="step-purchaseOrderData-tab" tabId={1}>
                         <div className="d-flex gap-3 mb-4">
                             <div className="w-50">
-                                <Label htmlFor="codeInput" className="form-label">Codigo</Label>
+                                <Label htmlFor="codeInput" className="form-label">{t('common.field.code')}</Label>
                                 <Input
                                     type="text"
                                     id="codeInput"
@@ -603,7 +523,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                             </div>
 
                             <div className="w-50">
-                                <Label htmlFor="dateInput" className="form-label">Fecha de registro</Label>
+                                <Label htmlFor="dateInput" className="form-label">{t('warehouse.purchaseOrders.attr.registrationDate', { defaultValue: 'Fecha de registro' })}</Label>
                                 <DatePicker
                                     id="date"
                                     className={`form-control ${formik.touched.date && formik.errors.date ? 'is-invalid' : ''}`}
@@ -620,7 +540,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                         </div>
 
                         <div className="">
-                            <Label className="form-label">Proveedor</Label>
+                            <Label className="form-label">{t('warehouse.suppliers.col.supplier', { defaultValue: 'Proveedor' })}</Label>
                             <div className="border rounded" style={{ maxHeight: '300px', overflow: 'auto' }}>
                                 <SelectableTable
                                     columns={supplierColumns}
@@ -650,7 +570,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                                 }
                             >
                                 <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
-                                Siguiente
+                                {t('common.button.next', { defaultValue: 'Siguiente' })}
                             </Button>
                         </div>
                     </TabPane>
@@ -689,7 +609,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                                 }}
                             >
                                 <i className="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i>{" "}
-                                Atras
+                                {t('common.button.back', { defaultValue: 'Atras' })}
                             </Button>
 
                             <Button
@@ -701,7 +621,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                                 }}
                             >
                                 <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
-                                Siguiente
+                                {t('common.button.next', { defaultValue: 'Siguiente' })}
                             </Button>
 
                         </div>
@@ -711,7 +631,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                         <div className="d-flex flex-grow-1 gap-3 w-100">
                             <Card>
                                 <CardHeader>
-                                    <h5 className="mb-0">Información de la Orden de Compra</h5>
+                                    <h5 className="mb-0">{t('warehouse.purchaseOrders.step.orderInfo', { defaultValue: 'Información de la Orden de Compra' })}</h5>
                                 </CardHeader>
                                 <CardBody className="pt-4">
                                     <ObjectDetails attributes={purchaseOrderAttributes} object={displayInfo} />
@@ -720,7 +640,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
 
                             <Card className="w-100">
                                 <CardHeader>
-                                    <h5 className="mb-0">Información de Productos</h5>
+                                    <h5 className="mb-0">{t('warehouse.purchaseOrders.attr.productInfo', { defaultValue: 'Información de Productos' })}</h5>
                                 </CardHeader>
                                 <CardBody className="border border-0 d-flex flex-column flex-grow-1 p-0">
                                     <CustomTable
@@ -738,13 +658,13 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                                         showPagination={true}
                                         rowsPerPage={10}
                                     />
-                                    
+
                                     {/* Total General */}
                                     <div className="p-3 border-top">
                                         <Row className="justify-content-end">
                                             <Col sm={6} md={4}>
                                                 <div className="d-flex justify-content-between align-items-center p-3 rounded" style={{ backgroundColor: '#f0f8ff' }}>
-                                                    <h5 className="mb-0 fw-bold">Total General:</h5>
+                                                    <h5 className="mb-0 fw-bold">{t('warehouse.purchaseOrders.attr.grandTotal', { defaultValue: 'Total General:' })}</h5>
                                                     <h4 className="mb-0 text-primary fw-bold">
                                                         {new Intl.NumberFormat('en-US', {
                                                             style: 'currency',
@@ -771,7 +691,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                                 }}
                             >
                                 <i className="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i>{" "}
-                                Atras
+                                {t('common.button.back', { defaultValue: 'Atras' })}
                             </Button>
 
                             <Button className="farm-primary-button ms-auto" type="submit" disabled={formik.isSubmitting}>
@@ -782,7 +702,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                                 ) : (
                                     <div>
                                         <i className="ri-check-line me-2" />
-                                        Registrar
+                                        {t('warehouse.purchaseOrders.button.register', { defaultValue: 'Registrar' })}
                                     </div>
                                 )}
                             </Button>
@@ -793,7 +713,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} />
 
-            <SuccessModal isOpen={modals.success} onClose={onSave} message={"Orden de compra creada con exito"} />
+            <SuccessModal isOpen={modals.success} onClose={onSave} message={t('warehouse.purchaseOrders.success.created', { defaultValue: 'Orden de compra creada con exito' })} />
         </>
     )
 }

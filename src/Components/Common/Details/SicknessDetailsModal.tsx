@@ -9,6 +9,7 @@ import ObjectDetails from "./ObjectDetails";
 import CustomTable from "../Tables/CustomTable";
 import { Column } from "common/data/data_types";
 import SicknessSymptomsSummary from "../Shared/SicknessSymptomsSummary";
+import { useTranslation } from "react-i18next";
 
 interface SicknessDetailsProps {
     pigId: string;
@@ -16,6 +17,7 @@ interface SicknessDetailsProps {
 }
 
 const SicknessDetails: React.FC<SicknessDetailsProps> = ({ pigId, sicknessId }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true)
@@ -29,36 +31,21 @@ const SicknessDetails: React.FC<SicknessDetailsProps> = ({ pigId, sicknessId }) 
     };
 
     const sicknessAttributes: Attribute[] = [
-        { key: 'name', label: 'Enfermedad', type: 'text' },
+        { key: 'name', label: t('medical.sickness.detail.attribute.disease', { defaultValue: 'Enfermedad' }), type: 'text' },
         {
             key: 'status',
-            label: 'Estado',
+            label: t('medical.sickness.detail.attribute.status', { defaultValue: 'Estado' }),
             type: 'text',
             render: (value: string) => {
                 let color = "secondary";
-                let label = value;
+                const label = t(`medical.sickness.detail.status.${value}`, { defaultValue: value });
 
                 switch (value) {
-                    case "suspected":
-                        color = "info";
-                        label = "Sospecha";
-                        break;
-                    case "confirmed":
-                        color = "success";
-                        label = "Confirmada";
-                        break;
-                    case "recovered":
-                        color = "primary";
-                        label = "Recuperada";
-                        break;
-                    case "chronic":
-                        color = "warning";
-                        label = "Cronica";
-                        break;
-                    case "dead":
-                        color = "black";
-                        label = "Muerte";
-                        break;
+                    case "suspected": color = "info"; break;
+                    case "confirmed": color = "success"; break;
+                    case "recovered": color = "primary"; break;
+                    case "chronic": color = "warning"; break;
+                    case "dead": color = "black"; break;
                 }
 
                 return <Badge color={color}>{label}</Badge>;
@@ -66,114 +53,85 @@ const SicknessDetails: React.FC<SicknessDetailsProps> = ({ pigId, sicknessId }) 
         },
         {
             key: 'severity',
-            label: 'Severidad',
+            label: t('medical.sickness.detail.attribute.severity', { defaultValue: 'Severidad' }),
             type: 'text',
             render: (value: string) => {
                 let color = "secondary";
-                let label = value;
+                const label = t(`medical.sickness.detail.severity.${value}`, { defaultValue: value });
 
                 switch (value) {
-                    case "low":
-                        color = "success";
-                        label = "Baja";
-                        break;
-                    case "medium":
-                        color = "warning";
-                        label = "Media";
-                        break;
-                    case "high":
-                        color = "danger";
-                        label = "Alta";
-                        break;
+                    case "low": color = "success"; break;
+                    case "medium": color = "warning"; break;
+                    case "high": color = "danger"; break;
                 }
 
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { key: 'startDate', label: 'Fecha de inicio', type: 'date' },
-        { key: 'endDate', label: 'Fecha de fin', type: 'date' },
+        { key: 'startDate', label: t('medical.sickness.detail.attribute.startDate', { defaultValue: 'Fecha de inicio' }), type: 'date' },
+        { key: 'endDate', label: t('medical.sickness.detail.attribute.endDate', { defaultValue: 'Fecha de fin' }), type: 'date' },
         {
             key: 'is_active',
-            label: 'Activa',
+            label: t('medical.sickness.detail.attribute.isActive', { defaultValue: 'Activa' }),
             type: 'status',
         },
         {
             key: 'detectedBy',
-            label: 'Detectada por',
+            label: t('medical.sickness.detail.attribute.detectedBy', { defaultValue: 'Detectada por' }),
             type: 'text',
             render: (_, obj) => <span>{obj?.detectedBy?.name} {obj?.detectedBy?.lastname}</span>
         },
-        { key: 'observations', label: 'Observaciones', type: 'text' },
+        { key: 'observations', label: t('medical.sickness.detail.attribute.observations', { defaultValue: 'Observaciones' }), type: 'text' },
 
     ]
 
     const treatmentItemsColumns: Column<any>[] = [
         {
-            header: "Codigo",
+            header: t('medical.sickness.detail.column.code', { defaultValue: 'Codigo' }),
             accessor: "medication.id",
             type: "text",
             isFilterable: true,
             render: (_, row) => <span>{row.medication.id}</span>
         },
         {
-            header: "Producto",
+            header: t('medical.sickness.detail.column.product', { defaultValue: 'Producto' }),
             accessor: "medication.name",
             type: "text",
             isFilterable: true,
             render: (_, row) => <span>{row.medication.name}</span>
         },
         {
-            header: "Dosis",
+            header: t('medical.sickness.detail.column.dose', { defaultValue: 'Dosis' }),
             accessor: "dose",
             type: "text",
             isFilterable: true,
             render: (_, row) => <span>{row.dose} {row.unit_measurement}</span>
         },
         {
-            header: "Administracion",
+            header: t('medical.sickness.detail.column.adminRoute', { defaultValue: 'Administracion' }),
             accessor: "administration_route",
             type: "text",
             isFilterable: true,
             render: (value: string) => {
                 let color = "secondary";
-                let label = value;
+                const label = t(`medical.medication.route.${value}`, { defaultValue: value });
 
                 switch (value) {
-                    case "oral":
-                        color = "info";
-                        label = "Oral";
-                        break;
+                    case "oral": color = "info"; break;
                     case "intramuscular":
-                        color = "primary";
-                        label = "Intramuscular";
-                        break;
                     case "subcutaneous":
-                        color = "primary";
-                        label = "Subcutánea";
-                        break;
                     case "intravenous":
-                        color = "primary";
-                        label = "Intravenosa";
-                        break;
                     case "intranasal":
-                        color = "primary";
-                        label = "Intranasal";
-                        break;
                     case "topical":
-                        color = "primary";
-                        label = "Tópica";
-                        break;
                     case "rectal":
-                        color = "primary";
-                        label = "Rectal";
-                        break;
+                        color = "primary"; break;
                 }
 
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { header: 'Inicio', accessor: 'startDate', type: 'date', },
-        { header: 'Fin', accessor: 'endDate', type: 'date', },
+        { header: t('medical.sickness.detail.column.startDate', { defaultValue: 'Inicio' }), accessor: 'startDate', type: 'date', },
+        { header: t('medical.sickness.detail.column.endDate', { defaultValue: 'Fin' }), accessor: 'endDate', type: 'date', },
     ]
 
     const fetchData = async () => {
@@ -187,7 +145,7 @@ const SicknessDetails: React.FC<SicknessDetailsProps> = ({ pigId, sicknessId }) 
             setTreatmentItems(sicknessData.treatment);
         } catch (error) {
             console.error('Error fetching data:', error);
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al cargar los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('medical.sickness.detail.error.load', { defaultValue: 'Ha ocurrido un error al cargar los datos, intentelo mas tarde' }) })
         } finally {
             setLoading(false);
         }
@@ -210,7 +168,7 @@ const SicknessDetails: React.FC<SicknessDetailsProps> = ({ pigId, sicknessId }) 
                 <div className="">
                     <Card className="shadow-sm">
                         <CardHeader className="bg-light fw-bold fs-5">
-                            Información de enfermedad
+                            {t('medical.sickness.detail.sicknessInfo', { defaultValue: 'Información de enfermedad' })}
                         </CardHeader>
                         <CardBody>
                             <ObjectDetails
@@ -222,7 +180,7 @@ const SicknessDetails: React.FC<SicknessDetailsProps> = ({ pigId, sicknessId }) 
 
                     <Card className="shadow-sm">
                         <CardHeader className="bg-light fw-bold fs-5">
-                            Síntomas
+                            {t('medical.sickness.detail.symptoms', { defaultValue: 'Síntomas' })}
                         </CardHeader>
 
                         <CardBody className="d-flex flex-column">
@@ -231,7 +189,7 @@ const SicknessDetails: React.FC<SicknessDetailsProps> = ({ pigId, sicknessId }) 
                             ) : (
                                 <div className="text-muted fst-italic d-flex align-items-center justify-content-center flex-grow-1 gap-2">
                                     <i className="fa-solid fa-circle-info" />
-                                    No se registraron síntomas
+                                    {t('medical.sickness.detail.noSymptoms', { defaultValue: 'No se registraron síntomas' })}
                                 </div>
                             )}
                         </CardBody>
@@ -241,7 +199,7 @@ const SicknessDetails: React.FC<SicknessDetailsProps> = ({ pigId, sicknessId }) 
                 <div className="d-flex flex-column gap-3 align-items-stretch" style={{ flex: 1 }}>
                     <Card className="shadow-sm w-100 h-100">
                         <CardHeader className="bg-light fw-bold fs-5">
-                            Tratamiento
+                            {t('medical.sickness.detail.treatment', { defaultValue: 'Tratamiento' })}
                         </CardHeader>
 
                         <CardBody className="d-flex flex-column p-0">
@@ -256,7 +214,7 @@ const SicknessDetails: React.FC<SicknessDetailsProps> = ({ pigId, sicknessId }) 
                             ) : (
                                 <div className="text-muted fst-italic d-flex align-items-center justify-content-center flex-grow-1 gap-2">
                                     <i className="fa-solid fa-pills" />
-                                    No se asignó tratamiento
+                                    {t('medical.sickness.detail.noTreatment', { defaultValue: 'No se asignó tratamiento' })}
                                 </div>
                             )}
                         </CardBody>

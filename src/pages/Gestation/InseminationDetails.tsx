@@ -14,9 +14,19 @@ import "simplebar-react/dist/simplebar.min.css";
 import DiagnosisForm from "Components/Common/Forms/DiagnoseForm";
 import HeatForm from "Components/Common/Forms/HeatForm";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
+import { useTranslation } from "react-i18next";
+
+const STATUS_BG: Record<string, string> = {
+    active: 'bg-success', completed: 'bg-primary', failed: 'bg-danger',
+};
+const RESULT_BG: Record<string, string> = {
+    pregnant: 'bg-success', empty: 'bg-danger', doubtful: 'bg-warning',
+    resorption: 'bg-danger', abortion: 'bg-black',
+};
 
 const InseminationDetails = () => {
     document.title = 'Detalles de inseminación | System Management'
+    const { t } = useTranslation();
     const { insemination_id } = useParams();
     const navigate = useNavigate();
     const configContext = useContext(ConfigContext);
@@ -35,45 +45,30 @@ const InseminationDetails = () => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
 
+    // Attribute arrays defined inside component to allow t() usage
     const sowAttributes: Attribute[] = [
-        { key: "code", label: "Código", type: "text" },
-        { key: "birthdate", label: "Fecha de nacimiento", type: "date" },
-        { key: "breed", label: "Raza", type: "text" },
-        { key: "origin", label: "Origen", type: "text" },
-        { key: "weight", label: "Peso actual", type: "text" },
+        { key: "code", label: t('insemination.detail.sow.code'), type: "text" },
+        { key: "birthdate", label: t('insemination.detail.sow.birthdate'), type: "date" },
+        { key: "breed", label: t('insemination.detail.sow.breed'), type: "text" },
+        { key: "origin", label: t('insemination.detail.sow.origin'), type: "text" },
+        { key: "weight", label: t('insemination.detail.sow.weight'), type: "text" },
         {
             key: "status",
-            label: "Estado",
+            label: t('insemination.detail.sow.status'),
             type: "text",
             render: (value: string) => {
-                let color = 'secondary';
-                let label = value;
-
-                switch (value) {
-                    case 'alive':
-                        color = 'success';
-                        label = 'Vivo';
-                        break;
-                    case 'discarded':
-                        color = 'warning';
-                        label = 'Descartado';
-                        break;
-                    case 'dead':
-                        color = 'danger';
-                        label = 'Muerto';
-                        break;
-                }
-
+                const color = value === 'alive' ? 'success' : value === 'discarded' ? 'warning' : value === 'dead' ? 'danger' : 'secondary';
+                const label = t(`insemination.detail.sow.status${value.charAt(0).toUpperCase() + value.slice(1)}`, { defaultValue: value });
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { key: "observations", label: "Observaciones", type: "text" },
+        { key: "observations", label: t('insemination.detail.sow.observations'), type: "text" },
     ]
 
     const inseminationAttributes: Attribute[] = [
         {
             key: 'responsible',
-            label: 'Responsable',
+            label: t('insemination.detail.attr.responsible'),
             type: 'text',
             render: (_, obj) => (
                 <Button className="p-0 fs-5" color="link" onClick={() => navigate(`/users/user_details/${obj.responsible._id}`)}>
@@ -81,11 +76,11 @@ const InseminationDetails = () => {
                 </Button>
             )
         },
-        { key: 'date', label: 'F. inseminación', type: 'date' },
-        { key: 'notes', label: 'Notas', type: 'text' },
+        { key: 'date', label: t('insemination.detail.attr.date'), type: 'date' },
+        { key: 'notes', label: t('insemination.detail.attr.notes'), type: 'text' },
         {
             key: 'estimated_farrowing_date',
-            label: 'Parto est.',
+            label: t('insemination.detail.attr.estimatedFarrowing'),
             type: 'date',
             render: (_: any, obj: any) => {
                 const baseDate = new Date(obj.date);
@@ -96,11 +91,11 @@ const InseminationDetails = () => {
     ]
 
     const diagnoseAttributes: Attribute[] = [
-        { key: 'diagnosis_date', label: 'F. diagnostico', type: 'date' },
-        { key: 'diagnose_notes', label: 'Notas', type: 'text' },
+        { key: 'diagnosis_date', label: t('insemination.detail.attr.diagnosisDate'), type: 'date' },
+        { key: 'diagnose_notes', label: t('insemination.detail.attr.diagnoseNotes'), type: 'text' },
         {
             key: 'diagnose_responsible',
-            label: 'Responable',
+            label: t('insemination.detail.attr.diagnoseResponsible'),
             type: 'text',
             render: (_, obj) =>
                 <Button className="p-0 fs-5" color="link" onClick={() => navigate(`/users/user_details/${obj.diagnose_responsible._id}`)}>
@@ -110,9 +105,9 @@ const InseminationDetails = () => {
     ]
 
     const abortionAttributes: Attribute[] = [
-        { key: 'date', label: 'Fecha de aborto', type: 'date' },
-        { key: 'probable_cause', label: 'Causa probable', type: 'text' },
-        { key: 'notes', label: 'Notas', type: 'text' },
+        { key: 'date', label: t('insemination.detail.attr.abortionDate'), type: 'date' },
+        { key: 'probable_cause', label: t('insemination.detail.attr.probableCause'), type: 'text' },
+        { key: 'notes', label: t('insemination.detail.attr.notes'), type: 'text' },
     ]
 
     const fetchData = async () => {
@@ -131,7 +126,7 @@ const InseminationDetails = () => {
             setDosesDetails(dosesResponse.data.data)
         } catch (error) {
             console.error('Error fetching data:', error);
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('insemination.error.load') })
         } finally {
             setLoading(false);
         }
@@ -149,7 +144,7 @@ const InseminationDetails = () => {
             toggleModal('viewPDF');
         } catch (error) {
             console.error('Error generating PDF: ', { error });
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('insemination.error.pdf') });
         } finally {
             setPdfLoading(false);
         }
@@ -168,12 +163,12 @@ const InseminationDetails = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Detalles de inseminación"} pageTitle={"Inseminaciones"} />
+                <BreadCrumb title={t('insemination.breadcrumb.detailTitle')} pageTitle={t('insemination.breadcrumb.detailParent')} />
 
                 <div className="mb-4 d-flex justify-content-between align-items-center">
                     <Button onClick={() => navigate(-1)}>
                         <i className="ri-arrow-left-line me-2" />
-                        Regresar
+                        {t('insemination.detail.button.back')}
                     </Button>
 
                     <Button
@@ -184,12 +179,12 @@ const InseminationDetails = () => {
                         {pdfLoading ? (
                             <>
                                 <Spinner className="me-2" size='sm' />
-                                Generando...
+                                {t('insemination.action.generating')}
                             </>
                         ) : (
                             <>
                                 <i className="ri-file-pdf-line me-2"></i>
-                                Ver PDF
+                                {t('insemination.detail.button.pdf')}
                             </>
                         )}
                     </Button>
@@ -199,56 +194,31 @@ const InseminationDetails = () => {
                     <Row className="h-100 g-3">
                         <Col lg={3} className="h-100 d-flex flex-column">
                             <div className="d-flex flex-column h-100 gap-3">
-                                <Card className="m-0 flex-fill d-flex flex-column min-h-0"> {/* Added min-h-0 */}
+                                <Card className="m-0 flex-fill d-flex flex-column min-h-0">
                                     <CardHeader>
-                                        <span className="fs-5 text-black">Estado</span>
+                                        <span className="fs-5 text-black">{t('insemination.detail.card.status')}</span>
                                     </CardHeader>
                                     <CardBody className="d-flex justify-content-center align-items-center">
-                                        {(() => {
-                                            switch (inseminationDetails.status) {
-                                                case "active":
-                                                    return (
-                                                        <span className="bg-success text-white rounded-5 fs-5 px-3 py-1">
-                                                            Activa
-                                                        </span>
-                                                    );
-                                                case "completed":
-                                                    return (
-                                                        <span className="bg-primary text-white rounded-5 fs-5 px-3 py-1">
-                                                            Completada
-                                                        </span>
-                                                    );
-                                                case "failed":
-                                                    return (
-                                                        <span className="bg-danger text-white rounded-5 fs-5 px-3 py-1">
-                                                            Fallida
-                                                        </span>
-                                                    );
-                                                default:
-                                                    return (
-                                                        <span className="bg-secondary text-white rounded-5 fs-5 px-3 py-1">
-                                                            Desconocido
-                                                        </span>
-                                                    );
-                                            }
-                                        })()}
+                                        <span className={`${STATUS_BG[inseminationDetails.status] || 'bg-secondary'} text-white rounded-5 fs-5 px-3 py-1`}>
+                                            {t(`insemination.status.${inseminationDetails.status}`, { defaultValue: t('insemination.status.unknown') })}
+                                        </span>
                                     </CardBody>
                                 </Card>
 
-                                <Card className="m-0 flex-fill d-flex flex-column min-h-0"> {/* Added min-h-0 */}
+                                <Card className="m-0 flex-fill d-flex flex-column min-h-0">
                                     <CardHeader>
-                                        <span className="text-black fs-5"> Informacion de inseminación</span>
+                                        <span className="text-black fs-5">{t('insemination.detail.card.info')}</span>
                                     </CardHeader>
                                     <CardBody className="flex-fill">
                                         <ObjectDetails attributes={inseminationAttributes} object={inseminationDetails} />
                                     </CardBody>
                                 </Card>
 
-                                <Card className="m-0 flex-fill d-flex flex-column min-h-0" > {/* Added min-h-0 */}
+                                <Card className="m-0 flex-fill d-flex flex-column min-h-0">
                                     <CardHeader className="d-flex justify-content-between align-items-center">
-                                        <span className="text-black fs-5">Cerda inseminada</span>
+                                        <span className="text-black fs-5">{t('insemination.detail.card.sow')}</span>
                                         <Button color='link' onClick={() => navigate(`/pigs/pig_details/${inseminationDetails.sow}`)}>
-                                            Toda la informacion ↗
+                                            {t('insemination.detail.card.allInfo')}
                                         </Button>
                                     </CardHeader>
                                     <CardBody className="flex-fill">
@@ -262,76 +232,36 @@ const InseminationDetails = () => {
                             <div className="d-flex flex-column h-100 gap-3">
                                 <Card className="m-0" style={{ flex: '0 0 auto' }}>
                                     <CardHeader className="d-flex justify-content-between">
-                                        <span className="text-black fs-5">Resultado</span>
+                                        <span className="text-black fs-5">{t('insemination.detail.card.result')}</span>
 
                                         {inseminationDetails && inseminationDetails.result === 'abortion' && (
                                             <Button className="p-0" color="link" onClick={() => toggleModal('abortionDetails')}>
-                                                Detalles de aborto ↗
+                                                {t('insemination.detail.card.abortionDetails')}
                                             </Button>
                                         )}
-
                                     </CardHeader>
                                     <CardBody className="d-flex justify-content-center align-items-center">
                                         {inseminationDetails.result === null ? (
                                             <>
                                                 <FiAlertCircle className="text-muted" size={22} />
                                                 <span className="fs-5 text-black text-muted text-center rounded-5 ms-2">
-                                                    Esta inseminación aun no tiene resultado
+                                                    {t('insemination.detail.card.noResult')}
                                                 </span>
                                             </>
                                         ) : (
-                                            <>
-                                                {(() => {
-                                                    switch (inseminationDetails.result) {
-                                                        case "pregnant":
-                                                            return (
-                                                                <span className="bg-success text-white rounded-5 fs-5 px-3 py-1">
-                                                                    Preñada
-                                                                </span>
-                                                            );
-                                                        case "empty":
-                                                            return (
-                                                                <span className="bg-danger text-white rounded-5 fs-5 px-3 py-1">
-                                                                    Vacia
-                                                                </span>
-                                                            );
-                                                        case "doubtful":
-                                                            return (
-                                                                <span className="bg-warning text-white rounded-5 fs-5 px-3 py-1">
-                                                                    Dudosa
-                                                                </span>
-                                                            );
-                                                        case "resorption":
-                                                            return (
-                                                                <span className="bg-danger text-white rounded-5 fs-5 px-3 py-1">
-                                                                    Reabsorción
-                                                                </span>
-                                                            );
-                                                        case "abortion":
-                                                            return (
-                                                                <span className="bg-black text-white rounded-5 fs-5 px-3 py-1">
-                                                                    Aborto
-                                                                </span>
-                                                            );
-                                                        default:
-                                                            return (
-                                                                <span className="bg-secondary text-white rounded-5 fs-5 px-3 py-1">
-                                                                    Desconocido
-                                                                </span>
-                                                            );
-                                                    }
-                                                })()}
-                                            </>
+                                            <span className={`${RESULT_BG[inseminationDetails.result] || 'bg-secondary'} text-white rounded-5 fs-5 px-3 py-1`}>
+                                                {t(`insemination.result.${inseminationDetails.result}`, { defaultValue: t('insemination.result.unknown') })}
+                                            </span>
                                         )}
                                     </CardBody>
                                 </Card>
 
                                 <Card className="m-0" style={{ flex: '0 0 auto' }}>
                                     <CardHeader className="d-flex justify-content-between">
-                                        <span className="text-black fs-5">Diagnostico</span>
+                                        <span className="text-black fs-5">{t('insemination.detail.card.diagnosis')}</span>
 
                                         <Button className="" size="sm" onClick={() => toggleModal('diagnosis')} disabled={inseminationDetails.status !== 'active'}>
-                                            Diagnosticar
+                                            {t('insemination.detail.button.diagnose')}
                                         </Button>
                                     </CardHeader>
                                     <CardBody className={!inseminationDetails.diagnosis_date ? 'justify-content-center align-items-center d-flex' : ''}>
@@ -339,7 +269,7 @@ const InseminationDetails = () => {
                                             <div className="">
                                                 <FiAlertCircle className="text-muted" size={22} />
                                                 <span className="fs-5 text-black text-muted text-center rounded-5 ms-2">
-                                                    Esta inseminación aun no tiene dianostico
+                                                    {t('insemination.detail.card.noDiagnosis')}
                                                 </span>
                                             </div>
                                         ) : (
@@ -350,10 +280,10 @@ const InseminationDetails = () => {
 
                                 <Card className="m-0 flex-fill d-flex flex-column min-h-0">
                                     <CardHeader className="d-flex gap-2 justify-content-between">
-                                        <span className="text-black fs-5">Celo</span>
+                                        <span className="text-black fs-5">{t('insemination.detail.card.heat')}</span>
 
                                         <Button className="" size="sm" onClick={() => toggleModal('heat')} disabled={inseminationDetails.status !== 'active'}>
-                                            Registrar celo
+                                            {t('insemination.detail.button.registerHeat')}
                                         </Button>
                                     </CardHeader>
                                     <CardBody className={`flex-fill p-0`} style={{ minHeight: '200px' }}>
@@ -363,7 +293,7 @@ const InseminationDetails = () => {
                                                     <div className="h-100 d-flex justify-content-center align-items-center">
                                                         <FiAlertCircle className="text-muted" size={22} />
                                                         <span className="fs-5 text-black text-muted text-center rounded-5 ms-2">
-                                                            No se ha registrado celo
+                                                            {t('insemination.detail.card.noHeat')}
                                                         </span>
                                                     </div>
                                                 ) : (
@@ -373,7 +303,7 @@ const InseminationDetails = () => {
                                                             .map((heat: any, idx: number) => (
                                                                 <div key={idx} className="d-flex align-items-start gap-3 p-3 border rounded bg-light">
                                                                     <span className={`fs-6 fw-semibold py-2 px-3 rounded text-white ${heat.heat_detected ? "bg-success" : "bg-secondary"}`} style={{ width: "120px", textAlign: "center", flexShrink: 0 }}>
-                                                                        {heat.heat_detected ? "Detectado" : "No detectado"}
+                                                                        {heat.heat_detected ? t('insemination.detail.heat.detected') : t('insemination.detail.heat.notDetected')}
                                                                     </span>
 
                                                                     <div className="flex-grow-1">
@@ -407,14 +337,11 @@ const InseminationDetails = () => {
                         <Col lg={5} className="h-100 d-flex flex-column">
                             <Card className="m-0 h-100 d-flex flex-column min-h-0">
                                 <CardHeader>
-                                    <span className="text-black fs-5">Dosis aplicadas</span>
+                                    <span className="text-black fs-5">{t('insemination.detail.card.doses')}</span>
                                 </CardHeader>
                                 <CardBody className="flex-fill p-0 pb-3" style={{ minHeight: '300px' }}>
                                     <SimpleBar
-                                        style={{
-                                            height: '100%',
-                                            maxHeight: '100%'
-                                        }}
+                                        style={{ height: '100%', maxHeight: '100%' }}
                                         className="h-100"
                                     >
                                         <div className="p-3">
@@ -422,7 +349,7 @@ const InseminationDetails = () => {
                                                 <div className="h-100 d-flex justify-content-center align-items-center">
                                                     <FiAlertCircle className="text-muted" size={22} />
                                                     <span className="fs-5 text-black text-muted text-center rounded-5 ms-2">
-                                                        No hay dosis aplicadas
+                                                        {t('insemination.detail.card.noDoses')}
                                                     </span>
                                                 </div>
                                             ) : (
@@ -437,23 +364,19 @@ const InseminationDetails = () => {
 
                                                                 <div className="flex-grow-1 d-flex flex-column gap-1 fs-5">
                                                                     <div className="d-flex justify-content-between">
-                                                                        <span className="fw-semibold text-black">Código:</span>
-                                                                        <span className="text-black">{dose.dose_info.code}</span>
-                                                                    </div>
-                                                                    <div className="d-flex justify-content-between">
-                                                                        <span className="fw-semibold text-black">Volumen semen:</span>
+                                                                        <span className="fw-semibold text-black">{t('insemination.detail.dose.semenVolume')}</span>
                                                                         <span className="text-black">{dose.dose_info.semen_volume} {dose.dose_info.unit_measurement}</span>
                                                                     </div>
                                                                     <div className="d-flex justify-content-between">
-                                                                        <span className="fw-semibold text-black">Volumen diluyente:</span>
+                                                                        <span className="fw-semibold text-black">{t('insemination.detail.dose.diluentVolume')}</span>
                                                                         <span className="text-black">{dose.dose_info.diluent_volume} {dose.dose_info.unit_measurement}</span>
                                                                     </div>
                                                                     <div className="d-flex justify-content-between">
-                                                                        <span className="fw-semibold text-black">Volumen total:</span>
+                                                                        <span className="fw-semibold text-black">{t('insemination.detail.dose.totalVolume')}</span>
                                                                         <span className="text-black">{dose.dose_info.total_volume} {dose.dose_info.unit_measurement}</span>
                                                                     </div>
                                                                     <div className="d-flex justify-content-between text-muted">
-                                                                        <span className="text-black">Fecha de aplicación:</span>
+                                                                        <span className="text-black">{t('insemination.detail.dose.applicationDate')}</span>
                                                                         <span className="text-black">{new Date(dose.time).toLocaleString("es-ES")}</span>
                                                                     </div>
                                                                 </div>
@@ -471,9 +394,8 @@ const InseminationDetails = () => {
                 </div>
             </Container>
 
-            {/* Modal PDF */}
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de inseminación</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('insemination.detail.modal.report')}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>
@@ -482,21 +404,21 @@ const InseminationDetails = () => {
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
 
             <Modal size="lg" isOpen={modals.diagnosis} toggle={() => toggleModal("diagnosis")} backdrop="static" keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("diagnosis")}>Registrar diagnóstico</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("diagnosis")}>{t('insemination.modal.diagnosis')}</ModalHeader>
                 <ModalBody>
                     <DiagnosisForm insemination={{ ...inseminationDetails, sow: { _id: inseminationDetails.sow } }} onSave={() => { toggleModal('diagnosis'); fetchData() }} onCancel={() => toggleModal('diagnosis')} />
                 </ModalBody>
             </Modal>
 
             <Modal size="lg" isOpen={modals.heat} toggle={() => toggleModal("heat")} backdrop="static" keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("heat")}>Registrar celo</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("heat")}>{t('insemination.modal.heat')}</ModalHeader>
                 <ModalBody>
                     {inseminationDetails && <HeatForm insemination={inseminationDetails} onSave={() => { toggleModal('heat'); fetchData() }} onCancel={() => toggleModal('heat')} />}
                 </ModalBody>
             </Modal>
 
             <Modal size="lg" isOpen={modals.abortionDetails} toggle={() => toggleModal("abortionDetails")} backdrop="static" centered>
-                <ModalHeader toggle={() => toggleModal("abortionDetails")}>Detalles de aborto</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("abortionDetails")}>{t('insemination.detail.modal.abortionDetails')}</ModalHeader>
                 <ModalBody className="mt-3">
                     <ObjectDetails attributes={abortionAttributes} object={abortionDetails} />
                 </ModalBody>

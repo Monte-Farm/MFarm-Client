@@ -12,6 +12,7 @@ import { Attribute } from "common/data_interfaces";
 import AbortionForm from "../Forms/AbortionForm";
 import BirthForm from "../Forms/BirthForm";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
+import { useTranslation } from "react-i18next";
 
 interface PregnancyDetailsProps {
     pregnancyId: string;
@@ -19,6 +20,7 @@ interface PregnancyDetailsProps {
 
 const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => {
     document.title = "Detalles de embarazo | Management System"
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [pregnancyDetails, setPregnancyDetails] = useState<any>({});
@@ -39,63 +41,47 @@ const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => 
     const getFarrowingStatusConfig = (status: string) => {
         switch (status) {
             case "pregnant":
-                return { color: "success", text: "Gestando" };
+                return { color: "success", text: t('pregnancy.detail.statusPregnant', { defaultValue: 'Gestando' }) };
             case "close_to_farrow":
-                return { color: "warning", text: "Próxima a parir" };
+                return { color: "warning", text: t('pregnancy.detail.statusCloseToFarrow', { defaultValue: 'Próxima a parir' }) };
             case "farrowing_pending":
-                return { color: "info", text: "Parto pendiente" };
+                return { color: "info", text: t('pregnancy.detail.statusFarrowingPending', { defaultValue: 'Parto pendiente' }) };
             case "overdue_farrowing":
-                return { color: "danger", text: "Parto atrasado" };
+                return { color: "danger", text: t('pregnancy.detail.statusOverdueFarrowing', { defaultValue: 'Parto atrasado' }) };
             case "farrowed":
-                return { color: "dark", text: "Parida" };
+                return { color: "dark", text: t('pregnancy.detail.statusFarrowed', { defaultValue: 'Parida' }) };
             case "abortion":
-                return { color: "dark", text: "Aborto" };
+                return { color: "dark", text: t('pregnancy.detail.statusAbortion', { defaultValue: 'Aborto' }) };
             default:
-                return { color: "secondary", text: "Desconocido" };
+                return { color: "secondary", text: t('pregnancy.detail.statusUnknown', { defaultValue: 'Desconocido' }) };
         }
     };
 
     const sowAttributes: Attribute[] = [
-        { key: "code", label: "Código", type: "text" },
-        { key: "birthdate", label: "Fecha de nacimiento", type: "date" },
-        { key: "breed", label: "Raza", type: "text" },
-        { key: "origin", label: "Origen", type: "text" },
-        { key: "weight", label: "Peso actual", type: "text" },
+        { key: "code", label: t('common.field.code', { defaultValue: 'Código' }), type: "text" },
+        { key: "birthdate", label: t('common.field.birthDate', { defaultValue: 'Fecha de nacimiento' }), type: "date" },
+        { key: "breed", label: t('common.field.breed', { defaultValue: 'Raza' }), type: "text" },
+        { key: "origin", label: t('pigs.field.origin', { defaultValue: 'Origen' }), type: "text" },
+        { key: "weight", label: t('common.field.weightCurrent', { defaultValue: 'Peso actual' }), type: "text" },
         {
             key: "status",
-            label: "Estado",
+            label: t('common.field.status', { defaultValue: 'Estado' }),
             type: "text",
             render: (value: string) => {
-                let color = 'secondary';
-                let label = value;
-
-                switch (value) {
-                    case 'alive':
-                        color = 'success';
-                        label = 'Vivo';
-                        break;
-                    case 'discarded':
-                        color = 'warning';
-                        label = 'Descartado';
-                        break;
-                    case 'dead':
-                        color = 'danger';
-                        label = 'Muerto';
-                        break;
-                }
-
+                const color = value === 'alive' ? 'success' : value === 'discarded' ? 'warning' : value === 'dead' ? 'danger' : 'secondary';
+                const label = t(`pigs.status.${value}`, { defaultValue: value });
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { key: "observations", label: "Observaciones", type: "text" },
+        { key: "observations", label: t('pigs.field.observations', { defaultValue: 'Observaciones' }), type: "text" },
     ]
 
     const inseminationAttributes: Attribute[] = [
-        { key: 'date', label: 'F. inseminación', type: 'date' },
-        { key: 'notes', label: 'Notas', type: 'text' },
+        { key: 'date', label: t('insemination.detail.attr.date', { defaultValue: 'F. inseminación' }), type: 'date' },
+        { key: 'notes', label: t('insemination.detail.attr.notes', { defaultValue: 'Notas' }), type: 'text' },
         {
             key: 'estimated_farrowing_date',
-            label: 'Parto est.',
+            label: t('insemination.detail.attr.estimatedFarrowing', { defaultValue: 'Parto est.' }),
             type: 'date',
             render: (_: any, obj: any) => {
                 const baseDate = new Date(obj.date);
@@ -105,41 +91,17 @@ const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => 
         },
         {
             key: "result",
-            label: "Resultado",
+            label: t('insemination.column.result', { defaultValue: 'Resultado' }),
             type: "text",
             render: (value: string) => {
-                let color = 'secondary';
-                let label = value;
-
-                switch (value) {
-                    case 'pregnant':
-                        color = 'success';
-                        label = 'Embarazada';
-                        break;
-                    case 'doubtful':
-                        color = 'warning';
-                        label = 'Dudosa';
-                        break;
-                    case 'empty':
-                        color = 'danger';
-                        label = 'Vacia';
-                        break;
-                    case 'resorption':
-                        color = 'warning';
-                        label = 'Reabsorsión';
-                        break;
-                    case 'abortion':
-                        color = 'danger';
-                        label = 'Aborto';
-                        break;
-                }
-
+                const color = value === 'pregnant' ? 'success' : value === 'doubtful' ? 'warning' : value === 'empty' ? 'danger' : value === 'resorption' ? 'warning' : value === 'abortion' ? 'danger' : 'secondary';
+                const label = t(`pregnancy.detail.result${value.charAt(0).toUpperCase() + value.slice(1)}`, { defaultValue: value });
                 return <Badge color={color}>{label}</Badge>;
             },
         },
         {
             key: 'doses',
-            label: 'Dosis aplicadas',
+            label: t('insemination.detail.card.doses', { defaultValue: 'Dosis aplicadas' }),
             type: 'text',
             render: (_: any, obj: any) => <span className="text-black">{inseminationDetails.doses.length}</span>
         },
@@ -158,7 +120,7 @@ const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => 
             setPregnancyDetails(restPregnancy)
         } catch (error) {
             console.error('Error fetching data:', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('pregnancy.detail.errorLoad', { defaultValue: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' }) })
         } finally {
             setLoaging(false)
         }
@@ -176,7 +138,7 @@ const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => 
             toggleModal('viewPDF');
         } catch (error) {
             console.error('Error generating PDF: ', { error });
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('pregnancy.detail.errorPdf', { defaultValue: 'Error al generar el PDF, intentelo más tarde' }) });
         } finally {
             setPdfLoading(false);
         }
@@ -197,37 +159,37 @@ const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => 
         <div className="">
             <Card className="shadow-sm h-100">
                 <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
-                    <h5>Progreso del embarazo</h5>
+                    <h5>{t('pregnancy.detail.pregnancyProgress', { defaultValue: 'Progreso del embarazo' })}</h5>
 
                     <div className="d-flex gap-2">
-                        <Button 
-                            color="primary" 
+                        <Button
+                            color="primary"
                             onClick={handlePrintPregnancy}
                             disabled={pdfLoading}
                         >
                             {pdfLoading ? (
                                 <>
                                     <Spinner className="me-2" size='sm' />
-                                    Generando...
+                                    {t('pregnancy.detail.generating', { defaultValue: 'Generando...' })}
                                 </>
                             ) : (
                                 <>
                                     <i className="ri-file-pdf-line me-2"></i>
-                                    Ver PDF
+                                    {t('pregnancy.detail.actionViewPdf', { defaultValue: 'Ver PDF' })}
                                 </>
                             )}
                         </Button>
-                        
+
                         {pregnancyDetails.farrowing_status !== 'farrowed' && pregnancyDetails.farrowing_status !== 'abortion' && (
                             <Button color="danger" onClick={() => toggleModal('abortion')}>
                                 <i className="bx bxs-skull me-2 align-middle fs-5" />
-                                Registrar perdida
+                                {t('pregnancy.detail.actionRegisterLoss', { defaultValue: 'Registrar perdida' })}
                             </Button>
                         )}
 
                         <Button onClick={() => toggleModal('birth')} disabled={pregnancyDetails.farrowing_status === 'farrowed' || pregnancyDetails.farrowing_status === 'pregnant' || pregnancyDetails.farrowing_status === 'abortion'}>
                             <i className="bx bx-dna align-middle me-2 fs-5" />
-                            Registrar parto
+                            {t('pregnancy.detail.actionRegisterBirth', { defaultValue: 'Registrar parto' })}
                         </Button>
                     </div>
 
@@ -235,13 +197,11 @@ const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => 
                 </CardHeader>
                 <CardBody>
                     <div className="d-flex flex-column justify-content-between align-items-center h-100">
-                        {/* <img src={pigSilhouette} height="200px" alt="Pig silhouette" className="mb-4" /> */}
-
                         {pregnancyDetails.start_date && (
                             <div className="w-100">
                                 <div className="d-flex justify-content-between align-items-center mb-2">
                                     <span className="fs-5 text-black">
-                                        Inseminación:{" "}
+                                        {t('pregnancy.detail.inseminationLabel', { defaultValue: 'Inseminación:' })}{" "}
                                         {new Date(pregnancyDetails.start_date).toLocaleDateString()}
                                     </span>
 
@@ -254,7 +214,7 @@ const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => 
                                     </Badge>
 
                                     <span className="fs-5 text-black">
-                                        Parto estimado:{" "}
+                                        {t('pregnancy.detail.estimatedBirth', { defaultValue: 'Parto estimado:' })}{" "}
                                         {pregnancyDetails.estimated_farrowing_date === null ? (
                                             <>
                                                 <span className="text-black">N/A</span>
@@ -302,9 +262,9 @@ const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => 
             <div className="d-flex gap-3 w-100 h-50">
                 <Card className="w-100" >
                     <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
-                        <span className="text-black fs-5">Cerda inseminada</span>
+                        <span className="text-black fs-5">{t('pregnancy.detail.sowInseminated', { defaultValue: 'Cerda inseminada' })}</span>
                         <Button color='link' onClick={() => navigate(`/pigs/pig_details/${inseminationDetails.sow}`)}>
-                            Toda la informacion ↗
+                            {t('pregnancy.detail.allInfo', { defaultValue: 'Toda la informacion ↗' })}
                         </Button>
                     </CardHeader>
                     <CardBody className="flex-fill">
@@ -314,9 +274,9 @@ const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => 
 
                 <Card className="w-100" >
                     <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
-                        <span className="text-black fs-5">Inseminación</span>
+                        <span className="text-black fs-5">{t('pregnancy.detail.insemination', { defaultValue: 'Inseminación' })}</span>
                         <Button color='link' onClick={() => navigate(`/gestation/insemination_details/${inseminationDetails._id}`)}>
-                            Toda la informacion ↗
+                            {t('pregnancy.detail.allInfo', { defaultValue: 'Toda la informacion ↗' })}
                         </Button>
                     </CardHeader>
                     <CardBody className="flex-fill">
@@ -326,7 +286,7 @@ const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => 
             </div>
 
             <Modal size="lg" isOpen={modals.abortion} toggle={() => toggleModal("abortion")} backdrop="static" keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("abortion")}>Registrar perdida</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("abortion")}>{t('pregnancy.detail.modalLossTitle', { defaultValue: 'Registrar perdida' })}</ModalHeader>
                 <ModalBody>
                     <AbortionForm pregnancy={{ _id: pregnancyId }} onSave={() => { toggleModal('abortion'); fetchData() }} onCancel={function (): void {
                         throw new Error("Function not implemented.");
@@ -335,7 +295,7 @@ const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => 
             </Modal>
 
             <Modal size="lg" isOpen={modals.birth} toggle={() => toggleModal("birth")} backdrop="static" keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("birth")}>Registrar perdida</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("birth")}>{t('pregnancy.detail.modalBirthTitle', { defaultValue: 'Registrar parto' })}</ModalHeader>
                 <ModalBody>
                     <BirthForm pregnancy={allPregnancyData} onSave={() => { toggleModal('birth'); fetchData(); }} onCancel={() => { }} />
                 </ModalBody>
@@ -343,7 +303,7 @@ const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => 
 
             {/* Modal PDF */}
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de embarazo</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('pregnancy.detail.modalPdfTitle', { defaultValue: 'Reporte de embarazo' })}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>

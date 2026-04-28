@@ -14,28 +14,15 @@ import SimpleBar from "simplebar-react";
 import ObjectDetails from "../Details/ObjectDetails";
 import SelectableCustomTable from "../Tables/SelectableTable";
 import AlertMessage from "../Shared/AlertMesagge";
+import { useTranslation } from "react-i18next";
 
 interface WeanLitterFormProps {
     groupId: string;
     onSave: () => void;
 }
 
-const statusData = {
-    weaning: {
-        proximo: "Crecimiento",
-        actual: "Destete",
-        color: "primary",
-        icon: "ri-arrow-up-circle-line"
-    },
-    fattening: {
-        proximo: "Salida",
-        actual: "Crecimiento y Ceba",
-        color: "warning",
-        icon: "ri-truck-line"
-    }
-};
-
 const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [modals, setModals] = useState({ confirm: false, success: false, error: false });
@@ -47,9 +34,25 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
 
     const [group, setGroup] = useState<any>()
     const [pigsArray, setPigsArray] = useState<any[]>([]);
-    const currentInfo = statusData[group?.stage as keyof typeof statusData] || statusData.weaning;
     const [useIndividualWeight, setUseIndividualWeight] = useState<boolean>(false);
     const [totalGroupWeight, setTotalGroupWeight] = useState<string>('');
+
+    const statusData = {
+        weaning: {
+            proximo: t('groups.form.changeStage.stageGrowth', { defaultValue: 'Crecimiento' }),
+            actual: t('groups.form.changeStage.stageWeaning', { defaultValue: 'Destete' }),
+            color: "primary",
+            icon: "ri-arrow-up-circle-line"
+        },
+        fattening: {
+            proximo: t('groups.form.changeStage.stageSale', { defaultValue: 'Salida' }),
+            actual: t('groups.form.changeStage.stageFattening', { defaultValue: 'Crecimiento y Ceba' }),
+            color: "warning",
+            icon: "ri-truck-line"
+        }
+    };
+
+    const currentInfo = statusData[group?.stage as keyof typeof statusData] || statusData.weaning;
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -68,132 +71,56 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
 
     const pigletsColumns: Column<any>[] = [
         {
-            header: 'Cerdo',
+            header: t('groups.column.code', { defaultValue: 'Cerdo' }),
             accessor: '',
             type: 'text',
-            render: (_, row,) => <span className="text-black">Cerdo {row.code}</span>
+            render: (_, row,) => <span className="text-black">{t('groups.column.code', { defaultValue: 'Cerdo' })} {row.code}</span>
         },
         {
-            header: 'Sexo',
+            header: t('groups.column.sex', { defaultValue: 'Sexo' }),
             accessor: 'sex',
             render: (value: string) => (
                 <Badge color={value === 'male' ? "info" : "danger"}>
-                    {value === 'male' ? "♂ Macho" : "♀ Hembra"}
+                    {value === 'male' ? `♂ ${t('pigs.sex.male', { defaultValue: 'Macho' })}` : `♀ ${t('pigs.sex.female', { defaultValue: 'Hembra' })}`}
                 </Badge>
             ),
         },
-        { header: 'Peso', accessor: 'newWeight', type: 'text' },
-    ]
+        { header: t('groups.kpi.avgWeightShort', { defaultValue: 'Peso' }), accessor: 'newWeight', type: 'text' },
+    ];
 
     const groupAttributes: Attribute[] = [
-        { key: "code", label: "Codigo", type: "text" },
-        { key: "name", label: "Nombre", type: "text" },
+        { key: "code", label: t('common.field.code', { defaultValue: 'Codigo' }), type: "text" },
+        { key: "name", label: t('common.field.name', { defaultValue: 'Nombre' }), type: "text" },
         {
             key: "area",
-            label: "Area",
+            label: t('groups.column.area', { defaultValue: 'Area' }),
             type: "text",
             render: (_, row) => {
                 let color = "secondary";
-                let text = "Desconocido";
-
-                switch (row.area) {
-                    case "gestation":
-                        color = "info";
-                        text = "Gestación";
-                        break;
-                    case "farrowing":
-                        color = "primary";
-                        text = "Paridera";
-                        break;
-                    case "maternity":
-                        color = "primary";
-                        text = "Maternidad";
-                        break;
-                    case "weaning":
-                        color = "success";
-                        text = "Destete";
-                        break;
-                    case "nursery":
-                        color = "warning";
-                        text = "Preceba / Levante inicial";
-                        break;
-                    case "fattening":
-                        color = "dark";
-                        text = "Ceba / Engorda";
-                        break;
-                    case "replacement":
-                        color = "secondary";
-                        text = "Reemplazo / Recría";
-                        break;
-                    case "boars":
-                        color = "info";
-                        text = "Área de verracos";
-                        break;
-                    case "quarantine":
-                        color = "danger";
-                        text = "Cuarentena / Aislamiento";
-                        break;
-                    case "hospital":
-                        color = "danger";
-                        text = "Hospital / Enfermería";
-                        break;
-                    case "shipping":
-                        color = "secondary";
-                        text = "Corrales de venta / embarque";
-                        break;
-                }
-
-                return <Badge color={color}>{text}</Badge>;
+                return <Badge color={color}>{t(`groups.area.${row.area}`, { defaultValue: row.area })}</Badge>;
             },
         },
         {
             key: "status",
-            label: "Estado",
+            label: t('groups.column.status', { defaultValue: 'Estado' }),
             type: "text",
             render: (_, row) => {
                 let color = "secondary";
-                let text = "Desconocido";
-
                 switch (row.status) {
-                    case "weaning":
-                        color = "info";
-                        text = "En destete";
-                        break;
-                    case "ready_to_grow":
-                        color = "primary";
-                        text = "Listo para crecimiento";
-                        break;
-                    case "grow_overdue":
-                        color = "warning";
-                        text = "Retradado en crecimiento";
-                        break;
-                    case "growing":
-                        color = "success";
-                        text = "En crecimiento y ceba";
-                        break;
-                    case "replacement":
-                        color = "secondary";
-                        text = "Reemplazo";
-                        break;
-                    case "ready_for_sale":
-                        color = "success";
-                        text = "Listo para venta";
-                        break;
-                    case "sale":
-                        color = "success";
-                        text = "En venta";
-                        break;
-                    case "sold":
-                        color = "success";
-                        text = "Vendido";
-                        break;
+                    case "weaning": color = "info"; break;
+                    case "ready_to_grow": color = "primary"; break;
+                    case "grow_overdue": color = "warning"; break;
+                    case "growing": color = "success"; break;
+                    case "replacement": color = "secondary"; break;
+                    case "ready_for_sale": color = "success"; break;
+                    case "sale": color = "success"; break;
+                    case "sold": color = "success"; break;
                 }
-
-                return <Badge color={color}>{text}</Badge>;
+                return <Badge color={color}>{t(`groups.status.${row.status}`, { defaultValue: row.status })}</Badge>;
             },
         },
-        { key: "creationDate", label: "Fecha de creacion", type: "date" },
-        { key: "observations", label: "Observaciones", type: "text" },
+        { key: "creationDate", label: t('groups.column.creationDate', { defaultValue: 'Fecha de creacion' }), type: "date" },
+        { key: "observations", label: t('groups.column.observations', { defaultValue: 'Observaciones' }), type: "text" },
     ];
 
     const fetchGroup = async () => {
@@ -299,7 +226,6 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
         fetchGroup();
     }, [])
 
-    // Calcular peso promedio cuando se usa peso total
     useEffect(() => {
         if (!useIndividualWeight && totalGroupWeight && pigsArray.length > 0) {
             const totalWeight = Number(totalGroupWeight);
@@ -336,7 +262,7 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
                             aria-controls="step-packageSelect-tab"
                             disabled
                         >
-                            Peso de lechones
+                            {t('groups.form.changeStage.step.weight', { defaultValue: 'Peso de lechones' })}
                         </NavLink>
                     </NavItem>
 
@@ -352,7 +278,7 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
                             aria-controls="step-summary-tab"
                             disabled
                         >
-                            Resumen
+                            {t('groups.form.changeStage.step.summary', { defaultValue: 'Resumen' })}
                         </NavLink>
                     </NavItem>
                 </Nav>
@@ -361,11 +287,10 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
             <TabContent activeTab={activeStep}>
                 <TabPane tabId={1}>
                     <div className="mb-4">
-                        <h5 className="fw-bold mb-1 text-dark">Registro de Peso</h5>
-                        <p className="text-muted small">Actualiza el pesaje para el seguimiento del grupo.</p>
+                        <h5 className="fw-bold mb-1 text-dark">{t('groups.form.changeStage.weightTitle', { defaultValue: 'Registro de Peso' })}</h5>
+                        <p className="text-muted small">{t('groups.form.changeStage.weightSubtitle', { defaultValue: 'Actualiza el pesaje para el seguimiento del grupo.' })}</p>
                     </div>
 
-                    {/* Toggle para modo de peso */}
                     <div className="card border-2 border-primary bg-primary-subtle mb-3" role="button" onClick={() => setUseIndividualWeight(!useIndividualWeight)}>
                         <div className="card-body d-flex align-items-center gap-3">
                             <Input
@@ -377,24 +302,23 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
                             <FaQuestionCircle className="text-primary" size={20} />
                             <div>
                                 <div className="fw-semibold">
-                                    Ingresar peso individual de cada cerdo
+                                    {t('groups.form.changeStage.individualWeight', { defaultValue: 'Ingresar peso individual de cada cerdo' })}
                                 </div>
                                 <div className="small text-muted">
                                     {useIndividualWeight
-                                        ? "Ingresa el peso de cada cerdo individualmente"
-                                        : "Ingresa el peso total del grupo y se asignará el peso promedio a cada cerdo"}
+                                        ? t('groups.form.changeStage.individualWeightOn', { defaultValue: 'Ingresa el peso de cada cerdo individualmente' })
+                                        : t('groups.form.changeStage.individualWeightOff', { defaultValue: 'Ingresa el peso total del grupo y se asignará el peso promedio a cada cerdo' })}
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Modo: Peso total del grupo */}
                     {!useIndividualWeight && (
                         <div className="card border-secondary-subtle mb-3">
                             <div className="card-body">
                                 <div className="row">
                                     <div className="col-md-6">
-                                        <label className="form-label fw-semibold">Peso total del grupo (kg)</label>
+                                        <label className="form-label fw-semibold">{t('groups.form.changeStage.totalGroupWeight', { defaultValue: 'Peso total del grupo (kg)' })}</label>
                                         <input
                                             type="number"
                                             step="0.01"
@@ -408,7 +332,7 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
                                         <div className="mt-4">
                                             <div className="d-flex align-items-center gap-2">
                                                 <i className="ri-calculator-line text-primary"></i>
-                                                <span className="text-muted">Peso promedio por cerdo:</span>
+                                                <span className="text-muted">{t('groups.form.changeStage.avgPerPig', { defaultValue: 'Peso promedio por cerdo:' })}</span>
                                                 <span className="fw-bold text-primary">
                                                     {totalGroupWeight && pigsArray.length > 0
                                                         ? (Number(totalGroupWeight) / pigsArray.length).toFixed(2)
@@ -418,7 +342,7 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
                                             </div>
                                             <div className="d-flex align-items-center gap-2 mt-1">
                                                 <i className="ri-group-line text-info"></i>
-                                                <span className="text-muted">Total de cerdos:</span>
+                                                <span className="text-muted">{t('groups.form.changeStage.totalPigs', { defaultValue: 'Total de cerdos:' })}</span>
                                                 <span className="fw-bold text-info">{pigsArray.length}</span>
                                             </div>
                                         </div>
@@ -428,7 +352,6 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
                         </div>
                     )}
 
-                    {/* Modo: Peso individual */}
                     {useIndividualWeight && (
                         <SimpleBar style={{ maxHeight: 450, paddingRight: 12 }}>
                             {pigsArray.map((pig, index) => {
@@ -440,7 +363,6 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
                                         <div className="card-body p-3">
                                             <div className="row align-items-center">
 
-                                                {/* Info del Cerdo */}
                                                 <div className="col-auto">
                                                     <div className={`bg-${accentColor} bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center`} style={{ width: '48px', height: '48px' }}>
                                                         <i className={`ri-${isMale ? 'men-line' : 'women-line'} fs-4 text-${accentColor}`}></i>
@@ -448,16 +370,15 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
                                                 </div>
 
                                                 <div className="col">
-                                                    <h6 className="mb-0 fw-bold text-dark">Cerdo {pig.code}</h6>
+                                                    <h6 className="mb-0 fw-bold text-dark">{t('groups.column.code', { defaultValue: 'Cerdo' })} {pig.code}</h6>
                                                     <span className={`badge bg-${accentColor} bg-opacity-25 text-${accentColor} text-uppercase px-2`} style={{ fontSize: '0.65rem', fontWeight: '700' }}>
-                                                        {isMale ? 'Macho' : 'Hembra'}
+                                                        {isMale ? t('pigs.sex.male', { defaultValue: 'Macho' }) : t('pigs.sex.female', { defaultValue: 'Hembra' })}
                                                     </span>
                                                 </div>
 
-                                                {/* Input de Peso */}
                                                 <div className="col-sm-5 col-12 mt-3 mt-sm-0">
                                                     <small className="text-muted">
-                                                        Actual: {pig.weight} kg
+                                                        {t('groups.metric.current', { defaultValue: 'Actual' })}: {pig.weight} kg
                                                     </small>
 
                                                     <div className="input-group">
@@ -505,10 +426,10 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
 
                     <div className="mt-4 pt-2 border-top d-flex align-items-center justify-content-between">
                         <span className="text-muted small">
-                            Total registros: <strong>{pigsArray.length}</strong>
+                            {t('groups.form.changeStage.totalRecords', { defaultValue: 'Total registros:' })} <strong>{pigsArray.length}</strong>
                         </span>
                         <Button className="ms-auto shadow-sm px-4" color="primary" onClick={() => setActiveStep(activeStep + 1)}>
-                            Siguiente
+                            {t('common.button.next', { defaultValue: 'Siguiente' })}
                             <i className="ri-arrow-right-line ms-2" />
                         </Button>
                     </div>
@@ -521,40 +442,37 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
 
                                 <div className="text-center mb-4">
                                     <h5 className="fw-bold text-dark mb-1">
-                                        Cambio de etapa
+                                        {t('groups.form.changeStage.stageChange', { defaultValue: 'Cambio de etapa' })}
                                     </h5>
                                     <span className="text-muted small">
-                                        El grupo pasará a la siguiente fase productiva
+                                        {t('groups.form.changeStage.stageChangeSubtitle', { defaultValue: 'El grupo pasará a la siguiente fase productiva' })}
                                     </span>
                                 </div>
 
                                 <div className="d-flex justify-content-center align-items-center gap-4 flex-wrap">
 
-                                    {/* Etapa actual */}
                                     <div className="text-center d-flex flex-column justify-content-center align-items-center">
                                         <div className="bg-light rounded-circle d-flex align-items-center justify-content-center mb-2 border" style={{ width: 70, height: 70 }}>
                                             <i className={`ri-information-line fs-2 text-secondary`} />
                                         </div>
                                         <div className="fw-semibold text-muted small">
-                                            Actual
+                                            {t('groups.form.changeStage.current', { defaultValue: 'Actual' })}
                                         </div>
                                         <div className="fw-bold text-dark">
                                             {currentInfo.actual}
                                         </div>
                                     </div>
 
-                                    {/* Flecha */}
                                     <div className="d-flex align-items-center">
                                         <i className="ri-arrow-right-line fs-2 text-muted" />
                                     </div>
 
-                                    {/* Próxima etapa */}
                                     <div className="text-center text-center d-flex flex-column justify-content-center align-items-center">
                                         <div className={`bg-${currentInfo.color} bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center mb-2`} style={{ width: 70, height: 70 }}>
                                             <i className={`${currentInfo.icon} fs-2 text-${currentInfo.color}`} />
                                         </div>
                                         <div className="fw-semibold text-muted small">
-                                            Próxima
+                                            {t('groups.form.changeStage.next', { defaultValue: 'Próxima' })}
                                         </div>
                                         <div className={`fw-bold text-${currentInfo.color}`}>
                                             {currentInfo.proximo}
@@ -571,7 +489,7 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
                         <div className="d'flex flex-column w-50">
                             <Card className="w-100 h-100">
                                 <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
-                                    <span className="text-black">Información del grupo</span>
+                                    <span className="text-black">{t('groups.form.changeStage.groupInfo', { defaultValue: 'Información del grupo' })}</span>
                                 </CardHeader>
                                 <CardBody className="flex-fill">
                                     <ObjectDetails attributes={groupAttributes} object={group} />
@@ -582,16 +500,15 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
                         <div className="w-50">
                             <Card className="w-100 h-100 m-0">
                                 <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
-                                    <span className="text-black">Peso de los cerdos</span>
+                                    <span className="text-black">{t('groups.form.changeStage.pigWeights', { defaultValue: 'Peso de los cerdos' })}</span>
                                 </CardHeader>
                                 <CardBody className='p-3'>
-                                    {/* Estadísticas principales */}
                                     <div className="row g-2 mb-3">
                                         <div className="col-6">
                                             <div className="border rounded p-2 text-center">
                                                 <div className="d-flex align-items-center justify-content-center mb-1">
                                                     <i className="ri-parent-line fs-5 text-primary me-1"></i>
-                                                    <span className="text-muted fw-semibold">Total</span>
+                                                    <span className="text-muted fw-semibold">{t('groups.form.changeStage.total', { defaultValue: 'Total' })}</span>
                                                 </div>
                                                 <h4 className="mb-0 text-primary fw-bold">{pigsArray.length}</h4>
                                             </div>
@@ -600,7 +517,7 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
                                             <div className="border rounded p-2 text-center">
                                                 <div className="d-flex align-items-center justify-content-center mb-1">
                                                     <i className="ri-scales-3-line fs-5 text-success me-1"></i>
-                                                    <span className="text-muted fw-semibold">Peso Promedio</span>
+                                                    <span className="text-muted fw-semibold">{t('groups.form.changeStage.avgWeight', { defaultValue: 'Peso Promedio' })}</span>
                                                 </div>
                                                 <h4 className="mb-0 text-success fw-bold">
                                                     {pigsArray.length > 0
@@ -612,16 +529,15 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
                                         </div>
                                     </div>
 
-                                    {/* Tabla de cerdos con scroll */}
-                                    <div className="text-muted fw-semibold mb-2">Detalles de cerdos:</div>
+                                    <div className="text-muted fw-semibold mb-2">{t('groups.form.changeStage.pigDetails', { defaultValue: 'Detalles de cerdos:' })}</div>
 
                                     <SimpleBar style={{ maxHeight: '300px' }}>
                                         <table className="table table-hover table-sm">
                                             <thead className="table-light">
                                                 <tr>
                                                     <th className="text-center">#</th>
-                                                    <th className="text-center">Sexo</th>
-                                                    <th className="text-center">Peso</th>
+                                                    <th className="text-center">{t('groups.column.sex', { defaultValue: 'Sexo' })}</th>
+                                                    <th className="text-center">{t('groups.kpi.avgWeightShort', { defaultValue: 'Peso' })}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -648,7 +564,7 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
                     <div className="mt-4 d-flex">
                         <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                             <i className="ri-arrow-left-line me-2" />
-                            Atrás
+                            {t('common.button.back', { defaultValue: 'Atrás' })}
                         </Button>
 
                         <Button className="ms-auto btn-success" disabled={isSubmitting} onClick={() => toggleModal('confirm')}>
@@ -659,7 +575,7 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
                             ) : (
                                 <div>
                                     <i className="ri-check-line me-2" />
-                                    Confirmar
+                                    {t('common.button.confirm', { defaultValue: 'Confirmar' })}
                                 </div>
                             )}
                         </Button>
@@ -670,7 +586,7 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
 
             <Modal size="md" isOpen={modals.confirm} toggle={() => toggleModal("confirm")} backdrop='static' keyboard={false} centered className="border-0">
                 <ModalHeader toggle={() => toggleModal("confirm")} className="border-bottom-0 pb-0">
-                    <span className="fw-bold text-muted">Confirmación de Cambio</span>
+                    <span className="fw-bold text-muted">{t('groups.form.changeStage.confirmTitle', { defaultValue: 'Confirmación de Cambio' })}</span>
                 </ModalHeader>
 
                 <ModalBody className="px-4 pb-4">
@@ -681,23 +597,23 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
                     </div>
 
                     <div className="text-center mb-4">
-                        <h4 className="fw-bold mb-2">¿Deseas cambiar a {currentInfo.proximo}?</h4>
+                        <h4 className="fw-bold mb-2">{t('groups.form.changeStage.confirmQuestion', { defaultValue: '¿Deseas cambiar a {{stage}}?', stage: currentInfo.proximo })}</h4>
                         <p className="text-muted fs-6 px-3">
-                            Al confirmar, el grupo cambiará su estado a <strong className="text-dark">{currentInfo.proximo}</strong> y se dará por finalizada la etapa de <strong className="text-dark">{currentInfo.actual}</strong>.
+                            {t('groups.form.changeStage.confirmBody', { defaultValue: 'Al confirmar, el grupo cambiará su estado a {{next}} y se dará por finalizada la etapa de {{current}}.', next: currentInfo.proximo, current: currentInfo.actual })}
                         </p>
                     </div>
 
                     <div className="rounded-3 p-3 bg-light border d-flex align-items-center gap-3">
                         <i className="ri-information-fill fs-3 text-warning"></i>
                         <div className="small text-secondary">
-                            <strong>Verifica los datos:</strong> Asegúrate de que toda la información ingresada sea correcta antes de realizar este cambio.
+                            <strong>{t('groups.form.changeStage.confirmWarning', { defaultValue: 'Verifica los datos:' })}</strong> {t('groups.form.changeStage.confirmWarningBody', { defaultValue: 'Asegúrate de que toda la información ingresada sea correcta antes de realizar este cambio.' })}
                         </div>
                     </div>
                 </ModalBody>
 
                 <ModalFooter className="border-top-0 d-flex gap-2 pb-4">
                     <Button color="light" className="px-4 fw-semibold text-muted border" onClick={() => toggleModal("confirm")} disabled={isSubmitting}>
-                        Cancelar
+                        {t('common.button.cancel', { defaultValue: 'Cancelar' })}
                     </Button>
                     <Button color="success" className="px-4 shadow-sm fw-bold" disabled={isSubmitting} onClick={() => handleConfirm()}>
                         {isSubmitting ? (
@@ -705,7 +621,7 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
                         ) : (
                             <>
                                 <i className="ri-check-line me-2" />
-                                Confirmar Cambio
+                                {t('groups.form.changeStage.confirmChange', { defaultValue: 'Confirmar Cambio' })}
                             </>
                         )}
                     </Button>
@@ -714,8 +630,8 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} autoClose={3000} />
 
-            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={"Cambio de etapa realizado con exito"} />
-            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={"Ha ocurrido un error al cambiar la etapa del grupo, intentelo mas tarde"} />
+            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={t('groups.form.changeStage.success', { defaultValue: 'Cambio de etapa realizado con exito' })} />
+            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={t('groups.form.changeStage.error', { defaultValue: 'Ha ocurrido un error al cambiar la etapa del grupo, intentelo mas tarde' })} />
         </>
     );
 };

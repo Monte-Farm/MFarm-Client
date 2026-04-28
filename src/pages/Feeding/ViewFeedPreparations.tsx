@@ -13,9 +13,11 @@ import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody,
 import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
+import { useTranslation } from "react-i18next";
 
 const ViewFeedPreparations = () => {
-    document.title = 'Preparaciones de alimento | System Management';
+    const { t } = useTranslation();
+    document.title = t('feeding.preparation.pageTitle') + ' | System Management';
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true);
@@ -31,27 +33,22 @@ const ViewFeedPreparations = () => {
     };
 
     const columns: Column<any>[] = [
-        { header: 'Código', accessor: 'code', type: 'text', isFilterable: true },
+        { header: t('feeding.preparation.column.code'), accessor: 'code', type: 'text', isFilterable: true },
         {
-            header: 'Receta', accessor: 'recipe.name',
-            isFilterable: true,
-            render: (_, row) => (<span>{row.recipe?.code} — {row.recipe?.name}</span>)
+            header: t('feeding.preparation.column.recipe'), accessor: 'recipe.name', isFilterable: true,
+            render: (_, row) => <span>{row.recipe?.code} — {row.recipe?.name}</span>
         },
-        { header: 'Fecha', accessor: 'preparationDate', type: 'date', isFilterable: true },
+        { header: t('feeding.preparation.column.date'), accessor: 'preparationDate', type: 'date', isFilterable: true },
         {
-            header: 'Mezcla preparada (kg)', accessor: 'batchSize',
-            type: 'number',
-            bgColor: '#e3f2fd',
+            header: t('feeding.preparation.column.mixPrepared'), accessor: 'batchSize', type: 'number', bgColor: '#e3f2fd',
             render: (_, row) => <span className="fw-medium">{(row.batchSize ?? 0).toFixed(2)}</span>
         },
         {
-            header: 'Producido (kg)', accessor: 'actualYield',
-            type: 'number',
-            bgColor: '#e8f5e9',
+            header: t('feeding.preparation.column.produced'), accessor: 'actualYield', type: 'number', bgColor: '#e8f5e9',
             render: (_, row) => <span className="fw-medium">{(row.actualYield ?? 0).toFixed(2)}</span>
         },
         {
-            header: 'Merma', accessor: 'shrinkagePercentage',
+            header: t('feeding.preparation.column.waste'), accessor: 'shrinkagePercentage',
             render: (_, row) => (
                 <Badge color={(row.shrinkagePercentage ?? 0) > 5 ? 'warning' : 'success'}>
                     {(row.shrinkagePercentage ?? 0).toFixed(2)}%
@@ -59,25 +56,21 @@ const ViewFeedPreparations = () => {
             )
         },
         {
-            header: 'Costo total', accessor: 'totalCost',
-            type: 'number',
-            bgColor: '#f3e5f5',
+            header: t('feeding.preparation.column.totalCost'), accessor: 'totalCost', type: 'number', bgColor: '#f3e5f5',
             render: (_, row) => <span className="fw-semibold">${(row.totalCost ?? 0).toFixed(2)}</span>
         },
         {
-            header: 'Costo / kg', accessor: 'costPerKg',
-            type: 'number',
-            bgColor: '#e0f7fa',
+            header: t('feeding.preparation.column.costPerKg'), accessor: 'costPerKg', type: 'number', bgColor: '#e0f7fa',
             render: (_, row) => <span className="fw-medium">${(row.costPerKg ?? 0).toFixed(2)}</span>
         },
         {
-            header: 'Responsable', accessor: 'responsible.name',
+            header: t('feeding.preparation.column.responsible'), accessor: 'responsible.name',
             render: (_, row) => <span>{row.responsible?.name} {row.responsible?.lastname}</span>
         },
         {
-            header: 'Acciones', accessor: 'action',
+            header: t('feeding.preparation.column.actions'), accessor: 'action',
             render: (_, row) => (
-                <Button className="farm-primary-button btn-icon" title="Ver detalles" onClick={() => { setSelectedPreparation(row); toggleModal('details'); }}>
+                <Button className="farm-primary-button btn-icon" title={t('feeding.package.action.viewDetails')} onClick={() => { setSelectedPreparation(row); toggleModal('details'); }}>
                     <i className="ri-eye-fill align-middle"></i>
                 </Button>
             ),
@@ -96,7 +89,7 @@ const ViewFeedPreparations = () => {
             setFileURL(window.URL.createObjectURL(pdfBlob));
             toggleModal('viewPDF');
         } catch (error) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('common.button.exportPdf') });
         } finally {
             setPdfLoading(false);
         }
@@ -110,7 +103,7 @@ const ViewFeedPreparations = () => {
             setPreparations(response.data.data || []);
         } catch (error) {
             console.error('Error fetching preparations:', error);
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al cargar las preparaciones' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('common.status.noData') });
         } finally {
             setLoading(false);
         }
@@ -126,68 +119,49 @@ const ViewFeedPreparations = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title="Preparaciones de alimento" pageTitle="Alimentación" />
-
+                <BreadCrumb title={t('feeding.preparation.breadcrumb')} pageTitle={t('menu.feeding')} />
                 <Card className="rounded">
                     <CardHeader>
                         <div className="d-flex gap-2 justify-content-end">
                             <Button color="primary" onClick={() => toggleModal('dateRange')} disabled={pdfLoading}>
-                                {pdfLoading ? (
-                                    <><Spinner className="me-2" size="sm" />Generando...</>
-                                ) : (
-                                    <><i className="ri-file-pdf-line me-2" />Exportar PDF</>
-                                )}
+                                {pdfLoading
+                                    ? <><Spinner className="me-2" size="sm" />Generando...</>
+                                    : <><i className="ri-file-pdf-line me-2" />{t('common.button.exportPdf')}</>
+                                }
                             </Button>
                             <Button className="farm-primary-button" onClick={() => toggleModal('create')}>
-                                <i className="ri-add-line me-2" />
-                                Preparar alimento
+                                <i className="ri-add-line me-2" />{t('feeding.preparation.create')}
                             </Button>
                         </div>
                     </CardHeader>
                     <CardBody className={preparations.length === 0 ? "d-flex flex-column justify-content-center align-items-center text-center" : ""}>
                         {preparations.length === 0 ? (
-                            <>
-                                <FiInbox className="text-muted" size={48} style={{ marginBottom: 10 }} />
-                                <span className="fs-5 text-muted">Aún no hay preparaciones registradas</span>
-                            </>
+                            <><FiInbox className="text-muted" size={48} style={{ marginBottom: 10 }} /><span className="fs-5 text-muted">{t('feeding.preparation.noRecords')}</span></>
                         ) : (
-                            <CustomTable columns={columns} data={preparations} showPagination={true} rowsPerPage={10} fontSize={14} />
+                            <CustomTable columns={columns} data={preparations} showPagination rowsPerPage={10} fontSize={14} />
                         )}
                     </CardBody>
                 </Card>
             </Container>
 
             <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("create")}>Preparar alimento</ModalHeader>
-                <ModalBody>
-                    <FeedPreparationForm onSave={() => { toggleModal('create'); fetchData(); }} onCancel={() => toggleModal('create', false)} />
-                </ModalBody>
+                <ModalHeader toggle={() => toggleModal("create")}>{t('feeding.preparation.createModal')}</ModalHeader>
+                <ModalBody><FeedPreparationForm onSave={() => { toggleModal('create'); fetchData(); }} onCancel={() => toggleModal('create', false)} /></ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("details")}>Detalle de preparación</ModalHeader>
-                <ModalBody>
-                    {selectedPreparation?._id && (
-                        <FeedPreparationDetails preparationId={selectedPreparation._id} />
-                    )}
-                </ModalBody>
+                <ModalHeader toggle={() => toggleModal("details")}>{t('feeding.preparation.detailModal')}</ModalHeader>
+                <ModalBody>{selectedPreparation?._id && <FeedPreparationDetails preparationId={selectedPreparation._id} />}</ModalBody>
             </Modal>
 
             <Modal size="md" isOpen={modals.dateRange} toggle={() => toggleModal("dateRange")} centered>
-                <ModalHeader toggle={() => toggleModal("dateRange")}>Seleccionar rango de fechas</ModalHeader>
-                <ReportDateRangeSelector
-                    onGenerate={handleGeneratePDF}
-                    onCancel={() => toggleModal("dateRange")}
-                    loading={pdfLoading}
-                    generateButtonText="Generar PDF"
-                />
+                <ModalHeader toggle={() => toggleModal("dateRange")}>{t('feeding.preparation.dateRangeModal')}</ModalHeader>
+                <ReportDateRangeSelector onGenerate={handleGeneratePDF} onCancel={() => toggleModal("dateRange")} loading={pdfLoading} generateButtonText={t('common.button.exportPdf')} />
             </Modal>
 
-            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop="static" keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Preparaciones de Alimento</ModalHeader>
-                <ModalBody>
-                    {fileURL && <PDFViewer fileUrl={fileURL} />}
-                </ModalBody>
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop="static" keyboard={false} centered fullscreen>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('feeding.preparation.reportModal')}</ModalHeader>
+                <ModalBody>{fileURL && <PDFViewer fileUrl={fileURL} />}</ModalBody>
             </Modal>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />

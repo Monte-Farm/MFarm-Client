@@ -14,9 +14,11 @@ import loginBanner from '../../assets/images/login_banner.png'
 import { useDispatch } from "react-redux";
 import { connectNotificationSocket } from "helpers/socketService";
 import { fetchGlobalConfig } from "slices/configurations/thunk";
+import { useTranslation } from "react-i18next";
 
 const CoverSignIn = () => {
-    document.title = "Inicio de sesión | MFarm";
+    const { t } = useTranslation();
+    document.title = t('auth.login.pageTitle');
     const dispatch: any = useDispatch();
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
@@ -83,19 +85,19 @@ const CoverSignIn = () => {
                                                         alt="Logo"
                                                     />
                                                 </div>
-                                                <h4 className="text-center" style={{ color: '#2F4F4F' }}>Bienvenido!</h4>
-                                                <p className="text-muted text-center fs-5">Inicie Sesión para continuar.</p>
+                                                <h4 className="text-center" style={{ color: '#2F4F4F' }}>{t('auth.login.welcome')}</h4>
+                                                <p className="text-muted text-center fs-5">{t('auth.login.subtitle')}</p>
 
                                                 <div className="mt-5">
                                                     <LoginForm onSubmit={handleLogin} />
                                                 </div>
                                             </div>
 
-                                            <AlertMessage 
-                                                color="danger" 
-                                                message="Este usuario ha sido desactivado, pongase en contacto con el administrador" 
-                                                visible={showDisabledAlert} 
-                                                onClose={() => setShowDisabledAlert(false)} 
+                                            <AlertMessage
+                                                color="danger"
+                                                message={t('auth.login.disabledUser')}
+                                                visible={showDisabledAlert}
+                                                onClose={() => setShowDisabledAlert(false)}
                                             />
                                         </Col>
                                     </Row>

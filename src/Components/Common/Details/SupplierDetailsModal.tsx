@@ -2,6 +2,7 @@ import { ConfigContext } from "App";
 import { SupplierData } from "common/data_interfaces";
 import SupplierForm from "Components/Common/Forms/SupplierForm";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Badge, Button, Card, CardBody, Col, Modal, ModalBody, ModalFooter, ModalHeader, Row, Spinner } from "reactstrap";
 import { Column } from "common/data/data_types";
 import CustomTable from "Components/Common/Tables/CustomTable";
@@ -10,7 +11,6 @@ import AlertMessage from "../Shared/AlertMesagge";
 import SuccessModal from "../Shared/SuccessModal";
 import ErrorModal from "../Shared/ErrorModal";
 import PurchaseOrderDetails from "./PurchaseOrderDetails";
-import { getSupplierTypeLabel } from "common/enums/suppliers.enums";
 import PDFViewer from "../Shared/PDFViewer";
 
 interface SupplierDetailsModalProps {
@@ -18,6 +18,7 @@ interface SupplierDetailsModalProps {
 }
 
 const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext)
     const [supplierDetails, setSupplierDetails] = useState<SupplierData | undefined>(undefined);
     const [supplierPurchaseOrders, setSupplierPurchaseOrders] = useState<any[]>();
@@ -29,17 +30,17 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId 
     const [fileURL, setFileURL] = useState<string | null>(null);
 
     const purchaseOrderColumns: Column<any>[] = [
-        { header: "No. de Orden", accessor: "code", isFilterable: true, type: 'text' },
-        { header: "Fecha", accessor: "date", isFilterable: true, type: 'date' },
+        { header: t('warehouse.orders.col.orderNumber', { defaultValue: 'No. de Orden' }), accessor: "code", isFilterable: true, type: 'text' },
+        { header: t('common.field.date'), accessor: "date", isFilterable: true, type: 'date' },
         {
-            header: 'Productos',
+            header: t('warehouse.suppliers.col.products', { defaultValue: 'Productos' }),
             accessor: 'products',
             isFilterable: true,
             type: 'text',
             render: (value, row) => <span>{row.products.length}</span>
         },
         {
-            header: 'Estado',
+            header: t('common.field.status'),
             accessor: 'status',
             isFilterable: false,
             type: 'text',
@@ -47,12 +48,12 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId 
                 <span
                     className={`badge ${row.status ? 'bg-warning text-dark' : 'bg-success'}`}
                 >
-                    {row.status ? 'No ingresada' : 'Ingresada'}
+                    {t(`warehouse.purchaseOrders.status.${row.status ? 'not_entered' : 'entered'}`, { defaultValue: row.status ? 'No ingresada' : 'Ingresada' })}
                 </span>
             )
         },
         {
-            header: 'Acciones',
+            header: t('common.field.actions'),
             accessor: 'action',
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
@@ -81,7 +82,7 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId 
             setSupplierPurchaseOrders(purchaseOrderResponse.data.data);
         } catch (error) {
             console.error("Error fetching data:", { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.suppliers.error.fetch', { defaultValue: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' }) })
         } finally {
             setLoading(false)
         }
@@ -125,7 +126,7 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId 
             toggleModal('viewPDF');
         } catch (error) {
             console.error('Error generating report:', { error });
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.suppliers.error.fetch', { defaultValue: 'Error al generar el PDF, intentelo más tarde' }) });
         } finally {
             setPdfLoading(false);
         }
@@ -157,21 +158,21 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId 
                     {pdfLoading ? (
                         <>
                             <Spinner className="me-2" size='sm' />
-                            Generando PDF
+                            {t('common.button.generating', { defaultValue: 'Generando PDF' })}
                         </>
                     ) : (
                         <>
                             <i className="ri-file-pdf-line me-2"></i>
-                            Ver PDF
+                            {t('common.button.exportPdf', { defaultValue: 'Ver PDF' })}
                         </>
                     )}
                 </Button>
 
                 <Button className="farm-secondary-button" onClick={() => toggleModal("delete")} disabled={!supplierDetails?.status}>
-                    <i className="ri-delete-bin-line me-3"></i>Desactivar Proveedor
+                    <i className="ri-delete-bin-line me-3"></i>{t('warehouse.suppliers.action.deactivate', { defaultValue: 'Desactivar Proveedor' })}
                 </Button>
                 <Button className="farm-primary-button" onClick={() => toggleModal("update")}>
-                    <i className="ri-pencil-line me-3"></i>Modificar Proveedor
+                    <i className="ri-pencil-line me-3"></i>{t('warehouse.suppliers.action.modify', { defaultValue: 'Modificar Proveedor' })}
                 </Button>
             </div>
 
@@ -186,7 +187,7 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId 
                                 </span>
                             </div>
                             <div>
-                                <p className="text-muted mb-1 fs-6">Total Ordenes</p>
+                                <p className="text-muted mb-1 fs-6">{t('warehouse.suppliers.stat.totalOrders', { defaultValue: 'Total Ordenes' })}</p>
                                 <h4 className="mb-0">{totalOrders}</h4>
                             </div>
                         </CardBody>
@@ -201,7 +202,7 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId 
                                 </span>
                             </div>
                             <div>
-                                <p className="text-muted mb-1 fs-6">Pendientes</p>
+                                <p className="text-muted mb-1 fs-6">{t('warehouse.common.orderStatus.pending', { defaultValue: 'Pendientes' })}</p>
                                 <h4 className="mb-0">{pendingOrders}</h4>
                             </div>
                         </CardBody>
@@ -216,7 +217,7 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId 
                                 </span>
                             </div>
                             <div>
-                                <p className="text-muted mb-1 fs-6">Ingresadas</p>
+                                <p className="text-muted mb-1 fs-6">{t('warehouse.suppliers.stat.entered', { defaultValue: 'Ingresadas' })}</p>
                                 <h4 className="mb-0">{completedOrders}</h4>
                             </div>
                         </CardBody>
@@ -225,15 +226,15 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId 
             </Row>
 
             {/* Información del proveedor */}
-            <h6 className="text-muted text-uppercase mb-3">Información del proveedor</h6>
+            <h6 className="text-muted text-uppercase mb-3">{t('warehouse.suppliers.section.supplierInfo', { defaultValue: 'Información del proveedor' })}</h6>
             <Card className="border shadow-sm mb-3">
                 <CardBody className="p-0">
                     <Row className="g-0">
                         {[
-                            { label: "Nombre", value: supplierDetails?.name || "—", icon: "ri-user-3-line" },
-                            { label: "Teléfono", value: supplierDetails?.phone_number || "—", icon: "ri-phone-line" },
-                            { label: "Correo", value: supplierDetails?.email || "—", icon: "ri-mail-line" },
-                            { label: "Dirección", value: supplierDetails?.address || "—", icon: "ri-map-pin-line" },
+                            { label: t('common.field.name'), value: supplierDetails?.name || "—", icon: "ri-user-3-line" },
+                            { label: t('warehouse.supplierForm.field.phone', { defaultValue: 'Teléfono' }), value: supplierDetails?.phone_number || "—", icon: "ri-phone-line" },
+                            { label: t('warehouse.supplierForm.field.email', { defaultValue: 'Email' }), value: supplierDetails?.email || "—", icon: "ri-mail-line" },
+                            { label: t('warehouse.supplierForm.field.address', { defaultValue: 'Dirección' }), value: supplierDetails?.address || "—", icon: "ri-map-pin-line" },
                         ].map((item, i) => (
                             <Col xs={12} sm={6} lg={3} key={i} className={i < 3 ? "border-end" : ""}>
                                 <div className="p-3">
@@ -253,9 +254,9 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId 
                 <CardBody className="p-0">
                     <Row className="g-0">
                         {[
-                            { label: "Categoría", value: getSupplierTypeLabel(supplierDetails?.supplier_type || ""), icon: "ri-price-tag-3-line", badgeColor: "info" },
-                            { label: "RNC", value: supplierDetails?.rnc || "—", icon: "ri-file-text-line" },
-                            { label: "Estado", value: supplierDetails?.status ? "Activo" : "Inactivo", icon: "ri-checkbox-circle-line", badgeColor: supplierDetails?.status ? "success" : "danger" },
+                            { label: t('warehouse.suppliers.attr.supplierType', { defaultValue: 'Categoría' }), value: t(`warehouse.common.supplierType.${supplierDetails?.supplier_type || ''}`, { defaultValue: supplierDetails?.supplier_type || '' }), icon: "ri-price-tag-3-line", badgeColor: "info" },
+                            { label: t('warehouse.supplierForm.field.rnc', { defaultValue: 'RNC' }), value: supplierDetails?.rnc || "—", icon: "ri-file-text-line" },
+                            { label: t('common.field.status'), value: supplierDetails?.status ? t('common.status.active') : t('common.status.inactive'), icon: "ri-checkbox-circle-line", badgeColor: supplierDetails?.status ? "success" : "danger" },
                         ].map((item: any, i: number) => (
                             <Col xs={12} sm={6} lg={4} key={i} className={i < 2 ? "border-end" : ""}>
                                 <div className="p-3">
@@ -277,7 +278,7 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId 
 
             {/* Ordenes de compra */}
             <h6 className="text-muted text-uppercase mb-3">
-                Ordenes de compra ({totalOrders})
+                {t('warehouse.suppliers.section.purchaseOrders', { defaultValue: 'Ordenes de compra' })} ({totalOrders})
             </h6>
             <Card className="shadow-sm border-0">
                 <CardBody className="p-0">
@@ -286,7 +287,7 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId 
                     ) : (
                         <div className="d-flex flex-column justify-content-center align-items-center text-muted py-5">
                             <i className="ri-shopping-cart-line mb-2" style={{ fontSize: '2.5rem' }}></i>
-                            <span className="fs-6 fst-italic">Sin ordenes de compra registradas</span>
+                            <span className="fs-6 fst-italic">{t('warehouse.suppliers.emptyPurchaseOrders', { defaultValue: 'Sin ordenes de compra registradas' })}</span>
                         </div>
                     )}
                 </CardBody>
@@ -294,36 +295,36 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId 
 
             {/* Modales */}
             <Modal size="lg" isOpen={modals.update} toggle={() => toggleModal("update")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("update")}>Modificar Proveedor</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("update")}>{t('warehouse.suppliers.action.modify', { defaultValue: 'Modificar Proveedor' })}</ModalHeader>
                 <ModalBody>
                     <SupplierForm initialData={supplierDetails} onSubmit={handleUpdateSupplier} onCancel={() => toggleModal("update", false)} isCodeDisabled={true} />
                 </ModalBody>
             </Modal>
 
             <Modal isOpen={modals.delete} toggle={() => toggleModal("delete")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("delete")}>Desactivar Proveedor</ModalHeader>
-                <ModalBody>¿Desea desactivar este proveedor?</ModalBody>
+                <ModalHeader toggle={() => toggleModal("delete")}>{t('warehouse.suppliers.action.deactivate', { defaultValue: 'Desactivar Proveedor' })}</ModalHeader>
+                <ModalBody>{t('warehouse.suppliers.confirm.deactivate', { defaultValue: '¿Desea desactivar este proveedor?' })}</ModalBody>
                 <ModalFooter>
-                    <Button color="danger" onClick={() => toggleModal("delete", false)}>Cancelar</Button>
-                    <Button color="success" onClick={() => handleDeleteSupplier(supplierDetails!)}>Confirmar</Button>
+                    <Button color="danger" onClick={() => toggleModal("delete", false)}>{t('common.button.cancel')}</Button>
+                    <Button color="success" onClick={() => handleDeleteSupplier(supplierDetails!)}>{t('common.button.confirm')}</Button>
                 </ModalFooter>
             </Modal>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
-            <SuccessModal isOpen={modals.updateSuccess} onClose={() => { toggleModal('updateSuccess'); handleGetSupplierDetails(); }} message={"Proveedor actualizado con exito"} />
-            <SuccessModal isOpen={modals.deleteSuccess} onClose={() => { toggleModal('deleteSuccess'); handleGetSupplierDetails(); }} message={"Proveedor desactivado con exito"} />
-            <ErrorModal isOpen={modals.updateError} onClose={() => { toggleModal('updateError') }} message={"Ha ocurrido un error al actualizar el proveedor, intentelo mas tarde"} />
-            <ErrorModal isOpen={modals.deleteError} onClose={() => { toggleModal('deleteError') }} message={"Ha ocurrido un error al desactivar el proveedor, intentelo mas tarde"} />
+            <SuccessModal isOpen={modals.updateSuccess} onClose={() => { toggleModal('updateSuccess'); handleGetSupplierDetails(); }} message={t('warehouse.suppliers.success.updated', { defaultValue: 'Proveedor actualizado con exito' })} />
+            <SuccessModal isOpen={modals.deleteSuccess} onClose={() => { toggleModal('deleteSuccess'); handleGetSupplierDetails(); }} message={t('warehouse.suppliers.success.deactivated', { defaultValue: 'Proveedor desactivado con exito' })} />
+            <ErrorModal isOpen={modals.updateError} onClose={() => { toggleModal('updateError') }} message={t('warehouse.suppliers.error.update', { defaultValue: 'Ha ocurrido un error al actualizar el proveedor, intentelo mas tarde' })} />
+            <ErrorModal isOpen={modals.deleteError} onClose={() => { toggleModal('deleteError') }} message={t('warehouse.suppliers.error.deactivate', { defaultValue: 'Ha ocurrido un error al desactivar el proveedor, intentelo mas tarde' })} />
 
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Proveedor</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('warehouse.suppliers.modal.report', { defaultValue: 'Reporte de Proveedor' })}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.purchaseOrderDetails} toggle={() => toggleModal("purchaseOrderDetails")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("purchaseOrderDetails")}>Detalles de orden de compra</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("purchaseOrderDetails")}>{t('warehouse.purchaseOrders.modal.details', { defaultValue: 'Detalles de orden de compra' })}</ModalHeader>
                 <ModalBody>
                     <PurchaseOrderDetails purchaseId={selectedPurchaseOrder} />
                 </ModalBody>

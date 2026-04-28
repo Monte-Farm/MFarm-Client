@@ -18,9 +18,16 @@ import BirthForm from "Components/Common/Forms/BirthForm";
 import SelectableCustomTable from "Components/Common/Tables/SelectableTable";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
 import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector";
+import { useTranslation } from "react-i18next";
+
+const PREGNANCY_STATUS_COLORS: Record<string, string> = {
+    pregnant: 'success', close_to_farrow: 'warning', farrowing_pending: 'info',
+    overdue_farrowing: 'danger', farrowed: 'dark', abortion: 'dark',
+};
 
 const ViewUpcomingBirths = () => {
     document.title = 'Proximos partos | Management system';
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const navigate = useNavigate();
@@ -45,7 +52,7 @@ const ViewUpcomingBirths = () => {
         setSelectedBirths(selected);
     };
 
-    const hasValidPregnancies = selectedBirths.some(preg => 
+    const hasValidPregnancies = selectedBirths.some(preg =>
         preg.farrowing_status !== 'farrowed'
     );
 
@@ -65,15 +72,14 @@ const ViewUpcomingBirths = () => {
         validationSchema: bulkAbortionValidationSchema,
         onSubmit: async (values, { setSubmitting }) => {
             if (!configContext) return;
-            
+
             const validPregnancyIds = selectedBirths
                 .filter(preg => preg.farrowing_status !== 'farrowed')
                 .map(preg => preg._id);
 
             try {
                 setSubmitting(true);
-                
-                // 1. Registrar abortos masivos
+
                 await configContext.axiosHelper.create(`${configContext.apiUrl}/pregnancies/register_bulk_abortion`, {
                     pregnancyIds: validPregnancyIds,
                     probable_cause: values.probable_cause,
@@ -82,18 +88,17 @@ const ViewUpcomingBirths = () => {
                     responsible: values.responsible
                 });
 
-                // 2. Registrar en el historial del usuario
                 await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
                     event: `Pérdida masiva de ${validPregnancyIds.length} embarazos registrada`
                 });
 
-                setAlertConfig({ visible: true, color: 'success', mesagge: `Pérdida registrada en ${validPregnancyIds.length} embarazos con éxito` });
+                setAlertConfig({ visible: true, color: 'success', mesagge: t('birth.success.bulkLoss', { count: validPregnancyIds.length }) });
                 fetchData();
                 setSelectedBirths([]);
                 bulkAbortionFormik.resetForm();
             } catch (error) {
                 console.error('Error bulk registering abortion:', error);
-                setAlertConfig({ visible: true, color: 'danger', mesagge: 'Ha ocurrido un error al registrar la pérdida masiva, intentelo más tarde' });
+                setAlertConfig({ visible: true, color: 'danger', mesagge: t('birth.error.bulkLoss') });
             } finally {
                 setSubmitting(false);
                 toggleModal('bulkAbortion');
@@ -108,7 +113,7 @@ const ViewUpcomingBirths = () => {
 
     const upcomingBirthsColumns: Column<any>[] = [
         {
-            header: 'Cerda',
+            header: t('birth.column.sow'),
             accessor: 'sow',
             type: 'text',
             isFilterable: true,
@@ -118,29 +123,21 @@ const ViewUpcomingBirths = () => {
                 </Button>
             )
         },
-        { header: 'Fecha de inseminación', accessor: 'start_date', type: 'date', isFilterable: true },
+        { header: t('birth.column.inseminationDate'), accessor: 'start_date', type: 'date', isFilterable: true },
         {
-            header: "Estado de embarazo",
+            header: t('birth.column.status'),
             accessor: "farrowing_status",
             type: "text",
             isFilterable: true,
             render: (_, row) => {
-                let color = "secondary";
-                let text = "Pendiente";
-                switch (row.farrowing_status) {
-                    case "pregnant": color = "success"; text = "Gestando"; break;
-                    case "close_to_farrow": color = "warning"; text = "Proxima a parir"; break;
-                    case "farrowing_pending": color = "info"; text = "Parto pendiente"; break;
-                    case "overdue_farrowing": color = "danger"; text = "Parto atrasado"; break;
-                    case "farrowed": color = "dark"; text = "Parida"; break;
-                    case "abortion": color = "dark"; text = "Aborto"; break;
-                }
+                const color = PREGNANCY_STATUS_COLORS[row.farrowing_status] || 'secondary';
+                const text = t(`pregnancy.status.${row.farrowing_status}`, { defaultValue: t('pregnancy.status.pending') });
                 return <Badge color={color}>{text}</Badge>;
             },
         },
-        { header: 'Fecha estimada de parto', accessor: 'estimated_farrowing_date', type: 'date', isFilterable: true },
+        { header: t('birth.column.estimatedFarrowing'), accessor: 'estimated_farrowing_date', type: 'date', isFilterable: true },
         {
-            header: "Acciones",
+            header: t('birth.column.actions'),
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
@@ -148,21 +145,21 @@ const ViewUpcomingBirths = () => {
                         <i className="bx bxs-skull align-middle"></i>
                     </Button>
                     <UncontrolledTooltip target={`abort-button-${row._id}`}>
-                        Registrar perdida
+                        {t('birth.action.registerLoss')}
                     </UncontrolledTooltip>
 
                     <Button id={`birth-button-${row._id}`} className="farm-secondary-button btn-icon" onClick={(e) => { e.stopPropagation(); setSelectedBirth(row); toggleModal('selectedBirth'); }} disabled={row.farrowing_status === 'farrowed' || row.farrowing_status === 'pregnant' || row.farrowing_status === 'abortion'}>
                         <i className="ri-parent-line align-middle"></i>
                     </Button>
                     <UncontrolledTooltip target={`birth-button-${row._id}`}>
-                        Registrar parto
+                        {t('birth.action.registerBirth')}
                     </UncontrolledTooltip>
 
                     <Button id={`view-button-${row._id}`} className="farm-primary-button btn-icon" onClick={(e) => { e.stopPropagation(); setSelectedPregnancyId(row._id); toggleModal('pregnancyDetails'); }} >
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
                     <UncontrolledTooltip target={`view-button-${row._id}`}>
-                        Ver detalles
+                        {t('birth.action.viewDetails')}
                     </UncontrolledTooltip>
                 </div>
             ),
@@ -184,7 +181,6 @@ const ViewUpcomingBirths = () => {
                 let borderColor = "#d1d5db";
                 let statusLabel = "";
 
-                // Calcular días restantes
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
                 const farrowingDate = new Date(birth.estimated_farrowing_date);
@@ -193,47 +189,27 @@ const ViewUpcomingBirths = () => {
 
                 switch (birth.farrowing_status) {
                     case "pregnant":
-                        bgColor = "#bbf7d0";
-                        textColor = "#065f46";
-                        borderColor = "#22c55e";
-                        statusLabel = "Gestando";
-                        break;
+                        bgColor = "#bbf7d0"; textColor = "#065f46"; borderColor = "#22c55e";
+                        statusLabel = t('pregnancy.status.pregnant'); break;
                     case "close_to_farrow":
-                        bgColor = "#fef9c3";
-                        textColor = "#854d0e";
-                        borderColor = "#eab308";
-                        statusLabel = "Próxima";
-                        break;
+                        bgColor = "#fef9c3"; textColor = "#854d0e"; borderColor = "#eab308";
+                        statusLabel = t('pregnancy.status.close_to_farrow'); break;
                     case "farrowing_pending":
-                        bgColor = "#bfdbfe";
-                        textColor = "#1e3a8a";
-                        borderColor = "#3b82f6";
-                        statusLabel = "Pendiente";
-                        break;
+                        bgColor = "#bfdbfe"; textColor = "#1e3a8a"; borderColor = "#3b82f6";
+                        statusLabel = t('pregnancy.status.farrowing_pending'); break;
                     case "overdue_farrowing":
-                        bgColor = "#fecaca";
-                        textColor = "#7f1d1d";
-                        borderColor = "#ef4444";
-                        statusLabel = "Atrasado";
-                        break;
+                        bgColor = "#fecaca"; textColor = "#7f1d1d"; borderColor = "#ef4444";
+                        statusLabel = t('pregnancy.status.overdue_farrowing'); break;
                     case "farrowed":
-                        bgColor = "#d1d5db";
-                        textColor = "#374151";
-                        borderColor = "#6b7280";
-                        statusLabel = "Parida";
-                        break;
+                        bgColor = "#d1d5db"; textColor = "#374151"; borderColor = "#6b7280";
+                        statusLabel = t('pregnancy.status.farrowed'); break;
                     case "abortion":
-                        bgColor = "#9ca3af";
-                        textColor = "#ffffff";
-                        borderColor = "#4b5563";
-                        statusLabel = "Aborto";
-                        break;
+                        bgColor = "#9ca3af"; textColor = "#ffffff"; borderColor = "#4b5563";
+                        statusLabel = t('pregnancy.status.abortion'); break;
                 }
 
-                // Construir título compacto
                 let title = birth.sow?.code || "S/C";
-                
-                // Añadir días solo para embarazos activos
+
                 if (birth.farrowing_status !== "farrowed" && birth.farrowing_status !== "abortion") {
                     if (daysRemaining > 0) {
                         title += ` | ${daysRemaining}d`;
@@ -263,7 +239,7 @@ const ViewUpcomingBirths = () => {
 
         } catch (error) {
             console.error(`Error fetching data: ${error}`)
-            setAlertConfig({ visible: true, mesagge: 'Error al obtener los datos, intentelo mas tarde', color: 'danger' });
+            setAlertConfig({ visible: true, mesagge: t('birth.error.load'), color: 'danger' });
         } finally {
             setLoading(false)
         }
@@ -275,19 +251,19 @@ const ViewUpcomingBirths = () => {
         try {
             setPdfLoading(true);
             toggleModal('dateRange', false);
-            
+
             const response = await configContext.axiosHelper.getBlob(
                 `${configContext.apiUrl}/reports/upcoming-births/range?start_date=${startDate}&end_date=${endDate}&farm_id=${userLogged.farm_assigned}`
             );
-            
+
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
             const url = window.URL.createObjectURL(pdfBlob);
-            
+
             setFileURL(url);
             toggleModal('viewPDF');
         } catch (error) {
             console.error('Error generating PDF: ', { error });
-            setAlertConfig({ visible: true, color: 'danger', mesagge: 'Error al generar el PDF, intentelo más tarde' });
+            setAlertConfig({ visible: true, color: 'danger', mesagge: t('birth.error.pdf') });
         } finally {
             setPdfLoading(false);
         }
@@ -307,7 +283,7 @@ const ViewUpcomingBirths = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Proximos partos"} pageTitle={"Reproducción"} />
+                <BreadCrumb title={t('birth.breadcrumb.upcomingTitle')} pageTitle={t('birth.breadcrumb.upcomingParent')} />
 
                 <Card style={{ height: '85vh' }}>
                     <CardHeader className="d-flex justify-content-between align-items-center">
@@ -325,17 +301,17 @@ const ViewUpcomingBirths = () => {
                             {selectedBirths.length > 0 && (
                                 <div className="d-flex align-items-center gap-2">
                                     <span className="text-muted">
-                                        {selectedBirths.length} {selectedBirths.length === 1 ? 'embarazo seleccionado' : 'embarazos seleccionados'}
+                                        {selectedBirths.length} {selectedBirths.length === 1 ? t('birth.selected.singular') : t('birth.selected.plural')}
                                     </span>
                                     <div className="btn-group" role="group">
                                         <Button
                                             className="farm-danger-button btn-sm"
                                             disabled={!hasValidPregnancies}
-                                            title={!hasValidPregnancies ? "No hay embarazos válidos para registrar pérdida" : undefined}
+                                            title={!hasValidPregnancies ? t('birth.bulk.noValidPregnancies') : undefined}
                                             onClick={handleOpenBulkAbortionForm}
                                         >
                                             <i className="bx bxs-skull me-1"></i>
-                                            Registrar Pérdida
+                                            {t('birth.action.registerLoss')}
                                         </Button>
                                     </div>
                                 </div>
@@ -343,27 +319,27 @@ const ViewUpcomingBirths = () => {
                         </div>
 
                         <div className="d-flex gap-2">
-                            <Button 
-                                color="secondary" 
+                            <Button
+                                color="secondary"
                                 onClick={() => toggleModal('dateRange')}
                                 disabled={pdfLoading}
                             >
                                 {pdfLoading ? (
                                     <>
                                         <Spinner className="me-2" size='sm' />
-                                        Generando...
+                                        {t('birth.action.generating')}
                                     </>
                                 ) : (
                                     <>
                                         <i className="ri-file-pdf-line me-2"></i>
-                                        Exportar PDF
+                                        {t('birth.action.exportPdf')}
                                     </>
                                 )}
                             </Button>
-                            
+
                             <Button onClick={() => toggleModal('birth')}>
                                 <i className="ri-add-line me-2" />
-                                Registrar parto
+                                {t('birth.action.registerBirth')}
                             </Button>
                         </div>
                     </CardHeader>
@@ -398,49 +374,47 @@ const ViewUpcomingBirths = () => {
             </Container>
 
             <Modal isOpen={modals.birth} size="xl" backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal('birth')}> Registrar parto </ModalHeader>
+                <ModalHeader toggle={() => toggleModal('birth')}>{t('birth.modal.registerBirth')}</ModalHeader>
                 <ModalBody>
                     <BirthForm pregnancy={undefined} onSave={() => { toggleModal('birth'); fetchData(); }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
-
             <Modal isOpen={modals.selectedBirth} size="xl" backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal('selectedBirth')}> Registrar parto </ModalHeader>
+                <ModalHeader toggle={() => toggleModal('selectedBirth')}>{t('birth.modal.registerBirth')}</ModalHeader>
                 <ModalBody>
                     <BirthForm pregnancy={selectedBirth} onSave={() => { toggleModal('selectedBirth'); fetchData(); }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.pregnancyDetails} toggle={() => { toggleModal("pregnancyDetails"); fetchData(); }} centered>
-                <ModalHeader toggle={() => { toggleModal("pregnancyDetails"); fetchData(); }}>Detalles de embarazo</ModalHeader>
+                <ModalHeader toggle={() => { toggleModal("pregnancyDetails"); fetchData(); }}>{t('birth.modal.pregnancyDetails')}</ModalHeader>
                 <ModalBody>
                     <PregnancyDetails pregnancyId={selectedPregnancyId} />
                 </ModalBody>
             </Modal>
 
             <Modal size="lg" isOpen={modals.abortion} toggle={() => { toggleModal("abortion"); fetchData(); }} backdrop="static" keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("abortion")}>Registrar perdida</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("abortion")}>{t('pregnancy.modal.registerLoss')}</ModalHeader>
                 <ModalBody>
                     <AbortionForm pregnancy={selectedPregnancyAbort} onSave={() => { toggleModal('abortion'); fetchData(); }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
-            {/* Modal Bulk Abortion Form */}
             <Modal isOpen={modals.bulkAbortion} toggle={() => toggleModal("bulkAbortion")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("bulkAbortion")}>
-                    Registrar Pérdida en {selectedBirths.filter(preg => preg.farrowing_status !== 'farrowed').length} Embarazos
+                    {t('birth.bulk.lossModal', { count: selectedBirths.filter(preg => preg.farrowing_status !== 'farrowed').length })}
                 </ModalHeader>
                 <ModalBody>
                     <form onSubmit={bulkAbortionFormik.handleSubmit}>
                         <div className="mb-3">
                             <small className="text-muted">
-                                Esta acción registrará la pérdida en los embarazos válidos seleccionados.
+                                {t('birth.bulk.lossInfo')}
                             </small>
                         </div>
 
                         <div className="mt-4">
-                            <Label htmlFor="probable_cause" className="form-label">Causa probable</Label>
+                            <Label htmlFor="probable_cause" className="form-label">{t('birth.field.probableCause')}</Label>
                             <Input
                                 type="text"
                                 id="probable_cause"
@@ -449,7 +423,7 @@ const ViewUpcomingBirths = () => {
                                 onChange={bulkAbortionFormik.handleChange}
                                 onBlur={bulkAbortionFormik.handleBlur}
                                 invalid={bulkAbortionFormik.touched.probable_cause && !!bulkAbortionFormik.errors.probable_cause}
-                                placeholder="Ej: Estrés, enfermedad, condiciones ambientales"
+                                placeholder={t('birth.placeholder.probableCause')}
                             />
                             {bulkAbortionFormik.touched.probable_cause && bulkAbortionFormik.errors.probable_cause && (
                                 <FormFeedback>{bulkAbortionFormik.errors.probable_cause}</FormFeedback>
@@ -458,7 +432,7 @@ const ViewUpcomingBirths = () => {
 
                         <div className="d-flex gap-2 mt-4">
                             <div className="w-50">
-                                <Label htmlFor="date" className="form-label">Fecha de pérdida</Label>
+                                <Label htmlFor="date" className="form-label">{t('birth.field.date')}</Label>
                                 <DatePicker
                                     id="date"
                                     className={`form-control ${bulkAbortionFormik.touched.date && bulkAbortionFormik.errors.date ? 'is-invalid' : ''}`}
@@ -472,7 +446,7 @@ const ViewUpcomingBirths = () => {
                             </div>
 
                             <div className="w-50">
-                                <Label htmlFor="responsible" className="form-label">Responsable</Label>
+                                <Label htmlFor="responsible" className="form-label">{t('birth.field.responsible')}</Label>
                                 <Input
                                     type="text"
                                     id="responsible"
@@ -484,7 +458,7 @@ const ViewUpcomingBirths = () => {
                         </div>
 
                         <div className="mt-4">
-                            <Label htmlFor="notes" className="form-label">Notas</Label>
+                            <Label htmlFor="notes" className="form-label">{t('birth.field.notes')}</Label>
                             <Input
                                 type="text"
                                 id="notes"
@@ -493,7 +467,7 @@ const ViewUpcomingBirths = () => {
                                 onChange={bulkAbortionFormik.handleChange}
                                 onBlur={bulkAbortionFormik.handleBlur}
                                 invalid={bulkAbortionFormik.touched.notes && !!bulkAbortionFormik.errors.notes}
-                                placeholder="Ej: Pérdida masiva por condiciones climáticas"
+                                placeholder={t('birth.placeholder.notes')}
                             />
                             {bulkAbortionFormik.touched.notes && bulkAbortionFormik.errors.notes && (
                                 <FormFeedback>{bulkAbortionFormik.errors.notes}</FormFeedback>
@@ -502,27 +476,25 @@ const ViewUpcomingBirths = () => {
                     </form>
                 </ModalBody>
                 <ModalFooter>
-                    <Button className="farm-secondary-button" onClick={() => toggleModal("bulkAbortion", false)}>Cancelar</Button>
+                    <Button className="farm-secondary-button" onClick={() => toggleModal("bulkAbortion", false)}>{t('common.button.cancel')}</Button>
                     <Button className="farm-danger-button" onClick={() => bulkAbortionFormik.handleSubmit()} disabled={bulkAbortionFormik.isSubmitting}>
-                        {bulkAbortionFormik.isSubmitting ? <Spinner size="sm" /> : 'Confirmar Pérdida'}
+                        {bulkAbortionFormik.isSubmitting ? <Spinner size="sm" /> : t('birth.bulk.confirmLoss')}
                     </Button>
                 </ModalFooter>
             </Modal>
 
-            {/* Modal para seleccionar rango de fechas */}
             <Modal size="md" isOpen={modals.dateRange} toggle={() => toggleModal("dateRange")} centered>
-                <ModalHeader toggle={() => toggleModal("dateRange")}>Seleccionar rango de fechas</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("dateRange")}>{t('birth.modal.dateRange')}</ModalHeader>
                 <ReportDateRangeSelector
                     onGenerate={handleGeneratePDF}
                     onCancel={() => toggleModal("dateRange")}
                     loading={pdfLoading}
-                    generateButtonText="Generar PDF"
+                    generateButtonText={t('birth.action.generatePdf')}
                 />
             </Modal>
 
-            {/* Modal PDF */}
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de próximos partos</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('birth.modal.upcomingReport')}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>

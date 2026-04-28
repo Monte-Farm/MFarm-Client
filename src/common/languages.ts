@@ -1,9 +1,15 @@
-const languages: Record<string, { label: string }> = {
+const languages: Record<string, { label: string; flag: string }> = {
   sp: {
     label: "Español",
+    flag: "🇪🇸",
   },
   en: {
     label: "English",
+    flag: "🇺🇸",
+  },
+  pt: {
+    label: "Português (BR)",
+    flag: "🇧🇷",
   },
 };
 

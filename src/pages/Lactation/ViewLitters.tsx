@@ -15,8 +15,14 @@ import BulkFeedAdministrationModal from "Components/Common/Forms/BulkFeedAdminis
 import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
+import { useTranslation } from "react-i18next";
+
+const STATUS_COLORS: Record<string, string> = {
+    active: 'primary', ready_to_wean: 'warning', weaned: 'success', wean_overdue: 'black',
+};
 
 const ViewLitters = () => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const navigate = useNavigate();
@@ -50,10 +56,10 @@ const ViewLitters = () => {
     };
 
     const litterColumns: Column<any>[] = [
-        { header: 'Codigo', accessor: 'code', type: 'text', isFilterable: true },
-        { header: 'Fecha de nacimiento', accessor: 'birthDate', type: 'date', isFilterable: true },
+        { header: t('litter.column.code'), accessor: 'code', type: 'text', isFilterable: true },
+        { header: t('litter.column.birthDate'), accessor: 'birthDate', type: 'date', isFilterable: true },
         {
-            header: 'Madre',
+            header: t('litter.column.mother'),
             accessor: 'mother',
             type: 'text',
             isFilterable: true,
@@ -70,29 +76,29 @@ const ViewLitters = () => {
                 </Button>
             )
         },
-        { 
-            header: 'Machos', 
-            accessor: 'currentMale', 
-            type: 'text', 
+        {
+            header: t('litter.column.males'),
+            accessor: 'currentMale',
+            type: 'text',
             isFilterable: true,
             bgColor: "#e3f2fd"
         },
-        { 
-            header: 'Hembras', 
-            accessor: 'currentFemale', 
-            type: 'text', 
+        {
+            header: t('litter.column.females'),
+            accessor: 'currentFemale',
+            type: 'text',
             isFilterable: true,
             bgColor: "#fce4ec"
         },
-        { 
-            header: 'Peso promedio', 
-            accessor: 'averageWeight', 
-            type: 'text', 
+        {
+            header: t('litter.column.avgWeight'),
+            accessor: 'averageWeight',
+            type: 'text',
             isFilterable: true,
             bgColor: "#e8f5e9"
         },
         {
-            header: 'Peso total',
+            header: t('litter.column.totalWeight'),
             accessor: 'averageWeight',
             type: 'text',
             isFilterable: true,
@@ -100,38 +106,18 @@ const ViewLitters = () => {
             render: (_, row) => <span>{(row.averageWeight * (row.currentMale + row.currentFemale)).toFixed(2)}</span>
         },
         {
-            header: 'Estado',
+            header: t('litter.column.status'),
             accessor: 'status',
             type: 'text',
             isFilterable: true,
             render: (value: string) => {
-                let color = "secondary";
-                let label = value;
-
-                switch (value) {
-                    case "active":
-                        color = "primary";
-                        label = "Lactando";
-                        break;
-                    case "ready_to_wean":
-                        color = "warning";
-                        label = "Listo para destetar";
-                        break;
-                    case "weaned":
-                        color = "success";
-                        label = "Destetada";
-                        break;
-                    case "wean_overdue":
-                        color = "black";
-                        label = "Destete vencido";
-                        break;
-                }
-
+                const color = STATUS_COLORS[value] || 'secondary';
+                const label = t(`litter.status.${value}`, { defaultValue: value });
                 return <Badge color={color}>{label}</Badge>;
             },
         },
         {
-            header: "Acciones",
+            header: t('litter.column.actions'),
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
@@ -155,7 +141,7 @@ const ViewLitters = () => {
             setFileURL(window.URL.createObjectURL(pdfBlob));
             setPdfModalOpen(true);
         } catch (error) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('litter.error.pdf') });
         } finally {
             setPdfLoading(false);
         }
@@ -188,46 +174,46 @@ const ViewLitters = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Camadas"} pageTitle={"Lactancia"} />
+                <BreadCrumb title={t('litter.breadcrumb.title')} pageTitle={t('litter.breadcrumb.parent')} />
 
                 <Card>
                     <CardHeader className="d-flex justify-content-between align-items-center gap-2">
                         <div className="d-flex align-items-center gap-3">
-                            <h4 className="mb-0">Camadas</h4>
+                            <h4 className="mb-0">{t('litter.breadcrumb.title')}</h4>
                             {selectedLitters.length > 0 && (
                                 <div className="d-flex align-items-center gap-2">
                                     <span className="text-muted">
-                                        {selectedLitters.length} {selectedLitters.length === 1 ? 'camada seleccionada' : 'camadas seleccionadas'}
+                                        {selectedLitters.length} {selectedLitters.length === 1 ? t('litter.selected.singular') : t('litter.selected.plural')}
                                     </span>
                                     <div className="btn-group" role="group">
                                         <Button
                                             className="farm-primary-button btn-sm"
                                             disabled={!hasActiveLitters}
-                                            title={!hasActiveLitters ? "No hay camadas activas para asignar medicación" : undefined}
+                                            title={!hasActiveLitters ? t('litter.tooltip.noActiveMedication') : undefined}
                                             onClick={() => setBulkMedicationModalOpen(true)}
                                         >
                                             <i className="ri-medicine-bottle-line me-1"></i>
-                                            Asignar Medicación
+                                            {t('litter.action.assignMedication')}
                                         </Button>
                                         <Button
                                             color="info"
                                             className="btn-sm"
                                             disabled={!hasActiveLitters}
-                                            title={!hasActiveLitters ? "No hay camadas activas para administrar alimento" : undefined}
+                                            title={!hasActiveLitters ? t('litter.tooltip.noActiveFeed') : undefined}
                                             onClick={() => setBulkFeedAdminModalOpen(true)}
                                         >
                                             <i className="ri-restaurant-line me-1"></i>
-                                            Administrar alimento
+                                            {t('litter.action.adminFeed')}
                                         </Button>
                                         <Button
                                             color="warning"
                                             className="btn-sm"
                                             disabled={!hasReadyToWeanLitters}
-                                            title={!hasReadyToWeanLitters ? "No hay camadas listas para destetar" : undefined}
+                                            title={!hasReadyToWeanLitters ? t('litter.tooltip.noReadyToWean') : undefined}
                                             onClick={() => setBulkWeanModalOpen(true)}
                                         >
                                             <i className="ri-scissors-cut-line me-1"></i>
-                                            Destetar Camadas
+                                            {t('litter.action.weanLitters')}
                                         </Button>
                                     </div>
                                 </div>
@@ -235,9 +221,9 @@ const ViewLitters = () => {
                         </div>
                         <Button color="primary" className="ms-auto" onClick={() => setDateRangeModalOpen(true)} disabled={pdfLoading}>
                             {pdfLoading ? (
-                                <><Spinner className="me-2" size="sm" />Generando...</>
+                                <><Spinner className="me-2" size="sm" />{t('litter.action.generating')}</>
                             ) : (
-                                <><i className="ri-file-pdf-line me-2" />Exportar PDF</>
+                                <><i className="ri-file-pdf-line me-2" />{t('litter.action.exportPdf')}</>
                             )}
                         </Button>
                     </CardHeader>
@@ -245,10 +231,10 @@ const ViewLitters = () => {
                     <CardBody style={{ display: "flex", flexDirection: "column", height: "100%" }}>
                         {litters && litters.length > 0 ? (
                             <div style={{ flex: 1 }}>
-                                <SelectableCustomTable 
-                                    columns={litterColumns} 
-                                    data={litters} 
-                                    showPagination={true} 
+                                <SelectableCustomTable
+                                    columns={litterColumns}
+                                    data={litters}
+                                    showPagination={true}
                                     rowsPerPage={7}
                                     onSelect={handleSelectionChange}
                                     selectionOnlyOnCheckbox={true}
@@ -258,7 +244,7 @@ const ViewLitters = () => {
                             <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", textAlign: "center", color: "#888", }}>
                                 <div>
                                     <FiInbox size={48} style={{ marginBottom: 10 }} />
-                                    <div>No hay camadas registradas</div>
+                                    <div>{t('litter.empty.noLitters')}</div>
                                 </div>
                             </div>
                         )}
@@ -289,17 +275,17 @@ const ViewLitters = () => {
             />
 
             <Modal size="md" isOpen={dateRangeModalOpen} toggle={() => setDateRangeModalOpen(false)} centered>
-                <ModalHeader toggle={() => setDateRangeModalOpen(false)}>Seleccionar rango de fechas de nacimiento</ModalHeader>
+                <ModalHeader toggle={() => setDateRangeModalOpen(false)}>{t('litter.modal.dateRange')}</ModalHeader>
                 <ReportDateRangeSelector
                     onGenerate={handleGeneratePDF}
                     onCancel={() => setDateRangeModalOpen(false)}
                     loading={pdfLoading}
-                    generateButtonText="Generar PDF"
+                    generateButtonText={t('litter.modal.generatePdf')}
                 />
             </Modal>
 
             <Modal size="xl" isOpen={pdfModalOpen} toggle={() => setPdfModalOpen(false)} backdrop="static" keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => setPdfModalOpen(false)}>Reporte de Camadas</ModalHeader>
+                <ModalHeader toggle={() => setPdfModalOpen(false)}>{t('litter.modal.report')}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button, Card, CardBody, Modal, ModalHeader } from "reactstrap";
 import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector";
 import { getGreeting } from "./dashboardHelpers";
@@ -11,13 +12,6 @@ interface DashboardHeaderProps {
     onDateChange: (start: string, end: string) => void;
 }
 
-const formatDateLabel = (dateStr: string): string => {
-    if (!dateStr) return "";
-    const [year, month, day] = dateStr.split("-");
-    const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-    return `${parseInt(day)} ${months[parseInt(month) - 1]} ${year}`;
-};
-
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     userName,
     roleLabel,
@@ -25,7 +19,15 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     endDate,
     onDateChange,
 }) => {
+    const { t } = useTranslation();
     const [pickerOpen, setPickerOpen] = useState(false);
+
+    const shortMonths = t("common.shortMonths", { returnObjects: true }) as string[];
+    const formatDateLabel = (dateStr: string): string => {
+        if (!dateStr) return "";
+        const [year, month, day] = dateStr.split("-");
+        return `${parseInt(day)} ${shortMonths[parseInt(month) - 1]} ${year}`;
+    };
 
     const todayLabel = new Date().toLocaleDateString("es-MX", {
         weekday: "long",
@@ -41,7 +43,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                     <div className="d-flex flex-wrap align-items-center justify-content-between gap-3">
                         <div>
                             <h4 className="mb-1 fw-bold">
-                                {getGreeting()}, {userName}
+                                {getGreeting(t)}, {userName}
                             </h4>
                             <div className="text-muted" style={{ fontSize: "14px", textTransform: "capitalize" }}>
                                 {todayLabel}
@@ -72,12 +74,12 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             <Modal isOpen={pickerOpen} toggle={() => setPickerOpen(false)} centered>
                 <ModalHeader toggle={() => setPickerOpen(false)}>
                     <i className="ri-calendar-line me-2"></i>
-                    Seleccionar Rango de Fechas
+                    {t("dashboard.header.selectDateRange")}
                 </ModalHeader>
                 <ReportDateRangeSelector
                     onGenerate={(s, e) => { onDateChange(s, e); setPickerOpen(false); }}
                     onCancel={() => setPickerOpen(false)}
-                    generateButtonText="Aplicar"
+                    generateButtonText={t("dashboard.header.apply")}
                 />
             </Modal>
         </>

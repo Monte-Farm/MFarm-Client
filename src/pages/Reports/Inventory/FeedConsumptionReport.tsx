@@ -1,5 +1,6 @@
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardBody, CardHeader, Col, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
 import { useReportScope } from "hooks/useReportScope";
 import { buildReportUrl } from "helpers/reports_url_helper";
@@ -49,7 +50,8 @@ interface FeedConsumptionKpis {
 }
 
 const FeedConsumptionReport = () => {
-    document.title = "Consumo de Alimento | Reportes";
+    const { t } = useTranslation();
+    document.title = `${t("reports.feedConsumption.title")} | ${t("reports.inventory")}`;
 
     const configContext = useContext(ConfigContext);
     const { isGlobal, farmId, scopeKey } = useReportScope();
@@ -92,7 +94,7 @@ const FeedConsumptionReport = () => {
             setKpis(data.kpis);
             setDailyTrend(data.dailyTrend || []);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar los datos del reporte." });
+            setAlertConfig({ visible: true, color: "danger", message: t("reports.error.loadData") });
         } finally {
             setLoading(false);
         }
@@ -119,42 +121,42 @@ const FeedConsumptionReport = () => {
     }, [startDate, endDate, scopeKey]);
 
     const groupColumns: Column<ConsumptionByGroup>[] = [
-        { header: "Grupo", accessor: "groupName", type: "text", isFilterable: true },
-        { header: "Etapa", accessor: "stage", type: "text" },
-        { header: "Cerdos", accessor: "pigCount", type: "number" },
+        { header: t("reports.col.group"), accessor: "groupName", type: "text", isFilterable: true },
+        { header: t("reports.col.stage"), accessor: "stage", type: "text" },
+        { header: t("reports.col.pigs"), accessor: "pigCount", type: "number" },
         {
-            header: "Total Consumido", accessor: "totalConsumed", type: "text", bgColor: "#e8f5e9",
+            header: t("reports.feedConsumption.col.totalConsumed"), accessor: "totalConsumed", type: "text", bgColor: "#e8f5e9",
             render: (v: number, row: ConsumptionByGroup) => <span className="fw-semibold">{v?.toLocaleString()} {row.unit}</span>,
         },
         {
-            header: "Prom. / Cerdo", accessor: "avgPerPig", type: "text", bgColor: "#e3f2fd",
+            header: t("reports.feedConsumption.col.avgPerPig"), accessor: "avgPerPig", type: "text", bgColor: "#e3f2fd",
             render: (v: number, row: ConsumptionByGroup) => <span>{v?.toFixed(2)} {row.unit}</span>,
         },
     ];
 
     const phaseColumns: Column<ConsumptionByPhase>[] = [
-        { header: "Fase", accessor: "phase", type: "text", isFilterable: true },
-        { header: "Producto", accessor: "productName", type: "text", isFilterable: true },
+        { header: t("reports.feedConsumption.col.phase"), accessor: "phase", type: "text", isFilterable: true },
+        { header: t("reports.col.product"), accessor: "productName", type: "text", isFilterable: true },
         {
-            header: "Total Consumido", accessor: "totalConsumed", type: "text", bgColor: "#e8f5e9",
+            header: t("reports.feedConsumption.col.totalConsumed"), accessor: "totalConsumed", type: "text", bgColor: "#e8f5e9",
             render: (v: number, row: ConsumptionByPhase) => <span className="fw-semibold">{v?.toLocaleString()} {row.unit}</span>,
         },
-        { header: "Grupos", accessor: "groupCount", type: "number" },
+        { header: t("reports.col.group") + "s", accessor: "groupCount", type: "number" },
         {
-            header: "Prom. / Grupo", accessor: "avgPerGroup", type: "text", bgColor: "#e3f2fd",
+            header: t("reports.feedConsumption.col.avgPerGroup"), accessor: "avgPerGroup", type: "text", bgColor: "#e3f2fd",
             render: (v: number, row: ConsumptionByPhase) => <span>{v?.toFixed(2)} {row.unit}</span>,
         },
     ];
 
     const dayColumns: Column<ConsumptionByDay>[] = [
-        { header: "Fecha", accessor: "date", type: "date", isFilterable: true },
+        { header: t("reports.col.date"), accessor: "date", type: "date", isFilterable: true },
         {
-            header: "Total Consumido", accessor: "totalConsumed", type: "text", bgColor: "#e8f5e9",
+            header: t("reports.feedConsumption.col.totalConsumed"), accessor: "totalConsumed", type: "text", bgColor: "#e8f5e9",
             render: (v: number, row: ConsumptionByDay) => <span className="fw-semibold">{v?.toLocaleString()} {row.unit}</span>,
         },
-        { header: "Grupos Activos", accessor: "groupsActive", type: "number" },
+        { header: t("reports.feedConsumption.col.groupsActive"), accessor: "groupsActive", type: "number" },
         {
-            header: "Prom. / Grupo", accessor: "avgPerGroup", type: "text", bgColor: "#e3f2fd",
+            header: t("reports.feedConsumption.col.avgPerGroup"), accessor: "avgPerGroup", type: "text", bgColor: "#e3f2fd",
             render: (v: number, row: ConsumptionByDay) => <span>{v?.toFixed(2)} {row.unit}</span>,
         },
     ];
@@ -173,10 +175,10 @@ const FeedConsumptionReport = () => {
 
     return (
         <ReportPageLayout
-            title="Consumo de Alimento"
-            pageTitle="Reportes de Inventario"
+            title={t("reports.feedConsumption.title")}
+            pageTitle={t("reports.inventory")}
             onGeneratePdf={handleGeneratePdf}
-            pdfTitle="Reporte - Consumo de Alimento"
+            pdfTitle={t("reports.feedConsumption.pdfTitle")}
             startDate={startDate}
             endDate={endDate}
             onDateChange={(s, e) => { setStartDate(s); setEndDate(e); }}
@@ -184,7 +186,7 @@ const FeedConsumptionReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Total Consumido"
+                        title={t("reports.feedConsumption.kpi.totalConsumed")}
                         value={kpis.totalConsumed}
                         icon={<i className="ri-plant-line fs-4 text-success"></i>}
                         animateValue
@@ -194,7 +196,7 @@ const FeedConsumptionReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Promedio / Dia"
+                        title={t("reports.feedConsumption.kpi.avgPerDay")}
                         value={kpis.avgPerDay}
                         icon={<i className="ri-calendar-line fs-4 text-primary"></i>}
                         animateValue
@@ -204,7 +206,7 @@ const FeedConsumptionReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Promedio / Cerdo"
+                        title={t("reports.feedConsumption.kpi.avgPerPig")}
                         value={kpis.avgPerPig}
                         icon={<i className="bx bxs-dog fs-4 text-info"></i>}
                         animateValue
@@ -215,7 +217,7 @@ const FeedConsumptionReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Promedio / Grupo"
+                        title={t("reports.feedConsumption.kpi.avgPerGroup")}
                         value={kpis.avgPerGroup}
                         icon={<i className="ri-group-line fs-4 text-warning"></i>}
                         animateValue
@@ -226,7 +228,7 @@ const FeedConsumptionReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Grupos con Consumo"
+                        title={t("reports.feedConsumption.kpi.groupsWithConsumption")}
                         value={kpis.groupsWithConsumption}
                         icon={<i className="ri-bar-chart-line fs-4 text-secondary"></i>}
                         animateValue
@@ -235,7 +237,7 @@ const FeedConsumptionReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Producto Principal"
+                        title={t("reports.feedConsumption.kpi.mainProduct")}
                         value={kpis.mostConsumedProduct || "—"}
                         icon={<i className="ri-star-line fs-4 text-warning"></i>}
                         iconBgColor="#FFF8E1"
@@ -246,10 +248,10 @@ const FeedConsumptionReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={6}>
                     <BasicLineChartCard
-                        title="Tendencia de Consumo Diario"
+                        title={t("reports.feedConsumption.chart.dailyTrend")}
                         data={trendData}
-                        yLabel="Consumo (kg)"
-                        xLabel="Dia"
+                        yLabel={`${t("reports.feedConsumption.kpi.totalConsumed")} (${t("reports.axis.kg")})`}
+                        xLabel={t("reports.feedConsumption.tab.byDay")}
                         height={280}
                         color="#10b981"
                         enableArea
@@ -258,12 +260,12 @@ const FeedConsumptionReport = () => {
                 </Col>
                 <Col xl={6}>
                     <BasicBarChart
-                        title="Consumo por Grupo"
+                        title={t("reports.feedConsumption.chart.byGroup")}
                         data={groupBarData}
                         indexBy="grupo"
                         keys={["Consumo Total"]}
-                        xLegend="Grupo"
-                        yLegend="kg"
+                        xLegend={t("reports.axis.group")}
+                        yLegend={t("reports.axis.kg")}
                         height={280}
                         colors={["#3b82f6"]}
                     />
@@ -279,7 +281,7 @@ const FeedConsumptionReport = () => {
                                 onClick={() => setActiveTab("1")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-group-line me-1"></i> Por Grupo ({byGroup.length})
+                                <i className="ri-group-line me-1"></i> {t("reports.feedConsumption.tab.byGroup")} ({byGroup.length})
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -288,7 +290,7 @@ const FeedConsumptionReport = () => {
                                 onClick={() => setActiveTab("2")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-stack-line me-1"></i> Por Fase ({byPhase.length})
+                                <i className="ri-stack-line me-1"></i> {t("reports.feedConsumption.tab.byPhase")} ({byPhase.length})
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -297,7 +299,7 @@ const FeedConsumptionReport = () => {
                                 onClick={() => setActiveTab("3")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-calendar-line me-1"></i> Por Dia ({byDay.length})
+                                <i className="ri-calendar-line me-1"></i> {t("reports.feedConsumption.tab.byDay")} ({byDay.length})
                             </NavLink>
                         </NavItem>
                     </Nav>

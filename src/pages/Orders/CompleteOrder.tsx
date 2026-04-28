@@ -10,8 +10,10 @@ import ErrorModal from "Components/Common/Shared/ErrorModal";
 import SuccessModal from "Components/Common/Shared/SuccessModal";
 import CompleteOrderForm from "Components/Common/Forms/CompleteOrderForm";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
+import { useTranslation } from "react-i18next";
 
 const CompleteOrder = () => {
+    const { t } = useTranslation();
     const history = useNavigate();
     const { id_order } = useParams();
     const configContext = useContext(ConfigContext)
@@ -129,16 +131,16 @@ const CompleteOrder = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Completar Pedido"} pageTitle={"Pedidos"} />
+                <BreadCrumb title={t('warehouse.orders.modal.complete', { defaultValue: 'Completar Pedido' })} pageTitle={t('warehouse.orders.breadcrumb.parent', { defaultValue: 'Pedidos' })} />
 
                 <Card>
                     <CardHeader>
                         <div className="d-flex gap-2">
-                            <h5>Detalles del Pedido</h5>
+                            <h5>{t('warehouse.orders.modal.details', { defaultValue: 'Detalles del Pedido' })}</h5>
 
                             <Button className="ms-auto farm-primary-button" onClick={handlePrintOrder}>
                                 <i className="ri-download-line me-2"></i>
-                                Descargar Reporte
+                                {t('warehouse.orderDetails.button.report', { defaultValue: 'Descargar Reporte' })}
                             </Button>
                         </div>
                     </CardHeader>
@@ -149,11 +151,11 @@ const CompleteOrder = () => {
             </Container>
 
 
-            <SuccessModal isOpen={modals.success} onClose={handleCancel} message={"El pedido se ha completado exitosamente"}></SuccessModal>
-            <ErrorModal isOpen={modals.error} onClose={handleCancel} message="Ha ocurrido un error al completar el pedido, intentelo mas tarde"></ErrorModal>
+            <SuccessModal isOpen={modals.success} onClose={handleCancel} message={t('warehouse.orders.success.complete', { defaultValue: 'El pedido se ha completado exitosamente' })}></SuccessModal>
+            <ErrorModal isOpen={modals.error} onClose={handleCancel} message={t('warehouse.orders.error.complete', { defaultValue: 'Ha ocurrido un error al completar el pedido, intentelo mas tarde' })}></ErrorModal>
 
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Pedido </ModalHeader>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('warehouse.orderDetails.modal.report', { defaultValue: 'Reporte de Pedido' })}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>

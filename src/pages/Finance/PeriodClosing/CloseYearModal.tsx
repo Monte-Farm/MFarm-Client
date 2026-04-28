@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { Alert, Button, Form, FormFeedback, FormGroup, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from "reactstrap";
 import Select from "react-select";
 import { useDispatch, useSelector } from "react-redux";
@@ -29,22 +30,8 @@ const statusIcon = (status: PrecheckStatus) => {
     }
 };
 
-const ChecklistItemRow = ({ item }: { item: PrecheckItem }) => (
-    <div className="d-flex align-items-start gap-2 py-2 border-bottom">
-        <div>{statusIcon(item.status)}</div>
-        <div className="flex-grow-1">
-            <div className="fw-semibold">{item.label}</div>
-            <small className="text-muted">{item.detail}</small>
-        </div>
-        {item.actionUrl && item.status !== "ok" && (
-            <Link to={item.actionUrl} className="btn btn-sm btn-light">
-                Ir a resolver
-            </Link>
-        )}
-    </div>
-);
-
 const CloseYearModal = ({ isOpen, onClose, onSuccess, farmId }: CloseYearModalProps) => {
+    const { t } = useTranslation();
     const dispatch = useDispatch<any>();
     const configContext = useContext(ConfigContext);
     const submitting = useSelector((state: any) => state.PeriodClosing.submitting);
@@ -58,7 +45,6 @@ const CloseYearModal = ({ isOpen, onClose, onSuccess, farmId }: CloseYearModalPr
     const [existingClosing, setExistingClosing] = useState<PeriodClosingByPeriod | null>(null);
 
     const today = new Date();
-    // Default: the year that just finished. If we're in Jan, default to prev year; otherwise current year - 1.
     const defaultYear = today.getFullYear() - 1;
 
     const formik = useFormik({
@@ -68,8 +54,8 @@ const CloseYearModal = ({ isOpen, onClose, onSuccess, farmId }: CloseYearModalPr
             notes: "",
         },
         validationSchema: Yup.object({
-            year: Yup.number().required("Año requerido").min(2000).max(2100),
-            notes: Yup.string().max(500, "Máximo 500 caracteres"),
+            year: Yup.number().required(t("finance.periodClosing.modal.shared.validation.yearRequired")).min(2000).max(2100),
+            notes: Yup.string().max(500, t("finance.periodClosing.modal.shared.validation.maxNotes")),
         }),
         onSubmit: async (values) => {
             setApiError(null);
@@ -102,12 +88,12 @@ const CloseYearModal = ({ isOpen, onClose, onSuccess, farmId }: CloseYearModalPr
     const yearSelectOptions = yearOptions.map((y) => ({ value: y, label: String(y) }));
 
     const selYear = Number(formik.values.year);
-    const periodStart = `1 de Enero de ${selYear}`;
-    const periodEnd = `31 de Diciembre de ${selYear}`;
+    const MONTHS = t("finance.periodClosing.months", { returnObjects: true }) as string[];
+    const periodStart = `1 de ${MONTHS[0]} de ${selYear}`;
+    const periodEnd = `31 de ${MONTHS[11]} de ${selYear}`;
     const startIso = `${selYear}-01-01`;
     const endIso = `${selYear}-12-31`;
 
-    // Year must have ended
     const yearEnded = new Date(selYear, 11, 31) < new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
     useEffect(() => {
@@ -140,7 +126,6 @@ const CloseYearModal = ({ isOpen, onClose, onSuccess, farmId }: CloseYearModalPr
             }
         };
         load();
-        // Annual precheck (uses same thunk — backend distinguishes by query params)
         dispatch(fetchClosingPrecheckAnnual(farmId, selYear));
         return () => { cancelled = true; };
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -157,27 +142,39 @@ const CloseYearModal = ({ isOpen, onClose, onSuccess, farmId }: CloseYearModalPr
         !submitting &&
         precheckOk;
 
+    const ChecklistItemRow = ({ item }: { item: PrecheckItem }) => (
+        <div className="d-flex align-items-start gap-2 py-2 border-bottom">
+            <div>{statusIcon(item.status)}</div>
+            <div className="flex-grow-1">
+                <div className="fw-semibold">{item.label}</div>
+                <small className="text-muted">{item.detail}</small>
+            </div>
+            {item.actionUrl && item.status !== "ok" && (
+                <Link to={item.actionUrl} className="btn btn-sm btn-light">
+                    {t("finance.periodClosing.modal.shared.goResolve")}
+                </Link>
+            )}
+        </div>
+    );
+
     return (
         <Modal isOpen={isOpen} toggle={handleClose} backdrop="static" keyboard={false} centered size="lg">
             <ModalHeader toggle={handleClose}>
                 <i className="ri-calendar-2-line me-2 text-primary" />
-                Cerrar año
+                {t("finance.periodClosing.modal.closeYear.header")}
             </ModalHeader>
             <Form onSubmit={formik.handleSubmit}>
                 <ModalBody>
                     <Alert color="info" className="d-flex align-items-start mb-3">
                         <i className="ri-information-line me-2 fs-5 mt-1 text-info" />
                         <div>
-                            <div className="fw-semibold mb-1">Vas a consolidar el año completo</div>
-                            <small>
-                                Se generará un snapshot anual inmutable que consolida los 12 cierres mensuales del año,
-                                con comparativo vs año anterior y evolución mensual.
-                            </small>
+                            <div className="fw-semibold mb-1">{t("finance.periodClosing.modal.closeYear.infoTitle")}</div>
+                            <small>{t("finance.periodClosing.modal.closeYear.infoBody")}</small>
                         </div>
                     </Alert>
 
                     <FormGroup className="mb-3">
-                        <Label for="year">Año</Label>
+                        <Label for="year">{t("finance.periodClosing.modal.closeYear.field.year")}</Label>
                         <Select
                             inputId="year"
                             options={yearSelectOptions}
@@ -190,52 +187,50 @@ const CloseYearModal = ({ isOpen, onClose, onSuccess, farmId }: CloseYearModalPr
 
                     <div className="border rounded p-3 mb-3 bg-light">
                         <div className="text-muted small mb-1">
-                            <i className="ri-calendar-line me-1 text-muted" />Periodo a cerrar
+                            <i className="ri-calendar-line me-1 text-muted" />{t("finance.periodClosing.modal.shared.periodLabel")}
                         </div>
-                        <div className="fw-semibold fs-5 mb-1">Año {selYear}</div>
+                        <div className="fw-semibold fs-5 mb-1">{t("finance.periodClosing.modal.closeYear.yearLabel", { val: selYear })}</div>
                         <div className="text-muted small">
                             Del <strong>{periodStart}</strong> al <strong>{periodEnd}</strong>
                         </div>
                     </div>
 
-                    {/* Validaciones previas */}
                     {!yearEnded && (
                         <Alert color="warning" className="d-flex align-items-center">
                             <i className="ri-error-warning-line me-2 fs-5 text-warning" />
-                            <div>Este año aún no termina. Solo se pueden cerrar años completos.</div>
+                            <div>{t("finance.periodClosing.modal.closeYear.validation.yearNotEnded")}</div>
                         </Alert>
                     )}
                     {blockedByExisting && (
                         <Alert color="warning" className="d-flex align-items-center">
                             <i className="ri-lock-line me-2 fs-5 text-warning" />
-                            <div>Este año ya tiene un cierre activo. Para recerrar hay que reabrir primero.</div>
+                            <div>{t("finance.periodClosing.modal.closeYear.validation.hasActiveClosure")}</div>
                         </Alert>
                     )}
                     {existingClosing?.status === "reopened" && (
                         <Alert color="info" className="d-flex align-items-center">
                             <i className="ri-history-line me-2 fs-5 text-info" />
-                            <div>Existe un cierre anual reabierto. Al cerrar se creará un nuevo registro y el anterior quedará archivado.</div>
+                            <div>{t("finance.periodClosing.modal.closeYear.validation.hasReopenedClosure")}</div>
                         </Alert>
                     )}
 
-                    {/* Precheck */}
                     <div className="mb-3">
                         <div className="d-flex align-items-center justify-content-between mb-2">
                             <div className="text-muted small fw-semibold">
-                                <i className="ri-checkbox-multiple-line me-1 text-muted" />Verificaciones previas
+                                <i className="ri-checkbox-multiple-line me-1 text-muted" />{t("finance.periodClosing.modal.shared.precheck.title")}
                             </div>
                             {precheck && (
                                 <div className="small">
-                                    <span className="text-success">{precheck.summary.ok} OK</span>
-                                    {precheck.summary.warning > 0 && <> · <span className="text-warning">{precheck.summary.warning} advertencias</span></>}
-                                    {precheck.summary.error > 0 && <> · <span className="text-danger">{precheck.summary.error} errores</span></>}
+                                    <span className="text-success">{precheck.summary.ok} {t("finance.periodClosing.modal.shared.precheck.ok")}</span>
+                                    {precheck.summary.warning > 0 && <> · <span className="text-warning">{precheck.summary.warning} {t("finance.periodClosing.modal.shared.precheck.warnings")}</span></>}
+                                    {precheck.summary.error > 0 && <> · <span className="text-danger">{precheck.summary.error} {t("finance.periodClosing.modal.shared.precheck.errors")}</span></>}
                                 </div>
                             )}
                         </div>
                         {loadingPrecheck ? (
                             <div className="text-center py-3 border rounded bg-light">
                                 <Spinner size="sm" className="me-2" />
-                                <span className="text-muted">Verificando meses del año...</span>
+                                <span className="text-muted">{t("finance.periodClosing.modal.closeYear.precheck.loading")}</span>
                             </div>
                         ) : precheck ? (
                             <div className="border rounded px-3">
@@ -247,44 +242,43 @@ const CloseYearModal = ({ isOpen, onClose, onSuccess, farmId }: CloseYearModalPr
                             <Alert color="warning" className="d-flex align-items-start mb-0">
                                 <i className="ri-error-warning-line me-2 fs-5 text-warning mt-1" />
                                 <div>
-                                    <div className="fw-semibold mb-1">No se pudo verificar el año</div>
+                                    <div className="fw-semibold mb-1">{t("finance.periodClosing.modal.closeYear.precheck.errorTitle")}</div>
                                     <small>{precheckError}</small>
                                 </div>
                             </Alert>
                         ) : (
                             <div className="text-center py-3 border rounded bg-light text-muted small">
-                                No se pudo cargar el checklist de verificación.
+                                {t("finance.periodClosing.modal.shared.precheck.fallback")}
                             </div>
                         )}
                     </div>
 
-                    {/* Preview */}
                     <div className="mb-3">
                         <div className="text-muted small fw-semibold mb-2">
-                            <i className="ri-eye-line me-1 text-muted" />Vista previa de cifras anuales
+                            <i className="ri-eye-line me-1 text-muted" />{t("finance.periodClosing.modal.closeYear.preview.title")}
                         </div>
                         {loadingPreview ? (
                             <div className="text-center py-4 border rounded bg-light">
                                 <Spinner size="sm" className="me-2" />
-                                <span className="text-muted">Cargando datos del año...</span>
+                                <span className="text-muted">{t("finance.periodClosing.modal.closeYear.preview.loading")}</span>
                             </div>
                         ) : preview ? (
                             <div className="row g-2">
                                 <div className="col-md-6">
                                     <div className="border rounded p-2" style={{ backgroundColor: "#E8F5E9" }}>
-                                        <div className="text-muted small">Ingresos</div>
+                                        <div className="text-muted small">{t("finance.periodClosing.modal.shared.preview.income")}</div>
                                         <div className="fw-bold fs-5 text-success">{formatCurrency(preview.totalIncome)}</div>
                                     </div>
                                 </div>
                                 <div className="col-md-6">
                                     <div className="border rounded p-2" style={{ backgroundColor: "#FFEBEE" }}>
-                                        <div className="text-muted small">Costos</div>
+                                        <div className="text-muted small">{t("finance.periodClosing.modal.shared.preview.costs")}</div>
                                         <div className="fw-bold fs-5 text-danger">{formatCurrency(preview.totalCosts)}</div>
                                     </div>
                                 </div>
                                 <div className="col-md-6">
                                     <div className="border rounded p-2" style={{ backgroundColor: "#FFF8E1" }}>
-                                        <div className="text-muted small">Resultado Operativo</div>
+                                        <div className="text-muted small">{t("finance.periodClosing.modal.shared.preview.operatingResult")}</div>
                                         <div className={`fw-bold fs-5 ${preview.operatingResult >= 0 ? "text-success" : "text-danger"}`}>
                                             {formatCurrency(preview.operatingResult)}
                                         </div>
@@ -292,33 +286,33 @@ const CloseYearModal = ({ isOpen, onClose, onSuccess, farmId }: CloseYearModalPr
                                 </div>
                                 <div className="col-md-6">
                                     <div className="border rounded p-2" style={{ backgroundColor: "#E0F7FA" }}>
-                                        <div className="text-muted small">Margen Operativo</div>
+                                        <div className="text-muted small">{t("finance.periodClosing.modal.shared.preview.operatingMargin")}</div>
                                         <div className="fw-bold fs-5 text-info">{(preview.operatingMargin || 0).toFixed(1)}%</div>
                                     </div>
                                 </div>
                                 <div className="col-md-6">
                                     <div className="border rounded p-2">
-                                        <div className="text-muted small">Cerdos Vendidos</div>
+                                        <div className="text-muted small">{t("finance.periodClosing.modal.shared.preview.pigsSold")}</div>
                                         <div className="fw-bold fs-5">{preview.totalPigsSold || 0}</div>
                                     </div>
                                 </div>
                                 <div className="col-md-6">
                                     <div className="border rounded p-2">
-                                        <div className="text-muted small">Kilos Vendidos</div>
+                                        <div className="text-muted small">{t("finance.periodClosing.modal.shared.preview.kgSold")}</div>
                                         <div className="fw-bold fs-5">{(preview.totalKgSold || 0).toFixed(0)} kg</div>
                                     </div>
                                 </div>
                             </div>
                         ) : (
                             <div className="text-center py-3 border rounded bg-light text-muted small">
-                                Sin datos disponibles para la vista previa.
+                                {t("finance.periodClosing.modal.shared.preview.noData")}
                             </div>
                         )}
                     </div>
 
                     <FormGroup>
                         <Label for="notes">
-                            Notas <span className="text-muted">(opcional)</span>
+                            {t("finance.periodClosing.modal.closeYear.field.notes")} <span className="text-muted">{t("finance.periodClosing.modal.closeYear.field.notesOptional")}</span>
                         </Label>
                         <Input
                             type="textarea"
@@ -326,7 +320,7 @@ const CloseYearModal = ({ isOpen, onClose, onSuccess, farmId }: CloseYearModalPr
                             name="notes"
                             rows={2}
                             maxLength={500}
-                            placeholder="Ej. Cierre anual del ejercicio fiscal..."
+                            placeholder={t("finance.periodClosing.modal.closeYear.field.notesPlaceholder")}
                             value={formik.values.notes}
                             onChange={formik.handleChange}
                             onBlur={formik.handleBlur}
@@ -344,10 +338,13 @@ const CloseYearModal = ({ isOpen, onClose, onSuccess, farmId }: CloseYearModalPr
                         <Alert color="info" className="d-flex align-items-start mb-0">
                             <Spinner size="sm" className="me-2 mt-1" />
                             <div>
-                                <div className="fw-semibold">Generando cierre anual…</div>
+                                <div className="fw-semibold">{t("finance.periodClosing.modal.closeYear.submitting.title")}</div>
                                 <small>
-                                    Este proceso puede tardar hasta <strong>60 segundos</strong>. Estamos consolidando
-                                    los 12 meses y calculando comparativas anuales.
+                                    <Trans
+                                        i18nKey="finance.periodClosing.modal.closeYear.submitting.body"
+                                        values={{ val: 60 }}
+                                        components={{ 1: <strong /> }}
+                                    />
                                 </small>
                             </div>
                         </Alert>
@@ -355,9 +352,11 @@ const CloseYearModal = ({ isOpen, onClose, onSuccess, farmId }: CloseYearModalPr
                     {apiError && <Alert color="danger" className="mb-0">{apiError}</Alert>}
                 </ModalBody>
                 <ModalFooter>
-                    <Button color="light" onClick={handleClose} disabled={submitting}>Cancelar</Button>
+                    <Button color="light" onClick={handleClose} disabled={submitting}>{t("common.button.cancel")}</Button>
                     <Button type="submit" color="primary" disabled={!canSubmit}>
-                        {submitting ? (<><i className="ri-loader-4-line ri-spin me-1" />Cerrando...</>) : (<><i className="ri-calendar-2-line me-1" />Cerrar año</>)}
+                        {submitting
+                            ? (<><i className="ri-loader-4-line ri-spin me-1" />{t("finance.periodClosing.modal.closeYear.button.submitting")}</>)
+                            : (<><i className="ri-calendar-2-line me-1" />{t("finance.periodClosing.modal.closeYear.button.submit")}</>)}
                     </Button>
                 </ModalFooter>
             </Form>

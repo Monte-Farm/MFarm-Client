@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
@@ -15,6 +16,7 @@ interface WeighGroupFormProps {
 }
 
 const WeighGroupForm: React.FC<WeighGroupFormProps> = ({ groupId, onSave }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [modals, setModals] = useState({ success: false, error: false });
@@ -39,7 +41,7 @@ const WeighGroupForm: React.FC<WeighGroupFormProps> = ({ groupId, onSave }) => {
             setPigsArray(filteredPigs.map((pig: any) => ({ ...pig, newWeight: '' })));
         } catch (error) {
             console.error('Error fetching group:', { error });
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al obtener los datos del grupo' });
+            setAlertConfig({ visible: true, color: 'danger', message: t("weighGroup.error.fetchGroup", { defaultValue: "Error al obtener los datos del grupo" }) });
         } finally {
             setLoading(false);
         }
@@ -49,13 +51,13 @@ const WeighGroupForm: React.FC<WeighGroupFormProps> = ({ groupId, onSave }) => {
         if (!configContext || !userLogged) return;
 
         if (pigsArray.length === 0) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'No hay cerdos activos en el grupo' });
+            setAlertConfig({ visible: true, color: 'danger', message: t("weighGroup.validation.noActivePigs", { defaultValue: "No hay cerdos activos en el grupo" }) });
             return;
         }
 
         const hasEmptyWeights = pigsArray.some(p => p.newWeight === '' || Number(p.newWeight) <= 0);
         if (hasEmptyWeights) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, ingresa el peso de todos los cerdos' });
+            setAlertConfig({ visible: true, color: 'danger', message: t("weighGroup.validation.enterAllWeights", { defaultValue: "Por favor, ingresa el peso de todos los cerdos" }) });
             return;
         }
 
@@ -116,8 +118,8 @@ const WeighGroupForm: React.FC<WeighGroupFormProps> = ({ groupId, onSave }) => {
     return (
         <>
             <div className="mb-4">
-                <h5 className="fw-bold mb-1 text-dark">Registro de Peso</h5>
-                <p className="text-muted small">Registra el pesaje periódico del grupo sin cambiar de etapa.</p>
+                <h5 className="fw-bold mb-1 text-dark">{t("weighGroup.title", { defaultValue: "Registro de Peso" })}</h5>
+                <p className="text-muted small">{t("weighGroup.subtitle", { defaultValue: "Registra el pesaje periódico del grupo sin cambiar de etapa." })}</p>
             </div>
 
             <div
@@ -129,11 +131,11 @@ const WeighGroupForm: React.FC<WeighGroupFormProps> = ({ groupId, onSave }) => {
                     <Input className="form-check-input mt-0" type="checkbox" checked={useIndividualWeight} readOnly />
                     <FaQuestionCircle className="text-primary" size={20} />
                     <div>
-                        <div className="fw-semibold">Ingresar peso individual de cada cerdo</div>
+                        <div className="fw-semibold">{t("weighGroup.label.individualWeight", { defaultValue: "Ingresar peso individual de cada cerdo" })}</div>
                         <div className="small text-muted">
                             {useIndividualWeight
-                                ? 'Ingresa el peso de cada cerdo individualmente'
-                                : 'Ingresa el peso total del grupo y se asignará el peso promedio a cada cerdo'}
+                                ? t("weighGroup.hint.individualWeightOn", { defaultValue: "Ingresa el peso de cada cerdo individualmente" })
+                                : t("weighGroup.hint.individualWeightOff", { defaultValue: "Ingresa el peso total del grupo y se asignará el peso promedio a cada cerdo" })}
                         </div>
                     </div>
                 </div>
@@ -144,7 +146,7 @@ const WeighGroupForm: React.FC<WeighGroupFormProps> = ({ groupId, onSave }) => {
                     <div className="card-body">
                         <div className="row">
                             <div className="col-md-6">
-                                <label className="form-label fw-semibold">Peso total del grupo (kg)</label>
+                                <label className="form-label fw-semibold">{t("weighGroup.label.totalGroupWeight", { defaultValue: "Peso total del grupo (kg)" })}</label>
                                 <input
                                     type="number"
                                     step="0.01"
@@ -158,7 +160,7 @@ const WeighGroupForm: React.FC<WeighGroupFormProps> = ({ groupId, onSave }) => {
                                 <div className="mt-4">
                                     <div className="d-flex align-items-center gap-2">
                                         <i className="ri-calculator-line text-primary"></i>
-                                        <span className="text-muted">Peso promedio por cerdo:</span>
+                                        <span className="text-muted">{t("weighGroup.label.avgWeightPerPig", { defaultValue: "Peso promedio por cerdo:" })}</span>
                                         <span className="fw-bold text-primary">
                                             {totalGroupWeight && pigsArray.length > 0
                                                 ? (Number(totalGroupWeight) / pigsArray.length).toFixed(2)
@@ -167,7 +169,7 @@ const WeighGroupForm: React.FC<WeighGroupFormProps> = ({ groupId, onSave }) => {
                                     </div>
                                     <div className="d-flex align-items-center gap-2 mt-1">
                                         <i className="ri-group-line text-info"></i>
-                                        <span className="text-muted">Total de cerdos:</span>
+                                        <span className="text-muted">{t("weighGroup.label.totalPigs", { defaultValue: "Total de cerdos:" })}</span>
                                         <span className="fw-bold text-info">{pigsArray.length}</span>
                                     </div>
                                 </div>
@@ -193,13 +195,13 @@ const WeighGroupForm: React.FC<WeighGroupFormProps> = ({ groupId, onSave }) => {
                                             </div>
                                         </div>
                                         <div className="col">
-                                            <h6 className="mb-0 fw-bold text-dark">Cerdo {pig.code}</h6>
+                                            <h6 className="mb-0 fw-bold text-dark">{t("weighGroup.label.pig", { defaultValue: "Cerdo" })} {pig.code}</h6>
                                             <Badge color={accentColor} className="bg-opacity-25 text-uppercase px-2" style={{ fontSize: '0.65rem', fontWeight: 700 }}>
-                                                {isMale ? 'Macho' : 'Hembra'}
+                                                {isMale ? t("pigs.sex.male", { defaultValue: "Macho" }) : t("pigs.sex.female", { defaultValue: "Hembra" })}
                                             </Badge>
                                         </div>
                                         <div className="col-sm-5 col-12 mt-3 mt-sm-0">
-                                            <small className="text-muted">Actual: {pig.weight} kg</small>
+                                            <small className="text-muted">{t("weighGroup.label.currentWeight", { defaultValue: "Actual:" })} {pig.weight} kg</small>
                                             <div className="input-group">
                                                 <span className="input-group-text bg-light border-end-0 text-muted small">
                                                     <i className="ri-scales-3-line"></i>
@@ -244,25 +246,25 @@ const WeighGroupForm: React.FC<WeighGroupFormProps> = ({ groupId, onSave }) => {
 
             <div className="mt-4 pt-2 border-top d-flex align-items-center justify-content-between">
                 <span className="text-muted small">
-                    Total cerdos: <strong>{pigsArray.length}</strong>
+                    {t("weighGroup.label.totalPigs", { defaultValue: "Total de cerdos:" })} <strong>{pigsArray.length}</strong>
                 </span>
                 <Button color="success" disabled={isSubmitting} onClick={handleSubmit}>
                     {isSubmitting ? (
                         <>
                             <Spinner size="sm" className="me-2" />
-                            Guardando...
+                            {t("common.button.saving", { defaultValue: "Guardando..." })}
                         </>
                     ) : (
                         <>
                             <i className="ri-check-line me-2" />
-                            Guardar pesaje
+                            {t("weighGroup.button.saveWeighing", { defaultValue: "Guardar pesaje" })}
                         </>
                     )}
                 </Button>
             </div>
 
-            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message="Pesaje registrado con éxito" />
-            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message="Ha ocurrido un error al registrar el pesaje, inténtelo más tarde" />
+            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={t("weighGroup.success.message", { defaultValue: "Pesaje registrado con éxito" })} />
+            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message={t("weighGroup.error.message", { defaultValue: "Ha ocurrido un error al registrar el pesaje, inténtelo más tarde" })} />
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} />
         </>
     );

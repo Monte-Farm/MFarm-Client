@@ -1,5 +1,6 @@
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardBody, CardHeader, Col, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
 import { Column } from "common/data/data_types";
 import { useReportScope } from "hooks/useReportScope";
@@ -54,7 +55,9 @@ interface MonthlyMortality {
 const causeColors = ["#ef4444", "#f97316", "#eab308", "#84cc16", "#06b6d4", "#8b5cf6", "#ec4899", "#6b7280"];
 
 const MortalityReport = () => {
-    document.title = "Reporte de Mortalidad | Reportes";
+    const { t } = useTranslation();
+
+    document.title = `${t("reports.mortality.title")} | ${t("reports.title")}`;
 
     const configContext = useContext(ConfigContext);
     const { isGlobal, farmId, scopeKey } = useReportScope();
@@ -101,7 +104,7 @@ const MortalityReport = () => {
             setMonthlyTrend(data.monthlyTrend || []);
             setKpis(data.kpis);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar los datos del reporte." });
+            setAlertConfig({ visible: true, color: "danger", message: t("reports.error.loadData") });
         } finally {
             setLoading(false);
         }
@@ -129,11 +132,11 @@ const MortalityReport = () => {
 
     // Table columns
     const stageColumns: Column<MortalityByStage>[] = [
-        { header: "Etapa", accessor: "stageLabel", type: "text", isFilterable: true },
-        { header: "Muertes", accessor: "deaths", type: "number", bgColor: "#ffebee" },
-        { header: "Total Animales", accessor: "totalAnimals", type: "number" },
+        { header: t("reports.col.stage"), accessor: "stageLabel", type: "text", isFilterable: true },
+        { header: t("reports.mortality.col.deaths"), accessor: "deaths", type: "number", bgColor: "#ffebee" },
+        { header: t("reports.mortality.col.totalAnimals"), accessor: "totalAnimals", type: "number" },
         {
-            header: "Tasa %", accessor: "rate", type: "text",
+            header: t("reports.mortality.col.rate"), accessor: "rate", type: "text",
             render: (v: number) => (
                 <span className={v > 5 ? "text-danger fw-semibold" : v > 3 ? "text-warning fw-semibold" : "text-success"}>
                     {v?.toFixed(2)}%
@@ -144,25 +147,25 @@ const MortalityReport = () => {
     ];
 
     const groupColumns: Column<MortalityByGroup>[] = [
-        { header: "Grupo", accessor: "groupName", type: "text", isFilterable: true },
-        { header: "Muertes", accessor: "deaths", type: "number", bgColor: "#ffebee" },
-        { header: "Total Animales", accessor: "totalAnimals", type: "number" },
+        { header: t("reports.col.group"), accessor: "groupName", type: "text", isFilterable: true },
+        { header: t("reports.mortality.col.deaths"), accessor: "deaths", type: "number", bgColor: "#ffebee" },
+        { header: t("reports.mortality.col.totalAnimals"), accessor: "totalAnimals", type: "number" },
         {
-            header: "Tasa %", accessor: "rate", type: "text",
+            header: t("reports.mortality.col.rate"), accessor: "rate", type: "text",
             render: (v: number) => (
                 <span className={v > 5 ? "text-danger fw-semibold" : v > 3 ? "text-warning fw-semibold" : "text-success"}>
                     {v?.toFixed(2)}%
                 </span>
             ),
         },
-        { header: "Acumuladas", accessor: "accumulatedDeaths", type: "number", bgColor: "#fce4ec" },
+        { header: t("reports.mortality.col.accumulated"), accessor: "accumulatedDeaths", type: "number", bgColor: "#fce4ec" },
     ];
 
     const causeColumns: Column<MortalityByCause>[] = [
-        { header: "Causa", accessor: "cause", type: "text", isFilterable: true },
-        { header: "Cantidad", accessor: "count", type: "number", bgColor: "#ffebee" },
+        { header: t("reports.mortality.col.cause"), accessor: "cause", type: "text", isFilterable: true },
+        { header: t("reports.mortality.col.count"), accessor: "count", type: "number", bgColor: "#ffebee" },
         {
-            header: "Porcentaje", accessor: "percentage", type: "text",
+            header: t("reports.mortality.col.percentage"), accessor: "percentage", type: "text",
             render: (v: number) => <span>{v?.toFixed(1)}%</span>,
         },
     ];
@@ -195,10 +198,10 @@ const MortalityReport = () => {
 
     return (
         <ReportPageLayout
-            title="Reporte de Mortalidad"
-            pageTitle="Reportes de Produccion"
+            title={t("reports.mortality.title")}
+            pageTitle={t("reports.production")}
             onGeneratePdf={handleGeneratePdf}
-            pdfTitle="Reporte - Mortalidad"
+            pdfTitle={t("reports.mortality.pdfTitle")}
             startDate={startDate}
             endDate={endDate}
             onDateChange={(s, e) => { setStartDate(s); setEndDate(e); }}
@@ -207,7 +210,7 @@ const MortalityReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Total Muertes"
+                        title={t("reports.mortality.kpi.totalDeaths")}
                         value={kpis.totalDeaths}
                         icon={<i className="ri-skull-line fs-4 text-danger"></i>}
                         animateValue
@@ -216,7 +219,7 @@ const MortalityReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Tasa General"
+                        title={t("reports.mortality.kpi.overallRate")}
                         value={kpis.overallRate}
                         icon={<i className="ri-percent-line fs-4 text-warning"></i>}
                         animateValue
@@ -227,7 +230,7 @@ const MortalityReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Etapa con Mayor Tasa"
+                        title={t("reports.mortality.kpi.highestStage")}
                         value={kpis.highestStageRate}
                         subtext={kpis.highestStage}
                         icon={<i className="ri-alert-line fs-4 text-danger"></i>}
@@ -239,7 +242,7 @@ const MortalityReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Lechones Muertos"
+                        title={t("reports.mortality.kpi.deadPiglets")}
                         value={kpis.deadPigletsByArea}
                         icon={<i className="mdi mdi-baby-bottle-outline fs-4 text-info"></i>}
                         animateValue
@@ -248,7 +251,7 @@ const MortalityReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Prom. Muertes / Mes"
+                        title={t("reports.mortality.kpi.avgPerMonth")}
                         value={kpis.avgDeathsPerMonth}
                         icon={<i className="ri-calendar-line fs-4 text-secondary"></i>}
                         animateValue
@@ -262,10 +265,10 @@ const MortalityReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={8}>
                     <BasicLineChartCard
-                        title="Tendencia de Mortalidad Mensual"
+                        title={t("reports.mortality.chart.monthlyTrend")}
                         data={trendLineData}
-                        yLabel="Tasa %"
-                        xLabel="Mes"
+                        yLabel={t("reports.mortality.col.rate")}
+                        xLabel={t("reports.axis.month")}
                         height={300}
                         color="#ef4444"
                         enableArea
@@ -274,7 +277,7 @@ const MortalityReport = () => {
                 </Col>
                 <Col xl={4}>
                     <DonutChartCard
-                        title="Mortalidad por Causa"
+                        title={t("reports.mortality.chart.byCause")}
                         data={causeDonutData}
                         legendItems={causeDonutLegend}
                         height={180}
@@ -285,12 +288,12 @@ const MortalityReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={12}>
                     <BasicBarChart
-                        title="Muertes por Etapa"
+                        title={t("reports.mortality.chart.byStage")}
                         data={stageBarData}
                         indexBy="etapa"
                         keys={["Muertes"]}
-                        xLegend="Etapa"
-                        yLegend="Muertes"
+                        xLegend={t("reports.axis.stage")}
+                        yLegend={t("reports.mortality.col.deaths")}
                         height={250}
                         colors={["#ef4444"]}
                     />
@@ -307,7 +310,7 @@ const MortalityReport = () => {
                                 onClick={() => setActiveTab("1")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-stack-line me-1"></i> Por Etapa
+                                <i className="ri-stack-line me-1"></i> {t("reports.mortality.tab.byStage")}
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -316,7 +319,7 @@ const MortalityReport = () => {
                                 onClick={() => setActiveTab("2")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-group-line me-1"></i> Por Grupo
+                                <i className="ri-group-line me-1"></i> {t("reports.mortality.tab.byGroup")}
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -325,7 +328,7 @@ const MortalityReport = () => {
                                 onClick={() => setActiveTab("3")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-stethoscope-line me-1"></i> Por Causa
+                                <i className="ri-stethoscope-line me-1"></i> {t("reports.mortality.tab.byCause")}
                             </NavLink>
                         </NavItem>
                     </Nav>

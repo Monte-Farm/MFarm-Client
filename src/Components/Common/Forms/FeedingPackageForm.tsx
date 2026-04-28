@@ -19,6 +19,7 @@ import ErrorModal from "../Shared/ErrorModal";
 import { HttpStatusCode } from "axios";
 import LoadingAnimation from "../Shared/LoadingAnimation";
 import { PRODUCT_TYPES } from "common/enums/products.enums";
+import { useTranslation } from "react-i18next";
 
 interface FeedingPackageFormProps {
     onSave: () => void;
@@ -35,6 +36,7 @@ interface SelectedFeeding {
 const RAW_INGREDIENT_CATEGORIES = ['nutrition', 'vitamins', 'minerals'];
 
 const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCancel, feedingPackageId }) => {
+    const { t } = useTranslation();
     const userLogged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
     const isEditMode = Boolean(feedingPackageId);
@@ -65,35 +67,29 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
 
     const ingredientColumns: Column<any>[] = [
         {
-            header: 'Imagen', accessor: 'image', render: (_, row) => (
-                <img src={row.image || noImageUrl} alt="Producto" style={{ height: "70px" }} />
+            header: t('feeding.package.form.column.image'), accessor: 'image', render: (_, row) => (
+                <img src={row.image || noImageUrl} alt={t('feeding.package.form.column.product')} style={{ height: "70px" }} />
             ),
         },
-        { header: "Codigo", accessor: "code", type: "text", isFilterable: true },
-        { header: "Producto", accessor: "name", type: "text", isFilterable: true },
+        { header: t('feeding.package.form.column.code'), accessor: "code", type: "text", isFilterable: true },
+        { header: t('feeding.package.form.column.product'), accessor: "name", type: "text", isFilterable: true },
         {
-            header: 'Categoria',
+            header: t('feeding.package.form.column.category'),
             accessor: 'category',
             render: (value: string) => {
                 let color = "secondary";
-                let label = value;
-                switch (value) {
-                    case "nutrition": color = "info"; label = "Nutricion"; break;
-                    case "vitamins": color = "primary"; label = "Vitaminas"; break;
-                    case "minerals": color = "primary"; label = "Minerales"; break;
-                }
-                return <Badge color={color}>{label}</Badge>;
+                return <Badge color={color}>{t(`feeding.productCategory.${value}`, { defaultValue: value })}</Badge>;
             },
         },
         {
-            header: "Precio Promedio",
+            header: t('feeding.package.form.column.avgPrice'),
             accessor: "averagePrice",
             render: (_value, row) => (
                 <span>${(row.averagePrice ?? 0).toFixed(2)} / {row.unit_measurement}</span>
             ),
         },
         {
-            header: "Porcentaje (%)",
+            header: t('feeding.package.form.column.percentage'),
             accessor: "percentage",
             render: (_, row, isSelected) => {
                 const selected = feedingsSelected.find(f => f.feeding === row.id || f.feeding === row._id);
@@ -134,66 +130,63 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
 
     const summaryColumns: Column<any>[] = [
         {
-            header: 'Imagen', accessor: 'image', render: (_, row) => (
-                <img src={row.image || noImageUrl} alt="Producto" style={{ height: "70px" }} />
+            header: t('feeding.package.form.column.image'), accessor: 'image', render: (_, row) => (
+                <img src={row.image || noImageUrl} alt={t('feeding.package.form.column.product')} style={{ height: "70px" }} />
             ),
         },
-        { header: "Codigo", accessor: "code", type: "text", isFilterable: true },
-        { header: "Producto", accessor: "name", type: "text", isFilterable: true },
+        { header: t('feeding.package.form.column.code'), accessor: "code", type: "text", isFilterable: true },
+        { header: t('feeding.package.form.column.product'), accessor: "name", type: "text", isFilterable: true },
         {
-            header: "Porcentaje",
+            header: t('feeding.package.form.column.percentage'),
             accessor: "percentage",
             render: (_, row) => <Badge color="success">{row.percentage}%</Badge>
         },
         {
-            header: "Aporte estimado por kg de mezcla",
+            header: t('feeding.package.form.column.contribution'),
             accessor: "perKg",
             render: (_, row) => (
-                <span>{((row.percentage ?? 0) / 100).toFixed(3)} kg / kg de mezcla</span>
+                <span>{((row.percentage ?? 0) / 100).toFixed(3)} kg / kg</span>
             )
         },
     ];
 
+    const stageColorMap: Record<string, string> = {
+        general: "info", piglet: "info", weaning: "warning", fattening: "primary", breeder: "success",
+    };
+
     const feedingAttributes: Attribute[] = [
-        { key: 'code', label: 'Codigo', type: 'text' },
-        { key: 'name', label: 'Nombre', type: 'text' },
-        { key: 'creation_date', label: 'Fecha de creacion', type: 'date' },
+        { key: 'code', label: t('feeding.package.form.field.code'), type: 'text' },
+        { key: 'name', label: t('feeding.package.form.field.name'), type: 'text' },
+        { key: 'creation_date', label: t('feeding.package.form.field.registrationDate'), type: 'date' },
         {
             key: 'stage',
-            label: 'Etapa',
+            label: t('feeding.package.column.stage'),
             type: 'text',
-            render: (_, row) => {
-                let color = "secondary";
-                let text = "Desconocido";
-                switch (row.stage) {
-                    case "general": color = "info"; text = "General"; break;
-                    case "piglet": color = "info"; text = "Lechón"; break;
-                    case "weaning": color = "warning"; text = "Destete"; break;
-                    case "fattening": color = "primary"; text = "Engorda"; break;
-                    case "breeder": color = "success"; text = "Reproductor"; break;
-                }
-                return <Badge color={color}>{text}</Badge>;
-            },
+            render: (_, row) => (
+                <Badge color={stageColorMap[row.stage] || "secondary"}>
+                    {t(`feeding.stage.${row.stage}`, { defaultValue: t('feeding.stage.unknown') })}
+                </Badge>
+            ),
         },
         {
             key: 'expectedYield',
-            label: 'Rendimiento esperado',
+            label: t('feeding.package.form.field.expectedYield'),
             render: (_, row) => <span>{row.expectedYield ?? 100}%</span>
         },
         {
             key: 'creation_responsible',
-            label: 'Responsable',
+            label: t('feeding.package.form.field.responsible'),
             type: 'text',
             render: () => (<span className="text-black">{userLogged.name} {userLogged.lastname}</span>)
         },
     ];
 
     const validationSchema = Yup.object({
-        code: Yup.string().required('El código es obligatorio')
-            .test('unique_code', 'Este codigo ya existe, por favor ingrese otro', async (value) => {
+        code: Yup.string().required(t('form.validation.required'))
+            .test('unique_code', t('form.validation.codeExists'), async (value) => {
                 if (!value) return false;
                 if (!configContext) return true;
-                if (isEditMode) return true; // No revalidar code en edición
+                if (isEditMode) return true;
                 try {
                     const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/${FEEDING_PACKAGE_URLS.checkCodeExists(value)}`);
                     return !response.data.codeExists;
@@ -202,13 +195,13 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
                     return false;
                 }
             }),
-        name: Yup.string().required('El nombre es obligatorio'),
-        stage: Yup.string().required('La etapa es obligatoria'),
+        name: Yup.string().required(t('form.validation.required')),
+        stage: Yup.string().required(t('form.validation.required')),
         expectedYield: Yup.number()
-            .typeError('Debe ser un número')
-            .min(1, 'Mínimo 1%')
-            .max(100, 'Máximo 100%')
-            .required('El rendimiento esperado es obligatorio'),
+            .typeError(t('form.validation.mustBeNumber'))
+            .min(1, t('form.validation.min', { val: '1%' }))
+            .max(100, t('form.validation.max', { val: '100%' }))
+            .required(t('form.validation.required')),
     });
 
     const formik = useFormik<FeedingPackage>({
@@ -250,7 +243,7 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
                 const okStatus = isEditMode ? HttpStatusCode.Ok : HttpStatusCode.Created;
                 if (response.status === okStatus) {
                     await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
-                        event: `Receta de alimentación ${payload.code} ${isEditMode ? 'actualizada' : 'creada'}`,
+                        event: `Feed formula ${payload.code} ${isEditMode ? 'updated' : 'created'}`,
                     });
                     toggleModal('success', true);
                 }
@@ -319,7 +312,7 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
             }
         } catch (error) {
             console.error('Error fetching information: ', error);
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('common.status.noData') });
         } finally {
             setLoading(false);
         }
@@ -338,7 +331,7 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
             await validationSchema.validate(formik.values, { abortEarly: false });
             toggleArrowTab(activeStep + 1);
         } catch (error) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, complete todos los campos obligatorios' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('form.validation.completeRequired') });
         }
     };
 
@@ -346,7 +339,7 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
         const errors: Record<string, boolean> = {};
 
         if (feedingsSelected.length === 0) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Seleccione al menos 1 ingrediente' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('feeding.package.form.ingredient.selectAtLeast') });
             return false;
         }
 
@@ -359,12 +352,12 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
         setPercentageErrors(errors);
 
         if (Object.keys(errors).length > 0) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Todos los ingredientes deben tener un porcentaje mayor a 0' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('feeding.package.form.ingredient.allMustHavePercent') });
             return false;
         }
 
         if (!sumIs100) {
-            setAlertConfig({ visible: true, color: 'danger', message: `La suma de porcentajes debe ser exactamente 100%. Actualmente: ${totalPercentage.toFixed(2)}%` });
+            setAlertConfig({ visible: true, color: 'danger', message: t('feeding.package.form.ingredient.sumMustBe100', { val: totalPercentage.toFixed(2) }) });
             return false;
         }
 
@@ -386,17 +379,17 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
                 <Nav className="nav-pills custom-nav nav-justified">
                     <NavItem>
                         <NavLink href="#" className={classnames({ active: activeStep === 1, done: activeStep > 1 })} disabled>
-                            Información de la receta
+                            {t('feeding.package.form.step.recipeInfo')}
                         </NavLink>
                     </NavItem>
                     <NavItem>
                         <NavLink href="#" className={classnames({ active: activeStep === 2, done: activeStep > 2 })} disabled>
-                            Ingredientes y porcentajes
+                            {t('feeding.package.form.step.ingredients')}
                         </NavLink>
                     </NavItem>
                     <NavItem>
                         <NavLink href="#" className={classnames({ active: activeStep === 3, done: activeStep > 3 })} disabled>
-                            Resumen
+                            {t('feeding.package.form.step.summary')}
                         </NavLink>
                     </NavItem>
                 </Nav>
@@ -407,7 +400,7 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
                 <TabPane tabId={1}>
                     <div className="d-flex gap-3">
                         <div className="mt-4 w-50">
-                            <Label htmlFor="code" className="form-label">Código</Label>
+                            <Label htmlFor="code" className="form-label">{t('feeding.package.form.field.code')}</Label>
                             <Input
                                 type="text" id="code" name="code"
                                 value={formik.values.code}
@@ -415,20 +408,20 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
                                 onBlur={formik.handleBlur}
                                 invalid={formik.touched.code && !!formik.errors.code}
                                 disabled={isEditMode}
-                                placeholder="Ej: REC-001"
+                                placeholder={t('feeding.package.form.field.codePlaceholder')}
                             />
                             {formik.touched.code && formik.errors.code && (<FormFeedback>{formik.errors.code}</FormFeedback>)}
                         </div>
 
                         <div className="mt-4 w-50">
-                            <Label htmlFor="name" className="form-label">Nombre de la receta</Label>
+                            <Label htmlFor="name" className="form-label">{t('feeding.package.form.field.name')}</Label>
                             <Input
                                 type="text" id="name" name="name"
                                 value={formik.values.name}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
                                 invalid={formik.touched.name && !!formik.errors.name}
-                                placeholder="Ej: Receta inicio lechón"
+                                placeholder={t('feeding.package.form.field.namePlaceholder')}
                             />
                             {formik.touched.name && formik.errors.name && (<FormFeedback>{formik.errors.name}</FormFeedback>)}
                         </div>
@@ -436,7 +429,7 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
 
                     <div className="d-flex gap-3">
                         <div className="mt-4 w-50">
-                            <Label htmlFor="stage" className="form-label">Etapa</Label>
+                            <Label htmlFor="stage" className="form-label">{t('feeding.package.form.field.stage')}</Label>
                             <Input
                                 type="select" id="stage" name="stage"
                                 value={formik.values.stage}
@@ -444,19 +437,19 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
                                 onBlur={formik.handleBlur}
                                 invalid={formik.touched.stage && !!formik.errors.stage}
                             >
-                                <option value="">Seleccione una etapa</option>
-                                <option value="general">General</option>
-                                <option value="piglet">Lechón</option>
-                                <option value="weaning">Destete</option>
-                                <option value="fattening">Engorda</option>
-                                <option value="breeder">Reproductor</option>
+                                <option value="">{t('feeding.package.form.field.stageSelect')}</option>
+                                <option value="general">{t('feeding.stage.general')}</option>
+                                <option value="piglet">{t('feeding.stage.piglet')}</option>
+                                <option value="weaning">{t('feeding.stage.weaning')}</option>
+                                <option value="fattening">{t('feeding.stage.fattening')}</option>
+                                <option value="breeder">{t('feeding.stage.breeder')}</option>
                             </Input>
                             {formik.touched.stage && formik.errors.stage && (<FormFeedback>{formik.errors.stage}</FormFeedback>)}
                         </div>
 
                         <div className="mt-4 w-50">
                             <Label htmlFor="expectedYield" className="form-label">
-                                Rendimiento esperado (%) <i className="ri-information-line text-muted" title="Porcentaje esperado de kg producidos respecto a kg cargados"></i>
+                                {t('feeding.package.form.field.expectedYield')} <i className="ri-information-line text-muted"></i>
                             </Label>
                             <div className="input-group">
                                 <Input
@@ -481,7 +474,7 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
 
                     <div className="d-flex gap-3">
                         <div className="mt-4 w-50">
-                            <Label htmlFor="creation_date" className="form-label">Fecha de registro *</Label>
+                            <Label htmlFor="creation_date" className="form-label">{t('feeding.package.form.field.registrationDate')}</Label>
                             <DatePicker
                                 id="creation_date"
                                 className={`form-control ${formik.touched.creation_date && formik.errors.creation_date ? 'is-invalid' : ''}`}
@@ -494,26 +487,26 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
                         </div>
 
                         <div className="mt-4 w-50">
-                            <Label htmlFor="user" className="form-label">Responsable del registro *</Label>
+                            <Label htmlFor="user" className="form-label">{t('feeding.package.form.field.responsible')}</Label>
                             <Input type="text" id="user" value={`${userLogged.name} ${userLogged.lastname}`} disabled />
                         </div>
                     </div>
 
                     <div className="mt-4">
-                        <Label htmlFor="description" className="form-label">Descripción</Label>
+                        <Label htmlFor="description" className="form-label">{t('feeding.package.form.field.description')}</Label>
                         <Input
                             type="text" id="description" name="description"
                             value={formik.values.description}
                             onChange={formik.handleChange}
                             onBlur={formik.handleBlur}
-                            placeholder="Observaciones sobre la receta"
+                            placeholder={t('feeding.package.form.field.descriptionPlaceholder')}
                         />
                     </div>
 
                     <div className="d-flex justify-content-between mt-4">
-                        <Button color="secondary" outline onClick={onCancel}>Cancelar</Button>
+                        <Button color="secondary" outline onClick={onCancel}>{t('common.button.cancel')}</Button>
                         <Button className="btn btn-primary" onClick={() => checkBasicData()}>
-                            Siguiente <i className="ri-arrow-right-line ms-1" />
+                            {t('common.button.next')} <i className="ri-arrow-right-line ms-1" />
                         </Button>
                     </div>
                 </TabPane>
@@ -525,7 +518,7 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
                             <div className="d-flex justify-content-between align-items-center mb-2">
                                 <div className="d-flex align-items-center gap-2">
                                     <i className="ri-pie-chart-line fs-4 text-primary" />
-                                    <span className="fw-semibold">Suma de porcentajes</span>
+                                    <span className="fw-semibold">{t('feeding.package.form.ingredient.percentageSum')}</span>
                                 </div>
                                 <span className={`fs-4 fw-bold ${sumIs100 ? 'text-success' : 'text-danger'}`}>
                                     {totalPercentage.toFixed(2)}% / 100%
@@ -541,8 +534,8 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
                                     <i className="ri-information-line text-warning" />
                                     <small className="text-muted">
                                         {totalPercentage > 100
-                                            ? `Excede en ${(totalPercentage - 100).toFixed(2)}%. Reduzca algún ingrediente.`
-                                            : `Faltan ${(100 - totalPercentage).toFixed(2)}% por asignar.`}
+                                            ? t('feeding.package.form.ingredient.exceeds', { val: (totalPercentage - 100).toFixed(2) })
+                                            : t('feeding.package.form.ingredient.missing', { val: (100 - totalPercentage).toFixed(2) })}
                                     </small>
                                 </div>
                             )}
@@ -569,10 +562,10 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
 
                     <div className="d-flex justify-content-between mt-3">
                         <Button color="danger" onClick={() => toggleArrowTab(activeStep - 1)}>
-                            <i className="ri-arrow-left-line me-2" /> Atrás
+                            <i className="ri-arrow-left-line me-2" /> {t('form.action.prev')}
                         </Button>
                         <Button color="primary" onClick={() => { if (validateSelectedFeedings()) toggleArrowTab(3); }}>
-                            Siguiente <i className="ri-arrow-right-line ms-1" />
+                            {t('common.button.next')} <i className="ri-arrow-right-line ms-1" />
                         </Button>
                     </div>
                 </TabPane>
@@ -583,7 +576,7 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
                         <Card className="border-primary border-opacity-25" style={{ minWidth: '320px' }}>
                             <CardHeader className="bg-primary bg-opacity-10">
                                 <h5 className="mb-0 text-primary">
-                                    <i className="ri-file-list-3-line me-2" /> Información de la receta
+                                    <i className="ri-file-list-3-line me-2" /> {t('feeding.package.form.card.recipeInfo')}
                                 </h5>
                             </CardHeader>
                             <CardBody>
@@ -594,7 +587,7 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
                         <Card className="w-100 border-success border-opacity-25">
                             <CardHeader className="bg-success bg-opacity-10 d-flex justify-content-between align-items-center">
                                 <h5 className="mb-0 text-success">
-                                    <i className="ri-leaf-line me-2" /> Ingredientes
+                                    <i className="ri-leaf-line me-2" /> {t('feeding.package.form.card.ingredients')}
                                 </h5>
                                 <Badge color="success" className="fs-6">Total: {totalPercentage.toFixed(2)}%</Badge>
                             </CardHeader>
@@ -613,11 +606,11 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
 
                     <div className="mt-4 d-flex">
                         <Button color="danger" onClick={() => toggleArrowTab(activeStep - 1)}>
-                            <i className="ri-arrow-left-line me-2" /> Atrás
+                            <i className="ri-arrow-left-line me-2" /> {t('form.action.prev')}
                         </Button>
                         <Button className="ms-auto btn-success" onClick={() => formik.handleSubmit()} disabled={formik.isSubmitting || !sumIs100}>
                             {formik.isSubmitting ? <Spinner size='sm' /> : (
-                                <><i className="ri-check-line me-2" />{isEditMode ? 'Guardar cambios' : 'Registrar receta'}</>
+                                <><i className="ri-check-line me-2" />{isEditMode ? t('feeding.package.form.action.saveChanges') : t('feeding.package.form.action.registerRecipe')}</>
                             )}
                         </Button>
                     </div>
@@ -627,12 +620,12 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
             <SuccessModal
                 isOpen={modals.success}
                 onClose={onSave}
-                message={isEditMode ? "Receta actualizada con éxito" : "Receta registrada con éxito"}
+                message={isEditMode ? t('feeding.package.success.updated') : t('feeding.package.success.saved')}
             />
             <ErrorModal
                 isOpen={modals.error}
                 onClose={() => toggleModal('error', false)}
-                message={`Ha ocurrido un error al ${isEditMode ? 'actualizar' : 'registrar'} la receta`}
+                message={isEditMode ? t('feeding.package.error.update') : t('feeding.package.error.save')}
             />
             <AlertMessage
                 color={alertConfig.color}

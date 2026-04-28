@@ -8,23 +8,15 @@ import * as Yup from "yup";
 import SuccessModal from "../Shared/SuccessModal";
 import ErrorModal from "../Shared/ErrorModal";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface ExpenseFormProps {
     onSave: () => void;
     onCancel: () => void;
 }
 
-const categoryOptions = [
-    { value: "LABOR", label: "Sueldos y nómina" },
-    { value: "UTILITY", label: "Servicios (luz, agua, gas)" },
-    { value: "MAINTENANCE", label: "Mantenimiento" },
-    { value: "TRANSPORT", label: "Transporte" },
-    { value: "LIVESTOCK_PURCHASE", label: "Compra de ganado" },
-    { value: "VETERINARY", label: "Veterinario" },
-    { value: "OTHER", label: "Otro" },
-];
-
 const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [modals, setModals] = useState({ success: false, error: false });
@@ -33,18 +25,28 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel }) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
 
+    const categoryOptions = [
+        { value: "LABOR", label: t("finance.expense.category.LABOR") },
+        { value: "UTILITY", label: t("finance.expense.category.UTILITY") },
+        { value: "MAINTENANCE", label: t("finance.expense.category.MAINTENANCE") },
+        { value: "TRANSPORT", label: t("finance.expense.category.TRANSPORT") },
+        { value: "LIVESTOCK_PURCHASE", label: t("finance.expense.category.LIVESTOCK_PURCHASE") },
+        { value: "VETERINARY", label: t("finance.expense.category.VETERINARY") },
+        { value: "OTHER", label: t("finance.expense.category.OTHER") },
+    ];
+
     const validationSchema = Yup.object({
         date: Yup.date()
-            .max(new Date(), "La fecha no puede ser futura")
-            .required("Por favor ingrese la fecha"),
+            .max(new Date(), t("finance.expense.validation.dateNotFuture"))
+            .required(t("finance.expense.validation.dateRequired")),
         category: Yup.string()
-            .oneOf(categoryOptions.map((c) => c.value), "Categoría inválida")
-            .required("Por favor seleccione una categoría"),
+            .oneOf(categoryOptions.map((c) => c.value), t("finance.expense.validation.categoryInvalid"))
+            .required(t("finance.expense.validation.categoryRequired")),
         description: Yup.string()
-            .required("Por favor ingrese una descripción"),
+            .required(t("finance.expense.validation.descriptionRequired")),
         amount: Yup.number()
-            .min(0.01, "El monto debe ser mayor a 0")
-            .required("Por favor ingrese el monto"),
+            .min(0.01, t("finance.expense.validation.amountPositive"))
+            .required(t("finance.expense.validation.amountRequired")),
     });
 
     const formik = useFormik({
@@ -90,7 +92,7 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel }) => {
             <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }}>
                 <div className="d-flex gap-3">
                     <div className="w-50">
-                        <Label htmlFor="date" className="form-label">Fecha</Label>
+                        <Label htmlFor="date" className="form-label">{t("finance.expense.form.date")}</Label>
                         <DatePicker
                             id="date"
                             className={`form-control ${formik.touched.date && formik.errors.date ? "is-invalid" : ""}`}
@@ -106,7 +108,7 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel }) => {
                     </div>
 
                     <div className="w-50">
-                        <Label htmlFor="category" className="form-label">Categoría</Label>
+                        <Label htmlFor="category" className="form-label">{t("finance.expense.form.category")}</Label>
                         <Input
                             type="select"
                             id="category"
@@ -116,7 +118,7 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel }) => {
                             onBlur={formik.handleBlur}
                             invalid={formik.touched.category && !!formik.errors.category}
                         >
-                            <option value="">Seleccione una categoría</option>
+                            <option value="">{t("finance.expense.form.categoryPlaceholder")}</option>
                             {categoryOptions.map((opt) => (
                                 <option key={opt.value} value={opt.value}>
                                     {opt.label}
@@ -130,7 +132,7 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel }) => {
                 </div>
 
                 <div className="mt-3">
-                    <Label htmlFor="description" className="form-label">Descripción</Label>
+                    <Label htmlFor="description" className="form-label">{t("finance.expense.form.description")}</Label>
                     <Input
                         type="textarea"
                         id="description"
@@ -139,7 +141,7 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel }) => {
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
                         invalid={formik.touched.description && !!formik.errors.description}
-                        placeholder="Ej: Pago de nómina quincenal"
+                        placeholder={t("finance.expense.form.descriptionPlaceholder")}
                     />
                     {formik.touched.description && formik.errors.description && (
                         <FormFeedback>{formik.errors.description}</FormFeedback>
@@ -147,7 +149,7 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel }) => {
                 </div>
 
                 <div className="mt-3">
-                    <Label htmlFor="amount" className="form-label">Monto ($)</Label>
+                    <Label htmlFor="amount" className="form-label">{t("finance.expense.form.amount")}</Label>
                     <Input
                         type="number"
                         step="0.01"
@@ -165,17 +167,17 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel }) => {
 
                 <div className="d-flex justify-content-end gap-2 mt-4">
                     <Button type="button" color="secondary" onClick={onCancel}>
-                        Cancelar
+                        {t("common.button.cancel")}
                     </Button>
                     <Button type="submit" color="primary" disabled={formik.isSubmitting}>
                         {formik.isSubmitting ? (
                             <>
-                                Guardando...
+                                {t("common.button.saving")}
                                 <span className="spinner-border spinner-border-sm ms-2" />
                             </>
                         ) : (
                             <>
-                                Guardar
+                                {t("common.button.save")}
                                 <i className="ri-save-3-fill ms-2" />
                             </>
                         )}
@@ -183,8 +185,8 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel }) => {
                 </div>
             </form>
 
-            <SuccessModal isOpen={modals.success} onClose={onSave} message="Gasto registrado con éxito" />
-            <ErrorModal isOpen={modals.error} onClose={() => toggleModal("error", false)} message="Ha ocurrido un error al registrar el gasto, inténtelo más tarde" />
+            <SuccessModal isOpen={modals.success} onClose={onSave} message={t("finance.expense.success.saved")} />
+            <ErrorModal isOpen={modals.error} onClose={() => toggleModal("error", false)} message={t("finance.expense.error.save")} />
         </>
     );
 };

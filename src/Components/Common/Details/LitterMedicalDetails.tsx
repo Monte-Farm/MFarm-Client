@@ -1,6 +1,7 @@
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import LoadingAnimation from "../Shared/LoadingAnimation";
 import AlertMessage from "../Shared/AlertMesagge";
 import { Badge, Card, CardBody, Col, Modal, ModalBody, ModalHeader, Row } from "reactstrap";
@@ -17,6 +18,7 @@ interface LitterMedicalDetailsProps {
 }
 
 const LitterMedicalDetails: React.FC<LitterMedicalDetailsProps> = ({ litterId }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true)
@@ -47,7 +49,7 @@ const LitterMedicalDetails: React.FC<LitterMedicalDetailsProps> = ({ litterId })
             setMedicalStats(statsResponse.data.data);
         } catch (error) {
             console.error('Error fetching data: ', { error });
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al obtener la informacion medica, intentelo mas tarde' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('medical.error.load') });
         } finally {
             setLoading(false)
         }
@@ -64,9 +66,9 @@ const LitterMedicalDetails: React.FC<LitterMedicalDetailsProps> = ({ litterId })
     }
 
     const healthStatusConfig: Record<string, { color: string; label: string; bg: string }> = {
-        healthy: { color: 'success', label: 'Sana', bg: '#d1fae5' },
-        treatment: { color: 'danger', label: 'En Tratamiento', bg: '#fee2e2' },
-        observation: { color: 'warning', label: 'En Observación', bg: '#fef3c7' },
+        healthy: { color: 'success', label: t('medical.health.status.healthyFem'), bg: '#d1fae5' },
+        treatment: { color: 'danger', label: t('medical.health.status.treatment'), bg: '#fee2e2' },
+        observation: { color: 'warning', label: t('medical.health.status.observation'), bg: '#fef3c7' },
     };
 
     const currentHealth = medicalStats ? healthStatusConfig[medicalStats.healthStatus] || healthStatusConfig.healthy : healthStatusConfig.healthy;
@@ -79,7 +81,7 @@ const LitterMedicalDetails: React.FC<LitterMedicalDetailsProps> = ({ litterId })
                     <Row className="g-3 mb-3">
                         <Col md={6} lg={3}>
                             <StatKpiCard
-                                title="Medicamentos"
+                                title={t('medical.kpi.medications')}
                                 value={medicalStats.kpis?.totalMedications || 0}
                                 icon={<RiMedicineBottleLine size={20} style={{ color: '#0ea5e9' }} />}
                                 animateValue={true}
@@ -88,7 +90,7 @@ const LitterMedicalDetails: React.FC<LitterMedicalDetailsProps> = ({ litterId })
                         </Col>
                         <Col md={6} lg={3}>
                             <StatKpiCard
-                                title="Enfermedades"
+                                title={t('medical.kpi.sicknesses')}
                                 value={medicalStats.kpis?.totalSicknesses || 0}
                                 icon={<RiVirusLine size={20} style={{ color: '#ef4444' }} />}
                                 animateValue={true}
@@ -97,9 +99,9 @@ const LitterMedicalDetails: React.FC<LitterMedicalDetailsProps> = ({ litterId })
                         </Col>
                         <Col md={6} lg={3}>
                             <StatKpiCard
-                                title="Días desde Última Aplicación"
+                                title={t('medical.kpi.daysSinceLastApplication')}
                                 value={medicalStats.kpis?.daysSinceLastApplication ?? 0}
-                                suffix="días"
+                                suffix={t('medical.kpi.days')}
                                 icon={<RiTimerLine size={20} style={{ color: '#f59e0b' }} />}
                                 animateValue={true}
                                 decimals={0}
@@ -110,7 +112,7 @@ const LitterMedicalDetails: React.FC<LitterMedicalDetailsProps> = ({ litterId })
                                 <CardBody className="d-flex flex-column justify-content-center">
                                     <div className="text-muted small fw-medium mb-1">
                                         <RiHeartPulseLine className="me-1" />
-                                        Estado de Salud de la Camada
+                                        {t('medical.health.litterLabel')}
                                     </div>
                                     <Badge color={currentHealth.color} className="fw-normal px-3 py-2 align-self-start" style={{ fontSize: '0.9rem' }}>
                                         {currentHealth.label}
@@ -134,9 +136,9 @@ const LitterMedicalDetails: React.FC<LitterMedicalDetailsProps> = ({ litterId })
                                         </div>
                                     </Col>
                                     <Col>
-                                        <div className="fw-bold text-dark">⚠ Tratamiento Activo: {medicalStats.activeSickness.name}</div>
+                                        <div className="fw-bold text-dark">{t('medical.healthEvent.activeTreatment')} {medicalStats.activeSickness.name}</div>
                                         <div className="small text-muted">
-                                            {medicalStats.activeSickness.daysInTreatment} días en tratamiento · Lechones afectados: <strong className="text-dark">{medicalStats.activeSickness.affectedPiglets}</strong>
+                                            {medicalStats.activeSickness.daysInTreatment} {t('medical.healthEvent.litterDays')} <strong className="text-dark">{medicalStats.activeSickness.affectedPiglets}</strong>
                                         </div>
                                     </Col>
                                 </Row>
@@ -165,21 +167,21 @@ const LitterMedicalDetails: React.FC<LitterMedicalDetailsProps> = ({ litterId })
             </div>
 
             <Modal size="xl" isOpen={modals.asignMedicationPackage} toggle={() => toggleModal("asignMedicationPackage")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("asignMedicationPackage")}>Asignar paquete de medicacion</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("asignMedicationPackage")}>{t('medical.medication.packageAssign')}</ModalHeader>
                 <ModalBody>
                     <AsignLitterMedicationPackageForm litterId={litterId} onSave={() => { toggleModal('asignMedicationPackage'); fetchMedicalInfo(); }} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.asignMedication} toggle={() => toggleModal("asignMedication")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("asignMedication")}>Asignar medicacion</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("asignMedication")}>{t('medical.medication.assign')}</ModalHeader>
                 <ModalBody>
                     <AsignLitterMedicationForm litterId={litterId} onSave={() => { toggleModal('asignMedication'); fetchMedicalInfo(); }} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.medicationPackageDetails} toggle={() => toggleModal("medicationPackageDetails")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("medicationPackageDetails")}>Detalles de paquete de medicacion</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("medicationPackageDetails")}>{t('medical.medication.packageDetails')}</ModalHeader>
                 <ModalBody>
                     <MedicationPackageDetails medicationPackageId={selectedMedicationPackage} />
                 </ModalBody>

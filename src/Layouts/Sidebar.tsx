@@ -12,14 +12,6 @@ const Sidebar = ({ layoutType }: any) => {
   const globalConfig: GlobalConfiguration | null = useSelector((s: any) => s.Configurations.globalConfig);
   const logoSrc = globalConfig?.logoUrl || systemLogo;
 
-  const roleLabels: Record<string, string> = {
-    'superadmin': 'Superadministrador',
-    'farm_manager': 'Gerente de granja',
-    'warehouse_manager': 'Encargado de almacén',
-    'subwarehouse_manager': 'Encargado de subalmacén',
-  };
-
-  const displayRole = roleLabels[userLogged.role] || userLogged.role;
 
   useEffect(() => {
     var verticalOverlay = document.getElementsByClassName("vertical-overlay");

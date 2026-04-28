@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Table, Input } from "reactstrap";
 import Pagination from "./Pagination";
 import SimpleBar from "simplebar-react";
@@ -48,6 +49,7 @@ const CustomTable = <T,>({
   fontSize,
 }: CustomTableProps<T>) => {
 
+  const { t } = useTranslation();
   const layoutModeType = useSelector((state: any) => state.Layout?.layoutModeType);
   const isDark = layoutModeType === "dark";
 
@@ -105,7 +107,7 @@ const CustomTable = <T,>({
         <div className="d-flex justify-content-between mb-3">
           <Input
             type="text"
-            placeholder="Buscar..."
+            placeholder={t("shared.table.search")}
             value={filterText}
             onChange={(e) => setFilterText(e.target.value)}
           />
@@ -158,7 +160,7 @@ const CustomTable = <T,>({
             ) : (
               <tr>
                 <td colSpan={columns.length} className="text-center">
-                  No se encontraron datos
+                  {t("shared.table.noData")}
                 </td>
               </tr>
             )}

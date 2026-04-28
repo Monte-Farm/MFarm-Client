@@ -19,8 +19,17 @@ import { usePigFilters } from "hooks/usePigFilters";
 import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
+import { useTranslation } from "react-i18next";
+
+const stageColorMap: Record<string, string> = {
+    piglet: "info", weaning: "warning", fattening: "primary", breeder: "success",
+};
+const statusColorMap: Record<string, string> = {
+    alive: "success", discarded: "warning", dead: "danger",
+};
 
 const DiscardedPigs = () => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [modals, setModals] = useState({ discard: false, dateRange: false, viewPDF: false });
@@ -31,90 +40,47 @@ const DiscardedPigs = () => {
     const [pigs, setPigs] = useState<PigData[]>([])
     const navigate = useNavigate();
     const [stats, setStats] = useState<any>()
-    
+
     const {
-        searchTerm,
-        setSearchTerm,
-        filters,
-        filteredPigs,
-        popoverOpen,
-        handleFilterChange,
-        handleWeightRangeChange,
-        clearFilters,
-        togglePopover
+        searchTerm, setSearchTerm, filters, filteredPigs,
+        popoverOpen, handleFilterChange, handleWeightRangeChange, clearFilters, togglePopover
     } = usePigFilters(pigs);
 
     const pigColumns: Column<any>[] = [
-        { header: 'Codigo', accessor: 'code', type: 'text' },
-        { header: 'Raza', accessor: 'breed', type: 'text' },
-        { header: 'Fecha de N.', accessor: 'birthdate', type: 'date' },
+        { header: t('pigs.field.code'), accessor: 'code', type: 'text' },
+        { header: t('pigs.field.breed'), accessor: 'breed', type: 'text' },
+        { header: t('pigs.field.birthDateShort'), accessor: 'birthdate', type: 'date' },
         {
-            header: 'Sexo',
+            header: t('pigs.field.sex'),
             accessor: 'sex',
             render: (value: string) => (
                 <Badge color={value === 'male' ? "info" : "danger"}>
-                    {value === 'male' ? "♂ Macho" : "♀ Hembra"}
+                    {value === 'male' ? t('pigs.sex.male') : t('pigs.sex.female')}
                 </Badge>
             ),
         },
         {
-            header: 'Etapa',
+            header: t('pigs.field.stage'),
             accessor: 'currentStage',
-            render: (value: string) => {
-                let color = "secondary";
-                let label = value;
-
-                switch (value) {
-                    case "piglet":
-                        color = "info";
-                        label = "Lechón";
-                        break;
-                    case "weaning":
-                        color = "warning";
-                        label = "Destete";
-                        break;
-                    case "fattening":
-                        color = "primary";
-                        label = "Engorda";
-                        break;
-                    case "breeder":
-                        color = "success";
-                        label = "Reproductor";
-                        break;
-                }
-
-                return <Badge color={color}>{label}</Badge>;
-            },
+            render: (value: string) => (
+                <Badge color={stageColorMap[value] || "secondary"}>
+                    {t(`pigs.stage.${value}`, { defaultValue: value })}
+                </Badge>
+            ),
         },
-        { header: 'Peso', accessor: 'weight', type: 'number' },
+        { header: t('common.field.weight'), accessor: 'weight', type: 'number' },
         {
-            header: 'Estado',
+            header: t('pigs.field.status'),
             accessor: 'status',
             isFilterable: true,
-            render: (value: string) => {
-                let color = 'secondary';
-                let label = value;
-
-                switch (value) {
-                    case 'alive':
-                        color = 'success';
-                        label = 'Vivo';
-                        break;
-                    case 'discarded':
-                        color = 'warning';
-                        label = 'Descartado';
-                        break;
-                    case 'dead':
-                        color = 'danger';
-                        label = 'Muerto';
-                        break;
-                }
-
-                return <Badge color={color}>{label}</Badge>;
-            },
+            render: (value: string) => (
+                <Badge color={statusColorMap[value] || "secondary"}>
+                    {t(`pigs.status.${value}`, { defaultValue: value })}
+                </Badge>
+            ),
         },
         {
-            header: "Acciones",
+            header: t('common.field.actions'),
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
@@ -127,16 +93,8 @@ const DiscardedPigs = () => {
     ]
 
     const predefinedBreeds = [
-        "Yorkshire",
-        "Landrace",
-        "Duroc",
-        "Hampshire",
-        "Pietrain",
-        "Berkshire",
-        "Large White",
-        "Chester White",
-        "Poland China",
-        "Tamworth"
+        "Yorkshire", "Landrace", "Duroc", "Hampshire", "Pietrain",
+        "Berkshire", "Large White", "Chester White", "Poland China", "Tamworth"
     ]
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
@@ -155,7 +113,7 @@ const DiscardedPigs = () => {
             setFileURL(window.URL.createObjectURL(pdfBlob));
             toggleModal('viewPDF');
         } catch (error) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('common.button.exportPdf') });
         } finally {
             setPdfLoading(false);
         }
@@ -169,116 +127,68 @@ const DiscardedPigs = () => {
                 configContext.axiosHelper.get(`${configContext.apiUrl}/pig/find_discarded_by_farm/${userLogged.farm_assigned}`),
                 configContext.axiosHelper.get(`${configContext.apiUrl}/pig/get_discarded_stats/${userLogged.farm_assigned}`),
             ])
-
             setPigs(pigsResponse.data.data)
             setStats(statsResponse.data.data)
         } catch (error) {
             console.error('Error fetching pigs: ', { error });
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('pigs.page.noDiscarded') })
         } finally {
             setLoading(false)
         }
     }
 
-    useEffect(() => {
-        fetchData()
-    }, [])
+    useEffect(() => { fetchData() }, [])
 
-    if (loading) {
-        return (
-            <LoadingAnimation />
-        );
-    }
+    if (loading) return <LoadingAnimation />;
 
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Cerdos descartados"} pageTitle={"Cerdos"} />
+                <BreadCrumb title={t('pigs.page.discardedTitle')} pageTitle={t('menu.pigs')} />
 
                 <div className="d-flex gap-3 flex-wrap">
-                    <KPI title="Cerdos descartados" value={stats?.general[0]?.totalDiscarded ?? 0} icon={FiTrash2} bgColor="#fdecea" iconColor="#d93025" />
-                    <KPI title="Porcentaje de cerdos descartados" value={`${stats?.general[0]?.discardRate ?? 0} %`} icon={FiTrendingDown} bgColor="#fff4e5" iconColor="#f5a623" />
+                    <KPI title={t('pigs.page.totalDiscarded')} value={stats?.general[0]?.totalDiscarded ?? 0} icon={FiTrash2} bgColor="#fdecea" iconColor="#d93025" />
+                    <KPI title={t('pigs.page.discardedPercent')} value={`${stats?.general[0]?.discardRate ?? 0} %`} icon={FiTrendingDown} bgColor="#fff4e5" iconColor="#f5a623" />
                 </div>
 
                 <div className="d-flex gap-3">
-                    <BasicPieChart title={"Cerdos descartados por sexo"}
+                    <BasicPieChart
+                        title={t('pigs.page.discardedByGender')}
                         data={stats?.bySex?.map((s: { _id: any; count: any }) => ({
-                            id: s._id === 'male' ? 'Macho' : 'Hembra',
+                            id: s._id === 'male' ? t('pigs.sex.maleShort') : t('pigs.sex.femaleShort'),
                             value: s.count,
                         })) ?? []}
                     />
-
                     <BasicPieChart
-                        title={"Cerdos descartados por etapa"}
-                        data={
-                            stats.byStage?.map((s: { _id: any; count: any }) => ({
-                                id: (() => {
-                                    switch (s._id) {
-                                        case "piglet": return "Lechón";
-                                        case "weaning": return "Destete";
-                                        case "fattening": return "Engorda";
-                                        case "breeder": return "Reproductor";
-                                        default: return s._id;
-                                    }
-                                })(),
-                                value: s.count,
-                            })) ?? []
-                        }
+                        title={t('pigs.page.discardedByStage')}
+                        data={stats.byStage?.map((s: { _id: any; count: any }) => ({
+                            id: t(`pigs.stage.${s._id}`, { defaultValue: s._id }),
+                            value: s.count,
+                        })) ?? []}
                     />
-
-                    <BasicBarChart title={"Razon de descarte de cerdos"}
+                    <BasicBarChart
+                        title={t('pigs.page.discardedByReason')}
                         indexBy="stage"
                         keys={["cantidad"]}
-                        xLegend="Etapa"
-                        yLegend="Cantidad"
+                        xLegend={t('pigs.field.stage')}
+                        yLegend={t('pigs.filter.allStatus')}
                         data={stats.byReason.map((s: { _id: any; count: any }) => ({
-                            stage: (() => {
-                                switch (s._id) {
-                                    case "lameness": return "Cojeras";
-                                    case "poor_body_condition": return "Condición corporal deficiente";
-                                    case "reproductive_failure": return "Falla reproductiva";
-                                    case "low_milk_production": return "Baja producción de leche";
-                                    case "disease": return "Enfermedad";
-                                    case "injury": return "Lesión";
-                                    case "aggressive_behavior": return "Comportamiento agresivo";
-                                    case "old_age": return "Edad avanzada";
-                                    case "death": return "Muerte";
-                                    case "poor_growth": return "Bajo crecimiento / rendimiento";
-                                    case "hernias": return "Hernias";
-                                    case "prolapse": return "Prolapso";
-                                    case "non_ambulatory": return "No puede caminar";
-                                    case "respiratory_failure": return "Problemas respiratorios severos";
-                                    default: return s._id;
-                                }
-                            })(),
+                            stage: t(`pigs.discard.reason.${s._id.replace(/_([a-z])/g, (_: any, c: string) => c.toUpperCase())}`, { defaultValue: s._id }),
                             cantidad: s.count
                         }))}
                     />
-
-                    <BasicBarChart title={"Destino de cerdos descartados"}
+                    <BasicBarChart
+                        title={t('pigs.page.discardedByDestination')}
                         indexBy="destination"
                         keys={["cantidad"]}
-                        xLegend="Destino"
-                        yLegend="Cantidad"
+                        xLegend={t('pigs.page.discardedByDestination')}
+                        yLegend={t('pigs.filter.allStatus')}
                         data={stats.byDestination.map((s: { _id: any; count: any }) => ({
-                            destination: (() => {
-                                switch (s._id) {
-                                    case "slaughterhouse": return "Rastro";
-                                    case "on_farm_euthanasia": return "Eutanasia en granja";
-                                    case "sale": return "Venta";
-                                    case "research": return "Investigación";
-                                    case "rendering": return "Procesadora / despojos";
-                                    case "composting": return "Compostaje";
-                                    case "burial": return "Enterrado";
-                                    case "incineration": return "Incineración";
-                                    default: return s._id;
-                                }
-                            })(),
+                            destination: t(`pigs.discard.destination.${s._id.replace(/_([a-z])/g, (_: any, c: string) => c.toUpperCase())}`, { defaultValue: s._id }),
                             cantidad: s.count
                         }))}
                     />
                 </div>
-
 
                 <Card>
                     <CardHeader>
@@ -294,30 +204,24 @@ const DiscardedPigs = () => {
                                 onTogglePopover={togglePopover}
                                 predefinedBreeds={predefinedBreeds}
                             />
-
                             <div className="d-flex gap-2 ms-auto">
                                 <Button color="primary" onClick={() => toggleModal('dateRange')} disabled={pdfLoading}>
-                                    {pdfLoading ? (
-                                        <><Spinner className="me-2" size="sm" />Generando...</>
-                                    ) : (
-                                        <><i className="ri-file-pdf-line me-2" />Exportar PDF</>
-                                    )}
+                                    {pdfLoading
+                                        ? <><Spinner className="me-2" size="sm" />Generando...</>
+                                        : <><i className="ri-file-pdf-line me-2" />{t('common.button.exportPdf')}</>
+                                    }
                                 </Button>
                                 <Button className="farm-primary-button" onClick={() => toggleModal('discard')}>
-                                    <i className="ri-add-line me-2" />
-                                    Descartar cerdo
+                                    <i className="ri-add-line me-2" />{t('pigs.action.discardPig')}
                                 </Button>
                             </div>
                         </div>
                     </CardHeader>
-
                     <CardBody className={pigs.length === 0 ? 'd-flex justify-content-center align-items-center' : ''}>
                         {pigs.length === 0 ? (
                             <>
                                 <FiAlertCircle className="text-muted" size={22} />
-                                <span className="fs-5 text-black text-muted text-center rounded-5 ms-2">
-                                    No hay cerdos descartados
-                                </span>
+                                <span className="fs-5 text-black text-muted text-center rounded-5 ms-2">{t('pigs.page.noDiscarded')}</span>
                             </>
                         ) : (
                             <CustomTable columns={pigColumns} data={filteredPigs} showSearchAndFilter={false} rowsPerPage={7} showPagination={true} />
@@ -327,27 +231,23 @@ const DiscardedPigs = () => {
             </Container>
 
             <Modal size="xl" isOpen={modals.discard} toggle={() => toggleModal("discard")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("discard")}>Descartar cerdo</ModalHeader>
-                <ModalBody>
-                    <DiscardPigForm onSave={() => { toggleModal('discard'); fetchData(); }} onCancel={() => { }} />
-                </ModalBody>
+                <ModalHeader toggle={() => toggleModal("discard")}>{t('pigs.action.discardPig')}</ModalHeader>
+                <ModalBody><DiscardPigForm onSave={() => { toggleModal('discard'); fetchData(); }} onCancel={() => { }} /></ModalBody>
             </Modal>
 
             <Modal size="md" isOpen={modals.dateRange} toggle={() => toggleModal("dateRange")} centered>
-                <ModalHeader toggle={() => toggleModal("dateRange")}>Seleccionar rango de fechas</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("dateRange")}>{t('pigs.report.discarded')}</ModalHeader>
                 <ReportDateRangeSelector
                     onGenerate={handleGeneratePDF}
                     onCancel={() => toggleModal("dateRange")}
                     loading={pdfLoading}
-                    generateButtonText="Generar PDF"
+                    generateButtonText={t('common.button.exportPdf')}
                 />
             </Modal>
 
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop="static" keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Cerdos Descartados</ModalHeader>
-                <ModalBody>
-                    {fileURL && <PDFViewer fileUrl={fileURL} />}
-                </ModalBody>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('pigs.report.discarded')}</ModalHeader>
+                <ModalBody>{fileURL && <PDFViewer fileUrl={fileURL} />}</ModalBody>
             </Modal>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />

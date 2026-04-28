@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Card, CardBody, CardHeader, Input, Label } from "reactstrap";
 
 interface SicknessSymptomsSelectorProps {
@@ -6,87 +7,85 @@ interface SicknessSymptomsSelectorProps {
 }
 
 interface SymptomCategory {
-    title: string;
+    titleKey: string;
     icon: string;
     color: string;
-    options: {
-        key: string;
-        label: string;
-    }[];
+    options: { key: string }[];
 }
 
 const SYMPTOMS_CATALOG: SymptomCategory[] = [
     {
-        title: "Respiratorios",
+        titleKey: "shared.symptoms.category.respiratory",
         icon: "fa-solid fa-lungs",
         color: "info",
         options: [
-            { key: "cough", label: "Tos" },
-            { key: "sneezing", label: "Estornudos" },
-            { key: "nasal_discharge", label: "Secreción nasal" },
-            { key: "difficulty_breathing", label: "Dificultad respiratoria" },
-            { key: "open_mouth_breathing", label: "Respiración con la boca abierta" },
+            { key: "cough" },
+            { key: "sneezing" },
+            { key: "nasal_discharge" },
+            { key: "difficulty_breathing" },
+            { key: "open_mouth_breathing" },
         ],
     },
     {
-        title: "Generales",
+        titleKey: "shared.symptoms.category.general",
         icon: "fa-solid fa-temperature-high",
         color: "warning",
         options: [
-            { key: "fever", label: "Fiebre" },
-            { key: "lethargy", label: "Decaimiento" },
-            { key: "loss_of_appetite", label: "Pérdida de apetito" },
-            { key: "weight_loss", label: "Pérdida de peso" },
-            { key: "isolation", label: "Aislamiento del grupo" },
+            { key: "fever" },
+            { key: "lethargy" },
+            { key: "loss_of_appetite" },
+            { key: "weight_loss" },
+            { key: "isolation" },
         ],
     },
     {
-        title: "Digestivos",
+        titleKey: "shared.symptoms.category.digestive",
         icon: "fa-solid fa-notes-medical",
         color: "success",
         options: [
-            { key: "diarrhea", label: "Diarrea" },
-            { key: "bloody_diarrhea", label: "Diarrea con sangre" },
-            { key: "vomiting", label: "Vómitos" },
-            { key: "abdominal_swelling", label: "Abdomen inflamado" },
-            { key: "dehydration", label: "Deshidratación" },
+            { key: "diarrhea" },
+            { key: "bloody_diarrhea" },
+            { key: "vomiting" },
+            { key: "abdominal_swelling" },
+            { key: "dehydration" },
         ],
     },
     {
-        title: "Locomotores",
+        titleKey: "shared.symptoms.category.locomotor",
         icon: "fa-solid fa-person-walking",
         color: "primary",
         options: [
-            { key: "lameness", label: "Cojera" },
-            { key: "joint_swelling", label: "Inflamación articular" },
-            { key: "difficulty_standing", label: "Dificultad para levantarse" },
+            { key: "lameness" },
+            { key: "joint_swelling" },
+            { key: "difficulty_standing" },
         ],
     },
     {
-        title: "Neurológicos",
+        titleKey: "shared.symptoms.category.neurological",
         icon: "fa-solid fa-brain",
         color: "dark",
         options: [
-            { key: "tremors", label: "Temblores" },
-            { key: "incoordination", label: "Descoordinación" },
-            { key: "convulsions", label: "Convulsiones" },
-            { key: "head_tilt", label: "Cabeza ladeada" },
-            { key: "circling", label: "Camina en círculos" },
+            { key: "tremors" },
+            { key: "incoordination" },
+            { key: "convulsions" },
+            { key: "head_tilt" },
+            { key: "circling" },
         ],
     },
     {
-        title: "Signos de alarma",
+        titleKey: "shared.symptoms.category.alarm",
         icon: "fa-solid fa-triangle-exclamation",
         color: "danger",
         options: [
-            { key: "cyanosis", label: "Coloración azulada (orejas o patas)" },
-            { key: "edema", label: "Edema / hinchazón" },
-            { key: "sudden_death", label: "Muerte súbita" },
+            { key: "cyanosis" },
+            { key: "edema" },
+            { key: "sudden_death" },
         ],
     },
 ];
 
 const SicknessSymptomsSelector: React.FC<SicknessSymptomsSelectorProps> = ({ value, onChange }) => {
+    const { t } = useTranslation();
 
     const toggleSymptom = (key: string) => {
         if (value.includes(key)) {
@@ -106,13 +105,13 @@ const SicknessSymptomsSelector: React.FC<SicknessSymptomsSelectorProps> = ({ val
         >
             <div className="row g-3 mx-0">
                 {SYMPTOMS_CATALOG.map(category => (
-                    <div className="col-md-6 px-2" key={category.title}>
+                    <div className="col-md-6 px-2" key={category.titleKey}>
                         <Card className="h-100 w-100">
                             <CardHeader
                                 className={`d-flex align-items-center gap-2 bg-${category.color} bg-opacity-10 text-${category.color}`}
                             >
                                 <i className={`${category.icon} fs-5`} />
-                                <strong>{category.title}</strong>
+                                <strong>{t(category.titleKey)}</strong>
                             </CardHeader>
 
                             <CardBody>
@@ -129,7 +128,7 @@ const SicknessSymptomsSelector: React.FC<SicknessSymptomsSelectorProps> = ({ val
                                             htmlFor={option.key}
                                             style={{ cursor: "pointer" }}
                                         >
-                                            {option.label}
+                                            {t(`shared.symptoms.${option.key}`)}
                                         </Label>
                                     </div>
                                 ))}

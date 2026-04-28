@@ -1,9 +1,11 @@
 import React, { useContext } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ConfigContext } from 'App';
 import { stopImpersonation } from 'helpers/impersonation_helper';
 
 const ImpersonationBanner: React.FC = () => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const navigate = useNavigate();
 
@@ -33,7 +35,7 @@ const ImpersonationBanner: React.FC = () => {
         >
             <span>
                 <i className="ri-eye-line me-2" />
-                Viendo como gerente de: <strong>{farm_name}</strong>
+                {t("shared.impersonation.viewingAs", { farmName: farm_name })}
             </span>
             <button
                 onClick={handleExit}
@@ -49,7 +51,7 @@ const ImpersonationBanner: React.FC = () => {
                 }}
             >
                 <i className="ri-logout-box-line me-1" />
-                Salir del modo granja
+                {t("shared.impersonation.exitMode")}
             </button>
         </div>
     );

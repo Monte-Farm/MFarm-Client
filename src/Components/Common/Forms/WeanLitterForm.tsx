@@ -14,6 +14,7 @@ import SimpleBar from "simplebar-react";
 import ObjectDetails from "../Details/ObjectDetails";
 import SelectableCustomTable from "../Tables/SelectableTable";
 import AlertMessage from "../Shared/AlertMesagge";
+import { useTranslation } from "react-i18next";
 
 interface WeanLitterFormProps {
     litterId: string;
@@ -21,6 +22,7 @@ interface WeanLitterFormProps {
 }
 
 const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [modals, setModals] = useState({ confirm: false, success: false, error: false });
@@ -53,119 +55,55 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
     }
 
     const groupsColumns: Column<any>[] = [
-        { header: 'Codigo', accessor: 'code', type: 'text', isFilterable: true },
-        { header: 'Nombre', accessor: 'name', type: 'text', isFilterable: true },
+        { header: t('groups.column.code', { defaultValue: 'Codigo' }), accessor: 'code', type: 'text', isFilterable: true },
+        { header: t('groups.column.name', { defaultValue: 'Nombre' }), accessor: 'name', type: 'text', isFilterable: true },
         {
-            header: 'Área',
+            header: t('groups.column.area', { defaultValue: 'Área' }),
             accessor: 'area',
             type: 'text',
             isFilterable: true,
             render: (_, row) => {
-                let color = "secondary";
-                let text = "Desconocido";
-
-                switch (row.area) {
-                    case "gestation":
-                        color = "info";
-                        text = "Gestación";
-                        break;
-                    case "farrowing":
-                        color = "primary";
-                        text = "Paridera";
-                        break;
-                    case "maternity":
-                        color = "primary";
-                        text = "Maternidad";
-                        break;
-                    case "weaning":
-                        color = "success";
-                        text = "Destete";
-                        break;
-                    case "nursery":
-                        color = "warning";
-                        text = "Preceba / Levante inicial";
-                        break;
-                    case "fattening":
-                        color = "dark";
-                        text = "Ceba / Engorda";
-                        break;
-                    case "replacement":
-                        color = "secondary";
-                        text = "Reemplazo / Recría";
-                        break;
-                    case "boars":
-                        color = "info";
-                        text = "Área de verracos";
-                        break;
-                    case "quarantine":
-                        color = "danger";
-                        text = "Cuarentena / Aislamiento";
-                        break;
-                    case "hospital":
-                        color = "danger";
-                        text = "Hospital / Enfermería";
-                        break;
-                    case "shipping":
-                        color = "secondary";
-                        text = "Corrales de venta / embarque";
-                        break;
-                }
-
+                const color = {
+                    gestation: 'info', farrowing: 'primary', maternity: 'primary', weaning: 'success',
+                    nursery: 'warning', fattening: 'dark', replacement: 'secondary', boars: 'info',
+                    quarantine: 'danger', hospital: 'danger', shipping: 'secondary'
+                }[row.area as string] || 'secondary';
+                const text = t(`groups.area.${row.area}`, { defaultValue: row.area });
                 return <Badge color={color}>{text}</Badge>;
             },
         },
         {
-            header: 'Etapa',
+            header: t('groups.column.stage', { defaultValue: 'Etapa' }),
             accessor: 'currentStage',
             render: (value, obj) => {
-                let color = "secondary";
-                let label = obj.stage;
-
-                switch (obj.stage) {
-                    case "piglet":
-                        color = "info";
-                        label = "Lechón";
-                        break;
-                    case "weaning":
-                        color = "warning";
-                        label = "Destete";
-                        break;
-                    case "fattening":
-                        color = "primary";
-                        label = "Engorda";
-                        break;
-                    case "breeder":
-                        color = "success";
-                        label = "Reproductor";
-                        break;
-                }
-
+                const color = obj.stage === 'piglet' ? 'info' : obj.stage === 'weaning' ? 'warning' : obj.stage === 'fattening' ? 'primary' : obj.stage === 'breeder' ? 'success' : 'secondary';
+                const label = t(`pigs.stage.${obj.stage}`, { defaultValue: obj.stage });
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { header: 'Fecha de creación', accessor: 'creationDate', type: 'date', isFilterable: true },
-        { header: 'No. de hembras', accessor: 'femaleCount', type: 'text', isFilterable: true },
-        { header: 'No. de machos', accessor: 'maleCount', type: 'text', isFilterable: true },
+        { header: t('groups.column.creationDate', { defaultValue: 'Fecha de creación' }), accessor: 'creationDate', type: 'date', isFilterable: true },
+        { header: t('groups.column.femaleCount', { defaultValue: 'No. de hembras' }), accessor: 'femaleCount', type: 'text', isFilterable: true },
+        { header: t('groups.column.maleCount', { defaultValue: 'No. de machos' }), accessor: 'maleCount', type: 'text', isFilterable: true },
     ]
 
     const pigletsColumns: Column<any>[] = [
         {
-            header: 'Lechón',
+            header: t('litter.pigletColumn.sex', { defaultValue: 'Lechón' }),
             accessor: '',
             type: 'text',
-            render: (_, row,) => <span className="text-black">Lechón #{pigletsArray.indexOf(row) + 1}</span>
+            render: (_, row,) => <span className="text-black">{t('litter.wean.pigletNumber', { number: pigletsArray.indexOf(row) + 1, defaultValue: `Lechón #${pigletsArray.indexOf(row) + 1}` })}</span>
         },
         {
-            header: 'Sexo',
+            header: t('litter.pigletColumn.sex', { defaultValue: 'Sexo' }),
             accessor: 'sex',
             render: (value: string) => (
                 <Badge color={value === 'male' ? "info" : "danger"}>
-                    {value === 'male' ? "♂ Macho" : "♀ Hembra"}
+                    {t(`common.sex.${value}`, { defaultValue: value === 'male' ? '♂ Macho' : '♀ Hembra' })}
                 </Badge>
             ),
         },
         {
-            header: 'Peso',
+            header: t('litter.pigletColumn.weight', { defaultValue: 'Peso' }),
             accessor: 'weight',
             type: 'text',
             render: (value: string) => `${parseFloat(value).toFixed(2)} kg`
@@ -173,95 +111,34 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
     ]
 
     const litterAttributes: Attribute[] = [
-        { key: 'code', label: 'Codigo', type: 'text' },
-        { key: 'birthDate', label: 'Fecha de nacimiento', type: 'date' },
+        { key: 'code', label: t('litter.attr.code', { defaultValue: 'Codigo' }), type: 'text' },
+        { key: 'birthDate', label: t('litter.attr.birthDate', { defaultValue: 'Fecha de nacimiento' }), type: 'date' },
         {
             key: 'status',
-            label: 'Estado',
+            label: t('common.field.status', { defaultValue: 'Estado' }),
             type: 'text',
             render: (value, object) => {
-                let color = 'secondary';
-                let label = value;
-
-                switch (value) {
-                    case 'active':
-                        color = 'warning';
-                        label = 'Lactando';
-                        break;
-                    case 'weaned':
-                        color = 'success';
-                        label = 'Destetada';
-                        break;
-                    case 'ready_to_wean':
-                        color = 'success';
-                        label = 'Lista para destetar';
-                        break;
-                }
-
+                const color = value === 'active' ? 'warning' : value === 'weaned' ? 'success' : value === 'ready_to_wean' ? 'success' : 'secondary';
+                const label = t(`litter.status.${value}`, { defaultValue: value });
                 return <Badge color={color}>{label}</Badge>;
-
             }
         },
     ]
 
     const groupAttributes: Attribute[] = [
-        { key: 'code', label: 'Codigo', type: 'text' },
-        { key: 'name', label: 'nombre', type: 'text' },
+        { key: 'code', label: t('groups.column.code', { defaultValue: 'Codigo' }), type: 'text' },
+        { key: 'name', label: t('groups.column.name', { defaultValue: 'nombre' }), type: 'text' },
         {
             key: 'area',
-            label: 'Area',
+            label: t('groups.column.area', { defaultValue: 'Area' }),
             type: 'text',
             render: (value, row) => {
-                let color = "secondary";
-                let text = "Desconocido";
-
-                switch (value) {
-                    case "gestation":
-                        color = "info";
-                        text = "Gestación";
-                        break;
-                    case "farrowing":
-                        color = "primary";
-                        text = "Paridera";
-                        break;
-                    case "maternity":
-                        color = "primary";
-                        text = "Maternidad";
-                        break;
-                    case "weaning":
-                        color = "success";
-                        text = "Destete";
-                        break;
-                    case "nursery":
-                        color = "warning";
-                        text = "Preceba / Levante inicial";
-                        break;
-                    case "fattening":
-                        color = "dark";
-                        text = "Ceba / Engorda";
-                        break;
-                    case "replacement":
-                        color = "secondary";
-                        text = "Reemplazo / Recría";
-                        break;
-                    case "boars":
-                        color = "info";
-                        text = "Área de verracos";
-                        break;
-                    case "quarantine":
-                        color = "danger";
-                        text = "Cuarentena / Aislamiento";
-                        break;
-                    case "hospital":
-                        color = "danger";
-                        text = "Hospital / Enfermería";
-                        break;
-                    case "shipping":
-                        color = "secondary";
-                        text = "Corrales de venta / embarque";
-                        break;
-                }
-
+                const color = {
+                    gestation: 'info', farrowing: 'primary', maternity: 'primary', weaning: 'success',
+                    nursery: 'warning', fattening: 'dark', replacement: 'secondary', boars: 'info',
+                    quarantine: 'danger', hospital: 'danger', shipping: 'secondary'
+                }[value as string] || 'secondary';
+                const text = t(`groups.area.${value}`, { defaultValue: value });
                 return <Badge color={color}>{text}</Badge>;
             },
         },
@@ -355,7 +232,7 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
         if (newGroup) toggleArrowTab(activeStep + 1);
 
         if (!selectedCompatibleGroup && !newGroup) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor seleccione un grupo para integrar a la camada' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('litter.wean.selectGroupAlert', { defaultValue: 'Por favor seleccione un grupo para integrar a la camada' }) });
         } else {
             toggleArrowTab(activeStep + 1)
         }
@@ -454,7 +331,7 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
                             aria-controls="step-packageSelect-tab"
                             disabled
                         >
-                            Peso de lechones
+                            {t('litter.wean.step1', { defaultValue: 'Peso de las camadas' })}
                         </NavLink>
                     </NavItem>
 
@@ -470,7 +347,7 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
                             aria-controls="step-groupIntegration-tab"
                             disabled
                         >
-                            Integracion a grupo
+                            {t('litter.wean.groupIntegration', { defaultValue: 'Integracion a grupo' })}
                         </NavLink>
                     </NavItem>
 
@@ -486,7 +363,7 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
                             aria-controls="step-summary-tab"
                             disabled
                         >
-                            Resumen
+                            {t('litter.wean.step2', { defaultValue: 'Grupo destino' })}
                         </NavLink>
                     </NavItem>
                 </Nav>
@@ -495,7 +372,7 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
             <TabContent activeTab={activeStep}>
                 <TabPane tabId={1}>
                     <Label>
-                        <h5>Peso de los lechones al destetar</h5>
+                        <h5>{t('litter.wean.pigletWeightsTitle', { defaultValue: 'Peso de los lechones al destetar' })}</h5>
                     </Label>
 
                     {/* Toggle para modo de peso */}
@@ -510,12 +387,12 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
                             <FaQuestionCircle className="text-primary" size={20} />
                             <div>
                                 <div className="fw-semibold">
-                                    Ingresar peso individual de cada lechón
+                                    {t('litter.wean.switchIndividualWeight', { defaultValue: 'Ingresar peso individual de cada lechón' })}
                                 </div>
                                 <div className="small text-muted">
                                     {useIndividualWeight
-                                        ? "Ingresa el peso de cada lechón individualmente"
-                                        : "Ingresa el peso total de la camada y se asignará el peso promedio a cada lechón"}
+                                        ? t('litter.wean.switchIndividualHint', { defaultValue: 'Ingresa el peso de cada lechón individualmente' })
+                                        : t('litter.wean.switchTotalHint', { defaultValue: 'Ingresa el peso total de la camada y se asignará el peso promedio a cada lechón' })}
                                 </div>
                             </div>
                         </div>
@@ -527,7 +404,7 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
                             <div className="card-body">
                                 <div className="row">
                                     <div className="col-md-6">
-                                        <label className="form-label fw-semibold">Peso total de la camada (kg)</label>
+                                        <label className="form-label fw-semibold">{t('litter.wean.enterWeight', { defaultValue: 'Ingresa el peso total de cada camada:' })}</label>
                                         <input
                                             type="number"
                                             step="0.01"
@@ -541,7 +418,7 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
                                         <div className="mt-4">
                                             <div className="d-flex align-items-center gap-2">
                                                 <i className="ri-calculator-line text-primary"></i>
-                                                <span className="text-muted">Peso promedio por lechón:</span>
+                                                <span className="text-muted">{t('litter.wean.avgWeightPerPiglet', { defaultValue: 'Peso promedio por lechón:' })}</span>
                                                 <span className="fw-bold text-primary">
                                                     {totalLitterWeight && pigletsArray.length > 0
                                                         ? (Number(totalLitterWeight) / pigletsArray.length).toFixed(2)
@@ -551,7 +428,7 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
                                             </div>
                                             <div className="d-flex align-items-center gap-2 mt-1">
                                                 <i className="ri-group-line text-info"></i>
-                                                <span className="text-muted">Total de lechones:</span>
+                                                <span className="text-muted">{t('litter.wean.totalPigletsLabel', { defaultValue: 'Total de lechones:' })}</span>
                                                 <span className="fw-bold text-info">{pigletsArray.length}</span>
                                             </div>
                                         </div>
@@ -568,15 +445,15 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
                                 {pigletsArray.map((piglet, index) => (
                                     <div key={index} className="border rounded p-3 mb-2">
                                         <div className="d-flex justify-content-between align-items-center mb-2">
-                                            <p className="fw-bold mb-0">Lechón #{index + 1}</p>
+                                            <p className="fw-bold mb-0">{t('litter.wean.pigletNumber', { number: index + 1, defaultValue: `Lechón #${index + 1}` })}</p>
                                             <Badge color={piglet.sex === 'male' ? "info" : "danger"}>
-                                                {piglet.sex === 'male' ? "♂ Macho" : "♀ Hembra"}
+                                                {t(`common.sex.${piglet.sex}`, { defaultValue: piglet.sex === 'male' ? '♂ Macho' : '♀ Hembra' })}
                                             </Badge>
                                         </div>
 
                                         <div className="row">
                                             <div className="col-12">
-                                                <label className="form-label">Peso (kg)</label>
+                                                <label className="form-label">{t('litter.wean.weightKg', { defaultValue: 'Peso (kg)' })}</label>
                                                 <input
                                                     type="number"
                                                     step="0.01"
@@ -621,7 +498,7 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
 
                     <div className="mt-4 d-flex">
                         <Button className="ms-auto" onClick={() => setActiveStep(activeStep + 1)}>
-                            Siguiente
+                            {t('common.button.next', { defaultValue: 'Siguiente' })}
                             < i className="ri-arrow-right-line ms-2" />
                         </Button>
                     </div>
@@ -635,10 +512,10 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
 
                                 <div>
                                     <div className="fw-semibold">
-                                        No hay grupos compatibles
+                                        {t('litter.wean.noCompatibleGroups', { defaultValue: 'No hay grupos compatibles' })}
                                     </div>
                                     <div className="small">
-                                        Se creará un nuevo grupo al continuar con el destete
+                                        {t('litter.wean.noCompatibleGroupsHint', { defaultValue: 'Se creará un nuevo grupo al continuar con el destete' })}
                                     </div>
                                 </div>
                             </div>
@@ -657,10 +534,10 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
 
                                         <div>
                                             <div className="fw-semibold">
-                                                Crear nuevo grupo
+                                                {t('litter.wean.createNewGroup', { defaultValue: 'Crear nuevo grupo' })}
                                             </div>
                                             <div className="small text-muted">
-                                                La camada no se mezclará con grupos existentes
+                                                {t('litter.wean.dontMixGroups', { defaultValue: 'La camada no se mezclará con grupos existentes' })}
                                             </div>
                                         </div>
                                     </div>
@@ -681,11 +558,11 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
                     <div className="mt-4 d-flex">
                         <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                             <i className="ri-arrow-left-line me-2" />
-                            Atrás
+                            {t('common.button.back', { defaultValue: 'Volver' })}
                         </Button>
 
                         <Button className="ms-auto" onClick={() => checkSelectedGroup()}>
-                            Siguiente
+                            {t('common.button.next', { defaultValue: 'Siguiente' })}
                             < i className="ri-arrow-right-line ms-2" />
                         </Button>
 
@@ -697,7 +574,7 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
                         <div className="d'flex flex-column w-50">
                             <Card className="w-100">
                                 <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
-                                    <span className="text-black">Información de la camada</span>
+                                    <span className="text-black">{t('litter.wean.litterInfo', { defaultValue: 'Información de la camada' })}</span>
                                 </CardHeader>
                                 <CardBody className="flex-fill">
                                     <ObjectDetails attributes={litterAttributes} object={litter} />
@@ -706,7 +583,7 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
 
                             <Card className="w-100 m-0">
                                 <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
-                                    <span className="text-black">Grupo destino</span>
+                                    <span className="text-black">{t('litter.wean.targetGroup', { defaultValue: 'Grupo destino' })}</span>
                                 </CardHeader>
                                 <CardBody className="flex-fill">
                                     {newGroup && newGroup === true ? (
@@ -715,10 +592,10 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
 
                                             <div>
                                                 <div className="fw-semibold">
-                                                    Nuevo grupo
+                                                    {t('litter.wean.newGroupTitle', { defaultValue: 'Nuevo grupo' })}
                                                 </div>
                                                 <div className="small">
-                                                    Se creará un nuevo grupo al destetar a la camada
+                                                    {t('litter.wean.newGroupHint', { defaultValue: 'Se creará un nuevo grupo al destetar a la camada' })}
                                                 </div>
                                             </div>
                                         </div>
@@ -732,7 +609,7 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
                         <div className="w-50">
                             <Card className="w-100 h-100 m-0">
                                 <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
-                                    <span className="text-black">Peso de los lechones</span>
+                                    <span className="text-black">{t('litter.wean.pigletWeights', { defaultValue: 'Peso de los lechones' })}</span>
                                 </CardHeader>
                                 <CardBody className='p-3'>
                                     {/* Estadísticas principales */}
@@ -741,7 +618,7 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
                                             <div className="border rounded p-2 text-center bg-light">
                                                 <div className="d-flex align-items-center justify-content-center mb-1">
                                                     <i className="ri-parent-line fs-5 text-primary me-1"></i>
-                                                    <span className="text-muted fw-semibold">Total</span>
+                                                    <span className="text-muted fw-semibold">{t('litter.wean.totalPiglets', { defaultValue: 'Total lechones' })}</span>
                                                 </div>
                                                 <h4 className="mb-0 text-primary fw-bold">{pigletsArray.length}</h4>
                                             </div>
@@ -750,7 +627,7 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
                                             <div className="border rounded p-2 text-center bg-light">
                                                 <div className="d-flex align-items-center justify-content-center mb-1">
                                                     <i className="ri-scales-3-line fs-5 text-success me-1"></i>
-                                                    <span className="text-muted fw-semibold">Peso Promedio</span>
+                                                    <span className="text-muted fw-semibold">{t('litter.wean.avgWeight', { defaultValue: 'Peso promedio' })}</span>
                                                 </div>
                                                 <h4 className="mb-0 text-success fw-bold">
                                                     {pigletsArray.length > 0
@@ -767,7 +644,7 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
                                             <div className="border rounded p-2 text-center">
                                                 <div className="d-flex align-items-center justify-content-center mb-1">
                                                     <i className="ri-men-line fs-5 text-info me-1"></i>
-                                                    <span className="text-muted fw-semibold">Machos</span>
+                                                    <span className="text-muted fw-semibold">{t('litter.kpi.males', { defaultValue: 'Machos' })}</span>
                                                 </div>
                                                 <h4 className="mb-0 text-info fw-bold">
                                                     {pigletsArray.filter(p => p.sex === 'male').length}
@@ -778,7 +655,7 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
                                             <div className="border rounded p-2 text-center">
                                                 <div className="d-flex align-items-center justify-content-center mb-1">
                                                     <i className="ri-women-line fs-5 text-danger me-1"></i>
-                                                    <span className="text-muted fw-semibold">Hembras</span>
+                                                    <span className="text-muted fw-semibold">{t('litter.kpi.females', { defaultValue: 'Hembras' })}</span>
                                                 </div>
                                                 <h4 className="mb-0 text-danger fw-bold">
                                                     {pigletsArray.filter(p => p.sex === 'female').length}
@@ -789,7 +666,7 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
 
                                     {/* Tabla detallada compacta */}
                                     <div>
-                                        <span className="text-muted fw-semibold d-block mb-2">Detalles individuales:</span>
+                                        <span className="text-muted fw-semibold d-block mb-2">{t('litter.wean.individualDetails', { defaultValue: 'Detalles individuales:' })}</span>
                                     </div>
 
                                     <SimpleBar style={{ maxHeight: 200 }}>
@@ -797,8 +674,8 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
                                             <thead className="table-light">
                                                 <tr>
                                                     <th className="text-center">#</th>
-                                                    <th className="text-center">Sexo</th>
-                                                    <th className="text-center">Peso</th>
+                                                    <th className="text-center">{t('litter.pigletColumn.sex', { defaultValue: 'Sexo' })}</th>
+                                                    <th className="text-center">{t('litter.pigletColumn.weight', { defaultValue: 'Peso' })}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -825,7 +702,7 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
                     <div className="mt-4 d-flex">
                         <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                             <i className="ri-arrow-left-line me-2" />
-                            Atrás
+                            {t('common.button.back', { defaultValue: 'Volver' })}
                         </Button>
 
                         <Button className="ms-auto btn-success" onClick={() => handleWeanLitter()} disabled={isSubmitting}>
@@ -836,7 +713,7 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
                             ) : (
                                 <div>
                                     <i className="ri-check-line me-2" />
-                                    Destetar camada
+                                    {t('litter.wean.weanLitterButton', { defaultValue: 'Destetar camada' })}
                                 </div>
                             )}
                         </Button>
@@ -846,35 +723,34 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
 
 
             <Modal size="md" isOpen={modals.confirm} toggle={() => toggleModal("confirm")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("confirm")}>Destetar camada</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("confirm")}>{t('litter.wean.confirmTitle', { defaultValue: 'Destetar camada' })}</ModalHeader>
                 <ModalBody>
                     <div className="d-flex justify-content-center mb-3">
                         <FaQuestionCircle size={56} className="text-primary opacity-75" />
                     </div>
 
                     <div className="text-center mb-2">
-                        <h4 className="fw-semibold mb-1">¿Deseas destetar esta camada?</h4>
+                        <h4 className="fw-semibold mb-1">{t('litter.wean.confirmQuestion', { defaultValue: '¿Deseas destetar esta camada?' })}</h4>
                     </div>
 
                     <div className="text-center text-muted fs-5 mb-4">
-                        Al confirmar el destete, la camada cambiará su estado y se dará por
-                        finalizada la etapa de lactancia.
+                        {t('litter.wean.confirmInfo', { defaultValue: 'Al confirmar el destete, la camada cambiará su estado y se dará por finalizada la etapa de lactancia.' })}
                         <br />
                     </div>
 
                     <div className="border rounded p-3 bg-light-subtle text-center mb-4">
-                        <strong>Asegúrate de que toda la información esté correcta antes de continuar.</strong>
+                        <strong>{t('litter.wean.confirmWarning', { defaultValue: 'Asegúrate de que toda la información esté correcta antes de continuar.' })}</strong>
                     </div>
                 </ModalBody>
 
                 <ModalFooter>
-                    <Button class Name="" color="success" onClick={() => handleWeanLitter()}>
+                    <Button color="success" onClick={() => handleWeanLitter()}>
                         {isSubmitting ? (
                             <Spinner size='sm' />
                         ) : (
                             <>
                                 <i className="ri ri-check-line me-2" />
-                                Confirmar
+                                {t('litter.wean.confirmButton', { defaultValue: 'Confirmar' })}
                             </>
                         )}
                     </Button>
@@ -883,8 +759,8 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} autoClose={3000} />
 
-            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={"Camada destetada con éxito"} />
-            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={"Ha ocurrido un error al destetar a la camada, intentelo mas tarde"} />
+            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={t('litter.wean.success', { defaultValue: 'Camada destetada con éxito' })} />
+            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={t('litter.wean.error', { defaultValue: 'Ha ocurrido un error al destetar a la camada, intentelo mas tarde' })} />
         </>
     );
 };

@@ -8,6 +8,7 @@ import DatePicker from "react-flatpickr";
 import { FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo } from "react-icons/fi";
 import SuccessModal from "../Shared/SuccessModal";
 import { HttpStatusCode } from "axios";
+import { useTranslation } from "react-i18next";
 
 interface HeatFormProps {
     insemination: any;
@@ -16,6 +17,7 @@ interface HeatFormProps {
 }
 
 const HeatForm = ({ insemination, onSave, onCancel }: HeatFormProps) => {
+    const { t } = useTranslation();
     const userLogged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -33,8 +35,8 @@ const HeatForm = ({ insemination, onSave, onCancel }: HeatFormProps) => {
     };
 
     const validationSchema = Yup.object({
-        heatDetected: Yup.boolean().required("Debe indicar si se detectó celo"),
-        date: Yup.date().required("La fecha es obligatoria"),
+        heatDetected: Yup.boolean().required(t('reproduction.form.heat.validationHeatDetected', { defaultValue: 'Debe indicar si se detectó celo' })),
+        date: Yup.date().required(t('reproduction.form.heat.validationDate', { defaultValue: 'La fecha es obligatoria' })),
     });
 
     const formik = useFormik({
@@ -65,7 +67,7 @@ const HeatForm = ({ insemination, onSave, onCancel }: HeatFormProps) => {
                     setSuccessModalOpen(true);
                 }
             } catch (error) {
-                handleError(error, "Ha ocurrido un error al registrar el celo");
+                handleError(error, t('reproduction.form.heat.errorRegister', { defaultValue: 'Ha ocurrido un error al registrar el celo' }));
             } finally {
                 setSubmitting(false);
             }
@@ -80,7 +82,7 @@ const HeatForm = ({ insemination, onSave, onCancel }: HeatFormProps) => {
         <>
             <form onSubmit={formik.handleSubmit}>
                 <div className="mt-4">
-                    <Label htmlFor="heatDetected" className="form-label">Celo detectado</Label>
+                    <Label htmlFor="heatDetected" className="form-label">{t('reproduction.form.heat.heatDetected', { defaultValue: 'Celo detectado' })}</Label>
                     <Input
                         type="select"
                         id="heatDetected"
@@ -90,8 +92,8 @@ const HeatForm = ({ insemination, onSave, onCancel }: HeatFormProps) => {
                         onBlur={formik.handleBlur}
                         invalid={formik.touched.heatDetected && !!formik.errors.heatDetected}
                     >
-                        <option value="true">Sí</option>
-                        <option value="false">No</option>
+                        <option value="true">{t('insemination.field.yes', { defaultValue: 'Sí' })}</option>
+                        <option value="false">{t('insemination.field.no', { defaultValue: 'No' })}</option>
                     </Input>
                     {formik.touched.heatDetected && formik.errors.heatDetected && (
                         <FormFeedback>{formik.errors.heatDetected}</FormFeedback>
@@ -100,7 +102,7 @@ const HeatForm = ({ insemination, onSave, onCancel }: HeatFormProps) => {
 
                 <div className="d-flex gap-2 mt-4">
                     <div className="w-50">
-                        <Label htmlFor="date" className="form-label">Fecha del registro</Label>
+                        <Label htmlFor="date" className="form-label">{t('reproduction.form.heat.dateLabel', { defaultValue: 'Fecha del registro' })}</Label>
                         <DatePicker
                             id="date"
                             className={`form-control ${formik.touched.date && formik.errors.date ? 'is-invalid' : ''}`}
@@ -114,7 +116,7 @@ const HeatForm = ({ insemination, onSave, onCancel }: HeatFormProps) => {
                     </div>
 
                     <div className="w-50">
-                        <Label htmlFor="responsible" className="form-label">Responsable</Label>
+                        <Label htmlFor="responsible" className="form-label">{t('reproduction.form.heat.responsible', { defaultValue: 'Responsable' })}</Label>
                         <Input
                             type="text"
                             id="responsible"
@@ -126,7 +128,7 @@ const HeatForm = ({ insemination, onSave, onCancel }: HeatFormProps) => {
                 </div>
 
                 <div className="mt-4">
-                    <Label htmlFor="notes" className="form-label">Notas</Label>
+                    <Label htmlFor="notes" className="form-label">{t('reproduction.form.heat.notes', { defaultValue: 'Notas' })}</Label>
                     <Input
                         type="text"
                         id="notes"
@@ -135,7 +137,7 @@ const HeatForm = ({ insemination, onSave, onCancel }: HeatFormProps) => {
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
                         invalid={formik.touched.notes && !!formik.errors.notes}
-                        placeholder="Ej: Celo leve, comportamiento dudoso"
+                        placeholder={t('reproduction.form.heat.notesPlaceholder', { defaultValue: 'Ej: Celo leve, comportamiento dudoso' })}
                     />
                     {formik.touched.notes && formik.errors.notes && (
                         <FormFeedback>{formik.errors.notes}</FormFeedback>
@@ -144,7 +146,7 @@ const HeatForm = ({ insemination, onSave, onCancel }: HeatFormProps) => {
 
                 <div className="d-flex gap-2 mt-3">
                     <Button className="ms-auto" color="primary" type="submit" disabled={formik.isSubmitting}>
-                        {formik.isSubmitting ? <Spinner size="sm" /> : <><i className="ri-check-line me-2" />Registrar</>}
+                        {formik.isSubmitting ? <Spinner size="sm" /> : <><i className="ri-check-line me-2" />{t('reproduction.form.heat.register', { defaultValue: 'Registrar' })}</>}
                     </Button>
                 </div>
             </form>
@@ -160,7 +162,7 @@ const HeatForm = ({ insemination, onSave, onCancel }: HeatFormProps) => {
                 </Alert>
             )}
 
-            <SuccessModal isOpen={successModalOpen} onClose={onSave} message="Registro de celo realizado con éxito" />
+            <SuccessModal isOpen={successModalOpen} onClose={onSave} message={t('reproduction.form.heat.success', { defaultValue: 'Registro de celo realizado con éxito' })} />
         </>
     );
 };

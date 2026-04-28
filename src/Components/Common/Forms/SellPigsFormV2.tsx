@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
@@ -104,23 +105,11 @@ type SelectionMode = "group" | "individual";
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
-const stageLabel: Record<string, string> = {
-    general: "General", piglet: "Lechón", lactation: "Lactancia",
-    weaning: "Destete", growing: "Crecimiento", fattening: "Engorda",
-    gestation: "Gestación", breeder: "Reproductor",
-    exit: "Salida", sale: "Venta",
-};
-
 const stageColor: Record<string, string> = {
     general: "#6c757d", piglet: "#e83e8c", lactation: "#f1b44c",
     weaning: "#50a5f1", growing: "#2ab57d", fattening: "#ff6f61",
     gestation: "#a855f7", breeder: "#556ee6",
     exit: "#74788d", sale: "#34c38f",
-};
-
-const sexConfig: Record<string, { label: string; icon: string; className: string; bg: string }> = {
-    male: { label: "Macho", icon: "ri-men-line", className: "text-info", bg: "rgba(80,165,241,.12)" },
-    female: { label: "Hembra", icon: "ri-women-line", className: "text-danger", bg: "rgba(232,62,140,.12)" },
 };
 
 const getROIColor = (roi: number) => {
@@ -140,7 +129,13 @@ const getROIBadgeClass = (roi: number) => {
 // ─── Component ─────────────────────────────────────────────────────────────────
 
 const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
+
+    const sexConfig: Record<string, { label: string; icon: string; className: string; bg: string }> = {
+        male: { label: t("pigs.sex.male", { defaultValue: "Macho" }), icon: "ri-men-line", className: "text-info", bg: "rgba(80,165,241,.12)" },
+        female: { label: t("pigs.sex.female", { defaultValue: "Hembra" }), icon: "ri-women-line", className: "text-danger", bg: "rgba(232,62,140,.12)" },
+    };
     const userLogged = getEffectiveUser();
     const isClassicMode = Boolean(groupId);
 
@@ -466,19 +461,19 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
     const validateStep1 = () => {
         const errs: Record<string, string> = {};
         const active = selectedPigs.filter(p => p.selected);
-        if (active.length === 0) errs.selection = "Debes seleccionar al menos un cerdo para vender";
-        if (active.some(p => p.weight <= 0)) errs.weight = "Todos los pesos deben ser mayores a 0";
-        if (active.some(p => p.pricePerKg <= 0)) errs.price = "El precio por kg debe ser mayor a 0";
+        if (active.length === 0) errs.selection = t("sellPigs.validation.selectAtLeastOne", { defaultValue: "Debes seleccionar al menos un cerdo para vender" });
+        if (active.some(p => p.weight <= 0)) errs.weight = t("sellPigs.validation.weightPositive", { defaultValue: "Todos los pesos deben ser mayores a 0" });
+        if (active.some(p => p.pricePerKg <= 0)) errs.price = t("sellPigs.validation.pricePositive", { defaultValue: "El precio por kg debe ser mayor a 0" });
         setErrors(errs);
         return Object.keys(errs).length === 0;
     };
 
     const validateStep2 = () => {
         const errs: Record<string, string> = {};
-        if (!formData.buyer.name.trim()) errs.buyerName = "El nombre del comprador es requerido";
-        if (!formData.paymentMethod) errs.paymentMethod = "El método de pago es requerido";
+        if (!formData.buyer.name.trim()) errs.buyerName = t("sellPigs.validation.buyerNameRequired", { defaultValue: "El nombre del comprador es requerido" });
+        if (!formData.paymentMethod) errs.paymentMethod = t("sellPigs.validation.paymentMethodRequired", { defaultValue: "El método de pago es requerido" });
         const badCosts = additionalCosts.filter(c => !c.concept.trim() || c.amount <= 0);
-        if (badCosts.length > 0) errs.additionalCosts = "Todos los costos adicionales deben tener concepto y monto válido";
+        if (badCosts.length > 0) errs.additionalCosts = t("sellPigs.validation.additionalCostsInvalid", { defaultValue: "Todos los costos adicionales deben tener concepto y monto válido" });
         setErrors(errs);
         return Object.keys(errs).length === 0;
     };
@@ -585,17 +580,17 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
 
     const classicPigColumns: Column<SelectedPig>[] = [
         {
-            header: "Código",
+            header: t("common.field.code", { defaultValue: "Código" }),
             accessor: "code",
             render: (_, row) => <span className="fw-semibold">{row.code}</span>,
         },
         {
-            header: "Peso Original",
+            header: t("sellPigs.column.originalWeight", { defaultValue: "Peso Original" }),
             accessor: "originalWeight",
             render: v => <span className="text-muted">{Number(v).toFixed(2)} kg</span>,
         },
         {
-            header: "Peso Venta (kg)",
+            header: t("sellPigs.column.saleWeight", { defaultValue: "Peso Venta (kg)" }),
             accessor: "weight",
             render: (v, row) => (
                 <Input
@@ -608,17 +603,17 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
             ),
         },
         {
-            header: "Total",
+            header: t("sellPigs.column.total", { defaultValue: "Total" }),
             accessor: "total",
             render: v => <span className="fw-bold">${Number(v).toFixed(2)}</span>,
         },
     ];
 
     const individualPigColumns: Column<AvailablePig>[] = [
-        { header: "Código", accessor: "code", render: (_, r) => <span className="fw-semibold">{r.code}</span> },
-        { header: "Etapa", accessor: "currentStage", render: v => <Badge color="secondary">{stageLabel[v] || v}</Badge> },
-        { header: "Peso", accessor: "currentWeight", render: v => `${Number(v).toFixed(1)} kg` },
-        { header: "Sexo", accessor: "sex", render: v => v === "male" ? "Macho" : v === "female" ? "Hembra" : "—" },
+        { header: t("common.field.code", { defaultValue: "Código" }), accessor: "code", render: (_, r) => <span className="fw-semibold">{r.code}</span> },
+        { header: t("common.field.stage", { defaultValue: "Etapa" }), accessor: "currentStage", render: v => <Badge color="secondary">{t(`pigs.stage.${v}`, { defaultValue: v })}</Badge> },
+        { header: t("common.field.weight", { defaultValue: "Peso" }), accessor: "currentWeight", render: v => `${Number(v).toFixed(1)} kg` },
+        { header: t("sellPigs.column.sex", { defaultValue: "Sexo" }), accessor: "sex", render: v => v === "male" ? t("pigs.sex.male", { defaultValue: "Macho" }) : v === "female" ? t("pigs.sex.female", { defaultValue: "Hembra" }) : "—" },
     ];
 
     // ─── Render ───────────────────────────────────────────────────────────────
@@ -631,9 +626,9 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
             <div className="step-arrow-nav mb-4">
                 <Nav className="nav-pills custom-nav nav-justified">
                     {[
-                        { icon: "ri-list-check-2", label: "Selección" },
-                        { icon: "ri-file-text-line", label: "Detalles" },
-                        { icon: "ri-eye-line", label: "Confirmación" },
+                        { icon: "ri-list-check-2", label: t("sellPigs.step.selection", { defaultValue: "Selección" }) },
+                        { icon: "ri-file-text-line", label: t("sellPigs.step.details", { defaultValue: "Detalles" }) },
+                        { icon: "ri-eye-line", label: t("sellPigs.step.confirmation", { defaultValue: "Confirmación" }) },
                     ].map((step, i) => (
                         <NavItem key={i}>
                             <NavLink
@@ -658,12 +653,12 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                     <div className="d-flex align-items-start justify-content-between mb-4">
                         <div>
                             <h5 className="fw-bold mb-1">
-                                {isClassicMode ? "Venta de grupo" : "Nueva venta"}
+                                {isClassicMode ? t("sellPigs.header.groupSale", { defaultValue: "Venta de grupo" }) : t("sellPigs.header.newSale", { defaultValue: "Nueva venta" })}
                             </h5>
                             <p className="text-muted mb-0" style={{ fontSize: 13 }}>
                                 {isClassicMode
-                                    ? "Ajusta precios y pesos antes de continuar."
-                                    : "Selecciona los cerdos que deseas vender."}
+                                    ? t("sellPigs.header.adjustPricesHint", { defaultValue: "Ajusta precios y pesos antes de continuar." })
+                                    : t("sellPigs.header.selectPigsHint", { defaultValue: "Selecciona los cerdos que deseas vender." })}
                             </p>
                         </div>
                         {!isClassicMode && (
@@ -672,8 +667,8 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                                 style={{ background: "#f0f0f0" }}
                             >
                                 {([
-                                    { key: "group" as SelectionMode, icon: "ri-folder-line", label: "Por grupo" },
-                                    { key: "individual" as SelectionMode, icon: "ri-user-search-line", label: "Individual" },
+                                    { key: "group" as SelectionMode, icon: "ri-folder-line", label: t("sellPigs.mode.byGroup", { defaultValue: "Por grupo" }) },
+                                    { key: "individual" as SelectionMode, icon: "ri-user-search-line", label: t("sellPigs.mode.individual", { defaultValue: "Individual" }) },
                                 ]).map(opt => (
                                     <button
                                         key={opt.key}
@@ -709,7 +704,7 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                             <Row className="align-items-center g-3">
                                 <Col md={isClassicMode ? 4 : 3}>
                                     <Label className="form-label text-muted small text-uppercase mb-1" style={{ fontSize: 11, letterSpacing: ".5px" }}>
-                                        Precio / kg
+                                        {t("sellPigs.label.pricePerKg", { defaultValue: "Precio / kg" })}
                                     </Label>
                                     <div className="input-group">
                                         <span className="input-group-text bg-light border-end-0" style={{ borderRadius: "8px 0 0 8px" }}>$</span>
@@ -730,16 +725,16 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                                             onClick={() => handleGlobalPriceChange(suggestedPricePerKg.toString())}
                                         >
                                             <i className="ri-magic-line me-1" />
-                                            Usar sugerido: <span className="fw-bold text-success">${suggestedPricePerKg.toFixed(2)}</span>
+                                            {t("sellPigs.label.useSuggested", { defaultValue: "Usar sugerido:" })} <span className="fw-bold text-success">${suggestedPricePerKg.toFixed(2)}</span>
                                         </button>
                                     )}
                                 </Col>
                                 <Col>
                                     <div className="d-flex align-items-center justify-content-end gap-4">
                                         {[
-                                            { label: "Cerdos", value: totals.totalPigs.toString(), color: "#556ee6" },
-                                            { label: "Peso total", value: `${totals.totalWeight.toFixed(1)} kg`, color: "#50a5f1" },
-                                            { label: "Subtotal", value: `$${totals.subtotal.toFixed(2)}`, color: "#34c38f" },
+                                            { label: t("sellPigs.summary.pigs", { defaultValue: "Cerdos" }), value: totals.totalPigs.toString(), color: "#556ee6" },
+                                            { label: t("sellPigs.summary.totalWeight", { defaultValue: "Peso total" }), value: `${totals.totalWeight.toFixed(1)} kg`, color: "#50a5f1" },
+                                            { label: t("sellPigs.summary.subtotal", { defaultValue: "Subtotal" }), value: `$${totals.subtotal.toFixed(2)}`, color: "#34c38f" },
                                         ].map(metric => (
                                             <div key={metric.label} className="text-end">
                                                 <div className="text-muted text-uppercase" style={{ fontSize: 10, letterSpacing: ".5px" }}>
@@ -778,7 +773,7 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                                     {availableGroups.length === 0 ? (
                                         <div className="text-center text-muted py-5">
                                             <i className="ri-inbox-line d-block mb-2" style={{ fontSize: 40, opacity: .2 }} />
-                                            <span className="small">No hay grupos activos disponibles</span>
+                                            <span className="small">{t("sellPigs.empty.noActiveGroups", { defaultValue: "No hay grupos activos disponibles" })}</span>
                                         </div>
                                     ) : (
                                         <Row className="g-3">
@@ -823,13 +818,13 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                                                                 </div>
                                                                 <div className="d-flex gap-3 flex-wrap" style={{ fontSize: 12 }}>
                                                                     <span className="text-muted">
-                                                                        <i className="ri-price-tag-3-line me-1" />{stageLabel[group.stage] || group.stage}
+                                                                        <i className="ri-price-tag-3-line me-1" />{t(`pigs.stage.${group.stage}`, { defaultValue: group.stage })}
                                                                     </span>
                                                                     <span className="text-muted">
-                                                                        <i className="ri-group-line me-1" />{group.pigCount} cerdos
+                                                                        <i className="ri-group-line me-1" />{group.pigCount} {t("sellPigs.label.pigs", { defaultValue: "cerdos" })}
                                                                     </span>
                                                                     <span className="text-muted">
-                                                                        <i className="ri-scales-3-line me-1" />{group.avgWeight.toFixed(1)} kg prom.
+                                                                        <i className="ri-scales-3-line me-1" />{group.avgWeight.toFixed(1)} {t("sellPigs.label.kgAvg", { defaultValue: "kg prom." })}
                                                                     </span>
                                                                 </div>
                                                                 {isAdded && (
@@ -839,7 +834,7 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                                                                             style={{ fontSize: 11 }}
                                                                             onClick={e => { e.stopPropagation(); removeGroup(group._id); }}
                                                                         >
-                                                                            <i className="ri-close-line me-1" />Quitar
+                                                                            <i className="ri-close-line me-1" />{t("sellPigs.button.remove", { defaultValue: "Quitar" })}
                                                                         </Button>
                                                                     </div>
                                                                 )}
@@ -896,7 +891,7 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                     {/* ── Navigation ── */}
                     <div className="mt-4 d-flex justify-content-end">
                         <Button color="primary" className="px-4" style={{ borderRadius: 8 }} onClick={handleNext}>
-                            Continuar <i className="ri-arrow-right-s-line ms-1" />
+                            {t("sellPigs.button.continue", { defaultValue: "Continuar" })} <i className="ri-arrow-right-s-line ms-1" />
                         </Button>
                     </div>
                 </TabPane>
@@ -904,9 +899,9 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                 {/* ══════════════════════ STEP 2 ══════════════════════ */}
                 <TabPane tabId={2}>
                     <div className="mb-4">
-                        <h5 className="fw-bold mb-1">Detalles de la venta</h5>
+                        <h5 className="fw-bold mb-1">{t("sellPigs.step2.title", { defaultValue: "Detalles de la venta" })}</h5>
                         <p className="text-muted mb-0" style={{ fontSize: 13 }}>
-                            Completa la información del comprador y condiciones de pago.
+                            {t("sellPigs.step2.subtitle", { defaultValue: "Completa la información del comprador y condiciones de pago." })}
                         </p>
                     </div>
 
@@ -923,7 +918,7 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                             <Row className="align-items-center g-3">
                                 <Col md={4}>
                                     <Label className="form-label text-muted small text-uppercase mb-1" style={{ fontSize: 11, letterSpacing: ".5px" }}>
-                                        Código de venta
+                                        {t("sellPigs.label.saleCode", { defaultValue: "Código de venta" })}
                                     </Label>
                                     <Input
                                         type="text"
@@ -935,7 +930,7 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                                 </Col>
                                 <Col md={4}>
                                     <Label className="form-label text-muted small text-uppercase mb-1" style={{ fontSize: 11, letterSpacing: ".5px" }}>
-                                        Fecha de venta
+                                        {t("sellPigs.label.saleDate", { defaultValue: "Fecha de venta" })}
                                     </Label>
                                     <Input
                                         type="date"
@@ -946,9 +941,9 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                                 </Col>
                                 <Col md={4} className="d-flex align-items-end justify-content-end">
                                     <div className="text-end">
-                                        <div className="text-muted text-uppercase" style={{ fontSize: 10, letterSpacing: ".5px" }}>Resumen</div>
+                                        <div className="text-muted text-uppercase" style={{ fontSize: 10, letterSpacing: ".5px" }}>{t("sellPigs.summary.title", { defaultValue: "Resumen" })}</div>
                                         <span className="fw-bold" style={{ fontSize: 15, color: "#556ee6" }}>
-                                            {totals.totalPigs} cerdos
+                                            {totals.totalPigs} {t("sellPigs.label.pigs", { defaultValue: "cerdos" })}
                                         </span>
                                         <span className="text-muted mx-2">&middot;</span>
                                         <span className="fw-bold" style={{ fontSize: 15, color: "#34c38f" }}>
@@ -962,65 +957,65 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
 
                     {/* ── Buyer section ── */}
                     <h6 className="fw-bold text-uppercase text-muted mb-3" style={{ fontSize: 11, letterSpacing: "1px" }}>
-                        <i className="ri-user-3-line me-2" />Comprador
+                        <i className="ri-user-3-line me-2" />{t("sellPigs.section.buyer", { defaultValue: "Comprador" })}
                     </h6>
                     <Card className="mb-4 border-0 shadow-sm" style={{ borderRadius: 12 }}>
                         <CardBody>
                             <Row className="g-3">
                                 <Col md={6}>
                                     <Label className="form-label small mb-1">
-                                        Nombre <span className="text-danger">*</span>
+                                        {t("common.field.name", { defaultValue: "Nombre" })} <span className="text-danger">*</span>
                                     </Label>
                                     <Input
                                         type="text"
                                         value={formData.buyer.name}
                                         onChange={e => setFormData(p => ({ ...p, buyer: { ...p.buyer, name: e.target.value } }))}
-                                        placeholder="Nombre completo o razón social"
+                                        placeholder={t("sellPigs.placeholder.buyerName", { defaultValue: "Nombre completo o razón social" })}
                                         invalid={!!errors.buyerName}
                                         style={{ borderRadius: 8 }}
                                     />
                                 </Col>
                                 <Col md={6}>
-                                    <Label className="form-label small mb-1">Tipo de comprador</Label>
+                                    <Label className="form-label small mb-1">{t("sellPigs.label.buyerType", { defaultValue: "Tipo de comprador" })}</Label>
                                     <Input
                                         type="select"
                                         value={formData.buyer.type}
                                         onChange={e => setFormData(p => ({ ...p, buyer: { ...p.buyer, type: e.target.value } }))}
                                         style={{ borderRadius: 8 }}
                                     >
-                                        <option value="individual">Individual</option>
-                                        <option value="company">Empresa</option>
-                                        <option value="slaughterhouse">Matadero</option>
-                                        <option value="other">Otro</option>
+                                        <option value="individual">{t("sellPigs.buyerType.individual", { defaultValue: "Individual" })}</option>
+                                        <option value="company">{t("sellPigs.buyerType.company", { defaultValue: "Empresa" })}</option>
+                                        <option value="slaughterhouse">{t("sellPigs.buyerType.slaughterhouse", { defaultValue: "Matadero" })}</option>
+                                        <option value="other">{t("sellPigs.buyerType.other", { defaultValue: "Otro" })}</option>
                                     </Input>
                                 </Col>
                                 <Col md={4}>
-                                    <Label className="form-label small mb-1">Contacto</Label>
+                                    <Label className="form-label small mb-1">{t("sellPigs.label.contact", { defaultValue: "Contacto" })}</Label>
                                     <Input
                                         type="text"
                                         value={formData.buyer.contact}
                                         onChange={e => setFormData(p => ({ ...p, buyer: { ...p.buyer, contact: e.target.value } }))}
-                                        placeholder="Teléfono o email"
+                                        placeholder={t("sellPigs.placeholder.contact", { defaultValue: "Teléfono o email" })}
                                         style={{ borderRadius: 8 }}
                                     />
                                 </Col>
                                 <Col md={4}>
-                                    <Label className="form-label small mb-1">Dirección</Label>
+                                    <Label className="form-label small mb-1">{t("sellPigs.label.address", { defaultValue: "Dirección" })}</Label>
                                     <Input
                                         type="text"
                                         value={formData.buyer.address}
                                         onChange={e => setFormData(p => ({ ...p, buyer: { ...p.buyer, address: e.target.value } }))}
-                                        placeholder="Dirección (opcional)"
+                                        placeholder={t("sellPigs.placeholder.address", { defaultValue: "Dirección (opcional)" })}
                                         style={{ borderRadius: 8 }}
                                     />
                                 </Col>
                                 <Col md={4}>
-                                    <Label className="form-label small mb-1">RFC</Label>
+                                    <Label className="form-label small mb-1">{t("sellPigs.label.fiscalId", { defaultValue: "RFC" })}</Label>
                                     <Input
                                         type="text"
                                         value={formData.buyer.fiscalId}
                                         onChange={e => setFormData(p => ({ ...p, buyer: { ...p.buyer, fiscalId: e.target.value } }))}
-                                        placeholder="Identificación fiscal"
+                                        placeholder={t("sellPigs.placeholder.fiscalId", { defaultValue: "Identificación fiscal" })}
                                         style={{ borderRadius: 8 }}
                                     />
                                 </Col>
@@ -1030,14 +1025,14 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
 
                     {/* ── Payment section ── */}
                     <h6 className="fw-bold text-uppercase text-muted mb-3" style={{ fontSize: 11, letterSpacing: "1px" }}>
-                        <i className="ri-bank-card-line me-2" />Pago
+                        <i className="ri-bank-card-line me-2" />{t("sellPigs.section.payment", { defaultValue: "Pago" })}
                     </h6>
                     <Card className="mb-4 border-0 shadow-sm" style={{ borderRadius: 12 }}>
                         <CardBody>
                             <Row className="g-3">
                                 <Col md={6}>
                                     <Label className="form-label small mb-1">
-                                        Método de pago <span className="text-danger">*</span>
+                                        {t("sellPigs.label.paymentMethod", { defaultValue: "Método de pago" })} <span className="text-danger">*</span>
                                     </Label>
                                     <Input
                                         type="select"
@@ -1045,24 +1040,24 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                                         onChange={e => setFormData(p => ({ ...p, paymentMethod: e.target.value }))}
                                         style={{ borderRadius: 8 }}
                                     >
-                                        <option value="cash">Efectivo</option>
-                                        <option value="transfer">Transferencia</option>
-                                        <option value="check">Cheque</option>
-                                        <option value="credit">Crédito</option>
-                                        <option value="other">Otro</option>
+                                        <option value="cash">{t("sellPigs.paymentMethod.cash", { defaultValue: "Efectivo" })}</option>
+                                        <option value="transfer">{t("sellPigs.paymentMethod.transfer", { defaultValue: "Transferencia" })}</option>
+                                        <option value="check">{t("sellPigs.paymentMethod.check", { defaultValue: "Cheque" })}</option>
+                                        <option value="credit">{t("sellPigs.paymentMethod.credit", { defaultValue: "Crédito" })}</option>
+                                        <option value="other">{t("sellPigs.paymentMethod.other", { defaultValue: "Otro" })}</option>
                                     </Input>
                                 </Col>
                                 <Col md={6}>
-                                    <Label className="form-label small mb-1">Estado del pago</Label>
+                                    <Label className="form-label small mb-1">{t("sellPigs.label.paymentStatus", { defaultValue: "Estado del pago" })}</Label>
                                     <Input
                                         type="select"
                                         value={formData.paymentStatus}
                                         onChange={e => setFormData(p => ({ ...p, paymentStatus: e.target.value }))}
                                         style={{ borderRadius: 8 }}
                                     >
-                                        <option value="pending">Pendiente</option>
-                                        <option value="partial">Parcial</option>
-                                        <option value="completed">Completado</option>
+                                        <option value="pending">{t("sellPigs.paymentStatus.pending", { defaultValue: "Pendiente" })}</option>
+                                        <option value="partial">{t("sellPigs.paymentStatus.partial", { defaultValue: "Parcial" })}</option>
+                                        <option value="completed">{t("sellPigs.paymentStatus.completed", { defaultValue: "Completado" })}</option>
                                     </Input>
                                 </Col>
                             </Row>
@@ -1072,7 +1067,7 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                     {/* ── Additional costs ── */}
                     <div className="d-flex align-items-center justify-content-between mb-3">
                         <h6 className="fw-bold text-uppercase text-muted mb-0" style={{ fontSize: 11, letterSpacing: "1px" }}>
-                            <i className="ri-money-dollar-circle-line me-2" />Costos adicionales
+                            <i className="ri-money-dollar-circle-line me-2" />{t("sellPigs.section.additionalCosts", { defaultValue: "Costos adicionales" })}
                         </h6>
                         <Button
                             size="sm" color="soft-primary"
@@ -1080,7 +1075,7 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                             style={{ fontSize: 12 }}
                             onClick={addCost}
                         >
-                            <i className="ri-add-line me-1" />Agregar costo
+                            <i className="ri-add-line me-1" />{t("sellPigs.button.addCost", { defaultValue: "Agregar costo" })}
                         </Button>
                     </div>
                     {additionalCosts.length === 0 ? (
@@ -1089,7 +1084,7 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                             style={{ borderColor: "#dee2e6", background: "#fafbfc" }}
                         >
                             <i className="ri-price-tag-3-line d-block mb-1" style={{ fontSize: 24, opacity: .3 }} />
-                            <span className="small">Sin costos adicionales. Haz clic en "Agregar costo" para incluir transporte, comisiones, etc.</span>
+                            <span className="small">{t("sellPigs.empty.noAdditionalCosts", { defaultValue: "Sin costos adicionales. Haz clic en \"Agregar costo\" para incluir transporte, comisiones, etc." })}</span>
                         </div>
                     ) : (
                         <Card className="mb-4 border-0 shadow-sm" style={{ borderRadius: 12 }}>
@@ -1097,7 +1092,7 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                                 {additionalCosts.map((cost, idx) => (
                                     <div key={idx} className="d-flex gap-2 align-items-center mb-2">
                                         <Input
-                                            type="text" placeholder="Ej: Transporte, Comisión..."
+                                            type="text" placeholder={t("sellPigs.placeholder.costConcept", { defaultValue: "Ej: Transporte, Comisión..." })}
                                             value={cost.concept}
                                             onChange={e => updateCost(idx, "concept", e.target.value)}
                                             className="flex-grow-1"
@@ -1116,7 +1111,7 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                                             type="button"
                                             className="btn btn-sm text-muted px-2"
                                             onClick={() => removeCost(idx)}
-                                            title="Eliminar"
+                                            title={t("common.button.delete", { defaultValue: "Eliminar" })}
                                         >
                                             <i className="ri-delete-bin-line" />
                                         </button>
@@ -1128,7 +1123,7 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
 
                     {/* ── Notes ── */}
                     <h6 className="fw-bold text-uppercase text-muted mb-3" style={{ fontSize: 11, letterSpacing: "1px" }}>
-                        <i className="ri-sticky-note-line me-2" />Notas
+                        <i className="ri-sticky-note-line me-2" />{t("sellPigs.section.notes", { defaultValue: "Notas" })}
                     </h6>
                     <Card className="mb-4 border-0 shadow-sm" style={{ borderRadius: 12 }}>
                         <CardBody>
@@ -1136,7 +1131,7 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                                 type="textarea" rows={3}
                                 value={formData.notes}
                                 onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))}
-                                placeholder="Observaciones adicionales sobre la venta..."
+                                placeholder={t("sellPigs.placeholder.notes", { defaultValue: "Observaciones adicionales sobre la venta..." })}
                                 style={{ borderRadius: 8 }}
                             />
                         </CardBody>
@@ -1145,7 +1140,7 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                     {/* ── Navigation ── */}
                     <div className="d-flex justify-content-between align-items-center pt-2">
                         <Button color="light" className="px-3" style={{ borderRadius: 8 }} onClick={handleBack}>
-                            <i className="ri-arrow-left-s-line me-1" />Atrás
+                            <i className="ri-arrow-left-s-line me-1" />{t("common.button.back", { defaultValue: "Atrás" })}
                         </Button>
                         <Button
                             color="primary"
@@ -1155,8 +1150,8 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                             disabled={loadingPreview}
                         >
                             {loadingPreview
-                                ? <><Spinner size="sm" className="me-2" />Calculando...</>
-                                : <>Ver preview <i className="ri-arrow-right-s-line ms-1" /></>}
+                                ? <><Spinner size="sm" className="me-2" />{t("sellPigs.button.calculating", { defaultValue: "Calculando..." })}</>
+                                : <>{t("sellPigs.button.viewPreview", { defaultValue: "Ver preview" })} <i className="ri-arrow-right-s-line ms-1" /></>}
                         </Button>
                     </div>
                 </TabPane>
@@ -1166,23 +1161,23 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                     {previewData && (
                         <>
                             <div className="mb-4">
-                                <h5 className="fw-bold mb-1 text-dark">Preview y Confirmación</h5>
-                                <p className="text-muted small">Revisa los detalles antes de confirmar la venta.</p>
+                                <h5 className="fw-bold mb-1 text-dark">{t("sellPigs.step3.title", { defaultValue: "Preview y Confirmación" })}</h5>
+                                <p className="text-muted small">{t("sellPigs.step3.subtitle", { defaultValue: "Revisa los detalles antes de confirmar la venta." })}</p>
                             </div>
 
                             <Row>
                                 <Col lg={6} className="mb-3">
                                     <Card className="h-100">
                                         <CardHeader className="bg-light">
-                                            <h6 className="mb-0 fw-bold">Resumen de Venta</h6>
+                                            <h6 className="mb-0 fw-bold">{t("sellPigs.preview.saleSummary", { defaultValue: "Resumen de Venta" })}</h6>
                                         </CardHeader>
                                         <CardBody>
                                             <Row className="g-3 mb-3">
                                                 {[
-                                                    { label: "Total Cerdos", value: previewData.summary.totalPigs, color: "primary", suffix: "" },
-                                                    { label: "Peso Total", value: previewData.summary.totalWeight.toFixed(2), color: "info", suffix: " kg" },
-                                                    { label: "Peso Promedio", value: previewData.summary.averageWeight.toFixed(2), color: "secondary", suffix: " kg" },
-                                                    { label: "Precio Promedio", value: `$${previewData.summary.averagePricePerKg.toFixed(2)}`, color: "warning", suffix: "/kg" },
+                                                    { label: t("sellPigs.preview.totalPigs", { defaultValue: "Total Cerdos" }), value: previewData.summary.totalPigs, color: "primary", suffix: "" },
+                                                    { label: t("sellPigs.preview.totalWeight", { defaultValue: "Peso Total" }), value: previewData.summary.totalWeight.toFixed(2), color: "info", suffix: " kg" },
+                                                    { label: t("sellPigs.preview.avgWeight", { defaultValue: "Peso Promedio" }), value: previewData.summary.averageWeight.toFixed(2), color: "secondary", suffix: " kg" },
+                                                    { label: t("sellPigs.preview.avgPrice", { defaultValue: "Precio Promedio" }), value: `$${previewData.summary.averagePricePerKg.toFixed(2)}`, color: "warning", suffix: "/kg" },
                                                 ].map(({ label, value, color, suffix }) => (
                                                     <Col xs={6} key={label}>
                                                         <div className="text-center p-3 bg-light rounded">
@@ -1194,16 +1189,16 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                                             </Row>
                                             <hr />
                                             <div className="d-flex justify-content-between mb-2">
-                                                <span className="text-muted">Subtotal:</span>
+                                                <span className="text-muted">{t("sellPigs.preview.subtotal", { defaultValue: "Subtotal:" })}</span>
                                                 <span className="fw-bold">${previewData.summary.subtotal.toFixed(2)}</span>
                                             </div>
                                             <div className="d-flex justify-content-between mb-2">
-                                                <span className="text-muted">Costos Adicionales:</span>
+                                                <span className="text-muted">{t("sellPigs.preview.additionalCosts", { defaultValue: "Costos Adicionales:" })}</span>
                                                 <span className="fw-bold text-danger">-${previewData.summary.additionalCosts.toFixed(2)}</span>
                                             </div>
                                             <hr />
                                             <div className="d-flex justify-content-between">
-                                                <span className="fw-bold fs-5">Total Neto:</span>
+                                                <span className="fw-bold fs-5">{t("sellPigs.preview.netTotal", { defaultValue: "Total Neto:" })}</span>
                                                 <span className="fw-bold fs-5 text-success">${previewData.summary.totalAmount.toFixed(2)}</span>
                                             </div>
                                         </CardBody>
@@ -1213,34 +1208,34 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                                 <Col lg={6} className="mb-3">
                                     <Card className={`h-100 border-2 border-${getROIColor(previewData.profitability.roi)}`}>
                                         <CardHeader className={`bg-${getROIColor(previewData.profitability.roi)} text-white`}>
-                                            <h6 className="mb-0 fw-bold">Análisis de Rentabilidad</h6>
+                                            <h6 className="mb-0 fw-bold">{t("sellPigs.preview.profitabilityAnalysis", { defaultValue: "Análisis de Rentabilidad" })}</h6>
                                         </CardHeader>
                                         <CardBody>
                                             <div className="text-center mb-4">
-                                                <div className="text-muted mb-2 small">Retorno de Inversión (ROI)</div>
+                                                <div className="text-muted mb-2 small">{t("sellPigs.preview.roi", { defaultValue: "Retorno de Inversión (ROI)" })}</div>
                                                 <div className={`display-4 fw-bold text-${getROIColor(previewData.profitability.roi)}`}>
                                                     {previewData.profitability.roi.toFixed(1)}%
                                                 </div>
                                                 <Badge className={`${getROIBadgeClass(previewData.profitability.roi)} mt-2`}>
-                                                    {previewData.profitability.roi > 50 ? "Excelente"
-                                                        : previewData.profitability.roi >= 20 ? "Bueno"
-                                                            : previewData.profitability.roi >= 0 ? "Regular"
-                                                                : "Pérdida"}
+                                                    {previewData.profitability.roi > 50 ? t("sellPigs.roi.excellent", { defaultValue: "Excelente" })
+                                                        : previewData.profitability.roi >= 20 ? t("sellPigs.roi.good", { defaultValue: "Bueno" })
+                                                            : previewData.profitability.roi >= 0 ? t("sellPigs.roi.regular", { defaultValue: "Regular" })
+                                                                : t("sellPigs.roi.loss", { defaultValue: "Pérdida" })}
                                                 </Badge>
                                             </div>
                                             <hr />
                                             <div className="d-flex justify-content-between mb-2">
-                                                <span className="text-muted small">Costos de Producción:</span>
+                                                <span className="text-muted small">{t("sellPigs.preview.productionCosts", { defaultValue: "Costos de Producción:" })}</span>
                                                 <span className="fw-bold small">${previewData.profitability.totalCosts.toFixed(2)}</span>
                                             </div>
                                             <div className="d-flex justify-content-between mb-2">
-                                                <span className="text-muted small">Ganancia Estimada:</span>
+                                                <span className="text-muted small">{t("sellPigs.preview.estimatedProfit", { defaultValue: "Ganancia Estimada:" })}</span>
                                                 <span className={`fw-bold small text-${previewData.profitability.estimatedProfit >= 0 ? "success" : "danger"}`}>
                                                     ${previewData.profitability.estimatedProfit.toFixed(2)}
                                                 </span>
                                             </div>
                                             <div className="d-flex justify-content-between">
-                                                <span className="text-muted small">Margen de Ganancia:</span>
+                                                <span className="text-muted small">{t("sellPigs.preview.profitMargin", { defaultValue: "Margen de Ganancia:" })}</span>
                                                 <span className="fw-bold small">{previewData.profitability.profitMargin.toFixed(1)}%</span>
                                             </div>
                                         </CardBody>
@@ -1251,19 +1246,19 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                             <div className="alert alert-info d-flex align-items-start gap-2 mb-4">
                                 <FaCheckCircle className="mt-1 flex-shrink-0" />
                                 <div className="small">
-                                    <span className="fw-bold">Importante: </span>
-                                    Al confirmar, se crearán las entradas financieras
-                                    {isClassicMode ? ", se cerrará el ciclo de producción" : " y se actualizará el estado de los cerdos vendidos"}
-                                    . Esta acción no se puede deshacer.
+                                    <span className="fw-bold">{t("sellPigs.alert.important", { defaultValue: "Importante:" })} </span>
+                                    {t("sellPigs.alert.confirmWarning", { defaultValue: "Al confirmar, se crearán las entradas financieras" })}
+                                    {isClassicMode ? t("sellPigs.alert.classicModeExtra", { defaultValue: ", se cerrará el ciclo de producción" }) : t("sellPigs.alert.freeModeExtra", { defaultValue: " y se actualizará el estado de los cerdos vendidos" })}
+                                    {t("sellPigs.alert.irreversible", { defaultValue: ". Esta acción no se puede deshacer." })}
                                 </div>
                             </div>
 
                             <div className="d-flex justify-content-between">
                                 <Button color="light" onClick={handleBack} disabled={isSubmitting}>
-                                    <i className="ri-arrow-left-line me-2" />Volver a editar
+                                    <i className="ri-arrow-left-line me-2" />{t("sellPigs.button.backToEdit", { defaultValue: "Volver a editar" })}
                                 </Button>
                                 <Button color="success" onClick={() => toggleModal("confirmation", true)} disabled={isSubmitting}>
-                                    <i className="ri-check-line me-2" />Confirmar Venta
+                                    <i className="ri-check-line me-2" />{t("sellPigs.button.confirmSale", { defaultValue: "Confirmar Venta" })}
                                 </Button>
                             </div>
                         </>
@@ -1286,8 +1281,8 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                             <h6 className="fw-bold mb-0" style={{ fontSize: 16 }}>{focusedGroup?.name}</h6>
                             <div className="d-flex gap-3 mt-1" style={{ fontSize: 12 }}>
                                 <span className="text-muted"><i className="ri-hashtag me-1" />{focusedGroup?.code}</span>
-                                <span className="text-muted"><i className="ri-price-tag-3-line me-1" />{stageLabel[focusedGroup?.stage || ""] || focusedGroup?.stage}</span>
-                                <span className="text-muted"><i className="ri-group-line me-1" />{groupModalPigs.length} cerdos</span>
+                                <span className="text-muted"><i className="ri-price-tag-3-line me-1" />{t(`pigs.stage.${focusedGroup?.stage || ""}`, { defaultValue: focusedGroup?.stage || "" })}</span>
+                                <span className="text-muted"><i className="ri-group-line me-1" />{groupModalPigs.length} {t("sellPigs.label.pigs", { defaultValue: "cerdos" })}</span>
                             </div>
                         </div>
                     </div>
@@ -1305,7 +1300,7 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                     {loadingGroupPigs ? (
                         <div className="text-center py-5">
                             <Spinner color="primary" />
-                            <div className="text-muted small mt-2">Cargando cerdos...</div>
+                            <div className="text-muted small mt-2">{t("sellPigs.loading.pigs", { defaultValue: "Cargando cerdos..." })}</div>
                         </div>
                     ) : (
                         <>
@@ -1317,7 +1312,7 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                                 >
                                     <i className="ri-checkbox-multiple-line text-primary" />
                                     <span className="text-muted">
-                                        <span className="fw-bold text-dark">{groupModalSelectedIds.size}</span> de {groupModalPigs.length} seleccionados
+                                        <span className="fw-bold text-dark">{groupModalSelectedIds.size}</span> {t("sellPigs.modal.ofSelected", { defaultValue: "de" })} {groupModalPigs.length} {t("sellPigs.modal.selected", { defaultValue: "seleccionados" })}
                                     </span>
                                 </div>
                                 <button
@@ -1335,7 +1330,7 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                                         "ri-checkbox-line": groupModalSelectedIds.size !== groupModalPigs.length,
                                         "ri-checkbox-indeterminate-line": groupModalSelectedIds.size === groupModalPigs.length,
                                     })} />
-                                    {groupModalSelectedIds.size === groupModalPigs.length ? "Deseleccionar todos" : "Seleccionar todos"}
+                                    {groupModalSelectedIds.size === groupModalPigs.length ? t("sellPigs.modal.deselectAll", { defaultValue: "Deseleccionar todos" }) : t("sellPigs.modal.selectAll", { defaultValue: "Seleccionar todos" })}
                                 </button>
                             </div>
 
@@ -1389,7 +1384,7 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                                                             borderRadius: 4,
                                                         }}
                                                     >
-                                                        {stageLabel[pig.currentStage] || pig.currentStage}
+                                                        {t(`pigs.stage.${pig.currentStage}`, { defaultValue: pig.currentStage })}
                                                     </Badge>
                                                     {pig.sex && sexConfig[pig.sex] && (
                                                         <span
@@ -1404,7 +1399,7 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                                                 <div className="d-flex gap-3 mt-1" style={{ fontSize: 12 }}>
                                                     {pig.age > 0 && (
                                                         <span className="text-muted">
-                                                            <i className="ri-calendar-line me-1" />{pig.age} días
+                                                            <i className="ri-calendar-line me-1" />{pig.age} {t("sellPigs.label.days", { defaultValue: "días" })}
                                                         </span>
                                                     )}
                                                 </div>
@@ -1435,7 +1430,7 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                 <div className="px-4 py-3 d-flex align-items-center justify-content-between border-top">
                     {groupModalSelectedIds.size > 0 && (
                         <div style={{ fontSize: 13 }}>
-                            <span className="text-muted">Peso total:</span>{" "}
+                            <span className="text-muted">{t("sellPigs.modal.totalWeight", { defaultValue: "Peso total:" })}</span>{" "}
                             <span className="fw-bold" style={{ color: "#50a5f1" }}>
                                 {groupModalPigs
                                     .filter(p => groupModalSelectedIds.has(p._id))
@@ -1445,7 +1440,7 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                         </div>
                     )}
                     {groupModalSelectedIds.size === 0 && (
-                        <div className="text-muted small">Selecciona al menos un cerdo</div>
+                        <div className="text-muted small">{t("sellPigs.modal.selectAtLeastOne", { defaultValue: "Selecciona al menos un cerdo" })}</div>
                     )}
                     <div className="d-flex gap-2">
                         <Button
@@ -1453,7 +1448,7 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                             style={{ borderRadius: 8 }}
                             onClick={() => setGroupModalOpen(false)}
                         >
-                            Cancelar
+                            {t("common.button.cancel", { defaultValue: "Cancelar" })}
                         </Button>
                         <Button
                             color="primary"
@@ -1463,7 +1458,7 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                             disabled={groupModalSelectedIds.size === 0}
                         >
                             <i className="ri-check-line me-1" />
-                            Confirmar ({groupModalSelectedIds.size})
+                            {t("common.button.confirm", { defaultValue: "Confirmar" })} ({groupModalSelectedIds.size})
                         </Button>
                     </div>
                 </div>
@@ -1473,27 +1468,27 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
             <Modal isOpen={modals.confirmation} toggle={() => toggleModal("confirmation")} centered>
                 <ModalHeader toggle={() => toggleModal("confirmation")}>
                     <i className="ri-alert-line text-warning me-2" />
-                    Confirmar Venta de Cerdos
+                    {t("sellPigs.confirmModal.title", { defaultValue: "Confirmar Venta de Cerdos" })}
                 </ModalHeader>
                 <ModalBody>
                     <div className="text-center py-3">
                         <i className="ri-question-line text-warning" style={{ fontSize: "3.5rem" }} />
-                        <h5 className="mt-3 mb-2">¿Estás seguro de confirmar esta venta?</h5>
+                        <h5 className="mt-3 mb-2">{t("sellPigs.confirmModal.question", { defaultValue: "¿Estás seguro de confirmar esta venta?" })}</h5>
                         <p className="text-muted small mb-0">
-                            Esta acción no podrá deshacerse. Verifica que todos los datos sean correctos.
+                            {t("sellPigs.confirmModal.warning", { defaultValue: "Esta acción no podrá deshacerse. Verifica que todos los datos sean correctos." })}
                         </p>
                         {previewData && (
                             <div className="mt-4 p-3 bg-light rounded text-start">
                                 <div className="d-flex justify-content-between mb-2">
-                                    <span className="fw-semibold small">Total de cerdos:</span>
+                                    <span className="fw-semibold small">{t("sellPigs.confirmModal.totalPigs", { defaultValue: "Total de cerdos:" })}</span>
                                     <span className="small">{previewData.summary.totalPigs}</span>
                                 </div>
                                 <div className="d-flex justify-content-between mb-2">
-                                    <span className="fw-semibold small">Peso total:</span>
+                                    <span className="fw-semibold small">{t("sellPigs.confirmModal.totalWeight", { defaultValue: "Peso total:" })}</span>
                                     <span className="small">{previewData.summary.totalWeight.toFixed(2)} kg</span>
                                 </div>
                                 <div className="d-flex justify-content-between">
-                                    <span className="fw-semibold small text-success">Monto total:</span>
+                                    <span className="fw-semibold small text-success">{t("sellPigs.confirmModal.totalAmount", { defaultValue: "Monto total:" })}</span>
                                     <span className="fw-bold small text-success">${previewData.summary.totalAmount.toFixed(2)}</span>
                                 </div>
                             </div>
@@ -1502,12 +1497,12 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                 </ModalBody>
                 <ModalFooter>
                     <Button color="light" onClick={() => toggleModal("confirmation")} disabled={isSubmitting}>
-                        Cancelar
+                        {t("common.button.cancel", { defaultValue: "Cancelar" })}
                     </Button>
                     <Button color="success" onClick={handleConfirmSale} disabled={isSubmitting}>
                         {isSubmitting
-                            ? <><Spinner size="sm" className="me-2" />Procesando...</>
-                            : <><i className="ri-check-line me-1" />Sí, Confirmar Venta</>}
+                            ? <><Spinner size="sm" className="me-2" />{t("sellPigs.button.processing", { defaultValue: "Procesando..." })}</>
+                            : <><i className="ri-check-line me-1" />{t("sellPigs.button.yesConfirmSale", { defaultValue: "Sí, Confirmar Venta" })}</>}
                     </Button>
                 </ModalFooter>
             </Modal>
@@ -1515,12 +1510,12 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
             <SuccessModal
                 isOpen={modals.success}
                 onClose={() => { toggleModal("success"); onSave(); }}
-                message="La venta se ha registrado exitosamente"
+                message={t("sellPigs.success.message", { defaultValue: "La venta se ha registrado exitosamente" })}
             />
             <ErrorModal
                 isOpen={modals.error}
                 onClose={() => toggleModal("error")}
-                message="Ha ocurrido un error al procesar la venta. Por favor, intente nuevamente."
+                message={t("sellPigs.error.message", { defaultValue: "Ha ocurrido un error al procesar la venta. Por favor, intente nuevamente." })}
             />
         </>
     );

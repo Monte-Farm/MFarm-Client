@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
@@ -14,6 +15,7 @@ import AlertMessage from "Components/Common/Shared/AlertMesagge";
 
 
 const SubwarehouseInventory = () => {
+    const { t } = useTranslation();
     document.title = 'Inventario de Subalmacen | Subalmacen';
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
@@ -28,21 +30,21 @@ const SubwarehouseInventory = () => {
 
     const inventoryColumns: Column<any>[] = [
         {
-            header: "Código",
+            header: t('common.field.code'),
             accessor: "id",
             isFilterable: true,
             type: 'text',
             render: (value, row) => <span className="text-black">{row.product?.id || row.id}</span>
         },
         {
-            header: "Producto",
+            header: t('common.field.name'),
             accessor: "name",
             isFilterable: true,
             type: 'text',
             render: (value, row) => <span className="text-black">{row.product?.name || row.name}</span>
         },
         {
-            header: 'Existencias',
+            header: t('warehouse.inventoryDetails.kpi.stock'),
             accessor: 'quantity',
             isFilterable: true,
             type: 'number',
@@ -50,14 +52,14 @@ const SubwarehouseInventory = () => {
             bgColor: '#E8F5E9'
         },
         {
-            header: 'Precio Promedio',
+            header: t('warehouse.inventoryDetails.kpi.avgPrice'),
             accessor: 'averagePrice',
             isFilterable: true,
             type: 'currency',
             bgColor: '#E3F2FD'
         },
         {
-            header: 'Valor Total',
+            header: t('warehouse.inventory.kpi.totalValue'),
             accessor: 'totalValue',
             isFilterable: true,
             type: 'currency',
@@ -68,7 +70,7 @@ const SubwarehouseInventory = () => {
             bgColor: '#FFF3E0'
         },
         {
-            header: "Acciones",
+            header: t('common.field.actions'),
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
@@ -96,7 +98,7 @@ const SubwarehouseInventory = () => {
             setSubwarehouseInventory(response.data.data);
         } catch (error) {
             console.error('Error fetching data', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.subwarehouseDetails.error.fetchInventory') })
         }
     };
 
@@ -126,7 +128,7 @@ const SubwarehouseInventory = () => {
             toggleModal('viewPDF')
         } catch (error) {
             console.error('Error generating report', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al generar el reporte, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.subwarehouseDetails.error.generateReport') })
         } finally {
             setLoadingPDF(false)
         }
@@ -155,13 +157,13 @@ const SubwarehouseInventory = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Inventario"} pageTitle={"Subalmacén"} />
+                <BreadCrumb title={t('warehouse.subwarehouseDetails.tab.inventory')} pageTitle={t('warehouse.subwarehouse.breadcrumb')} />
 
                 {/* KPIs Section */}
                 <div className="row mb-3">
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
-                            title="Valor Total del Inventario"
+                            title={t('warehouse.subwarehouseDetails.kpi.inventory.totalValue')}
                             value={warehouseStatistics.totalValue || 0}
                             prefix="$"
                             decimals={2}
@@ -173,7 +175,7 @@ const SubwarehouseInventory = () => {
                     </div>
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
-                            title="Total de Productos"
+                            title={t('warehouse.subwarehouseDetails.kpi.inventory.totalProducts')}
                             value={warehouseStatistics.uniqueProducts || 0}
                             icon={<i className="ri-archive-line fs-20 text-info"></i>}
                             iconBgColor="#E3F2FD"
@@ -183,7 +185,7 @@ const SubwarehouseInventory = () => {
                     </div>
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
-                            title="Total de Unidades"
+                            title={t('warehouse.subwarehouseDetails.kpi.inventory.totalUnits')}
                             value={warehouseStatistics.totalUnits || 0}
                             icon={<i className="ri-stack-line fs-20 text-success"></i>}
                             iconBgColor="#E8F5E9"
@@ -193,7 +195,7 @@ const SubwarehouseInventory = () => {
                     </div>
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
-                            title="Valor Promedio por Producto"
+                            title={t('warehouse.subwarehouseDetails.kpi.inventory.avgValuePerProduct')}
                             value={warehouseStatistics.averageValuePerProduct || 0}
                             prefix="$"
                             decimals={2}
@@ -212,12 +214,12 @@ const SubwarehouseInventory = () => {
                             <Button className="farm-primary-button" onClick={handlePrintInventory} disabled={loadingPDF}>
                                 {loadingPDF ? (
                                     <>
-                                        <Spinner size='sm' /> Generando
+                                        <Spinner size='sm' /> {t('common.button.generating')}
                                     </>
                                 ) : (
                                     <>
                                         <i className="ri-download-line me-2"></i>
-                                        Imprimir Inventario
+                                        {t('warehouse.subwarehouseDetails.button.report')}
                                     </>
                                 )}
                             </Button>
@@ -227,7 +229,7 @@ const SubwarehouseInventory = () => {
                         {subwarehouseInventory.length === 0 ? (
                             <>
                                 <i className="ri-drop-line text-muted mb-2" style={{ fontSize: "2rem" }} />
-                                <span className="fs-5 text-muted">Aún no hay productos registrados en el inventario</span>
+                                <span className="fs-5 text-muted">{t('warehouse.subwarehouseDetails.empty.inventory')}</span>
                             </>
                         ) : (
                             <CustomTable
@@ -244,7 +246,7 @@ const SubwarehouseInventory = () => {
             </Container>
 
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Inventario </ModalHeader>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('warehouse.subwarehouseDetails.modal.report')}</ModalHeader>
                 <ModalBody>
                     {pdfUrl && <PDFViewer fileUrl={pdfUrl} />}
                 </ModalBody>

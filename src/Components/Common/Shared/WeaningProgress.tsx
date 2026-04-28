@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { FaPiggyBank } from "react-icons/fa";
 
 interface WeaningProgressProps {
@@ -13,6 +14,8 @@ const WeaningProgress: React.FC<WeaningProgressProps> = ({
     birthDate,
     litterStatus
 }) => {
+    const { t } = useTranslation();
+
     const { daysOld, daysRemaining, progress, status, isWeaned } = useMemo(() => {
         const birth = new Date(birthDate);
         const today = new Date();
@@ -55,26 +58,26 @@ const WeaningProgress: React.FC<WeaningProgressProps> = ({
         ? {
             color: "#10b981",
             bg: "#ecfdf5",
-            text: "Camada destetada",
+            text: t("shared.weaningProgress.status.weanedText"),
             icon: "fa-solid fa-circle-check"
         }
         : {
             normal: {
                 color: "#3b82f6",
                 bg: "#eff6ff",
-                text: `${daysRemaining} días para destete`,
+                text: t("shared.weaningProgress.status.normal", { count: daysRemaining }),
                 icon: "fa-solid fa-clock"
             },
             ready: {
                 color: "#10b981",
                 bg: "#ecfdf5",
-                text: "Listo para destete",
+                text: t("shared.weaningProgress.status.ready"),
                 icon: "fa-solid fa-circle-check"
             },
             overdue: {
                 color: "#ef4444",
                 bg: "#fef2f2",
-                text: "Destete atrasado",
+                text: t("shared.weaningProgress.status.overdue"),
                 icon: "fa-solid fa-triangle-exclamation"
             }
         }[status];
@@ -99,7 +102,7 @@ const WeaningProgress: React.FC<WeaningProgressProps> = ({
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     <FaPiggyBank size={25} color={theme?.color} />
                     <span style={{ fontWeight: 700, fontSize: 20 }}>
-                        Progreso de destete
+                        {t("shared.weaningProgress.title")}
                     </span>
                 </div>
 
@@ -113,7 +116,7 @@ const WeaningProgress: React.FC<WeaningProgressProps> = ({
                         borderRadius: 14
                     }}
                 >
-                    {isWeaned ? "Destetada" : `${daysOld} días`}
+                    {isWeaned ? t("shared.weaningProgress.weaned") : t("shared.weaningProgress.daysOld", { count: daysOld })}
                 </span>
             </div>
 

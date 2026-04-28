@@ -16,6 +16,8 @@ import CustomTable from "../Tables/CustomTable";
 import SelectableTable from "../Tables/SelectableTable";
 import SelectTable from "../Tables/SelectTable";
 import ObjectDetails from "../Details/ObjectDetails";
+import FileUploader from "../Shared/FileUploader";
+import { useTranslation } from "react-i18next";
 
 interface IncomeFormProps {
     initialData?: IncomeData;
@@ -23,166 +25,8 @@ interface IncomeFormProps {
     onCancel: () => void;
 }
 
-const incomeAttributes: Attribute[] = [
-    { key: 'id', label: 'Identificador de entrada' },
-    { key: 'date', label: 'Fecha de registro', type: 'date' },
-    { key: 'emissionDate', label: 'Fecha de emisión', type: 'date' },
-    {
-        key: 'subtotal',
-        label: 'Subtotal',
-        type: 'currency',
-        render: (_, row) => {
-            const subtotal = row.products.reduce((sum: number, product: any) => sum + (product.quantity * (product.price || 0)), 0);
-            return new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD',
-            }).format(subtotal);
-        }
-    },
-    { key: 'tax', label: 'Impuesto', type: 'percentage' },
-    { key: 'discount', label: 'Descuento', type: 'percentage' },
-    { key: 'totalPrice', label: 'Precio Total', type: 'currency' },
-    {
-        key: 'incomeType',
-        label: 'Tipo de entrada',
-        type: 'text',
-        render: (value: string) => {
-            let color = "secondary";
-            let label = value;
-
-            switch (value) {
-                case "purchase":
-                    color = "primary";
-                    label = "Compra";
-                    break;
-                case "donation":
-                    color = "success";
-                    label = "Donación";
-                    break;
-                case "internal_transfer":
-                    color = "info";
-                    label = "Transferencia interna";
-                    break;
-                case "own_production":
-                    color = "warning";
-                    label = "Producción propia";
-                    break;
-            }
-
-            return <Badge color={color}>{label}</Badge>;
-        }
-    }
-];
-
-const purchaseOrderAttributes: Attribute[] = [
-    { key: 'code', label: 'No. de Orden de Compra' },
-    { key: 'date', label: 'Fecha', type: 'date' },
-    {
-        key: 'supplier',
-        label: 'Proveedor',
-        type: 'text',
-        render: (_, row) => <span className="text-black">{row.supplier.name}</span>
-    },
-];
-
-const productColumns: Column<any>[] = [
-    {
-        header: 'Código',
-        accessor: 'code',
-        isFilterable: true,
-        type: "text",
-        render: (value, row) => <span>{row.code}</span>
-    },
-    { header: 'Producto', accessor: 'name', isFilterable: true, type: "text" },
-    {
-        header: 'Cantidad',
-        accessor: 'quantity',
-        isFilterable: true,
-        type: "number",
-        render: (_, row) => <span>{row.quantity} {row.unit_measurement}</span>,
-        bgColor: '#f0f0ff'
-    },
-    {
-        header: 'Precio Unitario',
-        accessor: 'price',
-        type: "currency",
-        bgColor: '#e6f0ff'
-    },
-    {
-        header: 'Precio Total',
-        accessor: 'totalPrice',
-        type: 'currency',
-        render: (_, row) => {
-            const totalPrice = (row.quantity || 0) * (row.price || 0);
-            return new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD',
-            }).format(totalPrice);
-        },
-        bgColor: '#e6ffe6'
-    },
-    {
-        header: 'Categoria',
-        accessor: 'category',
-        isFilterable: true,
-        type: 'text',
-        render: (value: string) => {
-            let color = "secondary";
-            let label = value;
-
-            switch (value) {
-                case "nutrition":
-                    color = "info";
-                    label = "Nutrición";
-                    break;
-                case "medications":
-                    color = "warning";
-                    label = "Medicamentos";
-                    break;
-                case "vaccines":
-                    color = "primary";
-                    label = "Vacunas";
-                    break;
-                case "vitamins":
-                    color = "success";
-                    label = "Vitaminas";
-                    break;
-                case "minerals":
-                    color = "success";
-                    label = "Minerales";
-                    break;
-                case "supplies":
-                    color = "success";
-                    label = "Insumos";
-                    break;
-                case "hygiene_cleaning":
-                    color = "success";
-                    label = "Higiene y desinfección";
-                    break;
-                case "equipment_tools":
-                    color = "success";
-                    label = "Equipamiento y herramientas";
-                    break;
-                case "spare_parts":
-                    color = "success";
-                    label = "Refacciones y repuestos";
-                    break;
-                case "office_supplies":
-                    color = "success";
-                    label = "Material de oficina";
-                    break;
-                case "others":
-                    color = "success";
-                    label = "Otros";
-                    break;
-            }
-
-            return <Badge color={color}>{label}</Badge>;
-        },
-    },
-];
-
 const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext)
     const userLogged = getEffectiveUser();
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
@@ -203,6 +47,146 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
     const [mainWarehouseId, setMainWarehouseId] = useState<string>('')
     const [entryMode, setEntryMode] = useState<"purchase_order" | "direct" | null>(null)
 
+    const incomeAttributes: Attribute[] = [
+        { key: 'id', label: t('common.field.code', { defaultValue: 'Identificador de entrada' }) },
+        { key: 'date', label: t('common.field.date', { defaultValue: 'Fecha de registro' }), type: 'date' },
+        { key: 'emissionDate', label: t('warehouse.incomeForm.attr.emissionDate', { defaultValue: 'Fecha de emisión' }), type: 'date' },
+        {
+            key: 'subtotal',
+            label: t('warehouse.incomeForm.attr.subtotal', { defaultValue: 'Subtotal' }),
+            type: 'currency',
+            render: (_, row) => {
+                const subtotal = row.products.reduce((sum: number, product: any) => sum + (product.quantity * (product.price || 0)), 0);
+                return new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                }).format(subtotal);
+            }
+        },
+        { key: 'tax', label: t('warehouse.incomeForm.attr.tax', { defaultValue: 'Impuesto' }), type: 'percentage' },
+        { key: 'discount', label: t('warehouse.incomeForm.attr.discount', { defaultValue: 'Descuento' }), type: 'percentage' },
+        { key: 'totalPrice', label: t('common.field.totalPrice', { defaultValue: 'Precio Total' }), type: 'currency' },
+        {
+            key: 'incomeType',
+            label: t('warehouse.incomeForm.attr.incomeType', { defaultValue: 'Tipo de entrada' }),
+            type: 'text',
+            render: (value: string) => {
+                let color = "secondary";
+
+                switch (value) {
+                    case "purchase":
+                        color = "primary";
+                        break;
+                    case "donation":
+                        color = "success";
+                        break;
+                    case "internal_transfer":
+                        color = "info";
+                        break;
+                    case "own_production":
+                        color = "warning";
+                        break;
+                }
+
+                return <Badge color={color}>{t(`warehouse.common.incomeType.${value}`, { defaultValue: value })}</Badge>;
+            }
+        }
+    ];
+
+    const purchaseOrderAttributes: Attribute[] = [
+        { key: 'code', label: t('warehouse.purchaseOrders.col.orderNumber', { defaultValue: 'No. de Orden de Compra' }) },
+        { key: 'date', label: t('common.field.date', { defaultValue: 'Fecha' }), type: 'date' },
+        {
+            key: 'supplier',
+            label: t('warehouse.suppliers.col.supplier', { defaultValue: 'Proveedor' }),
+            type: 'text',
+            render: (_, row) => <span className="text-black">{row.supplier.name}</span>
+        },
+    ];
+
+    const productColumns: Column<any>[] = [
+        {
+            header: t('common.field.code'),
+            accessor: 'code',
+            isFilterable: true,
+            type: "text",
+            render: (value, row) => <span>{row.code}</span>
+        },
+        { header: t('common.field.name', { defaultValue: 'Producto' }), accessor: 'name', isFilterable: true, type: "text" },
+        {
+            header: t('common.field.qty', { defaultValue: 'Cantidad' }),
+            accessor: 'quantity',
+            isFilterable: true,
+            type: "number",
+            render: (_, row) => <span>{row.quantity} {row.unit_measurement}</span>,
+            bgColor: '#f0f0ff'
+        },
+        {
+            header: t('common.field.unitPrice', { defaultValue: 'Precio Unitario' }),
+            accessor: 'price',
+            type: "currency",
+            bgColor: '#e6f0ff'
+        },
+        {
+            header: t('common.field.totalPrice', { defaultValue: 'Precio Total' }),
+            accessor: 'totalPrice',
+            type: 'currency',
+            render: (_, row) => {
+                const totalPrice = (row.quantity || 0) * (row.price || 0);
+                return new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                }).format(totalPrice);
+            },
+            bgColor: '#e6ffe6'
+        },
+        {
+            header: t('warehouse.products.attr.category', { defaultValue: 'Categoria' }),
+            accessor: 'category',
+            isFilterable: true,
+            type: 'text',
+            render: (value: string) => {
+                let color = "secondary";
+
+                switch (value) {
+                    case "nutrition":
+                        color = "info";
+                        break;
+                    case "medications":
+                        color = "warning";
+                        break;
+                    case "vaccines":
+                        color = "primary";
+                        break;
+                    case "vitamins":
+                    case "minerals":
+                    case "supplies":
+                    case "hygiene_cleaning":
+                    case "equipment_tools":
+                    case "spare_parts":
+                    case "office_supplies":
+                    case "others":
+                        color = "success";
+                        break;
+                }
+
+                return <Badge color={color}>{t(`warehouse.common.productCategory.${value}`, { defaultValue: value })}</Badge>;
+            },
+        },
+    ];
+
+    const purchaseOrdersColumns: Column<any>[] = [
+        { header: t('common.field.code'), accessor: 'code', isFilterable: true, type: "text" },
+        { header: t('common.field.date', { defaultValue: 'Fecha' }), accessor: 'date', isFilterable: true, type: "date" },
+        {
+            header: t('warehouse.suppliers.col.supplier', { defaultValue: 'Proveedor' }),
+            accessor: 'supplier.name',
+            isFilterable: true,
+            type: "text",
+            render: (_, row) => <span className="text-black">{row.supplier.name}</span>
+        },
+    ]
+
     function toggleArrowTab(tab: any) {
         if (activeStep !== tab) {
             var modifiedSteps = [...passedarrowSteps, tab];
@@ -214,22 +198,10 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
         }
     }
 
-    const purchaseOrdersColumns: Column<any>[] = [
-        { header: 'Código', accessor: 'code', isFilterable: true, type: "text" },
-        { header: 'Fecha', accessor: 'date', isFilterable: true, type: "date" },
-        {
-            header: 'Proveedor',
-            accessor: 'supplier.name',
-            isFilterable: true,
-            type: "text",
-            render: (_, row) => <span className="text-black">{row.supplier.name}</span>
-        },
-    ]
-
     const validationSchema = Yup.object({
         id: Yup.string()
-            .required("Por favor, ingrese el ID")
-            .test('unique_id', "Este identificador ya existe, por favor ingrese otro", async (value) => {
+            .required(t('warehouse.incomeForm.validation.idRequired'))
+            .test('unique_id', t('warehouse.incomeForm.validation.idExists'), async (value) => {
                 if (!value) return false;
                 try {
                     const result = await configContext?.axiosHelper.get(`${configContext.apiUrl}/incomes/income_id_exists/${value}`);
@@ -239,12 +211,12 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                     return false;
                 }
             }),
-        date: Yup.string().required("Por favor, ingrese la fecha"),
-        emissionDate: Yup.string().required("Por favor, ingrese la fecha"),
-        tax: Yup.number().min(0, "El impuesto debe ser positivo").required("Por favor, ingrese el impuesto"),
-        discount: Yup.number().min(0, "El descuento debe ser positivo").required("Por favor, ingrese el descuento"),
-        invoiceNumber: Yup.string().required("Por favor, ingrese el número de factura"),
-        fiscalRecord: Yup.string().required('Por favor, ingrese el registro fiscal'),
+        date: Yup.string().required(t('warehouse.incomeForm.validation.dateRequired')),
+        emissionDate: Yup.string().required(t('warehouse.incomeForm.validation.dateRequired')),
+        tax: Yup.number().min(0, t('warehouse.incomeForm.validation.taxPositive')).required(t('warehouse.incomeForm.validation.taxRequired')),
+        discount: Yup.number().min(0, t('warehouse.incomeForm.validation.discountPositive')).required(t('warehouse.incomeForm.validation.discountRequired')),
+        invoiceNumber: Yup.string().required(t('warehouse.incomeForm.validation.invoiceRequired')),
+        fiscalRecord: Yup.string().required(t('warehouse.incomeForm.validation.fiscalRequired')),
     });
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
@@ -492,7 +464,11 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                 aria-controls="step-selectPurchaseOrder-tab"
                                 disabled
                             >
-                                {entryMode === "direct" ? "Modo de entrada" : entryMode === "purchase_order" ? "Orden de compra" : "Seleccionar modo"}
+                                {entryMode === "direct"
+                                    ? t('warehouse.incomeForm.step.directMode', { defaultValue: 'Modo de entrada' })
+                                    : entryMode === "purchase_order"
+                                        ? t('warehouse.incomeForm.step.purchaseOrder', { defaultValue: 'Orden de compra' })
+                                        : t('warehouse.incomeForm.step.selectMode', { defaultValue: 'Seleccionar modo' })}
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -508,7 +484,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                 aria-controls="step-incomeData-tab"
                                 disabled
                             >
-                                Información de entrada
+                                {t('warehouse.incomeForm.step.incomeInfo', { defaultValue: 'Información de entrada' })}
                             </NavLink>
                         </NavItem>
 
@@ -525,7 +501,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                 aria-controls="step-products-tab"
                                 disabled
                             >
-                                Selección de productos
+                                {t('warehouse.incomeForm.step.products', { defaultValue: 'Selección de productos' })}
                             </NavLink>
                         </NavItem>
 
@@ -541,7 +517,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                 aria-controls="step-summary-tab"
                                 disabled
                             >
-                                Resumen
+                                {t('warehouse.incomeForm.step.summary', { defaultValue: 'Resumen' })}
                             </NavLink>
                         </NavItem>
                     </Nav>
@@ -551,7 +527,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                     <TabPane id="step-selectPurchaseOrder-tab" tabId={1}>
                         {!entryMode ? (
                             <div className="d-flex flex-column align-items-center gap-4 py-4">
-                                <h5 className="text-muted">¿Cómo desea registrar la entrada?</h5>
+                                <h5 className="text-muted">{t('warehouse.incomeForm.selectMode.title', { defaultValue: '¿Cómo desea registrar la entrada?' })}</h5>
                                 <div className="d-flex gap-4 w-75">
                                     <Card
                                         className="w-50 text-center border cursor-pointer shadow-sm"
@@ -560,8 +536,8 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                     >
                                         <CardBody className="py-5">
                                             <i className="ri-file-list-3-line text-primary" style={{ fontSize: '3rem' }}></i>
-                                            <h5 className="mt-3">Con orden de compra</h5>
-                                            <p className="text-muted mb-0">Seleccione una orden de compra existente para registrar la entrada de productos.</p>
+                                            <h5 className="mt-3">{t('warehouse.incomeForm.selectMode.withOrder', { defaultValue: 'Con orden de compra' })}</h5>
+                                            <p className="text-muted mb-0">{t('warehouse.incomeForm.selectMode.withOrderDesc', { defaultValue: 'Seleccione una orden de compra existente para registrar la entrada de productos.' })}</p>
                                         </CardBody>
                                     </Card>
                                     <Card
@@ -571,8 +547,8 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                     >
                                         <CardBody className="py-5">
                                             <i className="ri-add-box-line text-success" style={{ fontSize: '3rem' }}></i>
-                                            <h5 className="mt-3">Entrada directa</h5>
-                                            <p className="text-muted mb-0">Registre una entrada de productos sin necesidad de una orden de compra.</p>
+                                            <h5 className="mt-3">{t('warehouse.incomeForm.selectMode.direct', { defaultValue: 'Entrada directa' })}</h5>
+                                            <p className="text-muted mb-0">{t('warehouse.incomeForm.selectMode.directDesc', { defaultValue: 'Registre una entrada de productos sin necesidad de una orden de compra.' })}</p>
                                         </CardBody>
                                     </Card>
                                 </div>
@@ -580,9 +556,9 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                         ) : entryMode === "purchase_order" ? (
                             <div>
                                 <div className="d-flex justify-content-between align-items-center mb-1">
-                                    <h5 className="text-muted">Ordenes de Compra</h5>
+                                    <h5 className="text-muted">{t('warehouse.incomeForm.purchaseOrders.title', { defaultValue: 'Ordenes de Compra' })}</h5>
                                     <Button size="sm" className="btn" onClick={() => setEntryMode(null)}>
-                                        <i className="ri-arrow-go-back-line me-1"></i>Cambiar modo
+                                        <i className="ri-arrow-go-back-line me-1"></i>{t('warehouse.incomeForm.changeMode', { defaultValue: 'Cambiar modo' })}
                                     </Button>
                                 </div>
                                 <SelectableTable columns={purchaseOrdersColumns} data={purchaseOrders} onSelect={(rows: any[]) => rows?.[0] && clicPurchaseOrder(rows[0])} selectionMode="single" showSearchAndFilter={false} showPagination={false} />
@@ -594,21 +570,21 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                         <div>
                             {entryMode === "direct" && (
                                 <div className="d-flex justify-content-between align-items-center mb-3">
-                                    <h5 className="text-muted mb-0">Entrada directa</h5>
+                                    <h5 className="text-muted mb-0">{t('warehouse.incomeForm.selectMode.direct', { defaultValue: 'Entrada directa' })}</h5>
                                     <Button className="btn" size="sm" onClick={() => { setEntryMode(null); toggleArrowTab(1); }}>
-                                        <i className="ri-arrow-go-back-line me-1"></i>Cambiar modo
+                                        <i className="ri-arrow-go-back-line me-1"></i>{t('warehouse.incomeForm.changeMode', { defaultValue: 'Cambiar modo' })}
                                     </Button>
                                 </div>
                             )}
                             {/* Datos generales */}
                             <Card className="shadow-sm">
                                 <CardHeader className="bg-light">
-                                    <h6 className="mb-0"><i className="ri-information-line me-2"></i>Datos generales</h6>
+                                    <h6 className="mb-0"><i className="ri-information-line me-2"></i>{t('warehouse.incomeForm.section.generalData', { defaultValue: 'Datos generales' })}</h6>
                                 </CardHeader>
                                 <CardBody>
                                     <Row className="g-3">
                                         <Col lg={entryMode === "direct" ? 3 : 6}>
-                                            <Label htmlFor="id" className="form-label">Identificador</Label>
+                                            <Label htmlFor="id" className="form-label">{t('common.field.code', { defaultValue: 'Identificador' })}</Label>
                                             <Input
                                                 type="text"
                                                 id="id"
@@ -622,7 +598,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                             {formik.touched.id && formik.errors.id && <FormFeedback>{formik.errors.id}</FormFeedback>}
                                         </Col>
                                         <Col lg={entryMode === "direct" ? 3 : 6}>
-                                            <Label htmlFor="date" className="form-label">Fecha de entrada</Label>
+                                            <Label htmlFor="date" className="form-label">{t('warehouse.incomeForm.attr.entryDate', { defaultValue: 'Fecha de entrada' })}</Label>
                                             <DatePicker
                                                 id="date"
                                                 className={`form-control ${formik.touched.date && formik.errors.date ? 'is-invalid' : ''}`}
@@ -638,7 +614,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                         </Col>
                                         {entryMode === "direct" && (
                                             <Col lg={6}>
-                                                <Label htmlFor="supplierSelect" className="form-label">Proveedor</Label>
+                                                <Label htmlFor="supplierSelect" className="form-label">{t('warehouse.suppliers.col.supplier', { defaultValue: 'Proveedor' })}</Label>
                                                 <Input
                                                     type="select"
                                                     id="supplierSelect"
@@ -646,7 +622,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                                     onChange={handleSupplierChange}
                                                     invalid={formik.touched.origin?.id && !formik.values.origin.id}
                                                 >
-                                                    <option value="">Seleccione un proveedor</option>
+                                                    <option value="">{t('warehouse.incomeForm.placeholder.selectSupplier', { defaultValue: 'Seleccione un proveedor' })}</option>
                                                     {suppliers.map((supplier: any) => (
                                                         <option key={supplier._id} value={supplier._id}>
                                                             {supplier.name}
@@ -654,7 +630,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                                     ))}
                                                 </Input>
                                                 {formik.touched.origin?.id && !formik.values.origin.id && (
-                                                    <FormFeedback className="d-block">Por favor, seleccione un proveedor</FormFeedback>
+                                                    <FormFeedback className="d-block">{t('warehouse.incomeForm.validation.selectSupplier', { defaultValue: 'Por favor, seleccione un proveedor' })}</FormFeedback>
                                                 )}
                                             </Col>
                                         )}
@@ -665,12 +641,12 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                             {/* Datos de facturación */}
                             <Card className="shadow-sm">
                                 <CardHeader className="bg-light">
-                                    <h6 className="mb-0"><i className="ri-file-text-line me-2"></i>Facturación</h6>
+                                    <h6 className="mb-0"><i className="ri-file-text-line me-2"></i>{t('warehouse.incomeForm.section.billing', { defaultValue: 'Facturación' })}</h6>
                                 </CardHeader>
                                 <CardBody>
                                     <Row className="g-3">
                                         <Col lg={4}>
-                                            <Label htmlFor="invoiceNumberInput" className="form-label">No. de Factura</Label>
+                                            <Label htmlFor="invoiceNumberInput" className="form-label">{t('warehouse.incomeForm.attr.invoiceNumber', { defaultValue: 'No. de Factura' })}</Label>
                                             <Input
                                                 type="text"
                                                 id="invoiceNumberInput"
@@ -683,7 +659,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                             {formik.touched.invoiceNumber && formik.errors.invoiceNumber && <FormFeedback>{formik.errors.invoiceNumber}</FormFeedback>}
                                         </Col>
                                         <Col lg={4}>
-                                            <Label htmlFor="emissionDateInput" className="form-label">Fecha de emisión</Label>
+                                            <Label htmlFor="emissionDateInput" className="form-label">{t('warehouse.incomeForm.attr.emissionDate', { defaultValue: 'Fecha de emisión' })}</Label>
                                             <DatePicker
                                                 id="emissionDateInput"
                                                 className={`form-control ${formik.touched.emissionDate && formik.errors.emissionDate ? 'is-invalid' : ''}`}
@@ -698,7 +674,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                             )}
                                         </Col>
                                         <Col lg={4}>
-                                            <Label htmlFor="fiscalRecordInput" className="form-label">Registro Fiscal</Label>
+                                            <Label htmlFor="fiscalRecordInput" className="form-label">{t('warehouse.incomeForm.attr.fiscalRecord', { defaultValue: 'Registro Fiscal' })}</Label>
                                             <Input
                                                 type="text"
                                                 id="fiscalRecordInput"
@@ -717,12 +693,12 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                             {/* Impuestos y descuentos */}
                             <Card className="shadow-sm">
                                 <CardHeader className="bg-light">
-                                    <h6 className="mb-0"><i className="ri-percent-line me-2"></i>Impuestos y descuentos</h6>
+                                    <h6 className="mb-0"><i className="ri-percent-line me-2"></i>{t('warehouse.incomeForm.section.taxDiscount', { defaultValue: 'Impuestos y descuentos' })}</h6>
                                 </CardHeader>
                                 <CardBody>
                                     <Row className="g-3">
                                         <Col lg={6}>
-                                            <Label htmlFor="taxInput" className="form-label">Impuesto</Label>
+                                            <Label htmlFor="taxInput" className="form-label">{t('warehouse.incomeForm.attr.tax', { defaultValue: 'Impuesto' })}</Label>
                                             <div className="input-group">
                                                 <Input
                                                     type="number"
@@ -740,7 +716,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                             {formik.touched.tax && formik.errors.tax && <FormFeedback>{formik.errors.tax}</FormFeedback>}
                                         </Col>
                                         <Col lg={6}>
-                                            <Label htmlFor="discountInput" className="form-label">Descuento</Label>
+                                            <Label htmlFor="discountInput" className="form-label">{t('warehouse.incomeForm.attr.discount', { defaultValue: 'Descuento' })}</Label>
                                             <div className="input-group">
                                                 <Input
                                                     type="number"
@@ -768,7 +744,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                         onClick={() => toggleArrowTab(activeStep - 1)}
                                     >
                                         <i className="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i>{" "}
-                                        Atras
+                                        {t('common.button.back', { defaultValue: 'Atras' })}
                                     </Button>
                                 )}
 
@@ -792,7 +768,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                     }
                                 >
                                     <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
-                                    Siguiente
+                                    {t('warehouse.incomeForm.button.next', { defaultValue: 'Siguiente' })}
                                 </Button>
                             </div>
 
@@ -802,20 +778,15 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                     <TabPane id="step-products-tab" tabId={3}>
                         <div>
                             <div className="w-100 mb-4">
-                                <Label htmlFor="documentsInput" className="form-label">Documentos</Label>
-                                <Input
-                                    type="file"
-                                    id="documentsInput"
-                                    accept="image/*, application/pdf"
-                                    onChange={(e) => {
-                                        if (e.target.files && e.target.files.length > 0) {
-                                            setFileToUpload(e.target.files[0]);
-                                        }
-                                    }}
+                                <Label className="form-label">{t('warehouse.incomeForm.attr.documents', { defaultValue: 'Documentos' })}</Label>
+                                <FileUploader
+                                    acceptedFileTypes={['image/*', 'application/pdf']}
+                                    maxFiles={5}
+                                    onFileUpload={(file) => setFileToUpload(file)}
                                 />
                             </div>
 
-                            <Label className="">Productos para ingresar</Label>
+                            <Label className="">{t('warehouse.incomeForm.attr.productsToAdd', { defaultValue: 'Productos para ingresar' })}</Label>
                             {/* Tabla de productos */}
                             <div className="border border-0 d-flex flex-column flex-grow-1">
                                 {hasSelectedPurchaseOrder ? (
@@ -841,7 +812,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                     }}
                                 >
                                     <i className="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i>{" "}
-                                    Atras
+                                    {t('common.button.back', { defaultValue: 'Atras' })}
                                 </Button>
 
                                 <Button
@@ -853,7 +824,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                     }
                                 >
                                     <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
-                                    Siguiente
+                                    {t('warehouse.incomeForm.button.next', { defaultValue: 'Siguiente' })}
                                 </Button>
 
                             </div>
@@ -866,7 +837,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                 {selectedPurchaseOrder ? (
                                     <Card className="w-50">
                                         <CardHeader className='bg-gradient' style={{ backgroundColor: '#e3f2fd' }}>
-                                            <h5 className="mb-0 text-primary">Orden de compra</h5>
+                                            <h5 className="mb-0 text-primary">{t('warehouse.incomeForm.summary.purchaseOrder', { defaultValue: 'Orden de compra' })}</h5>
                                         </CardHeader>
                                         <CardBody className="pt-4">
                                             <ObjectDetails attributes={purchaseOrderAttributes} object={selectedPurchaseOrder} />
@@ -875,13 +846,13 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                 ) : selectedSupplier ? (
                                     <Card className="w-50">
                                         <CardHeader className='bg-gradient' style={{ backgroundColor: '#e3f2fd' }}>
-                                            <h5 className="mb-0 text-primary">Proveedor</h5>
+                                            <h5 className="mb-0 text-primary">{t('warehouse.suppliers.col.supplier', { defaultValue: 'Proveedor' })}</h5>
                                         </CardHeader>
                                         <CardBody className="pt-4">
                                             <ObjectDetails attributes={[
-                                                { key: 'name', label: 'Nombre' },
-                                                { key: 'email', label: 'Email' },
-                                                { key: 'phone_number', label: 'Teléfono' },
+                                                { key: 'name', label: t('common.field.name', { defaultValue: 'Nombre' }) },
+                                                { key: 'email', label: t('warehouse.incomeForm.attr.email', { defaultValue: 'Email' }) },
+                                                { key: 'phone_number', label: t('warehouse.incomeForm.attr.phone', { defaultValue: 'Teléfono' }) },
                                             ]} object={selectedSupplier} />
                                         </CardBody>
                                     </Card>
@@ -889,7 +860,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
 
                                 <Card className={selectedPurchaseOrder || selectedSupplier ? "w-50" : "w-100"}>
                                     <CardHeader className='bg-gradient' style={{ backgroundColor: '#e8f5e9' }}>
-                                        <h5 className="mb-0 text-success">Entrada</h5>
+                                        <h5 className="mb-0 text-success">{t('warehouse.incomeForm.summary.income', { defaultValue: 'Entrada' })}</h5>
                                     </CardHeader>
                                     <CardBody className="pt-4">
                                         <ObjectDetails attributes={incomeAttributes} object={formik.values} />
@@ -900,7 +871,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                             <div className="w-100">
                                 <Card >
                                     <CardHeader className='bg-gradient' style={{ backgroundColor: '#f3e5f5' }}>
-                                        <h5 className="mb-0 text-purple">Productos</h5>
+                                        <h5 className="mb-0 text-purple">{t('warehouse.incomeForm.summary.products', { defaultValue: 'Productos' })}</h5>
                                     </CardHeader>
                                     <CardBody className="p-0">
                                         <CustomTable columns={productColumns} data={selectedProducts} showSearchAndFilter={false} showPagination={false} />
@@ -918,16 +889,17 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                 }}
                             >
                                 <i className="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i>{" "}
-                                Atras
+                                {t('common.button.back', { defaultValue: 'Atras' })}
                             </Button>
 
                             <Button className="farm-primary-button ms-auto" type="submit" disabled={formik.isSubmitting}>
                                 {formik.isSubmitting ?
                                     <>
                                         <Spinner size='sm' className="me-3" />
-                                        Guardando...</>
+                                        {t('common.button.saving', { defaultValue: 'Guardando...' })}</>
                                     : initialData ?
-                                        "Actualizar entrada" : "Registrar Entrada"}
+                                        t('warehouse.incomeForm.button.update', { defaultValue: 'Actualizar entrada' })
+                                        : t('warehouse.incomeForm.button.register', { defaultValue: 'Registrar Entrada' })}
                             </Button>
                         </div>
                     </TabPane>
@@ -935,16 +907,16 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
             </form>
 
             <Modal isOpen={cancelModalOpen} centered toggle={() => setCancelModalOpen(!cancelModalOpen)}>
-                <ModalHeader>Confirmación</ModalHeader>
-                <ModalBody>¿Estás seguro de que deseas cancelar? Los datos no se guardarán.</ModalBody>
+                <ModalHeader>{t('warehouse.productForm.cancelModal.title', { defaultValue: 'Confirmación' })}</ModalHeader>
+                <ModalBody>{t('warehouse.productForm.cancelModal.message', { defaultValue: '¿Estás seguro de que deseas cancelar? Los datos no se guardarán.' })}</ModalBody>
                 <ModalFooter>
-                    <Button color="danger" onClick={onCancel}>Sí, cancelar</Button>
-                    <Button color="success" onClick={() => setCancelModalOpen(false)}>No, continuar</Button>
+                    <Button color="danger" onClick={onCancel}>{t('warehouse.productForm.cancelModal.confirm', { defaultValue: 'Sí, cancelar' })}</Button>
+                    <Button color="success" onClick={() => setCancelModalOpen(false)}>{t('warehouse.productForm.cancelModal.deny', { defaultValue: 'No, continuar' })}</Button>
                 </ModalFooter>
             </Modal>
 
             <Modal size="xl" isOpen={modals.createPurchaseOrder} toggle={() => toggleModal("createPurchaseOrder")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("createPurchaseOrder")}>Nueva orden de compra</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("createPurchaseOrder")}>{t('warehouse.incomeForm.modal.newPurchaseOrder', { defaultValue: 'Nueva orden de compra' })}</ModalHeader>
                 <ModalBody>
                     <PurchaseOrderForm onSave={() => { toggleModal('createPurchaseOrder'); fetchPurchaseOrders(); }} onCancel={() => { }} />
                 </ModalBody>
@@ -952,7 +924,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} />
 
-            <SuccessModal isOpen={modals.success} onClose={onSave} message={"Entrada creada con exito"} />
+            <SuccessModal isOpen={modals.success} onClose={onSave} message={t('warehouse.incomeForm.success', { defaultValue: 'Entrada creada con exito' })} />
         </>
     );
 };

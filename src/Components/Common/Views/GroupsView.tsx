@@ -19,6 +19,7 @@ import KPI from "Components/Common/Graphics/Kpi";
 import { FaArrowDown, FaArrowUp, FaBalanceScale, FaLayerGroup, FaMars, FaPiggyBank, FaVenus, FaWeight } from "react-icons/fa";
 import { getActionsColumn } from "config/groupColumnsConfig";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface GroupsViewProps {
     stage: string;
@@ -39,6 +40,7 @@ const GroupsView: React.FC<GroupsViewProps> = ({
     transferStage,
     headerActions
 }) => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const {
         loading,
@@ -76,17 +78,15 @@ const GroupsView: React.FC<GroupsViewProps> = ({
         setSelectedGroups([]);
     };
 
-    // Verificar si hay grupos listos para cambio de etapa
-    const hasGroupsReadyForStageChange = selectedGroups.some(g => 
-        g.status === 'ready_to_grow' || 
-        g.status === 'grow_overdue' || 
+    const hasGroupsReadyForStageChange = selectedGroups.some(g =>
+        g.status === 'ready_to_grow' ||
+        g.status === 'grow_overdue' ||
         g.status === 'ready_for_sale'
     );
 
-    // Agregar columna de acciones
     const tableColumns = [
         ...columns,
-        getActionsColumn(navigate, setSelectedGroup, toggleModal)
+        getActionsColumn(navigate, setSelectedGroup, toggleModal, t)
     ];
 
     if (loading) {
@@ -99,14 +99,14 @@ const GroupsView: React.FC<GroupsViewProps> = ({
                 <BreadCrumb title={title} pageTitle={pageTitle} />
 
                 <div className="d-flex gap-3 flex-wrap">
-                    <KPI title="Grupos" value={stats?.population?.totalGroups ?? 0} icon={FaLayerGroup} bgColor="#e8f4fd" iconColor="#0d6efd" />
-                    <KPI title="Cerdos totales" value={stats?.population?.totalPigs ?? 0} icon={FaPiggyBank} bgColor="#fff3cd" iconColor="#ffc107" />
-                    <KPI title={statsEndpoint === 'group_alive_stats' ? "Cerdos promedio por grupo" : "Promedio por grupo"} value={stats?.population?.avgPigsPerGroup ?? 0} icon={FaBalanceScale} bgColor="#e6f7e6" iconColor="#28a745" />
-                    <KPI title="Mínimo por grupo" value={stats?.population?.minPigsPerGroup ?? 0} icon={FaArrowDown} bgColor="#f8d7da" iconColor="#dc3545" />
-                    <KPI title="Máximo por grupo" value={stats?.population?.maxPigsPerGroup ?? 0} icon={FaArrowUp} bgColor="#d1e7dd" iconColor="#198754" />
-                    <KPI title="Machos" value={stats?.population?.totalMales ?? 0} icon={FaMars} bgColor="#e7f1ff" iconColor="#0a58ca" />
-                    <KPI title="Hembras" value={stats?.population?.totalFemales ?? 0} icon={FaVenus} bgColor="#fde7f3" iconColor="#d63384" />
-                    <KPI title={statsEndpoint === 'group_alive_stats' ? "Peso promedio por cerdo (kg)" : "Peso promedio (kg)"} value={stats?.avgWeight?.toFixed(1) ?? 0} icon={FaWeight} bgColor="#ede9fe" iconColor="#6f42c1" />
+                    <KPI title={t('groups.kpi.groups')} value={stats?.population?.totalGroups ?? 0} icon={FaLayerGroup} bgColor="#e8f4fd" iconColor="#0d6efd" />
+                    <KPI title={t('groups.kpi.totalPigs')} value={stats?.population?.totalPigs ?? 0} icon={FaPiggyBank} bgColor="#fff3cd" iconColor="#ffc107" />
+                    <KPI title={statsEndpoint === 'group_alive_stats' ? t('groups.kpi.avgPigsPerGroup') : t('groups.kpi.avgPerGroup')} value={stats?.population?.avgPigsPerGroup ?? 0} icon={FaBalanceScale} bgColor="#e6f7e6" iconColor="#28a745" />
+                    <KPI title={t('groups.kpi.minPerGroup')} value={stats?.population?.minPigsPerGroup ?? 0} icon={FaArrowDown} bgColor="#f8d7da" iconColor="#dc3545" />
+                    <KPI title={t('groups.kpi.maxPerGroup')} value={stats?.population?.maxPigsPerGroup ?? 0} icon={FaArrowUp} bgColor="#d1e7dd" iconColor="#198754" />
+                    <KPI title={t('groups.kpi.males')} value={stats?.population?.totalMales ?? 0} icon={FaMars} bgColor="#e7f1ff" iconColor="#0a58ca" />
+                    <KPI title={t('groups.kpi.females')} value={stats?.population?.totalFemales ?? 0} icon={FaVenus} bgColor="#fde7f3" iconColor="#d63384" />
+                    <KPI title={statsEndpoint === 'group_alive_stats' ? t('groups.kpi.avgWeightPerPig') : t('groups.kpi.avgWeightShort')} value={stats?.avgWeight?.toFixed(1) ?? 0} icon={FaWeight} bgColor="#ede9fe" iconColor="#6f42c1" />
                 </div>
 
                 <Card>
@@ -115,7 +115,7 @@ const GroupsView: React.FC<GroupsViewProps> = ({
                             {selectedGroups.length > 0 && (
                                 <div className="d-flex align-items-center gap-2">
                                     <span className="text-muted">
-                                        {selectedGroups.length} {selectedGroups.length === 1 ? 'grupo seleccionado' : 'grupos seleccionados'}
+                                        {selectedGroups.length} {selectedGroups.length === 1 ? t('groups.modal.selectedSingular') : t('groups.modal.selectedPlural')}
                                     </span>
                                     <div className="btn-group" role="group">
                                         <Button
@@ -123,7 +123,7 @@ const GroupsView: React.FC<GroupsViewProps> = ({
                                             onClick={() => setBulkMedicationModalOpen(true)}
                                         >
                                             <i className="ri-medicine-bottle-line me-1"></i>
-                                            Asignar Medicación
+                                            {t('groups.button.bulkMedication')}
                                         </Button>
                                         <Button
                                             color="info"
@@ -131,17 +131,17 @@ const GroupsView: React.FC<GroupsViewProps> = ({
                                             onClick={() => setBulkFeedAdminModalOpen(true)}
                                         >
                                             <i className="ri-restaurant-line me-1"></i>
-                                            Administrar alimento
+                                            {t('groups.button.bulkFeed')}
                                         </Button>
                                         <Button
                                             color="warning"
                                             className="btn-sm"
                                             disabled={!hasGroupsReadyForStageChange}
-                                            title={!hasGroupsReadyForStageChange ? "No hay grupos listos para cambio de etapa" : undefined}
+                                            title={!hasGroupsReadyForStageChange ? t('groups.tooltip.noStageChange') : undefined}
                                             onClick={() => setBulkStageChangeModalOpen(true)}
                                         >
                                             <i className="ri-arrow-up-circle-line me-1"></i>
-                                            Cambiar Etapa
+                                            {t('groups.button.bulkStageChange')}
                                         </Button>
                                         <Button
                                             color="danger"
@@ -149,7 +149,7 @@ const GroupsView: React.FC<GroupsViewProps> = ({
                                             onClick={() => setBulkHealthEventModalOpen(true)}
                                         >
                                             <i className="ri-heart-pulse-line me-1"></i>
-                                            Evento Sanitario
+                                            {t('groups.button.bulkHealthEvent')}
                                         </Button>
                                     </div>
                                 </div>
@@ -161,10 +161,10 @@ const GroupsView: React.FC<GroupsViewProps> = ({
                     <CardBody style={{ display: "flex", flexDirection: "column", height: "100%" }}>
                         {groups.length > 0 ? (
                             <div style={{ flex: 1 }}>
-                                <SelectableCustomTable 
-                                    columns={tableColumns} 
-                                    data={groups} 
-                                    showPagination={true} 
+                                <SelectableCustomTable
+                                    columns={tableColumns}
+                                    data={groups}
+                                    showPagination={true}
                                     rowsPerPage={7}
                                     onSelect={handleSelectionChange}
                                     selectionMode="multiple"
@@ -174,9 +174,9 @@ const GroupsView: React.FC<GroupsViewProps> = ({
                         ) : (
                             <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", textAlign: "center", color: "#6c757d", padding: "2rem", flexDirection: "column", }}>
                                 <FiInbox size={56} style={{ marginBottom: 12, opacity: 0.8 }} />
-                                <h5 style={{ marginBottom: 6 }}>No hay grupos disponibles</h5>
+                                <h5 style={{ marginBottom: 6 }}>{t('groups.empty.noGroups')}</h5>
                                 <p style={{ maxWidth: 360, margin: 0, fontSize: 15 }}>
-                                    Actualmente no existen grupos de cerdos registrados o activos para mostrar.
+                                    {t('groups.empty.noGroupsMsg')}
                                 </p>
                             </div>
                         )}
@@ -185,28 +185,28 @@ const GroupsView: React.FC<GroupsViewProps> = ({
             </Container>
 
             <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} centered backdrop={'static'} keyboard={false}>
-                <ModalHeader toggle={() => toggleModal("create")}>Crear grupo</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("create")}>{t('groups.modal.createGroup')}</ModalHeader>
                 <ModalBody>
                     <GroupForm onSave={() => { fetchData(); toggleModal('create') }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.move} toggle={() => toggleModal("move")} centered backdrop={'static'} keyboard={false}>
-                <ModalHeader toggle={() => toggleModal("move")}>Trasladar cerdos</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("move")}>{t('groups.modal.moveGroup')}</ModalHeader>
                 <ModalBody>
                     <GroupTransferForm groupId={selectedGroup._id} onSave={() => { toggleModal('move'); fetchData(); }} stage={transferStage || stage} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.asign} toggle={() => toggleModal("asign")} centered backdrop={'static'} keyboard={false}>
-                <ModalHeader toggle={() => toggleModal("asign")}>Ingresar cerdos</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("asign")}>{t('groups.modal.insertPigs')}</ModalHeader>
                 <ModalBody>
                     <GroupInsertForm groupId={selectedGroup?._id} onSave={() => { fetchData(); toggleModal('asign') }} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.withdraw} toggle={() => toggleModal("withdraw")} centered backdrop={'static'} keyboard={false}>
-                <ModalHeader toggle={() => toggleModal("withdraw")}>Retirar cerdos</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("withdraw")}>{t('groups.modal.withdrawPigs')}</ModalHeader>
                 <ModalBody>
                     <GroupWithDrawForm groupId={selectedGroup?._id} onSave={() => { fetchData(); toggleModal('withdraw') }} />
                 </ModalBody>

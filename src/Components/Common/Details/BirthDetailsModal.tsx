@@ -14,12 +14,14 @@ import { Column } from "common/data/data_types";
 import KPI from "../Graphics/Kpi";
 import { IconBaseProps } from "react-icons";
 import { FaExclamationTriangle, FaHeart, FaMars, FaPiggyBank, FaSkull, FaVenus } from "react-icons/fa";
+import { useTranslation } from "react-i18next";
 
 interface BirthDetailsProps {
     birthId: string
 }
 
 const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const navigate = useNavigate();
@@ -31,22 +33,22 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
 
     const BirthAttributes: Attribute[] = [
-        { key: 'birth_date', label: 'Fecha de parto', type: 'date' },
+        { key: 'birth_date', label: t('birth.form.birthDate', { defaultValue: 'Fecha de parto' }), type: 'date' },
         {
             key: 'birth_type',
-            label: 'Tipo de parto',
+            label: t('birth.form.birthType', { defaultValue: 'Tipo de parto' }),
             type: 'text',
             render: (value: string) => {
                 let color = '';
-                let label = '';
+                const label = t(`birth.type.${value}`, { defaultValue: value });
 
                 switch (value) {
-                    case 'normal': color = 'success'; label = 'Normal'; break;
-                    case 'cesarean': color = 'primary'; label = 'Cesárea'; break;
-                    case 'abortive': color = 'danger'; label = 'Abortivo'; break;
-                    case 'dystocia': color = 'warning'; label = 'Distócico'; break;
-                    case 'induced': color = 'info'; label = 'Inducido'; break;
-                    default: color = 'secondary'; label = 'Sin especificar';
+                    case 'normal': color = 'success'; break;
+                    case 'cesarean': color = 'primary'; break;
+                    case 'abortive': color = 'danger'; break;
+                    case 'dystocia': color = 'warning'; break;
+                    case 'induced': color = 'info'; break;
+                    default: color = 'secondary';
                 }
 
                 return <Badge color={color}>{label}</Badge>;
@@ -54,101 +56,66 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
         },
         {
             key: 'assisted',
-            label: 'Asistido',
+            label: t('birth.form.assisted', { defaultValue: 'Asistido' }),
             type: 'text',
             render: (_, obj) => (
-                <Badge color={obj.assisted ? 'success' : 'warning'}>{obj.assisted ? 'Sí' : 'No'}</Badge>
+                <Badge color={obj.assisted ? 'success' : 'warning'}>
+                    {obj.assisted ? t('birth.assisted.yes', { defaultValue: 'Sí' }) : t('birth.assisted.no', { defaultValue: 'No' })}
+                </Badge>
             )
         },
         {
             key: 'responsible',
-            label: 'Responsable',
+            label: t('birth.field.responsible', { defaultValue: 'Responsable' }),
             type: 'text',
             render: (_, row) => <span className="text-black">{row.responsible.name} {row.responsible.lastname}</span>
         },
     ]
 
     const sowAttributes: Attribute[] = [
-        { key: "code", label: "Código", type: "text" },
-        { key: "birthdate", label: "Fecha de nacimiento", type: "date" },
-        { key: "breed", label: "Raza", type: "text" },
+        { key: "code", label: t('common.field.code', { defaultValue: 'Código' }), type: "text" },
+        { key: "birthdate", label: t('common.field.birthDate', { defaultValue: 'Fecha de nacimiento' }), type: "date" },
+        { key: "breed", label: t('common.field.breed', { defaultValue: 'Raza' }), type: "text" },
         {
             key: "origin",
-            label: "Origen",
+            label: t('pigs.field.origin', { defaultValue: 'Origen' }),
             type: "text",
             render: (value: string) => {
-                let color = 'secondary';
-                let label = value;
-
-                switch (value) {
-                    case 'born':
-                        color = 'success';
-                        label = 'Nacido en la granja';
-                        break;
-
-                    case 'purchased':
-                        color = 'warning';
-                        label = 'Comprado';
-                        break;
-
-                    case 'donated':
-                        color = 'info';
-                        label = 'Donado';
-                        break;
-
-                    case 'other':
-                        color = 'dark';
-                        label = 'Otro';
-                        break;
-                }
-
+                const color = value === 'born' ? 'success' : value === 'purchased' ? 'warning' : value === 'donated' ? 'info' : value === 'other' ? 'dark' : 'secondary';
+                const label = t(`pigs.origin.${value}`, { defaultValue: value });
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { key: "weight", label: "Peso actual", type: "text" },
+        { key: "weight", label: t('common.field.weightCurrent', { defaultValue: 'Peso actual' }), type: "text" },
         {
             key: "status",
-            label: "Estado",
+            label: t('common.field.status', { defaultValue: 'Estado' }),
             type: "text",
             render: (value: string) => {
-                let color = 'secondary';
-                let label = value;
-                switch (value) {
-                    case 'alive': color = 'success'; label = 'Vivo'; break;
-                    case 'discarded': color = 'warning'; label = 'Descartado'; break;
-                    case 'dead': color = 'danger'; label = 'Muerto'; break;
-                }
+                const color = value === 'alive' ? 'success' : value === 'discarded' ? 'warning' : value === 'dead' ? 'danger' : 'secondary';
+                const label = t(`pigs.status.${value}`, { defaultValue: value });
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { key: "observations", label: "Observaciones", type: "text" },
+        { key: "observations", label: t('pigs.field.observations', { defaultValue: 'Observaciones' }), type: "text" },
     ]
 
     const pregnancyAttributes: Attribute[] = [
-        { key: "start_date", label: "Fecha inseminación", type: "date" },
-        { key: "estimated_farrowing_date", label: "Fecha de parto prevista", type: "date" },
+        { key: "start_date", label: t('insemination.detail.attr.date', { defaultValue: 'Fecha inseminación' }), type: "date" },
+        { key: "estimated_farrowing_date", label: t('birth.column.estimatedFarrowing', { defaultValue: 'Fecha de parto prevista' }), type: "date" },
     ]
 
     const pigletsColumns: Column<any>[] = [
         {
-            header: 'Sexo',
+            header: t('litter.pigletColumn.sex', { defaultValue: 'Sexo' }),
             accessor: 'sex',
             render: (value: string) => (
                 <Badge color={value === 'male' ? "info" : "danger"}>
-                    {value === 'male' ? "♂ Macho" : "♀ Hembra"}
+                    {t(`common.sex.${value}`, { defaultValue: value === 'male' ? '♂ Macho' : '♀ Hembra' })}
                 </Badge>
             ),
         },
-        { header: 'Peso', accessor: 'weight', type: 'text', isFilterable: true },
-        // {
-        //     header: 'Estado',
-        //     accessor: 'status',
-        //     render: (value: string) => (
-        //         <Badge color={value === 'alive' ? "info" : "danger"}>
-        //             {value === 'alive' ? "Vivo" : "Muerto"}
-        //         </Badge>
-        //     ),
-        // },
+        { header: t('litter.pigletColumn.weight', { defaultValue: 'Peso' }), accessor: 'weight', type: 'text', isFilterable: true },
     ]
 
     const fetchData = async () => {
@@ -171,7 +138,7 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
             setLitterDetails(litterResponse.data.data);
         } catch (error) {
             console.error('Error al obtener los datos', { error });
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al recuperar los datos, inténtelo más tarde' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('birth.detail.errorLoad', { defaultValue: 'Ha ocurrido un error al recuperar los datos, inténtelo más tarde' }) });
         } finally {
             setLoading(false);
         }
@@ -194,7 +161,7 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
                 <div className="w-100 d-flex flex-column">
                     <Card className="flex-fill shadow-sm mb-3">
                         <CardHeader className="bg-light">
-                            <h5>Información del parto</h5>
+                            <h5>{t('birth.detail.birthInfo', { defaultValue: 'Información del parto' })}</h5>
                         </CardHeader>
                         <CardBody>
                             <ObjectDetails attributes={BirthAttributes} object={birthDetails} />
@@ -203,7 +170,7 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
 
                     <Card className="flex-fill shadow-sm">
                         <CardHeader className="bg-light">
-                            <h5>Información del embarazo</h5>
+                            <h5>{t('birth.detail.pregnancyInfo', { defaultValue: 'Información del embarazo' })}</h5>
                         </CardHeader>
                         <CardBody>
                             <ObjectDetails attributes={pregnancyAttributes} object={pregnancyDetails} />
@@ -214,9 +181,9 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
                 <div className="w-100 d-flex flex-column">
                     <Card className="flex-fill shadow-sm">
                         <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
-                            <span className="text-black fs-5">Cerda inseminada</span>
+                            <span className="text-black fs-5">{t('birth.detail.sowInseminated', { defaultValue: 'Cerda inseminada' })}</span>
                             <Button color="link" onClick={() => navigate(`/pigs/pig_details/${sowDetails._id}`)}>
-                                Información ↗
+                                {t('birth.detail.moreInfo', { defaultValue: 'Información ↗' })}
                             </Button>
                         </CardHeader>
                         <CardBody>
@@ -228,9 +195,9 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
                 <div className="w-100 d-flex flex-column">
                     <Card className="flex-fill shadow-sm">
                         <CardHeader className="bg-light d-flex justify-content-between align-items-center fs-5">
-                            <span className="text-black fs-5">Camada</span>
+                            <span className="text-black fs-5">{t('birth.detail.litter', { defaultValue: 'Camada' })}</span>
                             <Button color="link" onClick={() => navigate(`/lactation/litter_details/${litterDetails._id}`)}>
-                                Información ↗
+                                {t('birth.detail.moreInfo', { defaultValue: 'Información ↗' })}
                             </Button>
                         </CardHeader>
                         <CardBody className="p-2">
@@ -240,7 +207,7 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
                                     <div className="border rounded p-2 text-center bg-light">
                                         <div className="d-flex align-items-center justify-content-center mb-1">
                                             <i className="ri-parent-line fs-5 text-primary me-1"></i>
-                                            <small className="text-muted">Total Vivos</small>
+                                            <small className="text-muted">{t('birth.detail.totalAlive', { defaultValue: 'Total Vivos' })}</small>
                                         </div>
                                         <h4 className="mb-0 text-primary fw-bold">{litterDetails?.currentMale + litterDetails?.currentFemale}</h4>
                                     </div>
@@ -250,7 +217,7 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
                                     <div className="border rounded p-2 text-center bg-light">
                                         <div className="d-flex align-items-center justify-content-center mb-1">
                                             <i className="ri-men-line fs-5 text-info me-1"></i>
-                                            <small className="text-muted">Machos</small>
+                                            <small className="text-muted">{t('litter.kpi.males', { defaultValue: 'Machos' })}</small>
                                         </div>
                                         <h4 className="mb-0 text-info fw-bold">{litterDetails?.currentMale}</h4>
                                     </div>
@@ -260,7 +227,7 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
                                     <div className="border rounded p-2 text-center bg-light">
                                         <div className="d-flex align-items-center justify-content-center mb-1">
                                             <i className="ri-women-line fs-5 text-danger me-1"></i>
-                                            <small className="text-muted">Hembras</small>
+                                            <small className="text-muted">{t('litter.kpi.females', { defaultValue: 'Hembras' })}</small>
                                         </div>
                                         <h4 className="mb-0 text-danger fw-bold">{litterDetails?.currentFemale}</h4>
                                     </div>
@@ -273,10 +240,10 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
                                     <div className="border rounded p-2 text-center">
                                         <div className="d-flex align-items-center justify-content-center mb-1">
                                             <i className="ri-scales-3-line fs-5 text-success me-1"></i>
-                                            <small className="text-muted">Peso Promedio</small>
+                                            <small className="text-muted">{t('litter.kpi.avgWeight', { defaultValue: 'Peso Promedio' })}</small>
                                         </div>
                                         <h4 className="mb-0 text-success fw-bold">
-                                            {litterDetails?.piglets?.length > 0 
+                                            {litterDetails?.piglets?.length > 0
                                                 ? (litterDetails?.piglets?.reduce((acc: number, p: any) => acc + Number(p.weight), 0) / litterDetails?.piglets?.length).toFixed(2)
                                                 : '0.00'
                                             } kg
@@ -288,7 +255,7 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
                                     <div className="border rounded p-2 text-center">
                                         <div className="d-flex align-items-center justify-content-center mb-1">
                                             <i className="ri-calculator-line fs-5 text-primary me-1"></i>
-                                            <small className="text-muted">Peso Total</small>
+                                            <small className="text-muted">{t('litter.kpi.totalWeight', { defaultValue: 'Peso Total' })}</small>
                                         </div>
                                         <h4 className="mb-0 text-primary fw-bold">
                                             {litterDetails?.piglets?.reduce((acc: number, p: any) => acc + Number(p.weight), 0).toFixed(2)} kg
@@ -297,20 +264,20 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
                                 </div>
                             </div>
 
-                            
+
                             {/* Tabla detallada (opcional, más pequeña) */}
                             {litterDetails?.piglets?.length > 0 && (
                                 <div className="mt-3">
-                                    <small className="text-muted fw-semibold d-block mb-2">Detalles individuales:</small>
+                                    <small className="text-muted fw-semibold d-block mb-2">{t('birth.detail.individualDetails', { defaultValue: 'Detalles individuales:' })}</small>
                                     <SimpleBar style={{ maxHeight: 200 }}>
                                         <div className="table-responsive">
                                             <table className="table table-sm table-hover">
                                                 <thead className="table-light">
                                                     <tr>
                                                         <th className="text-center">#</th>
-                                                        <th className="text-center">Sexo</th>
-                                                        <th className="text-center">Peso (kg)</th>
-                                                        <th className="text-center">Estado</th>
+                                                        <th className="text-center">{t('litter.pigletColumn.sex', { defaultValue: 'Sexo' })}</th>
+                                                        <th className="text-center">{t('litter.pigletColumn.weight', { defaultValue: 'Peso (kg)' })}</th>
+                                                        <th className="text-center">{t('litter.pigletColumn.status', { defaultValue: 'Estado' })}</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -325,7 +292,10 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
                                                             <td className="text-center">{Number(piglet.weight).toFixed(2)}</td>
                                                             <td className="text-center">
                                                                 <Badge color={piglet.status === 'alive' ? "success" : "danger"} style={{ fontSize: '0.75rem' }}>
-                                                                    {piglet.status === 'alive' ? "Vivo" : "Muerto"}
+                                                                    {piglet.status === 'alive'
+                                                                        ? t('birth.detail.pigletAlive', { defaultValue: 'Vivo' })
+                                                                        : t('birth.detail.pigletDead', { defaultValue: 'Muerto' })
+                                                                    }
                                                                 </Badge>
                                                             </td>
                                                         </tr>

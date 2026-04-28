@@ -8,8 +8,10 @@ import { getAreaColumn, getBaseColumns, getCountColumns, getGeneralStatusColumn 
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useState } from "react";
 import { Button, Modal, ModalBody, ModalHeader, Spinner } from "reactstrap";
+import { useTranslation } from "react-i18next";
 
 const ViewGrowingGroups = () => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
 
@@ -31,7 +33,7 @@ const ViewGrowingGroups = () => {
             setFileURL(window.URL.createObjectURL(pdfBlob));
             setPdfModalOpen(true);
         } catch (error) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('groups.error.pdf') });
         } finally {
             setPdfLoading(false);
         }
@@ -40,28 +42,28 @@ const ViewGrowingGroups = () => {
     const pdfButton = (
         <Button color="primary" onClick={() => setDateRangeModalOpen(true)} disabled={pdfLoading}>
             {pdfLoading ? (
-                <><Spinner className="me-2" size="sm" />Generando...</>
+                <><Spinner className="me-2" size="sm" />{t('groups.button.generating')}</>
             ) : (
-                <><i className="ri-file-pdf-line me-2" />Exportar PDF</>
+                <><i className="ri-file-pdf-line me-2" />{t('groups.button.exportPdf')}</>
             )}
         </Button>
     );
 
     const columns: Column<any>[] = [
-        ...getBaseColumns(),
-        { header: 'Nombre', accessor: 'name', type: 'text', isFilterable: true },
-        getAreaColumn(),
-        { header: 'Fecha de creación', accessor: 'creationDate', type: 'date', isFilterable: true },
-        ...getCountColumns(),
-        getGeneralStatusColumn(),
+        ...getBaseColumns(t),
+        { header: t('groups.column.name'), accessor: 'name', type: 'text', isFilterable: true },
+        getAreaColumn(t),
+        { header: t('groups.column.creationDate'), accessor: 'creationDate', type: 'date', isFilterable: true },
+        ...getCountColumns(t),
+        getGeneralStatusColumn(t),
     ];
 
     return (
         <>
             <GroupsView
                 stage="fattening"
-                title="Ver grupos en crecimiento"
-                pageTitle="Crecimiento"
+                title={t('groups.view.titleGrowing')}
+                pageTitle={t('groups.pageTitle.growing')}
                 columns={columns}
                 statsEndpoint="group_alive_stats"
                 transferStage="weaning"
@@ -69,17 +71,17 @@ const ViewGrowingGroups = () => {
             />
 
             <Modal size="md" isOpen={dateRangeModalOpen} toggle={() => setDateRangeModalOpen(false)} centered>
-                <ModalHeader toggle={() => setDateRangeModalOpen(false)}>Seleccionar rango de fechas de creación</ModalHeader>
+                <ModalHeader toggle={() => setDateRangeModalOpen(false)}>{t('groups.modal.dateRange')}</ModalHeader>
                 <ReportDateRangeSelector
                     onGenerate={handleGeneratePDF}
                     onCancel={() => setDateRangeModalOpen(false)}
                     loading={pdfLoading}
-                    generateButtonText="Generar PDF"
+                    generateButtonText={t('groups.button.generatePdf')}
                 />
             </Modal>
 
             <Modal size="xl" isOpen={pdfModalOpen} toggle={() => setPdfModalOpen(false)} backdrop="static" keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => setPdfModalOpen(false)}>Reporte de Grupos en Crecimiento</ModalHeader>
+                <ModalHeader toggle={() => setPdfModalOpen(false)}>{t('groups.report.growing')}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>

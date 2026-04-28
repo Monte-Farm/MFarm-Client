@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import SimpleBar from "simplebar-react";
 
 interface HistoryItem {
@@ -21,6 +22,7 @@ const HistoryList: React.FC<HistoryListProps> = ({
     responsibleKey,
     badgeColors = {}
 }) => {
+    const { t } = useTranslation();
 
     const getBadgeColor = (type: string) => {
         if (badgeColors[type]) return badgeColors[type];
@@ -53,7 +55,7 @@ const HistoryList: React.FC<HistoryListProps> = ({
                                     className={`badge bg-${badgeColor} text-white fs-6 py-2 px-3`}
                                     style={{ width: '120px', textAlign: 'center', flexShrink: 0 }}
                                 >
-                                    {item[typeKey].toUpperCase()}
+                                    {t(`history.${item[typeKey]}`, { defaultValue: item[typeKey] }).toUpperCase()}
                                 </span>
                                 <div className="flex-grow-1">
                                     <div className="text-muted mb-1" style={{ fontSize: '0.9rem' }}>

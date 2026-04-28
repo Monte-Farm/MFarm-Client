@@ -1,7 +1,8 @@
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import { getEffectiveUser } from "helpers/impersonation_helper";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Badge, Button, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from "reactstrap";
 import DatePicker from "react-flatpickr";
 import { useFormik } from "formik";
@@ -24,6 +25,7 @@ const BulkMedicationAssignmentModal: React.FC<BulkMedicationAssignmentModalProps
     selectedLitters,
     onSuccess
 }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [modals, setModals] = useState({ success: false, error: false, missingStock: false, subwarehouseError: false });
@@ -36,35 +38,34 @@ const BulkMedicationAssignmentModal: React.FC<BulkMedicationAssignmentModalProps
     };
 
     const medicationPackagesColumns: Column<any>[] = [
-        { header: 'Codigo', accessor: 'code', type: 'text', isFilterable: true },
-        { header: 'Nombre', accessor: 'name', type: 'text', isFilterable: true },
-        { header: 'Fecha de creacion', accessor: 'creation_date', type: 'date', isFilterable: true },
+        { header: t('common.field.code'), accessor: 'code', type: 'text', isFilterable: true },
+        { header: t('common.field.name'), accessor: 'name', type: 'text', isFilterable: true },
+        { header: t('medication.package.column.createdAt'), accessor: 'creation_date', type: 'date', isFilterable: true },
         {
-            header: 'Etapa',
+            header: t('common.field.stage'),
             accessor: 'stage',
             type: 'text',
             isFilterable: true,
             render: (_, row) => {
                 let color = "secondary";
-                let text = "Desconocido";
 
                 switch (row.stage) {
-                    case "general": color = "info"; text = "General"; break;
-                    case "piglet": color = "info"; text = "Lechón"; break;
-                    case "weaning": color = "warning"; text = "Destete"; break;
-                    case "fattening": color = "primary"; text = "Engorda"; break;
-                    case "breeder": color = "success"; text = "Reproductor"; break;
+                    case "general": color = "info"; break;
+                    case "piglet": color = "info"; break;
+                    case "weaning": color = "warning"; break;
+                    case "fattening": color = "primary"; break;
+                    case "breeder": color = "success"; break;
                 }
 
-                return <Badge color={color}>{text}</Badge>;
+                return <Badge color={color}>{t(`feeding.stage.${row.stage}`, { defaultValue: t('medical.medication.field.unknown') })}</Badge>;
             },
         },
     ];
 
-    const bulkMedicationValidationSchema = Yup.object({
-        packageId: Yup.string().required('Debe seleccionar un paquete de medicación'),
-        applicationDate: Yup.date().required('La fecha de aplicación es obligatoria'),
-    });
+    const bulkMedicationValidationSchema = useMemo(() => Yup.object({
+        packageId: Yup.string().required(t('medication.bulk.litter.validation.selectPackage')),
+        applicationDate: Yup.date().required(t('form.validation.required')),
+    }), [t]);
 
     const bulkMedicationFormik = useFormik({
         initialValues: {
@@ -78,15 +79,14 @@ const BulkMedicationAssignmentModal: React.FC<BulkMedicationAssignmentModalProps
         validationSchema: bulkMedicationValidationSchema,
         onSubmit: async (values, { setSubmitting }) => {
             if (!configContext) return;
-            
+
             const activeLitterIds = selectedLitters
                 .filter(litter => litter.status === 'active')
                 .map(litter => litter._id);
 
             try {
                 setSubmitting(true);
-                
-                // 1. Asignar paquete de medicación masivo
+
                 await configContext.axiosHelper.create(
                     `${configContext.apiUrl}/medication_package/asign_bulk_litter_medication_package/${userLogged.farm_assigned}`,
                     {
@@ -99,7 +99,6 @@ const BulkMedicationAssignmentModal: React.FC<BulkMedicationAssignmentModalProps
                     }
                 );
 
-                // 2. Registrar en el historial del usuario
                 await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
                     event: `Paquete de medicación ${values.name} asignado a ${activeLitterIds.length} camadas`
                 });
@@ -107,8 +106,7 @@ const BulkMedicationAssignmentModal: React.FC<BulkMedicationAssignmentModalProps
                 toggleModal('success', true);
             } catch (error: any) {
                 console.error('Error bulk assigning medication package:', error);
-                
-                // Manejo crítico de errores
+
                 if (error.response?.status === 400 && error.response?.data?.missing) {
                     setMissingItems(error.response.data.missing);
                     toggleModal('missingStock', true);
@@ -156,7 +154,7 @@ const BulkMedicationAssignmentModal: React.FC<BulkMedicationAssignmentModalProps
 
     const fetchMedicationPackages = async () => {
         if (!configContext || !userLogged) return;
-        
+
         try {
             const medicationResponse = await configContext.axiosHelper.get(
                 `${configContext.apiUrl}/medication_package/find_by_stage/${userLogged.farm_assigned}/piglet`
@@ -182,18 +180,18 @@ const BulkMedicationAssignmentModal: React.FC<BulkMedicationAssignmentModalProps
         <>
             <Modal isOpen={isOpen} toggle={handleClose} size="lg" backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={handleClose}>
-                    Asignar Medicación a {activeLittersCount} Camadas
+                    {t('medication.bulk.litter.title', { count: activeLittersCount })}
                 </ModalHeader>
                 <ModalBody>
                     <form onSubmit={bulkMedicationFormik.handleSubmit}>
                         <div className="mb-3">
                             <small className="text-muted">
-                                Esta acción asignará el paquete de medicación seleccionado a todas las camadas activas.
+                                {t('medication.bulk.litter.description')}
                             </small>
                         </div>
 
                         <div className="mb-4">
-                            <Label className="form-label fw-semibold">Seleccionar Paquete de Medicación</Label>
+                            <Label className="form-label fw-semibold">{t('medication.bulk.litter.selectPackage')}</Label>
                             {medicationPackages.length > 0 ? (
                                 <>
                                     <SelectableCustomTable
@@ -211,8 +209,8 @@ const BulkMedicationAssignmentModal: React.FC<BulkMedicationAssignmentModalProps
                                 <div className="alert alert-warning d-flex align-items-center" role="alert">
                                     <i className="ri-error-warning-line fs-4 me-2 text-warning"></i>
                                     <div>
-                                        <strong>No hay paquetes de medicación disponibles</strong>
-                                        <p className="mb-0 mt-1">No se encontraron paquetes de medicación para la etapa de lechón. Por favor, cree un paquete antes de continuar.</p>
+                                        <strong>{t('medication.bulk.litter.noPackagesTitle')}</strong>
+                                        <p className="mb-0 mt-1">{t('medication.bulk.litter.noPackagesBody')}</p>
                                     </div>
                                 </div>
                             )}
@@ -220,13 +218,13 @@ const BulkMedicationAssignmentModal: React.FC<BulkMedicationAssignmentModalProps
 
                         {selectedMedicationPackage && (
                             <div className="alert alert-info">
-                                <strong>Paquete seleccionado:</strong> {selectedMedicationPackage.name} ({selectedMedicationPackage.code})
+                                <strong>{t('medication.bulk.litter.selectedPackage')}</strong> {selectedMedicationPackage.name} ({selectedMedicationPackage.code})
                             </div>
                         )}
 
                         <div className="d-flex gap-2 mt-4">
                             <div className="w-50">
-                                <Label htmlFor="applicationDate" className="form-label">Fecha de aplicación</Label>
+                                <Label htmlFor="applicationDate" className="form-label">{t('medication.assign.field.date')}</Label>
                                 <DatePicker
                                     id="applicationDate"
                                     className={`form-control ${bulkMedicationFormik.touched.applicationDate && bulkMedicationFormik.errors.applicationDate ? 'is-invalid' : ''}`}
@@ -240,7 +238,7 @@ const BulkMedicationAssignmentModal: React.FC<BulkMedicationAssignmentModalProps
                             </div>
 
                             <div className="w-50">
-                                <Label htmlFor="appliedBy" className="form-label">Responsable</Label>
+                                <Label htmlFor="appliedBy" className="form-label">{t('medication.assign.field.responsible')}</Label>
                                 <Input
                                     type="text"
                                     id="appliedBy"
@@ -252,7 +250,7 @@ const BulkMedicationAssignmentModal: React.FC<BulkMedicationAssignmentModalProps
                         </div>
 
                         <div className="mt-4">
-                            <Label htmlFor="observations" className="form-label">Observaciones</Label>
+                            <Label htmlFor="observations" className="form-label">{t('pigs.field.observations')}</Label>
                             <Input
                                 type="textarea"
                                 id="observations"
@@ -261,19 +259,19 @@ const BulkMedicationAssignmentModal: React.FC<BulkMedicationAssignmentModalProps
                                 value={bulkMedicationFormik.values.observations}
                                 onChange={bulkMedicationFormik.handleChange}
                                 onBlur={bulkMedicationFormik.handleBlur}
-                                placeholder="Observaciones adicionales sobre la aplicación masiva..."
+                                placeholder={t('medication.assign.field.observationsPlaceholder')}
                             />
                         </div>
                     </form>
                 </ModalBody>
                 <ModalFooter>
-                    <Button className="farm-secondary-button" onClick={handleClose}>Cancelar</Button>
-                    <Button 
-                        className="farm-primary-button" 
-                        onClick={() => bulkMedicationFormik.handleSubmit()} 
+                    <Button className="farm-secondary-button" onClick={handleClose}>{t('common.button.cancel')}</Button>
+                    <Button
+                        className="farm-primary-button"
+                        onClick={() => bulkMedicationFormik.handleSubmit()}
                         disabled={bulkMedicationFormik.isSubmitting || !selectedMedicationPackage || medicationPackages.length === 0}
                     >
-                        {bulkMedicationFormik.isSubmitting ? <Spinner size="sm" /> : 'Confirmar Asignación'}
+                        {bulkMedicationFormik.isSubmitting ? <Spinner size="sm" /> : t('medication.bulk.litter.confirm')}
                     </Button>
                 </ModalFooter>
             </Modal>
@@ -281,13 +279,13 @@ const BulkMedicationAssignmentModal: React.FC<BulkMedicationAssignmentModalProps
             <SuccessModal
                 isOpen={modals.success}
                 onClose={handleSuccessClose}
-                message="El paquete de medicación ha sido asignado exitosamente a las camadas seleccionadas."
+                message={t('medication.bulk.litter.success')}
             />
 
             <ErrorModal
                 isOpen={modals.error}
                 onClose={() => toggleModal('error', false)}
-                message="Ha ocurrido un error al asignar el paquete de medicación. Por favor, inténtelo más tarde."
+                message={t('medication.assign.error.submit')}
             />
 
             <MissingStockModal
@@ -298,20 +296,20 @@ const BulkMedicationAssignmentModal: React.FC<BulkMedicationAssignmentModalProps
 
             <Modal isOpen={modals.subwarehouseError} toggle={() => toggleModal('subwarehouseError', false)} centered>
                 <ModalHeader toggle={() => toggleModal('subwarehouseError', false)}>
-                    Error de Configuración
+                    {t('medication.assign.error.subwarehouseTitle')}
                 </ModalHeader>
                 <ModalBody>
                     <div className="text-center">
                         <i className="ri-error-warning-line" style={{ fontSize: '48px', color: '#f06548' }}></i>
-                        <h5 className="mt-3">No se encontró un subalmacén configurado</h5>
+                        <h5 className="mt-3">{t('medication.assign.error.subwarehouseHeading')}</h5>
                         <p className="text-muted">
-                            Por favor, configure un subalmacén para poder asignar medicación a las camadas.
+                            {t('medication.bulk.litter.subwarehouseBody')}
                         </p>
                     </div>
                 </ModalBody>
                 <ModalFooter>
                     <Button color="secondary" onClick={() => toggleModal('subwarehouseError', false)}>
-                        Cerrar
+                        {t('common.button.close')}
                     </Button>
                 </ModalFooter>
             </Modal>

@@ -1,5 +1,6 @@
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardBody, CardHeader, Col, Row } from "reactstrap";
 import { useReportScope } from "hooks/useReportScope";
 import { Column } from "common/data/data_types";
@@ -36,16 +37,6 @@ interface ExpensesReportKpis {
     topCategoryAmount: number;
 }
 
-const categoryLabels: Record<string, string> = {
-    LABOR: "Sueldos y nómina",
-    UTILITY: "Servicios",
-    MAINTENANCE: "Mantenimiento",
-    TRANSPORT: "Transporte",
-    LIVESTOCK_PURCHASE: "Compra de ganado",
-    VETERINARY: "Veterinario",
-    OTHER: "Otro",
-};
-
 const categoryColors: Record<string, string> = {
     LABOR: "#3b82f6",
     UTILITY: "#f59e0b",
@@ -57,6 +48,7 @@ const categoryColors: Record<string, string> = {
 };
 
 const ExpensesReport = () => {
+    const { t } = useTranslation();
     document.title = "Reporte de Gastos | Reportes";
 
     const configContext = useContext(ConfigContext);
@@ -72,6 +64,16 @@ const ExpensesReport = () => {
         categoriesCount: 0, topCategory: "", topCategoryAmount: 0,
     });
     const [monthlyData, setMonthlyData] = useState<any[]>([]);
+
+    const categoryLabels: Record<string, string> = {
+        LABOR: t("reports.expenses.category.LABOR"),
+        UTILITY: t("reports.expenses.category.UTILITY"),
+        MAINTENANCE: t("reports.expenses.category.MAINTENANCE"),
+        TRANSPORT: t("reports.expenses.category.TRANSPORT"),
+        LIVESTOCK_PURCHASE: t("reports.expenses.category.LIVESTOCK_PURCHASE"),
+        VETERINARY: t("reports.expenses.category.VETERINARY"),
+        OTHER: t("reports.expenses.category.OTHER"),
+    };
 
     const today = new Date();
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -92,7 +94,7 @@ const ExpensesReport = () => {
             setKpis(data.kpis);
             setMonthlyData(data.monthlyData || []);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar los datos del reporte." });
+            setAlertConfig({ visible: true, color: "danger", message: t("reports.error.loadData") });
         } finally {
             setLoading(false);
         }
@@ -113,29 +115,29 @@ const ExpensesReport = () => {
     }, [startDate, endDate, scopeKey]);
 
     const expenseColumns: Column<ExpenseRecord>[] = [
-        { header: "Fecha", accessor: "date", type: "date", isFilterable: true },
+        { header: t("reports.col.date"), accessor: "date", type: "date", isFilterable: true },
         {
-            header: "Categoría", accessor: "category", type: "text", isFilterable: true,
+            header: t("reports.expenses.col.category"), accessor: "category", type: "text", isFilterable: true,
             render: (v: string) => <span>{categoryLabels[v] || v}</span>,
         },
         {
-            header: "Descripción", accessor: "metadata", type: "text",
+            header: t("reports.expenses.col.description"), accessor: "metadata", type: "text",
             render: (v: any) => <span>{v?.description || "-"}</span>,
         },
-        { header: "Monto", accessor: "amount", type: "currency", bgColor: "#FFEBEE" },
+        { header: t("reports.expenses.col.amount"), accessor: "amount", type: "currency", bgColor: "#FFEBEE" },
     ];
 
     const categoryColumns: Column<ExpenseByCategoryRecord>[] = [
         {
-            header: "Categoría", accessor: "category", type: "text",
+            header: t("reports.expenses.col.category"), accessor: "category", type: "text",
             render: (v: string) => <span>{categoryLabels[v] || v}</span>,
         },
-        { header: "Monto Total", accessor: "totalAmount", type: "currency", bgColor: "#FFEBEE" },
+        { header: t("reports.expenses.col.totalAmount"), accessor: "totalAmount", type: "currency", bgColor: "#FFEBEE" },
         {
-            header: "Porcentaje", accessor: "percentage", type: "text",
+            header: t("reports.expenses.col.percentage"), accessor: "percentage", type: "text",
             render: (v: number) => <span className="fw-semibold">{v?.toFixed(1)}%</span>,
         },
-        { header: "Registros", accessor: "count", type: "number" },
+        { header: t("reports.expenses.col.records"), accessor: "count", type: "number" },
     ];
 
     const donutData: DonutDataItem[] = byCategory
@@ -164,8 +166,8 @@ const ExpensesReport = () => {
 
     return (
         <ReportPageLayout
-            title="Reporte de Gastos Operativos"
-            pageTitle="Reportes Financieros"
+            title={t("reports.expenses.title")}
+            pageTitle={t("reports.pageTitle")}
             onGeneratePdf={handleGeneratePdf}
             pdfTitle="Reporte - Gastos Operativos"
             startDate={startDate}
@@ -175,7 +177,7 @@ const ExpensesReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Total Registros"
+                        title={t("reports.expenses.kpi.totalRecords")}
                         value={kpis.totalExpenses}
                         icon={<i className="ri-file-list-3-line fs-4 text-primary"></i>}
                         animateValue
@@ -183,7 +185,7 @@ const ExpensesReport = () => {
                 </Col>
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Gasto Total"
+                        title={t("reports.expenses.kpi.totalAmount")}
                         value={kpis.totalAmount}
                         icon={<i className="ri-money-dollar-circle-line fs-4 text-danger"></i>}
                         animateValue
@@ -194,7 +196,7 @@ const ExpensesReport = () => {
                 </Col>
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Promedio por Gasto"
+                        title={t("reports.expenses.kpi.avgPerExpense")}
                         value={kpis.avgExpenseAmount}
                         icon={<i className="ri-bar-chart-line fs-4 text-warning"></i>}
                         animateValue
@@ -205,7 +207,7 @@ const ExpensesReport = () => {
                 </Col>
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Categoría Principal"
+                        title={t("reports.expenses.kpi.topCategory")}
                         value={kpis.topCategoryAmount}
                         subtext={categoryLabels[kpis.topCategory] || kpis.topCategory}
                         icon={<i className="ri-pie-chart-line fs-4 text-success"></i>}
@@ -220,19 +222,19 @@ const ExpensesReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={7}>
                     <BasicBarChart
-                        title="Gastos por Mes"
+                        title={t("reports.expenses.chart.byMonth")}
                         data={barData}
                         indexBy="mes"
                         keys={["Gasto"]}
-                        xLegend="Mes"
-                        yLegend="Monto ($)"
+                        xLegend={t("reports.axis.month")}
+                        yLegend={t("reports.axis.amountUsd")}
                         height={280}
                         colors={["#ef4444"]}
                     />
                 </Col>
                 <Col xl={5}>
                     <DonutChartCard
-                        title="Distribución por Categoría"
+                        title={t("reports.expenses.chart.byCategory")}
                         data={donutData}
                         legendItems={donutLegend}
                         height={180}
@@ -243,7 +245,7 @@ const ExpensesReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={4}>
                     <Card>
-                        <CardHeader className="fw-semibold">Resumen por Categoría</CardHeader>
+                        <CardHeader className="fw-semibold">{t("reports.expenses.card.summary")}</CardHeader>
                         <CardBody>
                             <CustomTable columns={categoryColumns} data={byCategory} showSearchAndFilter={false} showPagination={false} />
                         </CardBody>
@@ -251,7 +253,7 @@ const ExpensesReport = () => {
                 </Col>
                 <Col xl={8}>
                     <Card>
-                        <CardHeader className="fw-semibold">Detalle de Gastos</CardHeader>
+                        <CardHeader className="fw-semibold">{t("reports.expenses.card.details")}</CardHeader>
                         <CardBody>
                             <CustomTable columns={expenseColumns} data={expenses} showSearchAndFilter rowsPerPage={15} />
                         </CardBody>

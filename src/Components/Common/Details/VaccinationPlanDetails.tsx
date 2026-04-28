@@ -11,12 +11,14 @@ import noImageUrl from '../../../assets/images/no-image.png'
 import SuccessModal from "../Shared/SuccessModal";
 import ErrorModal from "../Shared/ErrorModal";
 import { HttpStatusCode } from "axios";
+import { useTranslation } from "react-i18next";
 
 interface VaccinationPlanDetailsProps {
     vaccinationPlanId: string;
 }
 
 const VaccinationPlanDetails: React.FC<VaccinationPlanDetailsProps> = ({ vaccinationPlanId }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true);
@@ -27,34 +29,22 @@ const VaccinationPlanDetails: React.FC<VaccinationPlanDetailsProps> = ({ vaccina
     const [isSubmitting, setSubmitting] = useState<boolean>(false);
 
     const vaccinationPlanAttributes: Attribute[] = [
-        { key: 'code', label: 'Codigo', type: 'text' },
-        { key: 'name', label: 'Nombre', type: 'text' },
-        { key: 'creation_date', label: 'Fecha de creacion', type: 'date' },
+        { key: 'code', label: t('medication.vaccinePlan.attribute.code'), type: 'text' },
+        { key: 'name', label: t('medication.vaccinePlan.attribute.name'), type: 'text' },
+        { key: 'creation_date', label: t('medication.vaccinePlan.attribute.createdAt'), type: 'date' },
         {
             key: 'stage',
-            label: 'Etapa',
+            label: t('medication.vaccinePlan.attribute.stage'),
             type: 'text',
             render: (_, row) => {
                 let color = "secondary";
-                let text = "Desconocido";
+                const text = t(`feeding.stage.${row.stage}`, { defaultValue: t('medical.medication.field.unknown') });
 
                 switch (row.stage) {
-                    case "piglet":
-                        color = "info";
-                        text = "Lechon";
-                        break;
-                    case "weaning":
-                        color = "info";
-                        text = "Destete";
-                        break;
-                    case "fattening":
-                        color = "primary";
-                        text = "Engorda";
-                        break;
-                    case "breeder":
-                        color = "primary";
-                        text = "Reproductor";
-                        break;
+                    case "piglet": color = "info"; break;
+                    case "weaning": color = "info"; break;
+                    case "fattening": color = "primary"; break;
+                    case "breeder": color = "primary"; break;
                 }
 
                 return <Badge color={color}>{text}</Badge>;
@@ -62,124 +52,72 @@ const VaccinationPlanDetails: React.FC<VaccinationPlanDetailsProps> = ({ vaccina
         },
         {
             key: 'creation_responsible',
-            label: 'Responsable de registo',
+            label: t('medication.vaccinePlan.attribute.responsible'),
             type: 'text',
             render: (_, obj) => (<span className="text-black">{userLogged.name} {userLogged.lastname}</span>)
         },
-
     ]
 
     const vaccinesColumns: Column<any>[] = [
         {
-            header: "Codigo",
+            header: t('medication.vaccinePlan.vaccineColumn.code'),
             accessor: "vaccine.id",
             type: "text",
             isFilterable: true,
             render: (_, row) => row.vaccine.id,
         },
         {
-            header: "Vacuna",
+            header: t('medication.vaccinePlan.vaccineColumn.name'),
             accessor: "name",
             type: "text",
             isFilterable: true,
             render: (_, row) => row.vaccine.name,
-
         },
         {
-            header: "Dosis",
+            header: t('medication.vaccinePlan.vaccineColumn.dose'),
             accessor: "dose",
             type: "text",
             isFilterable: true,
             render: (_, row) => `${row.dose} ${row.vaccine?.unit_measurement || ''}`,
         },
         {
-            header: "Administracion",
+            header: t('medication.vaccinePlan.vaccineColumn.route'),
             accessor: "administration_route",
             type: "text",
             isFilterable: true,
             render: (value: string) => {
                 let color = "secondary";
-                let label = value;
+                const label = value === 'protocol'
+                    ? t('medication.vaccinePlan.protocol')
+                    : t(`medical.medication.route.${value}`, { defaultValue: value });
 
                 switch (value) {
-                    case "oral":
-                        color = "info";
-                        label = "Oral";
-                        break;
-                    case "intramuscular":
-                        color = "primary";
-                        label = "Intramuscular";
-                        break;
-                    case "subcutaneous":
-                        color = "primary";
-                        label = "Subcutánea";
-                        break;
-                    case "intravenous":
-                        color = "primary";
-                        label = "Intravenosa";
-                        break;
-                    case "intranasal":
-                        color = "primary";
-                        label = "Intranasal";
-                        break;
-                    case "topical":
-                        color = "primary";
-                        label = "Tópica";
-                        break;
-                    case "protocol":
-                        color = "primary";
-                        label = "Protocolo";
-                        break;
+                    case "oral": color = "info"; break;
+                    default: color = "primary"; break;
                 }
 
                 return <Badge color={color}>{label}</Badge>;
             },
         },
         {
-            header: "Edad objetivo",
+            header: t('medication.vaccinePlan.vaccineColumn.age'),
             accessor: "age_objective",
             type: "text",
             isFilterable: true,
-            render: (_, row) => <span>{row.age_objective} dias</span>
+            render: (_, row) => <span>{row.age_objective} {t('medication.vaccinePlan.vaccineColumn.days')}</span>
         },
         {
-            header: "Frecuencia",
+            header: t('medication.vaccinePlan.vaccineColumn.frequency'),
             accessor: "frequency",
             type: "text",
             isFilterable: true,
             render: (value: string) => {
                 let color = "secondary";
-                let label = value;
+                const label = t(`medication.vaccinePlan.frequency.${value}`, { defaultValue: value });
 
                 switch (value) {
-                    case "single":
-                        color = "info";
-                        label = "Única dosis";
-                        break;
-                    case "single_booster":
-                        color = "primary";
-                        label = "Única dosis + refuerzo";
-                        break;
-                    case "3_weeks":
-                        color = "primary";
-                        label = "Cada 3 semanas";
-                        break;
-                    case "4_weeks":
-                        color = "primary";
-                        label = "Cada 4 semanas";
-                        break;
-                    case "6_weeks":
-                        color = "primary";
-                        label = "Cada 6 semanas";
-                        break;
-                    case "12_weeks":
-                        color = "primary";
-                        label = "Cada 12 semanas";
-                        break;
-                    case "rectal":
-                        color = "primary";
-                        label = "Rectal";
-                        break;
+                    case "single": color = "info"; break;
+                    default: color = "primary"; break;
                 }
 
                 return <Badge color={color}>{label}</Badge>;
@@ -204,7 +142,7 @@ const VaccinationPlanDetails: React.FC<VaccinationPlanDetailsProps> = ({ vaccina
             setLoading(false)
         } catch (error) {
             console.error('Error fetching data:', error)
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al cargar los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('medication.vaccinePlan.error.load') })
         }
     }
 
@@ -258,20 +196,19 @@ const VaccinationPlanDetails: React.FC<VaccinationPlanDetailsProps> = ({ vaccina
                 {vaccinationPlanDetails.is_active ? (
                     <Button className="btn-danger" onClick={() => toggleModal('deactivateVaccinationPlan')}>
                         <i className="ri-forbid-line align-middle me-2 fs-5" />
-                        Desactivar plan de vacunacion
+                        {t('medication.vaccinePlan.action.deactivate')}
                     </Button>
                 ) : (
                     <Button className="btn-success" onClick={() => toggleModal('activateVaccinationPlan')}>
                         <i className="ri-check-line align-middle me-2 fs-5" />
-                        Activar plan de vacunacion
+                        {t('medication.vaccinePlan.action.activate')}
                     </Button>
                 )}
-
             </div>
             <div className="d-flex gap-3">
                 <Card className="w-25">
                     <CardHeader className="bg-light">
-                        <h5>Informacion del plan de vacunacion</h5>
+                        <h5>{t('medication.vaccinePlan.info')}</h5>
                     </CardHeader>
                     <CardBody>
                         <ObjectDetails attributes={vaccinationPlanAttributes} object={vaccinationPlanDetails} />
@@ -280,7 +217,7 @@ const VaccinationPlanDetails: React.FC<VaccinationPlanDetailsProps> = ({ vaccina
 
                 <Card className="w-75">
                     <CardHeader className="bg-light">
-                        <h5>Vacunas del plan</h5>
+                        <h5>{t('medication.vaccinePlan.vaccinesCard')}</h5>
                     </CardHeader>
                     <CardBody className="p-0">
                         <CustomTable columns={vaccinesColumns} data={vaccinationItems} showSearchAndFilter={false} showPagination={true} rowsPerPage={5} />
@@ -289,33 +226,32 @@ const VaccinationPlanDetails: React.FC<VaccinationPlanDetailsProps> = ({ vaccina
             </div>
 
             <Modal size="md" isOpen={modals.deactivateVaccinationPlan} toggle={() => toggleModal("deactivateVaccinationPlan")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("deactivateVaccinationPlan")}>Desactivar plan de vacunacion</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("deactivateVaccinationPlan")}>{t('medication.vaccinePlan.action.deactivateModal')}</ModalHeader>
                 <ModalBody>
-                    <p>¿Está seguro que desea desactivar este plan de vacunacion?</p>
+                    <p>{t('medication.vaccinePlan.action.deactivateConfirm')}</p>
                 </ModalBody>
                 <ModalFooter>
-                    <Button color="secondary" onClick={() => toggleModal('deactivateVaccinationPlan', false)}>Cancelar</Button>
-                    <Button color="danger" onClick={() => { toggleModal('deactivateVaccinationPlan'); deactivateVaccinationPlan() }}>Confirmar</Button>
+                    <Button color="secondary" onClick={() => toggleModal('deactivateVaccinationPlan', false)}>{t('common.button.cancel')}</Button>
+                    <Button color="danger" onClick={() => { toggleModal('deactivateVaccinationPlan'); deactivateVaccinationPlan() }}>{t('common.button.confirm')}</Button>
                 </ModalFooter>
             </Modal>
 
             <Modal size="md" isOpen={modals.activateVaccinationPlan} toggle={() => toggleModal("activateVaccinationPlan")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("activateVaccinationPlan")}>Activar paquete de medicaciones</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("activateVaccinationPlan")}>{t('medication.vaccinePlan.action.activateModal')}</ModalHeader>
                 <ModalBody>
-                    <p>¿Está seguro que desea activar este plan de vacunacion?</p>
+                    <p>{t('medication.vaccinePlan.action.activateConfirm')}</p>
                 </ModalBody>
                 <ModalFooter>
-                    <Button color="secondary" onClick={() => toggleModal('activateVaccinationPlan', false)}>Cancelar</Button>
-                    <Button color="danger" onClick={() => { toggleModal('activateVaccinationPlan'); activateVaccinationPlan() }}>Confirmar</Button>
+                    <Button color="secondary" onClick={() => toggleModal('activateVaccinationPlan', false)}>{t('common.button.cancel')}</Button>
+                    <Button color="danger" onClick={() => { toggleModal('activateVaccinationPlan'); activateVaccinationPlan() }}>{t('common.button.confirm')}</Button>
                 </ModalFooter>
             </Modal>
 
+            <SuccessModal isOpen={modals.deactivationSuccess} onClose={() => { toggleModal('deactivationSuccess'); fetchData() }} message={t('medication.vaccinePlan.success.deactivated')} />
+            <SuccessModal isOpen={modals.activationSuccess} onClose={() => { toggleModal('activationSuccess'); fetchData() }} message={t('medication.vaccinePlan.success.activated')} />
 
-            <SuccessModal isOpen={modals.deactivationSuccess} onClose={() => { toggleModal('deactivationSuccess'); fetchData() }} message={"Plan de vacunacion desactivado con exito"} />
-            <SuccessModal isOpen={modals.activationSuccess} onClose={() => { toggleModal('activationSuccess'); fetchData() }} message={"Plan de vacunacionactivado con exito"} />
-
-            <ErrorModal isOpen={modals.deactivationError} onClose={() => { toggleModal('deactivationError') }} message={"Ha ocurrido un error al desactivar el plan de vacunacion, intentelo mas tarde"} />
-            <ErrorModal isOpen={modals.activationError} onClose={() => { toggleModal('activationError') }} message={"Ha ocurrido un error al activar el plan de vacunacion, intentelo mas tarde"} />
+            <ErrorModal isOpen={modals.deactivationError} onClose={() => { toggleModal('deactivationError') }} message={t('medication.vaccinePlan.error.deactivate')} />
+            <ErrorModal isOpen={modals.activationError} onClose={() => { toggleModal('activationError') }} message={t('medication.vaccinePlan.error.activate')} />
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} />
         </>

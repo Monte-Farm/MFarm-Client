@@ -1,9 +1,10 @@
 import i18n from "i18next";
-import detector from "i18next-browser-languagedetector";
+import LanguageDetector from "i18next-browser-languagedetector";
 import { initReactI18next } from "react-i18next";
 
 import translationSP from "./locales/sp.json";
 import translationENG from "./locales/en.json";
+import translationPT from "./locales/pt.json";
 
 const resources = {
   sp: {
@@ -12,23 +13,39 @@ const resources = {
   en: {
     translation: translationENG,
   },
+  pt: {
+    translation: translationPT,
+  },
 };
 
-const language = localStorage.getItem("I18N_LANGUAGE");
-if (!language) {
-  localStorage.setItem("I18N_LANGUAGE", "en");
-}
+const SUPPORTED = ["sp", "en", "pt"] as const;
+
+const mapBrowserLang = (lng?: string): string => {
+  if (!lng) return "sp";
+  const lower = lng.toLowerCase();
+  if (lower.startsWith("pt")) return "pt";
+  if (lower.startsWith("en")) return "en";
+  if (lower.startsWith("es")) return "sp";
+  return "sp";
+};
 
 i18n
-  .use(detector)
+  .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources,
-    lng: localStorage.getItem("I18N_LANGUAGE") || "en",
-    fallbackLng: "en",
-    keySeparator: false,
+    supportedLngs: SUPPORTED as unknown as string[],
+    fallbackLng: "sp",
+    keySeparator: ".",
+    nsSeparator: false,
     interpolation: {
       escapeValue: false,
+    },
+    detection: {
+      order: ["localStorage", "navigator"],
+      lookupLocalStorage: "I18N_LANGUAGE",
+      caches: ["localStorage"],
+      convertDetectedLanguage: mapBrowserLang,
     },
   });
 

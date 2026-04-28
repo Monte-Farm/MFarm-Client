@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { createSelector } from 'reselect';
+import { useTranslation } from 'react-i18next';
 import {
     Dropdown,
     DropdownToggle,
@@ -33,91 +34,93 @@ const selectNotificationsState = createSelector(
     })
 );
 
-const typeConfig: Record<string, { icon: string; color: string; bg: string; gradient: string; label: string }> = {
-    health_alert: {
-        icon: 'ri-heart-pulse-line',
-        color: '#f672a7',
-        bg: 'rgba(246, 114, 167, 0.12)',
-        gradient: 'linear-gradient(135deg, #f672a7 0%, #d14a86 100%)',
-        label: 'Salud',
-    },
-    birth_approaching: {
-        icon: 'ri-heart-add-line',
-        color: '#6559cc',
-        bg: 'rgba(101, 89, 204, 0.12)',
-        gradient: 'linear-gradient(135deg, #6559cc 0%, #4a3fb3 100%)',
-        label: 'Parto',
-    },
-    reproduction: {
-        icon: 'ri-parent-line',
-        color: '#a855d6',
-        bg: 'rgba(168, 85, 214, 0.12)',
-        gradient: 'linear-gradient(135deg, #a855d6 0%, #8a3db0 100%)',
-        label: 'Reproducción',
-    },
-    stage_change: {
-        icon: 'ri-arrow-right-circle-line',
-        color: '#405189',
-        bg: 'rgba(64, 81, 137, 0.12)',
-        gradient: 'linear-gradient(135deg, #405189 0%, #2f3e6f 100%)',
-        label: 'Etapa',
-    },
-    system: {
-        icon: 'ri-settings-3-line',
-        color: '#74788d',
-        bg: 'rgba(116, 120, 141, 0.12)',
-        gradient: 'linear-gradient(135deg, #74788d 0%, #5a5e73 100%)',
-        label: 'Sistema',
-    },
-    weight_goal: {
-        icon: 'ri-scales-line',
-        color: '#0ab39c',
-        bg: 'rgba(10, 179, 156, 0.12)',
-        gradient: 'linear-gradient(135deg, #0ab39c 0%, #089986 100%)',
-        label: 'Peso',
-    },
-    feeding_alert: {
-        icon: 'ri-restaurant-line',
-        color: '#299cdb',
-        bg: 'rgba(41, 156, 219, 0.12)',
-        gradient: 'linear-gradient(135deg, #299cdb 0%, #1f82bb 100%)',
-        label: 'Alimento',
-    },
-    group_management: {
-        icon: 'ri-group-line',
-        color: '#3577f1',
-        bg: 'rgba(53, 119, 241, 0.12)',
-        gradient: 'linear-gradient(135deg, #3577f1 0%, #2560d6 100%)',
-        label: 'Grupo',
-    },
-    inventory: {
-        icon: 'ri-archive-line',
-        color: '#f7b84b',
-        bg: 'rgba(247, 184, 75, 0.12)',
-        gradient: 'linear-gradient(135deg, #f7b84b 0%, #e09b25 100%)',
-        label: 'Inventario',
-    },
-};
-
-const defaultConfig = {
-    icon: 'ri-information-line',
-    color: '#74788d',
-    bg: 'rgba(116, 120, 141, 0.12)',
-    gradient: 'linear-gradient(135deg, #74788d 0%, #5a5e73 100%)',
-    label: 'General',
-};
-
-function timeAgo(dateStr: string): string {
-    const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-    if (diff < 60) return 'Ahora';
-    if (diff < 3600) return `Hace ${Math.floor(diff / 60)} min`;
-    if (diff < 86400) return `Hace ${Math.floor(diff / 3600)} h`;
-    return `Hace ${Math.floor(diff / 86400)} d`;
-}
-
 type TabKey = 'all' | 'unread';
 
 const NotificationDropdown = () => {
+    const { t } = useTranslation();
+
+    const typeConfig: Record<string, { icon: string; color: string; bg: string; gradient: string; label: string }> = {
+        health_alert: {
+            icon: 'ri-heart-pulse-line',
+            color: '#f672a7',
+            bg: 'rgba(246, 114, 167, 0.12)',
+            gradient: 'linear-gradient(135deg, #f672a7 0%, #d14a86 100%)',
+            label: t('notification.type.health_alert'),
+        },
+        birth_approaching: {
+            icon: 'ri-heart-add-line',
+            color: '#6559cc',
+            bg: 'rgba(101, 89, 204, 0.12)',
+            gradient: 'linear-gradient(135deg, #6559cc 0%, #4a3fb3 100%)',
+            label: t('notification.type.birth_approaching'),
+        },
+        reproduction: {
+            icon: 'ri-parent-line',
+            color: '#a855d6',
+            bg: 'rgba(168, 85, 214, 0.12)',
+            gradient: 'linear-gradient(135deg, #a855d6 0%, #8a3db0 100%)',
+            label: t('notification.type.reproduction'),
+        },
+        stage_change: {
+            icon: 'ri-arrow-right-circle-line',
+            color: '#405189',
+            bg: 'rgba(64, 81, 137, 0.12)',
+            gradient: 'linear-gradient(135deg, #405189 0%, #2f3e6f 100%)',
+            label: t('notification.type.stage_change'),
+        },
+        system: {
+            icon: 'ri-settings-3-line',
+            color: '#74788d',
+            bg: 'rgba(116, 120, 141, 0.12)',
+            gradient: 'linear-gradient(135deg, #74788d 0%, #5a5e73 100%)',
+            label: t('notification.type.system'),
+        },
+        weight_goal: {
+            icon: 'ri-scales-line',
+            color: '#0ab39c',
+            bg: 'rgba(10, 179, 156, 0.12)',
+            gradient: 'linear-gradient(135deg, #0ab39c 0%, #089986 100%)',
+            label: t('notification.type.weight_goal'),
+        },
+        feeding_alert: {
+            icon: 'ri-restaurant-line',
+            color: '#299cdb',
+            bg: 'rgba(41, 156, 219, 0.12)',
+            gradient: 'linear-gradient(135deg, #299cdb 0%, #1f82bb 100%)',
+            label: t('notification.type.feeding_alert'),
+        },
+        group_management: {
+            icon: 'ri-group-line',
+            color: '#3577f1',
+            bg: 'rgba(53, 119, 241, 0.12)',
+            gradient: 'linear-gradient(135deg, #3577f1 0%, #2560d6 100%)',
+            label: t('notification.type.group_management'),
+        },
+        inventory: {
+            icon: 'ri-archive-line',
+            color: '#f7b84b',
+            bg: 'rgba(247, 184, 75, 0.12)',
+            gradient: 'linear-gradient(135deg, #f7b84b 0%, #e09b25 100%)',
+            label: t('notification.type.inventory'),
+        },
+    };
+
+    const defaultConfig = {
+        icon: 'ri-information-line',
+        color: '#74788d',
+        bg: 'rgba(116, 120, 141, 0.12)',
+        gradient: 'linear-gradient(135deg, #74788d 0%, #5a5e73 100%)',
+        label: t('notification.type.default'),
+    };
+
+    function timeAgo(dateStr: string): string {
+        const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+        if (diff < 60) return t('notification.timeAgo.now');
+        if (diff < 3600) return t('notification.timeAgo.minutes', { count: Math.floor(diff / 60) });
+        if (diff < 86400) return t('notification.timeAgo.hours', { count: Math.floor(diff / 3600) });
+        return t('notification.timeAgo.days', { count: Math.floor(diff / 86400) });
+    }
+
     const dispatch: any = useDispatch();
     const navigate = useNavigate();
     const { notifications, unreadCount, loading } = useSelector(selectNotificationsState);
@@ -248,10 +251,10 @@ const NotificationDropdown = () => {
                             </div>
                             <div>
                                 <h6 className="mb-0 fw-bold" style={{ color: '#fff', fontSize: '17px', letterSpacing: '-0.3px' }}>
-                                    Notificaciones
+                                    {t('notification.title')}
                                 </h6>
                                 <p className="mb-0" style={{ color: 'rgba(255,255,255,0.75)', fontSize: '12px', marginTop: '2px' }}>
-                                    {unreadCount > 0 ? `${unreadCount} pendientes por revisar` : 'Todo al día'}
+                                    {unreadCount > 0 ? t('notification.pending', { count: unreadCount }) : t('notification.allCaughtUp')}
                                 </p>
                             </div>
                         </div>
@@ -271,15 +274,15 @@ const NotificationDropdown = () => {
                                 }}
                             >
                                 <i className="ri-check-double-line" style={{ fontSize: '14px' }} />
-                                Marcar leídas
+                                {t('notification.markRead')}
                             </button>
                         )}
                     </div>
 
                     <div className="position-relative d-flex gap-2" style={{ marginBottom: '-1px' }}>
                         {([
-                            { key: 'all' as TabKey, label: 'Todas', count: notifications.length },
-                            { key: 'unread' as TabKey, label: 'Sin leer', count: unreadCount },
+                            { key: 'all' as TabKey, label: t('notification.tab.all'), count: notifications.length },
+                            { key: 'unread' as TabKey, label: t('notification.tab.unread'), count: unreadCount },
                         ]).map(tab => {
                             const active = activeTab === tab.key;
                             return (
@@ -334,7 +337,7 @@ const NotificationDropdown = () => {
                             >
                                 <Spinner size="sm" style={{ color: '#405189' }} />
                             </div>
-                            <p className="mb-0" style={{ fontSize: '12.5px', color: '#878a99' }}>Cargando notificaciones...</p>
+                            <p className="mb-0" style={{ fontSize: '12.5px', color: '#878a99' }}>{t('notification.loading')}</p>
                         </div>
                     ) : filteredNotifications.length === 0 ? (
                         <div className="d-flex flex-column align-items-center justify-content-center py-5 px-4 text-center">
@@ -349,12 +352,12 @@ const NotificationDropdown = () => {
                                 <i className="ri-notification-off-line" style={{ fontSize: '34px', color: '#405189', opacity: 0.8 }} />
                             </div>
                             <h6 className="mb-1 fw-semibold" style={{ fontSize: '15px' }}>
-                                {activeTab === 'unread' ? 'Sin notificaciones nuevas' : 'No hay notificaciones'}
+                                {activeTab === 'unread' ? t('notification.empty.unread.title') : t('notification.empty.all.title')}
                             </h6>
                             <p className="mb-0" style={{ fontSize: '12.5px', maxWidth: '260px', color: '#878a99', lineHeight: '1.5' }}>
                                 {activeTab === 'unread'
-                                    ? 'Todas tus notificaciones están al día'
-                                    : 'Cuando recibas alguna aparecerá aquí'}
+                                    ? t('notification.empty.unread.body')
+                                    : t('notification.empty.all.body')}
                             </p>
                         </div>
                     ) : (
@@ -501,7 +504,7 @@ const NotificationDropdown = () => {
                         }}
                     >
                         <span style={{ fontSize: '11.5px', color: '#adb5bd', fontWeight: 500 }}>
-                            {filteredNotifications.length} {filteredNotifications.length === 1 ? 'notificación' : 'notificaciones'}
+                            {filteredNotifications.length} {filteredNotifications.length === 1 ? t('notification.footer.single') : t('notification.footer.plural')}
                         </span>
                         <button
                             className="btn btn-sm d-flex align-items-center gap-1 border-0"
@@ -513,7 +516,7 @@ const NotificationDropdown = () => {
                                 padding: '4px 8px',
                             }}
                         >
-                            Ver todas
+                            {t('notification.footer.viewAll')}
                             <i className="ri-arrow-right-line" style={{ fontSize: '14px' }} />
                         </button>
                     </div>

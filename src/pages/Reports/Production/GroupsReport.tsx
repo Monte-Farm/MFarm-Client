@@ -1,5 +1,6 @@
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Badge, Card, CardBody, CardHeader, Col, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
 import { Column } from "common/data/data_types";
 import { useReportScope } from "hooks/useReportScope";
@@ -53,24 +54,26 @@ interface GroupKpis {
     totalDeaths: number;
 }
 
-const stageLabels: Record<string, { label: string; color: string }> = {
-    lactation: { label: "Lactancia", color: "info" },
-    weaning: { label: "Destete", color: "primary" },
-    growing: { label: "Crecimiento", color: "success" },
-    finishing: { label: "Engorda", color: "warning" },
-    sold: { label: "Vendido", color: "secondary" },
-};
-
-const movementLabels: Record<string, { label: string; color: string }> = {
-    entry: { label: "Entrada", color: "success" },
-    exit: { label: "Salida", color: "warning" },
-    transfer: { label: "Transferencia", color: "info" },
-    death: { label: "Muerte", color: "danger" },
-    sale: { label: "Venta", color: "primary" },
-};
-
 const GroupsReport = () => {
-    document.title = "Reporte de Grupos | Reportes";
+    const { t } = useTranslation();
+
+    const stageLabels: Record<string, { label: string; color: string }> = {
+        lactation: { label: t("reports.groups.stage.lactation"), color: "info" },
+        weaning: { label: t("reports.groups.stage.weaning"), color: "primary" },
+        growing: { label: t("reports.groups.stage.growing"), color: "success" },
+        finishing: { label: t("reports.groups.stage.finishing"), color: "warning" },
+        sold: { label: t("reports.groups.stage.sold"), color: "secondary" },
+    };
+
+    const movementLabels: Record<string, { label: string; color: string }> = {
+        entry: { label: t("reports.groups.movement.entry"), color: "success" },
+        exit: { label: t("reports.groups.movement.exit"), color: "warning" },
+        transfer: { label: t("reports.groups.movement.transfer"), color: "info" },
+        death: { label: t("reports.groups.movement.death"), color: "danger" },
+        sale: { label: t("reports.groups.movement.sale"), color: "primary" },
+    };
+
+    document.title = `${t("reports.groups.title")} | ${t("reports.title")}`;
 
     const configContext = useContext(ConfigContext);
     const { isGlobal, farmId, scopeKey } = useReportScope();
@@ -117,7 +120,7 @@ const GroupsReport = () => {
             setKpis(data.kpis);
             setGroupsByStage(data.groupsByStage || []);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar los datos del reporte." });
+            setAlertConfig({ visible: true, color: "danger", message: t("reports.error.loadData") });
         } finally {
             setLoading(false);
         }
@@ -144,54 +147,54 @@ const GroupsReport = () => {
     }, [startDate, endDate, scopeKey]);
 
     const groupColumns: Column<GroupRecord>[] = [
-        { header: "Grupo", accessor: "name", type: "text", isFilterable: true },
+        { header: t("reports.col.group"), accessor: "name", type: "text", isFilterable: true },
         {
-            header: "Etapa", accessor: "stage", type: "text",
+            header: t("reports.col.stage"), accessor: "stage", type: "text",
             render: (value: string) => {
                 const s = stageLabels[value] || { label: value, color: "secondary" };
                 return <Badge color={s.color}>{s.label}</Badge>;
             },
         },
-        { header: "Cerdos", accessor: "pigCount", type: "number", bgColor: "#e3f2fd" },
+        { header: t("reports.groups.col.pigs"), accessor: "pigCount", type: "number", bgColor: "#e3f2fd" },
         {
-            header: "Peso Prom.", accessor: "avgWeight", type: "text",
+            header: t("reports.groups.col.avgWeight"), accessor: "avgWeight", type: "text",
             render: (v: number) => <span>{v?.toFixed(1)} kg</span>,
         },
-        { header: "Fecha Entrada", accessor: "entryDate", type: "date" },
+        { header: t("reports.groups.col.entryDate"), accessor: "entryDate", type: "date" },
         {
-            header: "Dias en Etapa", accessor: "daysInStage", type: "number",
+            header: t("reports.groups.col.daysInStage"), accessor: "daysInStage", type: "number",
             render: (v: number) => <span>{v} dias</span>,
         },
     ];
 
     const movementColumns: Column<GroupMovement>[] = [
-        { header: "Fecha", accessor: "date", type: "date", isFilterable: true },
-        { header: "Grupo", accessor: "groupName", type: "text", isFilterable: true },
+        { header: t("reports.col.date"), accessor: "date", type: "date", isFilterable: true },
+        { header: t("reports.col.group"), accessor: "groupName", type: "text", isFilterable: true },
         {
-            header: "Tipo", accessor: "movementType", type: "text",
+            header: t("reports.col.type"), accessor: "movementType", type: "text",
             render: (value: string) => {
                 const m = movementLabels[value] || { label: value, color: "secondary" };
                 return <Badge color={m.color}>{m.label}</Badge>;
             },
         },
-        { header: "Cantidad", accessor: "quantity", type: "number", bgColor: "#e3f2fd" },
-        { header: "Origen", accessor: "origin", type: "text" },
-        { header: "Destino", accessor: "destination", type: "text" },
-        { header: "Observaciones", accessor: "observations", type: "text" },
+        { header: t("reports.col.quantity"), accessor: "quantity", type: "number", bgColor: "#e3f2fd" },
+        { header: t("reports.groups.col.origin"), accessor: "origin", type: "text" },
+        { header: t("reports.groups.col.destination"), accessor: "destination", type: "text" },
+        { header: t("reports.col.observations"), accessor: "observations", type: "text" },
     ];
 
     const summaryColumns: Column<GroupSummary>[] = [
-        { header: "Grupo", accessor: "groupName", type: "text", isFilterable: true },
-        { header: "Entradas", accessor: "entries", type: "number", bgColor: "#e8f5e9" },
-        { header: "Salidas", accessor: "exits", type: "number", bgColor: "#fff3e0" },
-        { header: "Muertes", accessor: "deaths", type: "number", bgColor: "#ffebee" },
-        { header: "Actual", accessor: "currentCount", type: "number", bgColor: "#e3f2fd" },
+        { header: t("reports.col.group"), accessor: "groupName", type: "text", isFilterable: true },
+        { header: t("reports.groups.col.entries"), accessor: "entries", type: "number", bgColor: "#e8f5e9" },
+        { header: t("reports.groups.col.exits"), accessor: "exits", type: "number", bgColor: "#fff3e0" },
+        { header: t("reports.groups.col.deaths"), accessor: "deaths", type: "number", bgColor: "#ffebee" },
+        { header: t("reports.groups.col.current"), accessor: "currentCount", type: "number", bgColor: "#e3f2fd" },
         {
-            header: "Peso Prom.", accessor: "avgWeight", type: "text",
+            header: t("reports.groups.col.avgWeight"), accessor: "avgWeight", type: "text",
             render: (v: number) => <span>{v?.toFixed(1)} kg</span>,
         },
         {
-            header: "Alimento (kg)", accessor: "totalFeedConsumed", type: "text",
+            header: t("reports.groups.col.feed"), accessor: "totalFeedConsumed", type: "text",
             render: (v: number) => <span>{v?.toFixed(0)} kg</span>,
         },
     ];
@@ -206,10 +209,10 @@ const GroupsReport = () => {
 
     return (
         <ReportPageLayout
-            title="Reporte de Grupos"
-            pageTitle="Reportes de Produccion"
+            title={t("reports.groups.title")}
+            pageTitle={t("reports.production")}
             onGeneratePdf={handleGeneratePdf}
-            pdfTitle="Reporte - Grupos"
+            pdfTitle={t("reports.groups.pdfTitle")}
             startDate={startDate}
             endDate={endDate}
             onDateChange={(s, e) => { setStartDate(s); setEndDate(e); }}
@@ -218,7 +221,7 @@ const GroupsReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Total Grupos"
+                        title={t("reports.groups.kpi.totalGroups")}
                         value={kpis.totalGroups}
                         icon={<i className="ri-group-line fs-4 text-primary"></i>}
                         animateValue
@@ -226,7 +229,7 @@ const GroupsReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Total Cerdos"
+                        title={t("reports.groups.kpi.totalPigs")}
                         value={kpis.totalPigs}
                         icon={<i className="bx bxs-dog fs-4 text-info"></i>}
                         animateValue
@@ -235,7 +238,7 @@ const GroupsReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Prom. / Grupo"
+                        title={t("reports.groups.kpi.avgPerGroup")}
                         value={kpis.avgPigsPerGroup}
                         icon={<i className="ri-bar-chart-line fs-4 text-success"></i>}
                         animateValue
@@ -245,7 +248,7 @@ const GroupsReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Movimientos"
+                        title={t("reports.groups.kpi.movements")}
                         value={kpis.totalMovements}
                         icon={<i className="ri-arrow-left-right-line fs-4 text-warning"></i>}
                         animateValue
@@ -254,7 +257,7 @@ const GroupsReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Dias Prom. Etapa"
+                        title={t("reports.groups.kpi.avgDaysInStage")}
                         value={kpis.avgDaysInStage}
                         icon={<i className="ri-calendar-line fs-4 text-secondary"></i>}
                         animateValue
@@ -265,7 +268,7 @@ const GroupsReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Muertes"
+                        title={t("reports.groups.kpi.deaths")}
                         value={kpis.totalDeaths}
                         icon={<i className="ri-alert-line fs-4 text-danger"></i>}
                         animateValue
@@ -278,12 +281,12 @@ const GroupsReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={12}>
                     <BasicBarChart
-                        title="Grupos y Cerdos por Etapa"
+                        title={t("reports.groups.chart.groupsAndPigsByStage")}
                         data={stageBarData}
                         indexBy="stage"
                         keys={["Grupos", "Cerdos"]}
-                        xLegend="Etapa"
-                        yLegend="Cantidad"
+                        xLegend={t("reports.axis.stage")}
+                        yLegend={t("reports.axis.quantity")}
                         height={280}
                     />
                 </Col>
@@ -299,7 +302,7 @@ const GroupsReport = () => {
                                 onClick={() => setActiveTab("1")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-group-line me-1"></i> Existencia ({groups.length})
+                                <i className="ri-group-line me-1"></i> {t("reports.groups.tab.stock")} ({groups.length})
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -308,7 +311,7 @@ const GroupsReport = () => {
                                 onClick={() => setActiveTab("2")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-arrow-left-right-line me-1"></i> Movimientos ({movements.length})
+                                <i className="ri-arrow-left-right-line me-1"></i> {t("reports.groups.tab.movements")} ({movements.length})
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -317,7 +320,7 @@ const GroupsReport = () => {
                                 onClick={() => setActiveTab("3")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-file-list-3-line me-1"></i> Resumen Productivo ({summaries.length})
+                                <i className="ri-file-list-3-line me-1"></i> {t("reports.groups.tab.summary")} ({summaries.length})
                             </NavLink>
                         </NavItem>
                     </Nav>

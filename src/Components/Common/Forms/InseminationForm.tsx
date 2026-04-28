@@ -15,6 +15,7 @@ import SuccessModal from "../Shared/SuccessModal";
 import { HttpStatusCode } from "axios";
 import PigDetailsModal from "../Details/DetailsPigModal";
 import SelectableTable from "../Tables/SelectableTable";
+import { useTranslation } from "react-i18next";
 
 
 interface InseminationFormProps {
@@ -24,6 +25,7 @@ interface InseminationFormProps {
 }
 
 const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave, onCancel }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -44,7 +46,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
 
     const sowsColumns: Column<any>[] = [
         {
-            header: 'Codigo',
+            header: t('insemination.form.columnCode', { defaultValue: 'Codigo' }),
             accessor: 'code',
             render: (_, row) => (
                 <Button
@@ -60,66 +62,46 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                 </Button>
             )
         },
-        { header: 'Raza', accessor: 'breed', type: 'text', isFilterable: true },
-        { header: 'Peso actual', accessor: 'weight', type: 'number', isFilterable: true },
+        { header: t('insemination.form.columnBreed', { defaultValue: 'Raza' }), accessor: 'breed', type: 'text', isFilterable: true },
+        { header: t('insemination.form.columnWeight', { defaultValue: 'Peso actual' }), accessor: 'weight', type: 'number', isFilterable: true },
         {
-            header: 'Etapa',
+            header: t('insemination.form.columnStage', { defaultValue: 'Etapa' }),
             accessor: 'currentStage',
             render: (value: string) => {
-                let color = "secondary";
-                let label = value;
-
-                switch (value) {
-                    case "piglet":
-                        color = "info";
-                        label = "Lechón";
-                        break;
-                    case "weaning":
-                        color = "warning";
-                        label = "Destete";
-                        break;
-                    case "fattening":
-                        color = "primary";
-                        label = "Engorda";
-                        break;
-                    case "breeder":
-                        color = "success";
-                        label = "Reproductor";
-                        break;
-                }
-
+                const color = value === 'piglet' ? 'info' : value === 'weaning' ? 'warning' : value === 'fattening' ? 'primary' : value === 'breeder' ? 'success' : 'secondary';
+                const label = t(`pigs.stage.${value}`, { defaultValue: value });
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { header: 'Fecha de N.', accessor: 'birthdate', type: 'date' },
+        { header: t('insemination.form.columnBirthdate', { defaultValue: 'Fecha de N.' }), accessor: 'birthdate', type: 'date' },
     ]
 
     const dosesColumns: Column<any>[] = [
-        { header: 'Codigo', accessor: 'code', type: 'text', isFilterable: true },
+        { header: t('insemination.form.columnCode', { defaultValue: 'Codigo' }), accessor: 'code', type: 'text', isFilterable: true },
         {
-            header: 'Genetica liquida',
+            header: t('insemination.form.columnGeneticLiquid', { defaultValue: 'Genetica liquida' }),
             accessor: 'doses',
             type: 'number',
             isFilterable: true,
             render: (_, row) => `${row.semen_volume} ${row.unit_measurement}` || 0
         },
         {
-            header: 'Volumen diluyente',
+            header: t('insemination.form.columnDiluentVolume', { defaultValue: 'Volumen diluyente' }),
             accessor: 'doses',
             type: 'number',
             isFilterable: true,
             render: (_, row) => `${row.diluent_volume} ${row.unit_measurement}` || 0
         },
         {
-            header: 'Volumen total',
+            header: t('insemination.form.columnTotalVolume', { defaultValue: 'Volumen total' }),
             accessor: 'doses',
             type: 'number',
             isFilterable: true,
             render: (_, row) => `${row.total_volume} ${row.unit_measurement}` || 0
         },
-        { header: 'Verraco', accessor: 'boar_code', type: 'text', isFilterable: true },
+        { header: t('insemination.form.columnBoar', { defaultValue: 'Verraco' }), accessor: 'boar_code', type: 'text', isFilterable: true },
         {
-            header: 'Detalles de extracción',
+            header: t('insemination.form.columnExtractionDetails', { defaultValue: 'Detalles de extracción' }),
             accessor: 'action',
             render: (_, row) => (
                 <Button
@@ -130,7 +112,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                         fetchExtractionDetails(row.extraction_id, row.semen_sample_id);
                     }}
                 >
-                    Ver detalles ↗
+                    {t('common.button.viewDetails', { defaultValue: 'Ver detalles' })} ↗
                 </Button>
             )
         }
@@ -161,7 +143,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
     }
 
     const inseminationValidationSchema = Yup.object({
-        date: Yup.date().required('Por favor ingrese la fecha de la inseminación'),
+        date: Yup.date().required(t('insemination.form.validationDate', { defaultValue: 'Por favor ingrese la fecha de la inseminación' })),
     });
 
     const formik = useFormik<InseminationData>({
@@ -316,7 +298,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                                 aria-selected={activeStep === 1}
                                 aria-controls="step-sowselect-tab"
                             >
-                                Selección de cerda
+                                {t('insemination.form.step1', { defaultValue: 'Selección de cerda' })}
                             </NavLink>
                         </NavItem>
 
@@ -332,7 +314,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                                 aria-selected={activeStep === 2}
                                 aria-controls="step-inseminationinfo-tab"
                             >
-                                Información de la inseminación
+                                {t('insemination.form.step2', { defaultValue: 'Información de la inseminación' })}
                             </NavLink>
                         </NavItem>
 
@@ -348,7 +330,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                                 aria-selected={activeStep === 3}
                                 aria-controls="step-doses-tab"
                             >
-                                Datos de dosis
+                                {t('insemination.form.step3', { defaultValue: 'Datos de dosis' })}
                             </NavLink>
                         </NavItem>
 
@@ -364,7 +346,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                                 aria-selected={activeStep === 4}
                                 aria-controls="step-summary-tab"
                             >
-                                Resumen
+                                {t('insemination.form.step4', { defaultValue: 'Resumen' })}
                             </NavLink>
                         </NavItem>
                     </Nav>
@@ -375,14 +357,14 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                         <SelectableTable data={sows} columns={sowsColumns} selectionMode="single" showPagination={true} rowsPerPage={15} onSelect={(rows) => formik.setFieldValue('sow', rows[0]?._id)} />
                         <div className="mt-4 d-flex">
                             <Button className="ms-auto" onClick={() => checkSowSelected()}>
-                                Siguiente
+                                {t('common.button.next', { defaultValue: 'Siguiente' })}
                                 <i className="ri-arrow-right-line" />
                             </Button>
                         </div>
                         {alertSowEmpty && (
                             <Alert color='danger' className="d-flex align-items-center gap-2 shadow rounded-3 p-3 mt-3">
                                 <FiXCircle size={22} />
-                                <span className="flex-grow-1 text-black">Por favor, seleccione una cerda</span>
+                                <span className="flex-grow-1 text-black">{t('insemination.form.alertSelectPig', { defaultValue: 'Por favor, seleccione una cerda' })}</span>
 
                                 <Button close onClick={() => setAlertSowEmpty(false)} />
                             </Alert>
@@ -392,7 +374,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                     <TabPane id="step-inseminationinfo-tab" tabId={2}>
                         <div className="d-flex gap-2">
                             <div className="w-50">
-                                <Label htmlFor="date" className="form-label">Fecha de inseminación</Label>
+                                <Label htmlFor="date" className="form-label">{t('insemination.form.date', { defaultValue: 'Fecha de inseminación' })}</Label>
                                 <DatePicker
                                     id="date"
                                     className={`form-control ${formik.touched.date && formik.errors.date ? 'is-invalid' : ''}`}
@@ -408,7 +390,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                             </div>
 
                             <div className="w-50">
-                                <Label htmlFor="notes" className="form-label">Notas</Label>
+                                <Label htmlFor="notes" className="form-label">{t('insemination.form.notes', { defaultValue: 'Notas' })}</Label>
                                 <Input
                                     type="text"
                                     id="notes"
@@ -417,7 +399,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                                     onChange={formik.handleChange}
                                     onBlur={formik.handleBlur}
                                     invalid={formik.touched.notes && !!formik.errors.notes}
-                                    placeholder="Ej: Extraccion parcial"
+                                    placeholder={t('insemination.form.notesPlaceholder', { defaultValue: 'Ej: Extraccion parcial' })}
                                 />
                                 {formik.touched.notes && formik.errors.notes && (
                                     <FormFeedback>{formik.errors.notes}</FormFeedback>
@@ -426,7 +408,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                         </div>
 
                         <div className="mt-4 border-top border-3 pt-3">
-                            <Label className="form-label">Dosis de semen</Label>
+                            <Label className="form-label">{t('insemination.form.doses', { defaultValue: 'Dosis de semen' })}</Label>
                             <SelectableTable
                                 data={doses}
                                 columns={dosesColumns}
@@ -442,11 +424,11 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                         <div className="mt-4 d-flex">
                             <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                                 <i className="ri-arrow-left-line me-2" />
-                                Atras
+                                {t('common.button.back', { defaultValue: 'Volver' })}
                             </Button>
 
                             <Button className="ms-auto" onClick={() => checkInseminationData()}>
-                                Siguiente
+                                {t('common.button.next', { defaultValue: 'Siguiente' })}
                                 <i className="ri-arrow-right-line ms-2" />
                             </Button>
                         </div>
@@ -454,7 +436,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                         {alertInseminationDataEmpty && (
                             <Alert color='danger' className="d-flex align-items-center gap-2 shadow rounded-3 p-3 mt-3">
                                 <FiXCircle size={22} />
-                                <span className="flex-grow-1 text-black">Por favor, seleccione al menos una dosis</span>
+                                <span className="flex-grow-1 text-black">{t('insemination.form.alertSelectDose', { defaultValue: 'Por favor, seleccione al menos una dosis' })}</span>
 
                                 <Button close onClick={() => setAlertSowEmpty(false)} />
                             </Alert>
@@ -489,13 +471,13 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                                                         >
                                                             <Card className="mb-2 shadow-sm">
                                                                 <CardHeader className="bg-primary text-white d-flex justify-content-between align-items-center">
-                                                                    <span className="fs-5">Dosis: {dose.code}</span>
-                                                                    <span className="badge bg-light text-dark fs-5">Orden {index + 1}</span>
+                                                                    <span className="fs-5">{t('insemination.form.doseCode', { code: dose.code, defaultValue: `Dosis: ${dose.code}` })}</span>
+                                                                    <span className="badge bg-light text-dark fs-5">{t('insemination.form.doseOrder', { number: index + 1, defaultValue: `Orden ${index + 1}` })}</span>
                                                                 </CardHeader>
                                                                 <CardBody className="d-flex flex-column gap-3">
                                                                     <div className="d-flex gap-2">
                                                                         <div className="w-50">
-                                                                            <Label>Fecha y hora de aplicación</Label>
+                                                                            <Label>{t('insemination.form.doseDateTime', { defaultValue: 'Fecha y hora de aplicación' })}</Label>
                                                                             <DatePicker
                                                                                 className="form-control"
                                                                                 value={dose.time ?? undefined}
@@ -508,7 +490,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                                                                             />
                                                                         </div>
                                                                         <div className="w-50">
-                                                                            <Label>Notas</Label>
+                                                                            <Label>{t('insemination.form.doseNotes', { defaultValue: 'Notas' })}</Label>
                                                                             <Input
                                                                                 type="text"
                                                                                 value={dose.notes ?? ''}
@@ -517,7 +499,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                                                                                     updated[index].notes = e.target.value;
                                                                                     setSelectedDoses(updated);
                                                                                 }}
-                                                                                placeholder="Opcional"
+                                                                                placeholder={t('insemination.form.dosesOptionalPlaceholder', { defaultValue: 'Opcional' })}
                                                                             />
                                                                         </div>
                                                                     </div>
@@ -537,11 +519,11 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                         <div className="mt-4 d-flex">
                             <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                                 <i className="ri-arrow-left-line me-2" />
-                                Atras
+                                {t('common.button.back', { defaultValue: 'Volver' })}
                             </Button>
 
                             <Button className="ms-auto" onClick={validateAndSaveDoses}>
-                                Siguiente
+                                {t('common.button.next', { defaultValue: 'Siguiente' })}
                                 <i className="ri-arrow-right-line ms-2" />
                             </Button>
                         </div>
@@ -549,7 +531,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                         {alertDosesIncomplete && (
                             <Alert color='danger' className="d-flex align-items-center gap-2 shadow rounded-3 p-3 mt-3">
                                 <FiXCircle size={22} />
-                                <span className="flex-grow-1 text-black">Por favor complete todos los campos de las dosis</span>
+                                <span className="flex-grow-1 text-black">{t('insemination.form.alertFillDoses', { defaultValue: 'Por favor complete todos los campos de las dosis' })}</span>
                                 <Button close onClick={() => setAlertDosesIncomplete(false)} />
                             </Alert>
                         )}
@@ -562,32 +544,32 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                             <div className="col-md-6">
                                 <div className="card shadow-sm border-0 rounded-3 h-100">
                                     <div className="card-header bg-primary text-white fs-5 d-flex align-items-center justify-content-center">
-                                        Datos de la cerda
+                                        {t('insemination.form.pigCard', { defaultValue: 'Datos de la cerda' })}
                                     </div>
                                     <div className="card-body">
                                         {(() => {
                                             const selectedSow = sows.find(s => s._id === formik.values.sow);
-                                            if (!selectedSow) return <p className="text-muted text-center">No se seleccionó ninguna cerda</p>;
+                                            if (!selectedSow) return <p className="text-muted text-center">{t('insemination.form.noSowSelected', { defaultValue: 'No se seleccionó ninguna cerda' })}</p>;
                                             return (
                                                 <ul className="list-group list-group-flush fs-5">
                                                     <li className="list-group-item d-flex justify-content-between">
-                                                        <span className="text-black"><strong>Código:</strong></span>
+                                                        <span className="text-black"><strong>{t('insemination.form.summaryCode_label', { defaultValue: 'Código:' })}</strong></span>
                                                         <span className="text-black">{selectedSow.code}</span>
                                                     </li>
                                                     <li className="list-group-item d-flex justify-content-between">
-                                                        <span className="text-black"><strong>Raza:</strong></span>
+                                                        <span className="text-black"><strong>{t('insemination.form.summaryBreed_label', { defaultValue: 'Raza:' })}</strong></span>
                                                         <span className="text-black">{selectedSow.breed}</span>
                                                     </li>
                                                     <li className="list-group-item d-flex justify-content-between">
-                                                        <span className="text-black"><strong>Peso actual:</strong></span>
+                                                        <span className="text-black"><strong>{t('insemination.form.summaryWeight_label', { defaultValue: 'Peso actual:' })}</strong></span>
                                                         <span className="text-black">{selectedSow.weight} kg</span>
                                                     </li>
                                                     <li className="list-group-item d-flex justify-content-between">
-                                                        <span className="text-black"><strong>Etapa actual:</strong></span>
-                                                        <span className="text-black">{selectedSow.currentStage}</span>
+                                                        <span className="text-black"><strong>{t('insemination.form.summaryStage_label', { defaultValue: 'Etapa actual:' })}</strong></span>
+                                                        <span className="text-black">{t(`pigs.stage.${selectedSow.currentStage}`, { defaultValue: selectedSow.currentStage })}</span>
                                                     </li>
                                                     <li className="list-group-item d-flex justify-content-between">
-                                                        <span className="text-black"><strong>Fecha de nacimiento:</strong></span>
+                                                        <span className="text-black"><strong>{t('insemination.form.summaryBirthdate_label', { defaultValue: 'Fecha de nacimiento:' })}</strong></span>
                                                         <span className="text-black">{selectedSow.birthdate ? new Date(selectedSow.birthdate).toLocaleDateString() : "-"}</span>
                                                     </li>
                                                 </ul>
@@ -601,26 +583,26 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                             <div className="col-md-6">
                                 <div className="card shadow-sm border-0 rounded-3 h-100">
                                     <div className="card-header bg-success text-white fs-5 d-flex align-items-center justify-content-center">
-                                        Información de la inseminación
+                                        {t('insemination.form.inseminationCard', { defaultValue: 'Información de la inseminación' })}
                                     </div>
                                     <div className="card-body">
                                         <ul className="list-group list-group-flush fs-5">
                                             <li className="list-group-item d-flex justify-content-between">
-                                                <span className="text-black"><strong>Fecha:</strong></span>
+                                                <span className="text-black"><strong>{t('insemination.form.summaryDate_label', { defaultValue: 'Fecha:' })}</strong></span>
                                                 <span className="text-black">{formik.values.date ? new Date(formik.values.date).toLocaleDateString() : "-"}</span>
                                             </li>
                                             <li className="list-group-item d-flex justify-content-between">
-                                                <span className="text-black"><strong>Responsable:</strong></span>
+                                                <span className="text-black"><strong>{t('insemination.form.summaryResponsible_label', { defaultValue: 'Responsable:' })}</strong></span>
                                                 <span className="text-black">{userLogged.name} {userLogged.lastname}</span>
                                             </li>
                                             <li className="list-group-item d-flex justify-content-between">
-                                                <span className="text-black"><strong>Notas:</strong></span>
-                                                <span className="text-black">{formik.values.notes || "Sin notas"}</span>
+                                                <span className="text-black"><strong>{t('insemination.form.summaryNotes_label', { defaultValue: 'Notas:' })}</strong></span>
+                                                <span className="text-black">{formik.values.notes || t('insemination.form.noNotes', { defaultValue: 'Sin notas' })}</span>
                                             </li>
                                             <li className="list-group-item d-flex justify-content-between">
-                                                <span className="text-black"><strong>Fecha de parto (tentativa)</strong></span>
+                                                <span className="text-black"><strong>{t('insemination.form.summaryFarrowing_label', { defaultValue: 'Fecha de parto (tentativa)' })}</strong></span>
                                                 <span className="text-black">
-                                                    {formik.values.date ? new Date(new Date(formik.values.date).getTime() + 115 * 24 * 60 * 60 * 1000).toLocaleDateString() : "Sin fecha"}
+                                                    {formik.values.date ? new Date(new Date(formik.values.date).getTime() + 115 * 24 * 60 * 60 * 1000).toLocaleDateString() : t('insemination.form.noDate', { defaultValue: 'Sin fecha' })}
                                                 </span>
                                             </li>
                                         </ul>
@@ -632,11 +614,11 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                             <div className="col-12">
                                 <div className="card shadow-sm border-0 rounded-3 h-100">
                                     <div className="card-header bg-info text-white fs-5 d-flex align-items-center justify-content-center">
-                                        Dosis
+                                        {t('insemination.form.dosesCard', { defaultValue: 'Dosis' })}
                                     </div>
                                     <div className="card-body" style={{ maxHeight: "300px", overflowY: "auto" }}>
                                         {formik.values.doses.length === 0 ? (
-                                            <p className="text-muted text-center fs-5">No se han agregado dosis</p>
+                                            <p className="text-muted text-center fs-5">{t('insemination.form.noDoses', { defaultValue: 'No se han agregado dosis' })}</p>
                                         ) : (
                                             <ul className="list-group list-group-flush fs-5">
                                                 {formik.values.doses.map((dose, idx) => {
@@ -648,7 +630,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                                                         <li key={idx} className="list-group-item d-flex justify-content-between">
                                                             <span className="text-black"><strong>{displayCode}</strong></span>
                                                             <span className="text-black">
-                                                                {dose.time ? new Date(dose.time).toLocaleString() : "-"} | {dose.notes || "Sin notas"}
+                                                                {dose.time ? new Date(dose.time).toLocaleString() : "-"} | {dose.notes || t('insemination.form.noNotes', { defaultValue: 'Sin notas' })}
                                                             </span>
                                                         </li>
                                                     );
@@ -664,7 +646,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                         <div className="mt-4 d-flex">
                             <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                                 <i className="ri-arrow-left-line me-2" />
-                                Atrás
+                                {t('common.button.back', { defaultValue: 'Volver' })}
                             </Button>
 
                             <Button className="ms-auto btn-success" type="submit" onClick={() => formik.handleSubmit()} disabled={formik.isSubmitting}>
@@ -673,7 +655,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                                 ) : (
                                     <>
                                         <i className="ri-check-line me-2" />
-                                        Registrar
+                                        {t('insemination.form.register', { defaultValue: 'Registrar' })}
                                     </>
                                 )}
                             </Button>
@@ -684,7 +666,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
 
             <Modal isOpen={modalOpen} toggle={toggleModal} size="lg" centered className="border-0">
                 <ModalHeader toggle={toggleModal} className="border-0 pb-0">
-                    <h4 className="modal-title text-primary fw-bold">Detalles de la extracción</h4>
+                    <h4 className="modal-title text-primary fw-bold">{t('insemination.form.modalExtraction', { defaultValue: 'Detalles de la extracción' })}</h4>
                 </ModalHeader>
                 <ModalBody className="p-4">
                     {extractionData ? (
@@ -693,33 +675,33 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                             <Col md={6} className="d-flex">
                                 <div className="card shadow-sm border-0 rounded-3 w-100 h-100 d-flex flex-column">
                                     <div className="card-header bg-primary text-white fs-5 d-flex align-items-center justify-content-center">
-                                        Datos de la extracción
+                                        {t('insemination.form.extractionCardTitle', { defaultValue: 'Datos de la extracción' })}
                                     </div>
                                     <div className="card-body p-0 d-flex flex-column flex-grow-1">
                                         <ul className="list-group list-group-flush flex-grow-1">
                                             <li className="list-group-item d-flex justify-content-between">
-                                                <strong>Fecha:</strong> <span className="text-black">{new Date(extractionData.extraction.date).toLocaleString()}</span>
+                                                <strong>{t('insemination.form.extractionDate', { defaultValue: 'Fecha:' })}</strong> <span className="text-black">{new Date(extractionData.extraction.date).toLocaleString()}</span>
                                             </li>
                                             <li className="list-group-item d-flex justify-content-between">
-                                                <strong>Técnico:</strong> <span className="text-black">{extractionData.extraction.technician.name} {extractionData.extraction.technician.lastname}</span>
+                                                <strong>{t('insemination.form.extractionTechnician', { defaultValue: 'Técnico:' })}</strong> <span className="text-black">{extractionData.extraction.technician.name} {extractionData.extraction.technician.lastname}</span>
                                             </li>
                                             <li className="list-group-item d-flex justify-content-between">
-                                                <strong>Verraco:</strong> <span className="text-black">{extractionData.extraction.boar.code} ({extractionData.extraction.boar.breed})</span>
+                                                <strong>{t('insemination.form.extractionBoar', { defaultValue: 'Verraco:' })}</strong> <span className="text-black">{extractionData.extraction.boar.code} ({extractionData.extraction.boar.breed})</span>
                                             </li>
                                             <li className="list-group-item d-flex justify-content-between">
-                                                <strong>Ubicación:</strong> <span className="text-black">{extractionData.extraction.extraction_location}</span>
+                                                <strong>{t('insemination.form.extractionLocation', { defaultValue: 'Ubicación:' })}</strong> <span className="text-black">{extractionData.extraction.extraction_location}</span>
                                             </li>
                                             <li className="list-group-item d-flex justify-content-between">
-                                                <strong>Lote:</strong> <span className="text-black">{extractionData.extraction.batch}</span>
+                                                <strong>{t('insemination.form.extractionBatch', { defaultValue: 'Lote:' })}</strong> <span className="text-black">{extractionData.extraction.batch}</span>
                                             </li>
                                             <li className="list-group-item d-flex justify-content-between">
-                                                <strong>Volumen total:</strong> <span className="text-black">{extractionData.extraction.volume} {extractionData.extraction.unit_measurement}</span>
+                                                <strong>{t('insemination.form.extractionTotalVolume', { defaultValue: 'Volumen total:' })}</strong> <span className="text-black">{extractionData.extraction.volume} {extractionData.extraction.unit_measurement}</span>
                                             </li>
                                             <li className="list-group-item d-flex justify-content-between">
-                                                <strong>Notas:</strong> <span className="text-black">{extractionData.extraction.notes || 'N/A'}</span>
+                                                <strong>{t('insemination.form.extractionNotes', { defaultValue: 'Notas:' })}</strong> <span className="text-black">{extractionData.extraction.notes || 'N/A'}</span>
                                             </li>
                                             <li className="list-group-item d-flex justify-content-between">
-                                                <strong>Apariencia:</strong> <span className="text-black">{extractionData.extraction.appearance}</span>
+                                                <strong>{t('insemination.form.extractionAppearance', { defaultValue: 'Apariencia:' })}</strong> <span className="text-black">{extractionData.extraction.appearance}</span>
                                             </li>
                                         </ul>
                                     </div>
@@ -730,36 +712,36 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                             <Col md={6} className="d-flex">
                                 <div className="card shadow-sm border-0 rounded-3 w-100 h-100 d-flex flex-column">
                                     <div className="card-header bg-success text-white fs-5 d-flex align-items-center justify-content-center">
-                                        Información de la muestra
+                                        {t('insemination.form.sampleCardTitle', { defaultValue: 'Información de la muestra' })}
                                     </div>
                                     <div className="card-body p-0 d-flex flex-column flex-grow-1">
                                         <ul className="list-group list-group-flush flex-grow-1">
                                             <li className="list-group-item d-flex justify-content-between">
-                                                <strong>Diluyente:</strong> <span className="text-black">{extractionData.sample.diluent.type} (Lote {extractionData.sample.diluent.lot})</span>
+                                                <strong>{t('insemination.form.sampleDiluent', { defaultValue: 'Diluyente:' })}</strong> <span className="text-black">{extractionData.sample.diluent.type} (Lote {extractionData.sample.diluent.lot})</span>
                                             </li>
                                             <li className="list-group-item d-flex justify-content-between">
-                                                <strong>Concentración (millones):</strong> <span className="text-black">{extractionData.sample.concentration_million}</span>
+                                                <strong>{t('insemination.form.sampleConcentration', { defaultValue: 'Concentración (millones):' })}</strong> <span className="text-black">{extractionData.sample.concentration_million}</span>
                                             </li>
                                             <li className="list-group-item d-flex justify-content-between">
-                                                <strong>Motilidad (%):</strong> <span className="text-black">{extractionData.sample.motility_percent}</span>
+                                                <strong>{t('insemination.form.sampleMotility', { defaultValue: 'Motilidad (%):' })}</strong> <span className="text-black">{extractionData.sample.motility_percent}</span>
                                             </li>
                                             <li className="list-group-item d-flex justify-content-between">
-                                                <strong>Vitalidad (%):</strong> <span className="text-black">{extractionData.sample.vitality_percent}</span>
+                                                <strong>{t('insemination.form.sampleVitality', { defaultValue: 'Vitalidad (%):' })}</strong> <span className="text-black">{extractionData.sample.vitality_percent}</span>
                                             </li>
                                             <li className="list-group-item d-flex justify-content-between">
-                                                <strong>Anomalías (%):</strong> <span className="text-black">{extractionData.sample.abnormal_percent}</span>
+                                                <strong>{t('insemination.form.sampleAbnormal', { defaultValue: 'Anomalías (%):' })}</strong> <span className="text-black">{extractionData.sample.abnormal_percent}</span>
                                             </li>
                                             <li className="list-group-item d-flex justify-content-between">
-                                                <strong>pH:</strong> <span className="text-black">{extractionData.sample.pH}</span>
+                                                <strong>{t('insemination.form.samplePH', { defaultValue: 'pH:' })}</strong> <span className="text-black">{extractionData.sample.pH}</span>
                                             </li>
                                             <li className="list-group-item d-flex justify-content-between">
-                                                <strong>Temperatura (°C):</strong> <span className="text-black">{extractionData.sample.temperature}</span>
+                                                <strong>{t('insemination.form.sampleTemperature', { defaultValue: 'Temperatura (°C):' })}</strong> <span className="text-black">{extractionData.sample.temperature}</span>
                                             </li>
                                             <li className="list-group-item d-flex justify-content-between">
-                                                <strong>Método de conservación:</strong> <span className="text-black">{extractionData.sample.conservation_method}</span>
+                                                <strong>{t('insemination.form.sampleConservation', { defaultValue: 'Método de conservación:' })}</strong> <span className="text-black">{extractionData.sample.conservation_method}</span>
                                             </li>
                                             <li className="list-group-item d-flex justify-content-between">
-                                                <strong>Fecha de expiración:</strong> <span className="text-black">{new Date(extractionData.sample.expiration_date).toLocaleDateString()}</span>
+                                                <strong>{t('insemination.form.sampleExpiration', { defaultValue: 'Fecha de expiración:' })}</strong> <span className="text-black">{new Date(extractionData.sample.expiration_date).toLocaleDateString()}</span>
                                             </li>
                                         </ul>
                                     </div>
@@ -769,7 +751,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                     ) : (
                         <div className="text-center py-5 d-flex flex-column align-items-center">
                             <Spinner color="primary" className="mb-3" />
-                            <p className="text-muted mb-0">Cargando información...</p>
+                            <p className="text-muted mb-0">{t('insemination.form.loadingInfo', { defaultValue: 'Cargando información...' })}</p>
                         </div>
                     )}
                 </ModalBody>
@@ -777,14 +759,14 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
 
             <Modal isOpen={pigDetailsmodalOpen} toggle={togglePigDetailsModal} size="lg" centered className="border-0">
                 <ModalHeader toggle={togglePigDetailsModal} className="border-0 pb-0">
-                    <h4 className="modal-title text-primary fw-bold">Detalles de la cerda</h4>
+                    <h4 className="modal-title text-primary fw-bold">{t('insemination.form.sowDetailsTitle', { defaultValue: 'Detalles de la cerda' })}</h4>
                 </ModalHeader>
                 <ModalBody className="p-4">
                     <PigDetailsModal pigId={idSelectedPig} showAllDetailsButton={false} />
                 </ModalBody>
             </Modal>
 
-            <SuccessModal isOpen={successModalOpen} onClose={onSave} message={"Inseminación registrada con éxito"} />
+            <SuccessModal isOpen={successModalOpen} onClose={onSave} message={t('insemination.form.success', { defaultValue: 'Inseminación registrada con éxito' })} />
 
         </>
     )

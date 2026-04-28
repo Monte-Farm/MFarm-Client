@@ -25,16 +25,17 @@ import { deleteGlobalLogo, fetchGlobalConfig, updateGlobalConfig, uploadGlobalLo
 import { DATE_FORMAT_OPTIONS, DEFAULT_GLOBAL_CONFIG } from 'common/configuration_defaults';
 import { GlobalConfiguration as GlobalConfigType } from 'common/data_interfaces';
 import { deriveCurrencySymbol, getCurrencyOptions, getLocaleOptions, getTimezoneOptions } from 'utils/intlHelpers';
+import { useTranslation } from 'react-i18next';
 
 const GlobalConfiguration = () => {
-    document.title = 'Configuración Global | System Pig';
+    const { t } = useTranslation();
+    document.title = t('config.global.pageTitle');
     const dispatch: any = useDispatch();
     const globalConfig: GlobalConfigType | null = useSelector((s: any) => s.Configurations.globalConfig);
     const loading: boolean = useSelector((s: any) => s.Configurations.loadingGlobal);
 
     const [modals, setModals] = useState({ success: false, error: false });
     const [errorMessage, setErrorMessage] = useState<string>('');
-    const [successMessage, setSuccessMessage] = useState<string>('Configuración global actualizada correctamente');
     const [unitInput, setUnitInput] = useState<string>('');
     const [pendingLogoFile, setPendingLogoFile] = useState<File | null>(null);
     const [pendingLogoPreview, setPendingLogoPreview] = useState<string | null>(null);
@@ -67,21 +68,21 @@ const GlobalConfiguration = () => {
             unitMeasurements: globalConfig?.unitMeasurements ?? DEFAULT_GLOBAL_CONFIG.unitMeasurements,
         },
         validationSchema: Yup.object({
-            companyName: Yup.string().trim().required('Ingrese el nombre de la empresa'),
-            currency: Yup.string().required('Seleccione una moneda'),
+            companyName: Yup.string().trim().required(t('config.global.validation.companyNameRequired')),
+            currency: Yup.string().required(t('config.global.validation.currencyRequired')),
             decimals: Yup.number()
-                .typeError('Debe ser un número')
-                .integer('Debe ser un entero')
-                .min(0, 'Mínimo 0')
-                .max(6, 'Máximo 6')
-                .required('Ingrese los decimales'),
-            locale: Yup.string().required('Seleccione un locale'),
-            timezone: Yup.string().required('Seleccione una zona horaria'),
-            dateFormat: Yup.string().required('Seleccione un formato de fecha'),
+                .typeError(t('config.global.validation.decimalsType'))
+                .integer(t('config.global.validation.decimalsInteger'))
+                .min(0, t('config.global.validation.decimalsMin'))
+                .max(6, t('config.global.validation.decimalsMax'))
+                .required(t('config.global.validation.decimalsRequired')),
+            locale: Yup.string().required(t('config.global.validation.localeRequired')),
+            timezone: Yup.string().required(t('config.global.validation.timezoneRequired')),
+            dateFormat: Yup.string().required(t('config.global.validation.dateFormatRequired')),
             unitMeasurements: Yup.array()
-                .of(Yup.string().trim().min(1, 'La unidad no puede estar vacía'))
-                .min(1, 'Agregue al menos una unidad de medida')
-                .required('Agregue al menos una unidad de medida'),
+                .of(Yup.string().trim().min(1, t('config.global.validation.unitEmpty')))
+                .min(1, t('config.global.validation.unitMinOne'))
+                .required(t('config.global.validation.unitMinOne')),
         }),
         validateOnChange: false,
         validateOnBlur: true,
@@ -92,7 +93,7 @@ const GlobalConfiguration = () => {
             };
             const result = await dispatch(updateGlobalConfig(payload));
             if (!result?.ok) {
-                setErrorMessage(result?.error?.response?.data?.message ?? 'Error al guardar la configuración');
+                setErrorMessage(result?.error?.response?.data?.message ?? t('config.global.error.save'));
                 toggleModal('error', true);
                 return;
             }
@@ -100,7 +101,7 @@ const GlobalConfiguration = () => {
             if (pendingLogoRemoval) {
                 const delRes = await dispatch(deleteGlobalLogo());
                 if (!delRes?.ok) {
-                    setErrorMessage(delRes?.error?.response?.data?.message ?? 'Error al eliminar el logo');
+                    setErrorMessage(delRes?.error?.response?.data?.message ?? t('config.global.error.deleteLogo'));
                     toggleModal('error', true);
                     return;
                 }
@@ -108,7 +109,7 @@ const GlobalConfiguration = () => {
             } else if (pendingLogoFile) {
                 const upRes = await dispatch(uploadGlobalLogo(pendingLogoFile));
                 if (!upRes?.ok) {
-                    setErrorMessage(upRes?.error?.response?.data?.message ?? 'Error al subir el logo');
+                    setErrorMessage(upRes?.error?.response?.data?.message ?? t('config.global.error.uploadLogo'));
                     toggleModal('error', true);
                     return;
                 }
@@ -117,7 +118,6 @@ const GlobalConfiguration = () => {
                 setPendingLogoPreview(null);
             }
 
-            setSuccessMessage('Configuración global actualizada correctamente');
             toggleModal('success', true);
         },
     });
@@ -142,12 +142,12 @@ const GlobalConfiguration = () => {
 
     const handleLogoFileSelected = (file: File) => {
         if (!ALLOWED_LOGO_MIME.includes(file.type)) {
-            setErrorMessage('Formato no válido. Usa PNG, JPG o WEBP.');
+            setErrorMessage(t('config.global.error.invalidFormat'));
             toggleModal('error', true);
             return;
         }
         if (file.size > MAX_LOGO_SIZE) {
-            setErrorMessage('La imagen supera el tamaño máximo de 2 MB.');
+            setErrorMessage(t('config.global.error.fileTooLarge'));
             toggleModal('error', true);
             return;
         }
@@ -196,18 +196,18 @@ const GlobalConfiguration = () => {
                 .unit-pill button:hover { opacity: 0.7; }
             `}</style>
             <Container fluid>
-                <BreadCrumb title="Configuración Global" pageTitle="Configuración" />
+                <BreadCrumb title={t('config.global.breadcrumb')} pageTitle={t('config.global.breadcrumbParent')} />
 
                 <Card>
                     <CardHeader className="d-flex justify-content-between align-items-center">
-                        <h5 className="mb-0">Datos de la empresa y preferencias regionales</h5>
+                        <h5 className="mb-0">{t('config.global.header.title')}</h5>
                         <Button
                             type="button"
                             color="success"
                             disabled={loading}
                             onClick={() => formik.handleSubmit()}
                         >
-                            {loading ? 'Guardando...' : 'Guardar'}
+                            {loading ? t('common.button.saving') : t('common.button.save')}
                         </Button>
                     </CardHeader>
                     <CardBody>
@@ -219,7 +219,7 @@ const GlobalConfiguration = () => {
                         >
                             <Row className="g-3">
                                 <Col lg={12}>
-                                    <Label className="form-label">Logo de la empresa</Label>
+                                    <Label className="form-label">{t('config.global.field.logo')}</Label>
                                     <Row className="g-3 align-items-start">
                                         <Col md={4}>
                                             <div
@@ -244,10 +244,10 @@ const GlobalConfiguration = () => {
                                             <div className="d-flex justify-content-between align-items-center mt-2">
                                                 <small className="text-muted">
                                                     {pendingLogoPreview
-                                                        ? 'Vista previa (sin guardar)'
+                                                        ? t('config.global.logo.preview')
                                                         : pendingLogoRemoval
-                                                            ? 'Se quitará al guardar'
-                                                            : hasCustomLogo ? 'Logo actual' : 'Logo predeterminado'}
+                                                            ? t('config.global.logo.willRemove')
+                                                            : hasCustomLogo ? t('config.global.logo.current') : t('config.global.logo.default')}
                                                 </small>
                                                 {hasCustomLogo && !pendingLogoPreview && (
                                                     <Button
@@ -259,7 +259,7 @@ const GlobalConfiguration = () => {
                                                         onClick={handleMarkRemoveLogo}
                                                     >
                                                         <i className="ri-delete-bin-line me-1" />
-                                                        Quitar
+                                                        {t('config.global.button.removeLogo')}
                                                     </Button>
                                                 )}
                                             </div>
@@ -272,12 +272,12 @@ const GlobalConfiguration = () => {
                                                 onUpdateFiles={handleLogoFilesUpdate}
                                             />
                                             <small className="text-muted d-block mt-2">
-                                                PNG, JPG o WEBP · máx. 2 MB · recomendado ≥ 512×512 px con fondo transparente.
+                                                {t('config.global.logo.hint')}
                                             </small>
                                             {hasPendingLogoChanges && (
                                                 <small className="text-warning d-block mt-1">
                                                     <i className="ri-information-line me-1" />
-                                                    Los cambios del logo se aplicarán al guardar.
+                                                    {t('config.global.logo.pendingChanges')}
                                                 </small>
                                             )}
                                         </Col>
@@ -285,7 +285,7 @@ const GlobalConfiguration = () => {
                                 </Col>
 
                                 <Col lg={6}>
-                                    <Label htmlFor="companyName" className="form-label">Nombre de la empresa</Label>
+                                    <Label htmlFor="companyName" className="form-label">{t('config.global.field.companyName')}</Label>
                                     <Input
                                         id="companyName"
                                         name="companyName"
@@ -302,7 +302,7 @@ const GlobalConfiguration = () => {
 
                                 <Col lg={6}>
                                     <Label htmlFor="currency" className="form-label">
-                                        Moneda <span className="text-muted">(símbolo: {derivedSymbol})</span>
+                                        {t('config.global.field.currency')} <span className="text-muted">{t('config.global.field.currencySymbol', { val: derivedSymbol })}</span>
                                     </Label>
                                     <Input
                                         id="currency"
@@ -323,7 +323,7 @@ const GlobalConfiguration = () => {
                                 </Col>
 
                                 <Col lg={4}>
-                                    <Label htmlFor="decimals" className="form-label">Decimales</Label>
+                                    <Label htmlFor="decimals" className="form-label">{t('config.global.field.decimals')}</Label>
                                     <Input
                                         id="decimals"
                                         name="decimals"
@@ -336,14 +336,14 @@ const GlobalConfiguration = () => {
                                         onBlur={formik.handleBlur}
                                         invalid={formik.touched.decimals && !!formik.errors.decimals}
                                     />
-                                    <small className="text-muted">Entero entre 0 y 6</small>
+                                    <small className="text-muted">{t('config.global.field.decimalsHelper')}</small>
                                     {formik.touched.decimals && formik.errors.decimals && (
                                         <FormFeedback>{formik.errors.decimals as string}</FormFeedback>
                                     )}
                                 </Col>
 
                                 <Col lg={4}>
-                                    <Label htmlFor="locale" className="form-label">Locale</Label>
+                                    <Label htmlFor="locale" className="form-label">{t('config.global.field.locale')}</Label>
                                     <Input
                                         id="locale"
                                         name="locale"
@@ -363,7 +363,7 @@ const GlobalConfiguration = () => {
                                 </Col>
 
                                 <Col lg={4}>
-                                    <Label htmlFor="dateFormat" className="form-label">Formato de fecha</Label>
+                                    <Label htmlFor="dateFormat" className="form-label">{t('config.global.field.dateFormat')}</Label>
                                     <Input
                                         id="dateFormat"
                                         name="dateFormat"
@@ -383,7 +383,7 @@ const GlobalConfiguration = () => {
                                 </Col>
 
                                 <Col lg={6}>
-                                    <Label htmlFor="timezone" className="form-label">Zona horaria</Label>
+                                    <Label htmlFor="timezone" className="form-label">{t('config.global.field.timezone')}</Label>
                                     <Input
                                         id="timezone"
                                         name="timezone"
@@ -403,12 +403,12 @@ const GlobalConfiguration = () => {
                                 </Col>
 
                                 <Col lg={12}>
-                                    <Label htmlFor="unitInput" className="form-label">Unidades de medida</Label>
+                                    <Label htmlFor="unitInput" className="form-label">{t('config.global.field.unitMeasurements')}</Label>
                                     <InputGroup>
                                         <Input
                                             id="unitInput"
                                             type="text"
-                                            placeholder="Escribe una unidad (ej: kg) y presiona Enter"
+                                            placeholder={t('config.global.field.unitPlaceholder')}
                                             value={unitInput}
                                             onChange={(e) => setUnitInput(e.target.value)}
                                             onKeyDown={(e) => {
@@ -424,13 +424,13 @@ const GlobalConfiguration = () => {
                                             onClick={handleAddUnit}
                                             disabled={!unitInput.trim()}
                                         >
-                                            <i className="ri-add-line me-1" /> Agregar
+                                            <i className="ri-add-line me-1" /> {t('config.global.button.addUnit')}
                                         </Button>
                                     </InputGroup>
                                     <div className="d-flex flex-wrap gap-2 mt-3">
                                         {formik.values.unitMeasurements.length === 0 && (
                                             <span className="text-muted small fst-italic">
-                                                Aún no has agregado unidades de medida.
+                                                {t('config.global.field.unitEmpty')}
                                             </span>
                                         )}
                                         {formik.values.unitMeasurements.map((unit) => (
@@ -450,7 +450,7 @@ const GlobalConfiguration = () => {
                                                 {unit}
                                                 <button
                                                     type="button"
-                                                    aria-label={`Quitar ${unit}`}
+                                                    aria-label={t('config.global.button.removeUnit', { val: unit })}
                                                     onClick={() => handleRemoveUnit(unit)}
                                                     style={{
                                                         background: 'transparent',
@@ -473,7 +473,7 @@ const GlobalConfiguration = () => {
                                         <div className="text-danger mt-2 small">
                                             {typeof formik.errors.unitMeasurements === 'string'
                                                 ? formik.errors.unitMeasurements
-                                                : 'Agregue al menos una unidad de medida'}
+                                                : t('config.global.validation.unitMinOne')}
                                         </div>
                                     )}
                                 </Col>
@@ -487,12 +487,12 @@ const GlobalConfiguration = () => {
             <SuccessModal
                 isOpen={modals.success}
                 onClose={() => toggleModal('success', false)}
-                message={successMessage}
+                message={t('config.global.success')}
             />
             <ErrorModal
                 isOpen={modals.error}
                 onClose={() => toggleModal('error', false)}
-                message={errorMessage || 'Error al actualizar la configuración'}
+                message={errorMessage || t('config.global.error.update')}
             />
         </div>
     );

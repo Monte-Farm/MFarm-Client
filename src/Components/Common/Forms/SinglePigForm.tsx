@@ -10,6 +10,7 @@ import classnames from "classnames";
 import LoadingAnimation from "../Shared/LoadingAnimation";
 import SuccessModal from "../Shared/SuccessModal";
 import ErrorModal from "../Shared/ErrorModal";
+import { useTranslation } from "react-i18next";
 
 interface SinglePigFormProps {
     onSave: () => void;
@@ -17,11 +18,11 @@ interface SinglePigFormProps {
 }
 
 const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
-    const [loading, setLoading] = useState<boolean>(true)
-    const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ success: false, error: false })
+    const [loading, setLoading] = useState<boolean>(true);
+    const [modals, setModals] = useState({ success: false, error: false });
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
 
@@ -31,148 +32,80 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
 
     function toggleArrowTab(tab: any) {
         if (activeStep !== tab) {
-            var modifiedSteps = [...passedarrowSteps, tab];
-
-            if (tab >= 1 && tab <= 4) {
-                setActiveStep(tab);
-                setPassedarrowSteps(modifiedSteps);
-            }
+            const modifiedSteps = [...passedarrowSteps, tab];
+            if (tab >= 1 && tab <= 4) { setActiveStep(tab); setPassedarrowSteps(modifiedSteps); }
         }
     }
 
     const validationSchema = Yup.object({
-        code: Yup.string()
-            .required('Por favor ingrese el código del cerdo')
-            .test('unique_code', 'Este codigo ya existe, por favor ingrese otro', async (value) => {
-                if (!value) return false
-                if (!configContext) return true
-                try {
-                    const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/pig/check_code_exists/${value}`)
-                    return !response.data.data
-                } catch (error) {
-                    console.error('Error checking farm code:', error);
-                    return false;
-                }
-            }),
-        birthdate: Yup.date()
-            .max(new Date(), 'La fecha de nacimiento no puede ser futura')
-            .required('Por favor ingrese la fecha de nacimiento'),
-        breed: Yup.string()
-            .required('Por favor seleccione la raza'),
-        origin: Yup.mixed<'born' | 'purchased' | 'donated' | 'other'>()
-            .oneOf(['born', 'purchased', 'donated', 'other'], 'Origen inválido')
-            .required('Por favor seleccione el origen'),
-        originDetail: Yup.string().when('origin', {
-            is: 'otro',
-            then: schema => schema.required('Por favor especifique el origen'),
-            otherwise: schema => schema.notRequired(),
+        code: Yup.string().required(t('pigs.field.code')).test('unique_code', t('pigs.field.code'), async (value) => {
+            if (!value || !configContext) return !!value;
+            try {
+                const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/pig/check_code_exists/${value}`);
+                return !response.data.data;
+            } catch { return false; }
         }),
-        arrivalDate: Yup.date().when('origin', {
-            is: (val: string) => val !== 'born',
-            then: schema => schema
-                .max(new Date(), 'La fecha no puede ser futura')
-                .required('Por favor ingrese la fecha de llegada'),
-            otherwise: schema => schema.notRequired(),
-        }),
-        sourceFarm: Yup.string().when('origin', {
-            is: (val: string) => val === 'purchased' || val === 'donated',
-            then: schema => schema.required('Por favor ingrese la granja de origen'),
-            otherwise: schema => schema.notRequired(),
-        }),
-        purchasePrice: Yup.number().when('origin', {
-            is: 'purchased',
-            then: schema => schema.min(0.01, 'El precio debe ser mayor a 0').required('Por favor ingrese el precio de compra'),
-            otherwise: schema => schema.notRequired(),
-        }),
-        status: Yup.mixed<'alive' | 'sold' | 'slaughtered' | 'dead' | 'discarded'>()
-            .oneOf(['alive', 'sold', 'slaughtered', 'dead', 'discarded'], 'Estado inválido')
-            .required('Por favor seleccione el estado'),
-        currentStage: Yup.mixed<'piglet' | 'weaning' | 'fattening' | 'breeder'>()
-            .oneOf(['piglet', 'weaning', 'fattening', 'breeder'], 'Etapa inválida')
-            .required('Por favor seleccione la etapa'),
-        sex: Yup.mixed<'male' | 'female'>()
-            .oneOf(['male', 'female'], 'Sexo inválido')
-            .required('Por favor seleccione el sexo'),
-        weight: Yup.number()
-            .min(1, 'El peso deber ser mayor a 0')
-            .max(300, 'El peso no puede ser mayor a 500')
-            .required('Por favor ingrese el peso'),
+        birthdate: Yup.date().max(new Date()).required(t('pigs.field.birthDate')),
+        breed: Yup.string().required(t('pigs.field.breed')),
+        origin: Yup.mixed<'born' | 'purchased' | 'donated' | 'other'>().oneOf(['born', 'purchased', 'donated', 'other']).required(t('pigs.field.origin')),
+        originDetail: Yup.string().when('origin', { is: 'otro', then: schema => schema.required(t('pigs.field.originDetail')), otherwise: schema => schema.notRequired() }),
+        arrivalDate: Yup.date().when('origin', { is: (val: string) => val !== 'born', then: schema => schema.max(new Date()).required(t('pigs.field.arrivalDate')), otherwise: schema => schema.notRequired() }),
+        sourceFarm: Yup.string().when('origin', { is: (val: string) => val === 'purchased' || val === 'donated', then: schema => schema.required(t('pigs.field.originFarm')), otherwise: schema => schema.notRequired() }),
+        purchasePrice: Yup.number().when('origin', { is: 'purchased', then: schema => schema.min(0.01).required(t('form.pig.field.purchasePrice')), otherwise: schema => schema.notRequired() }),
+        status: Yup.mixed<'alive' | 'sold' | 'slaughtered' | 'dead' | 'discarded'>().oneOf(['alive', 'sold', 'slaughtered', 'dead', 'discarded']).required(t('pigs.field.status')),
+        currentStage: Yup.mixed<'piglet' | 'weaning' | 'fattening' | 'breeder'>().oneOf(['piglet', 'weaning', 'fattening', 'breeder']).required(t('pigs.field.stage')),
+        sex: Yup.mixed<'male' | 'female'>().oneOf(['male', 'female']).required(t('pigs.field.sex')),
+        weight: Yup.number().min(1).max(300).required(t('common.field.weight')),
         observations: Yup.string().notRequired(),
     });
 
     const formik = useFormik<PigData>({
         initialValues: {
-            _id: '',
-            code: '',
-            farmId: '',
-            breed: '',
-            birthdate: null,
-            origin: '',
-            originDetail: '',
-            sourceFarm: '',
-            arrivalDate: null,
-            purchasePrice: 0,
-            status: 'alive',
-            currentStage: 'piglet',
-            sex: 'male',
-            weight: 0,
-            observations: '',
-            historyChanges: [],
-            feedings: [],
-            medications: [],
-            medicationPackagesHistory: [],
-            vaccinationPlansHistory: [],
-            sicknessHistory: [],
-            reproduction: [],
-            registered_by: userLogged._id,
-            registration_date: null,
-            feedAdministrationHistory: [],
+            _id: '', code: '', farmId: '', breed: '', birthdate: null, origin: '', originDetail: '',
+            sourceFarm: '', arrivalDate: null, purchasePrice: 0, status: 'alive', currentStage: 'piglet',
+            sex: 'male', weight: 0, observations: '', historyChanges: [], feedings: [], medications: [],
+            medicationPackagesHistory: [], vaccinationPlansHistory: [], sicknessHistory: [], reproduction: [],
+            registered_by: userLogged._id, registration_date: null, feedAdministrationHistory: [],
         },
         enableReinitialize: true,
         validationSchema,
         validateOnChange: false,
         validateOnBlur: true,
-        onSubmit: async (values, { setSubmitting }) => {
+        onSubmit: async (values) => {
             if (!configContext) return;
             try {
                 values.farmId = userLogged.farm_assigned;
-
-                const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/pig/create`, values);
-                await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
-                    event: `Registro de cerdo ${values.code}`
-                });
-                toggleModal('success')
-            } catch (error) {
-                toggleModal('error')
-            }
+                await configContext.axiosHelper.create(`${configContext.apiUrl}/pig/create`, values);
+                await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, { event: `Registro de cerdo ${values.code}` });
+                toggleModal('success');
+            } catch { toggleModal('error'); }
         }
     });
 
     const fetchNextPigCode = async () => {
         if (!configContext) return;
         try {
-            setLoading(true)
-            const nextResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/pig/get_next_pig_code`)
-            const nextCode = nextResponse.data.data;
-            formik.setFieldValue('code', nextCode)
+            setLoading(true);
+            const nextResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/pig/get_next_pig_code`);
+            formik.setFieldValue('code', nextResponse.data.data);
         } catch (error) {
-            console.error('Error fetching the next code', { error })
+            console.error('Error fetching the next code', { error });
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
     useEffect(() => {
         fetchNextPigCode();
-        formik.setFieldValue('birthdate', new Date())
-        formik.setFieldValue('registration_date', new Date())
-    }, [])
+        formik.setFieldValue('birthdate', new Date());
+        formik.setFieldValue('registration_date', new Date());
+    }, []);
 
-    if (loading) {
-        return (
-            <LoadingAnimation absolutePosition={false} />
-        )
-    }
+    if (loading) return <LoadingAnimation absolutePosition={false} />;
+
+    const statusBadgeColor: Record<string, string> = { alive: "success", sold: "info", slaughtered: "warning", dead: "danger", discarded: "secondary" };
+    const stageBadgeColor: Record<string, string> = { '': '', piglet: "primary", weaning: "info", fattening: "warning", breeder: "success" };
+    const originBadgeColor: Record<string, string> = { '': '', born: "success", purchased: "info", donated: "primary", other: "secondary" };
 
     return (
         <>
@@ -180,240 +113,107 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
                 <div className="step-arrow-nav mb-4">
                     <Nav className="nav-pills custom-nav nav-justified">
                         <NavItem>
-                            <NavLink
-                                href='#'
-                                id="step-pigdate-tab"
-                                className={classnames({
-                                    active: activeStep === 1,
-                                    done: activeStep > 1,
-                                })}
-                                onClick={() => toggleArrowTab(1)}
-                                aria-selected={activeStep === 1}
-                                aria-controls="step-pigdate-tab"
-                                disabled
-                            >
-                                Datos de cerdo
+                            <NavLink href='#' id="step-pigdate-tab" className={classnames({ active: activeStep === 1, done: activeStep > 1 })} onClick={() => toggleArrowTab(1)} disabled>
+                                {t('form.pig.step.pigData')}
                             </NavLink>
                         </NavItem>
-
                         <NavItem>
-                            <NavLink
-                                href='#'
-                                id="step-summary-tab"
-                                className={classnames({
-                                    active: activeStep === 2,
-                                    done: activeStep > 2,
-                                })}
-                                onClick={() => toggleArrowTab(2)}
-                                aria-selected={activeStep === 2}
-                                aria-controls="step-summary-tab"
-                                disabled
-                            >
-                                Resumen
+                            <NavLink href='#' id="step-summary-tab" className={classnames({ active: activeStep === 2, done: activeStep > 2 })} onClick={() => toggleArrowTab(2)} disabled>
+                                {t('form.pig.step.summary')}
                             </NavLink>
                         </NavItem>
                     </Nav>
                 </div>
 
                 <TabContent activeTab={activeStep}>
-                    <TabPane id="step-pigdate-tab" tabId={1}>
-
-                        {/* Sección: Identificación */}
+                    <TabPane tabId={1}>
+                        {/* Identificación */}
                         <div className="card mb-3 shadow-sm">
                             <div className="card-header fw-semibold" style={{ backgroundColor: '#e3f2fd' }}>
-                                <i className="ri-fingerprint-line me-2 text-primary"></i>Identificación
+                                <i className="ri-fingerprint-line me-2 text-primary"></i>{t('form.pig.section.identification')}
                             </div>
                             <div className="card-body">
                                 <div className="d-flex gap-3">
                                     <div className="w-50">
-                                        <Label htmlFor="code" className="form-label">Código</Label>
-                                        <Input
-                                            type="text"
-                                            id="code"
-                                            name="code"
-                                            value={formik.values.code}
-                                            onChange={formik.handleChange}
-                                            onBlur={formik.handleBlur}
-                                            invalid={formik.touched.code && !!formik.errors.code}
-                                            placeholder="Ej: C001"
-                                        />
-                                        {formik.touched.code && formik.errors.code && (
-                                            <FormFeedback>{formik.errors.code}</FormFeedback>
-                                        )}
+                                        <Label htmlFor="code" className="form-label">{t('pigs.field.code')}</Label>
+                                        <Input type="text" id="code" name="code" value={formik.values.code} onChange={formik.handleChange} onBlur={formik.handleBlur} invalid={formik.touched.code && !!formik.errors.code} placeholder="Ej: C001" />
+                                        {formik.touched.code && formik.errors.code && <FormFeedback>{formik.errors.code}</FormFeedback>}
                                     </div>
-
                                     <div className="w-50">
-                                        <Label htmlFor="birthdate" className="form-label">Fecha de nacimiento</Label>
-                                        <DatePicker
-                                            id="birthdate"
-                                            className={`form-control ${formik.touched.birthdate && formik.errors.birthdate ? 'is-invalid' : ''}`}
-                                            value={formik.values.birthdate ?? undefined}
-                                            onChange={(date: Date[]) => {
-                                                if (date[0]) formik.setFieldValue('birthdate', date[0]);
-                                            }}
-                                            options={{ dateFormat: 'd/m/Y' }}
-                                        />
-                                        {formik.touched.birthdate && formik.errors.birthdate && (
-                                            <FormFeedback className="d-block">{formik.errors.birthdate as string}</FormFeedback>
-                                        )}
+                                        <Label htmlFor="birthdate" className="form-label">{t('pigs.field.birthDate')}</Label>
+                                        <DatePicker id="birthdate" className={`form-control ${formik.touched.birthdate && formik.errors.birthdate ? 'is-invalid' : ''}`} value={formik.values.birthdate ?? undefined} onChange={(date: Date[]) => { if (date[0]) formik.setFieldValue('birthdate', date[0]); }} options={{ dateFormat: 'd/m/Y' }} />
+                                        {formik.touched.birthdate && formik.errors.birthdate && <FormFeedback className="d-block">{formik.errors.birthdate as string}</FormFeedback>}
                                     </div>
                                 </div>
-
                                 <div className="d-flex gap-3 mt-3">
                                     <div className="w-50">
-                                        <Label htmlFor="breedInput" className="form-label">Raza</Label>
-                                        <Input
-                                            type="select"
-                                            id="breedInput"
-                                            name="breed"
-                                            value={formik.values.breed}
-                                            onChange={formik.handleChange}
-                                            onBlur={formik.handleBlur}
-                                            invalid={formik.touched.breed && !!formik.errors.breed}
-                                        >
-                                            <option value="">Seleccione una raza</option>
-                                            <option value="Yorkshire">Yorkshire</option>
-                                            <option value="Landrace">Landrace</option>
-                                            <option value="Duroc">Duroc</option>
-                                            <option value="Hampshire">Hampshire</option>
-                                            <option value="Pietrain">Pietrain</option>
-                                            <option value="Berkshire">Berkshire</option>
-                                            <option value="Large White">Large White</option>
-                                            <option value="Chester White">Chester White</option>
-                                            <option value="Poland China">Poland China</option>
-                                            <option value="Tamworth">Tamworth</option>
+                                        <Label htmlFor="breedInput" className="form-label">{t('pigs.field.breed')}</Label>
+                                        <Input type="select" id="breedInput" name="breed" value={formik.values.breed} onChange={formik.handleChange} onBlur={formik.handleBlur} invalid={formik.touched.breed && !!formik.errors.breed}>
+                                            <option value="">{t('form.pig.placeholder.selectBreed')}</option>
+                                            {["Yorkshire","Landrace","Duroc","Hampshire","Pietrain","Berkshire","Large White","Chester White","Poland China","Tamworth"].map(b => <option key={b} value={b}>{b}</option>)}
                                         </Input>
-                                        {formik.touched.breed && formik.errors.breed && (
-                                            <FormFeedback>{formik.errors.breed}</FormFeedback>
-                                        )}
+                                        {formik.touched.breed && formik.errors.breed && <FormFeedback>{formik.errors.breed}</FormFeedback>}
                                     </div>
-
                                     <div className="w-50">
-                                        <Label htmlFor="currentStage" className="form-label">Etapa actual</Label>
-                                        <Input
-                                            type="select"
-                                            id="currentStage"
-                                            name="currentStage"
-                                            value={formik.values.currentStage}
-                                            onChange={formik.handleChange}
-                                            onBlur={formik.handleBlur}
-                                            invalid={formik.touched.currentStage && !!formik.errors.currentStage}
-                                        >
-                                            <option value="piglet">Lechón</option>
-                                            <option value="weaning">Destete</option>
-                                            <option value="fattening">Engorda</option>
-                                            <option value="breeder">Reproductor</option>
+                                        <Label htmlFor="currentStage" className="form-label">{t('form.pig.field.currentStage')}</Label>
+                                        <Input type="select" id="currentStage" name="currentStage" value={formik.values.currentStage} onChange={formik.handleChange} onBlur={formik.handleBlur} invalid={formik.touched.currentStage && !!formik.errors.currentStage}>
+                                            <option value="piglet">{t('pigs.stage.piglet')}</option>
+                                            <option value="weaning">{t('pigs.stage.weaning')}</option>
+                                            <option value="fattening">{t('pigs.stage.fattening')}</option>
+                                            <option value="breeder">{t('pigs.stage.breeder')}</option>
                                         </Input>
-                                        {formik.touched.currentStage && formik.errors.currentStage && (
-                                            <FormFeedback>{formik.errors.currentStage}</FormFeedback>
-                                        )}
+                                        {formik.touched.currentStage && formik.errors.currentStage && <FormFeedback>{formik.errors.currentStage}</FormFeedback>}
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Sección: Origen */}
+                        {/* Origen */}
                         <div className="card mb-3 shadow-sm">
                             <div className="card-header fw-semibold" style={{ backgroundColor: '#e8f5e9' }}>
-                                <i className="ri-map-pin-line me-2 text-success"></i>Origen
+                                <i className="ri-map-pin-line me-2 text-success"></i>{t('form.pig.section.origin')}
                             </div>
                             <div className="card-body">
                                 <div className="d-flex gap-3">
                                     <div className="w-50">
-                                        <Label htmlFor="origin" className="form-label">Tipo de origen</Label>
-                                        <Input
-                                            type="select"
-                                            id="origin"
-                                            name="origin"
-                                            value={formik.values.origin}
-                                            onChange={formik.handleChange}
-                                            onBlur={formik.handleBlur}
-                                            invalid={formik.touched.origin && !!formik.errors.origin}
-                                        >
-                                            <option value="">Seleccione una opcion</option>
-                                            {/* <option value="born">Nacido en la granja</option> */}
-                                            <option value="purchased">Comprado</option>
-                                            <option value="donated">Donado</option>
-                                            <option value="other">Otro</option>
+                                        <Label htmlFor="origin" className="form-label">{t('form.pig.field.originType')}</Label>
+                                        <Input type="select" id="origin" name="origin" value={formik.values.origin} onChange={formik.handleChange} onBlur={formik.handleBlur} invalid={formik.touched.origin && !!formik.errors.origin}>
+                                            <option value="">{t('form.pig.placeholder.selectOption')}</option>
+                                            <option value="purchased">{t('pigs.origin.purchased')}</option>
+                                            <option value="donated">{t('pigs.origin.donated')}</option>
+                                            <option value="other">{t('pigs.origin.other')}</option>
                                         </Input>
-                                        {formik.touched.origin && formik.errors.origin && (
-                                            <FormFeedback>{formik.errors.origin}</FormFeedback>
-                                        )}
+                                        {formik.touched.origin && formik.errors.origin && <FormFeedback>{formik.errors.origin}</FormFeedback>}
                                     </div>
-
                                     {formik.values.origin !== '' && formik.values.origin !== 'born' && (
                                         <div className="w-50">
-                                            <Label htmlFor="arrivalDate" className="form-label">Fecha de llegada</Label>
-                                            <DatePicker
-                                                id="arrivalDate"
-                                                className={`form-control ${formik.touched.arrivalDate && formik.errors.arrivalDate ? 'is-invalid' : ''}`}
-                                                value={formik.values.arrivalDate ?? undefined}
-                                                onChange={(date: Date[]) => {
-                                                    if (date[0]) formik.setFieldValue('arrivalDate', date[0]);
-                                                }}
-                                                options={{ dateFormat: 'd/m/Y' }}
-                                            />
-                                            {formik.touched.arrivalDate && formik.errors.arrivalDate && (
-                                                <FormFeedback className="d-block">{formik.errors.arrivalDate as string}</FormFeedback>
-                                            )}
+                                            <Label htmlFor="arrivalDate" className="form-label">{t('pigs.field.arrivalDate')}</Label>
+                                            <DatePicker id="arrivalDate" className={`form-control ${formik.touched.arrivalDate && formik.errors.arrivalDate ? 'is-invalid' : ''}`} value={formik.values.arrivalDate ?? undefined} onChange={(date: Date[]) => { if (date[0]) formik.setFieldValue('arrivalDate', date[0]); }} options={{ dateFormat: 'd/m/Y' }} />
+                                            {formik.touched.arrivalDate && formik.errors.arrivalDate && <FormFeedback className="d-block">{formik.errors.arrivalDate as string}</FormFeedback>}
                                         </div>
                                     )}
                                 </div>
-
                                 {formik.values.origin !== '' && (
                                     <div className="d-flex gap-3 mt-3">
                                         {formik.values.origin === 'other' && (
                                             <div className="w-50">
-                                                <Label htmlFor="originDetail" className="form-label">Detalle del origen</Label>
-                                                <Input
-                                                    type="text"
-                                                    id="originDetail"
-                                                    name="originDetail"
-                                                    value={formik.values.originDetail}
-                                                    onChange={formik.handleChange}
-                                                    onBlur={formik.handleBlur}
-                                                    invalid={formik.touched.originDetail && !!formik.errors.originDetail}
-                                                />
-                                                {formik.touched.originDetail && formik.errors.originDetail && (
-                                                    <FormFeedback>{formik.errors.originDetail as string}</FormFeedback>
-                                                )}
+                                                <Label htmlFor="originDetail" className="form-label">{t('pigs.field.originDetail')}</Label>
+                                                <Input type="text" id="originDetail" name="originDetail" value={formik.values.originDetail} onChange={formik.handleChange} onBlur={formik.handleBlur} invalid={formik.touched.originDetail && !!formik.errors.originDetail} />
+                                                {formik.touched.originDetail && formik.errors.originDetail && <FormFeedback>{formik.errors.originDetail as string}</FormFeedback>}
                                             </div>
                                         )}
-
                                         {(formik.values.origin === 'purchased' || formik.values.origin === 'donated') && (
                                             <div className="w-50">
-                                                <Label htmlFor="sourceFarm" className="form-label">Granja de origen</Label>
-                                                <Input
-                                                    type="text"
-                                                    id="sourceFarm"
-                                                    name="sourceFarm"
-                                                    value={formik.values.sourceFarm}
-                                                    onChange={formik.handleChange}
-                                                    onBlur={formik.handleBlur}
-                                                    invalid={formik.touched.sourceFarm && !!formik.errors.sourceFarm}
-                                                />
-                                                {formik.touched.sourceFarm && formik.errors.sourceFarm && (
-                                                    <FormFeedback>{formik.errors.sourceFarm as string}</FormFeedback>
-                                                )}
+                                                <Label htmlFor="sourceFarm" className="form-label">{t('pigs.field.originFarm')}</Label>
+                                                <Input type="text" id="sourceFarm" name="sourceFarm" value={formik.values.sourceFarm} onChange={formik.handleChange} onBlur={formik.handleBlur} invalid={formik.touched.sourceFarm && !!formik.errors.sourceFarm} />
+                                                {formik.touched.sourceFarm && formik.errors.sourceFarm && <FormFeedback>{formik.errors.sourceFarm as string}</FormFeedback>}
                                             </div>
                                         )}
-
                                         {formik.values.origin === 'purchased' && (
                                             <div className="w-50">
-                                                <Label htmlFor="purchasePrice" className="form-label">Precio de compra ($)</Label>
-                                                <Input
-                                                    type="number"
-                                                    step="0.01"
-                                                    id="purchasePrice"
-                                                    name="purchasePrice"
-                                                    value={formik.values.purchasePrice}
-                                                    onChange={formik.handleChange}
-                                                    onBlur={formik.handleBlur}
-                                                    invalid={formik.touched.purchasePrice && !!formik.errors.purchasePrice}
-                                                />
-                                                {formik.touched.purchasePrice && formik.errors.purchasePrice && (
-                                                    <FormFeedback>{formik.errors.purchasePrice as string}</FormFeedback>
-                                                )}
+                                                <Label htmlFor="purchasePrice" className="form-label">{t('form.pig.field.purchasePrice')}</Label>
+                                                <Input type="number" step="0.01" id="purchasePrice" name="purchasePrice" value={formik.values.purchasePrice} onChange={formik.handleChange} onBlur={formik.handleBlur} invalid={formik.touched.purchasePrice && !!formik.errors.purchasePrice} />
+                                                {formik.touched.purchasePrice && formik.errors.purchasePrice && <FormFeedback>{formik.errors.purchasePrice as string}</FormFeedback>}
                                             </div>
                                         )}
                                     </div>
@@ -421,289 +221,99 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
                             </div>
                         </div>
 
-                        {/* Sección: Características físicas */}
+                        {/* Características físicas */}
                         <div className="card mb-3 shadow-sm">
                             <div className="card-header fw-semibold" style={{ backgroundColor: '#ede7f6' }}>
-                                <i className="ri-scales-3-line me-2" style={{ color: '#7c4dff' }}></i>Características físicas
+                                <i className="ri-scales-3-line me-2" style={{ color: '#7c4dff' }}></i>{t('form.pig.section.physicalTraits')}
                             </div>
                             <div className="card-body">
                                 <div className="d-flex gap-3">
                                     <div className="w-50">
-                                        <Label htmlFor="sex" className="form-label">Sexo</Label>
-                                        <Input
-                                            type="select"
-                                            id="sex"
-                                            name="sex"
-                                            value={formik.values.sex}
-                                            onChange={formik.handleChange}
-                                            onBlur={formik.handleBlur}
-                                            invalid={formik.touched.sex && !!formik.errors.sex}
-                                        >
-                                            <option value="male">Macho</option>
-                                            <option value="female">Hembra</option>
+                                        <Label htmlFor="sex" className="form-label">{t('pigs.field.sex')}</Label>
+                                        <Input type="select" id="sex" name="sex" value={formik.values.sex} onChange={formik.handleChange} onBlur={formik.handleBlur} invalid={formik.touched.sex && !!formik.errors.sex}>
+                                            <option value="male">{t('pigs.sex.maleShort')}</option>
+                                            <option value="female">{t('pigs.sex.femaleShort')}</option>
                                         </Input>
-                                        {formik.touched.sex && formik.errors.sex && (
-                                            <FormFeedback>{formik.errors.sex}</FormFeedback>
-                                        )}
+                                        {formik.touched.sex && formik.errors.sex && <FormFeedback>{formik.errors.sex}</FormFeedback>}
                                     </div>
-
                                     <div className="w-50">
-                                        <Label htmlFor="weight" className="form-label">Peso (kg)</Label>
-                                        <Input
-                                            type="number"
-                                            id="weight"
-                                            name="weight"
-                                            value={formik.values.weight}
-                                            onChange={formik.handleChange}
-                                            onBlur={formik.handleBlur}
-                                            invalid={formik.touched.weight && !!formik.errors.weight}
-                                        />
-                                        {formik.touched.weight && formik.errors.weight && (
-                                            <FormFeedback>{formik.errors.weight}</FormFeedback>
-                                        )}
+                                        <Label htmlFor="weight" className="form-label">{t('form.pig.field.weightKg')}</Label>
+                                        <Input type="number" id="weight" name="weight" value={formik.values.weight} onChange={formik.handleChange} onBlur={formik.handleBlur} invalid={formik.touched.weight && !!formik.errors.weight} />
+                                        {formik.touched.weight && formik.errors.weight && <FormFeedback>{formik.errors.weight}</FormFeedback>}
                                     </div>
                                 </div>
-
                                 <div className="mt-3">
-                                    <Label htmlFor="observations" className="form-label">Observaciones</Label>
-                                    <Input
-                                        type="textarea"
-                                        id="observations"
-                                        name="observations"
-                                        value={formik.values.observations}
-                                        onChange={formik.handleChange}
-                                        onBlur={formik.handleBlur}
-                                        placeholder="Ej: Marca de nacimiento"
-                                    />
+                                    <Label htmlFor="observations" className="form-label">{t('pigs.field.observations')}</Label>
+                                    <Input type="textarea" id="observations" name="observations" value={formik.values.observations} onChange={formik.handleChange} onBlur={formik.handleBlur} />
                                 </div>
                             </div>
                         </div>
 
                         <div className="d-flex mt-3 justify-content-end">
-                            <Button type="button"
-                                onClick={async () => {
-                                    const valid = await formik.validateForm();
-                                    if (Object.keys(valid).length === 0) {
-                                        toggleArrowTab(2);
-                                    } else {
-                                        formik.setTouched(
-                                            Object.keys(formik.values).reduce((acc, key) => ({ ...acc, [key]: true }), {}),
-                                            true
-                                        );
-                                    }
-                                }}
-                            >
-                                Siguiente
-                                <i className="ri-arrow-right-line ms-2" />
+                            <Button type="button" onClick={async () => {
+                                const valid = await formik.validateForm();
+                                if (Object.keys(valid).length === 0) {
+                                    toggleArrowTab(2);
+                                } else {
+                                    formik.setTouched(Object.keys(formik.values).reduce((acc, key) => ({ ...acc, [key]: true }), {}), true);
+                                }
+                            }}>
+                                {t('form.pig.action.next')}<i className="ri-arrow-right-line ms-2" />
                             </Button>
                         </div>
                     </TabPane>
 
-                    <TabPane id="step-summary-tab" tabId={2}>
+                    <TabPane tabId={2}>
                         <div className="p-2 fs-5">
-
-                            <h4 className="fw-bold mb-4">Resumen del Registro</h4>
-
-                            {/* Helpers para badges */}
+                            <h4 className="fw-bold mb-4">{t('form.pig.section.summaryTitle')}</h4>
                             {(() => {
-                                const BadgeSexo = () => {
-                                    const s = formik.values.sex;
-                                    return (
-                                        <span
-                                            className={`badge px-3 py-2 ${s === "male" ? "bg-primary" : "bg-pink"
-                                                }`}
-                                        >
-                                            <i className={`me-1 ${s === "male" ? "ri-men-fill" : "ri-women-fill"
-                                                }`} />
-                                            {s === "male" ? "Macho" : "Hembra"}
-                                        </span>
-                                    );
-                                };
-
-                                const BadgeEstado = () => {
-                                    const est = formik.values.status;
-                                    const map = {
-                                        alive: "success",
-                                        sold: "info",
-                                        slaughtered: "warning",
-                                        dead: "danger",
-                                        discarded: "secondary",
-                                    };
-                                    const icon = {
-                                        alive: "ri-heart-3-fill",
-                                        sold: "ri-money-dollar-circle-fill",
-                                        slaughtered: "ri-knife-blood-fill",
-                                        dead: "ri-skull-fill",
-                                        discarded: "ri-delete-bin-5-fill",
-                                    };
-
-                                    return (
-                                        <span className={`badge bg-${map[est]} px-3 py-2`}>
-                                            <i className={`${icon[est]} me-1`} />
-                                            {est.charAt(0).toUpperCase() + est.slice(1)}
-                                        </span>
-                                    );
-                                };
-
-                                const BadgeEtapa = () => {
-                                    const etapa = formik.values.currentStage;
-                                    const color = {
-                                        '': '',
-                                        "piglet": "primary",
-                                        "weaning": "info",
-                                        "fattening": "warning",
-                                        "breeder": "success",
-                                    };
-                                    return (
-                                        <span className={`badge bg-${color[etapa]} px-3 py-2`}>
-                                            {etapa.charAt(0).toUpperCase() + etapa.slice(1)}
-                                        </span>
-                                    );
-                                };
-
-                                const BadgeOrigen = () => {
-                                    const o = formik.values.origin;
-                                    const map = {
-                                        '': '',
-                                        born: "success",
-                                        purchased: "info",
-                                        donated: "primary",
-                                        other: "secondary",
-                                    };
-                                    return (
-                                        <span className={`badge bg-${map[o]} px-3 py-2`}>
-                                            {o === "born" ? "Nacido en la granja" : o.charAt(0).toUpperCase() + o.slice(1)}
-                                        </span>
-                                    );
-                                };
-
+                                const sex = formik.values.sex;
+                                const status = formik.values.status;
+                                const stage = formik.values.currentStage;
+                                const origin = formik.values.origin as string;
                                 return (
                                     <>
-                                        {/* Card Datos Generales */}
                                         <div className="card mb-4 shadow-sm">
-                                            <div className="card-header bg-light fw-semibold">Datos generales</div>
+                                            <div className="card-header bg-light fw-semibold">{t('form.pig.section.generalData')}</div>
                                             <div className="card-body">
                                                 <div className="row g-3">
-
-                                                    <div className="col-md-4">
-                                                        <label className="fw-semibold">Código</label>
-                                                        <div>{formik.values.code}</div>
-                                                    </div>
-
-                                                    <div className="col-md-4">
-                                                        <label className="fw-semibold">Fecha de nacimiento</label>
-                                                        <div>{formik.values.birthdate?.toLocaleDateString("es-MX")}</div>
-                                                    </div>
-
-                                                    <div className="col-md-4">
-                                                        <label className="fw-semibold">Raza</label>
-                                                        <div>{formik.values.breed}</div>
-                                                    </div>
-
-                                                    <div className="col-md-4">
-                                                        <label className="fw-semibold">Etapa actual</label>
-                                                        <div><BadgeEtapa /></div>
-                                                    </div>
-
-                                                    <div className="col-md-4">
-                                                        <label className="fw-semibold">Sexo</label>
-                                                        <div><BadgeSexo /></div>
-                                                    </div>
-
-                                                    <div className="col-md-4">
-                                                        <label className="fw-semibold">Peso (kg)</label>
-                                                        <div>{formik.values.weight} kg</div>
-                                                    </div>
-
-                                                    <div className="col-md-12">
-                                                        <label className="fw-semibold">Características físicas</label>
-                                                        <div>{formik.values.observations || "Sin especificar"}</div>
-                                                    </div>
-
-                                                    <div className="col-md-4">
-                                                        <label className="fw-semibold">Fecha de registro</label>
-                                                        <div>{userLogged.name} {userLogged.lastname}</div>
-                                                    </div>
-
-                                                    <div className="col-md-4">
-                                                        <label className="fw-semibold">Fecha de registro</label>
-                                                        <div>{formik.values.registration_date ? (formik.values.registration_date as Date).toLocaleDateString("es") : "Sin especificar"}</div>
-                                                    </div>
+                                                    <div className="col-md-4"><label className="fw-semibold">{t('pigs.field.code')}</label><div>{formik.values.code}</div></div>
+                                                    <div className="col-md-4"><label className="fw-semibold">{t('pigs.field.birthDate')}</label><div>{formik.values.birthdate?.toLocaleDateString("es-MX")}</div></div>
+                                                    <div className="col-md-4"><label className="fw-semibold">{t('pigs.field.breed')}</label><div>{formik.values.breed}</div></div>
+                                                    <div className="col-md-4"><label className="fw-semibold">{t('form.pig.field.currentStage')}</label><div><span className={`badge bg-${stageBadgeColor[stage]} px-3 py-2`}>{t(`pigs.stage.${stage}`, { defaultValue: stage })}</span></div></div>
+                                                    <div className="col-md-4"><label className="fw-semibold">{t('pigs.field.sex')}</label><div><span className={`badge px-3 py-2 ${sex === "male" ? "bg-primary" : "bg-pink"}`}><i className={`me-1 ${sex === "male" ? "ri-men-fill" : "ri-women-fill"}`} />{t(`pigs.sex.${sex}Short`, { defaultValue: sex })}</span></div></div>
+                                                    <div className="col-md-4"><label className="fw-semibold">{t('form.pig.field.weightKg')}</label><div>{formik.values.weight} kg</div></div>
+                                                    <div className="col-md-12"><label className="fw-semibold">{t('form.pig.section.physicalTraits')}</label><div>{formik.values.observations || t('form.pig.field.noSpecified')}</div></div>
+                                                    <div className="col-md-4"><label className="fw-semibold">{t('form.pig.field.registeredBy')}</label><div>{userLogged.name} {userLogged.lastname}</div></div>
+                                                    <div className="col-md-4"><label className="fw-semibold">{t('form.pig.field.registrationDate')}</label><div>{formik.values.registration_date ? (formik.values.registration_date as Date).toLocaleDateString("es") : t('form.pig.field.noSpecified')}</div></div>
                                                 </div>
                                             </div>
                                         </div>
-
-                                        {/* Card Origen */}
                                         <div className="card mb-4 shadow-sm">
-                                            <div className="card-header bg-light fw-semibold">Origen</div>
+                                            <div className="card-header bg-light fw-semibold">{t('form.pig.section.origin')}</div>
                                             <div className="card-body">
                                                 <div className="row g-3">
-
-                                                    <div className="col-md-6">
-                                                        <label className="fw-semibold">Tipo de origen</label>
-                                                        <div><BadgeOrigen /></div>
-                                                    </div>
-
-                                                    {formik.values.origin === "other" && (
-                                                        <div className="col-md-6">
-                                                            <label className="fw-semibold">Detalle del origen</label>
-                                                            <div>{formik.values.originDetail}</div>
-                                                        </div>
-                                                    )}
-
-                                                    {formik.values.origin !== "born" && (
-                                                        <div className="col-md-6">
-                                                            <label className="fw-semibold">Fecha de llegada</label>
-                                                            <div>{formik.values.arrivalDate?.toLocaleDateString("es-MX")}</div>
-                                                        </div>
-                                                    )}
-
-                                                    {(formik.values.origin === "purchased" ||
-                                                        formik.values.origin === "donated") && (
-                                                            <div className="col-md-6">
-                                                                <label className="fw-semibold">Granja de origen</label>
-                                                                <div>{formik.values.sourceFarm}</div>
-                                                            </div>
-                                                        )}
-
-                                                    {formik.values.origin === "purchased" && (
-                                                        <div className="col-md-6">
-                                                            <label className="fw-semibold">Precio de compra</label>
-                                                            <div>${formik.values.purchasePrice?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</div>
-                                                        </div>
-                                                    )}
-
+                                                    <div className="col-md-6"><label className="fw-semibold">{t('form.pig.field.originType')}</label><div><span className={`badge bg-${originBadgeColor[origin]} px-3 py-2`}>{t(`pigs.origin.${origin}`, { defaultValue: origin })}</span></div></div>
+                                                    {formik.values.origin === "other" && <div className="col-md-6"><label className="fw-semibold">{t('pigs.field.originDetail')}</label><div>{formik.values.originDetail}</div></div>}
+                                                    {formik.values.origin !== "born" && <div className="col-md-6"><label className="fw-semibold">{t('pigs.field.arrivalDate')}</label><div>{formik.values.arrivalDate?.toLocaleDateString("es-MX")}</div></div>}
+                                                    {(formik.values.origin === "purchased" || formik.values.origin === "donated") && <div className="col-md-6"><label className="fw-semibold">{t('pigs.field.originFarm')}</label><div>{formik.values.sourceFarm}</div></div>}
+                                                    {formik.values.origin === "purchased" && <div className="col-md-6"><label className="fw-semibold">{t('form.pig.field.purchasePrice')}</label><div>${formik.values.purchasePrice?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</div></div>}
                                                 </div>
                                             </div>
                                         </div>
-
-                                        {/* Card Estado */}
                                         <div className="card mb-4 shadow-sm">
-                                            <div className="card-header bg-light fw-semibold">Estado del cerdo</div>
-                                            <div className="card-body">
-                                                <label className="fw-semibold">Estado actual</label>
-                                                <div><BadgeEstado /></div>
-                                            </div>
+                                            <div className="card-header bg-light fw-semibold">{t('form.pig.section.pigStatus')}</div>
+                                            <div className="card-body"><label className="fw-semibold">{t('pigs.field.status')}</label><div><span className={`badge bg-${statusBadgeColor[status]} px-3 py-2`}>{t(`pigs.status.${status}`, { defaultValue: status })}</span></div></div>
                                         </div>
-
-                                        {/* Acciones */}
                                         <div className="d-flex justify-content-between mt-4">
                                             <Button type="button" color="secondary" onClick={() => toggleArrowTab(1)}>
-                                                <i className="ri-arrow-left-line me-2" /> Volver
+                                                <i className="ri-arrow-left-line me-2" />{t('form.pig.action.back')}
                                             </Button>
-
                                             <Button type="submit" color="primary" disabled={formik.isSubmitting}>
-                                                {formik.isSubmitting ? (
-                                                    <>
-                                                        Guardando...
-                                                        <span className="spinner-border spinner-border-sm ms-2" />
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        Guardar Registro
-                                                        <i className="ri-save-3-fill ms-2" />
-                                                    </>
-                                                )}
+                                                {formik.isSubmitting
+                                                    ? <>{t('form.pig.action.saving')}<span className="spinner-border spinner-border-sm ms-2" /></>
+                                                    : <>{t('form.pig.action.saveRecord')}<i className="ri-save-3-fill ms-2" /></>
+                                                }
                                             </Button>
                                         </div>
                                     </>
@@ -713,8 +323,8 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
                     </TabPane>
                 </TabContent>
 
-                <SuccessModal isOpen={modals.success} onClose={onSave} message={"Datos registrados con éxito"} />
-                <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={"Ha ocurrido un error al registrar los datos, intentelo mas tarde"} />
+                <SuccessModal isOpen={modals.success} onClose={onSave} message={t('form.pig.success.registered')} />
+                <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={t('form.pig.error.register')} />
             </form>
         </>
     );

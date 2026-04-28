@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
@@ -14,6 +15,7 @@ import DonutChartCard, { DonutDataItem, DonutLegendItem } from "Components/Commo
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 
 const SubwarehouseIncomes = () => {
+    const { t } = useTranslation();
     document.title = "Entradas de Subalmacén | Subalmacén"
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
@@ -40,7 +42,7 @@ const SubwarehouseIncomes = () => {
     };
 
     const incomesColumns: Column<any>[] = [
-        { header: 'Identificador', accessor: 'id', isFilterable: true, type: 'text' },
+        { header: t('common.field.code'), accessor: 'id', isFilterable: true, type: 'text' },
         {
             header: 'Proveedor',
             accessor: 'originName',
@@ -48,28 +50,28 @@ const SubwarehouseIncomes = () => {
             type: 'text',
             render: (_, row) => <span>{row.origin?.id?.name || 'N/A'}</span>
         },
-        { header: 'Fecha de entrada', accessor: 'date', isFilterable: true, type: 'date' },
+        { header: t('common.field.date'), accessor: 'date', isFilterable: true, type: 'date' },
         {
-            header: 'Tipo de entrada',
+            header: t('warehouse.subwarehouseDetails.tab.incomes'),
             accessor: 'incomeType',
             isFilterable: true,
             type: 'text',
             render: (_, row) => {
                 let color = 'secondary';
-                let text = 'N/A';
+                const text = t(`warehouse.common.incomeType.${row.incomeType}`, { defaultValue: row.incomeType });
 
                 switch (row.incomeType) {
-                    case "purchase": color = "success"; text = "Compra"; break;
-                    case "donacion": color = "warning"; text = "Donacion"; break;
-                    case "transfer": color = "info"; text = "Transferencia"; break;
-                    case "own_production": color = "secondary"; text = "Producción"; break;
+                    case "purchase": color = "success"; break;
+                    case "donacion": color = "warning"; break;
+                    case "transfer": color = "info"; break;
+                    case "own_production": color = "secondary"; break;
                 }
                 return <Badge color={color}>{text}</Badge>;
             },
         },
         { header: 'Precio Total', accessor: 'totalPrice', type: 'currency', bgColor: '#E8F5E9' },
         {
-            header: "Acciones",
+            header: t('common.field.actions'),
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
@@ -89,7 +91,7 @@ const SubwarehouseIncomes = () => {
             setSubwarehouseIncomes(response.data.data);
         } catch (error) {
             console.error('Error fetching data', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener las entradas, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.subwarehouseDetails.error.fetchIncomes') })
         }
     };
 
@@ -108,16 +110,16 @@ const SubwarehouseIncomes = () => {
         try {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/incomes/income_charts/${userLogged.assigment}`);
             const chartDataResponse = response.data.data;
-            
+
             // Transformar datos para las gráficas de dona - solo incluir tipos que tienen datos
             const entriesByType: DonutDataItem[] = [];
             const valueByType: DonutDataItem[] = [];
 
-            const typeConfig: Record<string, { label: string; color: string }> = {
-                purchase: { label: 'Compra', color: '#10b981' },
-                donacion: { label: 'Donación', color: '#f59e0b' },
-                transfer: { label: 'Transferencia', color: '#3b82f6' },
-                own_production: { label: 'Producción Propia', color: '#6b7280' }
+            const typeConfig: Record<string, { color: string }> = {
+                purchase: { color: '#10b981' },
+                donacion: { color: '#f59e0b' },
+                transfer: { color: '#3b82f6' },
+                own_production: { color: '#6b7280' }
             };
 
             if (chartDataResponse.entriesByType) {
@@ -126,7 +128,7 @@ const SubwarehouseIncomes = () => {
                     if (numericValue > 0 && typeConfig[type]) {
                         entriesByType.push({
                             id: type,
-                            label: typeConfig[type].label,
+                            label: t(`warehouse.common.incomeType.${type}`, { defaultValue: type }),
                             value: numericValue,
                             color: typeConfig[type].color
                         });
@@ -140,7 +142,7 @@ const SubwarehouseIncomes = () => {
                     if (numericValue > 0 && typeConfig[type]) {
                         valueByType.push({
                             id: type,
-                            label: typeConfig[type].label,
+                            label: t(`warehouse.common.incomeType.${type}`, { defaultValue: type }),
                             value: numericValue,
                             color: typeConfig[type].color
                         });
@@ -188,13 +190,13 @@ const SubwarehouseIncomes = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Ver Entradas"} pageTitle={"Entradas"} />
+                <BreadCrumb title={t('warehouse.subwarehouseDetails.tab.incomes')} pageTitle={t('warehouse.subwarehouseDetails.tab.incomes')} />
 
                 {/* KPIs Section */}
                 <div className="row mb-3">
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
-                            title="Valor Total de Entradas"
+                            title={t('warehouse.subwarehouseDetails.kpi.incomes.totalValue')}
                             value={incomeStatistics.totalValue}
                             prefix="$"
                             decimals={2}
@@ -206,7 +208,7 @@ const SubwarehouseIncomes = () => {
                     </div>
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
-                            title="Total de Entradas"
+                            title={t('warehouse.subwarehouseDetails.kpi.incomes.totalEntries')}
                             value={incomeStatistics.totalEntries}
                             icon={<i className="ri-file-list-3-line fs-20 text-info"></i>}
                             iconBgColor="#E3F2FD"
@@ -216,7 +218,7 @@ const SubwarehouseIncomes = () => {
                     </div>
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
-                            title="Valor Promedio por Entrada"
+                            title={t('warehouse.subwarehouseDetails.kpi.incomes.avgValuePerEntry')}
                             value={incomeStatistics.averageValuePerEntry}
                             prefix="$"
                             decimals={2}
@@ -232,7 +234,7 @@ const SubwarehouseIncomes = () => {
                 <div className="row mb-4">
                     <div className="col-xl-6">
                         <DonutChartCard
-                            title="Entradas por Tipo"
+                            title={t('warehouse.subwarehouseDetails.chart.incomesByType')}
                             data={chartData.entriesByType}
                             legendItems={chartData.entriesLegendItems}
                             height={200}
@@ -240,7 +242,7 @@ const SubwarehouseIncomes = () => {
                     </div>
                     <div className="col-xl-6">
                         <DonutChartCard
-                            title="Valor de Entradas por Tipo"
+                            title={t('warehouse.subwarehouseDetails.chart.incomeValueByType')}
                             data={chartData.valueByType}
                             legendItems={chartData.valueLegendItems}
                             height={200}
@@ -251,14 +253,14 @@ const SubwarehouseIncomes = () => {
                 <Card>
                     <CardHeader>
                         <div className="d-flex gap-2">
-                            <h4 className="me-auto">Entradas</h4>
+                            <h4 className="me-auto">{t('warehouse.subwarehouseDetails.tab.incomes')}</h4>
                         </div>
                     </CardHeader>
                     <CardBody className={subwarehouseIncomes.length === 0 ? "d-flex flex-column justify-content-center align-items-center text-center" : "d-flex flex-column flex-grow-1"}>
                         {subwarehouseIncomes.length === 0 ? (
                             <>
                                 <i className="ri-drop-line text-muted mb-2" style={{ fontSize: "2rem" }} />
-                                <span className="fs-5 text-muted">Aún no hay entradas registradas</span>
+                                <span className="fs-5 text-muted">{t('warehouse.subwarehouseDetails.empty.incomes')}</span>
                             </>
                         ) : (
                             <CustomTable columns={incomesColumns} data={subwarehouseIncomes} showPagination={false} />
@@ -269,7 +271,7 @@ const SubwarehouseIncomes = () => {
             </Container>
 
             <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal('details')}>Detalles de entrada</ModalHeader>
+                <ModalHeader toggle={() => toggleModal('details')}>{t('warehouse.subwarehouseDetails.modal.incomeDetails')}</ModalHeader>
                 <ModalBody>
                     <IncomeDetails incomeId={selectedIncome._id} />
                 </ModalBody>

@@ -1,5 +1,6 @@
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Badge, Card, CardBody, CardHeader, Col, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
 import { useReportScope } from "hooks/useReportScope";
 import { buildReportUrl } from "helpers/reports_url_helper";
@@ -45,7 +46,9 @@ interface CatalogsKpis {
 }
 
 const CatalogsReport = () => {
-    document.title = "Catalogos | Reportes";
+    const { t } = useTranslation();
+
+    document.title = `${t("reports.catalogs.title")} | ${t("reports.title")}`;
 
     const configContext = useContext(ConfigContext);
     const { isGlobal, farmId, scopeKey } = useReportScope();
@@ -76,7 +79,7 @@ const CatalogsReport = () => {
             setClients(data.clients || []);
             setKpis(data.kpis);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar los datos del reporte." });
+            setAlertConfig({ visible: true, color: "danger", message: t("reports.error.loadData") });
         } finally {
             setLoading(false);
         }
@@ -103,33 +106,33 @@ const CatalogsReport = () => {
     }, [scopeKey]);
 
     const supplierColumns: Column<SupplierRecord>[] = [
-        { header: "Nombre", accessor: "name", type: "text", isFilterable: true },
-        { header: "Contacto", accessor: "contact", type: "text", isFilterable: true },
-        { header: "Telefono", accessor: "phone", type: "text" },
-        { header: "Email", accessor: "email", type: "text" },
-        { header: "Compras", accessor: "totalPurchases", type: "number" },
-        { header: "Total Gastado", accessor: "totalSpent", type: "currency", bgColor: "#e8f5e9" },
-        { header: "Ultima Compra", accessor: "lastPurchaseDate", type: "date" },
+        { header: t("reports.col.name"), accessor: "name", type: "text", isFilterable: true },
+        { header: t("reports.col.contact"), accessor: "contact", type: "text", isFilterable: true },
+        { header: t("reports.col.phone"), accessor: "phone", type: "text" },
+        { header: t("reports.col.email"), accessor: "email", type: "text" },
+        { header: t("reports.catalogs.col.purchases"), accessor: "totalPurchases", type: "number" },
+        { header: t("reports.catalogs.col.totalSpent"), accessor: "totalSpent", type: "currency", bgColor: "#e8f5e9" },
+        { header: t("reports.catalogs.col.lastPurchase"), accessor: "lastPurchaseDate", type: "date" },
         {
-            header: "Estado", accessor: "status", type: "text",
+            header: t("reports.col.status"), accessor: "status", type: "text",
             render: (v: boolean) => (
-                <Badge color={v ? "success" : "secondary"}>{v ? "Activo" : "Inactivo"}</Badge>
+                <Badge color={v ? "success" : "secondary"}>{v ? t("reports.status.active") : t("reports.status.inactive")}</Badge>
             ),
         },
     ];
 
     const clientColumns: Column<ClientRecord>[] = [
-        { header: "Nombre", accessor: "name", type: "text", isFilterable: true },
-        { header: "Contacto", accessor: "contact", type: "text", isFilterable: true },
-        { header: "Telefono", accessor: "phone", type: "text" },
-        { header: "Email", accessor: "email", type: "text" },
-        { header: "Ventas", accessor: "totalSales", type: "number" },
-        { header: "Total Ingreso", accessor: "totalRevenue", type: "currency", bgColor: "#e8f5e9" },
-        { header: "Ultima Venta", accessor: "lastSaleDate", type: "date" },
+        { header: t("reports.col.name"), accessor: "name", type: "text", isFilterable: true },
+        { header: t("reports.col.contact"), accessor: "contact", type: "text", isFilterable: true },
+        { header: t("reports.col.phone"), accessor: "phone", type: "text" },
+        { header: t("reports.col.email"), accessor: "email", type: "text" },
+        { header: t("reports.catalogs.col.sales"), accessor: "totalSales", type: "number" },
+        { header: t("reports.catalogs.col.totalRevenue"), accessor: "totalRevenue", type: "currency", bgColor: "#e8f5e9" },
+        { header: t("reports.catalogs.col.lastSale"), accessor: "lastSaleDate", type: "date" },
         {
-            header: "Estado", accessor: "status", type: "text",
+            header: t("reports.col.status"), accessor: "status", type: "text",
             render: (v: boolean) => (
-                <Badge color={v ? "success" : "secondary"}>{v ? "Activo" : "Inactivo"}</Badge>
+                <Badge color={v ? "success" : "secondary"}>{v ? t("reports.status.active") : t("reports.status.inactive")}</Badge>
             ),
         },
     ];
@@ -138,16 +141,16 @@ const CatalogsReport = () => {
 
     return (
         <ReportPageLayout
-            title="Catalogos"
-            pageTitle="Reportes"
+            title={t("reports.catalogs.title")}
+            pageTitle={t("reports.title")}
             onGeneratePdf={() => handleGeneratePdf()}
-            pdfTitle="Reporte - Catalogos"
+            pdfTitle={t("reports.catalogs.pdfTitle")}
             showDateFilter={false}
         >
             <Row className="g-3 mb-3">
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Total Proveedores"
+                        title={t("reports.catalogs.kpi.totalSuppliers")}
                         value={kpis.totalSuppliers}
                         icon={<i className="ri-truck-line fs-4 text-primary"></i>}
                         animateValue
@@ -155,7 +158,7 @@ const CatalogsReport = () => {
                 </Col>
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Proveedores Activos"
+                        title={t("reports.catalogs.kpi.activeSuppliers")}
                         value={kpis.activeSuppliers}
                         icon={<i className="ri-check-line fs-4 text-success"></i>}
                         animateValue
@@ -164,7 +167,7 @@ const CatalogsReport = () => {
                 </Col>
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Total Clientes"
+                        title={t("reports.catalogs.kpi.totalClients")}
                         value={kpis.totalClients}
                         icon={<i className="ri-user-line fs-4 text-info"></i>}
                         animateValue
@@ -173,7 +176,7 @@ const CatalogsReport = () => {
                 </Col>
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Clientes Activos"
+                        title={t("reports.catalogs.kpi.activeClients")}
                         value={kpis.activeClients}
                         icon={<i className="ri-user-follow-line fs-4 text-success"></i>}
                         animateValue
@@ -191,7 +194,7 @@ const CatalogsReport = () => {
                                 onClick={() => setActiveTab("1")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-truck-line me-1"></i> Proveedores ({suppliers.length})
+                                <i className="ri-truck-line me-1"></i> {t("reports.catalogs.tab.suppliers")} ({suppliers.length})
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -200,7 +203,7 @@ const CatalogsReport = () => {
                                 onClick={() => setActiveTab("2")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-user-line me-1"></i> Clientes ({clients.length})
+                                <i className="ri-user-line me-1"></i> {t("reports.catalogs.tab.clients")} ({clients.length})
                             </NavLink>
                         </NavItem>
                     </Nav>

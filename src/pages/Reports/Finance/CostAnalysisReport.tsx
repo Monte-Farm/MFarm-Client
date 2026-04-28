@@ -1,5 +1,6 @@
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardBody, CardHeader, Col, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
 import { useReportScope } from "hooks/useReportScope";
 import { buildReportUrl } from "helpers/reports_url_helper";
@@ -54,6 +55,7 @@ interface CostAnalysisKpis {
 const typeColors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
 
 const CostAnalysisReport = () => {
+    const { t } = useTranslation();
     document.title = "Analisis de Costos | Reportes";
 
     const configContext = useContext(ConfigContext);
@@ -95,7 +97,7 @@ const CostAnalysisReport = () => {
             setByType(data.byType || []);
             setKpis(data.kpis);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar los datos del reporte." });
+            setAlertConfig({ visible: true, color: "danger", message: t("reports.error.loadData") });
         } finally {
             setLoading(false);
         }
@@ -122,48 +124,48 @@ const CostAnalysisReport = () => {
     }, [startDate, endDate, scopeKey]);
 
     const groupColumns: Column<CostByGroup>[] = [
-        { header: "Grupo", accessor: "groupName", type: "text", isFilterable: true },
-        { header: "Etapa", accessor: "stage", type: "text" },
-        { header: "Cerdos", accessor: "pigCount", type: "number" },
-        { header: "Alimento", accessor: "feedCost", type: "currency" },
-        { header: "Medicamento", accessor: "medicationCost", type: "currency" },
-        { header: "Otros", accessor: "otherCost", type: "currency" },
-        { header: "Costo Total", accessor: "totalCost", type: "currency", bgColor: "#ffebee" },
-        { header: "Costo / Cerdo", accessor: "costPerPig", type: "currency", bgColor: "#e3f2fd" },
+        { header: t("reports.col.group"), accessor: "groupName", type: "text", isFilterable: true },
+        { header: t("reports.col.stage"), accessor: "stage", type: "text" },
+        { header: t("reports.col.pigs"), accessor: "pigCount", type: "number" },
+        { header: t("reports.costAnalysis.col.feed"), accessor: "feedCost", type: "currency" },
+        { header: t("reports.costAnalysis.col.medication"), accessor: "medicationCost", type: "currency" },
+        { header: t("reports.costAnalysis.col.other"), accessor: "otherCost", type: "currency" },
+        { header: t("reports.costAnalysis.col.totalCost"), accessor: "totalCost", type: "currency", bgColor: "#ffebee" },
+        { header: t("reports.costAnalysis.col.costPerPig"), accessor: "costPerPig", type: "currency", bgColor: "#e3f2fd" },
     ];
 
     const pigColumns: Column<CostByPig>[] = [
-        { header: "Cerdo", accessor: "pigIdentifier", type: "text", isFilterable: true },
-        { header: "Grupo", accessor: "groupName", type: "text", isFilterable: true },
-        { header: "Alimento", accessor: "feedCost", type: "currency" },
-        { header: "Medicamento", accessor: "medicationCost", type: "currency" },
-        { header: "Otros", accessor: "otherCost", type: "currency" },
-        { header: "Costo Total", accessor: "totalCost", type: "currency", bgColor: "#ffebee" },
+        { header: t("reports.col.pigs"), accessor: "pigIdentifier", type: "text", isFilterable: true },
+        { header: t("reports.col.group"), accessor: "groupName", type: "text", isFilterable: true },
+        { header: t("reports.costAnalysis.col.feed"), accessor: "feedCost", type: "currency" },
+        { header: t("reports.costAnalysis.col.medication"), accessor: "medicationCost", type: "currency" },
+        { header: t("reports.costAnalysis.col.other"), accessor: "otherCost", type: "currency" },
+        { header: t("reports.costAnalysis.col.totalCost"), accessor: "totalCost", type: "currency", bgColor: "#ffebee" },
         {
-            header: "Peso Actual", accessor: "currentWeight", type: "text",
+            header: t("reports.costAnalysis.col.currentWeight"), accessor: "currentWeight", type: "text",
             render: (v: number) => <span>{v?.toFixed(1)} kg</span>,
         },
-        { header: "Costo / kg", accessor: "costPerKg", type: "currency", bgColor: "#e3f2fd" },
+        { header: t("reports.costAnalysis.col.costPerKg"), accessor: "costPerKg", type: "currency", bgColor: "#e3f2fd" },
     ];
 
     const typeColumns: Column<CostByType>[] = [
-        { header: "Tipo", accessor: "type", type: "text" },
-        { header: "Costo Total", accessor: "totalCost", type: "currency", bgColor: "#ffebee" },
+        { header: t("reports.col.type"), accessor: "type", type: "text" },
+        { header: t("reports.costAnalysis.col.totalCost"), accessor: "totalCost", type: "currency", bgColor: "#ffebee" },
         {
-            header: "Porcentaje", accessor: "percentage", type: "text",
+            header: t("reports.col.percentage"), accessor: "percentage", type: "text",
             render: (v: number) => <span className="fw-semibold">{v?.toFixed(1)}%</span>,
         },
-        { header: "Registros", accessor: "itemCount", type: "number" },
+        { header: t("reports.costAnalysis.col.records"), accessor: "itemCount", type: "number" },
     ];
 
-    const donutData: DonutDataItem[] = byType.map((t, i) => ({
-        id: t.type, label: t.type, value: t.totalCost,
+    const donutData: DonutDataItem[] = byType.map((item, i) => ({
+        id: item.type, label: item.type, value: item.totalCost,
         color: typeColors[i % typeColors.length],
     }));
 
-    const donutLegend: DonutLegendItem[] = byType.map(t => ({
-        label: t.type, value: `$${t.totalCost?.toLocaleString()}`,
-        percentage: `${t.percentage?.toFixed(1)}%`,
+    const donutLegend: DonutLegendItem[] = byType.map(item => ({
+        label: item.type, value: `$${item.totalCost?.toLocaleString()}`,
+        percentage: `${item.percentage?.toFixed(1)}%`,
     }));
 
     const groupBarData = byGroup.slice(0, 12).map(g => ({
@@ -177,10 +179,10 @@ const CostAnalysisReport = () => {
 
     return (
         <ReportPageLayout
-            title="Analisis de Costos"
-            pageTitle="Reportes Financieros"
+            title={t("reports.costAnalysis.title")}
+            pageTitle={t("reports.financial")}
             onGeneratePdf={handleGeneratePdf}
-            pdfTitle="Reporte - Analisis de Costos"
+            pdfTitle={t("reports.costAnalysis.pdfTitle")}
             startDate={startDate}
             endDate={endDate}
             onDateChange={(s, e) => { setStartDate(s); setEndDate(e); }}
@@ -188,7 +190,7 @@ const CostAnalysisReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Costo Total"
+                        title={t("reports.costAnalysis.kpi.totalCost")}
                         value={kpis.totalCost}
                         icon={<i className="ri-money-dollar-circle-line fs-4 text-danger"></i>}
                         animateValue
@@ -199,7 +201,7 @@ const CostAnalysisReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Costo / Grupo"
+                        title={t("reports.costAnalysis.kpi.costPerGroup")}
                         value={kpis.avgCostPerGroup}
                         icon={<i className="ri-group-line fs-4 text-primary"></i>}
                         animateValue
@@ -209,7 +211,7 @@ const CostAnalysisReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Costo / Cerdo"
+                        title={t("reports.costAnalysis.kpi.costPerPig")}
                         value={kpis.avgCostPerPig}
                         icon={<i className="bx bxs-dog fs-4 text-info"></i>}
                         animateValue
@@ -220,7 +222,7 @@ const CostAnalysisReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Costo / kg"
+                        title={t("reports.costAnalysis.kpi.costPerKg")}
                         value={kpis.avgCostPerKg}
                         icon={<i className="ri-scales-3-line fs-4 text-warning"></i>}
                         animateValue
@@ -231,7 +233,7 @@ const CostAnalysisReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="% Alimento"
+                        title={t("reports.costAnalysis.kpi.feedPct")}
                         value={kpis.feedCostPercent}
                         icon={<i className="ri-plant-line fs-4 text-success"></i>}
                         animateValue
@@ -242,7 +244,7 @@ const CostAnalysisReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="% Medicamento"
+                        title={t("reports.costAnalysis.kpi.medicationPct")}
                         value={kpis.medicationCostPercent}
                         icon={<i className="mdi mdi-heart-pulse fs-4 text-danger"></i>}
                         animateValue
@@ -256,19 +258,19 @@ const CostAnalysisReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={8}>
                     <BasicBarChart
-                        title="Costos por Grupo (desglose)"
+                        title={t("reports.costAnalysis.chart.costByGroup")}
                         data={groupBarData}
                         indexBy="grupo"
                         keys={["Alimento", "Medicamento", "Otros"]}
-                        xLegend="Grupo"
-                        yLegend="Costo ($)"
+                        xLegend={t("reports.axis.group")}
+                        yLegend={t("reports.axis.costUsd")}
                         height={300}
                         colors={["#3b82f6", "#ef4444", "#6b7280"]}
                     />
                 </Col>
                 <Col xl={4}>
                     <DonutChartCard
-                        title="Distribucion por Tipo de Costo"
+                        title={t("reports.costAnalysis.chart.byType")}
                         data={donutData}
                         legendItems={donutLegend}
                         height={180}
@@ -285,7 +287,7 @@ const CostAnalysisReport = () => {
                                 onClick={() => setActiveTab("1")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-group-line me-1"></i> Por Grupo ({byGroup.length})
+                                <i className="ri-group-line me-1"></i> {t("reports.costAnalysis.tab.byGroup")} ({byGroup.length})
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -294,7 +296,7 @@ const CostAnalysisReport = () => {
                                 onClick={() => setActiveTab("2")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="bx bxs-dog me-1"></i> Por Cerdo ({byPig.length})
+                                <i className="bx bxs-dog me-1"></i> {t("reports.costAnalysis.tab.byPig")} ({byPig.length})
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -303,7 +305,7 @@ const CostAnalysisReport = () => {
                                 onClick={() => setActiveTab("3")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-pie-chart-line me-1"></i> Por Tipo ({byType.length})
+                                <i className="ri-pie-chart-line me-1"></i> {t("reports.costAnalysis.tab.byType")} ({byType.length})
                             </NavLink>
                         </NavItem>
                     </Nav>

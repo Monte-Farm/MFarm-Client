@@ -1,6 +1,7 @@
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import LoadingAnimation from "../Shared/LoadingAnimation";
 import { Attribute } from "common/data_interfaces";
 import { Card, CardHeader, CardBody, Badge, Button, Modal, ModalBody, ModalHeader } from "reactstrap";
@@ -15,6 +16,7 @@ interface OrderDetailsProps {
 }
 
 const OrderDetails: React.FC<OrderDetailsProps> = ({ orderId }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState(true);
@@ -29,68 +31,64 @@ const OrderDetails: React.FC<OrderDetailsProps> = ({ orderId }) => {
     };
 
     const orderAttributes: Attribute[] = [
-        { key: 'id', label: 'No. de Pedido', type: 'text' },
-        { key: 'date', label: 'Fecha de pedido', type: 'date' },
+        { key: 'id', label: t('warehouse.orders.col.orderNumber', { defaultValue: 'No. de Pedido' }), type: 'text' },
+        { key: 'date', label: t('warehouse.orders.col.orderDate', { defaultValue: 'Fecha de pedido' }), type: 'date' },
         {
             key: 'user',
-            label: 'Pedido por',
+            label: t('warehouse.orders.col.orderedBy', { defaultValue: 'Pedido por' }),
             type: 'text',
             render: (_) => <span>{orderDetails.user.name} {orderDetails.user.lastname}</span>
         },
         {
             key: 'orderOrigin',
-            label: 'Pedido para',
+            label: t('warehouse.orders.col.orderFor', { defaultValue: 'Pedido para' }),
             type: 'text',
             render: (_) => <span>{orderDetails.orderOrigin.name}</span>
         },
         {
             key: 'orderDestiny',
-            label: 'Pedido hacia',
+            label: t('warehouse.orders.col.orderTo', { defaultValue: 'Pedido hacia' }),
             type: 'text',
             render: (_) => <span>{orderDetails.orderDestiny.name}</span>
         },
         {
             key: 'status',
-            label: 'Estado',
+            label: t('common.field.status'),
             render: (value: string) => {
                 let color = 'secondary';
-                let label = value;
 
                 switch (value) {
                     case 'completed':
                         color = 'success';
-                        label = 'Completado';
                         break;
                     case 'pending':
                         color = 'warning';
-                        label = 'Pendiente';
                         break;
                 }
-                return <Badge color={color}>{label}</Badge>;
+                return <Badge color={color}>{t(`warehouse.orders.status.${value}`, { defaultValue: value })}</Badge>;
             },
         },
     ]
 
     const productsColumns: Column<any>[] = [
-        { header: 'Código', accessor: 'id', isFilterable: true, type: 'text' },
-        { header: 'Nombre', accessor: 'name', isFilterable: true, type: 'text' },
+        { header: t('common.field.code'), accessor: 'id', isFilterable: true, type: 'text' },
+        { header: t('common.field.name'), accessor: 'name', isFilterable: true, type: 'text' },
         {
-            header: 'Solicitado',
+            header: t('warehouse.orderDetails.col.requested', { defaultValue: 'Solicitado' }),
             accessor: 'quantityRequested',
             isFilterable: true,
             type: 'text',
             render: (_, row) => <span>{row.quantityRequested} {row.unit_measurement}</span>
         },
         {
-            header: 'Entregado',
+            header: t('warehouse.orderDetails.col.delivered', { defaultValue: 'Entregado' }),
             accessor: 'quantityDelivered',
             isFilterable: true,
             type: 'text',
             render: (_, row) => <span>{row.quantityDelivered}</span>
         },
-        { header: 'Precio', accessor: 'price', isFilterable: true, type: 'text' },
-        { header: 'Observaciones', accessor: 'observations', isFilterable: true, type: 'text' },
-
+        { header: t('common.field.totalPrice', { defaultValue: 'Precio' }), accessor: 'price', isFilterable: true, type: 'text' },
+        { header: t('warehouse.orderDetails.col.observations', { defaultValue: 'Observaciones' }), accessor: 'observations', isFilterable: true, type: 'text' },
     ];
 
     const fetchData = async () => {
@@ -130,7 +128,7 @@ const OrderDetails: React.FC<OrderDetailsProps> = ({ orderId }) => {
             setProducts(combinedProducts);
         } catch (error) {
             console.error('Error fetching data', { error });
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.orders.error.fetch', { defaultValue: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' }) })
         } finally {
             setLoading(false);
         }
@@ -145,7 +143,7 @@ const OrderDetails: React.FC<OrderDetailsProps> = ({ orderId }) => {
             toggleModal('viewPDF')
         } catch (error) {
             console.error('Error generating report:', { error });
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al generar el reporte, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.orders.error.fetch', { defaultValue: 'Ha ocurrido un error al generar el reporte, intentelo mas tarde' }) })
         }
     };
 
@@ -164,13 +162,13 @@ const OrderDetails: React.FC<OrderDetailsProps> = ({ orderId }) => {
             <div className="d-flex gap-2 mb-4">
                 <Button className="farm-primary-button" onClick={handlePrintOrder}>
                     <i className="ri-download-line me-2"></i>
-                    Descargar Reporte
+                    {t('common.button.exportPdf', { defaultValue: 'Descargar Reporte' })}
                 </Button>
             </div>
             <div className="d-flex gap-3">
                 <Card>
                     <CardHeader className='bg-light'>
-                        <h5>Informacion del pedido</h5>
+                        <h5>{t('warehouse.orderDetails.attr.orderInfo', { defaultValue: 'Informacion del pedido' })}</h5>
                     </CardHeader>
                     <CardBody className="pt-4">
                         <ObjectDetails attributes={orderAttributes} object={orderDetails} />
@@ -179,7 +177,7 @@ const OrderDetails: React.FC<OrderDetailsProps> = ({ orderId }) => {
 
                 <Card className="w-100">
                     <CardHeader className='bg-light'>
-                        <h5>Productos del pedido</h5>
+                        <h5>{t('warehouse.orderDetails.attr.products', { defaultValue: 'Productos del pedido' })}</h5>
                     </CardHeader>
                     <CardBody className="p-0">
                         <CustomTable columns={productsColumns} data={products} showPagination={true} rowsPerPage={5} showSearchAndFilter={false} />
@@ -188,7 +186,7 @@ const OrderDetails: React.FC<OrderDetailsProps> = ({ orderId }) => {
             </div>
 
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Pedido de almacen </ModalHeader>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('warehouse.orderDetails.modal.report', { defaultValue: 'Pedido de almacen' })}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>

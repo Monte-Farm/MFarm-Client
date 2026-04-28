@@ -1,5 +1,6 @@
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardBody, CardHeader, Col, Input, Row } from "reactstrap";
 import SimpleBar from "simplebar-react";
 import { getEffectiveUser } from "helpers/impersonation_helper";
@@ -52,6 +53,7 @@ const formatCurrency = (value: number): string => {
 };
 
 const SupplierStatementReport = () => {
+    const { t } = useTranslation();
     document.title = "Estado de Cuenta por Proveedor | Reportes";
 
     const configContext = useContext(ConfigContext);
@@ -88,7 +90,7 @@ const SupplierStatementReport = () => {
             );
             setSuppliers(res.data.data || []);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar los proveedores." });
+            setAlertConfig({ visible: true, color: "danger", message: t("reports.error.loadSuppliers") });
         } finally {
             setLoadingSuppliers(false);
         }
@@ -106,7 +108,7 @@ const SupplierStatementReport = () => {
             setProducts(data.products || []);
             setKpis(data.kpis);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar el estado de cuenta." });
+            setAlertConfig({ visible: true, color: "danger", message: t("reports.error.loadStatement") });
         } finally {
             setLoading(false);
         }
@@ -136,26 +138,26 @@ const SupplierStatementReport = () => {
     }, [selectedSupplierId, startDate, endDate]);
 
     const purchaseColumns: Column<SupplierPurchase>[] = [
-        { header: "Fecha", accessor: "date", type: "date", isFilterable: true },
-        { header: "Producto", accessor: "productName", type: "text", isFilterable: true },
+        { header: t("reports.col.date"), accessor: "date", type: "date", isFilterable: true },
+        { header: t("reports.col.product"), accessor: "productName", type: "text", isFilterable: true },
         {
-            header: "Cantidad", accessor: "quantity", type: "text",
+            header: t("reports.col.quantity"), accessor: "quantity", type: "text",
             render: (v: number, row: SupplierPurchase) => <span>{v?.toLocaleString()} {row.unit}</span>,
         },
-        { header: "Precio Unit.", accessor: "unitPrice", type: "currency" },
-        { header: "Total", accessor: "totalAmount", type: "currency", bgColor: "#e8f5e9" },
-        { header: "Factura", accessor: "invoiceNumber", type: "text" },
+        { header: t("reports.supplierStatement.col.unitPrice"), accessor: "unitPrice", type: "currency" },
+        { header: t("reports.col.total"), accessor: "totalAmount", type: "currency", bgColor: "#e8f5e9" },
+        { header: t("reports.col.invoice"), accessor: "invoiceNumber", type: "text" },
     ];
 
     const productColumns: Column<SupplierProduct>[] = [
-        { header: "Producto", accessor: "productName", type: "text", isFilterable: true },
+        { header: t("reports.col.product"), accessor: "productName", type: "text", isFilterable: true },
         {
-            header: "Cantidad Total", accessor: "totalQuantity", type: "text",
+            header: t("reports.supplierStatement.col.totalQuantity"), accessor: "totalQuantity", type: "text",
             render: (v: number, row: SupplierProduct) => <span>{v?.toLocaleString()} {row.unit}</span>,
         },
-        { header: "Compras", accessor: "purchaseCount", type: "number" },
-        { header: "Precio Prom.", accessor: "avgPrice", type: "currency", bgColor: "#e3f2fd" },
-        { header: "Total Gastado", accessor: "totalSpent", type: "currency", bgColor: "#e8f5e9" },
+        { header: t("reports.supplierStatement.col.purchaseCount"), accessor: "purchaseCount", type: "number" },
+        { header: t("reports.supplierStatement.col.avgPrice"), accessor: "avgPrice", type: "currency", bgColor: "#e3f2fd" },
+        { header: t("reports.supplierStatement.col.totalSpent"), accessor: "totalSpent", type: "currency", bgColor: "#e8f5e9" },
     ];
 
     const productBarData = products.slice(0, 10).map(p => ({
@@ -167,8 +169,8 @@ const SupplierStatementReport = () => {
 
     return (
         <ReportPageLayout
-            title="Estado de Cuenta por Proveedor"
-            pageTitle="Reportes Financieros"
+            title={t("reports.supplierStatement.title")}
+            pageTitle={t("reports.pageTitle")}
             onGeneratePdf={selectedSupplierId ? handleGeneratePdf : undefined}
             pdfTitle="Estado de Cuenta - Proveedor"
             startDate={startDate}
@@ -182,13 +184,13 @@ const SupplierStatementReport = () => {
                             <i className="ri-truck-line fs-4 text-success"></i>
                         </div>
                         <div>
-                            <h6 className="mb-0 fw-semibold">Seleccionar Proveedor</h6>
-                            <small className="text-muted">Busca y selecciona un proveedor para ver su estado de cuenta</small>
+                            <h6 className="mb-0 fw-semibold">{t("reports.supplierStatement.selectSupplier")}</h6>
+                            <small className="text-muted">{t("reports.supplierStatement.selectSupplierHint")}</small>
                         </div>
                     </div>
                     <Input
                         type="text"
-                        placeholder="Buscar proveedor por nombre..."
+                        placeholder={t("reports.supplierStatement.searchPlaceholder")}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="mb-3"
@@ -216,7 +218,7 @@ const SupplierStatementReport = () => {
                                 ))
                             }
                             {suppliers.filter(s => s.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
-                                <span className="text-muted fst-italic">No se encontraron proveedores</span>
+                                <span className="text-muted fst-italic">{t("reports.supplierStatement.noSuppliersFound")}</span>
                             )}
                         </div>
                     </SimpleBar>
@@ -230,14 +232,14 @@ const SupplierStatementReport = () => {
                     <Row className="g-3 mb-3">
                         <Col xl={2} md={4} sm={6}>
                             <StatKpiCard
-                                title="Proveedor"
+                                title={t("reports.supplierStatement.kpi.supplier")}
                                 value={kpis.supplierName}
                                 icon={<i className="ri-truck-line fs-4 text-primary"></i>}
                             />
                         </Col>
                         <Col xl={2} md={4} sm={6}>
                             <StatKpiCard
-                                title="Total Compras"
+                                title={t("reports.supplierStatement.kpi.totalPurchases")}
                                 value={kpis.totalPurchases}
                                 icon={<i className="ri-shopping-cart-line fs-4 text-info"></i>}
                                 animateValue
@@ -246,7 +248,7 @@ const SupplierStatementReport = () => {
                         </Col>
                         <Col xl={2} md={4} sm={6}>
                             <StatKpiCard
-                                title="Total Gastado"
+                                title={t("reports.supplierStatement.kpi.totalSpent")}
                                 value={kpis.totalSpent}
                                 icon={<i className="ri-money-dollar-circle-line fs-4 text-danger"></i>}
                                 animateValue
@@ -257,7 +259,7 @@ const SupplierStatementReport = () => {
                         </Col>
                         <Col xl={2} md={4} sm={6}>
                             <StatKpiCard
-                                title="Prom. por Compra"
+                                title={t("reports.supplierStatement.kpi.avgPerPurchase")}
                                 value={kpis.avgPurchaseAmount}
                                 icon={<i className="ri-price-tag-3-line fs-4 text-warning"></i>}
                                 animateValue
@@ -268,7 +270,7 @@ const SupplierStatementReport = () => {
                         </Col>
                         <Col xl={2} md={4} sm={6}>
                             <StatKpiCard
-                                title="Productos"
+                                title={t("reports.supplierStatement.kpi.products")}
                                 value={kpis.uniqueProducts}
                                 icon={<i className="ri-box-3-line fs-4 text-success"></i>}
                                 animateValue
@@ -277,7 +279,7 @@ const SupplierStatementReport = () => {
                         </Col>
                         <Col xl={2} md={4} sm={6}>
                             <StatKpiCard
-                                title="Ultima Compra"
+                                title={t("reports.supplierStatement.kpi.lastPurchase")}
                                 value={kpis.lastPurchaseDate ? new Date(kpis.lastPurchaseDate).toLocaleDateString() : "—"}
                                 icon={<i className="ri-calendar-line fs-4 text-secondary"></i>}
                                 iconBgColor="#F5F5F5"
@@ -288,12 +290,12 @@ const SupplierStatementReport = () => {
                     <Row className="g-3 mb-3">
                         <Col xl={12}>
                             <BasicBarChart
-                                title="Gasto por Producto"
+                                title={t("reports.supplierStatement.chart.spendByProduct")}
                                 data={productBarData}
                                 indexBy="producto"
                                 keys={["Gasto"]}
-                                xLegend="Producto"
-                                yLegend="Gasto ($)"
+                                xLegend={t("reports.supplierStatement.chart.xProduct")}
+                                yLegend={t("reports.supplierStatement.chart.ySpend")}
                                 height={280}
                                 colors={["#3b82f6"]}
                             />
@@ -304,7 +306,7 @@ const SupplierStatementReport = () => {
                         <CardHeader>
                             <h5 className="mb-0">
                                 <i className="ri-box-3-line me-2"></i>
-                                Resumen por Producto ({products.length})
+                                {t("reports.supplierStatement.productSummary", { count: products.length })}
                             </h5>
                         </CardHeader>
                         <CardBody>
@@ -316,7 +318,7 @@ const SupplierStatementReport = () => {
                         <CardHeader>
                             <h5 className="mb-0">
                                 <i className="ri-file-list-3-line me-2"></i>
-                                Detalle de Compras ({purchases.length})
+                                {t("reports.supplierStatement.purchaseDetails", { count: purchases.length })}
                             </h5>
                         </CardHeader>
                         <CardBody>
@@ -330,7 +332,7 @@ const SupplierStatementReport = () => {
                 <Card>
                     <CardBody className="text-center text-muted py-5">
                         <i className="ri-truck-line" style={{ fontSize: "3rem" }}></i>
-                        <p className="mt-2">Selecciona un proveedor para ver su estado de cuenta.</p>
+                        <p className="mt-2">{t("reports.supplierStatement.selectSupplierPrompt")}</p>
                     </CardBody>
                 </Card>
             )}

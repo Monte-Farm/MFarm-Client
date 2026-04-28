@@ -10,12 +10,14 @@ import PDFViewer from "../Shared/PDFViewer";
 import AlertMessage from "../Shared/AlertMesagge";
 import { useNavigate } from "react-router-dom";
 import { Attribute } from "common/data_interfaces";
+import { useTranslation } from "react-i18next";
 
 interface OutcomeDetailsProps {
     outcomeId: string;
 }
 
 const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState(true);
@@ -32,29 +34,29 @@ const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
 
     const productsColumns: Column<any>[] = [
         {
-            header: 'Código',
+            header: t('common.field.code'),
             accessor: 'id',
             isFilterable: true,
             type: 'text',
             render: (_, row) => <span>{row?.id?.id}</span>
         },
         {
-            header: 'Producto',
+            header: t('common.field.name', { defaultValue: 'Producto' }),
             accessor: 'id',
             isFilterable: true,
             type: 'text',
             render: (_, row) => <span>{row?.id?.name}</span>
         },
         {
-            header: 'Cantidad',
+            header: t('common.field.qty', { defaultValue: 'Cantidad' }),
             accessor: 'quantity',
             isFilterable: true,
             type: 'number',
             render: (_, row) => <span>{row.quantity} {row.unit_measurement}</span>
         },
-        { header: 'Precio Unitario', accessor: 'price', type: 'currency' },
+        { header: t('common.field.unitPrice', { defaultValue: 'Precio Unitario' }), accessor: 'price', type: 'currency' },
         {
-            header: 'Precio Total',
+            header: t('common.field.totalPrice', { defaultValue: 'Precio Total' }),
             accessor: 'totalPrice',
             type: 'text',
             render: (_, row) => {
@@ -66,103 +68,72 @@ const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
             }
         },
         {
-            header: 'Categoria',
+            header: t('warehouse.products.attr.category', { defaultValue: 'Categoria' }),
             accessor: 'category',
             isFilterable: true,
             type: 'text',
             render: (_, row) => {
                 let color = "secondary";
-                let label = row.id.category;
 
                 switch (row.id.category) {
                     case "nutrition":
                         color = "info";
-                        label = "Nutrición";
                         break;
                     case "medications":
                         color = "warning";
-                        label = "Medicamentos";
                         break;
                     case "vaccines":
                         color = "primary";
-                        label = "Vacunas";
                         break;
                     case "vitamins":
-                        color = "success";
-                        label = "Vitaminas";
-                        break;
                     case "minerals":
-                        color = "success";
-                        label = "Minerales";
-                        break;
                     case "supplies":
-                        color = "success";
-                        label = "Insumos";
-                        break;
                     case "hygiene_cleaning":
-                        color = "success";
-                        label = "Higiene y desinfección";
-                        break;
                     case "equipment_tools":
-                        color = "success";
-                        label = "Equipamiento y herramientas";
-                        break;
                     case "spare_parts":
-                        color = "success";
-                        label = "Refacciones y repuestos";
-                        break;
                     case "office_supplies":
-                        color = "success";
-                        label = "Material de oficina";
-                        break;
                     case "others":
                         color = "success";
-                        label = "Otros";
                         break;
                 }
 
-                return <Badge color={color}>{label}</Badge>;
+                return <Badge color={color}>{t(`warehouse.common.productCategory.${row.id.category}`, { defaultValue: row.id.category })}</Badge>;
             },
         },
     ];
 
     const outcomeAttributes: Attribute[] = [
-        { key: 'code', label: 'Código', type: 'text' },
-        { key: 'date', label: 'Fecha', type: 'date' },
-        { key: 'warehouseOrigin.name', label: 'Almacén Origen', type: 'text' },
-        { key: 'warehouseDestiny.name', label: 'Almacén Destino', type: 'text' },
-        { key: 'description', label: 'Descripción', type: 'text' },
+        { key: 'code', label: t('common.field.code'), type: 'text' },
+        { key: 'date', label: t('common.field.date'), type: 'date' },
+        { key: 'warehouseOrigin.name', label: t('warehouse.outcomeDetails.attr.warehouseOrigin', { defaultValue: 'Almacén Origen' }), type: 'text' },
+        { key: 'warehouseDestiny.name', label: t('warehouse.outcomeDetails.attr.warehouseDestiny', { defaultValue: 'Almacén Destino' }), type: 'text' },
+        { key: 'description', label: t('warehouse.outcomeForm.attr.description', { defaultValue: 'Descripción' }), type: 'text' },
         {
             key: 'outcomeType',
-            label: 'Tipo de Salida',
+            label: t('warehouse.outcomeDetails.attr.outcomeType', { defaultValue: 'Tipo de Salida' }),
             type: 'text',
             render: (value: string) => {
                 let color = "secondary";
-                let label = value;
 
                 switch (value) {
                     case "internal_transfer":
                         color = "info";
-                        label = "Transferencia Interna";
                         break;
                     case "purchase":
                         color = "warning";
-                        label = "Compra";
                         break;
                     case "warehouse_order":
                         color = "warning";
-                        label = "Pedido de Almacén";
                         break;
                     case "consumption":
                         color = "danger";
-                        label = "Consumo";
                         break;
                 }
 
-                return <Badge color={color}>{label}</Badge>;
+                return <Badge color={color}>{t(`warehouse.common.outcomeType.${value}`, { defaultValue: value })}</Badge>;
             },
         },
-        { key: 'totalPrice', label: 'Valor Total', type: 'currency' },
+        { key: 'totalPrice', label: t('warehouse.outcomeForm.attr.totalValue', { defaultValue: 'Valor Total' }), type: 'currency' },
     ]
 
 
@@ -179,7 +150,7 @@ const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
             setProducts(outcomeDetailsResponse.products)
         } catch (error) {
             console.error('Error fetching data: ', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.outcomeDetails.error.fetch') })
         } finally {
             setLoading(false)
         }
@@ -190,19 +161,19 @@ const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
 
         try {
             setPdfLoading(true);
-            
+
             // Usar axiosHelper.getBlob para mantener consistencia
             const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/outcomes/${outcomeId}`);
-            
+
             // Crear blob con tipo MIME explícito para PDF
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
             const url = window.URL.createObjectURL(pdfBlob);
-            
+
             setFileURL(url);
             toggleModal('viewPDF');
         } catch (error) {
             console.error('Error generating report: ', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.outcomeDetails.error.pdf') })
         } finally {
             setPdfLoading(false);
         }
@@ -221,20 +192,20 @@ const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
     return (
         <>
             <div className="d-flex gap-2 mb-4">
-                <Button 
-                    color="primary" 
+                <Button
+                    color="primary"
                     onClick={handlePrintOutcome}
                     disabled={pdfLoading}
                 >
                     {pdfLoading ? (
                         <>
                             <Spinner className="me-2" size='sm' />
-                            Generando PDF
+                            {t('warehouse.outcomeDetails.generatingPdf', { defaultValue: 'Generando PDF' })}
                         </>
                     ) : (
                         <>
                             <i className="ri-file-pdf-line me-2"></i>
-                            Ver PDF
+                            {t('warehouse.outcomeDetails.viewPdf', { defaultValue: 'Ver PDF' })}
                         </>
                     )}
                 </Button>
@@ -244,7 +215,7 @@ const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
                 <div className="d-flex gap-3">
                     <Card>
                         <CardHeader className='bg-gradient bg-primary-subtle'>
-                            <h5 className="mb-0 text-primary">Información General</h5>
+                            <h5 className="mb-0 text-primary">{t('warehouse.outcomeDetails.section.generalInfo', { defaultValue: 'Información General' })}</h5>
                         </CardHeader>
                         <CardBody className="pt-4">
                             <ObjectDetails attributes={outcomeAttributes} object={outcomeDetails} />
@@ -254,7 +225,7 @@ const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
                     {/* Segunda fila: Productos */}
                     <Card className="w-100">
                         <CardHeader className='bg-gradient bg-secondary-subtle'>
-                            <h5 className="mb-0 text-secondary">Productos de la Salida</h5>
+                            <h5 className="mb-0 text-secondary">{t('warehouse.outcomeDetails.section.products', { defaultValue: 'Productos de la Salida' })}</h5>
                         </CardHeader>
                         <CardBody className="p-0">
                             <CustomTable columns={productsColumns} data={products} showPagination={true} rowsPerPage={5} showSearchAndFilter={false} />
@@ -264,7 +235,7 @@ const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
             </div>
 
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de salida</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('warehouse.outcomeDetails.pdfModal.title', { defaultValue: 'Reporte de salida' })}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>

@@ -18,9 +18,16 @@ import { ResponsiveBar } from "@nivo/bar";
 import BasicPieChart from "Components/Common/Graphics/BasicPieChart";
 import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
+import { useTranslation } from "react-i18next";
+
+const BIRTH_TYPE_COLORS: Record<string, string> = {
+    normal: 'success', cesarean: 'primary', abortive: 'danger',
+    dystocia: 'warning', induced: 'info',
+};
 
 const ViewBirths = () => {
     document.title = 'Partos registrados | Management System'
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext)
     const userLogged = getEffectiveUser()
     const navigate = useNavigate();
@@ -39,7 +46,7 @@ const ViewBirths = () => {
 
     const BirthsColumns: Column<any>[] = [
         {
-            header: "Cerda",
+            header: t('birth.column.sow'),
             accessor: "sow",
             type: "text",
             render: (_, row) => (
@@ -55,65 +62,38 @@ const ViewBirths = () => {
                 </Button>
             )
         },
-        { header: 'Fecha de parto', accessor: 'birth_date', type: 'date', isFilterable: true },
+        { header: t('birth.column.birthDate'), accessor: 'birth_date', type: 'date', isFilterable: true },
         {
-            header: 'Tipo de parto',
+            header: t('birth.column.birthType'),
             accessor: 'birth_type',
             type: 'text',
             isFilterable: true,
             render: (value: string) => {
-                let color = '';
-                let label = '';
-
-                switch (value) {
-                    case 'normal':
-                        color = 'success';
-                        label = 'Normal';
-                        break;
-                    case 'cesarean':
-                        color = 'primary';
-                        label = 'Cesárea';
-                        break;
-                    case 'abortive':
-                        color = 'danger';
-                        label = 'Abortivo';
-                        break;
-                    case 'dystocia':
-                        color = 'warning';
-                        label = 'Distócico';
-                        break;
-                    case 'induced':
-                        color = 'info';
-                        label = 'Inducido';
-                        break;
-                    default:
-                        color = 'secondary';
-                        label = 'Sin especificar';
-                }
-
+                const color = BIRTH_TYPE_COLORS[value] || 'secondary';
+                const label = t(`birth.type.${value}`, { defaultValue: t('birth.type.unspecified') });
                 return <Badge color={color}>{label}</Badge>;
             },
         },
         {
-            header: 'Asistido',
-            accessor:
-                'assisted',
+            header: t('birth.column.assisted'),
+            accessor: 'assisted',
             type: 'text',
             isFilterable: true,
             render: (_, obj) => (
-                <Badge color={obj.assisted ? 'success' : 'warning'}>{obj.assisted ? 'Si' : 'No'}</Badge>
+                <Badge color={obj.assisted ? 'success' : 'warning'}>
+                    {obj.assisted ? t('birth.assisted.yes') : t('birth.assisted.no')}
+                </Badge>
             )
         },
         {
-            header: 'Responsable',
+            header: t('birth.column.responsible'),
             accessor: 'responsible',
             type: 'text',
             isFilterable: true,
             render: (_, row) => <span className="text-black">{row.responsible.name} {row.responsible.lastname}</span>
-
         },
         {
-            header: "Embarazo",
+            header: t('birth.column.pregnancy'),
             accessor: "pregnancy",
             type: "text",
             render: (_, row) => (
@@ -126,12 +106,12 @@ const ViewBirths = () => {
                         toggleModal('pregnancyDetails');
                     }}
                 >
-                    Embarazo ↗
+                    {t('birth.column.pregnancyLink')}
                 </Button>
             )
         },
         {
-            header: "Acciones",
+            header: t('birth.column.actions'),
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
@@ -139,7 +119,7 @@ const ViewBirths = () => {
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
                     <UncontrolledTooltip target={`view-button-${row._id}`}>
-                        Ver detalles
+                        {t('birth.action.viewDetails')}
                     </UncontrolledTooltip>
                 </div>
             ),
@@ -158,7 +138,7 @@ const ViewBirths = () => {
             setBirthStats(statsResponse.data.data)
         } catch (error) {
             console.error('Error fetching data:', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('birth.error.load') })
         } finally {
             setLoading(false)
         }
@@ -182,7 +162,7 @@ const ViewBirths = () => {
             toggleModal('viewPDF');
         } catch (error) {
             console.error('Error generating PDF: ', { error });
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('birth.error.pdf') });
         } finally {
             setPdfLoading(false);
         }
@@ -201,58 +181,46 @@ const ViewBirths = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Partos registrados"} pageTitle={"Partos"} />
+                <BreadCrumb title={t('birth.breadcrumb.title')} pageTitle={t('birth.breadcrumb.parent')} />
 
                 <div className="d-flex gap-3 flex-wrap">
-                    <KPI title="Partos totales" value={birthStats?.operationalKpis?.[0]?.totalBirths ?? 0} icon={FaPiggyBank} bgColor="#e8f0fe" iconColor="#0d6efd" />
-                    <KPI title="Tasa de mortalidad" value={`${(birthStats?.operationalKpis?.[0]?.mortalityRate.toFixed(2) ?? 0)}%`} icon={FaSkullCrossbones} bgColor="#fdecea" iconColor="#dc3545" />
-                    <KPI title="Tasa de nacidos muertos" value={`${(birthStats?.operationalKpis?.[0]?.stillbornRate.toFixed(2) ?? 0)}%`} icon={FaBabyCarriage} bgColor="#fff3cd" iconColor="#ff8800" />
-                    <KPI title="Tasa de momias" value={`${(birthStats?.operationalKpis?.[0]?.mummiesRate.toFixed(2) ?? 0)}%`} icon={FaBiohazard} bgColor="#f8d7da" iconColor="#b02a37" />
-                    <KPI title="Cerdos nacidos muertos y momias" value={((birthStats?.birthStats?.[0]?.totalStillborn ?? 0) + (birthStats?.birthStats?.[0]?.totalMummies ?? 0))} icon={FaExclamationTriangle} bgColor="#f3e5f5" iconColor="#9c27b0" />
-                    <KPI title="Promedio de nacidos vivos" value={birthStats?.operationalKpis?.[0]?.avgBornAlivePerBirth.toFixed(2) ?? 0} icon={FaBaby} bgColor="#e6f7e6" iconColor="#28a745" />
+                    <KPI title={t('birth.kpi.total')} value={birthStats?.operationalKpis?.[0]?.totalBirths ?? 0} icon={FaPiggyBank} bgColor="#e8f0fe" iconColor="#0d6efd" />
+                    <KPI title={t('birth.kpi.mortalityRate')} value={`${(birthStats?.operationalKpis?.[0]?.mortalityRate.toFixed(2) ?? 0)}%`} icon={FaSkullCrossbones} bgColor="#fdecea" iconColor="#dc3545" />
+                    <KPI title={t('birth.kpi.stillbornRate')} value={`${(birthStats?.operationalKpis?.[0]?.stillbornRate.toFixed(2) ?? 0)}%`} icon={FaBabyCarriage} bgColor="#fff3cd" iconColor="#ff8800" />
+                    <KPI title={t('birth.kpi.mummiesRate')} value={`${(birthStats?.operationalKpis?.[0]?.mummiesRate.toFixed(2) ?? 0)}%`} icon={FaBiohazard} bgColor="#f8d7da" iconColor="#b02a37" />
+                    <KPI title={t('birth.kpi.stillbornAndMummies')} value={((birthStats?.birthStats?.[0]?.totalStillborn ?? 0) + (birthStats?.birthStats?.[0]?.totalMummies ?? 0))} icon={FaExclamationTriangle} bgColor="#f3e5f5" iconColor="#9c27b0" />
+                    <KPI title={t('birth.kpi.avgBornAlive')} value={birthStats?.operationalKpis?.[0]?.avgBornAlivePerBirth.toFixed(2) ?? 0} icon={FaBaby} bgColor="#e6f7e6" iconColor="#28a745" />
                 </div>
 
                 <div className="d-flex gap-3">
                     <BasicBarChart
-                        title="Resultados por cerda"
+                        title={t('birth.chart.bySow')}
                         data={birthStats?.reproductiveStatsBySow?.map((sow: any) => ({
                             cerda: sow.sowCode,
-                            "Nacidos vivos": sow.avgBornAlive,
-                            "Nacidos muertos": sow.avgStillborn,
-                            "Momias": sow.avgMummies,
+                            [t('birth.chart.bornAlive')]: sow.avgBornAlive,
+                            [t('birth.chart.stillborn')]: sow.avgStillborn,
+                            [t('birth.chart.mummies')]: sow.avgMummies,
                         })) ?? []}
                         indexBy="cerda"
-                        keys={["Nacidos vivos", "Nacidos muertos", "Momias"]}
-                        xLegend="Cerda"
-                        yLegend="Promedio por parto"
+                        keys={[t('birth.chart.bornAlive'), t('birth.chart.stillborn'), t('birth.chart.mummies')]}
+                        xLegend={t('birth.chart.sow')}
+                        yLegend={t('birth.chart.avgPerBirth')}
                     />
 
                     <BasicPieChart
-                        title="Distribución por tipo de parto"
+                        title={t('birth.chart.byType')}
                         data={
-                            (birthStats?.statsByBirthType ?? []).map((item: any) => {
-                                const labelMap: Record<string, string> = {
-                                    normal: "Normal",
-                                    dystocia: "Distócico",
-                                    cesarean: "Cesárea",
-                                    induced: "Inducido",
-                                    abortive: "Abortivo",
-                                };
-
-                                return {
-                                    id: labelMap[item.birthType] ?? item.birthType,
-                                    value: item.totalBirths,
-                                };
-                            })
+                            (birthStats?.statsByBirthType ?? []).map((item: any) => ({
+                                id: t(`birth.type.${item.birthType}`, { defaultValue: item.birthType }),
+                                value: item.totalBirths,
+                            }))
                         }
                     />
-
                 </div>
-
 
                 <Card>
                     <CardHeader className="d-flex justify-content-between align-items-center">
-                        <h5>Partos registrados</h5>
+                        <h5>{t('birth.card.registered')}</h5>
                         <Button
                             color="primary"
                             onClick={() => toggleModal("dateRange")}
@@ -261,12 +229,12 @@ const ViewBirths = () => {
                             {pdfLoading ? (
                                 <>
                                     <Spinner className="me-2" size='sm' />
-                                    Generando...
+                                    {t('birth.action.generating')}
                                 </>
                             ) : (
                                 <>
                                     <i className="ri-file-pdf-line me-2"></i>
-                                    Exportar PDF
+                                    {t('birth.action.exportPdf')}
                                 </>
                             )}
                         </Button>
@@ -276,7 +244,7 @@ const ViewBirths = () => {
                             <>
                                 <FiAlertCircle className="text-muted" size={22} />
                                 <span className="fs-5 text-black text-muted text-center rounded-5 ms-2">
-                                    Aun no se han registrado partos
+                                    {t('birth.empty.noBirths')}
                                 </span>
                             </>
                         ) : (
@@ -288,7 +256,7 @@ const ViewBirths = () => {
 
             <Modal isOpen={modals.pregnancyDetails} toggle={() => toggleModal('pregnancyDetails')} size="xl" centered>
                 <ModalHeader toggle={() => toggleModal('pregnancyDetails')}>
-                    <h5>Detalles de embarazo</h5>
+                    <h5>{t('birth.modal.pregnancyDetails')}</h5>
                 </ModalHeader>
                 <ModalBody>
                     <PregnancyDetails pregnancyId={selectedBirth.pregnancy} />
@@ -297,27 +265,25 @@ const ViewBirths = () => {
 
             <Modal isOpen={modals.birthDetails} toggle={() => toggleModal('birthDetails')} size="xl" centered>
                 <ModalHeader toggle={() => toggleModal('birthDetails')}>
-                    <h5>Detalles de parto</h5>
+                    <h5>{t('birth.modal.birthDetails')}</h5>
                 </ModalHeader>
                 <ModalBody>
                     <BirthDetails birthId={selectedBirth._id} />
                 </ModalBody>
             </Modal>
 
-            {/* Modal para seleccionar rango de fechas */}
             <Modal size="md" isOpen={modals.dateRange} toggle={() => toggleModal("dateRange")} centered>
-                <ModalHeader toggle={() => toggleModal("dateRange")}>Seleccionar rango de fechas</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("dateRange")}>{t('birth.modal.dateRange')}</ModalHeader>
                 <ReportDateRangeSelector
                     onGenerate={handleGeneratePDF}
                     onCancel={() => toggleModal("dateRange")}
                     loading={pdfLoading}
-                    generateButtonText="Generar PDF"
+                    generateButtonText={t('birth.action.generatePdf')}
                 />
             </Modal>
 
-            {/* Modal PDF */}
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de partos registrados</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('birth.modal.report')}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>

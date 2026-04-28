@@ -17,6 +17,7 @@ import CustomTable from '../Tables/CustomTable';
 import SelectableTable from '../Tables/SelectableTable';
 import SelectableCustomTable from '../Tables/SelectableTable';
 import ObjectDetails from '../Details/ObjectDetails';
+import { useTranslation } from 'react-i18next';
 
 interface OutcomeFormProps {
     initialData?: OutcomeData;
@@ -24,46 +25,8 @@ interface OutcomeFormProps {
     onCancel: () => void;
 }
 
-const selectedProductColumns: Column<any>[] = [
-    { header: 'Código', accessor: 'code', isFilterable: false, type: 'text' },
-    { header: 'Producto', accessor: 'productName', isFilterable: false, type: 'text' },
-    { header: 'Cantidad', accessor: 'quantity', isFilterable: false, type: 'number', bgColor: '#e3f2fd' },
-    { header: 'Precio Unitario', accessor: 'price', isFilterable: false, type: 'currency', bgColor: '#f3e5f5' },
-    { header: 'Subtotal', accessor: 'subtotal', isFilterable: false, type: 'currency', bgColor: '#e8f5e8' },
-];
-
-const getOutcomeAttributes = (values: any, selectedSubwarehouse: SubwarehouseData | null): Attribute[] => {
-    const attributes: Attribute[] = [
-        { key: 'code', label: 'Identificador' },
-        { key: 'date', label: 'Fecha', type: 'date' },
-        { key: 'outcomeType', label: 'Motivo de salida' },
-        { key: 'description', label: 'Descripción' },
-        { key: 'totalPrice', label: 'Valor total', type: 'currency' },
-    ];
-
-    if (values.outcomeType === OUTCOME_TYPES.TRANSFER && selectedSubwarehouse) {
-        attributes.splice(3, 0,
-            { key: 'warehouseDestinyName', label: 'Almacén de destino' }
-        );
-    }
-
-    return attributes;
-};
-
-const subwarehouseColumns: Column<any>[] = [
-    { header: 'Código', accessor: 'code', isFilterable: true, type: 'text' },
-    { header: 'Nombre', accessor: 'name', isFilterable: true, type: 'text' },
-    {
-        header: 'Responsable',
-        accessor: 'manager',
-        isFilterable: true,
-        type: 'text',
-        render: (value, row) => <span>{row?.manager?.name} {row?.manager?.lastname}</span>
-    },
-];
-
-
 const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel }) => {
+    const { t } = useTranslation();
     const [modals, setModals] = useState({ createWarehouse: false, cancel: false, success: false, error: false });
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const configContext = useContext(ConfigContext);
@@ -77,30 +40,68 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
 
+    const selectedProductColumns: Column<any>[] = [
+        { header: t('common.field.code'), accessor: 'code', isFilterable: false, type: 'text' },
+        { header: t('common.field.name', { defaultValue: 'Producto' }), accessor: 'productName', isFilterable: false, type: 'text' },
+        { header: t('common.field.qty', { defaultValue: 'Cantidad' }), accessor: 'quantity', isFilterable: false, type: 'number', bgColor: '#e3f2fd' },
+        { header: t('common.field.unitPrice', { defaultValue: 'Precio Unitario' }), accessor: 'price', isFilterable: false, type: 'currency', bgColor: '#f3e5f5' },
+        { header: t('warehouse.incomeForm.attr.subtotal', { defaultValue: 'Subtotal' }), accessor: 'subtotal', isFilterable: false, type: 'currency', bgColor: '#e8f5e8' },
+    ];
+
+    const getOutcomeAttributes = (values: any, selectedSubwarehouse: SubwarehouseData | null): Attribute[] => {
+        const attributes: Attribute[] = [
+            { key: 'code', label: t('common.field.code') },
+            { key: 'date', label: t('common.field.date'), type: 'date' },
+            { key: 'outcomeType', label: t('warehouse.outcomeForm.attr.outcomeType', { defaultValue: 'Motivo de salida' }) },
+            { key: 'description', label: t('warehouse.outcomeForm.attr.description', { defaultValue: 'Descripción' }) },
+            { key: 'totalPrice', label: t('warehouse.outcomeForm.attr.totalValue', { defaultValue: 'Valor total' }), type: 'currency' },
+        ];
+
+        if (values.outcomeType === OUTCOME_TYPES.TRANSFER && selectedSubwarehouse) {
+            attributes.splice(3, 0,
+                { key: 'warehouseDestinyName', label: t('warehouse.orderDetails.attr.destWarehouse', { defaultValue: 'Almacén de destino' }) }
+            );
+        }
+
+        return attributes;
+    };
+
+    const subwarehouseColumns: Column<any>[] = [
+        { header: t('common.field.code'), accessor: 'code', isFilterable: true, type: 'text' },
+        { header: t('common.field.name'), accessor: 'name', isFilterable: true, type: 'text' },
+        {
+            header: t('warehouse.subwarehouseDetails.attr.manager', { defaultValue: 'Responsable' }),
+            accessor: 'manager',
+            isFilterable: true,
+            type: 'text',
+            render: (value, row) => <span>{row?.manager?.name} {row?.manager?.lastname}</span>
+        },
+    ];
+
     const productColumns: Column<any>[] = [
         {
-            header: 'Código',
+            header: t('common.field.code'),
             accessor: 'id',
             isFilterable: true,
             type: 'text',
             render: (value, row) => <span>{row?.product?.id}</span>
         },
         {
-            header: 'Producto',
+            header: t('common.field.name', { defaultValue: 'Producto' }),
             accessor: 'name',
             isFilterable: true,
             type: 'text',
             render: (value, row) => <span>{row?.product?.name}</span>
         },
         {
-            header: 'Cantidad disponible',
+            header: t('warehouse.inventoryDetails.kpi.stock', { defaultValue: 'Cantidad disponible' }),
             accessor: 'quantity',
             isFilterable: true,
             type: 'number',
             render: (value, row) => <span>{row?.quantity} {row?.product?.unit_measurement}</span>
         },
         {
-            header: "Cantidad",
+            header: t('common.field.qty', { defaultValue: 'Cantidad' }),
             accessor: "quantity",
             type: "number",
             render: (value, row, isSelected) => {
@@ -150,68 +151,42 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
             },
         },
         {
-            header: 'Precio promedio',
+            header: t('warehouse.outcomeForm.col.avgPrice', { defaultValue: 'Precio promedio' }),
             accessor: 'averagePrice',
             isFilterable: true,
             type: 'currency',
         },
         {
-            header: 'Categoria',
+            header: t('warehouse.products.attr.category', { defaultValue: 'Categoria' }),
             accessor: 'category',
             isFilterable: true,
             type: 'text',
             render: (value, row) => {
                 let color = "secondary";
-                let label = row.product.category;
 
                 switch (row?.product?.category) {
                     case "nutrition":
                         color = "info";
-                        label = "Nutrición";
                         break;
                     case "medications":
                         color = "warning";
-                        label = "Medicamentos";
                         break;
                     case "vaccines":
                         color = "primary";
-                        label = "Vacunas";
                         break;
                     case "vitamins":
-                        color = "success";
-                        label = "Vitaminas";
-                        break;
                     case "minerals":
-                        color = "success";
-                        label = "Minerales";
-                        break;
                     case "supplies":
-                        color = "success";
-                        label = "Insumos";
-                        break;
                     case "hygiene_cleaning":
-                        color = "success";
-                        label = "Higiene y desinfección";
-                        break;
                     case "equipment_tools":
-                        color = "success";
-                        label = "Equipamiento y herramientas";
-                        break;
                     case "spare_parts":
-                        color = "success";
-                        label = "Refacciones y repuestos";
-                        break;
                     case "office_supplies":
-                        color = "success";
-                        label = "Material de oficina";
-                        break;
                     case "others":
                         color = "success";
-                        label = "Otros";
                         break;
                 }
 
-                return <Badge color={color}>{label}</Badge>;
+                return <Badge color={color}>{t(`warehouse.common.productCategory.${row?.product?.category}`, { defaultValue: row.product.category })}</Badge>;
             },
         },
     ];
@@ -229,8 +204,8 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
 
     const validationSchema = Yup.object({
         code: Yup.string()
-            .required('Por favor, ingrese el ID')
-            .test('unique_id', 'Este identificador ya existe, por favor ingrese otro', async (value) => {
+            .required(t('warehouse.outcomeForm.validation.codeRequired'))
+            .test('unique_id', t('warehouse.outcomeForm.validation.codeExists'), async (value) => {
                 if (!value) return false
                 try {
                     const result = await configContext?.axiosHelper.get(`${configContext.apiUrl}/outcomes/outcome_id_exists/${value}`)
@@ -240,8 +215,8 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                     return false
                 }
             }),
-        date: Yup.date().required('Por favor, ingrese la fecha'),
-        outcomeType: Yup.string().required('Por favor, seleccione el tipo de salida'),
+        date: Yup.date().required(t('warehouse.outcomeForm.validation.dateRequired')),
+        outcomeType: Yup.string().required(t('warehouse.outcomeForm.validation.typeRequired')),
     })
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
@@ -385,7 +360,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                                 aria-controls="step-outcomeData-tab"
                                 disabled
                             >
-                                Información de salida
+                                {t('warehouse.outcomeForm.step.outcomeInfo', { defaultValue: 'Información de salida' })}
                             </NavLink>
                         </NavItem>
 
@@ -402,7 +377,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                                 aria-controls="step-products-tab"
                                 disabled
                             >
-                                Selección de productos
+                                {t('warehouse.outcomeForm.step.products', { defaultValue: 'Selección de productos' })}
                             </NavLink>
                         </NavItem>
 
@@ -418,7 +393,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                                 aria-controls="step-summary-tab"
                                 disabled
                             >
-                                Resumen
+                                {t('warehouse.outcomeForm.step.summary', { defaultValue: 'Resumen' })}
                             </NavLink>
                         </NavItem>
                     </Nav>
@@ -429,7 +404,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                         <div>
                             <div className='d-flex gap-3'>
                                 <div className="w-50">
-                                    <Label htmlFor="idInput" className="form-label">Identificador</Label>
+                                    <Label htmlFor="idInput" className="form-label">{t('common.field.code', { defaultValue: 'Identificador' })}</Label>
                                     <Input
                                         type="text"
                                         id="idInput"
@@ -443,7 +418,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                                 </div>
 
                                 <div className="w-50">
-                                    <Label htmlFor="date" className="form-label">Fecha</Label>
+                                    <Label htmlFor="date" className="form-label">{t('common.field.date', { defaultValue: 'Fecha' })}</Label>
                                     <DatePicker
                                         id="date"
                                         className={`form-control ${formik.touched.date && formik.errors.date ? 'is-invalid' : ''}`}
@@ -461,7 +436,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
 
                             {/* Tipo de salida */}
                             <div className='mt-4'>
-                                <Label htmlFor='outcomeTypeInput' className='form-label'>Motivo de Salida</Label>
+                                <Label htmlFor='outcomeTypeInput' className='form-label'>{t('warehouse.outcomeForm.attr.outcomeType', { defaultValue: 'Motivo de Salida' })}</Label>
                                 <Input
                                     type="select"
                                     id="outcomeTypeInput"
@@ -471,10 +446,10 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                                     onBlur={formik.handleBlur}
                                     invalid={formik.touched.outcomeType && !!formik.errors.outcomeType}
                                 >
-                                    <option value="">Seleccione un motivo</option>
+                                    <option value="">{t('warehouse.outcomeForm.placeholder.selectReason', { defaultValue: 'Seleccione un motivo' })}</option>
                                     {Object.values(OUTCOME_TYPES).filter(type => type !== OUTCOME_TYPES.SALE).map((type) => (
                                         <option key={type} value={type}>
-                                            {getOutcomeTypeLabel(type)}
+                                            {t(`warehouse.common.outcomeType.${type}`, { defaultValue: getOutcomeTypeLabel(type) })}
                                         </option>
                                     ))}
                                 </Input>
@@ -482,7 +457,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                             </div>
 
                             <div className="mt-4">
-                                <Label htmlFor="descriptionInput" className="form-label">Descripción</Label>
+                                <Label htmlFor="descriptionInput" className="form-label">{t('warehouse.outcomeForm.attr.description', { defaultValue: 'Descripción' })}</Label>
                                 <Input
                                     type="text"
                                     id="descriptionInput"
@@ -498,7 +473,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                             {formik.values.outcomeType === OUTCOME_TYPES.TRANSFER && (
                                 <div>
                                     <div className="mt-3">
-                                        <Label className="form-label">Subalmacén</Label>
+                                        <Label className="form-label">{t('warehouse.outcomeForm.attr.subwarehouse', { defaultValue: 'Subalmacén' })}</Label>
                                         <div className="mt-2 border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(40vh - 100px)', overflowY: 'hidden' }}>
                                             <SelectableTable
                                                 data={subwarehouses}
@@ -529,7 +504,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                                     }
                                 >
                                     <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
-                                    Siguiente
+                                    {t('warehouse.outcomeForm.button.next', { defaultValue: 'Siguiente' })}
                                 </Button>
                             </div>
                         </div>
@@ -570,7 +545,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                                     }}
                                 >
                                     <i className="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i>{" "}
-                                    Atras
+                                    {t('common.button.back', { defaultValue: 'Atras' })}
                                 </Button>
 
                                 <Button
@@ -582,7 +557,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                                     }
                                 >
                                     <i className="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>
-                                    Siguiente
+                                    {t('warehouse.outcomeForm.button.next', { defaultValue: 'Siguiente' })}
                                 </Button>
                             </div>
                         </div>
@@ -592,14 +567,14 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                         <div className='d-flex gap-3 w-100'>
                             <Card className=''>
                                 <CardHeader style={{ backgroundColor: '#f0f4f8' }}>
-                                    <h5>Informacion de salida</h5>
+                                    <h5>{t('warehouse.outcomeForm.summary.outcomeInfo', { defaultValue: 'Informacion de salida' })}</h5>
                                 </CardHeader>
                                 <CardBody className="pt-4">
                                     <ObjectDetails
                                         attributes={getOutcomeAttributes(formik.values, selectedSubwarehouse)}
                                         object={{
                                             ...formik.values,
-                                            outcomeType: getOutcomeTypeLabel(formik.values.outcomeType),
+                                            outcomeType: t(`warehouse.common.outcomeType.${formik.values.outcomeType}`, { defaultValue: getOutcomeTypeLabel(formik.values.outcomeType) }),
                                             warehouseDestinyName: selectedSubwarehouse?.name,
                                             warehouseDestinyManager: selectedSubwarehouse?.manager || null
                                         }}
@@ -609,7 +584,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
 
                             <Card className='w-100'>
                                 <CardHeader style={{ backgroundColor: '#e8f5e8' }}>
-                                    <h5>Productos Seleccionados</h5>
+                                    <h5>{t('warehouse.outcomeForm.summary.selectedProducts', { defaultValue: 'Productos Seleccionados' })}</h5>
                                 </CardHeader>
                                 <CardBody className="border border-0 d-flex flex-column flex-grow-1 p-0">
                                     <CustomTable
@@ -636,11 +611,11 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                                 }}
                             >
                                 <i className="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i>{" "}
-                                Atras
+                                {t('common.button.back', { defaultValue: 'Atras' })}
                             </Button>
 
                             <Button className='farm-primary-button ms-auto' type='submit' disabled={formik.isSubmitting}>
-                                {formik.isSubmitting ? <Spinner /> : "Guardar"}
+                                {formik.isSubmitting ? <Spinner /> : t('common.button.save', { defaultValue: 'Guardar' })}
                             </Button>
                         </div>
 
@@ -650,16 +625,16 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
 
 
             <Modal isOpen={modals.cancel} centered toggle={() => toggleModal('cancel', false)}>
-                <ModalHeader>Confirmación</ModalHeader>
-                <ModalBody>¿Estás seguro de que deseas cancelar? Los datos no se guardarán.</ModalBody>
+                <ModalHeader>{t('warehouse.productForm.cancelModal.title', { defaultValue: 'Confirmación' })}</ModalHeader>
+                <ModalBody>{t('warehouse.productForm.cancelModal.message', { defaultValue: '¿Estás seguro de que deseas cancelar? Los datos no se guardarán.' })}</ModalBody>
                 <ModalFooter>
-                    <Button color="danger" onClick={onCancel}>Sí, cancelar</Button>
-                    <Button color="success" onClick={() => toggleModal('cancel', false)}>No, continuar</Button>
+                    <Button color="danger" onClick={onCancel}>{t('warehouse.productForm.cancelModal.confirm', { defaultValue: 'Sí, cancelar' })}</Button>
+                    <Button color="success" onClick={() => toggleModal('cancel', false)}>{t('warehouse.productForm.cancelModal.deny', { defaultValue: 'No, continuar' })}</Button>
                 </ModalFooter>
             </Modal>
 
             <Modal size='lg' isOpen={modals.createWarehouse} toggle={() => toggleModal('createWarehouse', false)} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal('createWarehouse')}>Nuevo Subalmacén</ModalHeader>
+                <ModalHeader toggle={() => toggleModal('createWarehouse')}>{t('warehouse.outcomeForm.modal.newSubwarehouse', { defaultValue: 'Nuevo Subalmacén' })}</ModalHeader>
                 <ModalBody>
                     <SubwarehouseForm onCancel={() => toggleModal('createWarehouse', false)} onSave={function (): void {
                         throw new Error('Function not implemented.');
@@ -667,8 +642,8 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                 </ModalBody>
             </Modal>
 
-            <SuccessModal isOpen={modals.success} onClose={onSave} message={'Salida creada con exito'} />
-            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={'Ha ocurrido un error al guardar los datos, intentelo mas tarde'} />
+            <SuccessModal isOpen={modals.success} onClose={onSave} message={t('warehouse.outcomeForm.success', { defaultValue: 'Salida creada con exito' })} />
+            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={t('warehouse.outcomeForm.error', { defaultValue: 'Ha ocurrido un error al guardar los datos, intentelo mas tarde' })} />
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </>

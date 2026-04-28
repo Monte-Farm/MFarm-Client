@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FilePond, registerPlugin } from 'react-filepond';
 import 'filepond/dist/filepond.min.css';
 import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
@@ -21,8 +22,9 @@ const FileUploader: React.FC<FileUploaderProps> = ({
   onFileUpload,
   maxFiles,
   imageSrc,
-  onUpdateFiles,  // <-- nuevo prop
+  onUpdateFiles,
 }) => {
+  const { t } = useTranslation();
   const [files, setFiles] = useState<File[]>([]);
 
   const handleFileUpload = async (file: File) => {
@@ -52,7 +54,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
         maxFiles={maxFiles}
         name="files"
         acceptedFileTypes={acceptedFileTypes}
-        labelIdle='Arrastra tus archivos o haz clic aqui'
+        labelIdle={t("shared.fileUploader.idle")}
       />
     </div>
   );

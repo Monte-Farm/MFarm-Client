@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Input } from "reactstrap";
 
 type Column<T> = {
@@ -25,6 +26,7 @@ const TableFilter = <T,>({
     onFilterChange,
     defaultFilterField,
 }: TableFilterProps<T>) => {
+    const { t } = useTranslation();
 
     useEffect(() => {
         if (defaultFilterField && selectedFilter === "") {
@@ -56,7 +58,7 @@ const TableFilter = <T,>({
                     value={filterText}
                     onChange={(e) => onFilterTextChange(e.target.value)}
                 >
-                    <option value="">Todo</option>
+                    <option value="">{t("shared.table.all")}</option>
                     {selectedColumn.options.map((option, index) => (
                         <option key={index} value={option.value}>
                             {option.label}
@@ -70,7 +72,7 @@ const TableFilter = <T,>({
             <Input
                 type="text"
                 className="form-control w-75"
-                placeholder="Buscar..."
+                placeholder={t("shared.table.search")}
                 value={filterText}
                 onChange={(e) => onFilterTextChange(e.target.value)}
             />

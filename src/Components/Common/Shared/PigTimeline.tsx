@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { FaBaby, FaPiggyBank, FaWeight, FaHeart } from 'react-icons/fa';
 
 interface PigTimelineProps {
@@ -8,11 +9,17 @@ interface PigTimelineProps {
 }
 
 const PigTimeline: React.FC<PigTimelineProps> = ({ currentStage, sex, className = '' }) => {
+    const { t } = useTranslation();
+
     const stages = [
-        { id: 'piglet', label: 'Lechón', icon: <FaBaby /> },
-        { id: 'weaning', label: 'Destete', icon: <FaPiggyBank /> },
-        { id: 'fattening', label: 'Engorda', icon: <FaWeight /> },
-        { id: 'breeder', label: sex === 'female' ? 'Reproductora' : 'Reproductor', icon: <FaHeart /> }
+        { id: 'piglet', label: t('pigs.stage.piglet'), icon: <FaBaby /> },
+        { id: 'weaning', label: t('pigs.stage.weaning'), icon: <FaPiggyBank /> },
+        { id: 'fattening', label: t('pigs.stage.fattening'), icon: <FaWeight /> },
+        {
+            id: 'breeder',
+            label: sex === 'female' ? t('shared.pigTimeline.breederFemale') : t('pigs.stage.breeder'),
+            icon: <FaHeart />
+        }
     ];
 
     const currentIndex = stages.findIndex(stage => stage.id === currentStage);

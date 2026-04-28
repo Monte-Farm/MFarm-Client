@@ -1,5 +1,6 @@
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardBody, CardHeader, Col, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
 import { useReportScope } from "hooks/useReportScope";
 import { buildReportUrl } from "helpers/reports_url_helper";
@@ -64,6 +65,7 @@ interface ProfitabilityKpis {
 }
 
 const ProfitabilityReport = () => {
+    const { t } = useTranslation();
     document.title = "Rentabilidad | Reportes";
 
     const configContext = useContext(ConfigContext);
@@ -107,7 +109,7 @@ const ProfitabilityReport = () => {
             setByClient(data.byClient || []);
             setKpis(data.kpis);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar los datos del reporte." });
+            setAlertConfig({ visible: true, color: "danger", message: t("reports.error.loadData") });
         } finally {
             setLoading(false);
         }
@@ -134,11 +136,11 @@ const ProfitabilityReport = () => {
     }, [startDate, endDate, scopeKey]);
 
     const costVsIncomeColumns: Column<CostVsIncome>[] = [
-        { header: "Mes", accessor: "month", type: "text" },
-        { header: "Costo Total", accessor: "totalCost", type: "currency", bgColor: "#ffebee" },
-        { header: "Ingreso Total", accessor: "totalIncome", type: "currency", bgColor: "#e8f5e9" },
+        { header: t("reports.col.month"), accessor: "month", type: "text" },
+        { header: t("reports.profitability.col.totalCost"), accessor: "totalCost", type: "currency", bgColor: "#ffebee" },
+        { header: t("reports.profitability.col.totalIncome"), accessor: "totalIncome", type: "currency", bgColor: "#e8f5e9" },
         {
-            header: "Utilidad", accessor: "profit", type: "currency", bgColor: "#e3f2fd",
+            header: t("reports.profitability.col.profit"), accessor: "profit", type: "currency", bgColor: "#e3f2fd",
             render: (v: number) => (
                 <span className={`fw-semibold ${v >= 0 ? "text-success" : "text-danger"}`}>
                     ${v?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -146,7 +148,7 @@ const ProfitabilityReport = () => {
             ),
         },
         {
-            header: "Margen %", accessor: "margin", type: "text",
+            header: t("reports.profitability.col.marginPct"), accessor: "margin", type: "text",
             render: (v: number) => (
                 <span className={`fw-semibold ${v >= 0 ? "text-success" : "text-danger"}`}>
                     {v?.toFixed(1)}%
@@ -156,13 +158,13 @@ const ProfitabilityReport = () => {
     ];
 
     const groupColumns: Column<UtilityByGroup>[] = [
-        { header: "Grupo", accessor: "groupName", type: "text", isFilterable: true },
-        { header: "Etapa", accessor: "stage", type: "text" },
-        { header: "Cerdos", accessor: "pigCount", type: "number" },
-        { header: "Costo", accessor: "totalCost", type: "currency", bgColor: "#ffebee" },
-        { header: "Ingreso", accessor: "totalIncome", type: "currency", bgColor: "#e8f5e9" },
+        { header: t("reports.col.group"), accessor: "groupName", type: "text", isFilterable: true },
+        { header: t("reports.col.stage"), accessor: "stage", type: "text" },
+        { header: t("reports.col.pigs"), accessor: "pigCount", type: "number" },
+        { header: t("reports.profitability.col.totalCost"), accessor: "totalCost", type: "currency", bgColor: "#ffebee" },
+        { header: t("reports.profitability.col.totalIncome"), accessor: "totalIncome", type: "currency", bgColor: "#e8f5e9" },
         {
-            header: "Utilidad", accessor: "profit", type: "currency", bgColor: "#e3f2fd",
+            header: t("reports.profitability.col.profit"), accessor: "profit", type: "currency", bgColor: "#e3f2fd",
             render: (v: number) => (
                 <span className={`fw-semibold ${v >= 0 ? "text-success" : "text-danger"}`}>
                     ${v?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -170,28 +172,28 @@ const ProfitabilityReport = () => {
             ),
         },
         {
-            header: "Margen %", accessor: "margin", type: "text",
+            header: t("reports.profitability.col.marginPct"), accessor: "margin", type: "text",
             render: (v: number) => (
                 <span className={`fw-semibold ${v >= 0 ? "text-success" : "text-danger"}`}>
                     {v?.toFixed(1)}%
                 </span>
             ),
         },
-        { header: "Utilidad / Cerdo", accessor: "profitPerPig", type: "currency" },
+        { header: t("reports.profitability.col.profitPerPig"), accessor: "profitPerPig", type: "currency" },
     ];
 
     const saleColumns: Column<UtilityBySale>[] = [
-        { header: "Fecha", accessor: "saleDate", type: "date", isFilterable: true },
-        { header: "Comprador", accessor: "buyer", type: "text", isFilterable: true },
-        { header: "Cerdos", accessor: "pigCount", type: "number" },
+        { header: t("reports.col.date"), accessor: "saleDate", type: "date", isFilterable: true },
+        { header: t("reports.col.buyer"), accessor: "buyer", type: "text", isFilterable: true },
+        { header: t("reports.col.pigs"), accessor: "pigCount", type: "number" },
         {
-            header: "Peso Total", accessor: "totalWeight", type: "text",
+            header: t("reports.profitability.col.totalWeight"), accessor: "totalWeight", type: "text",
             render: (v: number) => <span>{v?.toFixed(1)} kg</span>,
         },
-        { header: "Ingreso", accessor: "totalIncome", type: "currency", bgColor: "#e8f5e9" },
-        { header: "Costo", accessor: "totalCost", type: "currency", bgColor: "#ffebee" },
+        { header: t("reports.profitability.col.totalIncome"), accessor: "totalIncome", type: "currency", bgColor: "#e8f5e9" },
+        { header: t("reports.profitability.col.totalCost"), accessor: "totalCost", type: "currency", bgColor: "#ffebee" },
         {
-            header: "Utilidad", accessor: "profit", type: "currency", bgColor: "#e3f2fd",
+            header: t("reports.profitability.col.profit"), accessor: "profit", type: "currency", bgColor: "#e3f2fd",
             render: (v: number) => (
                 <span className={`fw-semibold ${v >= 0 ? "text-success" : "text-danger"}`}>
                     ${v?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -199,7 +201,7 @@ const ProfitabilityReport = () => {
             ),
         },
         {
-            header: "Margen %", accessor: "margin", type: "text",
+            header: t("reports.profitability.col.marginPct"), accessor: "margin", type: "text",
             render: (v: number) => (
                 <span className={`fw-semibold ${v >= 0 ? "text-success" : "text-danger"}`}>
                     {v?.toFixed(1)}%
@@ -209,12 +211,12 @@ const ProfitabilityReport = () => {
     ];
 
     const clientColumns: Column<MarginByClient>[] = [
-        { header: "Cliente", accessor: "clientName", type: "text", isFilterable: true },
-        { header: "Ventas", accessor: "totalSales", type: "number" },
-        { header: "Ingreso Total", accessor: "totalIncome", type: "currency", bgColor: "#e8f5e9" },
-        { header: "Costo Total", accessor: "totalCost", type: "currency", bgColor: "#ffebee" },
+        { header: t("reports.col.client"), accessor: "clientName", type: "text", isFilterable: true },
+        { header: t("reports.col.sales"), accessor: "totalSales", type: "number" },
+        { header: t("reports.profitability.col.totalIncome"), accessor: "totalIncome", type: "currency", bgColor: "#e8f5e9" },
+        { header: t("reports.profitability.col.totalCost"), accessor: "totalCost", type: "currency", bgColor: "#ffebee" },
         {
-            header: "Utilidad", accessor: "profit", type: "currency", bgColor: "#e3f2fd",
+            header: t("reports.profitability.col.profit"), accessor: "profit", type: "currency", bgColor: "#e3f2fd",
             render: (v: number) => (
                 <span className={`fw-semibold ${v >= 0 ? "text-success" : "text-danger"}`}>
                     ${v?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -222,7 +224,7 @@ const ProfitabilityReport = () => {
             ),
         },
         {
-            header: "Margen Prom. %", accessor: "avgMargin", type: "text",
+            header: t("reports.profitability.col.avgMarginPct"), accessor: "avgMargin", type: "text",
             render: (v: number) => (
                 <span className={`fw-semibold ${v >= 0 ? "text-success" : "text-danger"}`}>
                     {v?.toFixed(1)}%
@@ -246,10 +248,10 @@ const ProfitabilityReport = () => {
 
     return (
         <ReportPageLayout
-            title="Rentabilidad"
-            pageTitle="Reportes Financieros"
+            title={t("reports.profitability.title")}
+            pageTitle={t("reports.financial")}
             onGeneratePdf={handleGeneratePdf}
-            pdfTitle="Reporte - Rentabilidad"
+            pdfTitle={t("reports.profitability.pdfTitle")}
             startDate={startDate}
             endDate={endDate}
             onDateChange={(s, e) => { setStartDate(s); setEndDate(e); }}
@@ -257,7 +259,7 @@ const ProfitabilityReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Ingreso Total"
+                        title={t("reports.profitability.kpi.totalIncome")}
                         value={kpis.totalIncome}
                         icon={<i className="ri-arrow-up-circle-line fs-4 text-success"></i>}
                         animateValue
@@ -268,7 +270,7 @@ const ProfitabilityReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Costo Total"
+                        title={t("reports.profitability.kpi.totalCost")}
                         value={kpis.totalCost}
                         icon={<i className="ri-arrow-down-circle-line fs-4 text-danger"></i>}
                         animateValue
@@ -279,7 +281,7 @@ const ProfitabilityReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Utilidad"
+                        title={t("reports.profitability.kpi.profit")}
                         value={kpis.totalProfit}
                         icon={<i className="ri-money-dollar-box-line fs-4 text-primary"></i>}
                         animateValue
@@ -289,7 +291,7 @@ const ProfitabilityReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Margen General"
+                        title={t("reports.profitability.kpi.overallMargin")}
                         value={kpis.overallMargin}
                         icon={<i className="ri-percent-line fs-4 text-info"></i>}
                         animateValue
@@ -300,7 +302,7 @@ const ProfitabilityReport = () => {
                 </Col>
                 <Col xl={4} md={8}>
                     <StatKpiCard
-                        title="Mejor Margen (Grupo)"
+                        title={t("reports.profitability.kpi.bestGroup")}
                         value={kpis.bestGroupMargin}
                         subtext={kpis.bestGroupName}
                         icon={<i className="ri-trophy-line fs-4 text-warning"></i>}
@@ -315,22 +317,22 @@ const ProfitabilityReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={7}>
                     <BasicLineChartCard
-                        title="Ingreso vs Costo por Mes"
+                        title={t("reports.profitability.chart.incomeVsCost")}
                         data={trendData}
-                        yLabel="Monto ($)"
-                        xLabel="Mes"
+                        yLabel={t("reports.axis.amountUsd")}
+                        xLabel={t("reports.axis.month")}
                         height={300}
                         showLegend
                     />
                 </Col>
                 <Col xl={5}>
                     <BasicBarChart
-                        title="Utilidad por Mes"
+                        title={t("reports.profitability.chart.profitByMonth")}
                         data={profitBarData}
                         indexBy="month"
                         keys={["Utilidad"]}
-                        xLegend="Mes"
-                        yLegend="Utilidad ($)"
+                        xLegend={t("reports.axis.month")}
+                        yLegend={t("reports.axis.profitUsd")}
                         height={300}
                         colors={["#3b82f6"]}
                     />
@@ -346,7 +348,7 @@ const ProfitabilityReport = () => {
                                 onClick={() => setActiveTab("1")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-arrow-up-down-line me-1"></i> Costo vs Ingreso
+                                <i className="ri-arrow-up-down-line me-1"></i> {t("reports.profitability.tab.costVsIncome")}
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -355,7 +357,7 @@ const ProfitabilityReport = () => {
                                 onClick={() => setActiveTab("2")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-group-line me-1"></i> Por Grupo ({byGroup.length})
+                                <i className="ri-group-line me-1"></i> {t("reports.profitability.tab.byGroup")} ({byGroup.length})
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -364,7 +366,7 @@ const ProfitabilityReport = () => {
                                 onClick={() => setActiveTab("3")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-shopping-bag-line me-1"></i> Por Venta ({bySale.length})
+                                <i className="ri-shopping-bag-line me-1"></i> {t("reports.profitability.tab.bySale")} ({bySale.length})
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -373,7 +375,7 @@ const ProfitabilityReport = () => {
                                 onClick={() => setActiveTab("4")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-user-star-line me-1"></i> Por Cliente ({byClient.length})
+                                <i className="ri-user-star-line me-1"></i> {t("reports.profitability.tab.byClient")} ({byClient.length})
                             </NavLink>
                         </NavItem>
                     </Nav>

@@ -1,5 +1,6 @@
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardBody, CardHeader, Col, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
 import { useReportScope } from "hooks/useReportScope";
 import { buildReportUrl } from "helpers/reports_url_helper";
@@ -43,7 +44,9 @@ interface PurchasesKpis {
 }
 
 const PurchasesReport = () => {
-    document.title = "Compras y Fluctuacion de Precios | Reportes";
+    const { t } = useTranslation();
+
+    document.title = `${t("reports.purchases.title")} | ${t("reports.title")}`;
 
     const configContext = useContext(ConfigContext);
     const { isGlobal, farmId, scopeKey } = useReportScope();
@@ -83,7 +86,7 @@ const PurchasesReport = () => {
             setKpis(data.kpis);
             setMonthlySpending(data.monthlySpending || []);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar los datos del reporte." });
+            setAlertConfig({ visible: true, color: "danger", message: t("reports.error.loadData") });
         } finally {
             setLoading(false);
         }
@@ -110,25 +113,25 @@ const PurchasesReport = () => {
     }, [startDate, endDate, scopeKey]);
 
     const purchaseColumns: Column<PurchaseRecord>[] = [
-        { header: "Fecha", accessor: "date", type: "date", isFilterable: true },
-        { header: "Proveedor", accessor: "supplier", type: "text", isFilterable: true },
-        { header: "Producto", accessor: "productName", type: "text", isFilterable: true },
+        { header: t("reports.col.date"), accessor: "date", type: "date", isFilterable: true },
+        { header: t("reports.col.supplier"), accessor: "supplier", type: "text", isFilterable: true },
+        { header: t("reports.col.product"), accessor: "productName", type: "text", isFilterable: true },
         {
-            header: "Cantidad", accessor: "quantity", type: "text",
+            header: t("reports.col.quantity"), accessor: "quantity", type: "text",
             render: (v: number, row: PurchaseRecord) => <span>{v?.toLocaleString()} {row.unit}</span>,
         },
-        { header: "Precio Unit.", accessor: "unitPrice", type: "currency" },
-        { header: "Total", accessor: "totalAmount", type: "currency", bgColor: "#e8f5e9" },
-        { header: "Factura", accessor: "invoiceNumber", type: "text" },
+        { header: t("reports.purchases.col.unitPrice"), accessor: "unitPrice", type: "currency" },
+        { header: t("reports.col.total"), accessor: "totalAmount", type: "currency", bgColor: "#e8f5e9" },
+        { header: t("reports.col.invoice"), accessor: "invoiceNumber", type: "text" },
     ];
 
     const priceColumns: Column<PriceFluctuation>[] = [
-        { header: "Producto", accessor: "productName", type: "text", isFilterable: true },
-        { header: "Categoria", accessor: "category", type: "text", isFilterable: true },
-        { header: "Precio Actual", accessor: "currentPrice", type: "currency", bgColor: "#e3f2fd" },
-        { header: "Precio Anterior", accessor: "previousPrice", type: "currency" },
+        { header: t("reports.col.product"), accessor: "productName", type: "text", isFilterable: true },
+        { header: t("reports.col.category"), accessor: "category", type: "text", isFilterable: true },
+        { header: t("reports.purchases.col.currentPrice"), accessor: "currentPrice", type: "currency", bgColor: "#e3f2fd" },
+        { header: t("reports.purchases.col.prevPrice"), accessor: "previousPrice", type: "currency" },
         {
-            header: "Variacion", accessor: "variation", type: "currency",
+            header: t("reports.purchases.col.variation"), accessor: "variation", type: "currency",
             render: (v: number) => (
                 <span className={`fw-semibold ${v > 0 ? "text-danger" : v < 0 ? "text-success" : ""}`}>
                     {v > 0 ? "+" : ""}${v?.toFixed(2)}
@@ -136,7 +139,7 @@ const PurchasesReport = () => {
             ),
         },
         {
-            header: "Variacion %", accessor: "variationPercent", type: "text",
+            header: t("reports.purchases.col.variationPct"), accessor: "variationPercent", type: "text",
             render: (v: number) => (
                 <span className={`fw-semibold ${v > 0 ? "text-danger" : v < 0 ? "text-success" : ""}`}>
                     {v > 0 ? "+" : ""}{v?.toFixed(1)}%
@@ -146,7 +149,7 @@ const PurchasesReport = () => {
     ];
 
     const spendingTrendData = [{
-        id: "Gasto",
+        id: t("reports.purchases.kpi.totalSpent"),
         data: monthlySpending.map((m: any) => ({ x: m.month, y: m.totalSpent })),
     }];
 
@@ -159,10 +162,10 @@ const PurchasesReport = () => {
 
     return (
         <ReportPageLayout
-            title="Compras y Fluctuacion de Precios"
-            pageTitle="Reportes Financieros"
+            title={t("reports.purchases.title")}
+            pageTitle={t("reports.financial")}
             onGeneratePdf={handleGeneratePdf}
-            pdfTitle="Reporte - Compras y Fluctuacion de Precios"
+            pdfTitle={t("reports.purchases.pdfTitle")}
             startDate={startDate}
             endDate={endDate}
             onDateChange={(s, e) => { setStartDate(s); setEndDate(e); }}
@@ -170,7 +173,7 @@ const PurchasesReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Total Compras"
+                        title={t("reports.purchases.kpi.totalPurchases")}
                         value={kpis.totalPurchases}
                         icon={<i className="ri-shopping-cart-line fs-4 text-primary"></i>}
                         animateValue
@@ -178,7 +181,7 @@ const PurchasesReport = () => {
                 </Col>
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Total Gastado"
+                        title={t("reports.purchases.kpi.totalSpent")}
                         value={kpis.totalSpent}
                         icon={<i className="ri-money-dollar-circle-line fs-4 text-danger"></i>}
                         animateValue
@@ -189,7 +192,7 @@ const PurchasesReport = () => {
                 </Col>
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Prom. por Compra"
+                        title={t("reports.purchases.kpi.avgPerPurchase")}
                         value={kpis.avgPurchaseAmount}
                         icon={<i className="ri-price-tag-3-line fs-4 text-info"></i>}
                         animateValue
@@ -200,7 +203,7 @@ const PurchasesReport = () => {
                 </Col>
                 <Col xl={3} md={6}>
                     <StatKpiCard
-                        title="Proveedores"
+                        title={t("reports.purchases.kpi.suppliers")}
                         value={kpis.suppliersCount}
                         icon={<i className="ri-truck-line fs-4 text-success"></i>}
                         animateValue
@@ -212,10 +215,10 @@ const PurchasesReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={6}>
                     <BasicLineChartCard
-                        title="Tendencia de Gasto Mensual"
+                        title={t("reports.purchases.chart.monthlySpending")}
                         data={spendingTrendData}
-                        yLabel="Gasto ($)"
-                        xLabel="Mes"
+                        yLabel={t("reports.axis.expenseUsd")}
+                        xLabel={t("reports.axis.month")}
                         height={280}
                         color="#ef4444"
                         enableArea
@@ -224,12 +227,12 @@ const PurchasesReport = () => {
                 </Col>
                 <Col xl={6}>
                     <BasicBarChart
-                        title="Compras por Mes"
+                        title={t("reports.purchases.chart.purchasesByMonth")}
                         data={spendingBarData}
                         indexBy="month"
                         keys={["Compras"]}
-                        xLegend="Mes"
-                        yLegend="Cantidad"
+                        xLegend={t("reports.axis.month")}
+                        yLegend={t("reports.axis.quantity")}
                         height={280}
                     />
                 </Col>
@@ -244,7 +247,7 @@ const PurchasesReport = () => {
                                 onClick={() => setActiveTab("1")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-shopping-cart-line me-1"></i> Compras ({purchases.length})
+                                <i className="ri-shopping-cart-line me-1"></i> {t("reports.purchases.tab.purchases")} ({purchases.length})
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -253,7 +256,7 @@ const PurchasesReport = () => {
                                 onClick={() => setActiveTab("2")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-arrow-up-down-line me-1"></i> Fluctuacion de Precios ({priceChanges.length})
+                                <i className="ri-arrow-up-down-line me-1"></i> {t("reports.purchases.tab.priceFluctuation")} ({priceChanges.length})
                             </NavLink>
                         </NavItem>
                     </Nav>

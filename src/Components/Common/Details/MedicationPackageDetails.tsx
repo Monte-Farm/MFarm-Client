@@ -1,6 +1,7 @@
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import AlertMessage from "../Shared/AlertMesagge";
 import ObjectDetails from "./ObjectDetails";
 import { Attribute } from "common/data_interfaces";
@@ -18,6 +19,7 @@ interface MedicationPackageDetailsProps {
 }
 
 const MedicationPackageDetails: React.FC<MedicationPackageDetailsProps> = ({ medicationPackageId }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true);
@@ -29,72 +31,57 @@ const MedicationPackageDetails: React.FC<MedicationPackageDetailsProps> = ({ med
     const [isSubmitting, setSubmitting] = useState<boolean>(false);
 
     const medicationAttributes: Attribute[] = [
-        { key: 'code', label: 'Codigo', type: 'text' },
-        { key: 'name', label: 'Nombre', type: 'text' },
-        { key: 'creation_date', label: 'Fecha de creacion', type: 'date' },
+        { key: 'code', label: t('common.field.code'), type: 'text' },
+        { key: 'name', label: t('common.field.name'), type: 'text' },
+        { key: 'creation_date', label: t('medication.package.column.createdAt'), type: 'date' },
         {
-            label: 'Etapa',
+            label: t('common.field.stage'),
             key: 'stage',
             type: 'text',
             render: (_, row) => {
                 let color = "secondary";
-                let text = "Desconocido";
+                const text = t(`feeding.stage.${row.stage}`, { defaultValue: t('medical.medication.field.unknown') });
 
                 switch (row.stage) {
-                    case "general":
-                        color = "info";
-                        text = "General";
-                        break;
-                    case "piglet":
-                        color = "info";
-                        text = "Lechón";
-                        break;
-                    case "weaning":
-                        color = "warning";
-                        text = "Destete";
-                        break;
-                    case "fattening":
-                        color = "primary";
-                        text = "Engorda";
-                        break;
-                    case "breeder":
-                        color = "success";
-                        text = "Reproductor";
-                        break;
+                    case "general": color = "info"; break;
+                    case "piglet": color = "info"; break;
+                    case "weaning": color = "warning"; break;
+                    case "fattening": color = "primary"; break;
+                    case "breeder": color = "success"; break;
                 }
 
                 return <Badge color={color}>{text}</Badge>;
             },
         },
-        { key: 'description', label: 'Descripcion', type: 'text' },
+        { key: 'description', label: t('medication.package.detail.description'), type: 'text' },
         {
             key: 'creation_responsible',
-            label: 'Responsable de registo',
+            label: t('medication.package.detail.responsible'),
             type: 'text',
             render: (_, obj) => (<span className="text-black">{medicationPackageDetails?.creation_responsible?.name} {medicationPackageDetails?.creation_responsible?.lastname} </span>)
         },
         {
-            key: 'is_active', label: 'Estado', render: (value: boolean) => (
-                <Badge color={value ? "success" : "danger"}>{value ? "Activo" : "Inactivo"}</Badge>
+            key: 'is_active', label: t('common.field.status'), render: (value: boolean) => (
+                <Badge color={value ? "success" : "danger"}>{value ? t('common.status.active') : t('common.status.inactive')}</Badge>
             ),
         },
     ]
 
     const medicationsColumns: Column<any>[] = [
         {
-            header: 'Imagen', accessor: 'image', render: (_, row) => (
+            header: t('feeding.package.form.column.image'), accessor: 'image', render: (_, row) => (
                 <img src={row.medication.image || noImageUrl} alt="Imagen del Producto" style={{ height: "70px" }} />
             ),
         },
         {
-            header: "Codigo",
+            header: t('common.field.code'),
             accessor: "medication.id",
             type: "text",
             isFilterable: true,
             render: (_, row) => row.medication.id,
         },
         {
-            header: "Producto",
+            header: t('feeding.package.form.column.product'),
             accessor: "name",
             type: "text",
             isFilterable: true,
@@ -102,79 +89,46 @@ const MedicationPackageDetails: React.FC<MedicationPackageDetailsProps> = ({ med
 
         },
         {
-            header: 'Categoria',
+            header: t('feeding.package.form.column.category'),
             accessor: 'category',
             render: (_, row) => {
                 let color = "secondary";
-                let label = 'Desconocido';
+                const label = t(`feeding.productCategory.${row.medication?.category}`, { defaultValue: t('medical.medication.field.unknown') });
 
                 switch (row.medication?.category) {
-                    case "medications":
-                        color = "info";
-                        label = "Medicamentos";
-                        break;
-                    case "vaccines":
-                        color = "primary";
-                        label = "Vacunas";
-                        break;
-                    case "vitamins":
-                        color = "primary";
-                        label = "Vitaminas";
-                        break;
-                    case "minerals":
-                        color = "primary";
-                        label = "Minerales";
-                        break;
+                    case "medications": color = "info"; break;
+                    case "vaccines": color = "primary"; break;
+                    case "vitamins": color = "primary"; break;
+                    case "minerals": color = "primary"; break;
                 }
 
                 return <Badge color={color}>{label}</Badge>;
             },
         },
         {
-            header: "Cantidad",
+            header: t('medication.package.medicationColumn.quantity'),
             accessor: "quantity",
             type: "text",
             isFilterable: true,
             render: (_, row) => `${row.quantity} ${row.medication?.unit_measurement || ''}`,
         },
         {
-            header: "Administracion",
+            header: t('medication.package.medicationColumn.route'),
             accessor: "administration_route",
             type: "text",
             isFilterable: true,
             render: (value: string) => {
                 let color = "secondary";
-                let label = value;
+                const label = t(`medical.medication.route.${value}`, { defaultValue: value });
 
                 switch (value) {
-                    case "oral":
-                        color = "info";
-                        label = "Oral";
-                        break;
-                    case "intramuscular":
-                        color = "primary";
-                        label = "Intramuscular";
-                        break;
-                    case "subcutaneous":
-                        color = "primary";
-                        label = "Subcutánea";
-                        break;
-                    case "intravenous":
-                        color = "primary";
-                        label = "Intravenosa";
-                        break;
-                    case "intranasal":
-                        color = "primary";
-                        label = "Intranasal";
-                        break;
-                    case "topical":
-                        color = "primary";
-                        label = "Tópica";
-                        break;
-                    case "rectal":
-                        color = "primary";
-                        label = "Rectal";
-                        break;
+                    case "oral": color = "info"; break;
+                    case "intramuscular": color = "primary"; break;
+                    case "subcutaneous": color = "primary"; break;
+                    case "intravenous": color = "primary"; break;
+                    case "intranasal": color = "primary"; break;
+                    case "topical": color = "primary"; break;
+                    case "rectal": color = "primary"; break;
                 }
 
                 return <Badge color={color}>{label}</Badge>;
@@ -207,7 +161,7 @@ const MedicationPackageDetails: React.FC<MedicationPackageDetailsProps> = ({ med
             setCurrentPrices(pricesMap);
         } catch (error) {
             console.error('Error fetching data:', error)
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al cargar los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('medication.package.error.load') })
         } finally {
             setLoading(false)
         }
@@ -271,12 +225,12 @@ const MedicationPackageDetails: React.FC<MedicationPackageDetailsProps> = ({ med
                         {medicationPackageDetails.is_active ? (
                             <Button className="btn-danger" onClick={() => toggleModal('deactivateMedicationPackage')}>
                                 <i className="ri-forbid-line align-middle me-2 fs-5" />
-                                Desactivar paquete
+                                {t('medication.package.action.deactivate')}
                             </Button>
                         ) : (
                             <Button className="btn-success" onClick={() => toggleModal('activateMedicationPackage')}>
                                 <i className="ri-check-line align-middle me-2 fs-5" />
-                                Activar paquete
+                                {t('medication.package.action.activate')}
                             </Button>
                         )}
                     </>
@@ -288,7 +242,7 @@ const MedicationPackageDetails: React.FC<MedicationPackageDetailsProps> = ({ med
                     <CardHeader className="bg-primary bg-opacity-10">
                         <h5 className="mb-0 text-primary">
                             <i className="ri-file-list-3-line me-2" />
-                            Informacion del paquete
+                            {t('medication.package.info.card')}
                         </h5>
                     </CardHeader>
                     <CardBody>
@@ -300,7 +254,7 @@ const MedicationPackageDetails: React.FC<MedicationPackageDetailsProps> = ({ med
                     <CardHeader className="bg-success bg-opacity-10">
                         <h5 className="mb-0 text-success">
                             <i className="ri-medicine-bottle-line me-2" />
-                            Medicamentos del paquete
+                            {t('medication.package.info.medicationsCard')}
                         </h5>
                     </CardHeader>
                     <CardBody className="p-0">
@@ -312,7 +266,7 @@ const MedicationPackageDetails: React.FC<MedicationPackageDetailsProps> = ({ med
                                     <div>
                                         <div className="text-muted small mb-1">
                                             <i className="ri-history-line me-1" />
-                                            Costo por cerdo al momento del registro
+                                            {t('medication.package.info.costAtRegistration')}
                                         </div>
                                         <div className="fs-4 fw-bold text-success">
                                             ${medicationsItems.reduce((total, item) => {
@@ -322,8 +276,8 @@ const MedicationPackageDetails: React.FC<MedicationPackageDetailsProps> = ({ med
                                         <div className="d-flex align-items-center gap-1 mt-1">
                                             <i className="ri-information-line text-warning small" />
                                             <small className="text-muted">
-                                                Registrado el {medicationPackageDetails.creation_date
-                                                    ? new Date(medicationPackageDetails.creation_date).toLocaleDateString('es-MX')
+                                                {medicationPackageDetails.creation_date
+                                                    ? t('medication.package.info.recordedOn', { date: new Date(medicationPackageDetails.creation_date).toLocaleDateString('es-MX') })
                                                     : '—'}
                                             </small>
                                         </div>
@@ -335,7 +289,7 @@ const MedicationPackageDetails: React.FC<MedicationPackageDetailsProps> = ({ med
                                     <div>
                                         <div className="text-muted small mb-1">
                                             <i className="ri-refresh-line me-1" />
-                                            Costo por cerdo a precio actual
+                                            {t('medication.package.info.costAtCurrent')}
                                         </div>
                                         {Object.keys(currentPrices).length > 0 ? (
                                             <>
@@ -349,7 +303,7 @@ const MedicationPackageDetails: React.FC<MedicationPackageDetailsProps> = ({ med
                                                 <div className="d-flex align-items-center gap-1 mt-1">
                                                     <i className="ri-information-line text-warning small" />
                                                     <small className="text-muted">
-                                                        Precio promedio a día de hoy ({new Date().toLocaleDateString('es-MX')})
+                                                        {t('medication.package.info.currentPrice', { date: new Date().toLocaleDateString('es-MX') })}
                                                     </small>
                                                 </div>
                                             </>
@@ -366,33 +320,33 @@ const MedicationPackageDetails: React.FC<MedicationPackageDetailsProps> = ({ med
             </div>
 
             <Modal size="md" isOpen={modals.deactivateMedicationPackage} toggle={() => toggleModal("deactivateMedicationPackage")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("deactivateMedicationPackage")}>Desactivar paquete de medicaciones</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("deactivateMedicationPackage")}>{t('medication.package.action.deactivateModal')}</ModalHeader>
                 <ModalBody>
-                    <p>¿Está seguro que desea desactivar este paquete de medicaciones?</p>
+                    <p>{t('medication.package.action.deactivateConfirm')}</p>
                 </ModalBody>
                 <ModalFooter>
-                    <Button color="secondary" onClick={() => toggleModal('deactivateMedicationPackage', false)}>Cancelar</Button>
-                    <Button color="danger" onClick={() => { toggleModal('deactivateMedicationPackage'); deactivateMedicationPackage() }}>Confirmar</Button>
+                    <Button color="secondary" onClick={() => toggleModal('deactivateMedicationPackage', false)}>{t('common.button.cancel')}</Button>
+                    <Button color="danger" onClick={() => { toggleModal('deactivateMedicationPackage'); deactivateMedicationPackage() }}>{t('common.button.confirm')}</Button>
                 </ModalFooter>
             </Modal>
 
             <Modal size="md" isOpen={modals.activateMedicationPackage} toggle={() => toggleModal("activateMedicationPackage")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("activateMedicationPackage")}>Activar paquete de medicaciones</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("activateMedicationPackage")}>{t('medication.package.action.activateModal')}</ModalHeader>
                 <ModalBody>
-                    <p>¿Está seguro que desea activar este paquete de medicaciones?</p>
+                    <p>{t('medication.package.action.activateConfirm')}</p>
                 </ModalBody>
                 <ModalFooter>
-                    <Button color="secondary" onClick={() => toggleModal('activateMedicationPackage', false)}>Cancelar</Button>
-                    <Button color="danger" onClick={() => { toggleModal('activateMedicationPackage'); activateMedicationPackage() }}>Confirmar</Button>
+                    <Button color="secondary" onClick={() => toggleModal('activateMedicationPackage', false)}>{t('common.button.cancel')}</Button>
+                    <Button color="danger" onClick={() => { toggleModal('activateMedicationPackage'); activateMedicationPackage() }}>{t('common.button.confirm')}</Button>
                 </ModalFooter>
             </Modal>
 
 
-            <SuccessModal isOpen={modals.deactivationSuccess} onClose={() => { toggleModal('deactivationSuccess'); fetchData() }} message={"Paquete desactivado con exito"} />
-            <SuccessModal isOpen={modals.activationSuccess} onClose={() => { toggleModal('activationSuccess'); fetchData() }} message={"Paquete activado con exito"} />
+            <SuccessModal isOpen={modals.deactivationSuccess} onClose={() => { toggleModal('deactivationSuccess'); fetchData() }} message={t('medication.package.success.deactivated')} />
+            <SuccessModal isOpen={modals.activationSuccess} onClose={() => { toggleModal('activationSuccess'); fetchData() }} message={t('medication.package.success.activated')} />
 
-            <ErrorModal isOpen={modals.deactivationError} onClose={() => { toggleModal('deactivationError') }} message={"Ha ocurrido un error al desactivar el paquete, intentelo mas tarde"} />
-            <ErrorModal isOpen={modals.activationError} onClose={() => { toggleModal('activationError') }} message={"Ha ocurrido un error al activar el paquete, intentelo mas tarde"} />
+            <ErrorModal isOpen={modals.deactivationError} onClose={() => { toggleModal('deactivationError') }} message={t('medication.package.error.deactivate')} />
+            <ErrorModal isOpen={modals.activationError} onClose={() => { toggleModal('activationError') }} message={t('medication.package.error.activate')} />
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} />
         </>

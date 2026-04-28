@@ -12,13 +12,34 @@ import CustomTable from "Components/Common/Tables/CustomTable";
 import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
 import DonutChartCard, { DonutDataItem, DonutLegendItem } from "Components/Common/Graphics/DonutChartCard";
 import OutcomeDetails from "Components/Common/Details/OutcomeDetails";
-import { OUTCOME_TYPES, getOutcomeTypeLabel } from "common/enums/outcomes.enums";
+import { OUTCOME_TYPES } from "common/enums/outcomes.enums";
 import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
+import { useTranslation } from "react-i18next";
 
+const outcomeTypeColor: Record<string, string> = {
+    transfer: "info",
+    sale: "success",
+    loss: "danger",
+    adjustment: "warning",
+    return: "primary",
+    consumption: "secondary",
+    warehouse_order: "info",
+};
+
+const chartTypeColor: Record<string, string> = {
+    [OUTCOME_TYPES.TRANSFER]: '#3b82f6',
+    [OUTCOME_TYPES.SALE]: '#10b981',
+    [OUTCOME_TYPES.LOSS]: '#ef4444',
+    [OUTCOME_TYPES.ADJUSTMENT]: '#f59e0b',
+    [OUTCOME_TYPES.RETURN]: '#6366f1',
+    [OUTCOME_TYPES.CONSUMPTION]: '#6b7280',
+    [OUTCOME_TYPES.WAREHOUSE_ORDER]: '#8b5cf6',
+};
 
 const ViewOutcomes = () => {
-    document.title = 'Ver Salidas | Salidas'
+    const { t } = useTranslation();
+    document.title = t('finance.outcome.pageTitle')
     const navigate = useNavigate();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
@@ -48,53 +69,29 @@ const ViewOutcomes = () => {
     };
 
     const columns: Column<any>[] = [
-        { header: 'Identificador', accessor: 'code', isFilterable: true, type: 'text' },
-        { header: 'Fecha de Salida', accessor: 'date', isFilterable: true, type: 'date' },
+        { header: t('finance.outcome.column.id'), accessor: 'code', isFilterable: true, type: 'text' },
+        { header: t('finance.outcome.column.date'), accessor: 'date', isFilterable: true, type: 'date' },
         {
-            header: 'Tipo de salida',
+            header: t('finance.outcome.column.type'),
             accessor: 'outcomeType',
             isFilterable: true,
             type: 'text',
             render: (_, row) => {
-                let color = 'secondary';
-                let label = getOutcomeTypeLabel(row.outcomeType);
-
-                switch (row.outcomeType) {
-                    case OUTCOME_TYPES.TRANSFER:
-                        color = "info";
-                        break;
-                    case OUTCOME_TYPES.SALE:
-                        color = "success";
-                        break;
-                    case OUTCOME_TYPES.LOSS:
-                        color = "danger";
-                        break;
-                    case OUTCOME_TYPES.ADJUSTMENT:
-                        color = "warning";
-                        break;
-                    case OUTCOME_TYPES.RETURN:
-                        color = "primary";
-                        break;
-                    case OUTCOME_TYPES.CONSUMPTION:
-                        color = "secondary";
-                        break;
-                    case OUTCOME_TYPES.WAREHOUSE_ORDER:
-                        color = "info";
-                        break;
-                }
+                const color = outcomeTypeColor[row.outcomeType] || 'secondary';
+                const label = t(`finance.outcome.outcomeType.${row.outcomeType}`, { defaultValue: row.outcomeType });
                 return <Badge color={color}>{label}</Badge>;
             },
         },
         {
-            header: 'Subalmacén de destino',
+            header: t('finance.outcome.column.destination'),
             accessor: 'warehouseDestiny',
             isFilterable: true,
             type: 'text',
             render: (_, row) => <span>{row.warehouseDestiny?.name || "N/A"}</span>
         },
-        { header: 'Valor', accessor: 'totalPrice', isFilterable: true, type: 'currency' },
+        { header: t('finance.outcome.column.value'), accessor: 'totalPrice', isFilterable: true, type: 'currency' },
         {
-            header: 'Acciones', accessor: 'actions',
+            header: t('common.field.actions'), accessor: 'actions',
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
                     <Button className="btn-icon farm-primary-button" onClick={() => { setSelectedOutcome(row); toggleModal('details') }}>
@@ -117,7 +114,7 @@ const ViewOutcomes = () => {
             setFileURL(window.URL.createObjectURL(pdfBlob));
             toggleModal('viewPDF');
         } catch (error) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('finance.outcome.error.generatePdf') });
         } finally {
             setPdfLoading(false);
         }
@@ -137,12 +134,11 @@ const ViewOutcomes = () => {
         if (!configContext || !mainWarehouseId) return;
         try {
             setLoading(true)
-
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/outcomes/find_warehouse_outcomes/${mainWarehouseId}`);
             setOutcomes(response.data.data);
         } catch (error) {
             console.error('Error fetching data', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrdio un error al obtener los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('finance.outcome.error.fetchData') })
         } finally {
             setLoading(false)
         }
@@ -164,52 +160,37 @@ const ViewOutcomes = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/outcomes/outcome_charts/${mainWarehouseId}`);
             const chartDataResponse = response.data.data;
 
-            // Transformar datos para las gráficas de dona - solo incluir tipos que tienen datos
             const outcomesByType: DonutDataItem[] = [];
             const valueByType: DonutDataItem[] = [];
 
-            // Mapeo de tipos con sus colores y etiquetas (adaptado para outcomes)
-            const typeConfig: Record<string, { label: string; color: string }> = {
-                [OUTCOME_TYPES.TRANSFER]: { label: 'Transferencia', color: '#3b82f6' },
-                [OUTCOME_TYPES.SALE]: { label: 'Venta', color: '#10b981' },
-                [OUTCOME_TYPES.LOSS]: { label: 'Pérdida', color: '#ef4444' },
-                [OUTCOME_TYPES.ADJUSTMENT]: { label: 'Ajuste', color: '#f59e0b' },
-                [OUTCOME_TYPES.RETURN]: { label: 'Devolución', color: '#6366f1' },
-                [OUTCOME_TYPES.CONSUMPTION]: { label: 'Consumo', color: '#6b7280' },
-                [OUTCOME_TYPES.WAREHOUSE_ORDER]: { label: 'Orden de Almacén', color: '#8b5cf6' }
-            };
-
-            // Procesar entriesByType
             if (chartDataResponse.outcomesByType) {
                 Object.entries(chartDataResponse.outcomesByType).forEach(([type, value]) => {
                     const numericValue = Number(value);
-                    if (numericValue > 0 && typeConfig[type]) {
+                    if (numericValue > 0 && chartTypeColor[type]) {
                         outcomesByType.push({
                             id: type,
-                            label: typeConfig[type].label,
+                            label: t(`finance.outcome.outcomeType.${type}`, { defaultValue: type }),
                             value: numericValue,
-                            color: typeConfig[type].color
+                            color: chartTypeColor[type]
                         });
                     }
                 });
             }
 
-            // Procesar valueByType
             if (chartDataResponse.valueByType) {
                 Object.entries(chartDataResponse.valueByType).forEach(([type, value]) => {
                     const numericValue = Number(value);
-                    if (numericValue > 0 && typeConfig[type]) {
+                    if (numericValue > 0 && chartTypeColor[type]) {
                         valueByType.push({
                             id: type,
-                            label: typeConfig[type].label,
+                            label: t(`finance.outcome.outcomeType.${type}`, { defaultValue: type }),
                             value: numericValue,
-                            color: typeConfig[type].color
+                            color: chartTypeColor[type]
                         });
                     }
                 });
             }
 
-            // Crear legendItems para mostrar datos detallados
             const outcomesLegendItems = outcomesByType.map(item => ({
                 label: item.label,
                 value: item.value,
@@ -234,9 +215,9 @@ const ViewOutcomes = () => {
 
     const fetchWarehouseData = async () => {
         if (!mainWarehouseId || !configContext) return;
-        
+
         try {
-            const [outcomesResponse, statisticsResponse, chartDataResponse] = await Promise.all([
+            await Promise.all([
                 handleFetchOutcomes(),
                 fetchOutcomeStatistics(),
                 fetchOutcomeChartData()
@@ -259,13 +240,12 @@ const ViewOutcomes = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Ver Salidas"} pageTitle={"Salidas"} />
+                <BreadCrumb title={t('finance.outcome.breadcrumb.title')} pageTitle={t('finance.outcome.breadcrumb.parent')} />
 
-                {/* KPIs Section */}
                 <div className="row mb-3">
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
-                            title="Valor Total de Salidas"
+                            title={t('finance.outcome.kpi.totalValue')}
                             value={outcomeStatistics.totalValue}
                             prefix="$"
                             decimals={2}
@@ -277,7 +257,7 @@ const ViewOutcomes = () => {
                     </div>
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
-                            title="Total de Salidas"
+                            title={t('finance.outcome.kpi.total')}
                             value={outcomeStatistics.totalOutcomes}
                             icon={<i className="ri-file-list-3-line fs-20 text-info"></i>}
                             iconBgColor="#E3F2FD"
@@ -287,7 +267,7 @@ const ViewOutcomes = () => {
                     </div>
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
-                            title="Valor Promedio por Salida"
+                            title={t('finance.outcome.kpi.avgValue')}
                             value={outcomeStatistics.averageValuePerOutcome}
                             prefix="$"
                             decimals={2}
@@ -299,11 +279,10 @@ const ViewOutcomes = () => {
                     </div>
                 </div>
 
-                {/* Charts Section */}
                 <div className="row mb-4">
                     <div className="col-xl-6">
                         <DonutChartCard
-                            title="Salidas por Tipo"
+                            title={t('finance.outcome.chart.byType')}
                             data={chartData.outcomesByType}
                             legendItems={chartData.outcomesLegendItems}
                             height={200}
@@ -311,7 +290,7 @@ const ViewOutcomes = () => {
                     </div>
                     <div className="col-xl-6">
                         <DonutChartCard
-                            title="Valor de Salidas por Tipo"
+                            title={t('finance.outcome.chart.valueByType')}
                             data={chartData.valueByType}
                             legendItems={chartData.valueLegendItems}
                             height={200}
@@ -322,17 +301,17 @@ const ViewOutcomes = () => {
                 <Card>
                     <CardHeader>
                         <div className="d-flex gap-2 align-items-center">
-                            <h4 className="me-auto mb-0">Salidas</h4>
+                            <h4 className="me-auto mb-0">{t('finance.outcome.cardTitle')}</h4>
                             <Button color="primary" onClick={() => toggleModal('dateRange')} disabled={pdfLoading}>
                                 {pdfLoading ? (
-                                    <><Spinner className="me-2" size="sm" />Generando...</>
+                                    <><Spinner className="me-2" size="sm" />{t('common.button.generating')}</>
                                 ) : (
-                                    <><i className="ri-file-pdf-line me-2" />Exportar PDF</>
+                                    <><i className="ri-file-pdf-line me-2" />{t('common.button.exportPdf')}</>
                                 )}
                             </Button>
                             <Button className="farm-primary-button" onClick={() => toggleModal('createOutcome')}>
                                 <i className="ri-add-line me-2" />
-                                Nueva Salida
+                                {t('finance.outcome.action.new')}
                             </Button>
                         </div>
                     </CardHeader>
@@ -340,7 +319,7 @@ const ViewOutcomes = () => {
                         {outcomes.length === 0 ? (
                             <>
                                 <i className="ri-archive-line text-muted mb-2" style={{ fontSize: "2rem" }} />
-                                <span className="fs-5 text-muted">Aún no hay salidas de inventario registradas</span>
+                                <span className="fs-5 text-muted">{t('finance.outcome.empty')}</span>
                             </>
                         ) : (
                             <CustomTable columns={columns} data={outcomes} showSearchAndFilter={true} showPagination={false} />
@@ -350,31 +329,31 @@ const ViewOutcomes = () => {
             </Container>
 
             <Modal size="xl" isOpen={modals.createOutcome} toggle={() => toggleModal("createOutcome")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("createOutcome")}>Nueva salida</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("createOutcome")}>{t('finance.outcome.modal.create')}</ModalHeader>
                 <ModalBody>
                     <OutcomeForm onSave={() => { toggleModal('createOutcome'); fetchWarehouseData(); }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("details")}>Detalles de salida</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("details")}>{t('finance.outcome.modal.details')}</ModalHeader>
                 <ModalBody>
                     <OutcomeDetails outcomeId={selectedOutcome._id} />
                 </ModalBody>
             </Modal>
 
             <Modal size="md" isOpen={modals.dateRange} toggle={() => toggleModal("dateRange")} centered>
-                <ModalHeader toggle={() => toggleModal("dateRange")}>Seleccionar rango de fechas</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("dateRange")}>{t('finance.outcome.modal.dateRange')}</ModalHeader>
                 <ReportDateRangeSelector
                     onGenerate={handleGeneratePDF}
                     onCancel={() => toggleModal("dateRange")}
                     loading={pdfLoading}
-                    generateButtonText="Generar PDF"
+                    generateButtonText={t('finance.outcome.action.generatePdf')}
                 />
             </Modal>
 
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop="static" keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Salidas</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('finance.outcome.modal.pdfReport')}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>

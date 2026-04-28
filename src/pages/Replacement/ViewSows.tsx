@@ -20,8 +20,17 @@ import LoadingAnimation from "Components/Common/Shared/LoadingAnimation"
 import AlertMessage from "Components/Common/Shared/AlertMesagge"
 import { FaVenus } from "react-icons/fa"
 import KPI from "Components/Common/Graphics/Kpi"
+import { useTranslation } from "react-i18next"
+
+const STAGE_COLORS: Record<string, string> = {
+    piglet: 'info', weaning: 'warning', fattening: 'primary', breeder: 'success',
+};
+const STATUS_COLORS: Record<string, string> = {
+    alive: 'success', discarded: 'warning', dead: 'danger',
+};
 
 const ViewSows = () => {
+    const { t } = useTranslation();
     const [modals, setModals] = useState({ selectCreationMode: false, createSingle: false, createBatch: false, update: false, viewPDF: false });
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
@@ -46,77 +55,52 @@ const ViewSows = () => {
     const navigate = useNavigate();
     const [selectedPig, setSelectedPig] = useState<PigData | null>(null)
 
+    const predefinedBreeds = [
+        "Yorkshire", "Landrace", "Duroc", "Hampshire", "Pietrain",
+        "Berkshire", "Large White", "Chester White", "Poland China", "Tamworth"
+    ]
+
+    const togglePopover = () => setPopoverOpen(!popoverOpen)
+
+    const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
+        setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
+    };
+
     const pigColumns: Column<any>[] = [
-        { header: 'Codigo', accessor: 'code', type: 'text' },
-        { header: 'Raza', accessor: 'breed', type: 'text' },
-        { header: 'Fecha de N.', accessor: 'birthdate', type: 'date' },
+        { header: t('replacement.column.code'), accessor: 'code', type: 'text' },
+        { header: t('replacement.column.breed'), accessor: 'breed', type: 'text' },
+        { header: t('replacement.column.birthdate'), accessor: 'birthdate', type: 'date' },
         {
-            header: 'Sexo',
+            header: t('replacement.column.sex'),
             accessor: 'sex',
             render: (value: string) => (
                 <Badge color={value === 'male' ? "info" : "danger"}>
-                    {value === 'male' ? "♂ Macho" : "♀ Hembra"}
+                    {value === 'male' ? "♂ " + t('common.sex.male') : "♀ " + t('common.sex.female')}
                 </Badge>
             ),
         },
         {
-            header: 'Etapa',
+            header: t('replacement.column.stage'),
             accessor: 'currentStage',
             render: (value: string) => {
-                let color = "secondary";
-                let label = value;
-
-                switch (value) {
-                    case "piglet":
-                        color = "info";
-                        label = "Lechón";
-                        break;
-                    case "weaning":
-                        color = "warning";
-                        label = "Destete";
-                        break;
-                    case "fattening":
-                        color = "primary";
-                        label = "Engorda";
-                        break;
-                    case "breeder":
-                        color = "success";
-                        label = "Reproductor";
-                        break;
-                }
-
+                const color = STAGE_COLORS[value] || 'secondary';
+                const label = t(`replacement.stage.${value}`, { defaultValue: value });
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { header: 'Peso actual', accessor: 'weight', type: 'number' },
+        { header: t('replacement.column.weight'), accessor: 'weight', type: 'number' },
         {
-            header: 'Estado',
+            header: t('replacement.column.status'),
             accessor: 'status',
             isFilterable: true,
             render: (value: string) => {
-                let color = 'secondary';
-                let label = value;
-
-                switch (value) {
-                    case 'alive':
-                        color = 'success';
-                        label = 'Vivo';
-                        break;
-                    case 'discarded':
-                        color = 'warning';
-                        label = 'Descartado';
-                        break;
-                    case 'dead':
-                        color = 'danger';
-                        label = 'Muerto';
-                        break;
-                }
-
+                const color = STATUS_COLORS[value] || 'secondary';
+                const label = t(`replacement.status.${value}`, { defaultValue: value });
                 return <Badge color={color}>{label}</Badge>;
             },
         },
         {
-            header: "Acciones",
+            header: t('replacement.column.actions'),
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
@@ -131,24 +115,41 @@ const ViewSows = () => {
         },
     ]
 
-    const predefinedBreeds = [
-        "Yorkshire",
-        "Landrace",
-        "Duroc",
-        "Hampshire",
-        "Pietrain",
-        "Berkshire",
-        "Large White",
-        "Chester White",
-        "Poland China",
-        "Tamworth"
+    const statusOptions = [
+        { value: "", label: t('replacement.filter.statusAll') },
+        { value: "alive", label: t('replacement.filter.statusAlive') },
+        { value: "sold", label: t('replacement.filter.statusSold') },
+        { value: "slaughtered", label: t('replacement.filter.statusSlaughtered') },
+        { value: "dead", label: t('replacement.filter.statusDead') },
+        { value: "discarded", label: t('replacement.filter.statusDiscarded') },
     ]
 
-    const togglePopover = () => setPopoverOpen(!popoverOpen)
+    const stageOptions = [
+        { value: "", label: t('replacement.filter.stageAll') },
+        { value: "piglet", label: t('replacement.filter.stagePiglet') },
+        { value: "weaning", label: t('replacement.filter.stageWeaning') },
+        { value: "fattening", label: t('replacement.filter.stageFattening') },
+        { value: "breeder", label: t('replacement.filter.stageBreeder') },
+    ]
 
-    const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
-        setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
-    };
+    const originOptions = [
+        { value: "", label: t('replacement.filter.originAll') },
+        { value: "born", label: t('replacement.filter.originBorn') },
+        { value: "purchased", label: t('replacement.filter.originPurchased') },
+        { value: "donated", label: t('replacement.filter.originDonated') },
+        { value: "other", label: t('replacement.filter.originOther') },
+    ]
+
+    const sexOptions = [
+        { value: "", label: t('replacement.filter.sexAll') },
+        { value: "male", label: t('replacement.filter.sexMale') },
+        { value: "female", label: t('replacement.filter.sexFemale') },
+    ]
+
+    const breedOptions = [
+        { value: "", label: t('replacement.filter.breedAll') },
+        ...predefinedBreeds.map(breed => ({ value: breed, label: breed }))
+    ]
 
     const fetchData = async () => {
         if (!configContext) return
@@ -164,7 +165,7 @@ const ViewSows = () => {
             setStats(statsResponse.data.data)
         } catch (error) {
             console.error('Error fetching pigs: ', { error });
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('replacement.error.load') })
         } finally {
             setLoading(false)
         }
@@ -188,7 +189,7 @@ const ViewSows = () => {
             toggleModal('viewPDF');
         } catch (error) {
             console.error('Error generating report: ', { error });
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al generar el reporte, inténtelo más tarde.' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('replacement.error.pdf') })
         } finally {
             setGeneratingReport(false);
         }
@@ -214,21 +215,11 @@ const ViewSows = () => {
             )
         }
 
-        if (filters.status) {
-            result = result.filter(pig => pig.status === filters.status)
-        }
-        if (filters.currentStage) {
-            result = result.filter(pig => pig.currentStage === filters.currentStage)
-        }
-        if (filters.origin) {
-            result = result.filter(pig => pig.origin === filters.origin)
-        }
-        if (filters.sex) {
-            result = result.filter(pig => pig.sex === filters.sex)
-        }
-        if (filters.breed) {
-            result = result.filter(pig => pig.breed === filters.breed)
-        }
+        if (filters.status) result = result.filter(pig => pig.status === filters.status)
+        if (filters.currentStage) result = result.filter(pig => pig.currentStage === filters.currentStage)
+        if (filters.origin) result = result.filter(pig => pig.origin === filters.origin)
+        if (filters.sex) result = result.filter(pig => pig.sex === filters.sex)
+        if (filters.breed) result = result.filter(pig => pig.breed === filters.breed)
         if (filters.weightRange) {
             result = result.filter(pig =>
                 Number(pig.weight) >= filters.weightRange[0] &&
@@ -240,73 +231,24 @@ const ViewSows = () => {
     }
 
     const handleFilterChange = (filterName: string, value: any) => {
-        setFilters(prev => ({
-            ...prev,
-            [filterName]: value
-        }))
+        setFilters(prev => ({ ...prev, [filterName]: value }))
     }
 
     const handleWeightRangeChange = (value: number | number[]) => {
         if (Array.isArray(value)) {
-            setFilters(prev => ({
-                ...prev,
-                weightRange: value as [number, number]
-            }))
+            setFilters(prev => ({ ...prev, weightRange: value as [number, number] }))
         }
     }
 
     const clearFilters = () => {
         setSearchTerm("")
-        setFilters({
-            status: "",
-            currentStage: "",
-            origin: "",
-            sex: "",
-            breed: "",
-            weightRange: [0, 500]
-        })
+        setFilters({ status: "", currentStage: "", origin: "", sex: "", breed: "", weightRange: [0, 500] })
         setPopoverOpen(false)
     }
 
     const activeFilterCount = Object.values(filters).filter(v =>
         v !== "" && !(Array.isArray(v) && v[0] === 0 && v[1] === 500)
     ).length
-
-    const statusOptions = [
-        { value: "", label: "Todos" },
-        { value: "alive", label: "Vivo" },
-        { value: "sold", label: "Vendido" },
-        { value: "slaughtered", label: "Sacrificado" },
-        { value: "dead", label: "Muerto" },
-        { value: "discarded", label: "Descartado" },
-    ]
-
-    const stageOptions = [
-        { value: "", label: "Todas" },
-        { value: "piglet", label: "Lechón" },
-        { value: "weaning", label: "Destete" },
-        { value: "fattening", label: "Engorda" },
-        { value: "breeder", label: "Reproductor" }
-    ]
-
-    const originOptions = [
-        { value: "", label: "Todos" },
-        { value: "born", label: "Nacido" },
-        { value: "purchased", label: "Comprado" },
-        { value: "donated", label: "Donado" },
-        { value: "other", label: "Otro" }
-    ]
-
-    const sexOptions = [
-        { value: "", label: "Todos" },
-        { value: "male", label: "Macho" },
-        { value: "female", label: "Hembra" }
-    ]
-
-    const breedOptions = [
-        { value: "", label: "Todas" },
-        ...predefinedBreeds.map(breed => ({ value: breed, label: breed }))
-    ]
 
     if (loading) {
         return (
@@ -317,11 +259,11 @@ const ViewSows = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Ver Cerdos"} pageTitle={"Cerdos"} />
+                <BreadCrumb title={t('replacement.breadcrumb.sowTitle')} pageTitle={t('replacement.breadcrumb.sowParent')} />
 
                 <div className="d-flex gap-3 flex-wrap">
                     <KPI
-                        title="Cerdas totales"
+                        title={t('replacement.kpi.totalSows')}
                         value={stats?.generalStats[0]?.totalAlive ?? 0}
                         icon={FiCheckCircle}
                         bgColor="#e6f7e6"
@@ -329,7 +271,7 @@ const ViewSows = () => {
                     />
 
                     <KPI
-                        title="Peso promedio de hembras"
+                        title={t('replacement.kpi.avgFemaleWeight')}
                         icon={FaVenus}
                         bgColor="#fde8f2"
                         iconColor="#d63384"
@@ -337,33 +279,14 @@ const ViewSows = () => {
                     />
                 </div>
 
-                {/* <div className="d-flex gap-3">
-                    <BasicPieChart title={"Cerdos por sexo"}
-                        data={stats?.pigsBySex?.map((s: { _id: any; count: any }) => ({
-                            id: s._id === 'male' ? 'Macho' : 'Hembra',
-                            value: s.count,
-                        })) ?? []}
-                    />
-
-                    <BasicPieChart title={"Cerdos por raza"}
-                        data={stats?.pigsByBreed?.map((s: { _id: any; count: any }) => ({
-                            id: s._id,
-                            value: s.count,
-                        })) ?? []}
-                    />
-                </div> */}
-
-
-
                 <Card>
                     <CardHeader>
                         <div className="d-flex flex-wrap align-items-center gap-3">
-                            {/* Barra de búsqueda con icono */}
                             <div className="position-relative flex-grow-1" style={{ maxWidth: "400px" }}>
                                 <FiSearch className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" />
                                 <Input
                                     type="text"
-                                    placeholder="Buscar cerdos..."
+                                    placeholder={t('replacement.filter.search')}
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     className="form-control ps-5"
@@ -372,7 +295,7 @@ const ViewSows = () => {
 
                             <Button innerRef={filterBtnRef} color="light" onClick={togglePopover} className="d-flex align-items-center position-relative">
                                 <FiFilter className="me-2" />
-                                Filtros
+                                {t('replacement.filter.filters')}
                                 {activeFilterCount > 0 && (
                                     <Badge color="primary" pill className="position-absolute top-0 start-100 translate-middle">
                                         {activeFilterCount}
@@ -382,14 +305,14 @@ const ViewSows = () => {
 
                             <Popover placement="bottom-end" isOpen={popoverOpen} target={filterBtnRef} toggle={togglePopover} trigger="legacy" className="filter-popover" style={{ minWidth: "450px" }}>
                                 <PopoverHeader className="d-flex justify-content-between align-items-center popover-header">
-                                    <span className="text-black">Filtrar cerdos</span>
+                                    <span className="text-black">{t('replacement.filter.filterTitle')}</span>
                                     <Button close onClick={togglePopover} />
                                 </PopoverHeader>
                                 <PopoverBody className="popover-body">
                                     <Row className="g-3">
                                         <Col md={6}>
                                             <FormGroup>
-                                                <Label>Estado</Label>
+                                                <Label>{t('replacement.filter.status')}</Label>
                                                 <Select
                                                     options={statusOptions}
                                                     value={statusOptions.find(opt => opt.value === filters.status)}
@@ -401,7 +324,7 @@ const ViewSows = () => {
                                         </Col>
                                         <Col md={6}>
                                             <FormGroup>
-                                                <Label>Etapa</Label>
+                                                <Label>{t('replacement.filter.stage')}</Label>
                                                 <Select
                                                     options={stageOptions}
                                                     value={stageOptions.find(opt => opt.value === filters.currentStage)}
@@ -413,7 +336,7 @@ const ViewSows = () => {
                                         </Col>
                                         <Col md={6}>
                                             <FormGroup>
-                                                <Label>Origen</Label>
+                                                <Label>{t('replacement.filter.origin')}</Label>
                                                 <Select
                                                     options={originOptions}
                                                     value={originOptions.find(opt => opt.value === filters.origin)}
@@ -425,7 +348,7 @@ const ViewSows = () => {
                                         </Col>
                                         <Col md={6}>
                                             <FormGroup>
-                                                <Label>Género</Label>
+                                                <Label>{t('replacement.filter.sex')}</Label>
                                                 <Select
                                                     options={sexOptions}
                                                     value={sexOptions.find(opt => opt.value === filters.sex)}
@@ -437,7 +360,7 @@ const ViewSows = () => {
                                         </Col>
                                         <Col md={6}>
                                             <FormGroup>
-                                                <Label>Raza</Label>
+                                                <Label>{t('replacement.filter.breed')}</Label>
                                                 <Select
                                                     options={breedOptions}
                                                     value={breedOptions.find(opt => opt.value === filters.breed)}
@@ -450,7 +373,7 @@ const ViewSows = () => {
                                         <Col md={6}>
                                             <FormGroup>
                                                 <Label>
-                                                    Peso (kg): {filters.weightRange[0]} - {filters.weightRange[1]}
+                                                    {t('replacement.filter.weight')}: {filters.weightRange[0]} - {filters.weightRange[1]}
                                                 </Label>
                                                 <Slider
                                                     range
@@ -472,19 +395,11 @@ const ViewSows = () => {
                                         </Col>
                                     </Row>
                                     <div className="d-flex justify-content-between mt-3">
-                                        <Button
-                                            color="link"
-                                            onClick={clearFilters}
-                                            className="text-danger"
-                                        >
-                                            <FiX className="me-1" /> Limpiar todo
+                                        <Button color="link" onClick={clearFilters} className="text-danger">
+                                            <FiX className="me-1" /> {t('replacement.filter.clearAll')}
                                         </Button>
-                                        <Button
-                                            color="primary"
-                                            onClick={togglePopover}
-                                            size="sm"
-                                        >
-                                            Aplicar filtros
+                                        <Button color="primary" onClick={togglePopover} size="sm">
+                                            {t('replacement.filter.apply')}
                                         </Button>
                                     </div>
                                 </PopoverBody>
@@ -493,12 +408,12 @@ const ViewSows = () => {
                             <Button className="h-50 farm-primary-button ms-auto" onClick={handlePrintReport} disabled={generatingReport}>
                                 {generatingReport ? (
                                     <>
-                                        <Spinner size="sm" /> Generando...
+                                        <Spinner size="sm" /> {t('replacement.action.generating')}
                                     </>
                                 ) : (
                                     <>
                                         <i className="ri-download-line me-2"></i>
-                                        Exportar datos
+                                        {t('replacement.action.exportData')}
                                     </>
                                 )}
                             </Button>
@@ -510,7 +425,7 @@ const ViewSows = () => {
                             <>
                                 <FiAlertCircle className="text-muted" size={22} />
                                 <span className="fs-5 text-black text-muted text-center rounded-5 ms-2">
-                                    No hay cerdas registrados
+                                    {t('replacement.empty.noSows')}
                                 </span>
                             </>
                         ) : (
@@ -521,7 +436,7 @@ const ViewSows = () => {
             </Container>
 
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de cerdas</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('replacement.modal.sowReport')}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>

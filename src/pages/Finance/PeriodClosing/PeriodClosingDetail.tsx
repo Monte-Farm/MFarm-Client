@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import classnames from "classnames";
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Col, Container, Nav, NavItem, NavLink, Row, Table, TabContent, TabPane } from "reactstrap";
@@ -20,37 +21,10 @@ import ReproductionTab from "./tabs/ReproductionTab";
 import WorkforceTab from "./tabs/WorkforceTab";
 import ComparisonsTab from "./tabs/ComparisonsTab";
 
-const MONTHS_ES = [
-    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
-];
-
-const formatPeriod = (row: PeriodClosing) => {
-    if (row.periodType === "annual") return `Año ${row.year}`;
-    return row.month ? `${MONTHS_ES[row.month - 1]} ${row.year}` : `${row.year}`;
-};
-
 const formatDateTime = (iso: string | null | undefined): string => {
     if (!iso) return "-";
     const d = new Date(iso);
     return d.toLocaleString("es-MX", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
-};
-
-const statusBadge = (status: PeriodClosingStatus) => {
-    switch (status) {
-        case "closed":
-            return <Badge color="success"><i className="ri-lock-line me-1" />Cerrado</Badge>;
-        case "reopened":
-            return <Badge color="warning"><i className="ri-lock-unlock-line me-1" />Reabierto</Badge>;
-        case "archived":
-            return <Badge color="secondary"><i className="ri-archive-line me-1" />Archivado</Badge>;
-    }
-};
-
-const auditActionLabel: Record<string, { label: string; color: string }> = {
-    close: { label: "Cierre", color: "success" },
-    reopen: { label: "Reapertura", color: "warning" },
-    reclose: { label: "Recierre", color: "info" },
 };
 
 const TAB_IDS = {
@@ -65,6 +39,7 @@ const TAB_IDS = {
 };
 
 const PeriodClosingDetail = () => {
+    const { t } = useTranslation();
     const { closingId } = useParams<{ closingId: string }>();
     const navigate = useNavigate();
     const dispatch = useDispatch<any>();
@@ -81,6 +56,30 @@ const PeriodClosingDetail = () => {
     const [showReopenModal, setShowReopenModal] = useState(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
 
+    const MONTHS = t("finance.periodClosing.months", { returnObjects: true }) as string[];
+
+    const formatPeriod = (row: PeriodClosing) => {
+        if (row.periodType === "annual") return t("finance.periodClosing.modal.closeYear.yearLabel", { val: row.year });
+        return row.month ? `${MONTHS[row.month - 1]} ${row.year}` : `${row.year}`;
+    };
+
+    const statusBadge = (status: PeriodClosingStatus) => {
+        switch (status) {
+            case "closed":
+                return <Badge color="success"><i className="ri-lock-line me-1" />{t("finance.periodClosing.status.closed")}</Badge>;
+            case "reopened":
+                return <Badge color="warning"><i className="ri-lock-unlock-line me-1" />{t("finance.periodClosing.status.reopened")}</Badge>;
+            case "archived":
+                return <Badge color="secondary"><i className="ri-archive-line me-1" />{t("finance.periodClosing.status.archived")}</Badge>;
+        }
+    };
+
+    const auditActionLabel: Record<string, { label: string; color: string }> = {
+        close: { label: t("finance.periodClosing.detail.audit.action.close"), color: "success" },
+        reopen: { label: t("finance.periodClosing.detail.audit.action.reopen"), color: "warning" },
+        reclose: { label: t("finance.periodClosing.detail.audit.action.reclose"), color: "info" },
+    };
+
     const toggleTab = (tab: string) => {
         if (activeTab !== tab) setActiveTab(tab);
     };
@@ -89,7 +88,7 @@ const PeriodClosingDetail = () => {
         ? userLogged.role.includes("Superadmin")
         : userLogged?.role === "Superadmin";
 
-    document.title = current ? `${formatPeriod(current)} | Cierres` : "Cierre | MFarm";
+    document.title = current ? `${formatPeriod(current)} | ${t("finance.periodClosing.detail.breadcrumb")}` : "Cierre | MFarm";
 
     const loadDetail = () => {
         if (!closingId) return;
@@ -104,7 +103,7 @@ const PeriodClosingDetail = () => {
 
     const handleReopenSuccess = () => {
         setShowReopenModal(false);
-        setAlertConfig({ visible: true, color: "success", message: "Cierre reabierto correctamente." });
+        setAlertConfig({ visible: true, color: "success", message: t("finance.periodClosing.detail.success.reopened") });
         loadDetail();
     };
 
@@ -114,11 +113,11 @@ const PeriodClosingDetail = () => {
         return (
             <div className="page-content">
                 <Container fluid>
-                    <BreadCrumb title="Detalle de cierre" pageTitle="Administración" />
-                    <Alert color="danger">{error || "No se pudo cargar el cierre."}</Alert>
+                    <BreadCrumb title={t("finance.periodClosing.detail.breadcrumb")} pageTitle="Administración" />
+                    <Alert color="danger">{error || t("finance.periodClosing.detail.error")}</Alert>
                     <Button className="farm-secondary-button" onClick={() => navigate("/finance/period-closing")}>
                         <i className="ri-arrow-left-line me-3" />
-                        Regresar
+                        {t("finance.periodClosing.detail.button.back")}
                     </Button>
                 </Container>
             </div>
@@ -128,7 +127,6 @@ const PeriodClosingDetail = () => {
     const { snapshot } = current;
     const isAnnual = current.periodType === "annual";
 
-    // Detect legacy snapshot (no new sections)
     const hasExtended = !!(snapshot.inventory || snapshot.production || snapshot.salesDetail
         || snapshot.feeding || snapshot.health || snapshot.reproduction
         || snapshot.workforce || snapshot.comparisons);
@@ -136,16 +134,15 @@ const PeriodClosingDetail = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={`Cierre — ${formatPeriod(current)}`} pageTitle="Administración" />
+                <BreadCrumb title={`${t("finance.periodClosing.detail.breadcrumb")} — ${formatPeriod(current)}`} pageTitle="Administración" />
 
                 <div className="mb-3 d-flex">
                     <Button className="farm-secondary-button" onClick={() => navigate(-1)}>
                         <i className="ri-arrow-left-line me-3" />
-                        Regresar
+                        {t("finance.periodClosing.detail.button.back")}
                     </Button>
                 </div>
 
-                {/* Header card */}
                 <Card className="mb-3">
                     <CardBody>
                         <Row className="align-items-center">
@@ -154,37 +151,37 @@ const PeriodClosingDetail = () => {
                                     <h4 className="mb-0">{formatPeriod(current)}</h4>
                                     {isAnnual && (
                                         <Badge color="info">
-                                            <i className="ri-calendar-2-line me-1" />Cierre anual
+                                            <i className="ri-calendar-2-line me-1" />{t("finance.periodClosing.detail.badge.annual")}
                                         </Badge>
                                     )}
                                     {statusBadge(current.status)}
                                     {current.forced && (
                                         <Badge color="warning">
-                                            <i className="ri-alert-line me-1" />Forzado
+                                            <i className="ri-alert-line me-1" />{t("finance.periodClosing.detail.badge.forced")}
                                         </Badge>
                                     )}
                                 </div>
                                 <div className="text-muted mt-2">
                                     <div>
                                         <i className="ri-calendar-line me-1 text-muted" />
-                                        Periodo: {current.periodStart} a {current.periodEnd}
+                                        {t("finance.periodClosing.detail.info.period")} {current.periodStart} a {current.periodEnd}
                                     </div>
                                     {current.closedBy && (
                                         <div>
                                             <i className="ri-user-line me-1 text-muted" />
-                                            Cerrado por {current.closedBy.name} {current.closedBy.lastname} el {formatDateTime(current.closedAt)}
+                                            {t("finance.periodClosing.detail.info.closedBy")} {current.closedBy.name} {current.closedBy.lastname} el {formatDateTime(current.closedAt)}
                                         </div>
                                     )}
                                     {current.status === "reopened" && current.reopenedBy && (
                                         <div className="text-warning">
                                             <i className="ri-alert-line me-1 text-warning" />
-                                            Reabierto por {current.reopenedBy.name} {current.reopenedBy.lastname} el {formatDateTime(current.reopenedAt)} — Razón: {current.reopenReason}
+                                            {t("finance.periodClosing.detail.info.reopenedBy")} {current.reopenedBy.name} {current.reopenedBy.lastname} el {formatDateTime(current.reopenedAt)} — Razón: {current.reopenReason}
                                         </div>
                                     )}
                                     {current.forced && current.forcedReason && (
                                         <div className="text-warning">
                                             <i className="ri-alert-line me-1 text-warning" />
-                                            Cierre forzado con {current.forcedWarnings?.length || 0} error(es) ignorado(s) — Razón: {current.forcedReason}
+                                            {t("finance.periodClosing.detail.info.forcedWith")} {current.forcedWarnings?.length || 0} error(es) ignorado(s) — Razón: {current.forcedReason}
                                         </div>
                                     )}
                                     {current.notes && (
@@ -195,7 +192,7 @@ const PeriodClosingDetail = () => {
                             <Col md={4} className="text-end">
                                 {isSuperadmin && current.status === "closed" && (
                                     <Button color="warning" onClick={() => setShowReopenModal(true)}>
-                                        <i className="ri-lock-unlock-line me-1" />Reabrir
+                                        <i className="ri-lock-unlock-line me-1" />{t("finance.periodClosing.detail.button.reopen")}
                                     </Button>
                                 )}
                             </Col>
@@ -203,64 +200,58 @@ const PeriodClosingDetail = () => {
                     </CardBody>
                 </Card>
 
-                {/* Legacy snapshot banner */}
                 {!hasExtended && (
                     <Alert color="warning" className="d-flex align-items-start">
                         <i className="ri-information-line me-2 fs-5 text-warning" />
                         <div>
-                            <div className="fw-semibold">Cierre generado antes de la extensión del snapshot</div>
-                            <small>
-                                Este cierre fue creado con una versión anterior del sistema y no incluye las
-                                nuevas secciones (Inventario, Producción, Ventas detalladas, Alimentación, Sanidad,
-                                Reproducción, Personal ni Comparativas). Solo está disponible el resumen financiero.
-                            </small>
+                            <div className="fw-semibold">{t("finance.periodClosing.detail.legacy.title")}</div>
+                            <small>{t("finance.periodClosing.detail.legacy.body")}</small>
                         </div>
                     </Alert>
                 )}
 
-                {/* Tabs */}
                 <Card>
                     <Nav pills className="nav-justified p-3 flex-wrap">
                         <NavItem>
                             <NavLink className={classnames({ active: activeTab === TAB_IDS.summary })} onClick={() => toggleTab(TAB_IDS.summary)} style={{ cursor: "pointer" }}>
-                                <i className="ri-dashboard-line me-1" />Resumen
+                                <i className="ri-dashboard-line me-1" />{t("finance.periodClosing.detail.tab.summary")}
                             </NavLink>
                         </NavItem>
                         {hasExtended && (
                             <>
                                 <NavItem>
                                     <NavLink className={classnames({ active: activeTab === TAB_IDS.inventory })} onClick={() => toggleTab(TAB_IDS.inventory)} style={{ cursor: "pointer" }}>
-                                        <i className="ri-archive-line me-1" />Inventario y Producción
+                                        <i className="ri-archive-line me-1" />{t("finance.periodClosing.detail.tab.inventory")}
                                     </NavLink>
                                 </NavItem>
                                 <NavItem>
                                     <NavLink className={classnames({ active: activeTab === TAB_IDS.sales })} onClick={() => toggleTab(TAB_IDS.sales)} style={{ cursor: "pointer" }}>
-                                        <i className="ri-money-dollar-circle-line me-1" />Ventas
+                                        <i className="ri-money-dollar-circle-line me-1" />{t("finance.periodClosing.detail.tab.sales")}
                                     </NavLink>
                                 </NavItem>
                                 <NavItem>
                                     <NavLink className={classnames({ active: activeTab === TAB_IDS.feeding })} onClick={() => toggleTab(TAB_IDS.feeding)} style={{ cursor: "pointer" }}>
-                                        <i className="ri-restaurant-line me-1" />Alimentación
+                                        <i className="ri-restaurant-line me-1" />{t("finance.periodClosing.detail.tab.feeding")}
                                     </NavLink>
                                 </NavItem>
                                 <NavItem>
                                     <NavLink className={classnames({ active: activeTab === TAB_IDS.health })} onClick={() => toggleTab(TAB_IDS.health)} style={{ cursor: "pointer" }}>
-                                        <i className="ri-medicine-bottle-line me-1" />Sanidad
+                                        <i className="ri-medicine-bottle-line me-1" />{t("finance.periodClosing.detail.tab.health")}
                                     </NavLink>
                                 </NavItem>
                                 <NavItem>
                                     <NavLink className={classnames({ active: activeTab === TAB_IDS.reproduction })} onClick={() => toggleTab(TAB_IDS.reproduction)} style={{ cursor: "pointer" }}>
-                                        <i className="ri-heart-pulse-line me-1" />Reproducción
+                                        <i className="ri-heart-pulse-line me-1" />{t("finance.periodClosing.detail.tab.reproduction")}
                                     </NavLink>
                                 </NavItem>
                                 <NavItem>
                                     <NavLink className={classnames({ active: activeTab === TAB_IDS.workforce })} onClick={() => toggleTab(TAB_IDS.workforce)} style={{ cursor: "pointer" }}>
-                                        <i className="ri-group-line me-1" />Personal
+                                        <i className="ri-group-line me-1" />{t("finance.periodClosing.detail.tab.workforce")}
                                     </NavLink>
                                 </NavItem>
                                 <NavItem>
                                     <NavLink className={classnames({ active: activeTab === TAB_IDS.comparisons })} onClick={() => toggleTab(TAB_IDS.comparisons)} style={{ cursor: "pointer" }}>
-                                        <i className="ri-bar-chart-box-line me-1" />Comparativas
+                                        <i className="ri-bar-chart-box-line me-1" />{t("finance.periodClosing.detail.tab.comparisons")}
                                     </NavLink>
                                 </NavItem>
                             </>
@@ -299,24 +290,23 @@ const PeriodClosingDetail = () => {
                     )}
                 </TabContent>
 
-                {/* Audit trail (always visible below tabs) */}
                 <Card className="mb-3 mt-3">
                     <CardHeader>
-                        <h5 className="mb-0"><i className="ri-history-line me-2 text-primary" />Auditoría</h5>
+                        <h5 className="mb-0"><i className="ri-history-line me-2 text-primary" />{t("finance.periodClosing.detail.audit.header")}</h5>
                     </CardHeader>
                     <CardBody>
                         {loadingAudit ? (
-                            <p className="text-muted mb-0">Cargando auditoría...</p>
+                            <p className="text-muted mb-0">{t("finance.periodClosing.detail.audit.loading")}</p>
                         ) : audit.length === 0 ? (
-                            <p className="text-muted mb-0">Sin eventos registrados.</p>
+                            <p className="text-muted mb-0">{t("finance.periodClosing.detail.audit.empty")}</p>
                         ) : (
                             <Table className="align-middle mb-0" size="sm">
                                 <thead className="table-light">
                                     <tr>
-                                        <th>Acción</th>
-                                        <th>Usuario</th>
-                                        <th>Fecha</th>
-                                        <th>Razón</th>
+                                        <th>{t("finance.periodClosing.detail.audit.col.action")}</th>
+                                        <th>{t("finance.periodClosing.detail.audit.col.user")}</th>
+                                        <th>{t("finance.periodClosing.detail.audit.col.date")}</th>
+                                        <th>{t("finance.periodClosing.detail.audit.col.reason")}</th>
                                     </tr>
                                 </thead>
                                 <tbody>

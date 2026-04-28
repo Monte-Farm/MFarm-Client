@@ -11,9 +11,11 @@ import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import OrderForm from "Components/Common/Forms/OrderForm";
 import OrderDetails from "Components/Common/Details/OrderDetailsModal";
 import CompleteOrderForm from "Components/Common/Forms/CompleteOrderForm";
+import { useTranslation } from "react-i18next";
 
 const SendOrders = () => {
-    document.title = 'Pedidos enviados | Management System'
+    const { t } = useTranslation();
+    document.title = t('warehouse.orders.pageTitle')
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
@@ -29,38 +31,38 @@ const SendOrders = () => {
     };
 
     const columns: Column<any>[] = [
-        { header: 'No. de Pedido', accessor: 'id', isFilterable: true, type: 'text' },
-        { header: 'Fecha de Pedido', accessor: 'date', isFilterable: true, type: 'date' },
+        { header: t('warehouse.orders.col.orderNumber'), accessor: 'id', isFilterable: true, type: 'text' },
+        { header: t('warehouse.orders.col.orderDate'), accessor: 'date', isFilterable: true, type: 'date' },
         {
-            header: 'Pedido para',
+            header: t('warehouse.orders.col.orderFor'),
             accessor: 'orderOrigin',
             isFilterable: true,
             type: 'text',
             render: (_, row) => <span>{row.orderOrigin.name}</span>
         },
         {
-            header: 'Pedido hacia',
+            header: t('warehouse.orders.col.orderTo'),
             accessor: 'orderDestiny',
             isFilterable: true,
             type: 'text',
             render: (_, row) => <span>{row.orderDestiny.name}</span>
         },
         {
-            header: 'Pedido por',
+            header: t('warehouse.orders.col.orderedBy'),
             accessor: 'user',
             isFilterable: true,
             type: 'text',
             render: (_, row) => <span>{row.user.name} {row.user.lastname}</span>
         },
         {
-            header: 'Estado', accessor: 'status', isFilterable: true, render: (value: string) => (
+            header: t('common.field.status'), accessor: 'status', isFilterable: true, render: (value: string) => (
                 <Badge color={value === 'completed' ? "success" : "warning"}>
-                    {value === 'completed' ? "Completado" : "Pendiente"}
+                    {t(`warehouse.orders.status.${value}`, { defaultValue: value })}
                 </Badge>
             ),
         },
         {
-            header: "Acciones",
+            header: t('common.field.actions'),
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-2">
@@ -102,7 +104,7 @@ const SendOrders = () => {
 
         } catch (error) {
             console.error('Error fetching data:', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.orders.error.fetch') })
         } finally {
             setLoading(false)
         }
@@ -122,7 +124,7 @@ const SendOrders = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                {userLogged && <BreadCrumb title={userLogged.role.includes('warehouse_manager') ? 'Pedidos recibidos' : "Pedidos enviados"} pageTitle={"Pedidos"} />}
+                {userLogged && <BreadCrumb title={userLogged.role.includes('warehouse_manager') ? t('warehouse.orders.breadcrumb.received') : t('warehouse.orders.breadcrumb.sent')} pageTitle={t('warehouse.orders.breadcrumb.parent')} />}
 
                 <Card>
                     {userLogged?.role.includes('subwarehouse_manager') && (
@@ -130,7 +132,7 @@ const SendOrders = () => {
                             <div className="d-flex">
                                 <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>
                                     <i className="ri-add-line me-2" />
-                                    Nuevo Pedido
+                                    {t('warehouse.orders.button.new')}
                                 </Button>
                             </div>
                         </CardHeader>
@@ -142,21 +144,21 @@ const SendOrders = () => {
             </Container>
 
             <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} centered>
-                <ModalHeader toggle={() => toggleModal('create')}>Nuevo pedido de almacen</ModalHeader>
+                <ModalHeader toggle={() => toggleModal('create')}>{t('warehouse.orders.modal.create')}</ModalHeader>
                 <ModalBody>
                     <OrderForm onSave={() => { toggleModal('create'); fetchData(); }} onCancel={() => toggleModal('create')} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} centered>
-                <ModalHeader toggle={() => toggleModal('details')}>Detalles de pedido</ModalHeader>
+                <ModalHeader toggle={() => toggleModal('details')}>{t('warehouse.orders.modal.details')}</ModalHeader>
                 <ModalBody>
                     <OrderDetails orderId={selectedOrder?._id} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.completeOrder} toggle={() => toggleModal("completeOrder")} centered>
-                <ModalHeader toggle={() => toggleModal('completeOrder')}>Completar pedido</ModalHeader>
+                <ModalHeader toggle={() => toggleModal('completeOrder')}>{t('warehouse.orders.modal.complete')}</ModalHeader>
                 <ModalBody>
                     <CompleteOrderForm orderId={selectedOrder._id} onSave={() => { toggleModal('completeOrder'); fetchData(); }} onCancel={() => { toggleModal('completeOrder') }} />
                 </ModalBody>

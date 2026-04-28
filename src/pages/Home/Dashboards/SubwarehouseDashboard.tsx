@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Badge, Card, CardBody, CardHeader, Col, Row } from "reactstrap";
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
@@ -21,6 +22,7 @@ interface SubwarehouseData {
 }
 
 const SubwarehouseDashboard: React.FC<Props> = ({ startDate, endDate }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState(false);
@@ -38,7 +40,7 @@ const SubwarehouseDashboard: React.FC<Props> = ({ startDate, endDate }) => {
             );
             setData(res.data.data);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar el dashboard." });
+            setAlertConfig({ visible: true, color: "danger", message: t("dashboard.error") });
         } finally {
             setLoading(false);
         }
@@ -50,29 +52,29 @@ const SubwarehouseDashboard: React.FC<Props> = ({ startDate, endDate }) => {
     if (!data) return null;
 
     const stockColumns: Column<StockItem>[] = [
-        { header: "Producto", accessor: "productName", type: "text", isFilterable: true },
+        { header: t("dashboard.subwarehouse.table.product"), accessor: "productName", type: "text", isFilterable: true },
         {
-            header: "Stock", accessor: "currentStock", type: "text",
+            header: t("dashboard.subwarehouse.table.stock"), accessor: "currentStock", type: "text",
             render: (v: number, row) => <span>{v?.toFixed(2)} {row.unit}</span>,
         },
         {
-            header: "Estado", accessor: "status", type: "text",
-            render: (v: string) => <Badge color={v === "critical" ? "danger" : "warning"}>{v === "critical" ? "Critico" : "Bajo"}</Badge>,
+            header: t("dashboard.subwarehouse.table.status"), accessor: "status", type: "text",
+            render: (v: string) => <Badge color={v === "critical" ? "danger" : "warning"}>{v === "critical" ? t("dashboard.subwarehouse.table.statusCritical") : t("dashboard.subwarehouse.table.statusLow")}</Badge>,
         },
     ];
 
     const movColumns: Column<MoveItem>[] = [
-        { header: "Fecha", accessor: "date", type: "date" },
-        { header: "Producto", accessor: "productName", type: "text", isFilterable: true },
+        { header: t("dashboard.subwarehouse.table.date"), accessor: "date", type: "date" },
+        { header: t("dashboard.subwarehouse.table.product"), accessor: "productName", type: "text", isFilterable: true },
         {
-            header: "Tipo", accessor: "movementType", type: "text",
+            header: t("dashboard.subwarehouse.table.type"), accessor: "movementType", type: "text",
             render: (v: string) => {
                 const m = movementTypeLabels[v] || { label: v, color: "secondary" };
-                return <Badge color={m.color}>{m.label}</Badge>;
+                return <Badge color={m.color}>{t(`dashboard.movementType.${v}`, { defaultValue: m.label })}</Badge>;
             },
         },
         {
-            header: "Cantidad", accessor: "quantity", type: "text",
+            header: t("dashboard.subwarehouse.table.quantity"), accessor: "quantity", type: "text",
             render: (v: number, row) => <span>{v} {row.unit}</span>,
         },
     ];
@@ -81,22 +83,22 @@ const SubwarehouseDashboard: React.FC<Props> = ({ startDate, endDate }) => {
         <>
             <Row className="g-3 mb-3">
                 <Col xl={3} md={6}>
-                    <StatKpiCard title={data.kpis.subwarehouseName || "Subalmacen"} value={data.kpis.totalProducts}
-                        subtext="Productos en stock"
+                    <StatKpiCard title={data.kpis.subwarehouseName || t("dashboard.subwarehouse.kpi.products")} value={data.kpis.totalProducts}
+                        subtext={t("dashboard.subwarehouse.kpi.products")}
                         icon={<i className="ri-archive-line fs-4 text-primary"></i>} animateValue />
                 </Col>
                 <Col xl={3} md={6}>
-                    <StatKpiCard title="Movimientos" value={data.kpis.totalMovements}
+                    <StatKpiCard title={t("dashboard.subwarehouse.kpi.movements")} value={data.kpis.totalMovements}
                         icon={<i className="ri-swap-line fs-4 text-info"></i>}
                         iconBgColor="#E0F7FA" animateValue />
                 </Col>
                 <Col xl={3} md={6}>
-                    <StatKpiCard title="Distribuciones Pendientes" value={data.kpis.pendingDistributions}
+                    <StatKpiCard title={t("dashboard.subwarehouse.kpi.pendingDistributions")} value={data.kpis.pendingDistributions}
                         icon={<i className="ri-truck-line fs-4 text-warning"></i>}
                         iconBgColor="#FFF8E1" animateValue />
                 </Col>
                 <Col xl={3} md={6}>
-                    <StatKpiCard title="Stock Critico" value={data.kpis.criticalStockCount}
+                    <StatKpiCard title={t("dashboard.subwarehouse.kpi.criticalStock")} value={data.kpis.criticalStockCount}
                         icon={<i className="ri-alert-line fs-4 text-danger"></i>}
                         iconBgColor="#FEE2E2" animateValue />
                 </Col>
@@ -108,7 +110,7 @@ const SubwarehouseDashboard: React.FC<Props> = ({ startDate, endDate }) => {
                         <CardHeader>
                             <h6 className="mb-0 text-muted">
                                 <i className="ri-error-warning-line me-1 text-danger"></i>
-                                Stock Critico / Bajo
+                                {t("dashboard.subwarehouse.table.criticalStock")}
                             </h6>
                         </CardHeader>
                         <CardBody>
@@ -119,7 +121,7 @@ const SubwarehouseDashboard: React.FC<Props> = ({ startDate, endDate }) => {
                 <Col xl={6}>
                     <Card className="h-100">
                         <CardHeader>
-                            <h6 className="mb-0 text-muted">Movimientos Recientes</h6>
+                            <h6 className="mb-0 text-muted">{t("dashboard.subwarehouse.table.recentMovements")}</h6>
                         </CardHeader>
                         <CardBody>
                             <CustomTable columns={movColumns} data={data.recentMovements || []} rowsPerPage={10} showSearchAndFilter={false} />

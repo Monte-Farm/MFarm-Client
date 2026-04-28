@@ -8,8 +8,10 @@ import { getBaseColumns, getCountColumns, getWeanedStatusColumn } from "config/g
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useState } from "react";
 import { Button, Modal, ModalBody, ModalHeader, Spinner } from "reactstrap";
+import { useTranslation } from "react-i18next";
 
 const ViewWeanedGroups = () => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
 
@@ -31,7 +33,7 @@ const ViewWeanedGroups = () => {
             setFileURL(window.URL.createObjectURL(pdfBlob));
             setPdfModalOpen(true);
         } catch (error) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('groups.error.pdf') });
         } finally {
             setPdfLoading(false);
         }
@@ -40,26 +42,26 @@ const ViewWeanedGroups = () => {
     const pdfButton = (
         <Button color="primary" onClick={() => setDateRangeModalOpen(true)} disabled={pdfLoading}>
             {pdfLoading ? (
-                <><Spinner className="me-2" size="sm" />Generando...</>
+                <><Spinner className="me-2" size="sm" />{t('groups.button.generating')}</>
             ) : (
-                <><i className="ri-file-pdf-line me-2" />Exportar PDF</>
+                <><i className="ri-file-pdf-line me-2" />{t('groups.button.exportPdf')}</>
             )}
         </Button>
     );
 
     const columns: Column<any>[] = [
-        ...getBaseColumns(),
-        { header: 'Fecha de creación', accessor: 'creationDate', type: 'date', isFilterable: true },
-        ...getCountColumns(),
-        getWeanedStatusColumn(),
+        ...getBaseColumns(t),
+        { header: t('groups.column.creationDate'), accessor: 'creationDate', type: 'date', isFilterable: true },
+        ...getCountColumns(t),
+        getWeanedStatusColumn(t),
     ];
 
     return (
         <>
             <GroupsView
                 stage="weaning"
-                title="Ver grupos destetados"
-                pageTitle="Pre-iniciacion"
+                title={t('groups.view.titleWeaned')}
+                pageTitle={t('groups.pageTitle.weaned')}
                 columns={columns}
                 statsEndpoint="group_alive_stats"
                 transferStage="weaning"
@@ -67,17 +69,17 @@ const ViewWeanedGroups = () => {
             />
 
             <Modal size="md" isOpen={dateRangeModalOpen} toggle={() => setDateRangeModalOpen(false)} centered>
-                <ModalHeader toggle={() => setDateRangeModalOpen(false)}>Seleccionar rango de fechas de creación</ModalHeader>
+                <ModalHeader toggle={() => setDateRangeModalOpen(false)}>{t('groups.modal.dateRange')}</ModalHeader>
                 <ReportDateRangeSelector
                     onGenerate={handleGeneratePDF}
                     onCancel={() => setDateRangeModalOpen(false)}
                     loading={pdfLoading}
-                    generateButtonText="Generar PDF"
+                    generateButtonText={t('groups.button.generatePdf')}
                 />
             </Modal>
 
             <Modal size="xl" isOpen={pdfModalOpen} toggle={() => setPdfModalOpen(false)} backdrop="static" keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => setPdfModalOpen(false)}>Reporte de Grupos Destetados</ModalHeader>
+                <ModalHeader toggle={() => setPdfModalOpen(false)}>{t('groups.report.weaned')}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>

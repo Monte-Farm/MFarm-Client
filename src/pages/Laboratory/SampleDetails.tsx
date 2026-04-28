@@ -15,9 +15,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Badge, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalFooter, ModalHeader, Row, UncontrolledTooltip, Spinner } from "reactstrap";
 import SimpleBar from "simplebar-react";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
+import { useTranslation } from "react-i18next";
 
 const SampleDetails = () => {
-    document.title = 'Detalles de genetica liquida | System Management'
+    const { t } = useTranslation();
+    document.title = t('laboratory.sample.detail.pageTitle')
     const { sample_id } = useParams();
     const navigate = useNavigate();
     const configContext = useContext(ConfigContext);
@@ -38,60 +40,60 @@ const SampleDetails = () => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
 
+    const getLotStatusBadge = (lotStatus: string) => {
+        const statusMap: Record<string, { color: string; key: string }> = {
+            available: { color: "success", key: "available" },
+            near_expiration: { color: "warning", key: "nearExpiration" },
+            expired: { color: "dark", key: "expired" },
+            out_of_stock: { color: "dark", key: "outOfStock" },
+            discarded: { color: "dark", key: "discarded" },
+        };
+        const entry = statusMap[lotStatus];
+        const text = entry ? t(`laboratory.sample.lotStatus.${entry.key}`) : t('laboratory.sample.lotStatus.unknown');
+        const color = entry ? entry.color : "secondary";
+        return <Badge color={color}>{text}</Badge>;
+    };
+
+    const getDoseStatusBadge = (status: string) => {
+        const statusMap: Record<string, { color: string; key: string }> = {
+            available: { color: "success", key: "available" },
+            used: { color: "warning", key: "used" },
+            expired: { color: "danger", key: "expired" },
+            discarded: { color: "dark", key: "discarded" },
+        };
+        const entry = statusMap[status];
+        const text = entry ? t(`laboratory.sample.doseStatus.${entry.key}`) : t('laboratory.sample.doseStatus.unknown');
+        const color = entry ? entry.color : "secondary";
+        return <Badge color={color}>{text}</Badge>;
+    };
+
     const sampleAttributes: Attribute[] = [
         {
             key: 'lot_status',
-            label: 'Estado',
+            label: t('laboratory.sample.detail.attr.status'),
             type: 'text',
-            render: (_, obj) => {
-                let color = "secondary";
-                let text = "Desconocido";
-
-                switch (obj.lot_status) {
-                    case "available":
-                        color = "success";
-                        text = "Disponible";
-                        break;
-                    case "near_expiration":
-                        color = "warning";
-                        text = "A punto de expirar";
-                        break;
-                    case "expired":
-                        color = "dark";
-                        text = "Expirado";
-                        break;
-                    case "out_of_stock":
-                        color = "dark";
-                        text = "Sin dosis";
-                        break;
-                    case "discarded":
-                        color = "dark";
-                        text = "Descartado";
-                        break;
-                }
-                return <Badge color={color}>{text}</Badge>;
-            },
+            render: (_, obj) => getLotStatusBadge(obj.lot_status),
         },
-        { key: 'expiration_date', label: 'Fecha de expiración', type: 'date' },
-        { key: 'conservation_method', label: 'Metodo de conservacion', type: 'text' },
-        { key: 'concentration_million', label: 'Concentración (millones)', type: 'text' },
-        { key: 'motility_percent', label: 'Motilidad. (%)', type: 'text' },
-        { key: 'vitality_percent', label: 'Vitalidad (%)', type: 'text' },
-        { key: 'abnormal_percent', label: 'Anormalidad (%)', type: 'text' },
-        { key: 'pH', label: 'P.H.', type: 'text' },
-        { key: 'temperature', label: 'Temperatura', type: 'text' },
+        { key: 'expiration_date', label: t('laboratory.sample.detail.attr.expirationDate'), type: 'date' },
+        { key: 'conservation_method', label: t('laboratory.sample.detail.attr.conservationMethod'), type: 'text' },
+        { key: 'concentration_million', label: t('laboratory.sample.detail.attr.concentration'), type: 'text' },
+        { key: 'motility_percent', label: t('laboratory.sample.detail.attr.motility'), type: 'text' },
+        { key: 'vitality_percent', label: t('laboratory.sample.detail.attr.vitality'), type: 'text' },
+        { key: 'abnormal_percent', label: t('laboratory.sample.detail.attr.abnormality'), type: 'text' },
+        { key: 'pH', label: t('laboratory.sample.detail.attr.ph'), type: 'text' },
+        { key: 'temperature', label: t('laboratory.sample.detail.attr.temperature'), type: 'text' },
         {
             key: 'diluent',
-            label: 'Diluyente',
+            label: t('laboratory.sample.detail.attr.diluent'),
             type: 'text',
-            render: (_, obj) => obj.diluent.type + " - " + obj.diluent.lot + " - " + obj.diluent.volume + " " + obj.diluent.unit_measurement || "Sin diluyente"
+            render: (_, obj) => obj.diluent.type + " - " + obj.diluent.lot + " - " + obj.diluent.volume + " " + obj.diluent.unit_measurement || t('laboratory.sample.detail.attr.noDiluent')
         },
     ]
 
     const DiscardAttributes: Attribute[] = [
         {
             key: "discardResponsible",
-            label: "Descartado por",
+            label: t('laboratory.sample.detail.discardAttr.by'),
             type: "text",
             render: (value: any, obj: any) => (
                 <div className="d-flex gap-1">
@@ -101,15 +103,14 @@ const SampleDetails = () => {
                 </div>
             ),
         },
-        { key: "discardReason", label: "Razon de descarte", type: "text" },
-        { key: "discardDate", label: "Fecha de descarte", type: "date" },
+        { key: "discardReason", label: t('laboratory.sample.detail.discardAttr.reason'), type: "text" },
+        { key: "discardDate", label: t('laboratory.sample.detail.discardAttr.date'), type: "date" },
     ];
-
 
     const ExtractionAttributes: Attribute[] = [
         {
             key: "batch",
-            label: "Lote",
+            label: t('laboratory.sample.detail.extractionAttr.batch'),
             type: "text",
             render: (value: any, obj: any) => (
                 <div className="d-flex gap-1">
@@ -119,73 +120,50 @@ const SampleDetails = () => {
                 </div>
             ),
         },
-        { key: "date", label: "Fecha de extracción", type: "date" },
-        { key: "volume", label: "Volumen", type: "text" },
-        { key: "unit_measurement", label: "Unidad de medida", type: "text" },
-        { key: "extraction_location", label: "Ubicación", type: "text" },
-        { key: "appearance", label: "Apariencia", type: "text" },
-        { key: "notes", label: "Notas", type: "text" },
+        { key: "date", label: t('laboratory.sample.detail.extractionAttr.date'), type: "date" },
+        { key: "volume", label: t('laboratory.sample.detail.extractionAttr.volume'), type: "text" },
+        { key: "unit_measurement", label: t('laboratory.sample.detail.extractionAttr.unit'), type: "text" },
+        { key: "extraction_location", label: t('laboratory.sample.detail.extractionAttr.location'), type: "text" },
+        { key: "appearance", label: t('laboratory.sample.detail.extractionAttr.appearance'), type: "text" },
+        { key: "notes", label: t('laboratory.sample.detail.extractionAttr.notes'), type: "text" },
     ];
 
     const dosesColumns: Column<any>[] = [
-        { header: 'Codigo', accessor: 'code', type: 'text', isFilterable: true },
+        { header: t('laboratory.sample.detail.doseColumn.code'), accessor: 'code', type: 'text', isFilterable: true },
         {
-            header: 'Semen',
+            header: t('laboratory.sample.detail.doseColumn.semen'),
             accessor: 'doses',
             type: 'number',
             isFilterable: true,
             render: (_, row) => `${row.semen_volume} ${row.unit_measurement}` || 0
         },
         {
-            header: 'Diluyente',
+            header: t('laboratory.sample.detail.doseColumn.diluent'),
             accessor: 'doses',
             type: 'number',
             isFilterable: true,
             render: (_, row) => `${row.diluent_volume} ${row.unit_measurement}` || 0
         },
         {
-            header: 'V. total',
+            header: t('laboratory.sample.detail.doseColumn.totalVolume'),
             accessor: 'doses',
             type: 'number',
             isFilterable: true,
             render: (_, row) => `${row.total_volume} ${row.unit_measurement}` || 0
         },
         {
-            header: 'Estado',
+            header: t('laboratory.sample.detail.doseColumn.status'),
             accessor: 'status',
             type: 'text',
             isFilterable: false,
-            render: (_, row) => {
-                let color = "secondary";
-                let text = "Desconocido";
-
-                switch (row.status) {
-                    case "available":
-                        color = "success";
-                        text = "Disponible";
-                        break;
-                    case "used":
-                        color = "warning";
-                        text = "Usada";
-                        break;
-                    case "expired":
-                        color = "danger";
-                        text = "Expirado";
-                        break;
-                    case "discarded":
-                        color = "dark";
-                        text = "Descartado";
-                        break;
-                }
-                return <Badge color={color}>{text}</Badge>;
-            },
+            render: (_, row) => getDoseStatusBadge(row.status),
         },
         {
-            header: "Acciones",
+            header: t('common.field.actions'),
             accessor: "action",
             render: (value: any, row: any) => (
                 <Button className="p-0" color="link" onClick={() => { setSelectedDose(row); toggleModal('discardDose') }} disabled={row.status === "available" ? false : true}>
-                    Descartar
+                    {t('laboratory.sample.detail.doseColumn.discard')}
                 </Button>
             ),
         },
@@ -201,13 +179,13 @@ const SampleDetails = () => {
 
             if (discardResponse.status === HttpStatusCode.Ok) {
                 toggleModal('discardDose')
-                setAlertConfig({ visible: true, color: 'success', message: `Dosis ${selectedDose.code} descartada con éxito` })
+                setAlertConfig({ visible: true, color: 'success', message: t('laboratory.sample.detail.success.discardDose', { code: selectedDose.code }) })
                 fetchData();
             }
         } catch (error) {
             console.error(`Error discarding the dose: ${selectedDose.code}:`, error)
             toggleModal('discardDose')
-            setAlertConfig({ visible: true, color: 'danger', message: `Ha ocurrido un error la descartar la dosis: ${selectedDose.code}, intentelo mas tarde` })
+            setAlertConfig({ visible: true, color: 'danger', message: t('laboratory.sample.detail.error.discardDose', { code: selectedDose.code }) })
         }
     }
 
@@ -223,7 +201,7 @@ const SampleDetails = () => {
             toggleModal('viewPDF');
         } catch (error) {
             console.error('Error generating PDF: ', { error });
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('laboratory.sample.detail.error.generatePdf') });
         } finally {
             setPdfLoading(false);
         }
@@ -261,7 +239,7 @@ const SampleDetails = () => {
             setTecnicianDetails(technicianResponse.data.data);
         } catch (error) {
             console.error('Error fetching data:', error);
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('laboratory.sample.detail.error.fetchData') })
         } finally {
             setLoading(false);
         }
@@ -281,12 +259,12 @@ const SampleDetails = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Detalles de lote"} pageTitle={"Genetica liquida"} />
+                <BreadCrumb title={t('laboratory.sample.detail.breadcrumb.title')} pageTitle={t('laboratory.sample.detail.breadcrumb.parent')} />
 
                 <div className="mb-4 d-flex justify-content-between align-items-center">
                     <Button onClick={() => navigate(-1)}>
                         <i className="ri-arrow-left-line me-3"></i>
-                        Regresar
+                        {t('laboratory.sample.detail.action.back')}
                     </Button>
 
                     <Button
@@ -297,12 +275,12 @@ const SampleDetails = () => {
                         {pdfLoading ? (
                             <>
                                 <Spinner className="me-2" size='sm' />
-                                Generando...
+                                {t('common.button.generating')}
                             </>
                         ) : (
                             <>
                                 <i className="ri-file-pdf-line me-2"></i>
-                                Ver PDF
+                                {t('laboratory.sample.detail.action.viewPdf')}
                             </>
                         )}
                     </Button>
@@ -312,7 +290,7 @@ const SampleDetails = () => {
                     <Card className="mb-4 shadow-sm">
                         <CardBody className="d-flex justify-content-between align-items-center">
                             <span className="text-black fs-5">
-                                <strong>Responsable: </strong>
+                                <strong>{t('laboratory.sample.detail.responsible')}</strong>
                                 <Button className="p-0 fs-5" color="link" onClick={() => navigate(`/users/user_details/${technicianDetails._id}`)}>
                                     {technicianDetails.name} {technicianDetails.lastname} ↗
                                 </Button>
@@ -326,8 +304,7 @@ const SampleDetails = () => {
                         {sampleDetails && (
                             <Card className="shadow-md h-100">
                                 <CardHeader className="d-flex justify-content-between align-items-center" style={{ backgroundColor: 'lightsteelblue' }}>
-                                    <h5>Informacion del lote</h5>
-
+                                    <h5>{t('laboratory.sample.detail.card.lotInfo')}</h5>
                                 </CardHeader>
                                 <CardBody>
                                     <ObjectDetails attributes={sampleAttributes} object={sampleDetails} />
@@ -340,7 +317,7 @@ const SampleDetails = () => {
                         {sampleDetails.lot_status === 'discarded' && (
                             <Card className="shadow-md m-0 mb-3">
                                 <CardHeader className="d-flex justify-content-between align-items-center" style={{ backgroundColor: 'lightsteelblue' }}>
-                                    <h5>Informacion de descarte</h5>
+                                    <h5>{t('laboratory.sample.detail.card.discardInfo')}</h5>
                                 </CardHeader>
                                 <CardBody>
                                     <ObjectDetails attributes={DiscardAttributes} object={discardDetails || {}} />
@@ -351,7 +328,7 @@ const SampleDetails = () => {
                         {extractionDetails && (
                             <Card className={`shadow-md m-0 ${sampleDetails.lot_status === "discarded" ? "" : "h-100"}`}>
                                 <CardHeader className="d-flex justify-content-between align-items-center" style={{ backgroundColor: 'lightsteelblue' }}>
-                                    <h5>Informacion de extracción</h5>
+                                    <h5>{t('laboratory.sample.detail.card.extractionInfo')}</h5>
                                 </CardHeader>
                                 <CardBody>
                                     <ObjectDetails attributes={ExtractionAttributes} object={extractionDetails} />
@@ -364,7 +341,7 @@ const SampleDetails = () => {
                         {dosesDetails && (
                             <Card className="shadow-md h-100">
                                 <CardHeader className="d-flex justify-content-between align-items-center" style={{ backgroundColor: 'lightsteelblue' }}>
-                                    <h5>Informacion de dosis</h5>
+                                    <h5>{t('laboratory.sample.detail.card.dosesInfo')}</h5>
                                 </CardHeader>
                                 <CardBody>
                                     <CustomTable columns={dosesColumns} data={dosesDetails} showPagination={true} showSearchAndFilter={true} rowsPerPage={8} />
@@ -376,23 +353,23 @@ const SampleDetails = () => {
             </Container>
 
             <Modal size="xl" isOpen={modals.extractionDetails} toggle={() => toggleModal("extractionDetails")} centered>
-                <ModalHeader toggle={() => toggleModal("extractionDetails")}>Detalles de extraccion</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("extractionDetails")}>{t('laboratory.sample.detail.modal.extractionDetails')}</ModalHeader>
                 <ModalBody>
                     <ExtractionDetails extractionId={extractionDetails._id} />
                 </ModalBody>
             </Modal>
 
             <Modal size="md" isOpen={modals.discardDose} toggle={() => toggleModal("discardDose")} centered>
-                <ModalHeader toggle={() => toggleModal("discardDose")}> Descartar dosis </ModalHeader>
+                <ModalHeader toggle={() => toggleModal("discardDose")}>{t('laboratory.sample.detail.modal.discardDose')}</ModalHeader>
                 <ModalBody>
                     <div className="d-flex flex-column align-items-center text-center gap-3">
                         <FiAlertCircle size={50} color="#dc3545" />
                         <div>
                             <p className="mb-1 fs-5">
-                                ¿Desea descartar la dosis <strong>{selectedDose.code}</strong>?
+                                {t('laboratory.sample.detail.discardDose.confirm', { code: selectedDose.code })}
                             </p>
                             <p className="text-muted fs-6">
-                                Esta dosis ya no podrá ser utilizada.
+                                {t('laboratory.sample.detail.discardDose.warning')}
                             </p>
                         </div>
                     </div>
@@ -400,18 +377,17 @@ const SampleDetails = () => {
                 <ModalFooter>
                     <div className="d-flex gap-2 mt-3">
                         <Button color="secondary" onClick={() => toggleModal("discardDose")}>
-                            Cancelar
+                            {t('common.button.cancel')}
                         </Button>
                         <Button color="danger" onClick={() => discardDose()}>
-                            Confirmar
+                            {t('common.button.confirm')}
                         </Button>
                     </div>
                 </ModalFooter>
             </Modal>
 
-            {/* Modal PDF */}
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de muestra de semen</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('laboratory.sample.detail.modal.pdfReport')}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>

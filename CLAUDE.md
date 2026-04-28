@@ -53,3 +53,8 @@ src/
 - **Imports**: absolute from src/ (baseUrl configured in tsconfig)
 - **Modals**: SuccessModal / ErrorModal for form feedback
 - **Language**: Spanish-speaking team; UI may mix Spanish/English; code identifiers in English
+
+## i18n Rules (non-negotiable)
+- **Every new UI text must be localized from day one** — no hardcoded strings in components, ever. If you add a button, label, error message, or tooltip, it goes in `sp.json` / `en.json` / `pt.json` first.
+- **Translations must sound native**, not literal. For EN: use natural pig-farming industry terminology. For PT: use Brazilian suinocultura vocabulary. Never just word-for-word translate from Spanish.
+- Follow the key conventions in `I18N_HANDOFF.md`: configs using `t()` inside the component, dynamic keys with `defaultValue`, `Trans` for embedded HTML, interpolation with `{{val}}`.

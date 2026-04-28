@@ -1,7 +1,8 @@
 import { ConfigContext } from "App";
 import { Attribute, PurchaseOrderData } from "common/data_interfaces";
-import { SUPPLIER_TYPES, getSupplierTypeLabel } from "common/enums/suppliers.enums";
+import { SUPPLIER_TYPES } from "common/enums/suppliers.enums";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Badge, Button, Card, CardBody, CardHeader, Col, Modal, ModalBody, ModalHeader, Row, Spinner } from "reactstrap";
 import { Column } from "common/data/data_types";
 import CustomTable from "Components/Common/Tables/CustomTable";
@@ -16,6 +17,7 @@ interface PurchaseOrderDetailsProps {
 }
 
 const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -27,35 +29,34 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
     const [modals, setModals] = useState({ viewPDF: false });
 
     const purchaseOrderAttributes: Attribute[] = [
-        { key: 'code', label: 'Código', type: 'text' },
-        { key: 'date', label: 'Fecha', type: 'date' },
-        { key: 'supplier.name', label: 'Proveedor', type: 'text' },
+        { key: 'code', label: t('common.field.code'), type: 'text' },
+        { key: 'date', label: t('common.field.date'), type: 'date' },
+        { key: 'supplier.name', label: t('warehouse.suppliers.col.supplier', { defaultValue: 'Proveedor' }), type: 'text' },
         {
             key: 'status',
-            label: 'Estado',
+            label: t('common.field.status'),
             type: 'text',
             render: (value: boolean) => (
                 <Badge color={value ? 'warning' : 'success'}>
-                    {value ? 'No ingresada' : 'Ingresada'}
+                    {t(`warehouse.purchaseOrders.status.${value ? 'not_entered' : 'entered'}`, { defaultValue: value ? 'No ingresada' : 'Ingresada' })}
                 </Badge>
             ),
         },
     ]
 
     const supplierAttributes: Attribute[] = [
-        { key: 'id', label: 'Código', type: 'text' },
-        { key: 'name', label: 'Nombre', type: 'text' },
-        { key: 'address', label: 'Dirección', type: 'text' },
-        { key: 'phone_number', label: 'Teléfono', type: 'text' },
-        { key: 'email', label: 'Email', type: 'text' },
-        { key: 'rnc', label: 'RNC', type: 'text' },
+        { key: 'id', label: t('common.field.code'), type: 'text' },
+        { key: 'name', label: t('common.field.name'), type: 'text' },
+        { key: 'address', label: t('warehouse.supplierForm.field.address', { defaultValue: 'Dirección' }), type: 'text' },
+        { key: 'phone_number', label: t('warehouse.supplierForm.field.phone', { defaultValue: 'Teléfono' }), type: 'text' },
+        { key: 'email', label: t('warehouse.supplierForm.field.email', { defaultValue: 'Email' }), type: 'text' },
+        { key: 'rnc', label: t('warehouse.supplierForm.field.rnc', { defaultValue: 'RNC' }), type: 'text' },
         {
             key: 'supplier_type',
-            label: 'Tipo de Proveedor',
+            label: t('warehouse.suppliers.attr.supplierType', { defaultValue: 'Tipo de Proveedor' }),
             type: 'text',
             render: (value: string) => {
                 let color = "secondary";
-                let label = getSupplierTypeLabel(value);
 
                 switch (value) {
                     case SUPPLIER_TYPES.CLEANING_PRODUCTS:
@@ -78,28 +79,28 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
                         break;
                 }
 
-                return <Badge color={color}>{label}</Badge>;
+                return <Badge color={color}>{t(`warehouse.common.supplierType.${value}`, { defaultValue: value })}</Badge>;
             },
         },
     ]
 
     const productColumns: Column<any>[] = [
         {
-            header: 'Código',
+            header: t('common.field.code'),
             accessor: 'id',
             isFilterable: true,
             type: 'text',
             render: (_, row) => <span>{row?.id?.id}</span>
         },
         {
-            header: 'Producto',
+            header: t('common.field.name'),
             accessor: 'id',
             isFilterable: true,
             type: 'text',
             render: (_, row) => <span>{row?.id?.name}</span>
         },
         {
-            header: 'Cantidad',
+            header: t('warehouse.purchaseOrders.col.quantity', { defaultValue: 'Cantidad' }),
             accessor: 'quantity',
             isFilterable: true,
             type: 'number',
@@ -107,74 +108,48 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
             bgColor: '#f0f0ff'
         },
         {
-            header: 'Precio Unitario',
+            header: t('warehouse.purchaseOrders.col.unitPrice', { defaultValue: 'Precio Unitario' }),
             accessor: 'unitPrice',
             type: 'currency',
             bgColor: '#e6f0ff'
         },
         {
-            header: 'Precio Total',
+            header: t('warehouse.purchaseOrders.col.totalPrice', { defaultValue: 'Precio Total' }),
             accessor: 'totalPrice',
             type: 'currency',
             bgColor: '#e6ffe6'
         },
         {
-            header: 'Categoría',
+            header: t('warehouse.purchaseOrders.col.category', { defaultValue: 'Categoría' }),
             accessor: 'category',
             isFilterable: true,
             type: 'text',
             render: (_, row) => {
                 let color = "secondary";
-                let label = row.id.category;
 
                 switch (row.id.category) {
                     case "nutrition":
                         color = "info";
-                        label = "Nutrición";
                         break;
                     case "medications":
                         color = "warning";
-                        label = "Medicamentos";
                         break;
                     case "vaccines":
                         color = "primary";
-                        label = "Vacunas";
                         break;
                     case "vitamins":
-                        color = "success";
-                        label = "Vitaminas";
-                        break;
                     case "minerals":
-                        color = "success";
-                        label = "Minerales";
-                        break;
                     case "supplies":
-                        color = "success";
-                        label = "Insumos";
-                        break;
                     case "hygiene_cleaning":
-                        color = "success";
-                        label = "Higiene y desinfección";
-                        break;
                     case "equipment_tools":
-                        color = "success";
-                        label = "Equipamiento y herramientas";
-                        break;
                     case "spare_parts":
-                        color = "success";
-                        label = "Refacciones y repuestos";
-                        break;
                     case "office_supplies":
-                        color = "success";
-                        label = "Material de oficina";
-                        break;
                     case "others":
                         color = "success";
-                        label = "Otros";
                         break;
                 }
 
-                return <Badge color={color}>{label}</Badge>;
+                return <Badge color={color}>{t(`warehouse.common.productCategory.${row.id.category}`, { defaultValue: row.id.category })}</Badge>;
             },
         },
     ];
@@ -193,7 +168,7 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
             setProducts(purchaseOrderFound.products);
         } catch (error) {
             console.error('Error fetching data:', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al obtener los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.purchaseOrders.error.fetch', { defaultValue: 'Error al obtener los datos, intentelo mas tarde' }) })
         } finally {
             setLoading(false)
         }
@@ -205,10 +180,8 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
         try {
             setPdfLoading(true);
 
-            // Usar axiosHelper.getBlob para mantener consistencia
             const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/purchase_orders/${purchaseId}`);
 
-            // Crear blob con tipo MIME explícito para PDF
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
             const url = window.URL.createObjectURL(pdfBlob);
 
@@ -216,7 +189,7 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
             toggleModal('viewPDF');
         } catch (error) {
             console.error('Error generating report:', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.purchaseOrders.error.fetch', { defaultValue: 'Error al generar el PDF, intentelo más tarde' }) })
         } finally {
             setPdfLoading(false);
         }
@@ -243,12 +216,12 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
                     {pdfLoading ? (
                         <>
                             <Spinner className="me-2" size='sm' />
-                            Generando PDF
+                            {t('common.button.generating', { defaultValue: 'Generando PDF' })}
                         </>
                     ) : (
                         <>
                             <i className="ri-file-pdf-line me-2"></i>
-                            Ver PDF
+                            {t('common.button.exportPdf', { defaultValue: 'Ver PDF' })}
                         </>
                     )}
                 </Button>
@@ -258,7 +231,7 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
                 <div className="d-flex gap-3">
                     <Card>
                         <CardHeader className='bg-gradient bg-primary-subtle'>
-                            <h5 className="mb-0 text-primary">Información General</h5>
+                            <h5 className="mb-0 text-primary">{t('warehouse.purchaseOrders.attr.generalInfo', { defaultValue: 'Información General' })}</h5>
                         </CardHeader>
                         <CardBody className="pt-4">
                             <ObjectDetails attributes={purchaseOrderAttributes} object={purchaseOrderDetails ?? {}} />
@@ -268,7 +241,7 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
                     {purchaseOrderDetails?.supplier && (
                         <Card className="flex-fill">
                             <CardHeader className='bg-gradient bg-info-subtle'>
-                                <h5 className="mb-0 text-info">Detalles del Proveedor</h5>
+                                <h5 className="mb-0 text-info">{t('warehouse.purchaseOrders.attr.supplierDetails', { defaultValue: 'Detalles del Proveedor' })}</h5>
                             </CardHeader>
                             <CardBody className="pt-4">
                                 <ObjectDetails attributes={supplierAttributes} object={purchaseOrderDetails.supplier as unknown as Record<string, any>} />
@@ -280,10 +253,10 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
                 {/* Segunda fila: Productos */}
                 <Card>
                     <CardHeader className='bg-gradient bg-secondary-subtle d-flex justify-content-between align-items-center'>
-                        <h5 className="mb-0 text-secondary">Productos de la Orden</h5>
+                        <h5 className="mb-0 text-secondary">{t('warehouse.purchaseOrders.attr.orderProducts', { defaultValue: 'Productos de la Orden' })}</h5>
 
                         <div className="d-flex justify-content-between align-items-center p-3 rounded" style={{ backgroundColor: '#f0f8ff' }}>
-                            <h5 className="mb-0 me-2 fw-bold">Total:</h5>
+                            <h5 className="mb-0 me-2 fw-bold">{t('warehouse.purchaseOrders.attr.total', { defaultValue: 'Total:' })}</h5>
                             <h4 className="mb-0 text-primary fw-bold">
                                 {new Intl.NumberFormat('en-US', {
                                     style: 'currency',
@@ -303,7 +276,7 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
             </div>
 
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Orden de Compra</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('warehouse.purchaseOrders.modal.report', { defaultValue: 'Reporte de Orden de Compra' })}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>

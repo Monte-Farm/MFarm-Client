@@ -13,7 +13,6 @@ import PregnancyDetails from "../../Components/Common/Details/PregnancyDetails";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import { FiInbox } from "react-icons/fi";
 import KPI from "Components/Common/Graphics/Kpi";
-import { IconBaseProps } from "react-icons";
 import { FaBaby, FaChartBar, FaChartLine, FaCheckCircle, FaClipboardList, FaClock, FaExclamationTriangle, FaHeartbeat } from "react-icons/fa";
 import { transformPregnancyStatsForChart } from "Components/Hooks/transformPregnancyStats";
 import { ResponsiveLine } from "@nivo/line";
@@ -21,10 +20,17 @@ import LineChartCard from "Components/Common/Graphics/LineChartCard";
 import AbortionForm from "Components/Common/Forms/AbortionForm";
 import SelectableCustomTable from "Components/Common/Tables/SelectableTable";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
+import { useTranslation } from "react-i18next";
+
+const STATUS_COLORS: Record<string, string> = {
+    pregnant: 'success', close_to_farrow: 'warning', farrowing_pending: 'info',
+    overdue_farrowing: 'danger', farrowed: 'dark', abortion: 'dark',
+};
 
 type PeriodKey = "day" | "week" | "month" | "year";
 const ViewPregnancies = () => {
     document.title = "Ver embarazos | Management System"
+    const { t } = useTranslation();
     const userLoggged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
     const [loading, setLoading] = useState<boolean>(false);
@@ -40,7 +46,7 @@ const ViewPregnancies = () => {
 
     const inseminationsColumns: Column<any>[] = [
         {
-            header: "Cerda",
+            header: t('pregnancy.column.sow'),
             accessor: "sow",
             type: "text",
             render: (_, row) => (
@@ -57,34 +63,26 @@ const ViewPregnancies = () => {
                 </Button>
             )
         },
-        { header: "Fecha de inseminación", accessor: "start_date", type: "date", isFilterable: false },
+        { header: t('pregnancy.column.inseminationDate'), accessor: "start_date", type: "date", isFilterable: false },
         {
-            header: "Estado de embarazo",
+            header: t('pregnancy.column.status'),
             accessor: "farrowing_status",
             type: "text",
             isFilterable: true,
             render: (_, row) => {
-                let color = "secondary";
-                let text = "Pendiente";
-                switch (row.farrowing_status) {
-                    case "pregnant": color = "success"; text = "Gestando"; break;
-                    case "close_to_farrow": color = "warning"; text = "Proxima a parir"; break;
-                    case "farrowing_pending": color = "info"; text = "Parto pendiente"; break;
-                    case "overdue_farrowing": color = "danger"; text = "Parto atrasado"; break;
-                    case "farrowed": color = "dark"; text = "Parida"; break;
-                    case "abortion": color = "dark"; text = "Aborto"; break;
-                }
+                const color = STATUS_COLORS[row.farrowing_status] || 'secondary';
+                const text = t(`pregnancy.status.${row.farrowing_status}`, { defaultValue: t('pregnancy.status.pending') });
                 return <Badge color={color}>{text}</Badge>;
             },
         },
         {
-            header: "Fecha prevista de parto",
+            header: t('pregnancy.column.estimatedFarrowing'),
             accessor: "estimated_farrowing_date",
             type: "date",
             render: (_, row) => row.estimated_farrowing_date ? new Date(row.estimated_farrowing_date).toLocaleDateString() : "N/A",
         },
         {
-            header: "Acciones",
+            header: t('pregnancy.column.actions'),
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
@@ -92,14 +90,14 @@ const ViewPregnancies = () => {
                         <i className="bx bxs-skull align-middle"></i>
                     </Button>
                     <UncontrolledTooltip target={`diagnose-button-${row._id}`}>
-                        Registrar perdida
+                        {t('pregnancy.action.registerLoss')}
                     </UncontrolledTooltip>
 
                     <Button id={`view-button-${row._id}`} className="farm-primary-button btn-icon" onClick={(e) => { e.stopPropagation(); setSelectedPregnancy(row); toggleModal('pregnancyDetails'); }}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
                     <UncontrolledTooltip target={`view-button-${row._id}`}>
-                        Ver detalles
+                        {t('pregnancy.action.viewDetails')}
                     </UncontrolledTooltip>
                 </div>
             ),
@@ -114,7 +112,7 @@ const ViewPregnancies = () => {
         setSelectedPregnancies(selected);
     };
 
-    const hasValidPregnancies = selectedPregnancies.some(preg => 
+    const hasValidPregnancies = selectedPregnancies.some(preg =>
         preg.farrowing_status !== 'farrowed' && preg.abortions.length === 0
     );
 
@@ -134,15 +132,14 @@ const ViewPregnancies = () => {
         validationSchema: bulkAbortionValidationSchema,
         onSubmit: async (values, { setSubmitting }) => {
             if (!configContext) return;
-            
+
             const validPregnancyIds = selectedPregnancies
                 .filter(preg => preg.farrowing_status !== 'farrowed' && preg.abortions.length === 0)
                 .map(preg => preg._id);
 
             try {
                 setSubmitting(true);
-                
-                // 1. Registrar abortos masivos
+
                 await configContext.axiosHelper.create(`${configContext.apiUrl}/pregnancies/register_bulk_abortion`, {
                     pregnancyIds: validPregnancyIds,
                     probable_cause: values.probable_cause,
@@ -151,18 +148,17 @@ const ViewPregnancies = () => {
                     responsible: values.responsible
                 });
 
-                // 2. Registrar en el historial del usuario
                 await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLoggged._id}`, {
                     event: `Pérdida masiva de ${validPregnancyIds.length} embarazos registrada`
                 });
 
-                setAlertConfig({ visible: true, color: 'success', message: `Pérdida registrada en ${validPregnancyIds.length} embarazos con éxito` });
+                setAlertConfig({ visible: true, color: 'success', message: t('pregnancy.success.bulkLoss', { count: validPregnancyIds.length }) });
                 fetchData();
                 setSelectedPregnancies([]);
                 bulkAbortionFormik.resetForm();
             } catch (error) {
                 console.error('Error bulk registering abortion:', error);
-                setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al registrar la pérdida masiva, intentelo más tarde' });
+                setAlertConfig({ visible: true, color: 'danger', message: t('pregnancy.error.bulkLoss') });
             } finally {
                 setSubmitting(false);
                 toggleModal('bulkAbortion');
@@ -188,7 +184,7 @@ const ViewPregnancies = () => {
             toggleModal('reportPDF');
         } catch (error) {
             console.error('Error generating pregnancies report:', error);
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el reporte de embarazos.' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('pregnancy.error.pdf') });
         } finally {
             setPdfLoading(false);
         }
@@ -208,7 +204,7 @@ const ViewPregnancies = () => {
             setPregnancyStats(statsResponse.data.data)
         } catch (error) {
             console.error('An error has ocurred:', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('pregnancy.error.load') })
         } finally {
             setLoading(false)
         }
@@ -227,11 +223,11 @@ const ViewPregnancies = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Ver embarazos"} pageTitle={"Gestación"} />
+                <BreadCrumb title={t('pregnancy.breadcrumb.title')} pageTitle={t('pregnancy.breadcrumb.parent')} />
 
                 <div className="d-flex gap-3 flex-wrap">
                     <KPI
-                        title={"Embarazos totales"}
+                        title={t('pregnancy.kpi.total')}
                         value={pregnancyStats?.generalStats?.[0]?.totalPregnancies ?? 0}
                         icon={FaClipboardList}
                         bgColor="#e8f4fd"
@@ -239,7 +235,7 @@ const ViewPregnancies = () => {
                     />
 
                     <KPI
-                        title={"Embarazos activos"}
+                        title={t('pregnancy.kpi.active')}
                         value={pregnancyStats?.generalStats?.[0]?.activePregnancies ?? 0}
                         icon={FaHeartbeat}
                         bgColor="#fff3cd"
@@ -247,7 +243,7 @@ const ViewPregnancies = () => {
                     />
 
                     <KPI
-                        title={"Partos exitosos"}
+                        title={t('pregnancy.kpi.successfulBirths')}
                         value={pregnancyStats?.generalStats?.[0]?.farrowedCount ?? 0}
                         icon={FaBaby}
                         bgColor="#e6f7e6"
@@ -255,7 +251,7 @@ const ViewPregnancies = () => {
                     />
 
                     <KPI
-                        title={"Abortos registrados"}
+                        title={t('pregnancy.kpi.abortions')}
                         value={pregnancyStats?.generalStats?.[0]?.abortionCount ?? 0}
                         icon={FaExclamationTriangle}
                         bgColor="#fdecea"
@@ -263,7 +259,7 @@ const ViewPregnancies = () => {
                     />
 
                     <KPI
-                        title={"Promedio días de gestación"}
+                        title={t('pregnancy.kpi.avgGestationDays')}
                         value={Math.round(pregnancyStats?.generalStats?.[0]?.avgGestationDays ?? 0)}
                         icon={FaClock}
                         bgColor="#f3e8fd"
@@ -271,7 +267,7 @@ const ViewPregnancies = () => {
                     />
 
                     <KPI
-                        title={"Tasa de éxito"}
+                        title={t('pregnancy.kpi.successRate')}
                         value={`${((pregnancyStats?.generalStats?.[0]?.successRate ?? 0) * 100).toFixed(2)}%`}
                         icon={FaChartLine}
                         bgColor="#e8f7fc"
@@ -279,7 +275,7 @@ const ViewPregnancies = () => {
                     />
 
                     <KPI
-                        title={"Tasa de aborto"}
+                        title={t('pregnancy.kpi.abortionRate')}
                         value={`${((pregnancyStats?.generalStats?.[0]?.abortionRate ?? 0) * 100).toFixed(2)}%`}
                         icon={FaChartBar}
                         bgColor="#fdecea"
@@ -288,9 +284,9 @@ const ViewPregnancies = () => {
                 </div>
 
                 <div className="d-flex gap-3">
-                    <LineChartCard stats={pregnancyStats} type={"pregnancies"} title={"Embarazos por periodo"} yLabel={""} />
-                    <LineChartCard stats={pregnancyStats} type={"farrowings"} title={"Partos por periodo"} yLabel={""} />
-                    <LineChartCard stats={pregnancyStats} type={"abortions"} title={"Abortos por periodo"} yLabel={""} />
+                    <LineChartCard stats={pregnancyStats} type={"pregnancies"} title={t('pregnancy.chart.byPeriod')} yLabel={""} />
+                    <LineChartCard stats={pregnancyStats} type={"farrowings"} title={t('pregnancy.chart.farrowingsByPeriod')} yLabel={""} />
+                    <LineChartCard stats={pregnancyStats} type={"abortions"} title={t('pregnancy.chart.abortionsByPeriod')} yLabel={""} />
                 </div>
 
                 <Card>
@@ -299,36 +295,36 @@ const ViewPregnancies = () => {
                             {selectedPregnancies.length > 0 && (
                                 <div className="d-flex align-items-center gap-2">
                                     <span className="text-muted">
-                                        {selectedPregnancies.length} {selectedPregnancies.length === 1 ? 'embarazo seleccionado' : 'embarazos seleccionados'}
+                                        {selectedPregnancies.length} {selectedPregnancies.length === 1 ? t('pregnancy.selected.singular') : t('pregnancy.selected.plural')}
                                     </span>
                                     <div className="btn-group" role="group">
                                         <Button
                                             className="farm-danger-button btn-sm"
                                             disabled={!hasValidPregnancies}
-                                            title={!hasValidPregnancies ? "No hay embarazos válidos para registrar pérdida" : undefined}
+                                            title={!hasValidPregnancies ? t('pregnancy.bulk.noValidPregnancies') : undefined}
                                             onClick={handleOpenBulkAbortionForm}
                                         >
                                             <i className="bx bxs-skull me-1"></i>
-                                            Registrar Pérdida
+                                            {t('pregnancy.action.registerLoss')}
                                         </Button>
                                     </div>
                                 </div>
                             )}
                         </div>
-                        <Button 
-                            color="primary" 
+                        <Button
+                            color="primary"
                             onClick={handleGenerateReport}
                             disabled={pdfLoading}
                         >
                             {pdfLoading ? (
                                 <>
                                     <Spinner className="me-2" size='sm' />
-                                    Generando...
+                                    {t('pregnancy.action.generating')}
                                 </>
                             ) : (
                                 <>
                                     <i className="ri-file-pdf-line me-2"></i>
-                                    Reporte de Embarazos Activos
+                                    {t('pregnancy.action.exportPdf')}
                                 </>
                             )}
                         </Button>
@@ -351,7 +347,7 @@ const ViewPregnancies = () => {
                             <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", textAlign: "center", color: "#888", }}>
                                 <div>
                                     <FiInbox size={48} style={{ marginBottom: 10 }} />
-                                    <div>No hay embarazos registrados</div>
+                                    <div>{t('pregnancy.empty.noPregnancies')}</div>
                                 </div>
                             </div>
                         )}
@@ -360,34 +356,33 @@ const ViewPregnancies = () => {
             </Container>
 
             <Modal size="lg" isOpen={modals.pigDetails} toggle={() => toggleModal("pigDetails")} centered>
-                <ModalHeader toggle={() => toggleModal("pigDetails")}>Detalles del verraco</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("pigDetails")}>{t('pregnancy.modal.pigDetails')}</ModalHeader>
                 <ModalBody>
                     <PigDetailsModal pigId={selectedPigId} showAllDetailsButton={true} />
                 </ModalBody>
             </Modal>
 
             <Modal size="lg" isOpen={modals.abortion} toggle={() => toggleModal("abortion")} backdrop="static" keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("abortion")}>Registrar perdida</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("abortion")}>{t('pregnancy.modal.registerLoss')}</ModalHeader>
                 <ModalBody>
                     <AbortionForm pregnancy={selectedPregnancy} onSave={() => { fetchData(); toggleModal('abortion'); }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
-            {/* Modal Bulk Abortion Form */}
             <Modal isOpen={modals.bulkAbortion} toggle={() => toggleModal("bulkAbortion")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("bulkAbortion")}>
-                    Registrar Pérdida en {selectedPregnancies.filter(preg => preg.farrowing_status !== 'farrowed' && preg.abortions.length === 0).length} Embarazos
+                    {t('pregnancy.modal.bulkLoss', { count: selectedPregnancies.filter(preg => preg.farrowing_status !== 'farrowed' && preg.abortions.length === 0).length })}
                 </ModalHeader>
                 <ModalBody>
                     <form onSubmit={bulkAbortionFormik.handleSubmit}>
                         <div className="mb-3">
                             <small className="text-muted">
-                                Esta acción registrará la pérdida en los embarazos válidos seleccionados.
+                                {t('pregnancy.bulk.lossInfo')}
                             </small>
                         </div>
 
                         <div className="mt-4">
-                            <Label htmlFor="probable_cause" className="form-label">Causa probable</Label>
+                            <Label htmlFor="probable_cause" className="form-label">{t('pregnancy.field.probableCause')}</Label>
                             <Input
                                 type="text"
                                 id="probable_cause"
@@ -396,7 +391,7 @@ const ViewPregnancies = () => {
                                 onChange={bulkAbortionFormik.handleChange}
                                 onBlur={bulkAbortionFormik.handleBlur}
                                 invalid={bulkAbortionFormik.touched.probable_cause && !!bulkAbortionFormik.errors.probable_cause}
-                                placeholder="Ej: Estrés, enfermedad, condiciones ambientales"
+                                placeholder={t('pregnancy.placeholder.probableCause')}
                             />
                             {bulkAbortionFormik.touched.probable_cause && bulkAbortionFormik.errors.probable_cause && (
                                 <FormFeedback>{bulkAbortionFormik.errors.probable_cause}</FormFeedback>
@@ -405,7 +400,7 @@ const ViewPregnancies = () => {
 
                         <div className="d-flex gap-2 mt-4">
                             <div className="w-50">
-                                <Label htmlFor="date" className="form-label">Fecha de pérdida</Label>
+                                <Label htmlFor="date" className="form-label">{t('pregnancy.field.date')}</Label>
                                 <DatePicker
                                     id="date"
                                     className={`form-control ${bulkAbortionFormik.touched.date && bulkAbortionFormik.errors.date ? 'is-invalid' : ''}`}
@@ -419,7 +414,7 @@ const ViewPregnancies = () => {
                             </div>
 
                             <div className="w-50">
-                                <Label htmlFor="responsible" className="form-label">Responsable</Label>
+                                <Label htmlFor="responsible" className="form-label">{t('pregnancy.field.responsible')}</Label>
                                 <Input
                                     type="text"
                                     id="responsible"
@@ -431,7 +426,7 @@ const ViewPregnancies = () => {
                         </div>
 
                         <div className="mt-4">
-                            <Label htmlFor="notes" className="form-label">Notas</Label>
+                            <Label htmlFor="notes" className="form-label">{t('pregnancy.field.notes')}</Label>
                             <Input
                                 type="text"
                                 id="notes"
@@ -440,7 +435,7 @@ const ViewPregnancies = () => {
                                 onChange={bulkAbortionFormik.handleChange}
                                 onBlur={bulkAbortionFormik.handleBlur}
                                 invalid={bulkAbortionFormik.touched.notes && !!bulkAbortionFormik.errors.notes}
-                                placeholder="Ej: Pérdida masiva por condiciones climáticas"
+                                placeholder={t('pregnancy.placeholder.notes')}
                             />
                             {bulkAbortionFormik.touched.notes && bulkAbortionFormik.errors.notes && (
                                 <FormFeedback>{bulkAbortionFormik.errors.notes}</FormFeedback>
@@ -449,22 +444,22 @@ const ViewPregnancies = () => {
                     </form>
                 </ModalBody>
                 <ModalFooter>
-                    <Button className="farm-secondary-button" onClick={() => toggleModal("bulkAbortion", false)}>Cancelar</Button>
+                    <Button className="farm-secondary-button" onClick={() => toggleModal("bulkAbortion", false)}>{t('common.button.cancel')}</Button>
                     <Button className="farm-danger-button" onClick={() => bulkAbortionFormik.handleSubmit()} disabled={bulkAbortionFormik.isSubmitting}>
-                        {bulkAbortionFormik.isSubmitting ? <Spinner size="sm" /> : 'Confirmar Pérdida'}
+                        {bulkAbortionFormik.isSubmitting ? <Spinner size="sm" /> : t('pregnancy.action.confirmLoss')}
                     </Button>
                 </ModalFooter>
             </Modal>
 
             <Modal size="xl" isOpen={modals.pregnancyDetails} toggle={() => { toggleModal("pregnancyDetails"); fetchData() }} centered>
-                <ModalHeader toggle={() => { toggleModal("pregnancyDetails"); fetchData() }}>Detalles de embarazo</ModalHeader>
+                <ModalHeader toggle={() => { toggleModal("pregnancyDetails"); fetchData() }}>{t('pregnancy.modal.pregnancyDetails')}</ModalHeader>
                 <ModalBody>
                     <PregnancyDetails pregnancyId={selectedPregnancy._id} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.reportPDF} toggle={() => toggleModal("reportPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("reportPDF")}>Reporte de Embarazos Activos</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("reportPDF")}>{t('pregnancy.modal.report')}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>

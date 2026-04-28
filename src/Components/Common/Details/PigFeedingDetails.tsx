@@ -11,6 +11,7 @@ import StatKpiCard from "../Graphics/StatKpiCard";
 import BasicLineChartCard from "../Graphics/BasicLineChartCard";
 import DonutChartCard from "../Graphics/DonutChartCard";
 import FeedAdministrationsCard from "../Shared/FeedAdministrationsCard";
+import { useTranslation } from "react-i18next";
 
 type Stage = 'piglet' | 'sow' | 'nursery' | 'grower' | 'finisher' | 'general';
 
@@ -20,6 +21,7 @@ interface PigFeedingDetailsProps {
 }
 
 const PigFeedingDetails: React.FC<PigFeedingDetailsProps> = ({ pigId, pigStage }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true);
@@ -35,12 +37,10 @@ const PigFeedingDetails: React.FC<PigFeedingDetailsProps> = ({ pigId, pigStage }
                 configContext.axiosHelper.get(`${configContext.apiUrl}/${FEEDING_INFO_URLS.pigFeedingInfo(pigId)}`),
                 configContext.axiosHelper.get(`${configContext.apiUrl}/${FEEDING_INFO_URLS.pigFeedingStats(pigId)}`),
             ]);
-            const info = infoResponse.data.data;
-            setAdministrations(info?.feedAdministrationHistory ?? []);
+            setAdministrations(infoResponse.data.data?.feedAdministrationHistory ?? []);
             setFeedingStats(statsResponse.data.data);
         } catch (error) {
-            console.error('Error fetching data: ', { error });
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al obtener la informacion de alimentacion, intentelo mas tarde' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('common.status.noData') });
         } finally {
             setLoading(false);
         }
@@ -59,95 +59,46 @@ const PigFeedingDetails: React.FC<PigFeedingDetailsProps> = ({ pigId, pigStage }
                 <>
                     <Row className="g-3 mb-3">
                         <Col md={6} lg>
-                            <StatKpiCard
-                                title="Alimento Consumido"
-                                value={feedingStats.kpis?.totalConsumed || 0}
-                                suffix="kg"
-                                icon={<RiRestaurantLine size={20} style={{ color: '#f59e0b' }} />}
-                                animateValue={true}
-                                decimals={1}
-                            />
+                            <StatKpiCard title={t('pigs.kpi.foodConsumed')} value={feedingStats.kpis?.totalConsumed || 0} suffix="kg" icon={<RiRestaurantLine size={20} style={{ color: '#f59e0b' }} />} animateValue decimals={1} />
                         </Col>
                         <Col md={6} lg>
-                            <StatKpiCard
-                                title="Consumo Diario Promedio"
-                                value={feedingStats.kpis?.avgPerDay || 0}
-                                suffix="kg/día"
-                                icon={<RiScales3Line size={20} style={{ color: '#0ea5e9' }} />}
-                                animateValue={true}
-                                decimals={2}
-                            />
+                            <StatKpiCard title={t('pigs.kpi.dailyAvg')} value={feedingStats.kpis?.avgPerDay || 0} suffix="kg/día" icon={<RiScales3Line size={20} style={{ color: '#0ea5e9' }} />} animateValue decimals={2} />
                         </Col>
                         <Col md={6} lg>
-                            <StatKpiCard
-                                title="Conversión Alimenticia"
-                                value={feedingStats.kpis?.fcr || feedingStats.kpis?.feedConversionRatio || 0}
-                                suffix="kg/kg"
-                                icon={<RiExchangeLine size={20} style={{ color: '#ef4444' }} />}
-                                animateValue={true}
-                                decimals={2}
-                            />
+                            <StatKpiCard title={t('pigs.kpi.feedConversion')} value={feedingStats.kpis?.fcr || feedingStats.kpis?.feedConversionRatio || 0} suffix="kg/kg" icon={<RiExchangeLine size={20} style={{ color: '#ef4444' }} />} animateValue decimals={2} />
                         </Col>
                     </Row>
-
                     <Row className="g-3 mb-3">
                         <Col lg={8}>
                             <BasicLineChartCard
-                                title="Consumo Acumulado"
-                                data={[{
-                                    id: 'Alimento (kg)',
-                                    color: '#f59e0b',
-                                    data: (feedingStats.cumulativeConsumption || []).map((p: any) => ({ x: p.date, y: p.value })),
-                                }]}
+                                title={t('pigs.kpi.cumulativeConsumption')}
+                                data={[{ id: t('pigs.kpi.foodConsumed'), color: '#f59e0b', data: (feedingStats.cumulativeConsumption || []).map((p: any) => ({ x: p.date, y: p.value })) }]}
                                 yLabel="Kg acumulados"
-                                xLabel="Fecha"
-                                height={280}
-                                curve="natural"
-                                pointSize={5}
-                                strokeWidth={2}
-                                enableGrid={true}
-                                enablePoints={true}
-                                enableArea={true}
-                                showLegend={false}
-                                headerBgColor="#ffffff"
-                                className="border-0 shadow-sm h-100"
+                                xLabel={t('common.field.date')}
+                                height={280} curve="natural" pointSize={5} strokeWidth={2}
+                                enableGrid enablePoints enableArea showLegend={false}
+                                headerBgColor="#ffffff" className="border-0 shadow-sm h-100"
                             />
                         </Col>
                         <Col lg={4}>
                             <DonutChartCard
-                                title="Distribución por Tipo"
+                                title={t('feeding.groupFeeding.chart.distributionTitle')}
                                 data={feedingStats.distributionByType || []}
                                 legendItems={(feedingStats.distributionByType || []).map((d: any) => ({
                                     label: d.label,
                                     value: `${d.value} kg`,
-                                    percentage: feedingStats.kpis?.totalConsumed
-                                        ? `${((d.value / feedingStats.kpis.totalConsumed) * 100).toFixed(1)}%`
-                                        : '0%',
+                                    percentage: feedingStats.kpis?.totalConsumed ? `${((d.value / feedingStats.kpis.totalConsumed) * 100).toFixed(1)}%` : '0%',
                                 }))}
-                                className="h-100 border-0 shadow-sm"
-                                headerBgColor="#ffffff"
+                                className="h-100 border-0 shadow-sm" headerBgColor="#ffffff"
                             />
                         </Col>
                     </Row>
                 </>
             )}
-
             <div style={{ minHeight: "400px" }}>
-                <FeedAdministrationsCard
-                    administrations={administrations}
-                    targetType="pig"
-                    targetId={pigId}
-                    targetStage={pigStage}
-                    onAdministered={fetchFeedingInfo}
-                />
+                <FeedAdministrationsCard administrations={administrations} targetType="pig" targetId={pigId} targetStage={pigStage} onAdministered={fetchFeedingInfo} />
             </div>
-
-            <AlertMessage
-                color={alertConfig.color}
-                message={alertConfig.message}
-                visible={alertConfig.visible}
-                onClose={() => setAlertConfig({ ...alertConfig, visible: false })}
-            />
+            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </>
     );
 };

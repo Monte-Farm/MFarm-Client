@@ -1,4 +1,5 @@
 import { useState, useRef, useContext } from "react";
+import { useTranslation } from "react-i18next";
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { Button, Input, Popover, PopoverHeader, PopoverBody, Row, Col, FormGroup, Label, Badge } from "reactstrap";
@@ -8,6 +9,7 @@ import 'rc-slider/assets/index.css';
 import { FiFilter, FiX, FiSearch } from "react-icons/fi";
 
 const InseminationFilters = ({ inseminations, setFilteredInseminations }: { inseminations: any[], setFilteredInseminations: Function }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
 
@@ -25,20 +27,20 @@ const InseminationFilters = ({ inseminations, setFilteredInseminations }: { inse
     const togglePopover = () => setPopoverOpen(!popoverOpen);
 
     const statusOptions = [
-        { value: "", label: "Todos" },
-        { value: "active", label: "Activa" },
-        { value: "completed", label: "Completada" },
-        { value: "failed", label: "Fallida" }
+        { value: "", label: t("insemination.filter.all") },
+        { value: "active", label: t("insemination.status.active") },
+        { value: "completed", label: t("insemination.status.completed") },
+        { value: "failed", label: t("insemination.status.failed") }
     ];
 
     const resultOptions = [
-        { value: "", label: "Todos" },
-        { value: "pregnant", label: "Preñada" },
-        { value: "empty", label: "Vacía" },
-        { value: "doubtful", label: "Dudosa" },
-        { value: "resorption", label: "Reabsorción" },
-        { value: "abortion", label: "Aborto" },
-        { value: null, label: "Pendiente" }
+        { value: "", label: t("insemination.filter.all") },
+        { value: "pregnant", label: t("insemination.result.pregnant") },
+        { value: "empty", label: t("insemination.result.empty") },
+        { value: "doubtful", label: t("insemination.result.doubtful") },
+        { value: "resorption", label: t("insemination.result.resorption") },
+        { value: "abortion", label: t("insemination.result.abortion") },
+        { value: null, label: t("insemination.result.pending") }
     ];
 
     const handleFilterChange = (filterName: string, value: any) => {
@@ -77,7 +79,6 @@ const InseminationFilters = ({ inseminations, setFilteredInseminations }: { inse
             );
         }
 
-        // Doses
         if (filters.dosesRange) {
             result = result.filter(ins =>
                 ins.doses.length >= filters.dosesRange[0] &&
@@ -85,7 +86,6 @@ const InseminationFilters = ({ inseminations, setFilteredInseminations }: { inse
             );
         }
 
-        // Fecha de inseminación
         if (filters.dateRange[0]) {
             result = result.filter(ins => new Date(ins.date) >= filters.dateRange[0]!);
         }
@@ -93,17 +93,14 @@ const InseminationFilters = ({ inseminations, setFilteredInseminations }: { inse
             result = result.filter(ins => new Date(ins.date) <= filters.dateRange[1]!);
         }
 
-        // Estado
         if (filters.status) {
             result = result.filter(ins => ins.status === filters.status);
         }
 
-        // Resultado
         if (filters.result !== "") {
             result = result.filter(ins => ins.result === filters.result);
         }
 
-        // Fecha prevista de parto
         if (filters.estimatedFarrowingDateRange[0]) {
             result = result.filter(ins => ins.estimated_farrowing_date && new Date(ins.estimated_farrowing_date) >= filters.estimatedFarrowingDateRange[0]!);
         }
@@ -137,7 +134,7 @@ const InseminationFilters = ({ inseminations, setFilteredInseminations }: { inse
                 <FiSearch className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" />
                 <Input
                     type="text"
-                    placeholder="Buscar..."
+                    placeholder={t("insemination.filter.search")}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="form-control ps-5"
@@ -147,12 +144,15 @@ const InseminationFilters = ({ inseminations, setFilteredInseminations }: { inse
             </div>
 
             <Button innerRef={filterBtnRef} color="light" onClick={togglePopover} className="position-relative">
-                <FiFilter className="me-2" /> Filtros
+                <FiFilter className="me-2" /> {t("insemination.filter.filters")}
                 {activeFilterCount > 0 && <Badge color="primary" pill className="position-absolute top-0 start-100 translate-middle">{activeFilterCount}</Badge>}
             </Button>
 
-            {activeFilterCount > 0 && <Button color="link" onClick={clearFilters} className="text-danger"><FiX className="me-1" /> Limpiar filtros</Button>}
-
+            {activeFilterCount > 0 && (
+                <Button color="link" onClick={clearFilters} className="text-danger">
+                    <FiX className="me-1" /> {t("insemination.filter.clearFilters")}
+                </Button>
+            )}
 
             <Popover
                 placement="bottom-end"
@@ -164,13 +164,13 @@ const InseminationFilters = ({ inseminations, setFilteredInseminations }: { inse
                 style={{ minWidth: "450px" }}
             >
                 <PopoverHeader className="d-flex justify-content-between align-items-center">
-                    <span className="text-black">Filtros de inseminaciones</span>
+                    <span className="text-black">{t("insemination.filter.title")}</span>
                     <Button close onClick={togglePopover} />
                 </PopoverHeader>
                 <PopoverBody>
                     <Row className="">
                         <FormGroup>
-                            <Label>Dosis administradas: {filters.dosesRange[0]} - {filters.dosesRange[1]}</Label>
+                            <Label>{t("insemination.filter.doses")} {filters.dosesRange[0]} - {filters.dosesRange[1]}</Label>
                             <Slider
                                 range
                                 min={0}
@@ -185,7 +185,7 @@ const InseminationFilters = ({ inseminations, setFilteredInseminations }: { inse
 
                         <div className="d-flex gap-2">
                             <FormGroup className="w-50">
-                                <Label>Estado</Label>
+                                <Label>{t("insemination.filter.status")}</Label>
                                 <Select
                                     options={statusOptions}
                                     value={statusOptions.find(opt => opt.value === filters.status)}
@@ -194,7 +194,7 @@ const InseminationFilters = ({ inseminations, setFilteredInseminations }: { inse
                             </FormGroup>
 
                             <FormGroup className="w-50">
-                                <Label>Resultado</Label>
+                                <Label>{t("insemination.filter.result")}</Label>
                                 <Select
                                     options={resultOptions}
                                     value={resultOptions.find(opt => opt.value === filters.result)}
@@ -205,28 +205,32 @@ const InseminationFilters = ({ inseminations, setFilteredInseminations }: { inse
 
                         <Col md={6}>
                             <FormGroup>
-                                <Label>Fecha de inseminación desde</Label>
+                                <Label>{t("insemination.filter.dateFrom")}</Label>
                                 <Input type="date" value={filters.dateRange[0] ? filters.dateRange[0].toISOString().split('T')[0] : ""} onChange={e => { handleDateChange("dateRange", 0, e.target.value); applyFilters(); }} />
                             </FormGroup>
                             <FormGroup>
-                                <Label>Fecha de inseminación hasta</Label>
+                                <Label>{t("insemination.filter.dateTo")}</Label>
                                 <Input type="date" value={filters.dateRange[1] ? filters.dateRange[1].toISOString().split('T')[0] : ""} onChange={e => { handleDateChange("dateRange", 1, e.target.value); applyFilters(); }} />
                             </FormGroup>
                         </Col>
                         <Col md={6}>
                             <FormGroup>
-                                <Label>Parto previsto desde</Label>
+                                <Label>{t("insemination.filter.farrowingFrom")}</Label>
                                 <Input type="date" value={filters.estimatedFarrowingDateRange[0] ? filters.estimatedFarrowingDateRange[0].toISOString().split('T')[0] : ""} onChange={e => { handleDateChange("estimatedFarrowingDateRange", 0, e.target.value); applyFilters(); }} />
                             </FormGroup>
                             <FormGroup>
-                                <Label>Parto previsto hasta</Label>
+                                <Label>{t("insemination.filter.farrowingTo")}</Label>
                                 <Input type="date" value={filters.estimatedFarrowingDateRange[1] ? filters.estimatedFarrowingDateRange[1].toISOString().split('T')[0] : ""} onChange={e => { handleDateChange("estimatedFarrowingDateRange", 1, e.target.value); applyFilters(); }} />
                             </FormGroup>
                         </Col>
                     </Row>
                     <div className="d-flex justify-content-between mt-3">
-                        <Button color="link" onClick={clearFilters} className="text-danger"><FiX className="me-1" /> Limpiar todo</Button>
-                        <Button color="primary" onClick={() => { applyFilters(); togglePopover(); }}>Aplicar filtros</Button>
+                        <Button color="link" onClick={clearFilters} className="text-danger">
+                            <FiX className="me-1" /> {t("insemination.filter.clearAll")}
+                        </Button>
+                        <Button color="primary" onClick={() => { applyFilters(); togglePopover(); }}>
+                            {t("insemination.filter.applyFilters")}
+                        </Button>
                     </div>
                 </PopoverBody>
             </Popover>

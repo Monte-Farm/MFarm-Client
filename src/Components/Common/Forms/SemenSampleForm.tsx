@@ -14,6 +14,7 @@ import DatePicker from "react-flatpickr";
 import SimpleBar from "simplebar-react";
 import PigDetailsModal from "../Details/DetailsPigModal";
 import SelectableTable from "../Tables/SelectableTable";
+import { useTranslation } from "react-i18next";
 
 interface SemenSampleFormProps {
     initialData?: SemenSample;
@@ -23,6 +24,7 @@ interface SemenSampleFormProps {
 }
 
 const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselectedExtraction, onSave, onCancel }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -38,9 +40,9 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
     const [modalOpen, setModalOpen] = useState(false);
 
     const extractionsColumns: Column<any>[] = [
-        { header: 'Lote', accessor: 'batch', type: 'text', isFilterable: true },
+        { header: t('laboratory.sample.form.column.batch', { defaultValue: 'Lote' }), accessor: 'batch', type: 'text', isFilterable: true },
         {
-            header: 'Verraco',
+            header: t('laboratory.sample.form.column.boar', { defaultValue: 'Verraco' }),
             accessor: 'boar',
             render: (_, row) => (
                 <Button
@@ -56,23 +58,23 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                 </Button>
             )
         },
-        { header: 'Fecha de extracción', accessor: 'date', type: 'date', isFilterable: false },
+        { header: t('laboratory.sample.form.column.extractionDate', { defaultValue: 'Fecha de extracción' }), accessor: 'date', type: 'date', isFilterable: false },
         {
-            header: 'Volumen',
+            header: t('laboratory.sample.form.column.volume', { defaultValue: 'Volumen' }),
             accessor: 'volume',
             type: 'text',
             isFilterable: true,
-            render: (_, row) => row ? `${row.volume} ${row.unit_measurement}` : "Sin volumen"
+            render: (_, row) => row ? `${row.volume} ${row.unit_measurement}` : t('laboratory.sample.form.column.noVolume', { defaultValue: 'Sin volumen' })
         },
         {
-            header: 'Responsable',
+            header: t('laboratory.sample.form.column.responsible', { defaultValue: 'Responsable' }),
             accessor: 'technician',
             type: 'text',
             isFilterable: true,
-            render: (_, row) => row.technician ? `${row.technician.name} ${row.technician.lastname}` : "Sin responsable"
+            render: (_, row) => row.technician ? `${row.technician.name} ${row.technician.lastname}` : t('laboratory.sample.form.column.noResponsible', { defaultValue: 'Sin responsable' })
         },
-        { header: 'Ubicacion de la extracción', accessor: 'extraction_location', type: 'text', isFilterable: true },
-    ]
+        { header: t('laboratory.sample.form.column.location', { defaultValue: 'Ubicacion de la extracción' }), accessor: 'extraction_location', type: 'text', isFilterable: true },
+    ];
 
     const toggleModal = () => setModalOpen(!modalOpen);
 
@@ -102,44 +104,43 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
     }
 
     const validationSchema = Yup.object({
-        extraction_id: Yup.string().required("Por favor seleccione una extracción"),
+        extraction_id: Yup.string().required(t('laboratory.sample.form.validation.selectExtraction', { defaultValue: 'Por favor seleccione una extracción' })),
         concentration_million: Yup.number()
-            .min(0, "El número no puede ser menor a 0")
-            .required("Por favor, ingrese un número"),
+            .min(0, t('laboratory.sample.form.validation.minZero', { defaultValue: 'El número no puede ser menor a 0' }))
+            .required(t('laboratory.sample.form.validation.requiredNumber', { defaultValue: 'Por favor, ingrese un número' })),
         motility_percent: Yup.number()
-            .min(0, "El número no puede ser menor a 0")
-            .required("Por favor, ingrese un número"),
+            .min(0, t('laboratory.sample.form.validation.minZero', { defaultValue: 'El número no puede ser menor a 0' }))
+            .required(t('laboratory.sample.form.validation.requiredNumber', { defaultValue: 'Por favor, ingrese un número' })),
         vitality_percent: Yup.number()
-            .min(0, "El número no puede ser menor a 0")
-            .max(100, 'El número no puede ser mayor a 100')
-            .required("Por favor, ingrese un número"),
+            .min(0, t('laboratory.sample.form.validation.minZero', { defaultValue: 'El número no puede ser menor a 0' }))
+            .max(100, t('laboratory.sample.form.validation.max100', { defaultValue: 'El número no puede ser mayor a 100' }))
+            .required(t('laboratory.sample.form.validation.requiredNumber', { defaultValue: 'Por favor, ingrese un número' })),
         abnormal_percent: Yup.number()
-            .min(0, "El número no puede ser menor a 0")
-            .max(100, 'El número no puede ser mayor a 100')
-            .required("Por favor, ingrese un número"),
+            .min(0, t('laboratory.sample.form.validation.minZero', { defaultValue: 'El número no puede ser menor a 0' }))
+            .max(100, t('laboratory.sample.form.validation.max100', { defaultValue: 'El número no puede ser mayor a 100' }))
+            .required(t('laboratory.sample.form.validation.requiredNumber', { defaultValue: 'Por favor, ingrese un número' })),
         pH: Yup.number()
-            .min(0, "El número no puede ser menor a 0")
-            .required("Por favor, ingrese un número"),
+            .min(0, t('laboratory.sample.form.validation.minZero', { defaultValue: 'El número no puede ser menor a 0' }))
+            .required(t('laboratory.sample.form.validation.requiredNumber', { defaultValue: 'Por favor, ingrese un número' })),
         temperature: Yup.number()
-            .min(0, "El número no puede ser menor a 0")
-            .required("Por favor, ingrese un número"),
+            .min(0, t('laboratory.sample.form.validation.minZero', { defaultValue: 'El número no puede ser menor a 0' }))
+            .required(t('laboratory.sample.form.validation.requiredNumber', { defaultValue: 'Por favor, ingrese un número' })),
         diluent: Yup.object({
-            type: Yup.string().required("Por favor, ingrese el tipo de diluyente"),
-            lot: Yup.string().required("Por favor, ingrese el lote del diluyente"),
+            type: Yup.string().required(t('laboratory.sample.form.validation.diluentType', { defaultValue: 'Por favor, ingrese el tipo de diluyente' })),
+            lot: Yup.string().required(t('laboratory.sample.form.validation.diluentLot', { defaultValue: 'Por favor, ingrese el lote del diluyente' })),
             volume: Yup.number()
-                .min(0, "El número no puede ser menor a 0")
-                .required("Por favor, ingrese el volumen del diluyente"),
-            unit_measurement: Yup.string().required("Por favor, ingrese la unidad de medida"),
-
+                .min(0, t('laboratory.sample.form.validation.minZero', { defaultValue: 'El número no puede ser menor a 0' }))
+                .required(t('laboratory.sample.form.validation.diluentVolume', { defaultValue: 'Por favor, ingrese el volumen del diluyente' })),
+            unit_measurement: Yup.string().required(t('laboratory.sample.form.validation.diluentUnit', { defaultValue: 'Por favor, ingrese la unidad de medida' })),
         }),
-        conservation_method: Yup.string().required("Por favor, ingrese el método de conservación"),
-        expiration_date: Yup.date().min(new Date(new Date().setHours(0, 0, 0, 0)), 'La fecha de expiración no puede ser pasada').required('Por favor, ingrese la fecha de expiración'),
+        conservation_method: Yup.string().required(t('laboratory.sample.form.validation.conservationMethod', { defaultValue: 'Por favor, ingrese el método de conservación' })),
+        expiration_date: Yup.date().min(new Date(new Date().setHours(0, 0, 0, 0)), t('laboratory.sample.form.validation.expirationDate', { defaultValue: 'La fecha de expiración no puede ser pasada' })).required(t('laboratory.sample.form.validation.expirationDateRequired', { defaultValue: 'Por favor, ingrese la fecha de expiración' })),
         post_dilution_motility: Yup.number()
-            .min(0, "El número no puede ser menor a 0")
+            .min(0, t('laboratory.sample.form.validation.minZero', { defaultValue: 'El número no puede ser menor a 0' }))
             .notRequired(),
         alert_hours_before_expiration: Yup.number()
-            .min(0, "El número no puede ser menor a 0")
-            .required("Por favor, ingrese un numero"),
+            .min(0, t('laboratory.sample.form.validation.minZero', { defaultValue: 'El número no puede ser menor a 0' }))
+            .required(t('laboratory.sample.form.validation.alertHours', { defaultValue: 'Por favor, ingrese un numero' })),
     });
 
     const formik = useFormik<SemenSample>({
@@ -184,7 +185,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                 }
 
             } catch (err: any) {
-                handleError(err, 'Error al registrar la muestra. Por favor, inténtelo nuevamente.');
+                handleError(err, t('laboratory.sample.form.error', { defaultValue: 'Error al registrar la muestra. Por favor, inténtelo nuevamente.' }));
             } finally {
                 setSubmitting(false);
             }
@@ -227,9 +228,9 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
             toggleArrowTab(3);
         } catch (err: any) {
             if (err.errors && err.errors.length > 0) {
-                showAlert('danger', `Por favor complete los campos requeridos: ${err.errors.slice(0, 2).join(', ')}`);
+                showAlert('danger', `${t('laboratory.sample.form.alert.requiredFieldsDetail', { defaultValue: 'Por favor complete los campos requeridos:' })} ${err.errors.slice(0, 2).join(', ')}`);
             } else {
-                showAlert('danger', 'Por favor complete todos los campos requeridos antes de continuar');
+                showAlert('danger', t('laboratory.sample.form.alert.requiredFields', { defaultValue: 'Por favor complete todos los campos requeridos antes de continuar' }));
             }
         }
     };
@@ -256,7 +257,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
     useEffect(() => {
         const selected = extractions.find(e => e._id === formik.values.extraction_id);
         setSelectedExtraction(selected || null);
-        
+
         if (!selected) {
             formik.setFieldValue('doses', []);
             return;
@@ -337,7 +338,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                     aria-controls="step-extractionselect-tab"
                                     disabled
                                 >
-                                    Selección de extracción
+                                    {t('laboratory.sample.form.step.selectExtraction', { defaultValue: 'Selección de extracción' })}
                                 </NavLink>
                             </NavItem>
                         )}
@@ -355,7 +356,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                 aria-controls="step-sampleinfo-tab"
                                 disabled
                             >
-                                Información de la muestra
+                                {t('laboratory.sample.form.step.sampleInfo', { defaultValue: 'Información de la muestra' })}
                             </NavLink>
                         </NavItem>
 
@@ -372,7 +373,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                 aria-controls="step-dosesinfo-tab"
                                 disabled
                             >
-                                Información de las dosis
+                                {t('laboratory.sample.form.step.dosesInfo', { defaultValue: 'Información de las dosis' })}
                             </NavLink>
                         </NavItem>
 
@@ -389,7 +390,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                 aria-controls="step-summary-tab"
                                 disabled
                             >
-                                Resumen
+                                {t('laboratory.sample.form.step.summary', { defaultValue: 'Resumen' })}
                             </NavLink>
                         </NavItem>
                     </Nav>
@@ -402,14 +403,14 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                             <SelectableTable data={extractions} columns={extractionsColumns} selectionMode="single" showPagination={true} rowsPerPage={15} onSelect={(rows) => formik.setFieldValue('extraction_id', rows[0]?._id)} />
                             <div className="mt-4 d-flex">
                                 <Button className="ms-auto" onClick={() => checkExtractionSelected()}>
-                                    Siguiente
+                                    {t('laboratory.sample.form.action.next', { defaultValue: 'Siguiente' })}
                                     <i className="ri-arrow-right-line" />
                                 </Button>
                             </div>
                             {alertExtractionEmpty && (
                                 <Alert color='danger' className="d-flex align-items-center gap-2 shadow rounded-3 p-3 mt-3">
                                     <FiXCircle size={22} />
-                                    <span className="flex-grow-1 text-black">Por favor, seleccione una extracción</span>
+                                    <span className="flex-grow-1 text-black">{t('laboratory.sample.form.alert.selectExtraction', { defaultValue: 'Por favor, seleccione una extracción' })}</span>
 
                                     <Button close onClick={() => setAlertExtractionEmpty(false)} />
                                 </Alert>
@@ -423,13 +424,13 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                             <div className="card-header bg-light">
                                 <h6 className="mb-0 text-primary fw-bold">
                                     <i className="ri-settings-3-line me-2 text-primary"></i>
-                                    Configuración de Dosis
+                                    {t('laboratory.sample.form.section.doseConfig', { defaultValue: 'Configuración de Dosis' })}
                                 </h6>
                             </div>
                             <div className="card-body">
                                 <div className="row g-3">
                                     <div className="col-md-4">
-                                        <Label htmlFor="date" className="form-label">Fecha de expiración</Label>
+                                        <Label htmlFor="date" className="form-label">{t('laboratory.sample.form.field.expirationDate', { defaultValue: 'Fecha de expiración' })}</Label>
                                         <DatePicker
                                             id="date"
                                             className={`form-control ${formik.touched.expiration_date && formik.errors.expiration_date ? 'is-invalid' : ''}`}
@@ -445,7 +446,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                     </div>
 
                                     <div className="col-md-4">
-                                        <Label htmlFor="dose_size" className="form-label">Tamaño de dosis</Label>
+                                        <Label htmlFor="dose_size" className="form-label">{t('laboratory.sample.form.field.doseSize', { defaultValue: 'Tamaño de dosis' })}</Label>
                                         <Input
                                             type="number"
                                             id="dose_size"
@@ -459,7 +460,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                     </div>
 
                                     <div className="col-md-4">
-                                        <Label htmlFor="alert_hours_before_expiration" className="form-label">Alerta de expiración</Label>
+                                        <Label htmlFor="alert_hours_before_expiration" className="form-label">{t('laboratory.sample.form.field.alertHours', { defaultValue: 'Alerta de expiración' })}</Label>
                                         <div className="input-group">
                                             <Input
                                                 className="form-control"
@@ -473,7 +474,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                                 invalid={formik.touched.alert_hours_before_expiration && !!formik.errors.alert_hours_before_expiration}
                                                 min={0}
                                             />
-                                            <span className="input-group-text">horas antes</span>
+                                            <span className="input-group-text">{t('laboratory.sample.form.field.alertHoursUnit', { defaultValue: 'horas antes' })}</span>
                                             {formik.touched.alert_hours_before_expiration && formik.errors.alert_hours_before_expiration && (
                                                 <FormFeedback>{formik.errors.alert_hours_before_expiration}</FormFeedback>
                                             )}
@@ -488,13 +489,13 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                             <div className="card-header bg-light">
                                 <h6 className="mb-0 text-success fw-bold">
                                     <i className="ri-test-tube-line me-2 text-success"></i>
-                                    Análisis de Semen
+                                    {t('laboratory.sample.form.section.semenAnalysis', { defaultValue: 'Análisis de Semen' })}
                                 </h6>
                             </div>
                             <div className="card-body">
                                 <div className="row g-3">
                                     <div className="col-md-4">
-                                        <Label htmlFor="concentration_million" className="form-label">Concentración (millones)</Label>
+                                        <Label htmlFor="concentration_million" className="form-label">{t('laboratory.sample.form.field.concentration', { defaultValue: 'Concentración (millones)' })}</Label>
                                         <Input
                                             type="number"
                                             id="concentration_million"
@@ -512,7 +513,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                     </div>
 
                                     <div className="col-md-4">
-                                        <Label htmlFor="motility_percent" className="form-label">Motilidad (%)</Label>
+                                        <Label htmlFor="motility_percent" className="form-label">{t('laboratory.sample.form.field.motility', { defaultValue: 'Motilidad (%)' })}</Label>
                                         <Input
                                             type="number"
                                             id="motility_percent"
@@ -530,7 +531,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                     </div>
 
                                     <div className="col-md-4">
-                                        <Label htmlFor="vitality_percent" className="form-label">Vitalidad (%)</Label>
+                                        <Label htmlFor="vitality_percent" className="form-label">{t('laboratory.sample.form.field.vitality', { defaultValue: 'Vitalidad (%)' })}</Label>
                                         <Input
                                             type="number"
                                             id="vitality_percent"
@@ -548,7 +549,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                     </div>
 
                                     <div className="col-md-4">
-                                        <Label htmlFor="abnormal_percent" className="form-label">Anomalías (%)</Label>
+                                        <Label htmlFor="abnormal_percent" className="form-label">{t('laboratory.sample.form.field.abnormality', { defaultValue: 'Anomalías (%)' })}</Label>
                                         <Input
                                             type="number"
                                             id="abnormal_percent"
@@ -566,7 +567,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                     </div>
 
                                     <div className="col-md-4">
-                                        <Label htmlFor="pH" className="form-label">pH</Label>
+                                        <Label htmlFor="pH" className="form-label">{t('laboratory.sample.form.field.ph', { defaultValue: 'pH' })}</Label>
                                         <Input
                                             type="number"
                                             id="pH"
@@ -584,7 +585,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                     </div>
 
                                     <div className="col-md-4">
-                                        <Label htmlFor="temperature" className="form-label">Temperatura (°C)</Label>
+                                        <Label htmlFor="temperature" className="form-label">{t('laboratory.sample.form.field.temperature', { defaultValue: 'Temperatura (°C)' })}</Label>
                                         <Input
                                             type="number"
                                             id="temperature"
@@ -609,13 +610,13 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                             <div className="card-header bg-light">
                                 <h6 className="mb-0 text-info fw-bold">
                                     <i className="ri-flask-line me-2 text-info"></i>
-                                    Dilución y Conservación
+                                    {t('laboratory.sample.form.section.dilution', { defaultValue: 'Dilución y Conservación' })}
                                 </h6>
                             </div>
                             <div className="card-body">
                                 <div className="row g-3">
                                     <div className="col-md-4">
-                                        <Label htmlFor="diluent_type" className="form-label">Tipo de diluyente</Label>
+                                        <Label htmlFor="diluent_type" className="form-label">{t('laboratory.sample.form.field.diluentType', { defaultValue: 'Tipo de diluyente' })}</Label>
                                         <Input
                                             type="text"
                                             id="diluent_type"
@@ -632,7 +633,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                     </div>
 
                                     <div className="col-md-4">
-                                        <Label htmlFor="diluent_lot" className="form-label">Lote de diluyente</Label>
+                                        <Label htmlFor="diluent_lot" className="form-label">{t('laboratory.sample.form.field.diluentLot', { defaultValue: 'Lote de diluyente' })}</Label>
                                         <Input
                                             type="text"
                                             id="diluent_lot"
@@ -649,7 +650,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                     </div>
 
                                     <div className="col-md-4">
-                                        <Label htmlFor="diluent_final_volume" className="form-label">Volumen de diluyente ({selectedExtraction?.unit_measurement})</Label>
+                                        <Label htmlFor="diluent_final_volume" className="form-label">{t('laboratory.sample.form.field.diluentVolume', { defaultValue: 'Volumen de diluyente' })} ({selectedExtraction?.unit_measurement})</Label>
                                         <Input
                                             type="number"
                                             id="diluent_final_concentration"
@@ -667,7 +668,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                     </div>
 
                                     <div className="col-md-6">
-                                        <Label htmlFor="conservation_method" className="form-label">Método de conservación</Label>
+                                        <Label htmlFor="conservation_method" className="form-label">{t('laboratory.sample.form.field.conservationMethod', { defaultValue: 'Método de conservación' })}</Label>
                                         <Input
                                             type="select"
                                             id="conservation_method"
@@ -677,12 +678,12 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                             onBlur={formik.handleBlur}
                                             invalid={formik.touched.conservation_method && !!formik.errors.conservation_method}
                                         >
-                                            <option value="">Seleccione un método</option>
-                                            <option value="Refrigeración">Refrigeración</option>
-                                            <option value="Congelación">Congelación</option>
-                                            <option value="Extender">Extender</option>
-                                            <option value="Inmersión en nitrógeno líquido">Inmersión en nitrógeno líquido</option>
-                                            <option value="Otro">Otro</option>
+                                            <option value="">{t('laboratory.sample.form.conservationOptions.select', { defaultValue: 'Seleccione un método' })}</option>
+                                            <option value="Refrigeración">{t('laboratory.sample.form.conservationOptions.refrigeration', { defaultValue: 'Refrigeración' })}</option>
+                                            <option value="Congelación">{t('laboratory.sample.form.conservationOptions.freezing', { defaultValue: 'Congelación' })}</option>
+                                            <option value="Extender">{t('laboratory.sample.form.conservationOptions.extender', { defaultValue: 'Extender' })}</option>
+                                            <option value="Inmersión en nitrógeno líquido">{t('laboratory.sample.form.conservationOptions.liquid_nitrogen', { defaultValue: 'Inmersión en nitrógeno líquido' })}</option>
+                                            <option value="Otro">{t('laboratory.sample.form.conservationOptions.other', { defaultValue: 'Otro' })}</option>
                                         </Input>
                                         {formik.touched.conservation_method && formik.errors.conservation_method && (
                                             <FormFeedback>{formik.errors.conservation_method}</FormFeedback>
@@ -690,7 +691,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                     </div>
 
                                     <div className="col-md-6">
-                                        <Label htmlFor="post_dilution_motility" className="form-label">Motilidad post-dilución (%)</Label>
+                                        <Label htmlFor="post_dilution_motility" className="form-label">{t('laboratory.sample.form.field.postDilutionMotility', { defaultValue: 'Motilidad post-dilución (%)' })}</Label>
                                         <Input
                                             type="number"
                                             id="post_dilution_motility"
@@ -713,11 +714,11 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                         <div className="mt-4 d-flex">
                             <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                                 <i className="ri-arrow-left-line me-2" />
-                                Atras
+                                {t('laboratory.sample.form.action.back', { defaultValue: 'Atras' })}
                             </Button>
 
                             <Button className="ms-auto" onClick={() => checkSampleData()}>
-                                Siguiente
+                                {t('laboratory.sample.form.action.next', { defaultValue: 'Siguiente' })}
                                 <i className="ri-arrow-right-line ms-2" />
                             </Button>
                         </div>
@@ -729,10 +730,10 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                 <Table className="table-hover align-middle table-nowrap mb-0 table-striped table-bordered">
                                     <thead className="table-light sticky-top">
                                         <tr>
-                                            <th>Codigo</th>
-                                            <th>Volumen semen (ml)</th>
-                                            <th>Volumen diluyente (ml)</th>
-                                            <th>Total (ml)</th>
+                                            <th>{t('laboratory.sample.form.table.code', { defaultValue: 'Codigo' })}</th>
+                                            <th>{t('laboratory.sample.form.table.semenVolume', { defaultValue: 'Volumen semen (ml)' })}</th>
+                                            <th>{t('laboratory.sample.form.table.diluentVolume', { defaultValue: 'Volumen diluyente (ml)' })}</th>
+                                            <th>{t('laboratory.sample.form.table.total', { defaultValue: 'Total (ml)' })}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -784,11 +785,11 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                         <div className="mt-4 d-flex">
                             <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                                 <i className="ri-arrow-left-line me-2" />
-                                Atras
+                                {t('laboratory.sample.form.action.back', { defaultValue: 'Atras' })}
                             </Button>
 
                             <Button className="ms-auto" onClick={() => toggleArrowTab(activeStep + 1)}>
-                                Siguiente
+                                {t('laboratory.sample.form.action.next', { defaultValue: 'Siguiente' })}
                                 <i className="ri-arrow-right-line ms-2" />
                             </Button>
                         </div>
@@ -799,7 +800,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                             <div className="card-header bg-gradient text-white">
                                 <h5 className="mb-0 text-center">
                                     <i className="ri-file-list-3-line me-2"></i>
-                                    Resumen del Registro de Muestra de Semen
+                                    {t('laboratory.sample.form.summary.title', { defaultValue: 'Resumen del Registro de Muestra de Semen' })}
                                 </h5>
                             </div>
                             <div className="card-body p-3">
@@ -808,31 +809,31 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                     <div className="col-lg-4">
                                         <div className="border rounded-2 p-3 bg-light h-100 d-flex flex-column">
                                             <h6 className="text-primary fw-bold mb-3">
-                                                <i className="ri-drop-line me-2"></i>Datos Extracción
+                                                <i className="ri-drop-line me-2"></i>{t('laboratory.sample.form.summary.extractionData', { defaultValue: 'Datos Extracción' })}
                                             </h6>
                                             {(() => {
                                                 const selectedExtraction = extractions.find(e => e._id === formik.values.extraction_id);
-                                                if (!selectedExtraction) return <p className="text-muted">No seleccionada</p>;
+                                                if (!selectedExtraction) return <p className="text-muted">{t('laboratory.sample.form.summary.noExtraction', { defaultValue: 'No seleccionada' })}</p>;
                                                 return (
                                                     <div className="flex-grow-1">
                                                         <div className="d-flex justify-content-between mb-2">
-                                                            <span className="text-muted">Lote:</span>
+                                                            <span className="text-muted">{t('laboratory.sample.form.summary.batch', { defaultValue: 'Lote:' })}</span>
                                                             <span className="fw-semibold">{selectedExtraction.batch}</span>
                                                         </div>
                                                         <div className="d-flex justify-content-between mb-2">
-                                                            <span className="text-muted">Fecha:</span>
+                                                            <span className="text-muted">{t('laboratory.sample.form.summary.date', { defaultValue: 'Fecha:' })}</span>
                                                             <span>{selectedExtraction.date ? new Date(selectedExtraction.date).toLocaleDateString() : "-"}</span>
                                                         </div>
                                                         <div className="d-flex justify-content-between mb-2">
-                                                            <span className="text-muted">Verraco:</span>
+                                                            <span className="text-muted">{t('laboratory.sample.form.summary.boar', { defaultValue: 'Verraco:' })}</span>
                                                             <span className="fw-semibold">{selectedExtraction.boar?.code || "-"}</span>
                                                         </div>
                                                         <div className="d-flex justify-content-between mb-2">
-                                                            <span className="text-muted">Técnico:</span>
+                                                            <span className="text-muted">{t('laboratory.sample.form.summary.technician', { defaultValue: 'Técnico:' })}</span>
                                                             <span>{selectedExtraction.technician ? `${selectedExtraction.technician.name} ${selectedExtraction.technician.lastname}` : "-"}</span>
                                                         </div>
                                                         <div className="d-flex justify-content-between">
-                                                            <span className="text-muted">Volumen:</span>
+                                                            <span className="text-muted">{t('laboratory.sample.form.summary.volume', { defaultValue: 'Volumen:' })}</span>
                                                             <span className="fw-semibold">{selectedExtraction.volume} {selectedExtraction.unit_measurement}</span>
                                                         </div>
                                                     </div>
@@ -845,27 +846,27 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                     <div className="col-lg-4">
                                         <div className="border rounded-2 p-3 bg-light h-100 d-flex flex-column">
                                             <h6 className="text-success fw-bold mb-3">
-                                                <i className="ri-test-tube-line me-2"></i>Análisis Semen
+                                                <i className="ri-test-tube-line me-2"></i>{t('laboratory.sample.form.summary.semenAnalysis', { defaultValue: 'Análisis Semen' })}
                                             </h6>
                                             <div className="flex-grow-1">
                                                 <div className="row g-2">
                                                     <div className="col-6">
                                                         <div className="d-flex justify-content-between">
-                                                            <span className="text-muted">Conc:</span>
+                                                            <span className="text-muted">{t('laboratory.sample.form.summary.concentration', { defaultValue: 'Conc:' })}</span>
                                                             <span className="fw-semibold">{formik.values.concentration_million}M</span>
                                                         </div>
                                                         <div className="d-flex justify-content-between">
-                                                            <span className="text-muted">Motilidad:</span>
+                                                            <span className="text-muted">{t('laboratory.sample.form.summary.motility', { defaultValue: 'Motilidad:' })}</span>
                                                             <span className="fw-semibold">{formik.values.motility_percent}%</span>
                                                         </div>
                                                         <div className="d-flex justify-content-between">
-                                                            <span className="text-muted">Vitalidad:</span>
+                                                            <span className="text-muted">{t('laboratory.sample.form.summary.vitality', { defaultValue: 'Vitalidad:' })}</span>
                                                             <span className="fw-semibold">{formik.values.vitality_percent}%</span>
                                                         </div>
                                                     </div>
                                                     <div className="col-6">
                                                         <div className="d-flex justify-content-between">
-                                                            <span className="text-muted">Anomalías:</span>
+                                                            <span className="text-muted">{t('laboratory.sample.form.summary.abnormality', { defaultValue: 'Anomalías:' })}</span>
                                                             <span className="fw-semibold">{formik.values.abnormal_percent}%</span>
                                                         </div>
                                                         <div className="d-flex justify-content-between">
@@ -873,7 +874,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                                             <span className="fw-semibold">{formik.values.pH}</span>
                                                         </div>
                                                         <div className="d-flex justify-content-between">
-                                                            <span className="text-muted">Temp:</span>
+                                                            <span className="text-muted">{t('laboratory.sample.form.summary.temp', { defaultValue: 'Temp:' })}</span>
                                                             <span className="fw-semibold">{formik.values.temperature}°C</span>
                                                         </div>
                                                     </div>
@@ -886,31 +887,31 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                     <div className="col-lg-4">
                                         <div className="border rounded-2 p-3 bg-light h-100 d-flex flex-column">
                                             <h6 className="text-info fw-bold mb-3">
-                                                <i className="ri-flask-line me-2"></i>Dilución & Conservación
+                                                <i className="ri-flask-line me-2"></i>{t('laboratory.sample.form.summary.dilutionConservation', { defaultValue: 'Dilución & Conservación' })}
                                             </h6>
                                             <div className="flex-grow-1">
                                                 <div className="d-flex justify-content-between mb-2">
-                                                    <span className="text-muted">Diluyente:</span>
+                                                    <span className="text-muted">{t('laboratory.sample.form.summary.diluent', { defaultValue: 'Diluyente:' })}</span>
                                                     <span className="fw-semibold">{formik.values.diluent.type}</span>
                                                 </div>
                                                 <div className="d-flex justify-content-between mb-2">
-                                                    <span className="text-muted">Lote:</span>
+                                                    <span className="text-muted">{t('laboratory.sample.form.summary.lot', { defaultValue: 'Lote:' })}</span>
                                                     <span>{formik.values.diluent.lot}</span>
                                                 </div>
                                                 <div className="d-flex justify-content-between mb-2">
-                                                    <span className="text-muted">Vol. Diluyente:</span>
+                                                    <span className="text-muted">{t('laboratory.sample.form.summary.diluentVolume', { defaultValue: 'Vol. Diluyente:' })}</span>
                                                     <span className="fw-semibold">{formik.values.diluent.volume} {selectedExtraction?.unit_measurement}</span>
                                                 </div>
                                                 <div className="d-flex justify-content-between mb-2">
-                                                    <span className="text-muted">Método:</span>
+                                                    <span className="text-muted">{t('laboratory.sample.form.summary.method', { defaultValue: 'Método:' })}</span>
                                                     <span>{formik.values.conservation_method}</span>
                                                 </div>
                                                 <div className="d-flex justify-content-between mb-2">
-                                                    <span className="text-muted">Expira:</span>
+                                                    <span className="text-muted">{t('laboratory.sample.form.summary.expires', { defaultValue: 'Expira:' })}</span>
                                                     <span className="fw-semibold">{formik.values.expiration_date ? new Date(formik.values.expiration_date).toLocaleDateString() : "-"}</span>
                                                 </div>
                                                 <div className="d-flex justify-content-between">
-                                                    <span className="text-muted">Mot. Post:</span>
+                                                    <span className="text-muted">{t('laboratory.sample.form.summary.postMotility', { defaultValue: 'Mot. Post:' })}</span>
                                                     <span>{formik.values.post_dilution_motility || "-"}%</span>
                                                 </div>
                                             </div>
@@ -921,19 +922,19 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                     <div className="col-12">
                                         <div className="border rounded-2 p-3 bg-light">
                                             <h6 className="text-warning fw-bold mb-3">
-                                                <i className="ri-vial-line me-2"></i>Dosis Generadas ({formik.values.doses.length})
+                                                <i className="ri-vial-line me-2"></i>{t('laboratory.sample.form.summary.generatedDoses', { defaultValue: 'Dosis Generadas' })} ({formik.values.doses.length})
                                             </h6>
                                             {formik.values.doses.length === 0 ? (
-                                                <p className="text-muted text-center mb-0">No se han generado dosis</p>
+                                                <p className="text-muted text-center mb-0">{t('laboratory.sample.form.summary.noDoses', { defaultValue: 'No se han generado dosis' })}</p>
                                             ) : (
                                                 <div className="table-responsive" style={{ maxHeight: "150px" }}>
                                                     <table className="table table-hover mb-0">
                                                         <thead className="sticky-top bg-light">
                                                             <tr>
-                                                                <th>Código</th>
-                                                                <th>Semen</th>
-                                                                <th>Diluyente</th>
-                                                                <th className="text-end">Total</th>
+                                                                <th>{t('laboratory.sample.form.summary.code', { defaultValue: 'Código' })}</th>
+                                                                <th>{t('laboratory.sample.form.summary.semen', { defaultValue: 'Semen' })}</th>
+                                                                <th>{t('laboratory.sample.form.summary.diluentLabel', { defaultValue: 'Diluyente' })}</th>
+                                                                <th className="text-end">{t('laboratory.sample.form.summary.total', { defaultValue: 'Total' })}</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -958,7 +959,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                         <div className="mt-4 d-flex">
                             <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                                 <i className="ri-arrow-left-line me-2" />
-                                Atrás
+                                {t('laboratory.sample.form.action.back', { defaultValue: 'Atrás' })}
                             </Button>
 
                             <Button className="ms-auto btn-success" onClick={() => formik.handleSubmit()} disabled={formik.isSubmitting}>
@@ -969,7 +970,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                 ) : (
                                     <div>
                                         <i className="ri-check-line me-2" />
-                                        Registrar
+                                        {t('laboratory.sample.form.action.register', { defaultValue: 'Registrar' })}
                                     </div>
                                 )}
                             </Button>
@@ -993,14 +994,14 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
 
             <Modal isOpen={modalOpen} toggle={toggleModal} size="lg" centered className="border-0">
                 <ModalHeader toggle={toggleModal} className="border-0 pb-0">
-                    <h4 className="modal-title text-primary fw-bold">Detalles de la extracción</h4>
+                    <h4 className="modal-title text-primary fw-bold">{t('laboratory.sample.form.modal.extractionDetails', { defaultValue: 'Detalles de la extracción' })}</h4>
                 </ModalHeader>
                 <ModalBody className="p-4">
                     <PigDetailsModal pigId={idSelectedPig} showAllDetailsButton={false} />
                 </ModalBody>
             </Modal>
 
-            <SuccessModal isOpen={successModalOpen} onClose={onSave} message={"Muestra registrada con éxito"} />
+            <SuccessModal isOpen={successModalOpen} onClose={onSave} message={t('laboratory.sample.form.success', { defaultValue: 'Muestra registrada con éxito' })} />
         </>
     )
 }

@@ -17,6 +17,7 @@ import ErrorModal from "../Shared/ErrorModal";
 import { HttpStatusCode } from "axios";
 import ObjectDetails from "../Details/ObjectDetails";
 import { Attribute } from "common/data_interfaces";
+import { useTranslation } from "react-i18next";
 
 interface DiscardPigInGroupFormProps {
     groupId: string
@@ -25,6 +26,7 @@ interface DiscardPigInGroupFormProps {
 }
 
 const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, onSave, onCancel }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext)
     const userLogged = getEffectiveUser()
     const [modals, setModals] = useState({ pigDetails: false, success: false, error: false })
@@ -52,7 +54,7 @@ const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, 
 
     const pigsColumns: Column<any>[] = [
         {
-            header: 'Codigo',
+            header: t('groups.column.code', { defaultValue: 'Codigo' }),
             accessor: 'code',
             render: (_, row) => (
                 <Button
@@ -68,56 +70,35 @@ const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, 
                 </Button>
             )
         },
-        { header: 'Raza', accessor: 'breed', type: 'text', isFilterable: true },
+        { header: t('groups.column.breed', { defaultValue: 'Raza' }), accessor: 'breed', type: 'text', isFilterable: true },
         {
-            header: 'Sexo',
+            header: t('groups.column.sex', { defaultValue: 'Sexo' }),
             accessor: 'sex',
             render: (value: string) => (
                 <Badge color={value === 'male' ? "info" : "danger"}>
-                    {value === 'male' ? "♂ Macho" : "♀ Hembra"}
+                    {value === 'male' ? `♂ ${t('pigs.sex.male', { defaultValue: 'Macho' })}` : `♀ ${t('pigs.sex.female', { defaultValue: 'Hembra' })}`}
                 </Badge>
             ),
         },
-        { header: 'Peso actual', accessor: 'weight', type: 'number', isFilterable: true },
+        { header: t('groups.column.weight', { defaultValue: 'Peso actual' }), accessor: 'weight', type: 'number', isFilterable: true },
         {
-            header: 'Etapa',
+            header: t('groups.column.stage', { defaultValue: 'Etapa' }),
             accessor: 'currentStage',
             render: (value: string) => {
                 let color = "secondary";
-                let label = value;
-
-                switch (value) {
-                    case "piglet":
-                        color = "info";
-                        label = "Lechón";
-                        break;
-                    case "weaning":
-                        color = "warning";
-                        label = "Destete";
-                        break;
-                    case "fattening":
-                        color = "primary";
-                        label = "Engorda";
-                        break;
-                    case "breeder":
-                        color = "success";
-                        label = "Reproductor";
-                        break;
-                }
-
-                return <Badge color={color}>{label}</Badge>;
+                return <Badge color={color}>{t(`pigs.stage.${value}`, { defaultValue: value })}</Badge>;
             },
         },
-        { header: 'Fecha de N.', accessor: 'birthdate', type: 'date' },
-    ]
+        { header: t('groups.column.birthDate', { defaultValue: 'Fecha de N.' }), accessor: 'birthdate', type: 'date' },
+    ];
 
     const pigsAttributes: Attribute[] = [
-        { key: "code", label: "Código", type: "text" },
-        { key: "birthdate", label: "Fecha de nacimiento", type: "date" },
-        { key: "breed", label: "Raza", type: "text" },
+        { key: "code", label: t('common.field.code', { defaultValue: 'Código' }), type: "text" },
+        { key: "birthdate", label: t('common.field.birthdate', { defaultValue: 'Fecha de nacimiento' }), type: "date" },
+        { key: "breed", label: t('groups.column.breed', { defaultValue: 'Raza' }), type: "text" },
         {
             key: "origin",
-            label: "Origen",
+            label: t('common.field.origin', { defaultValue: 'Origen' }),
             type: "text",
             render: (value: string) => {
                 let color = 'secondary';
@@ -126,126 +107,60 @@ const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, 
                 switch (value) {
                     case 'born':
                         color = 'success';
-                        label = 'Nacido en la granja';
+                        label = t('pigs.origin.born', { defaultValue: 'Nacido en la granja' });
                         break;
-
                     case 'purchased':
                         color = 'warning';
-                        label = 'Comprado';
+                        label = t('pigs.origin.purchased', { defaultValue: 'Comprado' });
                         break;
-
                     case 'donated':
                         color = 'info';
-                        label = 'Donado';
+                        label = t('pigs.origin.donated', { defaultValue: 'Donado' });
                         break;
-
                     case 'other':
                         color = 'dark';
-                        label = 'Otro';
+                        label = t('pigs.origin.other', { defaultValue: 'Otro' });
                         break;
                 }
 
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { key: "weight", label: "Peso actual", type: "text" },
+        { key: "weight", label: t('groups.column.weight', { defaultValue: 'Peso actual' }), type: "text" },
         {
             key: 'currentStage',
-            label: 'Etapa',
+            label: t('groups.column.stage', { defaultValue: 'Etapa' }),
             render: (value: string) => {
                 let color = "secondary";
-                let label = value;
-
-                switch (value) {
-                    case "piglet":
-                        color = "info";
-                        label = "Lechón";
-                        break;
-                    case "weaning":
-                        color = "warning";
-                        label = "Destete";
-                        break;
-                    case "fattening":
-                        color = "primary";
-                        label = "Engorda";
-                        break;
-                    case "breeder":
-                        color = "success";
-                        label = "Reproductor";
-                        break;
-                }
-
-                return <Badge color={color}>{label}</Badge>;
+                return <Badge color={color}>{t(`pigs.stage.${value}`, { defaultValue: value })}</Badge>;
             },
         },
-        { key: "observations", label: "Observaciones", type: "text" },
+        { key: "observations", label: t('groups.column.observations', { defaultValue: 'Observaciones' }), type: "text" },
     ];
 
     const discardAttributes: Attribute[] = [
         {
             key: "reason",
-            label: "Razón",
+            label: t('common.field.reason', { defaultValue: 'Razón' }),
             render: (value: string) => {
                 let color = "secondary";
                 let label = value;
 
                 switch (value) {
-                    case "lameness":
-                        color = "warning";
-                        label = "Cojeras";
-                        break;
-                    case "poor_body_condition":
-                        color = "warning";
-                        label = "Condición corporal deficiente";
-                        break;
-                    case "reproductive_failure":
-                        color = "danger";
-                        label = "Falla reproductiva";
-                        break;
-                    case "low_milk_production":
-                        color = "info";
-                        label = "Baja producción de leche";
-                        break;
-                    case "disease":
-                        color = "danger";
-                        label = "Enfermedad";
-                        break;
-                    case "injury":
-                        color = "warning";
-                        label = "Lesión";
-                        break;
-                    case "aggressive_behavior":
-                        color = "primary";
-                        label = "Comportamiento agresivo";
-                        break;
-                    case "old_age":
-                        color = "secondary";
-                        label = "Edad avanzada";
-                        break;
-                    case "death":
-                        color = "dark";
-                        label = "Muerte";
-                        break;
-                    case "poor_growth":
-                        color = "info";
-                        label = "Bajo crecimiento / rendimiento";
-                        break;
-                    case "hernias":
-                        color = "warning";
-                        label = "Hernias";
-                        break;
-                    case "prolapse":
-                        color = "danger";
-                        label = "Prolapso";
-                        break;
-                    case "non_ambulatory":
-                        color = "danger";
-                        label = "No puede caminar";
-                        break;
-                    case "respiratory_failure":
-                        color = "danger";
-                        label = "Problemas respiratorios severos";
-                        break;
+                    case "lameness": color = "warning"; label = t('pigs.discard.reason.lameness', { defaultValue: 'Cojeras' }); break;
+                    case "poor_body_condition": color = "warning"; label = t('pigs.discard.reason.poor_body_condition', { defaultValue: 'Condición corporal deficiente' }); break;
+                    case "reproductive_failure": color = "danger"; label = t('pigs.discard.reason.reproductive_failure', { defaultValue: 'Falla reproductiva' }); break;
+                    case "low_milk_production": color = "info"; label = t('pigs.discard.reason.low_milk_production', { defaultValue: 'Baja producción de leche' }); break;
+                    case "disease": color = "danger"; label = t('pigs.discard.reason.disease', { defaultValue: 'Enfermedad' }); break;
+                    case "injury": color = "warning"; label = t('pigs.discard.reason.injury', { defaultValue: 'Lesión' }); break;
+                    case "aggressive_behavior": color = "primary"; label = t('pigs.discard.reason.aggressive_behavior', { defaultValue: 'Comportamiento agresivo' }); break;
+                    case "old_age": color = "secondary"; label = t('pigs.discard.reason.old_age', { defaultValue: 'Edad avanzada' }); break;
+                    case "death": color = "dark"; label = t('pigs.discard.reason.death', { defaultValue: 'Muerte' }); break;
+                    case "poor_growth": color = "info"; label = t('pigs.discard.reason.poor_growth', { defaultValue: 'Bajo crecimiento / rendimiento' }); break;
+                    case "hernias": color = "warning"; label = t('pigs.discard.reason.hernias', { defaultValue: 'Hernias' }); break;
+                    case "prolapse": color = "danger"; label = t('pigs.discard.reason.prolapse', { defaultValue: 'Prolapso' }); break;
+                    case "non_ambulatory": color = "danger"; label = t('pigs.discard.reason.non_ambulatory', { defaultValue: 'No puede caminar' }); break;
+                    case "respiratory_failure": color = "danger"; label = t('pigs.discard.reason.respiratory_failure', { defaultValue: 'Problemas respiratorios severos' }); break;
                 }
 
                 return <Badge color={color}>{label}</Badge>;
@@ -253,57 +168,33 @@ const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, 
         },
         {
             key: "destination",
-            label: "Destino",
+            label: t('common.field.destination', { defaultValue: 'Destino' }),
             render: (value: string) => {
                 let color = "secondary";
                 let label = value;
 
                 switch (value) {
-                    case "slaughterhouse":
-                        color = "primary";
-                        label = "Rastro";
-                        break;
-                    case "on_farm_euthanasia":
-                        color = "danger";
-                        label = "Eutanasia en granja";
-                        break;
-                    case "sale":
-                        color = "success";
-                        label = "Venta";
-                        break;
-                    case "research":
-                        color = "info";
-                        label = "Investigación";
-                        break;
-                    case "rendering":
-                        color = "secondary";
-                        label = "Procesadora / despojos";
-                        break;
-                    case "composting":
-                        color = "warning";
-                        label = "Compostaje";
-                        break;
-                    case "burial":
-                        color = "dark";
-                        label = "Enterrado";
-                        break;
-                    case "incineration":
-                        color = "danger";
-                        label = "Incineración";
-                        break;
+                    case "slaughterhouse": color = "primary"; label = t('pigs.discard.destination.slaughterhouse', { defaultValue: 'Rastro' }); break;
+                    case "on_farm_euthanasia": color = "danger"; label = t('pigs.discard.destination.on_farm_euthanasia', { defaultValue: 'Eutanasia en granja' }); break;
+                    case "sale": color = "success"; label = t('pigs.discard.destination.sale', { defaultValue: 'Venta' }); break;
+                    case "research": color = "info"; label = t('pigs.discard.destination.research', { defaultValue: 'Investigación' }); break;
+                    case "rendering": color = "secondary"; label = t('pigs.discard.destination.rendering', { defaultValue: 'Procesadora / despojos' }); break;
+                    case "composting": color = "warning"; label = t('pigs.discard.destination.composting', { defaultValue: 'Compostaje' }); break;
+                    case "burial": color = "dark"; label = t('pigs.discard.destination.burial', { defaultValue: 'Enterrado' }); break;
+                    case "incineration": color = "danger"; label = t('pigs.discard.destination.incineration', { defaultValue: 'Incineración' }); break;
                 }
 
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { key: "date", label: "Fecha", type: "date" },
-        { key: "observations", label: "Observaciones", type: "text" },
+        { key: "date", label: t('common.field.date', { defaultValue: 'Fecha' }), type: "date" },
+        { key: "observations", label: t('groups.column.observations', { defaultValue: 'Observaciones' }), type: "text" },
     ];
 
     const validationSchema = Yup.object({
-        reason: Yup.string().required('Seleccione la razon del descarte'),
-        destination: Yup.string().required('Seleccione el destino del cerdo descartado'),
-        date: Yup.date().required('Por favor ingrese la fecha del parto'),
+        reason: Yup.string().required(t('groups.form.discardPig.validation.reason', { defaultValue: 'Seleccione la razon del descarte' })),
+        destination: Yup.string().required(t('groups.form.discardPig.validation.destination', { defaultValue: 'Seleccione el destino del cerdo descartado' })),
+        date: Yup.date().required(t('groups.form.discardPig.validation.date', { defaultValue: 'Por favor ingrese la fecha del parto' })),
     })
 
     const formik = useFormik({
@@ -349,7 +240,7 @@ const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, 
             setPigs(pigsFiltered)
         } catch (error) {
             console.error('Error fetching data: ', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('groups.form.discardPig.loadError', { defaultValue: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' }) })
         } finally {
             setLoading(false)
         }
@@ -359,7 +250,7 @@ const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, 
         if (selectedPig) {
             toggleArrowTab(activeStep + 1)
         } else {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Seleccione un cerdo antes de continuar' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('groups.form.discardPig.validationPig', { defaultValue: 'Seleccione un cerdo antes de continuar' }) })
         }
     }
 
@@ -409,7 +300,7 @@ const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, 
                                 aria-selected={activeStep === 1}
                                 aria-controls="step-pigSelect-tab"
                             >
-                                Selección de cerdo
+                                {t('groups.form.discardPig.step.pigSelect', { defaultValue: 'Selección de cerdo' })}
                             </NavLink>
                         </NavItem>
 
@@ -425,7 +316,7 @@ const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, 
                                 aria-selected={activeStep === 2}
                                 aria-controls="step-discardInfo-tab"
                             >
-                                Información de muerte
+                                {t('groups.form.discardPig.step.discardInfo', { defaultValue: 'Información de muerte' })}
                             </NavLink>
                         </NavItem>
 
@@ -441,7 +332,7 @@ const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, 
                                 aria-selected={activeStep === 3}
                                 aria-controls="step-summary-tab"
                             >
-                                Resumen
+                                {t('groups.form.step3', { defaultValue: 'Resumen' })}
                             </NavLink>
                         </NavItem>
 
@@ -455,7 +346,7 @@ const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, 
 
                         <div className="mt-4 d-flex">
                             <Button className="ms-auto" onClick={() => checkSelectedPig()}>
-                                Siguiente
+                                {t('common.button.next', { defaultValue: 'Siguiente' })}
                                 <i className="ri-arrow-right-line" />
                             </Button>
                         </div>
@@ -464,7 +355,7 @@ const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, 
                     <TabPane id="step-discardInfo-tab" tabId={2}>
                         <div className="d-flex gap-2 mt-4">
                             <div className="w-100">
-                                <Label htmlFor="destination" className="form-label">Destino del cerdo</Label>
+                                <Label htmlFor="destination" className="form-label">{t('groups.form.discardPig.destinationLabel', { defaultValue: 'Destino del cerdo' })}</Label>
                                 <Input
                                     type="select"
                                     id="destination"
@@ -474,11 +365,11 @@ const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, 
                                     onBlur={formik.handleBlur}
                                     invalid={formik.touched.destination && !!formik.errors.destination}
                                 >
-                                    <option value="">Selecciona un destino</option>
-                                    <option value="rendering">Procesadora / despojos</option>
-                                    <option value="composting">Compostaje</option>
-                                    <option value="burial">Enterrado</option>
-                                    <option value="incineration">Incineración</option>
+                                    <option value="">{t('groups.form.discardPig.destinationPlaceholder', { defaultValue: 'Selecciona un destino' })}</option>
+                                    <option value="rendering">{t('pigs.discard.destination.rendering', { defaultValue: 'Procesadora / despojos' })}</option>
+                                    <option value="composting">{t('pigs.discard.destination.composting', { defaultValue: 'Compostaje' })}</option>
+                                    <option value="burial">{t('pigs.discard.destination.burial', { defaultValue: 'Enterrado' })}</option>
+                                    <option value="incineration">{t('pigs.discard.destination.incineration', { defaultValue: 'Incineración' })}</option>
                                 </Input>
 
                                 {formik.touched.destination && formik.errors.destination && (
@@ -489,7 +380,7 @@ const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, 
 
                         <div className="d-flex gap-2 mt-4">
                             <div className="w-50">
-                                <Label htmlFor="discard_date" className="form-label">Fecha de muerte</Label>
+                                <Label htmlFor="discard_date" className="form-label">{t('groups.form.discardPig.dateLabel', { defaultValue: 'Fecha de muerte' })}</Label>
                                 <DatePicker
                                     id="discard_date"
                                     className={`form-control ${formik.touched.date && formik.errors.date ? 'is-invalid' : ''}`}
@@ -503,7 +394,7 @@ const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, 
                             </div>
 
                             <div className="w-50">
-                                <Label htmlFor="responsible" className="form-label">Responsable de registro</Label>
+                                <Label htmlFor="responsible" className="form-label">{t('groups.form.discardPig.responsibleLabel', { defaultValue: 'Responsable de registro' })}</Label>
                                 <Input
                                     type="text"
                                     id="responsible"
@@ -516,7 +407,7 @@ const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, 
 
                         <div className="d-flex gap-2 mt-4">
                             <div className="w-100">
-                                <Label htmlFor="observations" className="form-label">Observaciones</Label>
+                                <Label htmlFor="observations" className="form-label">{t('groups.form.discardPig.observationsLabel', { defaultValue: 'Observaciones' })}</Label>
                                 <Input
                                     type="text"
                                     id="observations"
@@ -535,11 +426,11 @@ const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, 
                         <div className="mt-4 d-flex">
                             <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                                 <i className="ri-arrow-left-line me-2" />
-                                Atras
+                                {t('common.button.back', { defaultValue: 'Atras' })}
                             </Button>
 
                             <Button className="ms-auto" type="button" onClick={() => checkDiscardData()}>
-                                Siguiente
+                                {t('common.button.next', { defaultValue: 'Siguiente' })}
                                 <i className="ri-arrow-right-line ms-2" />
                             </Button>
                         </div>
@@ -550,7 +441,7 @@ const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, 
                         <Card className="mb-4 shadow-sm bg-light">
                             <CardBody className="d-flex justify-content-between align-items-center">
                                 <span className="text-black fs-5">
-                                    <strong>Responsable del registro: </strong>
+                                    <strong>{t('groups.form.discardPig.responsible', { defaultValue: 'Responsable del registro: ' })}</strong>
                                     {userLogged.name}{" "}
                                     {userLogged.lastname}
                                 </span>
@@ -560,7 +451,7 @@ const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, 
                         <div className="d-flex gap-3 align-items-stretch">
                             <Card className="shadow-sm w-50">
                                 <CardHeader className="bg-light fw-bold fs-5">
-                                    Información del descarte
+                                    {t('groups.form.discardPig.discardInfo', { defaultValue: 'Información del descarte' })}
                                 </CardHeader>
                                 <CardBody>
                                     <ObjectDetails attributes={discardAttributes} object={formik.values} />
@@ -569,7 +460,7 @@ const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, 
 
                             <Card className="shadow-sm w-50">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
-                                    Información del cerdo
+                                    {t('groups.form.discardPig.pigInfo', { defaultValue: 'Información del cerdo' })}
                                 </CardHeader>
                                 <CardBody>
                                     <ObjectDetails attributes={pigsAttributes} object={selectedPig} />
@@ -580,7 +471,7 @@ const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, 
                         <div className="mt-4 d-flex">
                             <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                                 <i className="ri-arrow-left-line me-2" />
-                                Atrás
+                                {t('common.button.back', { defaultValue: 'Atrás' })}
                             </Button>
 
                             <Button className="ms-auto btn-success" onClick={() => formik.handleSubmit()} disabled={formik.isSubmitting}>
@@ -591,7 +482,7 @@ const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, 
                                 ) : (
                                     <div>
                                         <i className="ri-check-line me-2" />
-                                        Registrar
+                                        {t('common.button.register', { defaultValue: 'Registrar' })}
                                     </div>
                                 )}
 
@@ -603,15 +494,15 @@ const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, 
 
             <Modal isOpen={modals.pigDetails} toggle={() => toggleModal('pigDetails')} size="lg" centered className="border-0">
                 <ModalHeader toggle={() => toggleModal('pigDetails')} className="border-0 pb-0">
-                    <h4 className="modal-title text-primary fw-bold">Detalles de la extracción</h4>
+                    <h4 className="modal-title text-primary fw-bold">{t('groups.form.discardPig.pigDetailsTitle', { defaultValue: 'Detalles de la extracción' })}</h4>
                 </ModalHeader>
                 <ModalBody className="p-4">
                     <PigDetailsModal pigId={detailsSelectedPig} showAllDetailsButton={false} />
                 </ModalBody>
             </Modal>
 
-            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={"Cerdo descartado con exito"} />
-            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message={"Ha ocurrido un error al descartar el cerdo, intentelo mas tarde"} />
+            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={t('groups.form.discardPig.success', { defaultValue: 'Cerdo descartado con exito' })} />
+            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message={t('groups.form.discardPig.error', { defaultValue: 'Ha ocurrido un error al descartar el cerdo, intentelo mas tarde' })} />
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} />
         </>

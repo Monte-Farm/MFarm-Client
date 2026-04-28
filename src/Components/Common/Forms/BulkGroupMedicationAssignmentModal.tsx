@@ -10,6 +10,7 @@ import SelectableCustomTable from "../Tables/SelectableTable";
 import MissingStockModal from "../Shared/MissingStockModal";
 import SuccessModal from "../Shared/SuccessModal";
 import ErrorModal from "../Shared/ErrorModal";
+import { useTranslation } from "react-i18next";
 
 interface BulkGroupMedicationAssignmentModalProps {
     isOpen: boolean;
@@ -24,6 +25,7 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
     selectedGroups,
     onSuccess
 }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [modals, setModals] = useState({ success: false, error: false, missingStock: false, subwarehouseError: false });
@@ -36,24 +38,24 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
     };
 
     const medicationPackagesColumns: Column<any>[] = [
-        { header: 'Codigo', accessor: 'code', type: 'text', isFilterable: true },
-        { header: 'Nombre', accessor: 'name', type: 'text', isFilterable: true },
-        { header: 'Fecha de creacion', accessor: 'creation_date', type: 'date', isFilterable: true },
+        { header: t('common.field.code'), accessor: 'code', type: 'text', isFilterable: true },
+        { header: t('common.field.name'), accessor: 'name', type: 'text', isFilterable: true },
+        { header: t('medication.package.column.createdAt'), accessor: 'creation_date', type: 'date', isFilterable: true },
         {
-            header: 'Etapa',
+            header: t('common.field.stage'),
             accessor: 'stage',
             type: 'text',
             isFilterable: true,
             render: (_, row) => {
                 let color = "secondary";
-                let text = "Desconocido";
+                const text = t(`feeding.stage.${row.stage}`, { defaultValue: t('medical.medication.field.unknown') });
 
                 switch (row.stage) {
-                    case "general": color = "info"; text = "General"; break;
-                    case "piglet": color = "info"; text = "Lechón"; break;
-                    case "weaning": color = "warning"; text = "Destete"; break;
-                    case "fattening": color = "primary"; text = "Engorda"; break;
-                    case "breeder": color = "success"; text = "Reproductor"; break;
+                    case "general": color = "info"; break;
+                    case "piglet": color = "info"; break;
+                    case "weaning": color = "warning"; break;
+                    case "fattening": color = "primary"; break;
+                    case "breeder": color = "success"; break;
                 }
 
                 return <Badge color={color}>{text}</Badge>;
@@ -62,8 +64,8 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
     ];
 
     const bulkMedicationValidationSchema = Yup.object({
-        packageId: Yup.string().required('Debe seleccionar un paquete de medicación'),
-        applicationDate: Yup.date().required('La fecha de aplicación es obligatoria'),
+        packageId: Yup.string().required(t('medication.assign.bulkGroup.validation.packageRequired')),
+        applicationDate: Yup.date().required(t('medication.assign.bulkGroup.validation.dateRequired')),
     });
 
     const bulkMedicationFormik = useFormik({
@@ -184,18 +186,18 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
         <>
             <Modal isOpen={isOpen} toggle={handleClose} size="lg" backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={handleClose}>
-                    Asignar Medicación a {selectedGroups.length} Grupos
+                    {t('medication.assign.bulkGroup.header', { count: selectedGroups.length })}
                 </ModalHeader>
                 <ModalBody>
                     <form onSubmit={bulkMedicationFormik.handleSubmit}>
                         <div className="mb-3">
                             <small className="text-muted">
-                                Esta acción asignará el paquete de medicación seleccionado a todos los grupos seleccionados.
+                                {t('medication.assign.bulkGroup.description')}
                             </small>
                         </div>
 
                         <div className="mb-4">
-                            <Label className="form-label fw-semibold">Seleccionar Paquete de Medicación</Label>
+                            <Label className="form-label fw-semibold">{t('medication.assign.bulkGroup.selectPackage')}</Label>
                             {medicationPackages.length > 0 ? (
                                 <>
                                     <SelectableCustomTable
@@ -213,8 +215,8 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
                                 <div className="alert alert-warning d-flex align-items-center" role="alert">
                                     <i className="ri-error-warning-line fs-4 me-2 text-warning"></i>
                                     <div>
-                                        <strong>No hay paquetes de medicación disponibles</strong>
-                                        <p className="mb-0 mt-1">No se encontraron paquetes de medicación para esta etapa. Por favor, cree un paquete antes de continuar.</p>
+                                        <strong>{t('medication.assign.bulkGroup.noPackages')}</strong>
+                                        <p className="mb-0 mt-1">{t('medication.assign.bulkGroup.noPackagesDesc')}</p>
                                     </div>
                                 </div>
                             )}
@@ -222,13 +224,13 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
 
                         {selectedMedicationPackage && (
                             <div className="alert alert-info">
-                                <strong>Paquete seleccionado:</strong> {selectedMedicationPackage.name} ({selectedMedicationPackage.code})
+                                <strong>{t('medication.assign.bulkGroup.selectedPackage')}</strong> {selectedMedicationPackage.name} ({selectedMedicationPackage.code})
                             </div>
                         )}
 
                         <div className="d-flex gap-2 mt-4">
                             <div className="w-50">
-                                <Label htmlFor="applicationDate" className="form-label">Fecha de aplicación</Label>
+                                <Label htmlFor="applicationDate" className="form-label">{t('medication.assign.field.date')}</Label>
                                 <DatePicker
                                     id="applicationDate"
                                     className={`form-control ${bulkMedicationFormik.touched.applicationDate && bulkMedicationFormik.errors.applicationDate ? 'is-invalid' : ''}`}
@@ -242,7 +244,7 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
                             </div>
 
                             <div className="w-50">
-                                <Label htmlFor="appliedBy" className="form-label">Responsable</Label>
+                                <Label htmlFor="appliedBy" className="form-label">{t('medication.assign.field.responsible')}</Label>
                                 <Input
                                     type="text"
                                     id="appliedBy"
@@ -254,7 +256,7 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
                         </div>
 
                         <div className="mt-4">
-                            <Label htmlFor="observations" className="form-label">Observaciones</Label>
+                            <Label htmlFor="observations" className="form-label">{t('medication.assign.field.observations')}</Label>
                             <Input
                                 type="textarea"
                                 id="observations"
@@ -263,19 +265,19 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
                                 value={bulkMedicationFormik.values.observations}
                                 onChange={bulkMedicationFormik.handleChange}
                                 onBlur={bulkMedicationFormik.handleBlur}
-                                placeholder="Observaciones adicionales sobre la aplicación masiva..."
+                                placeholder={t('medication.assign.bulkGroup.obsPlaceholder')}
                             />
                         </div>
                     </form>
                 </ModalBody>
                 <ModalFooter>
-                    <Button className="farm-secondary-button" onClick={handleClose}>Cancelar</Button>
-                    <Button 
-                        className="farm-primary-button" 
-                        onClick={() => bulkMedicationFormik.handleSubmit()} 
+                    <Button className="farm-secondary-button" onClick={handleClose}>{t('common.button.cancel')}</Button>
+                    <Button
+                        className="farm-primary-button"
+                        onClick={() => bulkMedicationFormik.handleSubmit()}
                         disabled={bulkMedicationFormik.isSubmitting || !selectedMedicationPackage || medicationPackages.length === 0}
                     >
-                        {bulkMedicationFormik.isSubmitting ? <Spinner size="sm" /> : 'Confirmar Asignación'}
+                        {bulkMedicationFormik.isSubmitting ? <Spinner size="sm" /> : t('medication.assign.bulkGroup.submit')}
                     </Button>
                 </ModalFooter>
             </Modal>
@@ -283,13 +285,13 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
             <SuccessModal
                 isOpen={modals.success}
                 onClose={handleSuccessClose}
-                message="El paquete de medicación ha sido asignado exitosamente a los grupos seleccionados."
+                message={t('medication.assign.bulkGroup.success')}
             />
 
             <ErrorModal
                 isOpen={modals.error}
                 onClose={() => toggleModal('error', false)}
-                message="Ha ocurrido un error al asignar el paquete de medicación. Por favor, inténtelo más tarde."
+                message={t('medication.assign.bulkGroup.error')}
             />
 
             <MissingStockModal
@@ -300,20 +302,20 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
 
             <Modal isOpen={modals.subwarehouseError} toggle={() => toggleModal('subwarehouseError', false)} centered>
                 <ModalHeader toggle={() => toggleModal('subwarehouseError', false)}>
-                    Error de Configuración
+                    {t('medication.assign.bulkGroup.subwarehouseError.title')}
                 </ModalHeader>
                 <ModalBody>
                     <div className="text-center">
                         <i className="ri-error-warning-line" style={{ fontSize: '48px', color: '#f06548' }}></i>
-                        <h5 className="mt-3">No se encontró un subalmacén configurado</h5>
+                        <h5 className="mt-3">{t('medication.assign.bulkGroup.subwarehouseError.subtitle')}</h5>
                         <p className="text-muted">
-                            Por favor, configure un subalmacén para poder asignar medicación a los grupos.
+                            {t('medication.assign.bulkGroup.subwarehouseError.description')}
                         </p>
                     </div>
                 </ModalBody>
                 <ModalFooter>
                     <Button color="secondary" onClick={() => toggleModal('subwarehouseError', false)}>
-                        Cerrar
+                        {t('common.button.close')}
                     </Button>
                 </ModalFooter>
             </Modal>

@@ -19,9 +19,11 @@ import CustomTable from "Components/Common/Tables/CustomTable";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
 import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector";
 import SemenSampleForm from "Components/Common/Forms/SemenSampleForm";
+import { useTranslation } from "react-i18next";
 
 const ViewExtractions = () => {
-    document.title = 'Ver extracciones | Management System'
+    const { t } = useTranslation();
+    document.title = t('laboratory.extraction.pageTitle')
     const userLoggged = getEffectiveUser();
     const configContext = useContext(ConfigContext)
     const [loading, setLoading] = useState<boolean>(true);
@@ -34,10 +36,10 @@ const ViewExtractions = () => {
     const [fileURL, setFileURL] = useState<string>('');
 
     const extractionsColumns: Column<any>[] = [
-        { header: 'Lote', accessor: 'batch', type: 'text', isFilterable: true },
-        { header: 'Fecha de extracción', accessor: 'date', type: 'date', isFilterable: false },
+        { header: t('laboratory.extraction.column.batch'), accessor: 'batch', type: 'text', isFilterable: true },
+        { header: t('laboratory.extraction.column.date'), accessor: 'date', type: 'date', isFilterable: false },
         {
-            header: 'Verraco',
+            header: t('laboratory.extraction.column.boar'),
             accessor: 'boar',
             render: (_, row) => (
                 <Button
@@ -54,48 +56,48 @@ const ViewExtractions = () => {
             )
         },
         {
-            header: 'Responsable',
+            header: t('laboratory.extraction.column.technician'),
             accessor: 'technician',
             type: 'text',
             isFilterable: true,
-            render: (_, row) => row.technician ? `${row.technician.name} ${row.technician.lastname}` : "Sin responsable"
+            render: (_, row) => row.technician ? `${row.technician.name} ${row.technician.lastname}` : t('laboratory.extraction.noResponsible')
         },
-        { header: 'Ubicacion de la extracción', accessor: 'extraction_location', type: 'text', isFilterable: true },
+        { header: t('laboratory.extraction.column.location'), accessor: 'extraction_location', type: 'text', isFilterable: true },
         {
-            header: 'Muestra registrada',
+            header: t('laboratory.extraction.column.sampleRegistered'),
             accessor: 'is_sample_registered',
             type: 'text',
             isFilterable: true,
             render: (_, obj) => (
-                <Badge color={obj.is_sample_registered ? 'success' : 'warning'}>{obj.is_sample_registered ? 'Si' : 'No'}</Badge>
+                <Badge color={obj.is_sample_registered ? 'success' : 'warning'}>{obj.is_sample_registered ? t('common.yes') : t('common.no')}</Badge>
             )
         },
         {
-            header: "Acciones",
+            header: t('common.field.actions'),
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button 
-                        id={`register-sample-button-${row._id}`} 
-                        className="farm-secondary-button btn-icon" 
-                        onClick={(e) => { 
-                            e.stopPropagation(); 
-                            setSelectedExtraction(row); 
-                            toggleModal('registerSample') 
-                        }} 
+                    <Button
+                        id={`register-sample-button-${row._id}`}
+                        className="farm-secondary-button btn-icon"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedExtraction(row);
+                            toggleModal('registerSample')
+                        }}
                         disabled={row.is_sample_registered}
                     >
                         <i className="ri-test-tube-line align-middle"></i>
                     </Button>
                     <UncontrolledTooltip target={`register-sample-button-${row._id}`}>
-                        {row.is_sample_registered ? 'Muestra ya registrada' : 'Registrar muestra'}
+                        {row.is_sample_registered ? t('laboratory.extraction.tooltip.alreadyRegistered') : t('laboratory.extraction.tooltip.registerSample')}
                     </UncontrolledTooltip>
 
                     <Button id={`details-button-${row._id}`} className="farm-primary-button btn-icon" onClick={(e) => { e.stopPropagation(); setSelectedExtraction(row); toggleModal('extractionDetails') }} >
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
                     <UncontrolledTooltip target={`details-button-${row._id}`}>
-                        Ver detalles
+                        {t('common.button.viewDetails')}
                     </UncontrolledTooltip>
                 </div>
             ),
@@ -112,19 +114,19 @@ const ViewExtractions = () => {
         try {
             setPdfLoading(true);
             toggleModal('dateRange', false);
-            
+
             const response = await configContext.axiosHelper.getBlob(
                 `${configContext.apiUrl}/reports/extractions/range?start_date=${startDate}&end_date=${endDate}&farm_id=${userLoggged.farm_assigned}`
             );
-            
+
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
             const url = window.URL.createObjectURL(pdfBlob);
-            
+
             setFileURL(url);
             toggleModal('viewPDF');
         } catch (error) {
             console.error('Error generating PDF: ', { error });
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('laboratory.extraction.error.generatePdf') });
         } finally {
             setPdfLoading(false);
         }
@@ -143,7 +145,7 @@ const ViewExtractions = () => {
             setStats(statsResponse.data.data)
         } catch (error) {
             console.error('Error fetching data:', error);
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al obtener los datos, intentelo mas tarde.' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('laboratory.extraction.error.fetchData') })
         } finally {
             setLoading(false);
         }
@@ -163,12 +165,12 @@ const ViewExtractions = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Ver extracciones"} pageTitle={"Extracciones"} />
+                <BreadCrumb title={t('laboratory.extraction.breadcrumb.title')} pageTitle={t('laboratory.extraction.breadcrumb.parent')} />
 
                 <div className="d-flex flex-wrap gap-3">
                     {stats.extractionsByDay && (
                         <KPI
-                            title="Total de extracciones"
+                            title={t('laboratory.extraction.kpi.totalExtractions')}
                             value={stats.extractionsByDay.reduce((sum: number, e: any) => sum + e.count, 0)}
                             icon={FiAlertCircle}
                             bgColor="#e6f0ff"
@@ -178,7 +180,7 @@ const ViewExtractions = () => {
 
                     {stats.volumeByDay && (
                         <KPI
-                            title="Volumen total extraído"
+                            title={t('laboratory.extraction.kpi.totalVolume')}
                             value={`${stats.volumeByDay.reduce((sum: number, v: any) => sum + v.totalVolume, 0)} ml`}
                             icon={FiInfo}
                             bgColor="#fff4e6"
@@ -188,7 +190,7 @@ const ViewExtractions = () => {
 
                     {stats.volumeByDay && stats.extractionsByDay && (
                         <KPI
-                            title="Volumen promedio por extracción"
+                            title={t('laboratory.extraction.kpi.avgVolume')}
                             value={(() => {
                                 const totalVol = stats.volumeByDay.reduce((sum: number, v: any) => sum + v.totalVolume, 0);
                                 const totalExt = stats.extractionsByDay.reduce((sum: number, e: any) => sum + e.count, 0);
@@ -204,7 +206,7 @@ const ViewExtractions = () => {
                         const maxDay = stats.volumeByDay.reduce((prev: any, curr: any) => curr.totalVolume > prev.totalVolume ? curr : prev);
                         return (
                             <KPI
-                                title="Día con mayor volumen"
+                                title={t('laboratory.extraction.kpi.maxVolumeDay')}
                                 value={`${maxDay.totalVolume} ml`}
                                 subtext={maxDay._id}
                                 icon={FiInfo}
@@ -218,7 +220,7 @@ const ViewExtractions = () => {
                         const minDay = stats.volumeByDay.reduce((prev: any, curr: any) => curr.totalVolume < prev.totalVolume ? curr : prev);
                         return (
                             <KPI
-                                title="Día con menor volumen"
+                                title={t('laboratory.extraction.kpi.minVolumeDay')}
                                 value={`${minDay.totalVolume} ml`}
                                 subtext={minDay._id}
                                 icon={FiInfo}
@@ -233,16 +235,16 @@ const ViewExtractions = () => {
                     <LineChartCard
                         stats={stats}
                         type="volume"
-                        title="Volumen"
-                        yLabel="Mililitros"
+                        title={t('laboratory.extraction.chart.volume')}
+                        yLabel={t('laboratory.extraction.chart.volumeLabel')}
                         color="#ffc107"
                     />
 
                     <LineChartCard
                         stats={stats}
                         type="extractions"
-                        title="Extracciones"
-                        yLabel="Número de extracciones"
+                        title={t('laboratory.extraction.chart.extractions')}
+                        yLabel={t('laboratory.extraction.chart.extractionsLabel')}
                         color="#198754"
                     />
 
@@ -251,28 +253,28 @@ const ViewExtractions = () => {
 
                 <Card>
                     <CardHeader className="d-flex justify-content-between align-items-center">
-                        <h4>Extracciones</h4>
+                        <h4>{t('laboratory.extraction.breadcrumb.parent')}</h4>
                         <div className="d-flex gap-2">
-                            <Button 
-                                color="secondary" 
+                            <Button
+                                color="secondary"
                                 onClick={() => toggleModal('dateRange')}
                                 disabled={pdfLoading}
                             >
                                 {pdfLoading ? (
                                     <>
                                         <Spinner className="me-2" size='sm' />
-                                        Generando...
+                                        {t('common.button.generating')}
                                     </>
                                 ) : (
                                     <>
                                         <i className="ri-file-pdf-line me-2"></i>
-                                        Exportar PDF
+                                        {t('common.button.exportPdf')}
                                     </>
                                 )}
                             </Button>
                             <Button className="farm-primary-button" onClick={() => toggleModal('create')}>
                                 <i className="ri-add-line me-2" />
-                                Nueva extracción
+                                {t('laboratory.extraction.action.new')}
                             </Button>
                         </div>
                     </CardHeader>
@@ -286,7 +288,7 @@ const ViewExtractions = () => {
                             <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", textAlign: "center", color: "#888", }}>
                                 <div>
                                     <FiInbox size={48} style={{ marginBottom: 10 }} />
-                                    <div>No hay datos disponibles</div>
+                                    <div>{t('laboratory.extraction.empty')}</div>
                                 </div>
                             </div>
                         )}
@@ -295,53 +297,50 @@ const ViewExtractions = () => {
             </Container>
 
             <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("create")}>Nueva extracción</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("create")}>{t('laboratory.extraction.modal.create')}</ModalHeader>
                 <ModalBody>
                     <ExtractionForm onSave={() => { toggleModal('create'); fetchData(); }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
             <Modal size="lg" isOpen={modals.pigDetails} toggle={() => toggleModal("pigDetails")} centered>
-                <ModalHeader toggle={() => toggleModal("pigDetails")}>Detalles del verraco</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("pigDetails")}>{t('laboratory.extraction.modal.pigDetails')}</ModalHeader>
                 <ModalBody>
                     <PigDetailsModal pigId={selectedExtraction.boar?._id} showAllDetailsButton={true} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.extractionDetails} toggle={() => toggleModal("extractionDetails")} centered>
-                <ModalHeader toggle={() => toggleModal("extractionDetails")}>Detalles de la extracción</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("extractionDetails")}>{t('laboratory.extraction.modal.extractionDetails')}</ModalHeader>
                 <ModalBody>
                     <ExtractionDetails extractionId={selectedExtraction?._id} />
                 </ModalBody>
             </Modal>
 
-            {/* Modal para seleccionar rango de fechas */}
             <Modal size="md" isOpen={modals.dateRange} toggle={() => toggleModal("dateRange")} centered>
-                <ModalHeader toggle={() => toggleModal("dateRange")}>Seleccionar rango de fechas</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("dateRange")}>{t('laboratory.extraction.modal.dateRange')}</ModalHeader>
                 <ReportDateRangeSelector
                     onGenerate={handleGeneratePDF}
                     onCancel={() => toggleModal("dateRange")}
                     loading={pdfLoading}
-                    generateButtonText="Generar PDF"
+                    generateButtonText={t('laboratory.extraction.action.generatePdf')}
                 />
             </Modal>
 
-            {/* Modal PDF */}
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de extracciones</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('laboratory.extraction.modal.pdfReport')}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>
             </Modal>
 
-            {/* Modal para registrar muestra */}
             <Modal size="xl" isOpen={modals.registerSample} toggle={() => toggleModal("registerSample")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("registerSample")}>Registrar muestra</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("registerSample")}>{t('laboratory.extraction.modal.registerSample')}</ModalHeader>
                 <ModalBody>
-                    <SemenSampleForm 
-                        preselectedExtraction={selectedExtraction} 
-                        onSave={() => { toggleModal('registerSample'); fetchData(); }} 
-                        onCancel={() => toggleModal('registerSample')} 
+                    <SemenSampleForm
+                        preselectedExtraction={selectedExtraction}
+                        onSave={() => { toggleModal('registerSample'); fetchData(); }}
+                        onCancel={() => toggleModal('registerSample')}
                     />
                 </ModalBody>
             </Modal>

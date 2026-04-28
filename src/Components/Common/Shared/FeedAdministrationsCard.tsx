@@ -5,6 +5,7 @@ import { FeedAdministrationHistoryEntry } from "common/data_interfaces";
 import { Column } from "common/data/data_types";
 import FeedAdministrationForm from "../Forms/FeedAdministrationForm";
 import CustomTable from "../Tables/CustomTable";
+import { useTranslation } from "react-i18next";
 
 type Stage = 'piglet' | 'sow' | 'nursery' | 'grower' | 'finisher' | 'general';
 
@@ -17,14 +18,6 @@ interface Props {
     disabled?: boolean;
 }
 
-const STAGE_LABELS: Record<string, string> = {
-    piglet: "Lechón",
-    sow: "Cerda",
-    nursery: "Destete",
-    grower: "Crecimiento",
-    finisher: "Finalización",
-};
-
 const FeedAdministrationsCard = ({
     administrations,
     targetType,
@@ -33,6 +26,7 @@ const FeedAdministrationsCard = ({
     onAdministered,
     disabled = false,
 }: Props) => {
+    const { t } = useTranslation();
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const hasData = administrations && administrations.length > 0;
@@ -45,7 +39,7 @@ const FeedAdministrationsCard = ({
 
     const columns: Column<FeedAdministrationHistoryEntry>[] = [
         {
-            header: 'Fecha',
+            header: t('feeding.administration.column.date'),
             accessor: 'applicationDate',
             type: 'text',
             render: (_, row) => (
@@ -53,25 +47,25 @@ const FeedAdministrationsCard = ({
             ),
         },
         {
-            header: 'Alimento preparado',
+            header: t('feeding.administration.column.preparedFeed'),
             accessor: 'preparedProduct',
             type: 'text',
             render: (_, row) => <span className="fw-semibold">{row.preparedProduct?.name ?? "—"}</span>,
         },
         {
-            header: 'Receta origen',
+            header: t('feeding.administration.column.sourceRecipe'),
             accessor: 'recipe',
             type: 'text',
             render: (_, row) => (
                 <span>
                     {row.recipe
-                        ? `${row.recipe.code} — ${row.recipe.name}${row.recipe.stage ? ` (${STAGE_LABELS[row.recipe.stage] ?? row.recipe.stage})` : ""}`
+                        ? `${row.recipe.code} — ${row.recipe.name}${row.recipe.stage ? ` (${t(`feeding.stage.${row.recipe.stage}`, { defaultValue: row.recipe.stage })})` : ""}`
                         : "—"}
                 </span>
             ),
         },
         {
-            header: 'Cantidad',
+            header: t('feeding.administration.column.quantity'),
             accessor: 'quantity',
             type: 'currency',
             bgColor: '#e3f2fd',
@@ -80,13 +74,13 @@ const FeedAdministrationsCard = ({
             ),
         },
         {
-            header: 'Responsable',
+            header: t('feeding.administration.column.responsible'),
             accessor: 'appliedBy',
             type: 'text',
             render: (_, row) => <span>{row.appliedBy ? `${row.appliedBy.name} ${row.appliedBy.lastname}` : "—"}</span>,
         },
         {
-            header: 'Observaciones',
+            header: t('feeding.administration.column.observations'),
             accessor: 'observations',
             type: 'text',
             render: (_, row) => <span>{row.observations?.trim() || "—"}</span>,
@@ -97,10 +91,10 @@ const FeedAdministrationsCard = ({
         <>
             <Card className="w-100 h-100 m-0">
                 <CardHeader className="bg-white d-flex justify-content-between align-items-center border-bottom">
-                    <h5 className="mb-0 fw-semibold">Administraciones de alimento</h5>
+                    <h5 className="mb-0 fw-semibold">{t('feeding.administration.card.title')}</h5>
                     <Button size="sm" color="primary" onClick={() => setIsModalOpen(true)} disabled={disabled}>
                         <i className="ri-add-line me-1" />
-                        Administrar alimento
+                        {t('feeding.administration.card.button')}
                     </Button>
                 </CardHeader>
                 <CardBody
@@ -111,7 +105,7 @@ const FeedAdministrationsCard = ({
                         <div className="text-center">
                             <FiAlertCircle className="text-muted" size={22} />
                             <span className="fs-5 text-muted text-center rounded-5 ms-2">
-                                No hay administraciones registradas
+                                {t('feeding.administration.card.noRecords')}
                             </span>
                         </div>
                     ) : (
@@ -135,7 +129,7 @@ const FeedAdministrationsCard = ({
                 keyboard={false}
                 centered
             >
-                <ModalHeader toggle={() => setIsModalOpen(false)}>Registrar administración de alimento</ModalHeader>
+                <ModalHeader toggle={() => setIsModalOpen(false)}>{t('feeding.administration.card.registerModal')}</ModalHeader>
                 <ModalBody>
                     <FeedAdministrationForm
                         targetType={targetType}

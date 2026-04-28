@@ -24,9 +24,18 @@ import InseminationForm from "Components/Common/Forms/InseminationForm";
 import SelectableCustomTable from "Components/Common/Tables/SelectableTable";
 import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
+import { useTranslation } from "react-i18next";
+
+const STATUS_COLORS: Record<string, string> = {
+    completed: 'success', active: 'warning', failed: 'danger',
+};
+const RESULT_COLORS: Record<string, string> = {
+    pregnant: 'success', empty: 'warning', doubtful: 'info', resorption: 'danger', abortion: 'dark',
+};
 
 const ViewInseminations = () => {
     document.title = "Ver inseminaciones | Management System"
+    const { t } = useTranslation();
     const userLoggged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
     const navigate = useNavigate();
@@ -46,7 +55,7 @@ const ViewInseminations = () => {
 
     const inseminationsColumns: Column<any>[] = [
         {
-            header: "Cerda",
+            header: t('insemination.column.sow'),
             accessor: "sow",
             type: "text",
             render: (_, row) => (
@@ -64,15 +73,15 @@ const ViewInseminations = () => {
             )
         },
         {
-            header: "Dosis admin.",
+            header: t('insemination.column.doses'),
             accessor: "doses",
             type: "number",
             isFilterable: true,
             render: (_, row) => row.doses.length || 0,
         },
-        { header: "Fecha de inseminación", accessor: "date", type: "date", isFilterable: false },
+        { header: t('insemination.column.date'), accessor: "date", type: "date", isFilterable: false },
         {
-            header: "F. de parto (tentativa)",
+            header: t('insemination.column.estimatedFarrowing'),
             accessor: "date",
             type: "date",
             isFilterable: false,
@@ -92,49 +101,39 @@ const ViewInseminations = () => {
             },
         },
         {
-            header: "Responsable",
+            header: t('insemination.column.responsible'),
             accessor: "responsible",
             type: "text",
             isFilterable: true,
             render: (_, row) =>
-                row.responsible ? `${row.responsible.name} ${row.responsible.lastname}` : "Sin responsable",
+                row.responsible
+                    ? `${row.responsible.name} ${row.responsible.lastname}`
+                    : t('insemination.column.noResponsible'),
         },
         {
-            header: "Estado",
+            header: t('insemination.column.status'),
             accessor: "status",
             type: "text",
             isFilterable: true,
             render: (_, row) => {
-                let color = "secondary";
-                let text = "Desconocido";
-                switch (row.status) {
-                    case "completed": color = "success"; text = "Completada"; break;
-                    case "active": color = "warning"; text = "Activa"; break;
-                    case "failed": color = "danger"; text = "Fallida"; break;
-                }
+                const color = STATUS_COLORS[row.status] || 'secondary';
+                const text = t(`insemination.status.${row.status}`, { defaultValue: t('insemination.status.unknown') });
                 return <Badge color={color}>{text}</Badge>;
             },
         },
         {
-            header: "Resultado",
+            header: t('insemination.column.result'),
             accessor: "result",
             type: "text",
             isFilterable: true,
             render: (_, row) => {
-                let color = "secondary";
-                let text = "Pendiente";
-                switch (row.result) {
-                    case "pregnant": color = "success"; text = "Preñada"; break;
-                    case "empty": color = "warning"; text = "Vacía"; break;
-                    case "doubtful": color = "info"; text = "Dudosa"; break;
-                    case "resorption": color = "danger"; text = "Reabsorción"; break;
-                    case "abortion": color = "dark"; text = "Aborto"; break;
-                }
+                const color = RESULT_COLORS[row.result] || 'secondary';
+                const text = t(`insemination.result.${row.result}`, { defaultValue: t('insemination.result.pending') });
                 return <Badge color={color}>{text}</Badge>;
             },
         },
         {
-            header: "Acciones",
+            header: t('insemination.column.actions'),
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
@@ -142,22 +141,21 @@ const ViewInseminations = () => {
                         <i className="bx bx-heart align-middle"></i>
                     </Button>
                     <UncontrolledTooltip target={`heat-button-${row._id}`}>
-                        Registrar celo
+                        {t('insemination.action.registerHeat')}
                     </UncontrolledTooltip>
-
 
                     <Button id={`diagnose-button-${row._id}`} className="farm-secondary-button btn-icon" onClick={(e) => { e.stopPropagation(); setSelectedInsemination(row); toggleModal('diagnosis'); }} disabled={row.status === 'completed' || row.status === 'failed'} >
                         <i className="bx bx-dna align-middle"></i>
                     </Button>
                     <UncontrolledTooltip target={`diagnose-button-${row._id}`}>
-                        Registrar diagnóstico
+                        {t('insemination.action.registerDiagnosis')}
                     </UncontrolledTooltip>
 
                     <Button id={`view-button-${row._id}`} className="farm-primary-button btn-icon" onClick={(e) => { e.stopPropagation(); navigate(`/gestation/insemination_details/${row._id}`); }}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
                     <UncontrolledTooltip target={`view-button-${row._id}`} >
-                        Ver detalles
+                        {t('insemination.action.viewDetails')}
                     </UncontrolledTooltip>
                 </div>
             ),
@@ -221,13 +219,13 @@ const ViewInseminations = () => {
                     notes: values.notes,
                     responsible: values.responsible
                 });
-                setAlertConfig({ visible: true, color: 'success', message: `Celo registrado en ${activeInseminationIds.length} inseminaciones con éxito` });
+                setAlertConfig({ visible: true, color: 'success', message: t('insemination.success.bulkHeat', { count: activeInseminationIds.length }) });
                 loadData();
                 setSelectedInseminations([]);
                 bulkHeatFormik.resetForm();
             } catch (error) {
                 console.error('Error bulk registering heat:', error);
-                setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al registrar el celo masivo, intentelo más tarde' });
+                setAlertConfig({ visible: true, color: 'danger', message: t('insemination.error.bulkHeat') });
             } finally {
                 setSubmitting(false);
                 toggleModal('bulkHeat');
@@ -262,8 +260,7 @@ const ViewInseminations = () => {
 
             try {
                 setSubmitting(true);
-                
-                // 1. Registrar diagnóstico masivo
+
                 await configContext.axiosHelper.create(`${configContext.apiUrl}/insemination/diagnose_bulk`, {
                     inseminationIds: activeInseminationIds,
                     result: values.result,
@@ -272,7 +269,6 @@ const ViewInseminations = () => {
                     diagnose_responsible: values.diagnose_responsible
                 });
 
-                // 2. Si el resultado es 'pregnant', crear pregnancies para cada inseminación
                 if (values.result === 'pregnant') {
                     const activeInseminations = selectedInseminations
                         .filter(ins => ins.status !== 'completed' && ins.status !== 'failed');
@@ -295,7 +291,6 @@ const ViewInseminations = () => {
                     }
                 }
 
-                // 3. Actualizar el stage de las cerdas a 'gestation'
                 const uniqueSowIds = Array.from(new Set(
                     selectedInseminations
                         .filter(ins => ins.status !== 'completed' && ins.status !== 'failed')
@@ -308,18 +303,17 @@ const ViewInseminations = () => {
                     });
                 }
 
-                // 4. Registrar en el historial del usuario
                 await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLoggged._id}`, {
                     event: `Diagnóstico masivo de ${activeInseminationIds.length} inseminaciones registrado`
                 });
 
-                setAlertConfig({ visible: true, color: 'success', message: `Diagnóstico registrado en ${activeInseminationIds.length} inseminaciones con éxito` });
+                setAlertConfig({ visible: true, color: 'success', message: t('insemination.success.bulkDiagnosis', { count: activeInseminationIds.length }) });
                 loadData();
                 setSelectedInseminations([]);
                 bulkDiagnosisFormik.resetForm();
             } catch (error) {
                 console.error('Error bulk diagnosing:', error);
-                setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al registrar el diagnóstico masivo, intentelo más tarde' });
+                setAlertConfig({ visible: true, color: 'danger', message: t('insemination.error.bulkDiagnosis') });
             } finally {
                 setSubmitting(false);
                 toggleModal('bulkDiagnosis');
@@ -350,7 +344,7 @@ const ViewInseminations = () => {
             toggleModal('viewPDF');
         } catch (error) {
             console.error('Error generating PDF: ', { error });
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('insemination.error.pdf') });
         } finally {
             setPdfLoading(false);
         }
@@ -365,7 +359,7 @@ const ViewInseminations = () => {
             ]);
         } catch (error) {
             console.error(error);
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un erorr al obtener los datos, intentelo de nuevo' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('insemination.error.load') })
         } finally {
             setLoading(false);
         }
@@ -384,11 +378,11 @@ const ViewInseminations = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Ver Inseminaciones"} pageTitle={"Gestación"} />
+                <BreadCrumb title={t('insemination.breadcrumb.title')} pageTitle={t('insemination.breadcrumb.parent')} />
 
                 <div className="d-flex gap-3 flex-wrap">
                     <KPI
-                        title="Total inseminaciones"
+                        title={t('insemination.kpi.total')}
                         value={inseminationsStats?.inseminationStats?.[0]?.total ?? 0}
                         icon={FiActivity}
                         bgColor="#e8f4fd"
@@ -396,7 +390,7 @@ const ViewInseminations = () => {
                     />
 
                     <KPI
-                        title="Inseminaciones activas"
+                        title={t('insemination.kpi.active')}
                         value={inseminationsStats?.inseminationStats?.[0]?.active ?? 0}
                         icon={FiPlayCircle}
                         bgColor="#fff8e1"
@@ -404,7 +398,7 @@ const ViewInseminations = () => {
                     />
 
                     <KPI
-                        title="Inseminaciones completadas"
+                        title={t('insemination.kpi.completed')}
                         value={inseminationsStats?.inseminationStats?.[0]?.completed ?? 0}
                         icon={FiCheckCircle}
                         bgColor="#e6f7e6"
@@ -412,7 +406,7 @@ const ViewInseminations = () => {
                     />
 
                     <KPI
-                        title="Inseminaciones fallidas"
+                        title={t('insemination.kpi.failed')}
                         value={inseminationsStats?.inseminationStats?.[0]?.failed ?? 0}
                         icon={FiXCircle}
                         bgColor="#fdecea"
@@ -421,28 +415,28 @@ const ViewInseminations = () => {
                 </div>
 
                 <div className="d-flex gap-3">
-                    <LineChartCard stats={inseminationsStats} type={"volume"} title={"Insemimaciones por periodo"} yLabel={"Inseminaciones"} />
+                    <LineChartCard stats={inseminationsStats} type={"volume"} title={t('insemination.chart.byPeriod')} yLabel={t('insemination.chart.yLabel')} />
 
                     <BasicBarChart
-                        title="Inseminaciones por cerda"
+                        title={t('insemination.chart.bySow')}
                         data={(inseminationsStats?.inseminationsBySow ?? []).map((item: any) => ({
                             sowCode: item.sowCode,
                             count: item.count
                         }))}
                         indexBy="sowCode"
                         keys={["count"]}
-                        xLegend="Cerda"
-                        yLegend="Número de inseminaciones"
+                        xLegend={t('insemination.chart.sowLabel')}
+                        yLegend={t('insemination.chart.countLabel')}
                     />
 
                     <BasicPieChart
-                        title="Resultados de inseminaciones"
+                        title={t('insemination.chart.results')}
                         data={[
-                            { id: 'Preñadas', value: inseminationsStats?.resultsStats?.[0]?.pregnant ?? 0 },
-                            { id: 'Vacías', value: inseminationsStats?.resultsStats?.[0]?.empty ?? 0 },
-                            { id: 'Abortos', value: inseminationsStats?.resultsStats?.[0]?.abortion ?? 0 },
-                            { id: 'Reabsorciones', value: inseminationsStats?.resultsStats?.[0]?.resorption ?? 0 },
-                            { id: 'Dudosas / Sin diagnóstico', value: inseminationsStats?.resultsStats?.[0]?.doubtfulOrMissing ?? 0 }
+                            { id: t('insemination.chart.pregnant'), value: inseminationsStats?.resultsStats?.[0]?.pregnant ?? 0 },
+                            { id: t('insemination.chart.empty'), value: inseminationsStats?.resultsStats?.[0]?.empty ?? 0 },
+                            { id: t('insemination.chart.abortion'), value: inseminationsStats?.resultsStats?.[0]?.abortion ?? 0 },
+                            { id: t('insemination.chart.resorption'), value: inseminationsStats?.resultsStats?.[0]?.resorption ?? 0 },
+                            { id: t('insemination.chart.doubtful'), value: inseminationsStats?.resultsStats?.[0]?.doubtfulOrMissing ?? 0 }
                         ]}
                     />
 
@@ -454,26 +448,26 @@ const ViewInseminations = () => {
                             {selectedInseminations.length > 0 && (
                                 <div className="d-flex align-items-center gap-2">
                                     <span className="text-muted">
-                                        {selectedInseminations.length} {selectedInseminations.length === 1 ? 'inseminación seleccionada' : 'inseminaciones seleccionadas'}
+                                        {selectedInseminations.length} {selectedInseminations.length === 1 ? t('insemination.selected.singular') : t('insemination.selected.plural')}
                                     </span>
                                     <div className="btn-group" role="group">
                                         <Button
                                             className="farm-warning-button btn-sm"
                                             disabled={!hasActiveInseminations}
-                                            title={!hasActiveInseminations ? "No hay inseminaciones activas para registrar celo" : undefined}
+                                            title={!hasActiveInseminations ? t('insemination.bulk.noActiveHeat') : undefined}
                                             onClick={handleOpenBulkHeatForm}
                                         >
                                             <i className="bx bx-heart me-1"></i>
-                                            Registrar Celo
+                                            {t('insemination.action.registerHeat')}
                                         </Button>
                                         <Button
                                             className="farm-secondary-button btn-sm ms-2"
                                             disabled={!hasActiveInseminations}
-                                            title={!hasActiveInseminations ? "No hay inseminaciones activas para registrar diagnóstico" : undefined}
+                                            title={!hasActiveInseminations ? t('insemination.bulk.noActiveDiagnosis') : undefined}
                                             onClick={handleOpenBulkDiagnosisForm}
                                         >
                                             <i className="bx bx-dna me-1"></i>
-                                            Registrar Diagnóstico
+                                            {t('insemination.action.registerDiagnosis')}
                                         </Button>
                                     </div>
                                 </div>
@@ -488,18 +482,18 @@ const ViewInseminations = () => {
                                 {pdfLoading ? (
                                     <>
                                         <Spinner className="me-2" size='sm' />
-                                        Generando...
+                                        {t('insemination.action.generating')}
                                     </>
                                 ) : (
                                     <>
                                         <i className="ri-file-pdf-line me-2"></i>
-                                        Exportar PDF
+                                        {t('insemination.action.exportPdf')}
                                     </>
                                 )}
                             </Button>
                             <Button className="farm-primary-button" onClick={() => toggleModal("create")}>
                                 <i className="ri-add-line me-2" />
-                                Registrar inseminación
+                                {t('insemination.action.registerInsemination')}
                             </Button>
                         </div>
                     </CardHeader>
@@ -537,7 +531,7 @@ const ViewInseminations = () => {
                             >
                                 <div>
                                     <FiInbox size={48} style={{ marginBottom: 10 }} />
-                                    <div>No hay inseminaciones disponibles</div>
+                                    <div>{t('insemination.empty.noInseminations')}</div>
                                 </div>
                             </div>
                         )}
@@ -546,41 +540,40 @@ const ViewInseminations = () => {
             </Container>
 
             <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("create")}>Nueva inseminación</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("create")}>{t('insemination.modal.create')}</ModalHeader>
                 <ModalBody>
                     <InseminationForm onSave={() => { toggleModal('create'); fetchInseminations(); fetchInseminationsStats(); }} onCancel={() => toggleModal('create')} />
                 </ModalBody>
             </Modal>
 
             <Modal size="lg" isOpen={modals.diagnosis} toggle={() => toggleModal("diagnosis")} backdrop="static" keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("diagnosis")}>Registrar diagnóstico</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("diagnosis")}>{t('insemination.modal.diagnosis')}</ModalHeader>
                 <ModalBody>
                     <DiagnosisForm insemination={selectedInsemination} onSave={() => { toggleModal('diagnosis'); fetchInseminations(); fetchInseminationsStats(); }} onCancel={() => toggleModal('diagnosis')} />
                 </ModalBody>
             </Modal>
 
             <Modal size="lg" isOpen={modals.heat} toggle={() => toggleModal("heat")} backdrop="static" keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("heat")}>Registrar celo</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("heat")}>{t('insemination.modal.heat')}</ModalHeader>
                 <ModalBody>
                     {selectedInsemination && <HeatForm insemination={selectedInsemination} onSave={() => { toggleModal('heat'); fetchInseminations(); fetchInseminationsStats(); }} onCancel={() => toggleModal('heat')} />}
                 </ModalBody>
             </Modal>
 
-            {/* Modal Bulk Heat Form */}
             <Modal isOpen={modals.bulkHeat} toggle={() => toggleModal("bulkHeat")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("bulkHeat")}>
-                    Registrar Celo en {selectedInseminations.filter(ins => ins.status !== 'completed' && ins.status !== 'failed').length} Inseminaciones
+                    {t('insemination.modal.bulkHeat', { count: selectedInseminations.filter(ins => ins.status !== 'completed' && ins.status !== 'failed').length })}
                 </ModalHeader>
                 <ModalBody>
                     <form onSubmit={bulkHeatFormik.handleSubmit}>
                         <div className="mb-3">
                             <small className="text-muted">
-                                Esta acción registrará el celo en las inseminaciones activas seleccionadas.
+                                {t('insemination.bulk.heatInfo')}
                             </small>
                         </div>
 
                         <div className="mt-4">
-                            <Label htmlFor="heatDetected" className="form-label">Celo detectado</Label>
+                            <Label htmlFor="heatDetected" className="form-label">{t('insemination.field.heatDetected')}</Label>
                             <Input
                                 type="select"
                                 id="heatDetected"
@@ -590,8 +583,8 @@ const ViewInseminations = () => {
                                 onBlur={bulkHeatFormik.handleBlur}
                                 invalid={bulkHeatFormik.touched.heatDetected && !!bulkHeatFormik.errors.heatDetected}
                             >
-                                <option value="true">Sí</option>
-                                <option value="false">No</option>
+                                <option value="true">{t('insemination.field.yes')}</option>
+                                <option value="false">{t('insemination.field.no')}</option>
                             </Input>
                             {bulkHeatFormik.touched.heatDetected && bulkHeatFormik.errors.heatDetected && (
                                 <FormFeedback>{bulkHeatFormik.errors.heatDetected}</FormFeedback>
@@ -600,7 +593,7 @@ const ViewInseminations = () => {
 
                         <div className="d-flex gap-2 mt-4">
                             <div className="w-50">
-                                <Label htmlFor="date" className="form-label">Fecha del registro</Label>
+                                <Label htmlFor="date" className="form-label">{t('insemination.field.date')}</Label>
                                 <DatePicker
                                     id="date"
                                     className={`form-control ${bulkHeatFormik.touched.date && bulkHeatFormik.errors.date ? 'is-invalid' : ''}`}
@@ -614,7 +607,7 @@ const ViewInseminations = () => {
                             </div>
 
                             <div className="w-50">
-                                <Label htmlFor="responsible" className="form-label">Responsable</Label>
+                                <Label htmlFor="responsible" className="form-label">{t('insemination.field.responsible')}</Label>
                                 <Input
                                     type="text"
                                     id="responsible"
@@ -626,7 +619,7 @@ const ViewInseminations = () => {
                         </div>
 
                         <div className="mt-4">
-                            <Label htmlFor="notes" className="form-label">Notas</Label>
+                            <Label htmlFor="notes" className="form-label">{t('insemination.field.notes')}</Label>
                             <Input
                                 type="text"
                                 id="notes"
@@ -635,7 +628,7 @@ const ViewInseminations = () => {
                                 onChange={bulkHeatFormik.handleChange}
                                 onBlur={bulkHeatFormik.handleBlur}
                                 invalid={bulkHeatFormik.touched.notes && !!bulkHeatFormik.errors.notes}
-                                placeholder="Ej: Celo leve, comportamiento dudoso"
+                                placeholder={t('insemination.placeholder.heatNotes')}
                             />
                             {bulkHeatFormik.touched.notes && bulkHeatFormik.errors.notes && (
                                 <FormFeedback>{bulkHeatFormik.errors.notes}</FormFeedback>
@@ -644,36 +637,35 @@ const ViewInseminations = () => {
                     </form>
                 </ModalBody>
                 <ModalFooter>
-                    <Button className="farm-secondary-button" onClick={() => toggleModal("bulkHeat", false)}>Cancelar</Button>
+                    <Button className="farm-secondary-button" onClick={() => toggleModal("bulkHeat", false)}>{t('common.button.cancel')}</Button>
                     <Button className="farm-primary-button" onClick={() => bulkHeatFormik.handleSubmit()} disabled={bulkHeatFormik.isSubmitting}>
-                        {bulkHeatFormik.isSubmitting ? <Spinner size="sm" /> : 'Confirmar Registro'}
+                        {bulkHeatFormik.isSubmitting ? <Spinner size="sm" /> : t('insemination.action.confirmRegister')}
                     </Button>
                 </ModalFooter>
             </Modal>
 
-            {/* Modal Bulk Diagnosis Form */}
             <Modal isOpen={modals.bulkDiagnosis} toggle={() => toggleModal("bulkDiagnosis")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("bulkDiagnosis")}>
-                    Registrar Diagnóstico en {selectedInseminations.filter(ins => ins.status !== 'completed' && ins.status !== 'failed').length} Inseminaciones
+                    {t('insemination.modal.bulkDiagnosis', { count: selectedInseminations.filter(ins => ins.status !== 'completed' && ins.status !== 'failed').length })}
                 </ModalHeader>
                 <ModalBody>
                     <form onSubmit={bulkDiagnosisFormik.handleSubmit}>
                         <div className="mb-3">
                             <small className="text-muted">
-                                Esta acción registrará el diagnóstico en las inseminaciones activas seleccionadas.
+                                {t('insemination.bulk.diagnosisInfo')}
                             </small>
                             {bulkDiagnosisFormik.values.result === 'pregnant' && (
                                 <div className="alert alert-info mt-2 d-flex align-items-center gap-2">
                                     <FiInfo size={20} />
                                     <small>
-                                        Se crearán automáticamente registros de embarazo para las inseminaciones diagnosticadas como preñadas.
+                                        {t('insemination.bulk.pregnancyAlert')}
                                     </small>
                                 </div>
                             )}
                         </div>
 
                         <div className="mt-4">
-                            <Label htmlFor="result" className="form-label">Diagnóstico</Label>
+                            <Label htmlFor="result" className="form-label">{t('insemination.field.diagnosis')}</Label>
                             <Input
                                 type="select"
                                 name="result"
@@ -682,11 +674,11 @@ const ViewInseminations = () => {
                                 onBlur={bulkDiagnosisFormik.handleBlur}
                                 invalid={bulkDiagnosisFormik.touched.result && !!bulkDiagnosisFormik.errors.result}
                             >
-                                <option value="pregnant">Preñada</option>
-                                <option value="empty">Vacía</option>
-                                <option value="doubtful">Dudosa</option>
-                                <option value="resorption">Reabsorción</option>
-                                <option value="abortion">Aborto</option>
+                                <option value="pregnant">{t('insemination.result.pregnant')}</option>
+                                <option value="empty">{t('insemination.result.empty')}</option>
+                                <option value="doubtful">{t('insemination.result.doubtful')}</option>
+                                <option value="resorption">{t('insemination.result.resorption')}</option>
+                                <option value="abortion">{t('insemination.result.abortion')}</option>
                             </Input>
                             {bulkDiagnosisFormik.touched.result && bulkDiagnosisFormik.errors.result && (
                                 <FormFeedback>{bulkDiagnosisFormik.errors.result}</FormFeedback>
@@ -695,7 +687,7 @@ const ViewInseminations = () => {
 
                         <div className="d-flex gap-2 mt-4">
                             <div className="w-50">
-                                <Label htmlFor="diagnosisDate" className="form-label">Fecha de diagnóstico</Label>
+                                <Label htmlFor="diagnosisDate" className="form-label">{t('insemination.field.diagnosisDate')}</Label>
                                 <DatePicker
                                     id="diagnosisDate"
                                     className={`form-control ${bulkDiagnosisFormik.touched.diagnosisDate && bulkDiagnosisFormik.errors.diagnosisDate ? 'is-invalid' : ''}`}
@@ -709,7 +701,7 @@ const ViewInseminations = () => {
                             </div>
 
                             <div className="w-50">
-                                <Label htmlFor="responsible" className="form-label">Responsable</Label>
+                                <Label htmlFor="responsible" className="form-label">{t('insemination.field.responsible')}</Label>
                                 <Input
                                     type="text"
                                     id="responsible"
@@ -721,7 +713,7 @@ const ViewInseminations = () => {
                         </div>
 
                         <div className="mt-4">
-                            <Label htmlFor="diagnose_notes" className="form-label">Notas</Label>
+                            <Label htmlFor="diagnose_notes" className="form-label">{t('insemination.field.notes')}</Label>
                             <Input
                                 type="text"
                                 id="diagnose_notes"
@@ -730,7 +722,7 @@ const ViewInseminations = () => {
                                 onChange={bulkDiagnosisFormik.handleChange}
                                 onBlur={bulkDiagnosisFormik.handleBlur}
                                 invalid={bulkDiagnosisFormik.touched.diagnose_notes && !!bulkDiagnosisFormik.errors.diagnose_notes}
-                                placeholder="Ej: Diagnóstico masivo por ultrasonido"
+                                placeholder={t('insemination.placeholder.diagnosisNotes')}
                             />
                             {bulkDiagnosisFormik.touched.diagnose_notes && bulkDiagnosisFormik.errors.diagnose_notes && (
                                 <FormFeedback>{bulkDiagnosisFormik.errors.diagnose_notes}</FormFeedback>
@@ -739,34 +731,32 @@ const ViewInseminations = () => {
                     </form>
                 </ModalBody>
                 <ModalFooter>
-                    <Button className="farm-secondary-button" onClick={() => toggleModal("bulkDiagnosis", false)}>Cancelar</Button>
+                    <Button className="farm-secondary-button" onClick={() => toggleModal("bulkDiagnosis", false)}>{t('common.button.cancel')}</Button>
                     <Button className="farm-primary-button" onClick={() => bulkDiagnosisFormik.handleSubmit()} disabled={bulkDiagnosisFormik.isSubmitting}>
-                        {bulkDiagnosisFormik.isSubmitting ? <Spinner size="sm" /> : 'Confirmar Diagnóstico'}
+                        {bulkDiagnosisFormik.isSubmitting ? <Spinner size="sm" /> : t('insemination.action.confirmDiagnosis')}
                     </Button>
                 </ModalFooter>
             </Modal>
 
             <Modal size="lg" isOpen={modals.pigDetails} toggle={() => toggleModal("pigDetails")} centered>
-                <ModalHeader toggle={() => toggleModal("pigDetails")}>Detalles del verraco</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("pigDetails")}>{t('insemination.modal.pigDetails')}</ModalHeader>
                 <ModalBody>
                     <PigDetailsModal pigId={selectedPigId} showAllDetailsButton={true} />
                 </ModalBody>
             </Modal>
 
-            {/* Modal para seleccionar rango de fechas */}
             <Modal size="md" isOpen={modals.dateRange} toggle={() => toggleModal("dateRange")} centered>
-                <ModalHeader toggle={() => toggleModal("dateRange")}>Seleccionar rango de fechas</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("dateRange")}>{t('insemination.modal.dateRange')}</ModalHeader>
                 <ReportDateRangeSelector
                     onGenerate={handleGeneratePDF}
                     onCancel={() => toggleModal("dateRange")}
                     loading={pdfLoading}
-                    generateButtonText="Generar PDF"
+                    generateButtonText={t('insemination.action.generatePdf')}
                 />
             </Modal>
 
-            {/* Modal PDF */}
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de inseminaciones</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('insemination.modal.report')}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>

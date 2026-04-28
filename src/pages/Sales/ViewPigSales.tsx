@@ -11,14 +11,7 @@ import SellPigsFormV2 from "Components/Common/Forms/SellPigsFormV2";
 import SaleDetails from "Components/Common/Details/SaleDetails";
 import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
-
-const paymentMethodLabel: Record<string, string> = {
-    cash: "Efectivo",
-    transfer: "Transferencia",
-    check: "Cheque",
-    credit: "Crédito",
-    other: "Otro",
-};
+import { useTranslation } from "react-i18next";
 
 const paymentStatusColor: Record<string, string> = {
     pending: "warning",
@@ -26,14 +19,9 @@ const paymentStatusColor: Record<string, string> = {
     completed: "success",
 };
 
-const paymentStatusLabel: Record<string, string> = {
-    pending: "Pendiente",
-    partial: "Parcial",
-    completed: "Completado",
-};
-
 const ViewPigSales = () => {
-    document.title = "Ver Ventas | Ventas";
+    const { t } = useTranslation();
+    document.title = t('finance.sale.pageTitle');
 
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
@@ -51,25 +39,25 @@ const ViewPigSales = () => {
 
     const columns: Column<any>[] = [
         {
-            header: "Código",
+            header: t('finance.sale.column.code'),
             accessor: "code",
             isFilterable: true,
             type: "text",
         },
         {
-            header: "Fecha",
+            header: t('finance.sale.column.date'),
             accessor: "saleDate",
             isFilterable: true,
             type: "date",
         },
         {
-            header: "Comprador",
+            header: t('finance.sale.column.buyer'),
             accessor: "buyer",
             type: "text",
             render: (_, row) => <span>{row.buyer?.name || "—"}</span>,
         },
         {
-            header: "Cerdos",
+            header: t('finance.sale.column.pigs'),
             accessor: "pigs",
             type: "text",
             bgColor: "#e3f2fd",
@@ -80,7 +68,7 @@ const ViewPigSales = () => {
             ),
         },
         {
-            header: "Peso total",
+            header: t('finance.sale.column.totalWeight'),
             accessor: "totalWeight",
             type: "text",
             bgColor: "#e8f5e9",
@@ -89,29 +77,29 @@ const ViewPigSales = () => {
             ),
         },
         {
-            header: "Monto total",
+            header: t('finance.sale.column.totalAmount'),
             accessor: "totalAmount",
             type: "currency",
             bgColor: "#e0f2f1",
         },
         {
-            header: "Método de pago",
+            header: t('finance.sale.column.paymentMethod'),
             accessor: "paymentMethod",
             type: "text",
-            render: v => <span>{paymentMethodLabel[v] || v}</span>,
+            render: v => <span>{t(`finance.sale.paymentMethod.${v}`, { defaultValue: v })}</span>,
         },
         {
-            header: "Estado de pago",
+            header: t('finance.sale.column.paymentStatus'),
             accessor: "paymentStatus",
             type: "text",
             render: v => (
                 <Badge color={paymentStatusColor[v] || "secondary"}>
-                    {paymentStatusLabel[v] || v}
+                    {t(`finance.sale.paymentStatus.${v}`, { defaultValue: v })}
                 </Badge>
             ),
         },
         {
-            header: "Acciones",
+            header: t('common.field.actions'),
             accessor: "action",
             render: (_: any, row: any) => (
                 <Button
@@ -139,7 +127,7 @@ const ViewPigSales = () => {
             setFileURL(window.URL.createObjectURL(pdfBlob));
             toggleModal('viewPDF');
         } catch (error) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('finance.sale.error.generatePdf') });
         } finally {
             setPdfLoading(false);
         }
@@ -154,7 +142,7 @@ const ViewPigSales = () => {
             );
             setSales(res.data.data || []);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al obtener las ventas, intente nuevamente." });
+            setAlertConfig({ visible: true, color: "danger", message: t('finance.sale.error.fetchData') });
         } finally {
             setLoading(false);
         }
@@ -169,22 +157,22 @@ const ViewPigSales = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title="Ver Ventas" pageTitle="Ventas" />
+                <BreadCrumb title={t('finance.sale.breadcrumb.title')} pageTitle={t('finance.sale.breadcrumb.parent')} />
 
                 <Card>
                     <CardHeader>
                         <div className="d-flex align-items-center gap-2">
-                            <h4 className="mb-0 me-auto">Ventas de cerdos</h4>
+                            <h4 className="mb-0 me-auto">{t('finance.sale.cardTitle')}</h4>
                             <Button color="primary" onClick={() => toggleModal("dateRange")} disabled={pdfLoading}>
                                 {pdfLoading ? (
-                                    <><Spinner className="me-2" size="sm" />Generando...</>
+                                    <><Spinner className="me-2" size="sm" />{t('common.button.generating')}</>
                                 ) : (
-                                    <><i className="ri-file-pdf-line me-2" />Exportar PDF</>
+                                    <><i className="ri-file-pdf-line me-2" />{t('common.button.exportPdf')}</>
                                 )}
                             </Button>
                             <Button className="farm-primary-button" onClick={() => toggleModal("newSale")}>
                                 <i className="ri-add-line me-2" />
-                                Nueva Venta
+                                {t('finance.sale.action.new')}
                             </Button>
                         </div>
                     </CardHeader>
@@ -192,7 +180,7 @@ const ViewPigSales = () => {
                         {sales.length === 0 ? (
                             <>
                                 <i className="ri-money-dollar-circle-line text-muted mb-2" style={{ fontSize: "2rem" }} />
-                                <span className="fs-5 text-muted">Aún no hay ventas registradas</span>
+                                <span className="fs-5 text-muted">{t('finance.sale.empty')}</span>
                             </>
                         ) : (
                             <CustomTable columns={columns} data={sales} showSearchAndFilter={true} showPagination={false} />
@@ -202,7 +190,7 @@ const ViewPigSales = () => {
             </Container>
 
             <Modal size="xl" isOpen={modals.newSale} toggle={() => toggleModal("newSale")} backdrop="static" keyboard={false} centered scrollable>
-                <ModalHeader toggle={() => toggleModal("newSale")}>Nueva venta de cerdos</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("newSale")}>{t('finance.sale.modal.create')}</ModalHeader>
                 <ModalBody>
                     <SellPigsFormV2
                         onSave={() => { toggleModal("newSale"); fetchSales(); }}
@@ -211,24 +199,24 @@ const ViewPigSales = () => {
             </Modal>
 
             <Modal size="xl" isOpen={modals.details} toggle={() => { toggleModal("details"); setSelectedSaleId(null); }} centered scrollable>
-                <ModalHeader toggle={() => { toggleModal("details"); setSelectedSaleId(null); }}>Detalles de la venta</ModalHeader>
+                <ModalHeader toggle={() => { toggleModal("details"); setSelectedSaleId(null); }}>{t('finance.sale.modal.details')}</ModalHeader>
                 <ModalBody>
                     {selectedSaleId && <SaleDetails saleId={selectedSaleId} />}
                 </ModalBody>
             </Modal>
 
             <Modal size="md" isOpen={modals.dateRange} toggle={() => toggleModal("dateRange")} centered>
-                <ModalHeader toggle={() => toggleModal("dateRange")}>Seleccionar rango de fechas</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("dateRange")}>{t('finance.sale.modal.dateRange')}</ModalHeader>
                 <ReportDateRangeSelector
                     onGenerate={handleGeneratePDF}
                     onCancel={() => toggleModal("dateRange")}
                     loading={pdfLoading}
-                    generateButtonText="Generar PDF"
+                    generateButtonText={t('finance.sale.action.generatePdf')}
                 />
             </Modal>
 
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop="static" keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Ventas de Cerdos</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('finance.sale.modal.pdfReport')}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>

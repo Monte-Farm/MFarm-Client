@@ -18,9 +18,11 @@ import DiscardSampleForm from "Components/Common/Forms/DiscardSampleForm";
 import SemenSampleForm from "Components/Common/Forms/SemenSampleForm";
 import SelectableCustomTable from "Components/Common/Tables/SelectableTable";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
+import { useTranslation } from "react-i18next";
 
 const ViewSamples = () => {
-    document.title = 'Ver génetica liquida | Management System'
+    const { t } = useTranslation();
+    document.title = t('laboratory.sample.pageTitle')
     const userLoggged = getEffectiveUser();
     const configContext = useContext(ConfigContext)
     const [loading, setLoading] = useState<boolean>(true);
@@ -35,16 +37,30 @@ const ViewSamples = () => {
     const [selectedPig, setSelectedPig] = useState<any>({})
     const navigate = useNavigate();
 
+    const getLotStatusBadge = (lotStatus: string) => {
+        const statusMap: Record<string, { color: string; key: string }> = {
+            available: { color: "success", key: "available" },
+            near_expiration: { color: "warning", key: "nearExpiration" },
+            expired: { color: "dark", key: "expired" },
+            out_of_stock: { color: "dark", key: "outOfStock" },
+            discarded: { color: "dark", key: "discarded" },
+        };
+        const entry = statusMap[lotStatus];
+        const text = entry ? t(`laboratory.sample.lotStatus.${entry.key}`) : t('laboratory.sample.lotStatus.unknown');
+        const color = entry ? entry.color : "secondary";
+        return <Badge color={color}>{text}</Badge>;
+    };
+
     const samplesColumns: Column<any>[] = [
         {
-            header: 'Lote',
+            header: t('laboratory.sample.column.batch'),
             accessor: 'extraction_id',
             type: 'text',
             isFilterable: true,
-            render: (_, row) => row.extraction_id.batch || "Sin lote"
+            render: (_, row) => row.extraction_id.batch || t('laboratory.sample.noBatch')
         },
         {
-            header: 'Verraco',
+            header: t('laboratory.sample.column.boar'),
             accessor: 'boar',
             render: (_, row) => (
                 <Button
@@ -60,63 +76,35 @@ const ViewSamples = () => {
             )
         },
         {
-            header: 'Dosis totales',
+            header: t('laboratory.sample.column.totalDoses'),
             accessor: 'total_doses',
             type: 'number',
             isFilterable: true,
         },
         {
-            header: 'Dosis disponibles',
+            header: t('laboratory.sample.column.availableDoses'),
             accessor: 'available_doses',
             type: 'number',
             isFilterable: true,
         },
-        { header: 'Fecha de expiracion', accessor: 'expiration_date', type: 'date', isFilterable: false },
-        { header: 'Método de conservación', accessor: 'conservation_method', type: 'text', isFilterable: true },
+        { header: t('laboratory.sample.column.expirationDate'), accessor: 'expiration_date', type: 'date', isFilterable: false },
+        { header: t('laboratory.sample.column.conservationMethod'), accessor: 'conservation_method', type: 'text', isFilterable: true },
         {
-            header: 'Responsable',
+            header: t('laboratory.sample.column.technician'),
             accessor: 'technician',
             type: 'text',
             isFilterable: true,
-            render: (_, row) => row.technician ? `${row.technician.name} ${row.technician.lastname}` : "Sin responsable"
+            render: (_, row) => row.technician ? `${row.technician.name} ${row.technician.lastname}` : t('laboratory.sample.noResponsible')
         },
         {
-            header: "Estado del lote",
+            header: t('laboratory.sample.column.lotStatus'),
             accessor: "lot_status",
             type: "text",
             isFilterable: true,
-            render: (_, row) => {
-                let color = "secondary";
-                let text = "Desconocido";
-
-                switch (row.lot_status) {
-                    case "available":
-                        color = "success";
-                        text = "Disponible";
-                        break;
-                    case "near_expiration":
-                        color = "warning";
-                        text = "A punto de expirar";
-                        break;
-                    case "expired":
-                        color = "dark";
-                        text = "Expirado";
-                        break;
-                    case "out_of_stock":
-                        color = "dark";
-                        text = "Sin dosis";
-                        break;
-                    case "discarded":
-                        color = "dark";
-                        text = "Descartado";
-                        break;
-                }
-
-                return <Badge color={color}>{text}</Badge>;
-            },
+            render: (_, row) => getLotStatusBadge(row.lot_status),
         },
         {
-            header: "Acciones",
+            header: t('common.field.actions'),
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
@@ -124,14 +112,14 @@ const ViewSamples = () => {
                         <i className="ri-forbid-line align-middle"></i>
                     </Button>
                     <UncontrolledTooltip target={`discard-button-${row._id}`}>
-                        Descartar lote
+                        {t('laboratory.sample.action.discard')}
                     </UncontrolledTooltip>
 
                     <Button id={`details-button-${row._id}`} className="farm-primary-button btn-icon" onClick={(e) => { e.stopPropagation(); navigate(`/laboratory/samples/sample_details/${row._id}`); }}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
                     <UncontrolledTooltip target={`details-button-${row._id}`}>
-                        Ver detalles
+                        {t('common.button.viewDetails')}
                     </UncontrolledTooltip>
                 </div>
             ),
@@ -178,7 +166,7 @@ const ViewSamples = () => {
             setFileURL(window.URL.createObjectURL(pdfBlob));
             toggleModal('viewPDF');
         } catch (error) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('laboratory.sample.error.generatePdf') });
         } finally {
             setPdfLoading(false);
         }
@@ -194,15 +182,15 @@ const ViewSamples = () => {
             setFilteredSamples(samplesWithId)
         } catch (error) {
             console.error('Error fetching the data: ', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('laboratory.sample.error.fetchData') })
         } finally {
             setLoading(false)
         }
     }
 
     const bulkDiscardValidationSchema = Yup.object({
-        discard_reason: Yup.string().required("Por favor ingrese el motivo del descarte"),
-        discard_date: Yup.date().required("La fecha es obligatoria"),
+        discard_reason: Yup.string().required(t('laboratory.sample.bulk.validation.reason')),
+        discard_date: Yup.date().required(t('laboratory.sample.bulk.validation.date')),
     });
 
     const bulkDiscardFormik = useFormik({
@@ -228,12 +216,12 @@ const ViewSamples = () => {
                     discard_date: values.discard_date,
                     discarded_by: values.discarded_by
                 });
-                setAlertConfig({ visible: true, color: 'success', message: `${discardableSampleIds.length} lotes descartados con éxito` });
+                setAlertConfig({ visible: true, color: 'success', message: t('laboratory.sample.bulk.success', { count: discardableSampleIds.length }) });
                 fetchSemenSamples();
                 setSelectedSamples([]);
             } catch (error) {
                 console.error('Error bulk discarding samples:', error);
-                setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al descartar los lotes, intentelo más tarde' });
+                setAlertConfig({ visible: true, color: 'danger', message: t('laboratory.sample.bulk.error') });
             } finally {
                 setSubmitting(false);
                 bulkDiscardFormik.resetForm();
@@ -262,14 +250,16 @@ const ViewSamples = () => {
         );
     }
 
+    const discardableCount = selectedSamples.filter(s => s.lot_status !== 'discarded' && s.lot_status !== 'expired' && s.lot_status !== 'out_of_stock').length;
+
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Lotes"} pageTitle={"Génetica liquida"} />
+                <BreadCrumb title={t('laboratory.sample.breadcrumb.title')} pageTitle={t('laboratory.sample.breadcrumb.parent')} />
 
                 <div className="d-flex gap-3 flex-wrap">
                     <KPI
-                        title="Lotes totales"
+                        title={t('laboratory.sample.kpi.total')}
                         value={samples.length}
                         icon={FiCheckCircle}
                         bgColor="#e6f7e6"
@@ -277,7 +267,7 @@ const ViewSamples = () => {
                     />
 
                     <KPI
-                        title="Próximos a expirar"
+                        title={t('laboratory.sample.kpi.nearExpiration')}
                         value={samples.filter(s => s.lot_status === "near_expiration").length}
                         icon={FiAlertCircle}
                         bgColor="#fff4e6"
@@ -285,7 +275,7 @@ const ViewSamples = () => {
                     />
 
                     <KPI
-                        title="Disponibles"
+                        title={t('laboratory.sample.kpi.available')}
                         value={samples.filter(s => s.lot_status === "available").length}
                         icon={FiCheckCircle}
                         bgColor="#e6f0ff"
@@ -293,7 +283,7 @@ const ViewSamples = () => {
                     />
 
                     <KPI
-                        title="Expirados"
+                        title={t('laboratory.sample.kpi.expired')}
                         value={samples.filter(s => s.lot_status === "expired").length}
                         icon={FiXCircle}
                         bgColor="#ffe6e6"
@@ -301,7 +291,7 @@ const ViewSamples = () => {
                     />
 
                     <KPI
-                        title="Descartados"
+                        title={t('laboratory.sample.kpi.discarded')}
                         value={samples.filter(s => s.lot_status === "discarded").length}
                         icon={FiXCircle}
                         bgColor="#f0f0f0"
@@ -315,17 +305,17 @@ const ViewSamples = () => {
                             {selectedSamples.length > 0 && (
                                 <div className="d-flex align-items-center gap-2">
                                     <span className="text-muted">
-                                        {selectedSamples.length} {selectedSamples.length === 1 ? 'lote seleccionado' : 'lotes seleccionados'}
+                                        {selectedSamples.length} {selectedSamples.length === 1 ? t('laboratory.sample.selection.singular') : t('laboratory.sample.selection.plural')}
                                     </span>
                                     <div className="btn-group" role="group">
                                         <Button
                                             className="farm-secondary-button btn-sm"
                                             disabled={!hasDiscardableSamples}
-                                            title={!hasDiscardableSamples ? "No hay lotes disponibles para descartar" : undefined}
+                                            title={!hasDiscardableSamples ? t('laboratory.sample.action.noDiscardable') : undefined}
                                             onClick={handleOpenBulkDiscardForm}
                                         >
                                             <i className="ri-forbid-line me-1"></i>
-                                            Descartar Seleccionados
+                                            {t('laboratory.sample.action.discardSelected')}
                                         </Button>
                                     </div>
                                 </div>
@@ -333,14 +323,14 @@ const ViewSamples = () => {
                             <div className="d-flex gap-2 ms-auto">
                                 <Button color="primary" onClick={handleGeneratePDF} disabled={pdfLoading}>
                                     {pdfLoading ? (
-                                        <><Spinner className="me-2" size="sm" />Generando...</>
+                                        <><Spinner className="me-2" size="sm" />{t('common.button.generating')}</>
                                     ) : (
-                                        <><i className="ri-file-pdf-line me-2" />Exportar PDF</>
+                                        <><i className="ri-file-pdf-line me-2" />{t('common.button.exportPdf')}</>
                                     )}
                                 </Button>
                                 <Button className="farm-primary-button" onClick={() => toggleModal('create')}>
                                     <i className="ri-add-line me-2" />
-                                    Agregar muestra
+                                    {t('laboratory.sample.action.add')}
                                 </Button>
                             </div>
                         </div>
@@ -362,7 +352,7 @@ const ViewSamples = () => {
                             <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", textAlign: "center", color: "#888", }}>
                                 <div>
                                     <FiInbox size={48} style={{ marginBottom: 10 }} />
-                                    <div>No hay muestras disponibles</div>
+                                    <div>{t('laboratory.sample.empty')}</div>
                                 </div>
                             </div>
                         )}
@@ -372,42 +362,40 @@ const ViewSamples = () => {
             </Container>
 
             <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("create")}>Nueva muestra</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("create")}>{t('laboratory.sample.modal.create')}</ModalHeader>
                 <ModalBody>
                     <SemenSampleForm onSave={() => onSaveSample()} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
-
             <Modal size="lg" isOpen={modals.pigDetails} toggle={() => toggleModal("pigDetails")} centered>
-                <ModalHeader toggle={() => toggleModal("pigDetails")}>Detalles del verraco</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("pigDetails")}>{t('laboratory.sample.modal.pigDetails')}</ModalHeader>
                 <ModalBody>
                     <PigDetailsModal pigId={selectedPig} showAllDetailsButton={true} />
                 </ModalBody>
             </Modal>
 
             <Modal size="lg" isOpen={modals.discard} toggle={() => toggleModal("discard")} backdrop="static" keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("discard")}>Descartar lote</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("discard")}>{t('laboratory.sample.modal.discard')}</ModalHeader>
                 <ModalBody>
                     <DiscardSampleForm sample={selectedSample} onSave={() => onDiscardedSample()} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
-            {/* Modal Bulk Discard Form */}
             <Modal isOpen={modals.bulkDiscardForm} toggle={() => toggleModal("bulkDiscardForm")} backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={() => toggleModal("bulkDiscardForm")}>
-                    Descartar {selectedSamples.filter(s => s.lot_status !== 'discarded' && s.lot_status !== 'expired' && s.lot_status !== 'out_of_stock').length} Lotes
+                    {t('laboratory.sample.bulk.title', { count: discardableCount })}
                 </ModalHeader>
                 <ModalBody>
                     <form onSubmit={bulkDiscardFormik.handleSubmit}>
                         <div className="mb-3">
                             <small className="text-muted">
-                                Esta acción marcará los lotes seleccionados como descartados y no podrán ser utilizados.
+                                {t('laboratory.sample.bulk.warning')}
                             </small>
                         </div>
 
                         <div className="mt-4">
-                            <Label htmlFor="discard_reason" className="form-label">Razón del descarte</Label>
+                            <Label htmlFor="discard_reason" className="form-label">{t('laboratory.sample.bulk.field.reason')}</Label>
                             <Input
                                 type="text"
                                 id="discard_reason"
@@ -424,7 +412,7 @@ const ViewSamples = () => {
 
                         <div className="d-flex gap-2 mt-4">
                             <div className="w-50">
-                                <Label htmlFor="discard_date" className="form-label">Fecha del descarte</Label>
+                                <Label htmlFor="discard_date" className="form-label">{t('laboratory.sample.bulk.field.date')}</Label>
                                 <DatePicker
                                     id="discard_date"
                                     className={`form-control ${bulkDiscardFormik.touched.discard_date && bulkDiscardFormik.errors.discard_date ? 'is-invalid' : ''}`}
@@ -438,7 +426,7 @@ const ViewSamples = () => {
                             </div>
 
                             <div className="w-50">
-                                <Label htmlFor="responsible" className="form-label">Responsable</Label>
+                                <Label htmlFor="responsible" className="form-label">{t('laboratory.sample.bulk.field.responsible')}</Label>
                                 <Input
                                     type="text"
                                     id="responsible"
@@ -451,15 +439,15 @@ const ViewSamples = () => {
                     </form>
                 </ModalBody>
                 <ModalFooter>
-                    <Button className="farm-secondary-button" onClick={() => toggleModal("bulkDiscardForm", false)}>Cancelar</Button>
+                    <Button className="farm-secondary-button" onClick={() => toggleModal("bulkDiscardForm", false)}>{t('common.button.cancel')}</Button>
                     <Button className="farm-primary-button" onClick={() => bulkDiscardFormik.handleSubmit()} disabled={bulkDiscardFormik.isSubmitting}>
-                        {bulkDiscardFormik.isSubmitting ? <Spinner size="sm" /> : 'Confirmar Descarte'}
+                        {bulkDiscardFormik.isSubmitting ? <Spinner size="sm" /> : t('laboratory.sample.bulk.button.confirm')}
                     </Button>
                 </ModalFooter>
             </Modal>
 
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop="static" keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Lotes de Genética Líquida</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('laboratory.sample.modal.pdfReport')}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>

@@ -10,35 +10,36 @@ import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Column } from "common/data/data_types"
 import CustomTable from "Components/Common/Tables/CustomTable"
 import PDFViewer from "Components/Common/Shared/PDFViewer"
-
-const orderAttributes: Attribute[] = [
-    { key: 'id', label: 'No. de Pedido', type: 'text' },
-    { key: 'date', label: 'Fecha de pedido', type: 'text' },
-    { key: 'user', label: 'Usuario', type: 'text' },
-    { key: 'orderDestiny', label: 'Almacén de destino', type: 'text' },
-    { key: 'status', label: 'Estado', type: 'status' }
-]
-
-const productsColumns: Column<any>[] = [
-    { header: 'Codigo', accessor: 'id', isFilterable: true, type: 'text' },
-    { header: 'Nombre', accessor: 'name', isFilterable: true, type: 'text' },
-    { header: 'Cantidad Solicitada', accessor: 'quantity', isFilterable: true, type: 'number' },
-    { header: 'Unidad de medida', accessor: 'unit_measurement', isFilterable: true, type: 'text' },
-    { header: 'Categoria', accessor: 'category', isFilterable: true, type: 'text' },
-    { header: 'Observaciones', accessor: 'observations', isFilterable: true, type: 'text' },
-]
-
-const productsCompletedColumns: Column<any>[] = [
-    { header: 'Codigo', accessor: 'id', isFilterable: true, type: 'text' },
-    { header: 'Nombre', accessor: 'name', isFilterable: true, type: 'text' },
-    { header: 'Cantidad Solicitada', accessor: 'quantity', isFilterable: true, type: 'number' },
-    { header: 'Cantidad Entregada', accessor: 'quantityDelivered', isFilterable: true, type: 'number' },
-    { header: 'Unidad de medida', accessor: 'unit_measurement', isFilterable: true, type: 'text' },
-    { header: 'Categoria', accessor: 'category', isFilterable: true, type: 'text' },
-    { header: 'Observaciones', accessor: 'observations', isFilterable: true, type: 'text' },
-]
+import { useTranslation } from "react-i18next"
 
 const OrderDetails = () => {
+    const { t } = useTranslation();
+
+    const orderAttributes: Attribute[] = [
+        { key: 'id', label: t('warehouse.orderDetails.attr.orderNumber', { defaultValue: 'No. de Pedido' }), type: 'text' },
+        { key: 'date', label: t('warehouse.orderDetails.attr.orderDate', { defaultValue: 'Fecha de pedido' }), type: 'text' },
+        { key: 'user', label: t('warehouse.orderDetails.attr.user', { defaultValue: 'Usuario' }), type: 'text' },
+        { key: 'orderDestiny', label: t('warehouse.orderDetails.attr.destWarehouse', { defaultValue: 'Almacén de destino' }), type: 'text' },
+        { key: 'status', label: t('warehouse.orderDetails.attr.status', { defaultValue: 'Estado' }), type: 'status' }
+    ];
+
+    const productsColumns: Column<any>[] = [
+        { header: t('common.field.code', { defaultValue: 'Codigo' }), accessor: 'id', isFilterable: true, type: 'text' },
+        { header: t('common.field.name', { defaultValue: 'Nombre' }), accessor: 'name', isFilterable: true, type: 'text' },
+        { header: t('warehouse.orderDetails.col.requested', { defaultValue: 'Cantidad Solicitada' }), accessor: 'quantity', isFilterable: true, type: 'number' },
+        { header: t('warehouse.orderDetails.col.unit', { defaultValue: 'Unidad de medida' }), accessor: 'unit_measurement', isFilterable: true, type: 'text' },
+        { header: t('warehouse.orderDetails.col.observations', { defaultValue: 'Observaciones' }), accessor: 'observations', isFilterable: true, type: 'text' },
+    ];
+
+    const productsCompletedColumns: Column<any>[] = [
+        { header: t('common.field.code', { defaultValue: 'Codigo' }), accessor: 'id', isFilterable: true, type: 'text' },
+        { header: t('common.field.name', { defaultValue: 'Nombre' }), accessor: 'name', isFilterable: true, type: 'text' },
+        { header: t('warehouse.orderDetails.col.requested', { defaultValue: 'Cantidad Solicitada' }), accessor: 'quantity', isFilterable: true, type: 'number' },
+        { header: t('warehouse.orderDetails.col.delivered', { defaultValue: 'Cantidad Entregada' }), accessor: 'quantityDelivered', isFilterable: true, type: 'number' },
+        { header: t('warehouse.orderDetails.col.unit', { defaultValue: 'Unidad de medida' }), accessor: 'unit_measurement', isFilterable: true, type: 'text' },
+        { header: t('warehouse.orderDetails.col.observations', { defaultValue: 'Observaciones' }), accessor: 'observations', isFilterable: true, type: 'text' },
+    ];
+
     const history = useNavigate();
     const { id_order } = useParams();
     const configContext = useContext(ConfigContext)
@@ -136,16 +137,16 @@ const OrderDetails = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Detalles de pedido"} pageTitle={"Pedidos"} />
+                <BreadCrumb title={t('warehouse.orderDetails.breadcrumb', { defaultValue: 'Detalles de pedido' })} pageTitle={t('warehouse.orders.breadcrumb.parent', { defaultValue: 'Pedidos' })} />
 
                 <div className="d-flex gap-2">
                     <Button className="me-auto farm-secondary-button" onClick={() => history(-1)}>
-                        <i className="ri-arrow-left-line me-3"></i>Regresar
+                        <i className="ri-arrow-left-line me-3"></i>{t('common.button.back', { defaultValue: 'Regresar' })}
                     </Button>
 
                     <Button className="ms-auto farm-primary-button" onClick={handlePrintOrder}>
                         <i className="ri-download-line me-2"></i>
-                        Descargar Reporte
+                        {t('warehouse.orderDetails.button.report', { defaultValue: 'Descargar Reporte' })}
                     </Button>
                 </div>
 
@@ -175,7 +176,7 @@ const OrderDetails = () => {
 
 
                 <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
-                    <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Inventario </ModalHeader>
+                    <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('warehouse.orderDetails.modal.report', { defaultValue: 'Reporte de Pedido' })}</ModalHeader>
                     <ModalBody>
                         {fileURL && <PDFViewer fileUrl={fileURL} />}
                     </ModalBody>

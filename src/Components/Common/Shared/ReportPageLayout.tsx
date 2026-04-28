@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button, Container, Modal, ModalHeader } from "reactstrap";
 import BreadCrumb from "./BreadCrumb";
 import PDFViewer from "./PDFViewer";
@@ -17,13 +18,6 @@ interface ReportPageLayoutProps {
     headerActions?: React.ReactNode;
 }
 
-const formatDateLabel = (dateStr: string): string => {
-    if (!dateStr) return "";
-    const [year, month, day] = dateStr.split("-");
-    const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-    return `${parseInt(day)} ${months[parseInt(month) - 1]} ${year}`;
-};
-
 const ReportPageLayout: React.FC<ReportPageLayoutProps> = ({
     title,
     pageTitle,
@@ -36,11 +30,20 @@ const ReportPageLayout: React.FC<ReportPageLayoutProps> = ({
     onDateChange,
     headerActions,
 }) => {
+    const { t } = useTranslation();
     const [pdfModalOpen, setPdfModalOpen] = useState(false);
     const [pdfDatePickerOpen, setPdfDatePickerOpen] = useState(false);
     const [filterDatePickerOpen, setFilterDatePickerOpen] = useState(false);
     const [pdfLoading, setPdfLoading] = useState(false);
     const [fileURL, setFileURL] = useState<string | null>(null);
+
+    const shortMonths = t("common.shortMonths", { returnObjects: true }) as string[];
+
+    const formatDateLabel = (dateStr: string): string => {
+        if (!dateStr) return "";
+        const [year, month, day] = dateStr.split("-");
+        return `${parseInt(day)} ${shortMonths[parseInt(month) - 1]} ${year}`;
+    };
 
     const handleGeneratePdf = async (start: string, end: string) => {
         if (!onGeneratePdf) return;
@@ -85,7 +88,7 @@ const ReportPageLayout: React.FC<ReportPageLayoutProps> = ({
                                     <span className="fw-semibold" style={{ color: "#333" }}>{formatDateLabel(endDate)}</span>
                                 </span>
                             ) : (
-                                <span style={{ fontSize: "13px", color: "#666" }}>Seleccionar periodo</span>
+                                <span style={{ fontSize: "13px", color: "#666" }}>{t("shared.reportLayout.selectPeriod")}</span>
                             )}
                             <i className="ri-arrow-down-s-line" style={{ color: "#666" }}></i>
                         </Button>
@@ -99,7 +102,7 @@ const ReportPageLayout: React.FC<ReportPageLayoutProps> = ({
                                 onClick={() => setPdfDatePickerOpen(true)}
                             >
                                 <i className="ri-file-pdf-line me-1"></i>
-                                Imprimir PDF
+                                {t("shared.reportLayout.printPdf")}
                             </Button>
                         )}
                     </div>
@@ -108,24 +111,22 @@ const ReportPageLayout: React.FC<ReportPageLayoutProps> = ({
                 {children}
             </Container>
 
-            {/* Modal for date filter */}
             <Modal isOpen={filterDatePickerOpen} toggle={() => setFilterDatePickerOpen(false)} centered>
                 <ModalHeader toggle={() => setFilterDatePickerOpen(false)}>
                     <i className="ri-calendar-line me-2"></i>
-                    Seleccionar Rango de Fechas
+                    {t("shared.reportLayout.filterModal")}
                 </ModalHeader>
                 <ReportDateRangeSelector
                     onGenerate={handleFilterDateSelect}
                     onCancel={() => setFilterDatePickerOpen(false)}
-                    generateButtonText="Aplicar Filtro"
+                    generateButtonText={t("shared.dateRangeSelector.applyFilter")}
                 />
             </Modal>
 
-            {/* Modal for PDF date selection */}
             <Modal isOpen={pdfDatePickerOpen} toggle={() => setPdfDatePickerOpen(false)} centered>
                 <ModalHeader toggle={() => setPdfDatePickerOpen(false)}>
                     <i className="ri-file-pdf-line me-2"></i>
-                    Seleccionar periodo para PDF
+                    {t("shared.reportLayout.pdfModal")}
                 </ModalHeader>
                 <ReportDateRangeSelector
                     onGenerate={handleGeneratePdf}
@@ -134,7 +135,6 @@ const ReportPageLayout: React.FC<ReportPageLayoutProps> = ({
                 />
             </Modal>
 
-            {/* Modal for PDF viewer */}
             <Modal size="xl" isOpen={pdfModalOpen} toggle={() => setPdfModalOpen(false)} backdrop="static" keyboard={false} centered fullscreen={true}>
                 <ModalHeader toggle={() => setPdfModalOpen(false)}>{pdfTitle}</ModalHeader>
                 {fileURL && (

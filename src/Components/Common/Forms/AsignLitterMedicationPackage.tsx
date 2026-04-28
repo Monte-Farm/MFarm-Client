@@ -2,10 +2,11 @@
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import { getEffectiveUser } from "helpers/impersonation_helper";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Badge, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from "reactstrap";
 import LoadingAnimation from "../Shared/LoadingAnimation";
-import { Attribute, GroupData, GroupMedicationPackagesHistory, LitterEvent, medicationPackagesEntry, PigData } from "common/data_interfaces";
+import { Attribute, GroupMedicationPackagesHistory, LitterEvent } from "common/data_interfaces";
 import * as Yup from 'yup';
 import classnames from "classnames";
 import { useFormik } from "formik";
@@ -24,6 +25,7 @@ interface AsignLitterMedicationPackageFormProps {
 }
 
 const AsignLitterMedicationPackageForm: React.FC<AsignLitterMedicationPackageFormProps> = ({ litterId, onSave }) => {
+    const { t } = useTranslation();
     const userLogged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -53,179 +55,117 @@ const AsignLitterMedicationPackageForm: React.FC<AsignLitterMedicationPackageFor
     };
 
     const medicationPackagesColumns: Column<any>[] = [
-        { header: 'Codigo', accessor: 'code', type: 'text', isFilterable: true },
-        { header: 'Nombre', accessor: 'name', type: 'text', isFilterable: true },
-        { header: 'Fecha de creacion', accessor: 'creation_date', type: 'date', isFilterable: true },
+        { header: t('common.field.code'), accessor: 'code', type: 'text', isFilterable: true },
+        { header: t('common.field.name'), accessor: 'name', type: 'text', isFilterable: true },
+        { header: t('medication.package.column.createdAt'), accessor: 'creation_date', type: 'date', isFilterable: true },
         {
-            header: 'Etapa',
+            header: t('common.field.stage'),
             accessor: 'stage',
             type: 'text',
             isFilterable: true,
             render: (_, row) => {
                 let color = "secondary";
-                let text = "Desconocido";
 
                 switch (row.stage) {
-                    case "general":
-                        color = "info";
-                        text = "General";
-                        break;
-                    case "piglet":
-                        color = "info";
-                        text = "Lechón";
-                        break;
-                    case "weaning":
-                        color = "warning";
-                        text = "Destete";
-                        break;
-                    case "fattening":
-                        color = "primary";
-                        text = "Engorda";
-                        break;
-                    case "breeder":
-                        color = "success";
-                        text = "Reproductor";
-                        break;
+                    case "general": color = "info"; break;
+                    case "piglet": color = "info"; break;
+                    case "weaning": color = "warning"; break;
+                    case "fattening": color = "primary"; break;
+                    case "breeder": color = "success"; break;
                 }
 
-                return <Badge color={color}>{text}</Badge>;
+                return <Badge color={color}>{t(`feeding.stage.${row.stage}`, { defaultValue: t('medical.medication.field.unknown') })}</Badge>;
             },
         },
     ]
 
     const selectedMedicationsColumns: Column<any>[] = [
-        { header: "Codigo", accessor: "id", type: "text", isFilterable: true },
-        { header: "Producto", accessor: "name", type: "text", isFilterable: true },
+        { header: t('common.field.code'), accessor: "id", type: "text", isFilterable: true },
+        { header: t('feeding.package.form.column.product'), accessor: "name", type: "text", isFilterable: true },
         {
-            header: "Dosis por cerdo",
+            header: t('medication.card.medications.perHead'),
             accessor: "quantity",
             type: "text",
             isFilterable: true,
             render: (_, row) => <span>{row.quantity} {row.unit_measurement}</span>
         },
         {
-            header: "Dosis total",
+            header: t('medication.card.medications.totalDose'),
             accessor: "totalDose",
             type: "text",
             isFilterable: true,
             render: (_, row) => <span>{row.totalDose} {row.unit_measurement}</span>
         },
         {
-            header: "Administracion",
+            header: t('medical.medication.field.route'),
             accessor: "administration_route",
             type: "text",
             isFilterable: true,
             render: (value: string) => {
                 let color = "secondary";
-                let label = value;
 
                 switch (value) {
-                    case "oral":
-                        color = "info";
-                        label = "Oral";
-                        break;
+                    case "oral": color = "info"; break;
                     case "intramuscular":
-                        color = "primary";
-                        label = "Intramuscular";
-                        break;
                     case "subcutaneous":
-                        color = "primary";
-                        label = "Subcutánea";
-                        break;
                     case "intravenous":
-                        color = "primary";
-                        label = "Intravenosa";
-                        break;
                     case "intranasal":
-                        color = "primary";
-                        label = "Intranasal";
-                        break;
                     case "topical":
-                        color = "primary";
-                        label = "Tópica";
-                        break;
-                    case "rectal":
-                        color = "primary";
-                        label = "Rectal";
-                        break;
+                    case "rectal": color = "primary"; break;
                 }
 
-                return <Badge color={color}>{label}</Badge>;
+                return <Badge color={color}>{t(`medical.medication.route.${value}`, { defaultValue: value })}</Badge>;
             },
         },
     ]
 
     const medicationPackagesAttributes: Attribute[] = [
-        { label: 'Codigo', key: 'code', type: 'text' },
-        { label: 'Nombre', key: 'name', type: 'text', },
-        { label: 'Fecha de creacion', key: 'creation_date', type: 'date', },
+        { label: t('common.field.code'), key: 'code', type: 'text' },
+        { label: t('common.field.name'), key: 'name', type: 'text', },
+        { label: t('medication.package.column.createdAt'), key: 'creation_date', type: 'date', },
         {
-            label: 'Etapa',
+            label: t('common.field.stage'),
             key: 'stage',
             type: 'text',
             render: (_, row) => {
                 let color = "secondary";
-                let text = "Desconocido";
 
                 switch (row.stage) {
-                    case "general":
-                        color = "info";
-                        text = "General";
-                        break;
-                    case "piglet":
-                        color = "info";
-                        text = "Lechón";
-                        break;
-                    case "weaning":
-                        color = "warning";
-                        text = "Destete";
-                        break;
-                    case "fattening":
-                        color = "primary";
-                        text = "Engorda";
-                        break;
-                    case "breeder":
-                        color = "success";
-                        text = "Reproductor";
-                        break;
+                    case "general": color = "info"; break;
+                    case "piglet": color = "info"; break;
+                    case "weaning": color = "warning"; break;
+                    case "fattening": color = "primary"; break;
+                    case "breeder": color = "success"; break;
                 }
 
-                return <Badge color={color}>{text}</Badge>;
+                return <Badge color={color}>{t(`feeding.stage.${row.stage}`, { defaultValue: t('medical.medication.field.unknown') })}</Badge>;
             },
         },
     ]
 
     const litterAttributes: Attribute[] = [
-        { key: 'code', label: 'Codigo', type: 'text' },
-        { key: 'birthDate', label: 'Fecha de nacimiento', type: 'date' },
-        { key: 'currentMale', label: 'Macho', type: 'text' },
-        { key: 'currentFemale', label: 'Hembra', type: 'text' },
+        { key: 'code', label: t('common.field.code'), type: 'text' },
+        { key: 'birthDate', label: t('pigs.field.birthDate'), type: 'date' },
+        { key: 'currentMale', label: t('litter.attr.currentMale'), type: 'text' },
+        { key: 'currentFemale', label: t('litter.attr.currentFemale'), type: 'text' },
         {
             key: 'status',
-            label: 'Estado',
+            label: t('common.field.status'),
             type: 'text',
             render: (value, object) => {
                 let color = 'secondary';
-                let label = value;
 
                 switch (value) {
-                    case 'active':
-                        color = 'warning';
-                        label = 'Lactando';
-                        break;
-                    case 'weaned':
-                        color = 'success';
-                        label = 'Destetada';
-                        break;
+                    case 'active': color = 'warning'; break;
+                    case 'weaned': color = 'success'; break;
                 }
 
-                return <Badge color={color}>{label}</Badge>;
-
+                return <Badge color={color}>{t(`litter.status.${value}`, { defaultValue: value })}</Badge>;
             }
         },
         {
             key: 'responsible',
-            label: 'Registrado por',
+            label: t('litter.attr.responsible'),
             type: 'text',
             render: (value, object) => <span>{object.responsible?.name} {object.responsible?.lastname}</span>
         },
@@ -244,7 +184,7 @@ const AsignLitterMedicationPackageForm: React.FC<AsignLitterMedicationPackageFor
             setMedicationsPackages(packagesWithId);
         } catch (error) {
             console.error('Error fetching data:', error);
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al cargar los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('medication.assign.error.load') })
         } finally {
             setLoading(false)
         }
@@ -268,10 +208,10 @@ const AsignLitterMedicationPackageForm: React.FC<AsignLitterMedicationPackageFor
         }
     }
 
-    const validationSchema = Yup.object({
-        applicationDate: Yup.date().required('La fecha de aplicacion es obligatoria'),
-        appliedBy: Yup.string().required('El area de destino es obligatoria'),
-    })
+    const validationSchema = useMemo(() => Yup.object({
+        applicationDate: Yup.date().required(t('form.validation.required')),
+        appliedBy: Yup.string().required(t('form.validation.required')),
+    }), [t])
 
     const formik = useFormik<GroupMedicationPackagesHistory>({
         initialValues: {
@@ -326,7 +266,7 @@ const AsignLitterMedicationPackageForm: React.FC<AsignLitterMedicationPackageFor
 
     const checkMedicationPackageData = async () => {
         if (formik.values.packageId === '') {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, seleccione un paquete de medicacion' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('medication.assign.validation.selectPackage') })
         } else {
             toggleArrowTab(activeStep + 1);
         }
@@ -383,7 +323,7 @@ const AsignLitterMedicationPackageForm: React.FC<AsignLitterMedicationPackageFor
                             aria-controls="step-packageSelect-tab"
                             disabled
                         >
-                            Selección de paquete de medicamentos
+                            {t('medication.assign.step.package')}
                         </NavLink>
                     </NavItem>
 
@@ -399,7 +339,7 @@ const AsignLitterMedicationPackageForm: React.FC<AsignLitterMedicationPackageFor
                             aria-controls="step-summary-tab"
                             disabled
                         >
-                            Resumen
+                            {t('medication.assign.step.summary')}
                         </NavLink>
                     </NavItem>
                 </Nav>
@@ -409,7 +349,7 @@ const AsignLitterMedicationPackageForm: React.FC<AsignLitterMedicationPackageFor
                 <TabPane id="step-packageSelect-tab" tabId={1}>
                     <div className="d-flex gap-2 mt-4">
                         <div className="w-50">
-                            <Label htmlFor="applicationDate" className="form-label">Fecha de aplicacion</Label>
+                            <Label htmlFor="applicationDate" className="form-label">{t('medication.assign.field.date')}</Label>
                             <DatePicker
                                 id="applicationDate"
                                 className={`form-control ${formik.touched.applicationDate && formik.errors.applicationDate ? 'is-invalid' : ''}`}
@@ -425,7 +365,7 @@ const AsignLitterMedicationPackageForm: React.FC<AsignLitterMedicationPackageFor
                         </div>
 
                         <div className="w-50">
-                            <Label htmlFor="user" className="form-label">Responsable de aplicacion</Label>
+                            <Label htmlFor="user" className="form-label">{t('medication.assign.field.responsible')}</Label>
                             <Input
                                 type="text"
                                 id="user"
@@ -437,7 +377,7 @@ const AsignLitterMedicationPackageForm: React.FC<AsignLitterMedicationPackageFor
                     </div>
 
                     <div className="mt-4">
-                        <Label htmlFor="observations" className="form-label">Observaciones</Label>
+                        <Label htmlFor="observations" className="form-label">{t('pigs.field.observations')}</Label>
                         <Input
                             type="text"
                             id="observations"
@@ -446,7 +386,7 @@ const AsignLitterMedicationPackageForm: React.FC<AsignLitterMedicationPackageFor
                             onChange={formik.handleChange}
                             onBlur={formik.handleBlur}
                             invalid={formik.touched.observations && !!formik.errors.observations}
-                            placeholder="Observaciones de la aplicacion"
+                            placeholder={t('medication.assign.field.observationsPlaceholder')}
                         />
                         {formik.touched.observations && formik.errors.observations && (
                             <FormFeedback>{formik.errors.observations}</FormFeedback>
@@ -454,7 +394,7 @@ const AsignLitterMedicationPackageForm: React.FC<AsignLitterMedicationPackageFor
                     </div>
 
                     <div className="mt-4">
-                        <Label htmlFor="observations" className="form-label">Seleccion de paquete de medicacion</Label>
+                        <Label htmlFor="observations" className="form-label">{t('medication.assign.field.selectPackage')}</Label>
 
                         <SelectableCustomTable
                             columns={medicationPackagesColumns}
@@ -470,7 +410,7 @@ const AsignLitterMedicationPackageForm: React.FC<AsignLitterMedicationPackageFor
 
                     <div className="d-flex justify-content-between mt-4">
                         <Button className="btn btn-primary ms-auto" onClick={() => checkMedicationPackageData()}>
-                            Siguiente
+                            {t('common.button.next')}
                             <i className="ri-arrow-right-line ms-1" />
                         </Button>
                     </div>
@@ -481,7 +421,7 @@ const AsignLitterMedicationPackageForm: React.FC<AsignLitterMedicationPackageFor
                         <div className="">
                             <Card className="shadow-sm h-100">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
-                                    Información de la camada
+                                    {t('medication.assign.summary.litterCard')}
                                 </CardHeader>
                                 <CardBody>
                                     <ObjectDetails
@@ -495,7 +435,7 @@ const AsignLitterMedicationPackageForm: React.FC<AsignLitterMedicationPackageFor
                         <div className="w-100">
                             <Card className="shadow-sm mb-3">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
-                                    Información de paquete de medicamentos
+                                    {t('medication.assign.summary.packageCard')}
                                 </CardHeader>
                                 <CardBody>
                                     <ObjectDetails
@@ -507,7 +447,7 @@ const AsignLitterMedicationPackageForm: React.FC<AsignLitterMedicationPackageFor
 
                             <Card className="shadow-sm">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
-                                    <h5>Medicamentos</h5>
+                                    <h5>{t('medication.assign.summary.medicationsCard')}</h5>
                                 </CardHeader>
                                 <CardBody className="p-0 mb-3">
                                     <CustomTable
@@ -525,7 +465,7 @@ const AsignLitterMedicationPackageForm: React.FC<AsignLitterMedicationPackageFor
                     <div className="mt-4 d-flex">
                         <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                             <i className="ri-arrow-left-line me-2" />
-                            Atrás
+                            {t('common.button.back')}
                         </Button>
 
                         <Button className="ms-auto btn-success" onClick={() => formik.handleSubmit()} disabled={formik.isSubmitting}>
@@ -536,7 +476,7 @@ const AsignLitterMedicationPackageForm: React.FC<AsignLitterMedicationPackageFor
                             ) : (
                                 <div>
                                     <i className="ri-check-line me-2" />
-                                    Asignar
+                                    {t('medication.assign.button.assign')}
                                 </div>
                             )}
 
@@ -547,10 +487,10 @@ const AsignLitterMedicationPackageForm: React.FC<AsignLitterMedicationPackageFor
             </TabContent>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} autoClose={3000} />
-            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message={"Ha ocurrido un error, intentelo mas tarde"} />
-            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={"Paquete de medicacion asignado correctamente"} />
+            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message={t('medication.assign.error.submit')} />
+            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={t('medication.assign.success.package')} />
             <MissingStockModal isOpen={modals.missingStock} onClose={() => toggleModal('missingStock', false)} missingItems={missingItems} />
-            <ErrorModal isOpen={modals.subwarehouseError} onClose={() => toggleModal('subwarehouseError')} message={"No existe un subalmacen medico, pongase en contacto con el encargado de almacen"} />
+            <ErrorModal isOpen={modals.subwarehouseError} onClose={() => toggleModal('subwarehouseError')} message={t('medication.assign.error.noSubwarehouse')} />
 
         </>
     )

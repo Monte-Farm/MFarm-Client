@@ -1,5 +1,6 @@
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Badge, Card, CardBody, CardHeader, Col, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
 import { useReportScope } from "hooks/useReportScope";
 import { buildReportUrl } from "helpers/reports_url_helper";
@@ -44,15 +45,16 @@ interface InventoryMovementKpis {
     netChange: number;
 }
 
-const movementTypeLabels: Record<string, { label: string; color: string }> = {
-    income: { label: "Entrada", color: "success" },
-    outcome: { label: "Salida", color: "danger" },
-    transfer: { label: "Transferencia", color: "info" },
-    adjustment: { label: "Ajuste", color: "warning" },
-};
-
 const InventoryMovementsReport = () => {
-    document.title = "Movimientos e Inventario | Reportes";
+    const { t } = useTranslation();
+    document.title = `${t("reports.invMovements.title")} | ${t("reports.title")}`;
+
+    const movementTypeLabels: Record<string, { label: string; color: string }> = {
+        income: { label: t("reports.invMovements.movementType.income"), color: "success" },
+        outcome: { label: t("reports.invMovements.movementType.outcome"), color: "danger" },
+        transfer: { label: t("reports.invMovements.movementType.transfer"), color: "info" },
+        adjustment: { label: t("reports.invMovements.movementType.adjustment"), color: "warning" },
+    };
 
     const configContext = useContext(ConfigContext);
     const { isGlobal, farmId, scopeKey } = useReportScope();
@@ -93,7 +95,7 @@ const InventoryMovementsReport = () => {
             setKpis(data.kpis);
             setMovementsByType(data.movementsByType || []);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar los datos del reporte." });
+            setAlertConfig({ visible: true, color: "danger", message: t("reports.error.loadData") });
         } finally {
             setLoading(false);
         }
@@ -120,37 +122,37 @@ const InventoryMovementsReport = () => {
     }, [startDate, endDate, scopeKey]);
 
     const movementColumns: Column<MovementRecord>[] = [
-        { header: "Fecha", accessor: "date", type: "date", isFilterable: true },
-        { header: "Producto", accessor: "productName", type: "text", isFilterable: true },
+        { header: t("reports.col.date"), accessor: "date", type: "date", isFilterable: true },
+        { header: t("reports.col.product"), accessor: "productName", type: "text", isFilterable: true },
         {
-            header: "Tipo", accessor: "movementType", type: "text",
+            header: t("reports.col.type"), accessor: "movementType", type: "text",
             render: (value: string) => {
                 const m = movementTypeLabels[value] || { label: value, color: "secondary" };
                 return <Badge color={m.color}>{m.label}</Badge>;
             },
         },
         {
-            header: "Cantidad", accessor: "quantity", type: "text", bgColor: "#e3f2fd",
+            header: t("reports.col.quantity"), accessor: "quantity", type: "text", bgColor: "#e3f2fd",
             render: (v: number, row: MovementRecord) => <span className="fw-semibold">{v} {row.unit}</span>,
         },
         {
-            header: "Stock Resultante", accessor: "stockAfter", type: "text", bgColor: "#F3E5F5",
+            header: t("reports.invMovements.col.stockAfter"), accessor: "stockAfter", type: "text", bgColor: "#F3E5F5",
             render: (v: number, row: MovementRecord) => <span className="fw-semibold">{v} {row.unit}</span>,
         },
-        { header: "Almacen", accessor: "warehouse", type: "text", isFilterable: true },
-        { header: "Usuario", accessor: "user", type: "text" },
-        { header: "Observaciones", accessor: "observations", type: "text" },
+        { header: t("reports.col.warehouse"), accessor: "warehouse", type: "text", isFilterable: true },
+        { header: t("reports.col.user"), accessor: "user", type: "text" },
+        { header: t("reports.col.observations"), accessor: "observations", type: "text" },
     ];
 
     const stockColumns: Column<WarehouseStock>[] = [
-        { header: "Producto", accessor: "productName", type: "text", isFilterable: true },
-        { header: "Categoria", accessor: "category", type: "text", isFilterable: true },
-        { header: "Almacen", accessor: "warehouse", type: "text", isFilterable: true },
+        { header: t("reports.col.product"), accessor: "productName", type: "text", isFilterable: true },
+        { header: t("reports.col.category"), accessor: "category", type: "text", isFilterable: true },
+        { header: t("reports.col.warehouse"), accessor: "warehouse", type: "text", isFilterable: true },
         {
-            header: "Stock Actual", accessor: "currentStock", type: "text", bgColor: "#e8f5e9",
+            header: t("reports.invMovements.col.currentStock"), accessor: "currentStock", type: "text", bgColor: "#e8f5e9",
             render: (v: number, row: WarehouseStock) => <span className="fw-semibold">{v} {row.unit}</span>,
         },
-        { header: "Ultimo Movimiento", accessor: "lastMovementDate", type: "date" },
+        { header: t("reports.invMovements.col.lastMovement"), accessor: "lastMovementDate", type: "date" },
     ];
 
     const barData = movementsByType.map((m: any) => ({
@@ -162,10 +164,10 @@ const InventoryMovementsReport = () => {
 
     return (
         <ReportPageLayout
-            title="Movimientos e Inventario"
-            pageTitle="Reportes de Inventario"
+            title={t("reports.invMovements.title")}
+            pageTitle={t("reports.inventory")}
             onGeneratePdf={handleGeneratePdf}
-            pdfTitle="Reporte - Movimientos e Inventario"
+            pdfTitle={t("reports.invMovements.pdfTitle")}
             startDate={startDate}
             endDate={endDate}
             onDateChange={(s, e) => { setStartDate(s); setEndDate(e); }}
@@ -173,7 +175,7 @@ const InventoryMovementsReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Total Movimientos"
+                        title={t("reports.invMovements.kpi.totalMovements")}
                         value={kpis.totalMovements}
                         icon={<i className="ri-arrow-left-right-line fs-4 text-primary"></i>}
                         animateValue
@@ -181,7 +183,7 @@ const InventoryMovementsReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Entradas"
+                        title={t("reports.invMovements.kpi.incomes")}
                         value={kpis.totalIncomes}
                         icon={<i className="ri-inbox-archive-line fs-4 text-success"></i>}
                         animateValue
@@ -190,7 +192,7 @@ const InventoryMovementsReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Salidas"
+                        title={t("reports.invMovements.kpi.outcomes")}
                         value={kpis.totalOutcomes}
                         icon={<i className="ri-inbox-unarchive-line fs-4 text-danger"></i>}
                         animateValue
@@ -199,7 +201,7 @@ const InventoryMovementsReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Cambio Neto"
+                        title={t("reports.invMovements.kpi.netChange")}
                         value={kpis.netChange}
                         icon={<i className={`ri-arrow-${kpis.netChange >= 0 ? 'up' : 'down'}-line fs-4 ${kpis.netChange >= 0 ? 'text-success' : 'text-danger'}`}></i>}
                         animateValue
@@ -208,7 +210,7 @@ const InventoryMovementsReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Productos"
+                        title={t("reports.invMovements.kpi.products")}
                         value={kpis.uniqueProducts}
                         icon={<i className="ri-box-3-line fs-4 text-info"></i>}
                         animateValue
@@ -217,7 +219,7 @@ const InventoryMovementsReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Almacenes"
+                        title={t("reports.invMovements.kpi.warehouses")}
                         value={kpis.totalWarehouses}
                         icon={<i className="ri-community-line fs-4 text-warning"></i>}
                         animateValue
@@ -229,12 +231,12 @@ const InventoryMovementsReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={12}>
                     <BasicBarChart
-                        title="Movimientos por Tipo"
+                        title={t("reports.invMovements.chart.byType")}
                         data={barData}
                         indexBy="tipo"
                         keys={["Cantidad"]}
-                        xLegend="Tipo"
-                        yLegend="Cantidad"
+                        xLegend={t("reports.axis.type")}
+                        yLegend={t("reports.axis.quantity")}
                         height={250}
                     />
                 </Col>
@@ -249,7 +251,7 @@ const InventoryMovementsReport = () => {
                                 onClick={() => setActiveTab("1")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-arrow-left-right-line me-1"></i> Movimientos ({movements.length})
+                                <i className="ri-arrow-left-right-line me-1"></i> {t("reports.invMovements.tab.movements")} ({movements.length})
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -258,7 +260,7 @@ const InventoryMovementsReport = () => {
                                 onClick={() => setActiveTab("2")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-community-line me-1"></i> Inventario por Almacen ({stock.length})
+                                <i className="ri-community-line me-1"></i> {t("reports.invMovements.tab.inventory")} ({stock.length})
                             </NavLink>
                         </NavItem>
                     </Nav>

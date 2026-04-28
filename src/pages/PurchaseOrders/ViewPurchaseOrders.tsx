@@ -13,9 +13,12 @@ import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
 import PurchaseOrderDetails from "Components/Common/Details/PurchaseOrderDetails";
 import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
+import { useTranslation } from "react-i18next";
 
 const ViewPurchaseOrders = () => {
-    document.title = 'Ver Ordenes de compra | Ordenes de compra';
+    const { t } = useTranslation();
+    document.title = t('warehouse.purchaseOrders.pageTitle', { defaultValue: 'Ver Ordenes de compra' }) + ' | ' + t('warehouse.purchaseOrders.breadcrumb', { defaultValue: 'Ordenes de compra' });
+
     const configContext = useContext(ConfigContext)
     const userLogged = getEffectiveUser();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -38,24 +41,24 @@ const ViewPurchaseOrders = () => {
     };
 
     const columnsTable: Column<any>[] = [
-        { header: "No. de Orden", accessor: "code", isFilterable: true, type: 'text' },
-        { header: "Fecha", accessor: "date", isFilterable: true, type: 'date' },
+        { header: t('warehouse.purchaseOrders.col.orderNumber', { defaultValue: 'No. de Orden' }), accessor: "code", isFilterable: true, type: 'text' },
+        { header: t('common.field.date', { defaultValue: 'Fecha' }), accessor: "date", isFilterable: true, type: 'date' },
         {
-            header: 'Productos',
+            header: t('warehouse.purchaseOrders.col.products', { defaultValue: 'Productos' }),
             accessor: 'products',
             isFilterable: true,
             type: 'text',
             render: (value, row) => <span>{row.products.length}</span>
         },
         {
-            header: 'Proveedor',
+            header: t('warehouse.suppliers.col.supplier', { defaultValue: 'Proveedor' }),
             accessor: 'supplier',
             isFilterable: true,
             type: 'text',
             render: (_, row) => <span className="text-black">{row.supplier.name}</span>
         },
         {
-            header: 'Estado',
+            header: t('common.field.status', { defaultValue: 'Estado' }),
             accessor: 'status',
             isFilterable: false,
             type: 'text',
@@ -63,12 +66,12 @@ const ViewPurchaseOrders = () => {
                 <span
                     className={`badge ${row.status ? 'bg-warning text-dark' : 'bg-success'}`}
                 >
-                    {row.status ? 'No ingresada' : 'Ingresada'}
+                    {t(`warehouse.purchaseOrders.status.${row.status ? 'not_entered' : 'entered'}`, { defaultValue: row.status ? 'No ingresada' : 'Ingresada' })}
                 </span>
             )
         },
         {
-            header: "Acciones",
+            header: t('common.field.actions', { defaultValue: 'Acciones' }),
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
@@ -98,7 +101,7 @@ const ViewPurchaseOrders = () => {
             setPurchaseOrders(response.data.data);
         } catch (error) {
             console.error('El servicio no esta disponible, intentelo mas tarde', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos intentelo, mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.purchaseOrders.error.fetch', { defaultValue: 'Ha ocurrido un error al obtener los datos intentelo, mas tarde' }) })
         } finally {
             setLoading(false);
         }
@@ -116,7 +119,7 @@ const ViewPurchaseOrders = () => {
             setFileURL(window.URL.createObjectURL(pdfBlob));
             toggleModal('viewPDF');
         } catch (error) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al generar el PDF, intentelo más tarde' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.purchaseOrders.error.generatePdf', { defaultValue: 'Error al generar el PDF, intentelo más tarde' }) });
         } finally {
             setPdfLoading(false);
         }
@@ -150,13 +153,13 @@ const ViewPurchaseOrders = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Ver Ordenes de Compra"} pageTitle={"Ordenes de Compra"} />
+                <BreadCrumb title={t('warehouse.purchaseOrders.pageTitle', { defaultValue: 'Ver Ordenes de Compra' })} pageTitle={t('warehouse.purchaseOrders.breadcrumb', { defaultValue: 'Ordenes de Compra' })} />
 
                 {/* KPIs Section */}
                 <div className="row mb-3">
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
-                            title="Total de Órdenes del Mes"
+                            title={t('warehouse.purchaseOrders.kpi.total', { defaultValue: 'Total de Órdenes del Mes' })}
                             value={purchaseStatistics.totalOrders}
                             icon={<i className="ri-file-list-3-line fs-20 text-primary"></i>}
                             iconBgColor="#E8F5E9"
@@ -166,7 +169,7 @@ const ViewPurchaseOrders = () => {
                     </div>
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
-                            title="Total de Unidades Solicitados"
+                            title={t('warehouse.purchaseOrders.kpi.totalProducts', { defaultValue: 'Total de Unidades Solicitados' })}
                             value={purchaseStatistics.totalProductsRequested}
                             icon={<i className="ri-shopping-bag-line fs-20 text-info"></i>}
                             iconBgColor="#E3F2FD"
@@ -176,7 +179,7 @@ const ViewPurchaseOrders = () => {
                     </div>
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
-                            title="Órdenes Pendientes"
+                            title={t('warehouse.purchaseOrders.kpi.pending', { defaultValue: 'Órdenes Pendientes' })}
                             value={purchaseStatistics.pendingOrders}
                             icon={<i className="ri-time-line fs-20 text-warning"></i>}
                             iconBgColor="#FFF3E0"
@@ -186,7 +189,7 @@ const ViewPurchaseOrders = () => {
                     </div>
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
-                            title="Promedio de Unidades por Orden"
+                            title={t('warehouse.purchaseOrders.kpi.avgProducts', { defaultValue: 'Promedio de Unidades por Orden' })}
                             value={purchaseStatistics.averageProductsPerOrder}
                             decimals={1}
                             icon={<i className="ri-bar-chart-box-line fs-20 text-success"></i>}
@@ -200,18 +203,18 @@ const ViewPurchaseOrders = () => {
                 <Card className="rounded">
                     <CardHeader>
                         <div className="d-flex justify-content-between">
-                            <h4 className="m-2">Órdenes de Compra</h4>
+                            <h4 className="m-2">{t('warehouse.purchaseOrders.breadcrumb', { defaultValue: 'Órdenes de Compra' })}</h4>
                             <div className="d-flex gap-2">
                                 <Button color="primary" onClick={() => toggleModal('dateRange')} disabled={pdfLoading}>
                                     {pdfLoading ? (
-                                        <><Spinner className="me-2" size="sm" />Generando...</>
+                                        <><Spinner className="me-2" size="sm" />{t('common.button.generating', { defaultValue: 'Generando...' })}</>
                                     ) : (
-                                        <><i className="ri-file-pdf-line me-2" />Exportar PDF</>
+                                        <><i className="ri-file-pdf-line me-2" />{t('common.button.exportPdf', { defaultValue: 'Exportar PDF' })}</>
                                     )}
                                 </Button>
                                 <Button className="farm-primary-button" onClick={() => toggleModal('createPurchaseOrder')}>
                                     <i className="ri-add-line pe-2" />
-                                    Nueva Orden de Compra
+                                    {t('warehouse.purchaseOrders.button.new')}
                                 </Button>
                             </div>
                         </div>
@@ -221,7 +224,7 @@ const ViewPurchaseOrders = () => {
                         {purchaseOrders.length === 0 ? (
                             <>
                                 <i className="ri-file-list-line text-muted mb-2" style={{ fontSize: "2rem" }} />
-                                <span className="fs-5 text-muted">Aún no hay órdenes de compra registradas</span>
+                                <span className="fs-5 text-muted">{t('warehouse.purchaseOrders.empty')}</span>
                             </>
                         ) : (
                             <CustomTable
@@ -238,31 +241,31 @@ const ViewPurchaseOrders = () => {
             </Container>
 
             <Modal size="xl" isOpen={modals.createPurchaseOrder} toggle={() => toggleModal("createPurchaseOrder")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("createPurchaseOrder")}>Nueva orden de compra</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("createPurchaseOrder")}>{t('warehouse.purchaseOrders.modal.new')}</ModalHeader>
                 <ModalBody>
                     <PurchaseOrderForm onSave={() => { toggleModal('createPurchaseOrder'); fetchPurchaseOrdersData(); }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.purchaseOrderDetails} toggle={() => toggleModal("purchaseOrderDetails")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("purchaseOrderDetails")}>Detalles de orden de compra</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("purchaseOrderDetails")}>{t('warehouse.purchaseOrders.modal.details')}</ModalHeader>
                 <ModalBody>
                     <PurchaseOrderDetails purchaseId={selectedPurchaseOrder} />
                 </ModalBody>
             </Modal>
 
             <Modal size="md" isOpen={modals.dateRange} toggle={() => toggleModal("dateRange")} centered>
-                <ModalHeader toggle={() => toggleModal("dateRange")}>Seleccionar rango de fechas</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("dateRange")}>{t('warehouse.purchaseOrders.modal.dateRange')}</ModalHeader>
                 <ReportDateRangeSelector
                     onGenerate={handleGeneratePDF}
                     onCancel={() => toggleModal("dateRange")}
                     loading={pdfLoading}
-                    generateButtonText="Generar PDF"
+                    generateButtonText={t('warehouse.purchaseOrders.modal.generatePdf')}
                 />
             </Modal>
 
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop="static" keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Órdenes de Compra</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('warehouse.purchaseOrders.modal.report', { defaultValue: 'Reporte de Órdenes de Compra' })}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>

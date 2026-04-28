@@ -1,5 +1,6 @@
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Badge, Card, CardBody, CardHeader, Col, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
 import { useReportScope } from "hooks/useReportScope";
 import { buildReportUrl } from "helpers/reports_url_helper";
@@ -55,16 +56,18 @@ interface AuditKpis {
     mostActiveModule: string;
 }
 
-const actionLabels: Record<string, { label: string; color: string }> = {
-    create: { label: "Crear", color: "success" },
-    update: { label: "Actualizar", color: "info" },
-    delete: { label: "Eliminar", color: "danger" },
-    login: { label: "Inicio de sesion", color: "primary" },
-    export: { label: "Exportar", color: "secondary" },
-};
-
 const AuditReport = () => {
-    document.title = "Auditoria | Reportes";
+    const { t } = useTranslation();
+
+    const actionLabels: Record<string, { label: string; color: string }> = {
+        create: { label: t("reports.audit.action.create"), color: "success" },
+        update: { label: t("reports.audit.action.update"), color: "info" },
+        delete: { label: t("reports.audit.action.delete"), color: "danger" },
+        login: { label: t("reports.audit.action.login"), color: "primary" },
+        export: { label: t("reports.audit.action.export"), color: "secondary" },
+    };
+
+    document.title = `${t("reports.audit.title")} | ${t("reports.title")}`;
 
     const configContext = useContext(ConfigContext);
     const { isGlobal, farmId, scopeKey } = useReportScope();
@@ -107,7 +110,7 @@ const AuditReport = () => {
             setKpis(data.kpis);
             setActionsByModule(data.actionsByModule || []);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar los datos del reporte." });
+            setAlertConfig({ visible: true, color: "danger", message: t("reports.error.loadData") });
         } finally {
             setLoading(false);
         }
@@ -134,51 +137,51 @@ const AuditReport = () => {
     }, [startDate, endDate, scopeKey]);
 
     const activityColumns: Column<ActivityRecord>[] = [
-        { header: "Fecha", accessor: "date", type: "date", isFilterable: true },
-        { header: "Usuario", accessor: "user", type: "text", isFilterable: true },
+        { header: t("reports.col.date"), accessor: "date", type: "date", isFilterable: true },
+        { header: t("reports.col.user"), accessor: "user", type: "text", isFilterable: true },
         {
-            header: "Accion", accessor: "action", type: "text",
+            header: t("reports.audit.col.action"), accessor: "action", type: "text",
             render: (value: string) => {
                 const a = actionLabels[value] || { label: value, color: "secondary" };
                 return <Badge color={a.color}>{a.label}</Badge>;
             },
         },
-        { header: "Modulo", accessor: "module", type: "text", isFilterable: true },
-        { header: "Descripcion", accessor: "description", type: "text", isFilterable: true },
-        { header: "Detalles", accessor: "details", type: "text" },
+        { header: t("reports.audit.col.module"), accessor: "module", type: "text", isFilterable: true },
+        { header: t("reports.col.description"), accessor: "description", type: "text", isFilterable: true },
+        { header: t("reports.col.details"), accessor: "details", type: "text" },
     ];
 
     const adjustmentColumns: Column<InventoryAdjustment>[] = [
-        { header: "Fecha", accessor: "date", type: "date", isFilterable: true },
-        { header: "Producto", accessor: "productName", type: "text", isFilterable: true },
-        { header: "Almacen", accessor: "warehouse", type: "text", isFilterable: true },
+        { header: t("reports.col.date"), accessor: "date", type: "date", isFilterable: true },
+        { header: t("reports.col.product"), accessor: "productName", type: "text", isFilterable: true },
+        { header: t("reports.col.warehouse"), accessor: "warehouse", type: "text", isFilterable: true },
         {
-            header: "Stock Anterior", accessor: "previousStock", type: "text",
+            header: t("reports.audit.col.prevStock"), accessor: "previousStock", type: "text",
             render: (v: number, row: InventoryAdjustment) => <span>{v} {row.unit}</span>,
         },
         {
-            header: "Stock Nuevo", accessor: "newStock", type: "text",
+            header: t("reports.audit.col.newStock"), accessor: "newStock", type: "text",
             render: (v: number, row: InventoryAdjustment) => <span>{v} {row.unit}</span>,
         },
         {
-            header: "Diferencia", accessor: "difference", type: "text", bgColor: "#fff8e1",
+            header: t("reports.audit.col.difference"), accessor: "difference", type: "text", bgColor: "#fff8e1",
             render: (v: number, row: InventoryAdjustment) => (
                 <span className={`fw-semibold ${v > 0 ? "text-success" : v < 0 ? "text-danger" : ""}`}>
                     {v > 0 ? "+" : ""}{v} {row.unit}
                 </span>
             ),
         },
-        { header: "Motivo", accessor: "reason", type: "text" },
-        { header: "Usuario", accessor: "user", type: "text" },
+        { header: t("reports.col.reason"), accessor: "reason", type: "text" },
+        { header: t("reports.col.user"), accessor: "user", type: "text" },
     ];
 
     const priceChangeColumns: Column<PriceChangeRecord>[] = [
-        { header: "Fecha", accessor: "date", type: "date", isFilterable: true },
-        { header: "Producto", accessor: "productName", type: "text", isFilterable: true },
-        { header: "Precio Anterior", accessor: "previousPrice", type: "currency" },
-        { header: "Precio Nuevo", accessor: "newPrice", type: "currency", bgColor: "#e3f2fd" },
+        { header: t("reports.col.date"), accessor: "date", type: "date", isFilterable: true },
+        { header: t("reports.col.product"), accessor: "productName", type: "text", isFilterable: true },
+        { header: t("reports.audit.col.prevPrice"), accessor: "previousPrice", type: "currency" },
+        { header: t("reports.audit.col.newPrice"), accessor: "newPrice", type: "currency", bgColor: "#e3f2fd" },
         {
-            header: "Variacion", accessor: "variation", type: "text",
+            header: t("reports.audit.col.variation"), accessor: "variation", type: "text",
             render: (v: number) => (
                 <span className={`fw-semibold ${v > 0 ? "text-danger" : v < 0 ? "text-success" : ""}`}>
                     {v > 0 ? "+" : ""}${v?.toFixed(2)}
@@ -186,14 +189,14 @@ const AuditReport = () => {
             ),
         },
         {
-            header: "Variacion %", accessor: "variationPercent", type: "text",
+            header: t("reports.audit.col.variationPct"), accessor: "variationPercent", type: "text",
             render: (v: number) => (
                 <span className={`fw-semibold ${v > 0 ? "text-danger" : v < 0 ? "text-success" : ""}`}>
                     {v > 0 ? "+" : ""}{v?.toFixed(1)}%
                 </span>
             ),
         },
-        { header: "Usuario", accessor: "user", type: "text" },
+        { header: t("reports.col.user"), accessor: "user", type: "text" },
     ];
 
     const moduleBarData = actionsByModule.map((m: any) => ({
@@ -205,10 +208,10 @@ const AuditReport = () => {
 
     return (
         <ReportPageLayout
-            title="Auditoria"
-            pageTitle="Reportes"
+            title={t("reports.audit.title")}
+            pageTitle={t("reports.title")}
             onGeneratePdf={handleGeneratePdf}
-            pdfTitle="Reporte - Auditoria"
+            pdfTitle={t("reports.audit.pdfTitle")}
             startDate={startDate}
             endDate={endDate}
             onDateChange={(s, e) => { setStartDate(s); setEndDate(e); }}
@@ -216,7 +219,7 @@ const AuditReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Total Acciones"
+                        title={t("reports.audit.kpi.totalActions")}
                         value={kpis.totalActions}
                         icon={<i className="ri-history-line fs-4 text-primary"></i>}
                         animateValue
@@ -224,7 +227,7 @@ const AuditReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Usuarios Activos"
+                        title={t("reports.audit.kpi.activeUsers")}
                         value={kpis.totalUsers}
                         icon={<i className="ri-user-line fs-4 text-info"></i>}
                         animateValue
@@ -233,7 +236,7 @@ const AuditReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Ajustes Inventario"
+                        title={t("reports.audit.kpi.invAdjustments")}
                         value={kpis.totalAdjustments}
                         icon={<i className="ri-equalizer-line fs-4 text-warning"></i>}
                         animateValue
@@ -242,7 +245,7 @@ const AuditReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Cambios de Precio"
+                        title={t("reports.audit.kpi.priceChanges")}
                         value={kpis.totalPriceChanges}
                         icon={<i className="ri-price-tag-3-line fs-4 text-danger"></i>}
                         animateValue
@@ -251,7 +254,7 @@ const AuditReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Usuario mas Activo"
+                        title={t("reports.audit.kpi.mostActiveUser")}
                         value={kpis.mostActiveUser || "—"}
                         icon={<i className="ri-user-star-line fs-4 text-success"></i>}
                         iconBgColor="#E8F5E9"
@@ -259,7 +262,7 @@ const AuditReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Modulo mas Activo"
+                        title={t("reports.audit.kpi.mostActiveModule")}
                         value={kpis.mostActiveModule || "—"}
                         icon={<i className="ri-layout-grid-line fs-4 text-secondary"></i>}
                         iconBgColor="#F5F5F5"
@@ -270,12 +273,12 @@ const AuditReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={12}>
                     <BasicBarChart
-                        title="Acciones por Modulo"
+                        title={t("reports.audit.chart.actionsByModule")}
                         data={moduleBarData}
                         indexBy="modulo"
                         keys={["Acciones"]}
-                        xLegend="Modulo"
-                        yLegend="Acciones"
+                        xLegend={t("reports.axis.module")}
+                        yLegend={t("reports.axis.actions")}
                         height={250}
                     />
                 </Col>
@@ -290,7 +293,7 @@ const AuditReport = () => {
                                 onClick={() => setActiveTab("1")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-history-line me-1"></i> Historial de Movimientos ({activities.length})
+                                <i className="ri-history-line me-1"></i> {t("reports.audit.tab.history")} ({activities.length})
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -299,7 +302,7 @@ const AuditReport = () => {
                                 onClick={() => setActiveTab("2")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-equalizer-line me-1"></i> Ajustes de Inventario ({adjustments.length})
+                                <i className="ri-equalizer-line me-1"></i> {t("reports.audit.tab.adjustments")} ({adjustments.length})
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -308,7 +311,7 @@ const AuditReport = () => {
                                 onClick={() => setActiveTab("3")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-price-tag-3-line me-1"></i> Cambios de Precio ({priceChanges.length})
+                                <i className="ri-price-tag-3-line me-1"></i> {t("reports.audit.tab.priceChanges")} ({priceChanges.length})
                             </NavLink>
                         </NavItem>
                     </Nav>

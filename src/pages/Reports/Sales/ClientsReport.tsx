@@ -1,5 +1,6 @@
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardBody, CardHeader, Col, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
 import { useReportScope } from "hooks/useReportScope";
 import { buildReportUrl } from "helpers/reports_url_helper";
@@ -43,6 +44,7 @@ interface ClientsKpis {
 }
 
 const ClientsReport = () => {
+    const { t } = useTranslation();
     document.title = "Analisis de Clientes | Reportes";
 
     const configContext = useContext(ConfigContext);
@@ -82,7 +84,7 @@ const ClientsReport = () => {
             setFrequency(data.frequency || []);
             setKpis(data.kpis);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar los datos del reporte." });
+            setAlertConfig({ visible: true, color: "danger", message: t("reports.error.loadData") });
         } finally {
             setLoading(false);
         }
@@ -109,16 +111,16 @@ const ClientsReport = () => {
     }, [startDate, endDate, scopeKey]);
 
     const topClientColumns: Column<TopClient>[] = [
-        { header: "Cliente", accessor: "clientName", type: "text", isFilterable: true },
-        { header: "Ventas", accessor: "totalSales", type: "number" },
-        { header: "Cerdos", accessor: "totalPigs", type: "number" },
+        { header: t("reports.col.name"), accessor: "clientName", type: "text", isFilterable: true },
+        { header: t("reports.sales.col.salesCount"), accessor: "totalSales", type: "number" },
+        { header: t("reports.col.pigs"), accessor: "totalPigs", type: "number" },
         {
-            header: "Peso Total", accessor: "totalWeight", type: "text",
+            header: t("reports.clients.col.totalWeight"), accessor: "totalWeight", type: "text",
             render: (v: number) => <span>{v?.toFixed(1)} kg</span>,
         },
-        { header: "Ingreso", accessor: "totalRevenue", type: "currency", bgColor: "#e8f5e9" },
+        { header: t("reports.clients.col.revenue"), accessor: "totalRevenue", type: "currency", bgColor: "#e8f5e9" },
         {
-            header: "Utilidad", accessor: "totalProfit", type: "currency", bgColor: "#e3f2fd",
+            header: t("reports.clients.col.profit"), accessor: "totalProfit", type: "currency", bgColor: "#e3f2fd",
             render: (v: number) => (
                 <span className={`fw-semibold ${v >= 0 ? "text-success" : "text-danger"}`}>
                     ${v?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -126,27 +128,27 @@ const ClientsReport = () => {
             ),
         },
         {
-            header: "Margen %", accessor: "margin", type: "text",
+            header: t("reports.clients.col.marginPct"), accessor: "margin", type: "text",
             render: (v: number) => (
                 <span className={`fw-semibold ${v >= 0 ? "text-success" : "text-danger"}`}>
                     {v?.toFixed(1)}%
                 </span>
             ),
         },
-        { header: "Prom. $/kg", accessor: "avgPricePerKg", type: "currency" },
+        { header: t("reports.clients.col.avgPricePerKg"), accessor: "avgPricePerKg", type: "currency" },
     ];
 
     const frequencyColumns: Column<ClientFrequency>[] = [
-        { header: "Cliente", accessor: "clientName", type: "text", isFilterable: true },
-        { header: "Ventas", accessor: "totalSales", type: "number" },
-        { header: "Primera Compra", accessor: "firstPurchaseDate", type: "date" },
-        { header: "Ultima Compra", accessor: "lastPurchaseDate", type: "date" },
+        { header: t("reports.col.name"), accessor: "clientName", type: "text", isFilterable: true },
+        { header: t("reports.sales.col.salesCount"), accessor: "totalSales", type: "number" },
+        { header: t("reports.clients.col.firstPurchase"), accessor: "firstPurchaseDate", type: "date" },
+        { header: t("reports.clients.col.lastPurchase"), accessor: "lastPurchaseDate", type: "date" },
         {
-            header: "Dias entre Compras", accessor: "avgDaysBetweenPurchases", type: "text", bgColor: "#e3f2fd",
+            header: t("reports.clients.col.daysBetween"), accessor: "avgDaysBetweenPurchases", type: "text", bgColor: "#e3f2fd",
             render: (v: number) => <span className="fw-semibold">{v?.toFixed(0)} dias</span>,
         },
-        { header: "Prom. por Compra", accessor: "avgPurchaseAmount", type: "currency" },
-        { header: "Ingreso Total", accessor: "totalRevenue", type: "currency", bgColor: "#e8f5e9" },
+        { header: t("reports.clients.col.avgPerPurchase"), accessor: "avgPurchaseAmount", type: "currency" },
+        { header: t("reports.clients.col.totalRevenue"), accessor: "totalRevenue", type: "currency", bgColor: "#e8f5e9" },
     ];
 
     const topBarData = topClients.slice(0, 10).map(c => ({
@@ -158,8 +160,8 @@ const ClientsReport = () => {
 
     return (
         <ReportPageLayout
-            title="Analisis de Clientes"
-            pageTitle="Reportes de Ventas"
+            title={t("reports.clients.title")}
+            pageTitle={t("reports.sales")}
             onGeneratePdf={handleGeneratePdf}
             pdfTitle="Reporte - Analisis de Clientes"
             startDate={startDate}
@@ -169,7 +171,7 @@ const ClientsReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Total Clientes"
+                        title={t("reports.clients.kpi.totalClients")}
                         value={kpis.totalClients}
                         icon={<i className="ri-user-line fs-4 text-primary"></i>}
                         animateValue
@@ -177,7 +179,7 @@ const ClientsReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Clientes Activos"
+                        title={t("reports.clients.kpi.activeClients")}
                         value={kpis.activeClients}
                         icon={<i className="ri-user-follow-line fs-4 text-success"></i>}
                         animateValue
@@ -186,7 +188,7 @@ const ClientsReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Prom. Ventas / Cliente"
+                        title={t("reports.clients.kpi.avgSales")}
                         value={kpis.avgSalesPerClient}
                         icon={<i className="ri-shopping-bag-line fs-4 text-info"></i>}
                         animateValue
@@ -196,7 +198,7 @@ const ClientsReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Prom. Ingreso / Cliente"
+                        title={t("reports.clients.kpi.avgRevenue")}
                         value={kpis.avgRevenuePerClient}
                         icon={<i className="ri-money-dollar-circle-line fs-4 text-warning"></i>}
                         animateValue
@@ -207,7 +209,7 @@ const ClientsReport = () => {
                 </Col>
                 <Col xl={4} md={8}>
                     <StatKpiCard
-                        title="Cliente Principal"
+                        title={t("reports.clients.kpi.topClient")}
                         value={kpis.topClientRevenue}
                         subtext={kpis.topClientName}
                         icon={<i className="ri-vip-crown-line fs-4 text-warning"></i>}
@@ -222,12 +224,12 @@ const ClientsReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={12}>
                     <BasicBarChart
-                        title="Top 10 Clientes por Ingreso"
+                        title={t("reports.clients.chart.top10ByRevenue")}
                         data={topBarData}
                         indexBy="cliente"
                         keys={["Ingreso"]}
-                        xLegend="Cliente"
-                        yLegend="Ingreso ($)"
+                        xLegend={t("reports.axis.client")}
+                        yLegend={t("reports.axis.incomeUsd")}
                         height={280}
                         colors={["#10b981"]}
                     />
@@ -243,7 +245,7 @@ const ClientsReport = () => {
                                 onClick={() => setActiveTab("1")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-vip-crown-line me-1"></i> Clientes mas Rentables ({topClients.length})
+                                <i className="ri-vip-crown-line me-1"></i> {t("reports.clients.tab.mostProfitable")} ({topClients.length})
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -252,7 +254,7 @@ const ClientsReport = () => {
                                 onClick={() => setActiveTab("2")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-calendar-check-line me-1"></i> Frecuencia de Compra ({frequency.length})
+                                <i className="ri-calendar-check-line me-1"></i> {t("reports.clients.tab.frequency")} ({frequency.length})
                             </NavLink>
                         </NavItem>
                     </Nav>

@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { Button, Col, Row, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback } from "reactstrap";
 import * as Yup from "yup";
 import { useFormik } from "formik";
+import { useTranslation } from "react-i18next";
 import { SupplierData } from "common/data_interfaces";
 import { ConfigContext } from "App";
 import { getSupplierTypeOptions } from "common/enums/suppliers.enums";
@@ -14,14 +15,15 @@ interface SupplierFormProps {
 }
 
 const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCancel, isCodeDisabled }) => {
+  const { t } = useTranslation();
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [showErrorAlert, setShowErrorAlert] = useState(false);
   const configContext = useContext(ConfigContext)
 
   const validationSchema = Yup.object({
     id: Yup.string()
-      .required("Por favor, ingrese el código")
-      .test('unique_id', 'Este identificador ya existe, por favor ingrese otro', async (value) => {
+      .required(t('warehouse.supplierForm.validation.codeRequired'))
+      .test('unique_id', t('warehouse.supplierForm.validation.codeExists'), async (value) => {
         if (initialData) return true
         if (!value) return false
         try {
@@ -32,12 +34,12 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCa
           return false
         }
       }),
-    name: Yup.string().required("Por favor, ingrese el nombre"),
-    address: Yup.string().required("Por favor, ingrese la dirección"),
-    phone_number: Yup.string().required("Por favor, ingrese el número de teléfono"),
-    email: Yup.string().email("Ingrese un correo válido").required("Por favor, ingrese el correo electrónico"),
-    supplier_type: Yup.string().required("Por favor, seleccione el tipo de proveedor"),
-    rnc: Yup.string().required("Por favor, ingrese el RNC"),
+    name: Yup.string().required(t('warehouse.supplierForm.validation.nameRequired')),
+    address: Yup.string().required(t('warehouse.supplierForm.validation.addressRequired')),
+    phone_number: Yup.string().required(t('warehouse.supplierForm.validation.phoneRequired')),
+    email: Yup.string().email(t('warehouse.supplierForm.validation.emailInvalid')).required(t('warehouse.supplierForm.validation.emailRequired')),
+    supplier_type: Yup.string().required(t('warehouse.supplierForm.validation.typeRequired')),
+    rnc: Yup.string().required(t('warehouse.supplierForm.validation.rncRequired')),
   });
 
 
@@ -97,12 +99,12 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCa
         {/* Identificación */}
         <div className="mb-4">
           <div className="text-uppercase text-muted fw-semibold mb-3" style={{ fontSize: '0.7rem', letterSpacing: '0.8px' }}>
-            Identificación
+            {t('warehouse.supplierForm.section.identification')}
           </div>
 
           <Row className="g-3">
             <Col lg={4}>
-              <Label htmlFor="idInput" className="form-label">Código</Label>
+              <Label htmlFor="idInput" className="form-label">{t('common.field.code')}</Label>
               <Input
                 type="text"
                 id="idInput"
@@ -117,12 +119,12 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCa
             </Col>
 
             <Col lg={8}>
-              <Label htmlFor="nameInput" className="form-label">Nombre del Proveedor</Label>
+              <Label htmlFor="nameInput" className="form-label">{t('warehouse.supplierForm.field.supplierName')}</Label>
               <Input
                 type="text"
                 id="nameInput"
                 name="name"
-                placeholder="Ej. Distribuidora XYZ"
+                placeholder={t('warehouse.supplierForm.field.namePlaceholder')}
                 value={formik.values.name}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
@@ -132,7 +134,7 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCa
             </Col>
 
             <Col lg={12}>
-              <Label htmlFor="supplierTypeInput" className="form-label">Tipo de Proveedor</Label>
+              <Label htmlFor="supplierTypeInput" className="form-label">{t('warehouse.supplierForm.field.supplierType')}</Label>
               <Input
                 type="select"
                 id="supplierTypeInput"
@@ -142,7 +144,7 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCa
                 onBlur={formik.handleBlur}
                 invalid={formik.touched.supplier_type && !!formik.errors.supplier_type}
               >
-                <option value="">Seleccione un tipo</option>
+                <option value="">{t('warehouse.supplierForm.field.selectType')}</option>
                 {getSupplierTypeOptions().map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
@@ -159,17 +161,17 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCa
         {/* Contacto */}
         <div className="mb-4">
           <div className="text-uppercase text-muted fw-semibold mb-3" style={{ fontSize: '0.7rem', letterSpacing: '0.8px' }}>
-            Contacto
+            {t('warehouse.supplierForm.section.contact')}
           </div>
 
           <Row className="g-3">
             <Col lg={6}>
-              <Label htmlFor="phone_numberInput" className="form-label">Teléfono</Label>
+              <Label htmlFor="phone_numberInput" className="form-label">{t('warehouse.supplierForm.field.phone')}</Label>
               <Input
                 type="text"
                 id="phone_numberInput"
                 name="phone_number"
-                placeholder="Ej. 809-555-0000"
+                placeholder={t('warehouse.supplierForm.field.phonePlaceholder')}
                 value={formik.values.phone_number}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
@@ -179,12 +181,12 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCa
             </Col>
 
             <Col lg={6}>
-              <Label htmlFor="emailInput" className="form-label">Correo Electrónico</Label>
+              <Label htmlFor="emailInput" className="form-label">{t('warehouse.supplierForm.field.email')}</Label>
               <Input
                 type="email"
                 id="emailInput"
                 name="email"
-                placeholder="contacto@proveedor.com"
+                placeholder={t('warehouse.supplierForm.field.emailPlaceholder')}
                 value={formik.values.email}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
@@ -194,12 +196,12 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCa
             </Col>
 
             <Col lg={12}>
-              <Label htmlFor="addressInput" className="form-label">Dirección</Label>
+              <Label htmlFor="addressInput" className="form-label">{t('warehouse.supplierForm.field.address')}</Label>
               <Input
                 type="text"
                 id="addressInput"
                 name="address"
-                placeholder="Ingrese la dirección completa"
+                placeholder={t('warehouse.supplierForm.field.addressPlaceholder')}
                 value={formik.values.address}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
@@ -213,17 +215,17 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCa
         {/* Información Fiscal */}
         <div className="mb-4">
           <div className="text-uppercase text-muted fw-semibold mb-3" style={{ fontSize: '0.7rem', letterSpacing: '0.8px' }}>
-            Información Fiscal
+            {t('warehouse.supplierForm.section.fiscal')}
           </div>
 
           <Row className="g-3">
             <Col lg={12}>
-              <Label htmlFor="rncInput" className="form-label">ID Fiscal (RNC)</Label>
+              <Label htmlFor="rncInput" className="form-label">{t('warehouse.supplierForm.field.rnc')}</Label>
               <Input
                 type="text"
                 id="rncInput"
                 name="rnc"
-                placeholder="Ingrese el ID Fiscal"
+                placeholder={t('warehouse.supplierForm.field.rncPlaceholder')}
                 value={formik.values.rnc}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
@@ -238,28 +240,28 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCa
         {/* ============ BOTONES ============ */}
         <div className="d-flex justify-content-end mt-4 pt-3 gap-2 border-top">
           <Button className="farm-secondary-button" onClick={() => setCancelModalOpen(true)} disabled={formik.isSubmitting}>
-            Cancelar
+            {t('common.button.cancel')}
           </Button>
           <Button className="farm-primary-button" type="submit" disabled={formik.isSubmitting}>
-            {formik.isSubmitting ? "Guardando..." : initialData ? "Actualizar Proveedor" : "Registrar Proveedor"}
+            {formik.isSubmitting ? t('common.button.saving') : initialData ? t('warehouse.supplierForm.button.update') : t('warehouse.supplierForm.button.register')}
           </Button>
         </div>
       </form>
 
       {/* Modal de Confirmación de Cancelación */}
       <Modal isOpen={cancelModalOpen} centered toggle={() => setCancelModalOpen(!cancelModalOpen)}>
-        <ModalHeader>Confirmación de Cancelación</ModalHeader>
-        <ModalBody>¿Estás seguro de que deseas cancelar? Los datos no se guardarán.</ModalBody>
+        <ModalHeader>{t('warehouse.supplierForm.cancelModal.title')}</ModalHeader>
+        <ModalBody>{t('warehouse.supplierForm.cancelModal.body')}</ModalBody>
         <ModalFooter>
-          <Button color="danger" onClick={onCancel}>Sí, cancelar</Button>
-          <Button color="success" onClick={() => setCancelModalOpen(false)}>No, continuar</Button>
+          <Button color="danger" onClick={onCancel}>{t('warehouse.supplierForm.cancelModal.confirm')}</Button>
+          <Button color="success" onClick={() => setCancelModalOpen(false)}>{t('warehouse.supplierForm.cancelModal.reject')}</Button>
         </ModalFooter>
       </Modal>
 
       {/* Alerta de Error */}
       {showErrorAlert && (
         <div className="position-fixed bottom-0 start-50 translate-middle-x bg-danger text-white text-center p-3 rounded" style={{ zIndex: 1050, width: "90%", maxWidth: "500px" }}>
-          <span>El servicio no está disponible. Inténtelo de nuevo más tarde.</span>
+          <span>{t('warehouse.supplierForm.error.service')}</span>
         </div>
       )}
     </>

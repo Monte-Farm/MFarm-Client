@@ -1,5 +1,6 @@
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Badge, Card, CardBody, CardHeader, Col, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
 import { useReportScope } from "hooks/useReportScope";
 import { buildReportUrl } from "helpers/reports_url_helper";
@@ -54,21 +55,8 @@ interface SalesKpis {
     avgPricePerKg: number;
 }
 
-const paymentMethodLabels: Record<string, string> = {
-    cash: "Efectivo",
-    transfer: "Transferencia",
-    check: "Cheque",
-    credit: "Credito",
-    other: "Otro",
-};
-
-const paymentStatusLabels: Record<string, { label: string; color: string }> = {
-    pending: { label: "Pendiente", color: "warning" },
-    partial: { label: "Parcial", color: "info" },
-    completed: { label: "Completado", color: "success" },
-};
-
 const SalesReport = () => {
+    const { t } = useTranslation();
     document.title = "Reporte de Ventas | Reportes";
 
     const configContext = useContext(ConfigContext);
@@ -93,6 +81,20 @@ const SalesReport = () => {
     const [startDate, setStartDate] = useState(monthStart.toISOString().split("T")[0]);
     const [endDate, setEndDate] = useState(monthEnd.toISOString().split("T")[0]);
 
+    const paymentMethodLabels: Record<string, string> = {
+        cash: t("reports.sales.paymentMethod.cash"),
+        transfer: t("reports.sales.paymentMethod.transfer"),
+        check: t("reports.sales.paymentMethod.check"),
+        credit: t("reports.sales.paymentMethod.credit"),
+        other: t("reports.sales.paymentMethod.other"),
+    };
+
+    const paymentStatusLabels: Record<string, { label: string; color: string }> = {
+        pending: { label: t("reports.sales.paymentStatus.pending"), color: "warning" },
+        partial: { label: t("reports.sales.paymentStatus.partial"), color: "info" },
+        completed: { label: t("reports.sales.paymentStatus.completed"), color: "success" },
+    };
+
     const fetchData = async () => {
         if (!configContext) return;
         setLoading(true);
@@ -112,7 +114,7 @@ const SalesReport = () => {
             setKpis(data.kpis);
             setMonthlyTrend(data.monthlyTrend || []);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar los datos del reporte." });
+            setAlertConfig({ visible: true, color: "danger", message: t("reports.error.loadData") });
         } finally {
             setLoading(false);
         }
@@ -139,22 +141,22 @@ const SalesReport = () => {
     }, [startDate, endDate, scopeKey]);
 
     const saleColumns: Column<SaleRecord>[] = [
-        { header: "Fecha", accessor: "saleDate", type: "date", isFilterable: true },
-        { header: "Codigo", accessor: "code", type: "text", isFilterable: true },
-        { header: "Comprador", accessor: "buyer", type: "text", isFilterable: true },
-        { header: "Cerdos", accessor: "pigCount", type: "number", bgColor: "#e3f2fd" },
+        { header: t("reports.col.date"), accessor: "saleDate", type: "date", isFilterable: true },
+        { header: t("reports.sales.col.code"), accessor: "code", type: "text", isFilterable: true },
+        { header: t("reports.sales.col.buyer"), accessor: "buyer", type: "text", isFilterable: true },
+        { header: t("reports.col.pigs"), accessor: "pigCount", type: "number", bgColor: "#e3f2fd" },
         {
-            header: "Peso Total", accessor: "totalWeight", type: "text", bgColor: "#e8f5e9",
+            header: t("reports.sales.col.totalWeight"), accessor: "totalWeight", type: "text", bgColor: "#e8f5e9",
             render: (v: number) => <span>{v?.toFixed(1)} kg</span>,
         },
-        { header: "Precio/kg", accessor: "pricePerKg", type: "currency" },
-        { header: "Monto Total", accessor: "totalAmount", type: "currency", bgColor: "#e8f5e9" },
+        { header: t("reports.sales.col.pricePerKg"), accessor: "pricePerKg", type: "currency" },
+        { header: t("reports.sales.col.totalAmount"), accessor: "totalAmount", type: "currency", bgColor: "#e8f5e9" },
         {
-            header: "Metodo", accessor: "paymentMethod", type: "text",
+            header: t("reports.sales.col.method"), accessor: "paymentMethod", type: "text",
             render: (v: string) => <span>{paymentMethodLabels[v] || v}</span>,
         },
         {
-            header: "Estado", accessor: "paymentStatus", type: "text",
+            header: t("reports.col.status"), accessor: "paymentStatus", type: "text",
             render: (v: string) => {
                 const s = paymentStatusLabels[v] || { label: v, color: "secondary" };
                 return <Badge color={s.color}>{s.label}</Badge>;
@@ -163,28 +165,28 @@ const SalesReport = () => {
     ];
 
     const clientColumns: Column<SaleByClient>[] = [
-        { header: "Cliente", accessor: "clientName", type: "text", isFilterable: true },
-        { header: "Ventas", accessor: "totalSales", type: "number" },
-        { header: "Cerdos", accessor: "totalPigs", type: "number" },
+        { header: t("reports.col.name"), accessor: "clientName", type: "text", isFilterable: true },
+        { header: t("reports.sales.col.salesCount"), accessor: "totalSales", type: "number" },
+        { header: t("reports.col.pigs"), accessor: "totalPigs", type: "number" },
         {
-            header: "Peso Total", accessor: "totalWeight", type: "text",
+            header: t("reports.sales.col.totalWeight"), accessor: "totalWeight", type: "text",
             render: (v: number) => <span>{v?.toFixed(1)} kg</span>,
         },
-        { header: "Monto Total", accessor: "totalAmount", type: "currency", bgColor: "#e8f5e9" },
-        { header: "Prom. $/kg", accessor: "avgPricePerKg", type: "currency", bgColor: "#e3f2fd" },
-        { header: "Prom. $/cerdo", accessor: "avgPricePerPig", type: "currency" },
+        { header: t("reports.sales.col.totalAmount"), accessor: "totalAmount", type: "currency", bgColor: "#e8f5e9" },
+        { header: t("reports.sales.col.avgPricePerKg"), accessor: "avgPricePerKg", type: "currency", bgColor: "#e3f2fd" },
+        { header: t("reports.sales.col.avgPricePerPig"), accessor: "avgPricePerPig", type: "currency" },
     ];
 
     const periodColumns: Column<SaleByPeriod>[] = [
-        { header: "Periodo", accessor: "period", type: "text" },
-        { header: "Ventas", accessor: "salesCount", type: "number" },
-        { header: "Cerdos", accessor: "totalPigs", type: "number" },
+        { header: t("reports.col.period"), accessor: "period", type: "text" },
+        { header: t("reports.sales.col.salesCount"), accessor: "salesCount", type: "number" },
+        { header: t("reports.col.pigs"), accessor: "totalPigs", type: "number" },
         {
-            header: "Peso Total", accessor: "totalWeight", type: "text",
+            header: t("reports.sales.col.totalWeight"), accessor: "totalWeight", type: "text",
             render: (v: number) => <span>{v?.toFixed(1)} kg</span>,
         },
-        { header: "Monto Total", accessor: "totalAmount", type: "currency", bgColor: "#e8f5e9" },
-        { header: "Prom. $/kg", accessor: "avgPricePerKg", type: "currency", bgColor: "#e3f2fd" },
+        { header: t("reports.sales.col.totalAmount"), accessor: "totalAmount", type: "currency", bgColor: "#e8f5e9" },
+        { header: t("reports.sales.col.avgPricePerKg"), accessor: "avgPricePerKg", type: "currency", bgColor: "#e3f2fd" },
     ];
 
     const revenueTrendData = [{
@@ -201,8 +203,8 @@ const SalesReport = () => {
 
     return (
         <ReportPageLayout
-            title="Reporte de Ventas"
-            pageTitle="Reportes de Ventas"
+            title={t("reports.sales.title")}
+            pageTitle={t("reports.sales")}
             onGeneratePdf={handleGeneratePdf}
             pdfTitle="Reporte - Ventas"
             startDate={startDate}
@@ -212,7 +214,7 @@ const SalesReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Total Ventas"
+                        title={t("reports.sales.kpi.totalSales")}
                         value={kpis.totalSales}
                         icon={<i className="ri-shopping-bag-line fs-4 text-primary"></i>}
                         animateValue
@@ -220,7 +222,7 @@ const SalesReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Ingreso Total"
+                        title={t("reports.sales.kpi.totalRevenue")}
                         value={kpis.totalRevenue}
                         icon={<i className="ri-money-dollar-circle-line fs-4 text-success"></i>}
                         animateValue
@@ -231,7 +233,7 @@ const SalesReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Cerdos Vendidos"
+                        title={t("reports.sales.kpi.pigsSold")}
                         value={kpis.totalPigsSold}
                         icon={<i className="bx bxs-dog fs-4 text-info"></i>}
                         animateValue
@@ -240,7 +242,7 @@ const SalesReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Peso Vendido"
+                        title={t("reports.sales.kpi.weightSold")}
                         value={kpis.totalWeightSold}
                         icon={<i className="ri-scales-3-line fs-4 text-warning"></i>}
                         animateValue
@@ -251,7 +253,7 @@ const SalesReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Precio Prom. / Cerdo"
+                        title={t("reports.sales.kpi.avgPricePerPig")}
                         value={kpis.avgPricePerPig}
                         icon={<i className="ri-price-tag-3-line fs-4 text-primary"></i>}
                         animateValue
@@ -261,7 +263,7 @@ const SalesReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Precio Prom. / kg"
+                        title={t("reports.sales.kpi.avgPricePerKg")}
                         value={kpis.avgPricePerKg}
                         icon={<i className="ri-price-tag-3-line fs-4 text-success"></i>}
                         animateValue
@@ -275,10 +277,10 @@ const SalesReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={6}>
                     <BasicLineChartCard
-                        title="Tendencia de Ingresos"
+                        title={t("reports.sales.chart.revenueTrend")}
                         data={revenueTrendData}
-                        yLabel="Ingresos ($)"
-                        xLabel="Mes"
+                        yLabel={t("reports.axis.incomeUsd")}
+                        xLabel={t("reports.axis.month")}
                         height={280}
                         color="#10b981"
                         enableArea
@@ -287,12 +289,12 @@ const SalesReport = () => {
                 </Col>
                 <Col xl={6}>
                     <BasicBarChart
-                        title="Cerdos Vendidos por Mes"
+                        title={t("reports.sales.chart.pigsByMonth")}
                         data={pigsSoldBarData}
                         indexBy="month"
                         keys={["Cerdos Vendidos"]}
-                        xLegend="Mes"
-                        yLegend="Cantidad"
+                        xLegend={t("reports.axis.month")}
+                        yLegend={t("reports.axis.quantity")}
                         height={280}
                         colors={["#3b82f6"]}
                     />
@@ -308,7 +310,7 @@ const SalesReport = () => {
                                 onClick={() => setActiveTab("1")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-file-list-3-line me-1"></i> Todas las Ventas ({sales.length})
+                                <i className="ri-file-list-3-line me-1"></i> {t("reports.sales.tab.allSales")} ({sales.length})
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -317,7 +319,7 @@ const SalesReport = () => {
                                 onClick={() => setActiveTab("2")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-user-line me-1"></i> Por Cliente ({byClient.length})
+                                <i className="ri-user-line me-1"></i> {t("reports.sales.tab.byClient")} ({byClient.length})
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -326,7 +328,7 @@ const SalesReport = () => {
                                 onClick={() => setActiveTab("3")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-calendar-line me-1"></i> Por Periodo ({byPeriod.length})
+                                <i className="ri-calendar-line me-1"></i> {t("reports.sales.tab.byPeriod")} ({byPeriod.length})
                             </NavLink>
                         </NavItem>
                     </Nav>

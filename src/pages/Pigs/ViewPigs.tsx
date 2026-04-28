@@ -23,8 +23,24 @@ import KPI from "Components/Common/Graphics/Kpi"
 import BasicPieChart from "Components/Common/Graphics/BasicPieChart"
 import PigFilters from "Components/Common/Filters/PigFilters"
 import { usePigFilters } from "hooks/usePigFilters"
+import { useTranslation } from "react-i18next"
+
+const stageColorMap: Record<string, string> = {
+    piglet: "info",
+    weaning: "warning",
+    fattening: "primary",
+    breeder: "success",
+    gestation: "info",
+};
+
+const statusColorMap: Record<string, string> = {
+    alive: "success",
+    discarded: "warning",
+    dead: "danger",
+};
 
 const ViewPigs = () => {
+    const { t } = useTranslation();
     const [modals, setModals] = useState({ selectCreationMode: false, createSingle: false, createBatch: false, update: false, viewPDF: false });
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
@@ -36,7 +52,7 @@ const ViewPigs = () => {
     const [generatingReport, setGeneratingReport] = useState(false);
     const navigate = useNavigate();
     const [selectedPig, setSelectedPig] = useState<PigData | null>(null)
-    
+
     const {
         searchTerm,
         setSearchTerm,
@@ -50,80 +66,40 @@ const ViewPigs = () => {
     } = usePigFilters(pigs);
 
     const pigColumns: Column<any>[] = [
-        { header: 'Codigo', accessor: 'code', type: 'text' },
-        { header: 'Raza', accessor: 'breed', type: 'text' },
-        { header: 'Fecha de N.', accessor: 'birthdate', type: 'date' },
+        { header: t('pigs.field.code'), accessor: 'code', type: 'text' },
+        { header: t('pigs.field.breed'), accessor: 'breed', type: 'text' },
+        { header: t('pigs.field.birthDateShort'), accessor: 'birthdate', type: 'date' },
         {
-            header: 'Sexo',
+            header: t('pigs.field.sex'),
             accessor: 'sex',
             render: (value: string) => (
                 <Badge color={value === 'male' ? "info" : "danger"}>
-                    {value === 'male' ? "♂ Macho" : "♀ Hembra"}
+                    {value === 'male' ? t('pigs.sex.male') : t('pigs.sex.female')}
                 </Badge>
             ),
         },
         {
-            header: 'Etapa',
+            header: t('pigs.field.stage'),
             accessor: 'currentStage',
-            render: (value: string) => {
-                let color = "secondary";
-                let label = value;
-
-                switch (value) {
-                    case "piglet":
-                        color = "info";
-                        label = "Lechón";
-                        break;
-                    case "weaning":
-                        color = "warning";
-                        label = "Destete";
-                        break;
-                    case "fattening":
-                        color = "primary";
-                        label = "Engorda";
-                        break;
-                    case "breeder":
-                        color = "success";
-                        label = "Reproductor";
-                        break;
-                    case "gestation":
-                        color = "info";
-                        label = "Gestacion";
-                        break;
-                }
-
-                return <Badge color={color}>{label}</Badge>;
-            },
+            render: (value: string) => (
+                <Badge color={stageColorMap[value] || "secondary"}>
+                    {t(`pigs.stage.${value}`, { defaultValue: value })}
+                </Badge>
+            ),
         },
-        { header: 'Peso actual', accessor: 'weight', type: 'number' },
+        { header: t('pigs.field.currentWeight'), accessor: 'weight', type: 'number' },
         {
-            header: 'Estado',
+            header: t('pigs.field.status'),
             accessor: 'status',
             isFilterable: true,
-            render: (value: string) => {
-                let color = 'secondary';
-                let label = value;
-
-                switch (value) {
-                    case 'alive':
-                        color = 'success';
-                        label = 'Vivo';
-                        break;
-                    case 'discarded':
-                        color = 'warning';
-                        label = 'Descartado';
-                        break;
-                    case 'dead':
-                        color = 'danger';
-                        label = 'Muerto';
-                        break;
-                }
-
-                return <Badge color={color}>{label}</Badge>;
-            },
+            render: (value: string) => (
+                <Badge color={statusColorMap[value] || "secondary"}>
+                    {t(`pigs.status.${value}`, { defaultValue: value })}
+                </Badge>
+            ),
         },
         {
-            header: "Acciones",
+            header: t('common.field.actions'),
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
@@ -139,16 +115,8 @@ const ViewPigs = () => {
     ]
 
     const predefinedBreeds = [
-        "Yorkshire",
-        "Landrace",
-        "Duroc",
-        "Hampshire",
-        "Pietrain",
-        "Berkshire",
-        "Large White",
-        "Chester White",
-        "Poland China",
-        "Tamworth"
+        "Yorkshire", "Landrace", "Duroc", "Hampshire", "Pietrain",
+        "Berkshire", "Large White", "Chester White", "Poland China", "Tamworth"
     ]
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
@@ -163,12 +131,11 @@ const ViewPigs = () => {
                 configContext.axiosHelper.get(`${configContext.apiUrl}/pig/find_breeders_by_farm/${userLogged.farm_assigned}`),
                 configContext.axiosHelper.get(`${configContext.apiUrl}/pig/get_breeder_stats/${userLogged.farm_assigned}`),
             ])
-
             setPigs(pigsResponse.data.data)
             setStats(statsResponse.data.data)
         } catch (error) {
             console.error('Error fetching pigs: ', { error });
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('pigs.page.noPigs') })
         } finally {
             setLoading(false)
         }
@@ -176,86 +143,53 @@ const ViewPigs = () => {
 
     const handlePrintReport = async () => {
         if (!configContext) return;
-
         setGeneratingReport(true);
         try {
             const pigIds = filteredPigs.map(pig => pig._id);
-
             const response = await configContext.axiosHelper.postBlob(
                 `${configContext.apiUrl}/reports/generate_multiple_pig_report/`,
                 pigIds,
                 { responseType: 'blob' }
             );
-
             const url = window.URL.createObjectURL(new Blob([response.data]));
             setFileURL(url);
             toggleModal('viewPDF');
         } catch (error) {
             console.error('Error generating report: ', { error });
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al generar el reporte, inténtelo más tarde.' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('pigs.page.noPigs') })
         } finally {
             setGeneratingReport(false);
         }
     };
 
-    useEffect(() => {
-        fetchData()
-    }, [])
+    useEffect(() => { fetchData() }, [])
 
-    if (loading) {
-        return (
-            <LoadingAnimation />
-        );
-    }
+    if (loading) return <LoadingAnimation />;
 
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Ver Cerdos"} pageTitle={"Cerdos"} />
+                <BreadCrumb title={t('pigs.page.viewTitle')} pageTitle={t('menu.pigs')} />
 
                 <div className="d-flex gap-3 flex-wrap">
-                    <KPI
-                        title="Cerdos totales"
-                        value={stats?.generalStats[0]?.totalAlive ?? 0}
-                        icon={FiCheckCircle}
-                        bgColor="#e6f7e6"
-                        iconColor="#28a745"
-                    />
-
-                    <KPI
-                        title="Peso promedio de machos"
-                        icon={FaMars}
-                        bgColor="#e8f0fa"
-                        iconColor="#1a4d8f"
-                        value={stats?.avgWeightBySex?.find((p: { _id: string }) => p._id === 'male')?.avgWeight.toFixed(2) ?? 0}
-                    />
-
-                    <KPI
-                        title="Peso promedio de hembras"
-                        icon={FaVenus}
-                        bgColor="#fde8f2"
-                        iconColor="#d63384"
-                        value={stats?.avgWeightBySex?.find((p: { _id: string }) => p._id === 'female')?.avgWeight ?? 0}
-                    />
+                    <KPI title={t('pigs.page.totalPigs')} value={stats?.generalStats[0]?.totalAlive ?? 0} icon={FiCheckCircle} bgColor="#e6f7e6" iconColor="#28a745" />
+                    <KPI title={t('pigs.page.avgWeightMale')} icon={FaMars} bgColor="#e8f0fa" iconColor="#1a4d8f" value={stats?.avgWeightBySex?.find((p: { _id: string }) => p._id === 'male')?.avgWeight.toFixed(2) ?? 0} />
+                    <KPI title={t('pigs.page.avgWeightFemale')} icon={FaVenus} bgColor="#fde8f2" iconColor="#d63384" value={stats?.avgWeightBySex?.find((p: { _id: string }) => p._id === 'female')?.avgWeight ?? 0} />
                 </div>
 
                 <div className="d-flex gap-3">
-                    <BasicPieChart title={"Cerdos por sexo"}
+                    <BasicPieChart
+                        title={t('pigs.page.byGender')}
                         data={stats?.pigsBySex?.map((s: { _id: any; count: any }) => ({
-                            id: s._id === 'male' ? 'Macho' : 'Hembra',
+                            id: s._id === 'male' ? t('pigs.sex.maleShort') : t('pigs.sex.femaleShort'),
                             value: s.count,
                         })) ?? []}
                     />
-
-                    <BasicPieChart title={"Cerdos por raza"}
-                        data={stats?.pigsByBreed?.map((s: { _id: any; count: any }) => ({
-                            id: s._id,
-                            value: s.count,
-                        })) ?? []}
+                    <BasicPieChart
+                        title={t('pigs.page.byBreed')}
+                        data={stats?.pigsByBreed?.map((s: { _id: any; count: any }) => ({ id: s._id, value: s.count })) ?? []}
                     />
                 </div>
-
-
 
                 <Card>
                     <CardHeader>
@@ -271,34 +205,19 @@ const ViewPigs = () => {
                                 onTogglePopover={togglePopover}
                                 predefinedBreeds={predefinedBreeds}
                             />
-
                             <Button className="h-50 farm-primary-button ms-auto" onClick={handlePrintReport} disabled={generatingReport}>
-                                {generatingReport ? (
-                                    <>
-                                        <Spinner size="sm" /> Generando...
-                                    </>
-                                ) : (
-                                    <>
-                                        <i className="ri-download-line me-2"></i>
-                                        Exportar datos
-                                    </>
-                                )}
+                                {generatingReport ? <><Spinner size="sm" /> Generando...</> : <><i className="ri-download-line me-2"></i>{t('pigs.action.exportData')}</>}
                             </Button>
-
                             <Button className="h-50 farm-primary-button" onClick={() => toggleModal('selectCreationMode')}>
-                                <i className="ri ri-add-line me-2" />
-                                Registrar cerdo
+                                <i className="ri ri-add-line me-2" />{t('pigs.action.register')}
                             </Button>
                         </div>
                     </CardHeader>
-
                     <CardBody className={pigs.length === 0 ? 'd-flex justify-content-center align-items-center' : ''}>
                         {pigs.length === 0 ? (
                             <>
                                 <FiAlertCircle className="text-muted" size={22} />
-                                <span className="fs-5 text-black text-muted text-center rounded-5 ms-2">
-                                    No hay cerdos registrados
-                                </span>
+                                <span className="fs-5 text-black text-muted text-center rounded-5 ms-2">{t('pigs.page.noPigs')}</span>
                             </>
                         ) : (
                             <CustomTable columns={pigColumns} data={filteredPigs} showSearchAndFilter={false} rowsPerPage={7} showPagination={true} />
@@ -308,26 +227,23 @@ const ViewPigs = () => {
             </Container>
 
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
-                <ModalHeader toggle={() => toggleModal("viewPDF")}>Reporte de Inventario </ModalHeader>
-                <ModalBody>
-                    {fileURL && <PDFViewer fileUrl={fileURL} />}
-                </ModalBody>
+                <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('pigs.report.inventory')}</ModalHeader>
+                <ModalBody>{fileURL && <PDFViewer fileUrl={fileURL} />}</ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.selectCreationMode} toggle={() => toggleModal("selectCreationMode")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("selectCreationMode")}>Seleccion modo de registro</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("selectCreationMode")}>{t('pigs.action.selectMode')}</ModalHeader>
                 <ModalBody>
                     <div className="text-center py-5">
-                        <h5 className="mb-4 text-muted">¿Qué tipo de registro quieres realizar?</h5>
+                        <h5 className="mb-4 text-muted">{t('pigs.action.selectModeQuestion')}</h5>
                         <div className="d-flex justify-content-center gap-4">
                             <Button color="secondary" size="lg" className="d-flex flex-column align-items-center p-4" onClick={() => { toggleModal('selectCreationMode'); toggleModal('createSingle') }}>
                                 <FaKeyboard size={32} className="mb-2" />
-                                <span>Registro individual</span>
+                                <span>{t('pigs.action.registerSingle')}</span>
                             </Button>
-
                             <Button color="primary" size="lg" className="d-flex flex-column align-items-center p-4" onClick={() => { toggleModal('selectCreationMode'); toggleModal('createBatch') }}>
                                 <FaListUl size={32} className="mb-2" />
-                                <span>Registro por lote</span>
+                                <span>{t('pigs.action.registerBatch')}</span>
                             </Button>
                         </div>
                     </div>
@@ -335,25 +251,19 @@ const ViewPigs = () => {
             </Modal>
 
             <Modal size="xl" isOpen={modals.createSingle} toggle={() => toggleModal("createSingle")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("createSingle")}>Registro individual de cerdo</ModalHeader>
-                <ModalBody>
-                    <SinglePigForm onSave={() => { toggleModal('createSingle'); fetchData(); }} onCancel={() => toggleModal('createSingle')} />
-                </ModalBody>
+                <ModalHeader toggle={() => toggleModal("createSingle")}>{t('pigs.action.registerSingle')}</ModalHeader>
+                <ModalBody><SinglePigForm onSave={() => { toggleModal('createSingle'); fetchData(); }} onCancel={() => toggleModal('createSingle')} /></ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.createBatch} toggle={() => toggleModal("createBatch")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("createBatch")}>Registro de cerdos por lote</ModalHeader>
-                <ModalBody>
-                    <BatchPigForm onSave={() => { toggleModal('createBatch'); fetchData(); }} onCancel={() => { }} />
-                </ModalBody>
+                <ModalHeader toggle={() => toggleModal("createBatch")}>{t('pigs.action.registerBatch')}</ModalHeader>
+                <ModalBody><BatchPigForm onSave={() => { toggleModal('createBatch'); fetchData(); }} onCancel={() => { }} /></ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.update} toggle={() => toggleModal("update")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("update")}>Edición de cerdo</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("update")}>{t('pigs.action.editPig')}</ModalHeader>
                 <ModalBody>
-                    {selectedPig && (
-                        <PigEditForm pigData={selectedPig} onSave={() => { toggleModal('update'); fetchData() }} onCancel={() => toggleModal('update')} />
-                    )}
+                    {selectedPig && <PigEditForm pigData={selectedPig} onSave={() => { toggleModal('update'); fetchData() }} onCancel={() => toggleModal('update')} />}
                 </ModalBody>
             </Modal>
 

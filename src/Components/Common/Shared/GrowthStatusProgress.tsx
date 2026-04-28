@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import {
     FaBaby,
     FaChartLine,
@@ -21,29 +22,27 @@ interface GrowthStatusProgressProps {
     title?: string;
 }
 
-const baseSteps = [
-    { key: "weaning", label: "Destete", icon: FaBaby },
-    { key: "growing", label: "Crecimiento", icon: FaChartLine },
-    { key: "sale", label: "En venta", icon: FaTruckLoading }
-];
-
-const finalStagesMap: Record<
-    string,
-    { key: string; label: string; icon: any }
-> = {
-    replacement: {
-        key: "replacement",
-        label: "Reemplazo",
-        icon: FaSyncAlt
-    },
-    sold: {
-        key: "sold",
-        label: "Venta",
-        icon: FaDollarSign
-    }
-};
-
 const GrowthStatusProgress: React.FC<GrowthStatusProgressProps> = ({ status, title }) => {
+    const { t } = useTranslation();
+
+    const baseSteps = [
+        { key: "weaning", label: t("shared.growthStatus.step.weaning"), icon: FaBaby },
+        { key: "growing", label: t("shared.growthStatus.step.growing"), icon: FaChartLine },
+        { key: "sale", label: t("shared.growthStatus.step.sale"), icon: FaTruckLoading }
+    ];
+
+    const finalStagesMap: Record<string, { key: string; label: string; icon: any }> = {
+        replacement: {
+            key: "replacement",
+            label: t("shared.growthStatus.step.replacement"),
+            icon: FaSyncAlt
+        },
+        sold: {
+            key: "sold",
+            label: t("shared.growthStatus.step.sold"),
+            icon: FaDollarSign
+        }
+    };
 
     const { steps, activeIndex } = useMemo(() => {
 
@@ -75,7 +74,8 @@ const GrowthStatusProgress: React.FC<GrowthStatusProgressProps> = ({ status, tit
             activeIndex: stageIndexMap[status] ?? 0
         };
 
-    }, [status]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [status, t]);
 
     const totalSteps = steps.length;
 

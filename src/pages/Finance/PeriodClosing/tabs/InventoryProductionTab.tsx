@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Alert, Card, CardBody, CardHeader, Col, Row, Table } from "reactstrap";
 import { ClosingSnapshot } from "common/data_interfaces";
 import { formatCurrency, formatNumber, formatPercentDecimal, formatWeightKg, stageLabel } from "utils/closingFormatters";
@@ -8,43 +9,43 @@ interface Props {
 }
 
 const InventoryProductionTab: React.FC<Props> = ({ snapshot }) => {
+    const { t } = useTranslation();
     const { inventory, production, meta } = snapshot;
 
     if (!inventory && !production) {
-        return <Alert color="secondary">Este cierre no incluye datos de inventario ni producción.</Alert>;
+        return <Alert color="secondary">{t("finance.periodClosing.tabs.inventory.empty")}</Alert>;
     }
 
     return (
         <>
             {inventory && (
                 <>
-                    {/* Flow diagram: initial → movements → final */}
                     <Card className="mb-3">
                         <CardHeader>
-                            <h5 className="mb-0"><i className="ri-archive-line me-2 text-primary" />Flujo de inventario</h5>
+                            <h5 className="mb-0"><i className="ri-archive-line me-2 text-primary" />{t("finance.periodClosing.tabs.inventory.flow.header")}</h5>
                         </CardHeader>
                         <CardBody>
                             <Row className="g-3 align-items-stretch">
                                 <Col md={4}>
                                     <div className="border rounded p-3 h-100 bg-light">
-                                        <div className="text-muted small mb-1">Inicial ({inventory.initial.date})</div>
+                                        <div className="text-muted small mb-1">{t("finance.periodClosing.tabs.inventory.flow.initial")} ({inventory.initial.date})</div>
                                         <div className="fw-bold fs-3">{formatNumber(inventory.initial.totalPigs)}</div>
                                         <div className="text-muted small">{formatWeightKg(inventory.initial.totalWeightKg, 0)}</div>
                                     </div>
                                 </Col>
                                 <Col md={4}>
                                     <div className="border rounded p-3 h-100">
-                                        <div className="text-muted small mb-2">Movimientos del periodo</div>
+                                        <div className="text-muted small mb-2">{t("finance.periodClosing.tabs.inventory.flow.movements")}</div>
                                         <div className="d-flex flex-column gap-1" style={{ fontSize: "0.9rem" }}>
-                                            <div className="d-flex justify-content-between"><span className="text-success">+ Nacimientos</span><strong>{inventory.movements.births.count}</strong></div>
-                                            <div className="d-flex justify-content-between"><span className="text-success">+ Compras</span><strong>{inventory.movements.purchases.count}</strong></div>
-                                            <div className="d-flex justify-content-between"><span className="text-danger">− Ventas</span><strong>{inventory.movements.sales.count}</strong></div>
-                                            <div className="d-flex justify-content-between"><span className="text-danger">− Muertes</span><strong>{inventory.movements.deaths.count}</strong></div>
-                                            <div className="d-flex justify-content-between"><span className="text-danger">− Descartes</span><strong>{inventory.movements.discards.count}</strong></div>
+                                            <div className="d-flex justify-content-between"><span className="text-success">{t("finance.periodClosing.tabs.inventory.flow.births")}</span><strong>{inventory.movements.births.count}</strong></div>
+                                            <div className="d-flex justify-content-between"><span className="text-success">{t("finance.periodClosing.tabs.inventory.flow.purchases")}</span><strong>{inventory.movements.purchases.count}</strong></div>
+                                            <div className="d-flex justify-content-between"><span className="text-danger">{t("finance.periodClosing.tabs.inventory.flow.sales")}</span><strong>{inventory.movements.sales.count}</strong></div>
+                                            <div className="d-flex justify-content-between"><span className="text-danger">{t("finance.periodClosing.tabs.inventory.flow.deaths")}</span><strong>{inventory.movements.deaths.count}</strong></div>
+                                            <div className="d-flex justify-content-between"><span className="text-danger">{t("finance.periodClosing.tabs.inventory.flow.discards")}</span><strong>{inventory.movements.discards.count}</strong></div>
                                             {(inventory.movements.transfersIn.count > 0 || inventory.movements.transfersOut.count > 0) && (
                                                 <>
-                                                    <div className="d-flex justify-content-between"><span className="text-muted">+ Traslados entrada</span><strong>{inventory.movements.transfersIn.count}</strong></div>
-                                                    <div className="d-flex justify-content-between"><span className="text-muted">− Traslados salida</span><strong>{inventory.movements.transfersOut.count}</strong></div>
+                                                    <div className="d-flex justify-content-between"><span className="text-muted">{t("finance.periodClosing.tabs.inventory.flow.transfersIn")}</span><strong>{inventory.movements.transfersIn.count}</strong></div>
+                                                    <div className="d-flex justify-content-between"><span className="text-muted">{t("finance.periodClosing.tabs.inventory.flow.transfersOut")}</span><strong>{inventory.movements.transfersOut.count}</strong></div>
                                                 </>
                                             )}
                                         </div>
@@ -52,54 +53,56 @@ const InventoryProductionTab: React.FC<Props> = ({ snapshot }) => {
                                 </Col>
                                 <Col md={4}>
                                     <div className="border rounded p-3 h-100 bg-light">
-                                        <div className="text-muted small mb-1">Final ({inventory.final.date})</div>
+                                        <div className="text-muted small mb-1">{t("finance.periodClosing.tabs.inventory.flow.final")} ({inventory.final.date})</div>
                                         <div className="fw-bold fs-3">{formatNumber(inventory.final.totalPigs)}</div>
                                         <div className="text-muted small">{formatWeightKg(inventory.final.totalWeightKg, 0)}</div>
                                     </div>
                                 </Col>
                             </Row>
 
-                            {/* Reconciliation warning */}
                             {inventory.reconciliation.diff !== 0 && (
                                 (Math.abs(inventory.reconciliation.diff) > 5 ||
                                     (inventory.initial.totalPigs > 0 && Math.abs(inventory.reconciliation.diff) / inventory.initial.totalPigs > 0.05)) ? (
                                     <Alert color="warning" className="mt-3 mb-0 d-flex align-items-start">
                                         <i className="ri-error-warning-line me-2 fs-5 text-warning" />
                                         <div>
-                                            <div className="fw-semibold">Inconsistencia en reconciliación</div>
+                                            <div className="fw-semibold">{t("finance.periodClosing.tabs.inventory.flow.reconciliation.title")}</div>
                                             <small>
-                                                Esperado: {formatNumber(inventory.reconciliation.expectedFinal)} cerdos ·
-                                                Actual: {formatNumber(inventory.reconciliation.actualFinal)} cerdos ·
-                                                Diferencia: <strong>{inventory.reconciliation.diff > 0 ? "+" : ""}{inventory.reconciliation.diff}</strong>.
-                                                Puede indicar movimientos no registrados.
+                                                {t("finance.periodClosing.tabs.inventory.flow.reconciliation.expected")} {formatNumber(inventory.reconciliation.expectedFinal)} ·{" "}
+                                                {t("finance.periodClosing.tabs.inventory.flow.reconciliation.actual")} {formatNumber(inventory.reconciliation.actualFinal)} ·{" "}
+                                                {t("finance.periodClosing.tabs.inventory.flow.reconciliation.diff")} <strong>{inventory.reconciliation.diff > 0 ? "+" : ""}{inventory.reconciliation.diff}</strong>.{" "}
+                                                {t("finance.periodClosing.tabs.inventory.flow.reconciliation.hint")}
                                             </small>
                                         </div>
                                     </Alert>
                                 ) : (
                                     <div className="mt-3 text-muted small">
                                         <i className="ri-information-line me-1 text-muted" />
-                                        Diferencia menor entre esperado ({inventory.reconciliation.expectedFinal}) y actual ({inventory.reconciliation.actualFinal}): {inventory.reconciliation.diff}.
+                                        {t("finance.periodClosing.tabs.inventory.flow.reconciliation.minor", {
+                                            expected: inventory.reconciliation.expectedFinal,
+                                            actual: inventory.reconciliation.actualFinal,
+                                            diff: inventory.reconciliation.diff,
+                                        })}
                                     </div>
                                 )
                             )}
                         </CardBody>
                     </Card>
 
-                    {/* Inventory by stage */}
                     <Card className="mb-3">
                         <CardHeader>
-                            <h5 className="mb-0"><i className="ri-stack-line me-2 text-primary" />Inventario por etapa</h5>
+                            <h5 className="mb-0"><i className="ri-stack-line me-2 text-primary" />{t("finance.periodClosing.tabs.inventory.stage.header")}</h5>
                         </CardHeader>
                         <CardBody>
                             <Table className="table-hover align-middle mb-0">
                                 <thead className="table-light">
                                     <tr>
-                                        <th>Etapa</th>
-                                        <th className="text-end">Inicial</th>
-                                        <th className="text-end">Peso inicial</th>
-                                        <th className="text-end">Final</th>
-                                        <th className="text-end">Peso final</th>
-                                        <th className="text-end">Peso prom.</th>
+                                        <th>{t("finance.periodClosing.tabs.inventory.stage.col.stage")}</th>
+                                        <th className="text-end">{t("finance.periodClosing.tabs.inventory.stage.col.initial")}</th>
+                                        <th className="text-end">{t("finance.periodClosing.tabs.inventory.stage.col.initialWeight")}</th>
+                                        <th className="text-end">{t("finance.periodClosing.tabs.inventory.stage.col.final")}</th>
+                                        <th className="text-end">{t("finance.periodClosing.tabs.inventory.stage.col.finalWeight")}</th>
+                                        <th className="text-end">{t("finance.periodClosing.tabs.inventory.stage.col.avgWeight")}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -121,33 +124,32 @@ const InventoryProductionTab: React.FC<Props> = ({ snapshot }) => {
                         </CardBody>
                     </Card>
 
-                    {/* Valuation */}
                     <Card className="mb-3">
                         <CardHeader>
-                            <h5 className="mb-0"><i className="ri-money-dollar-circle-line me-2 text-success" />Valorización de inventario final</h5>
+                            <h5 className="mb-0"><i className="ri-money-dollar-circle-line me-2 text-success" />{t("finance.periodClosing.tabs.inventory.valuation.header")}</h5>
                         </CardHeader>
                         <CardBody>
                             {!inventory.valuation ? (
-                                <p className="text-muted mb-0">Sin valorización disponible (no hubo ventas para calcular el precio de mercado).</p>
+                                <p className="text-muted mb-0">{t("finance.periodClosing.tabs.inventory.valuation.empty")}</p>
                             ) : (
                                 <>
                                     <Row className="g-3 mb-3">
                                         <Col md={4}>
                                             <div className="border rounded p-3 bg-light">
-                                                <div className="text-muted small">Precio por kg</div>
+                                                <div className="text-muted small">{t("finance.periodClosing.tabs.inventory.valuation.pricePerKg")}</div>
                                                 <div className="fw-bold fs-5">{formatCurrency(inventory.valuation.pricePerKg, meta)}</div>
-                                                <small className="text-muted">Fuente: {inventory.valuation.pricePerKgSource}</small>
+                                                <small className="text-muted">{t("finance.periodClosing.tabs.inventory.valuation.source")} {inventory.valuation.pricePerKgSource}</small>
                                             </div>
                                         </Col>
                                         <Col md={4}>
                                             <div className="border rounded p-3 bg-light">
-                                                <div className="text-muted small">Peso total final</div>
+                                                <div className="text-muted small">{t("finance.periodClosing.tabs.inventory.valuation.totalWeight")}</div>
                                                 <div className="fw-bold fs-5">{formatWeightKg(inventory.final.totalWeightKg, 0)}</div>
                                             </div>
                                         </Col>
                                         <Col md={4}>
                                             <div className="border rounded p-3" style={{ backgroundColor: "#E8F5E9" }}>
-                                                <div className="text-muted small">Valor total</div>
+                                                <div className="text-muted small">{t("finance.periodClosing.tabs.inventory.valuation.totalValue")}</div>
                                                 <div className="fw-bold fs-5 text-success">{formatCurrency(inventory.valuation.totalValue, meta)}</div>
                                             </div>
                                         </Col>
@@ -155,9 +157,9 @@ const InventoryProductionTab: React.FC<Props> = ({ snapshot }) => {
                                     <Table size="sm" className="mb-0">
                                         <thead className="table-light">
                                             <tr>
-                                                <th>Etapa</th>
-                                                <th className="text-end">Peso (kg)</th>
-                                                <th className="text-end">Valor</th>
+                                                <th>{t("finance.periodClosing.tabs.inventory.valuation.col.stage")}</th>
+                                                <th className="text-end">{t("finance.periodClosing.tabs.inventory.valuation.col.weight")}</th>
+                                                <th className="text-end">{t("finance.periodClosing.tabs.inventory.valuation.col.value")}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -179,34 +181,33 @@ const InventoryProductionTab: React.FC<Props> = ({ snapshot }) => {
 
             {production && (
                 <>
-                    {/* Production KPIs */}
                     <Card className="mb-3">
                         <CardHeader>
-                            <h5 className="mb-0"><i className="ri-line-chart-line me-2 text-primary" />Producción</h5>
+                            <h5 className="mb-0"><i className="ri-line-chart-line me-2 text-primary" />{t("finance.periodClosing.tabs.inventory.production.header")}</h5>
                         </CardHeader>
                         <CardBody>
                             <Row className="g-3 mb-3">
                                 <Col md={6}>
                                     <div className="border rounded p-3">
-                                        <div className="fw-semibold mb-2"><i className="ri-seedling-line me-1 text-success" />Nacimientos</div>
+                                        <div className="fw-semibold mb-2"><i className="ri-seedling-line me-1 text-success" />{t("finance.periodClosing.tabs.inventory.production.births.title")}</div>
                                         <Row className="small g-2">
-                                            <Col xs={6}>Camadas<div className="fw-bold">{formatNumber(production.births.litterCount)}</div></Col>
-                                            <Col xs={6}>Vivos<div className="fw-bold text-success">{formatNumber(production.births.pigletsBornAlive)}</div></Col>
-                                            <Col xs={6}>Muertos<div className="fw-bold text-danger">{formatNumber(production.births.pigletsBornDead)}</div></Col>
-                                            <Col xs={6}>Camada promedio<div className="fw-bold">{formatNumber(production.births.avgLitterSize, 1)}</div></Col>
-                                            <Col xs={12}>Peso prom. al nacer<div className="fw-bold">{formatWeightKg(production.births.avgPigletBirthWeightKg, 2)}</div></Col>
+                                            <Col xs={6}>{t("finance.periodClosing.tabs.inventory.production.births.litters")}<div className="fw-bold">{formatNumber(production.births.litterCount)}</div></Col>
+                                            <Col xs={6}>{t("finance.periodClosing.tabs.inventory.production.births.alive")}<div className="fw-bold text-success">{formatNumber(production.births.pigletsBornAlive)}</div></Col>
+                                            <Col xs={6}>{t("finance.periodClosing.tabs.inventory.production.births.dead")}<div className="fw-bold text-danger">{formatNumber(production.births.pigletsBornDead)}</div></Col>
+                                            <Col xs={6}>{t("finance.periodClosing.tabs.inventory.production.births.avgLitter")}<div className="fw-bold">{formatNumber(production.births.avgLitterSize, 1)}</div></Col>
+                                            <Col xs={12}>{t("finance.periodClosing.tabs.inventory.production.births.avgWeight")}<div className="fw-bold">{formatWeightKg(production.births.avgPigletBirthWeightKg, 2)}</div></Col>
                                         </Row>
                                     </div>
                                 </Col>
                                 <Col md={6}>
                                     <div className="border rounded p-3">
-                                        <div className="fw-semibold mb-2"><i className="ri-parent-line me-1 text-info" />Destetes</div>
+                                        <div className="fw-semibold mb-2"><i className="ri-parent-line me-1 text-info" />{t("finance.periodClosing.tabs.inventory.production.weanings.title")}</div>
                                         <Row className="small g-2">
-                                            <Col xs={6}>Camadas<div className="fw-bold">{formatNumber(production.weanings.litterCount)}</div></Col>
-                                            <Col xs={6}>Lechones destetados<div className="fw-bold">{formatNumber(production.weanings.pigletsWeaned)}</div></Col>
-                                            <Col xs={6}>Camada prom.<div className="fw-bold">{formatNumber(production.weanings.avgLitterSizeAtWeaning, 1)}</div></Col>
-                                            <Col xs={6}>Edad prom. destete<div className="fw-bold">{production.weanings.avgWeaningAgeDays !== null ? `${production.weanings.avgWeaningAgeDays} días` : "Sin datos"}</div></Col>
-                                            <Col xs={12}>Mortalidad pre-destete<div className="fw-bold text-danger">{formatPercentDecimal(production.weanings.preWeaningMortality)}</div></Col>
+                                            <Col xs={6}>{t("finance.periodClosing.tabs.inventory.production.weanings.litters")}<div className="fw-bold">{formatNumber(production.weanings.litterCount)}</div></Col>
+                                            <Col xs={6}>{t("finance.periodClosing.tabs.inventory.production.weanings.piglets")}<div className="fw-bold">{formatNumber(production.weanings.pigletsWeaned)}</div></Col>
+                                            <Col xs={6}>{t("finance.periodClosing.tabs.inventory.production.weanings.avgLitter")}<div className="fw-bold">{formatNumber(production.weanings.avgLitterSizeAtWeaning, 1)}</div></Col>
+                                            <Col xs={6}>{t("finance.periodClosing.tabs.inventory.production.weanings.avgAge")}<div className="fw-bold">{production.weanings.avgWeaningAgeDays !== null ? `${production.weanings.avgWeaningAgeDays} días` : t("finance.periodClosing.tabs.inventory.fcr.noData")}</div></Col>
+                                            <Col xs={12}>{t("finance.periodClosing.tabs.inventory.production.weanings.preweanMortality")}<div className="fw-bold text-danger">{formatPercentDecimal(production.weanings.preWeaningMortality)}</div></Col>
                                         </Row>
                                     </div>
                                 </Col>
@@ -214,22 +215,21 @@ const InventoryProductionTab: React.FC<Props> = ({ snapshot }) => {
                         </CardBody>
                     </Card>
 
-                    {/* Mortality */}
                     <Card className="mb-3">
                         <CardHeader>
-                            <h5 className="mb-0"><i className="ri-skull-line me-2 text-danger" />Mortalidad</h5>
+                            <h5 className="mb-0"><i className="ri-skull-line me-2 text-danger" />{t("finance.periodClosing.tabs.inventory.mortality.header")}</h5>
                         </CardHeader>
                         <CardBody>
                             <Row className="g-3 mb-3">
                                 <Col md={4}>
                                     <div className="border rounded p-3" style={{ backgroundColor: "#FFEBEE" }}>
-                                        <div className="text-muted small">Muertes totales</div>
+                                        <div className="text-muted small">{t("finance.periodClosing.tabs.inventory.mortality.totalDeaths")}</div>
                                         <div className="fw-bold fs-5 text-danger">{formatNumber(production.mortality.totalDeaths)}</div>
                                     </div>
                                 </Col>
                                 <Col md={4}>
                                     <div className="border rounded p-3" style={{ backgroundColor: "#FFEBEE" }}>
-                                        <div className="text-muted small">Tasa de mortalidad</div>
+                                        <div className="text-muted small">{t("finance.periodClosing.tabs.inventory.mortality.mortalityRate")}</div>
                                         <div className="fw-bold fs-5 text-danger">{formatPercentDecimal(production.mortality.mortalityRate, 2)}</div>
                                     </div>
                                 </Col>
@@ -237,16 +237,16 @@ const InventoryProductionTab: React.FC<Props> = ({ snapshot }) => {
 
                             <Row className="g-3">
                                 <Col md={6}>
-                                    <div className="fw-semibold mb-2">Por etapa</div>
+                                    <div className="fw-semibold mb-2">{t("finance.periodClosing.tabs.inventory.mortality.byStage")}</div>
                                     {production.mortality.byStage.length === 0 ? (
-                                        <p className="text-muted small">Sin datos.</p>
+                                        <p className="text-muted small">{t("finance.periodClosing.tabs.inventory.mortality.noData")}</p>
                                     ) : (
                                         <Table size="sm" className="mb-0">
                                             <thead className="table-light">
                                                 <tr>
-                                                    <th>Etapa</th>
-                                                    <th className="text-end">Muertes</th>
-                                                    <th className="text-end">Tasa</th>
+                                                    <th>{t("finance.periodClosing.tabs.inventory.mortality.col.stage")}</th>
+                                                    <th className="text-end">{t("finance.periodClosing.tabs.inventory.mortality.col.deaths")}</th>
+                                                    <th className="text-end">{t("finance.periodClosing.tabs.inventory.mortality.col.rate")}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -262,15 +262,15 @@ const InventoryProductionTab: React.FC<Props> = ({ snapshot }) => {
                                     )}
                                 </Col>
                                 <Col md={6}>
-                                    <div className="fw-semibold mb-2">Por causa</div>
+                                    <div className="fw-semibold mb-2">{t("finance.periodClosing.tabs.inventory.mortality.byCause")}</div>
                                     {production.mortality.byCause.length === 0 ? (
-                                        <p className="text-muted small">Sin causas registradas.</p>
+                                        <p className="text-muted small">{t("finance.periodClosing.tabs.inventory.mortality.noCauses")}</p>
                                     ) : (
                                         <Table size="sm" className="mb-0">
                                             <thead className="table-light">
                                                 <tr>
-                                                    <th>Causa</th>
-                                                    <th className="text-end">Cantidad</th>
+                                                    <th>{t("finance.periodClosing.tabs.inventory.mortality.col.cause")}</th>
+                                                    <th className="text-end">{t("finance.periodClosing.tabs.inventory.mortality.col.count")}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -288,29 +288,28 @@ const InventoryProductionTab: React.FC<Props> = ({ snapshot }) => {
                         </CardBody>
                     </Card>
 
-                    {/* FCR + avg days */}
                     <Card className="mb-3">
                         <CardHeader>
-                            <h5 className="mb-0"><i className="ri-exchange-line me-2 text-primary" />Conversión alimenticia y permanencia</h5>
+                            <h5 className="mb-0"><i className="ri-exchange-line me-2 text-primary" />{t("finance.periodClosing.tabs.inventory.fcr.header")}</h5>
                         </CardHeader>
                         <CardBody>
                             <Row className="g-3">
                                 <Col md={6}>
-                                    <div className="fw-semibold mb-2">Conversión alimenticia (FCR)</div>
+                                    <div className="fw-semibold mb-2">{t("finance.periodClosing.tabs.inventory.fcr.title")}</div>
                                     <div className="border rounded p-3">
-                                        <div className="text-muted small">General</div>
-                                        <div className="fw-bold fs-5">{production.feedConversion.overall !== null ? production.feedConversion.overall.toFixed(2) : "Sin datos"}</div>
-                                        <small className="text-muted">Desglose por etapa: sin datos</small>
+                                        <div className="text-muted small">{t("finance.periodClosing.tabs.inventory.fcr.general")}</div>
+                                        <div className="fw-bold fs-5">{production.feedConversion.overall !== null ? production.feedConversion.overall.toFixed(2) : t("finance.periodClosing.tabs.inventory.fcr.noData")}</div>
+                                        <small className="text-muted">{t("finance.periodClosing.tabs.inventory.fcr.noBreakdown")}</small>
                                     </div>
                                 </Col>
                                 <Col md={6}>
-                                    <div className="fw-semibold mb-2">Días promedio por etapa</div>
+                                    <div className="fw-semibold mb-2">{t("finance.periodClosing.tabs.inventory.fcr.avgDays")}</div>
                                     <Table size="sm" className="mb-0">
                                         <tbody>
                                             {production.avgDaysPerStage.map((d) => (
                                                 <tr key={d.stage}>
                                                     <td>{stageLabel(d.stage)}</td>
-                                                    <td className="text-end">{d.avgDays !== null ? `${d.avgDays} días` : <span className="text-muted">Sin datos</span>}</td>
+                                                    <td className="text-end">{d.avgDays !== null ? `${d.avgDays} días` : <span className="text-muted">{t("finance.periodClosing.tabs.inventory.fcr.noData")}</span>}</td>
                                                 </tr>
                                             ))}
                                         </tbody>

@@ -13,12 +13,14 @@ import SuccessModal from "../Shared/SuccessModal";
 import ErrorModal from "../Shared/ErrorModal";
 import { HttpStatusCode } from "axios";
 import LoadingAnimation from "../Shared/LoadingAnimation";
+import { useTranslation } from "react-i18next";
 
 interface FeedingPackageDetailsProps {
     feedingPackageId: string;
 }
 
 const FeedingPackageDetails: React.FC<FeedingPackageDetailsProps> = ({ feedingPackageId }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true);
@@ -35,61 +37,63 @@ const FeedingPackageDetails: React.FC<FeedingPackageDetailsProps> = ({ feedingPa
     const totalPercentage = feedingsItems.reduce((acc, f) => acc + (f.percentage ?? 0), 0);
 
     const recipeAttributes: Attribute[] = [
-        { key: 'code', label: 'Codigo', type: 'text' },
-        { key: 'name', label: 'Nombre', type: 'text' },
-        { key: 'creation_date', label: 'Fecha de creacion', type: 'date' },
+        { key: 'code', label: t('feeding.package.detail.code'), type: 'text' },
+        { key: 'name', label: t('feeding.package.detail.name'), type: 'text' },
+        { key: 'creation_date', label: t('feeding.package.detail.createdAt'), type: 'date' },
         {
-            key: 'stage', label: 'Etapa', type: 'text',
+            key: 'stage', label: t('common.field.stage'), type: 'text',
             render: (_, row) => {
-                let color = "secondary"; let text = "Desconocido";
-                switch (row.stage) {
-                    case "general": color = "info"; text = "General"; break;
-                    case "piglet": color = "info"; text = "Lechón"; break;
-                    case "weaning": color = "warning"; text = "Destete"; break;
-                    case "fattening": color = "primary"; text = "Engorda"; break;
-                    case "breeder": color = "success"; text = "Reproductor"; break;
-                }
-                return <Badge color={color}>{text}</Badge>;
+                const stageColors: Record<string, string> = {
+                    general: 'info', piglet: 'info', weaning: 'warning',
+                    fattening: 'primary', breeder: 'success',
+                };
+                return (
+                    <Badge color={stageColors[row.stage] || 'secondary'}>
+                        {t(`feeding.stage.${row.stage}`, { defaultValue: row.stage })}
+                    </Badge>
+                );
             },
         },
         {
-            key: 'expectedYield', label: 'Rendimiento esperado',
+            key: 'expectedYield', label: t('feeding.package.detail.expectedYield'),
             render: (_, row) => <span>{row.expectedYield ?? 100}%</span>
         },
-        { key: 'description', label: 'Descripcion', type: 'text' },
+        { key: 'description', label: t('feeding.package.detail.description'), type: 'text' },
         {
-            key: 'creation_responsible', label: 'Responsable',
+            key: 'creation_responsible', label: t('feeding.package.detail.responsible'),
             render: () => (<span className="text-black">{recipe?.creation_responsible?.name} {recipe?.creation_responsible?.lastname}</span>)
         },
         {
-            key: 'is_active', label: 'Estado',
+            key: 'is_active', label: t('feeding.package.detail.status'),
             render: (value: boolean) => (
-                <Badge color={value ? "success" : "danger"}>{value ? "Activo" : "Inactivo"}</Badge>
+                <Badge color={value ? "success" : "danger"}>
+                    {value ? t('common.status.active') : t('common.status.inactive')}
+                </Badge>
             ),
         },
     ];
 
     const ingredientColumns: Column<any>[] = [
         {
-            header: 'Imagen', accessor: 'image',
+            header: t('feeding.package.form.column.image'), accessor: 'image',
             render: (_, row) => (
-                <img src={row.feeding?.image || noImageUrl} alt="Producto" style={{ height: "70px" }} />
+                <img src={row.feeding?.image || noImageUrl} alt={t('feeding.package.form.column.product')} style={{ height: "70px" }} />
             ),
         },
         {
-            header: "Codigo", accessor: "feeding.id", type: "text", isFilterable: true,
+            header: t('feeding.package.form.column.code'), accessor: "feeding.id", type: "text", isFilterable: true,
             render: (_, row) => row.feeding?.id || row.feeding?._id,
         },
         {
-            header: "Producto", accessor: "name", type: "text", isFilterable: true,
+            header: t('feeding.package.form.column.product'), accessor: "name", type: "text", isFilterable: true,
             render: (_, row) => row.feeding?.name,
         },
         {
-            header: "Porcentaje", accessor: "percentage",
+            header: t('feeding.package.form.column.percentage'), accessor: "percentage",
             render: (_, row) => <Badge color="success" className="fs-6">{(row.percentage ?? 0).toFixed(2)}%</Badge>
         },
         {
-            header: "Aporte por kg de mezcla", accessor: "perKg",
+            header: t('feeding.package.form.column.contributionShort'), accessor: "perKg",
             render: (_, row) => <span>{((row.percentage ?? 0) / 100).toFixed(3)} kg</span>
         },
     ];
@@ -108,7 +112,7 @@ const FeedingPackageDetails: React.FC<FeedingPackageDetailsProps> = ({ feedingPa
             setFeedingsItems(data.feedings || []);
         } catch (error) {
             console.error('Error fetching data:', error);
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al cargar los datos' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('feeding.package.error.load') });
         } finally {
             setLoading(false);
         }
@@ -164,12 +168,12 @@ const FeedingPackageDetails: React.FC<FeedingPackageDetailsProps> = ({ feedingPa
                     recipe.is_active ? (
                         <Button color="danger" onClick={() => toggleModal('deactivate')}>
                             <i className="ri-forbid-line align-middle me-2 fs-5" />
-                            Desactivar receta
+                            {t('feeding.package.action.deactivate')}
                         </Button>
                     ) : (
                         <Button color="success" onClick={() => toggleModal('activate')}>
                             <i className="ri-check-line align-middle me-2 fs-5" />
-                            Activar receta
+                            {t('feeding.package.action.activate')}
                         </Button>
                     )
                 )}
@@ -179,7 +183,7 @@ const FeedingPackageDetails: React.FC<FeedingPackageDetailsProps> = ({ feedingPa
                 <Card className="border-primary border-opacity-25 flex-shrink-0" style={{ width: '320px' }}>
                     <CardHeader className="bg-primary bg-opacity-10">
                         <h5 className="mb-0 text-primary">
-                            <i className="ri-file-list-3-line me-2" /> Información de la receta
+                            <i className="ri-file-list-3-line me-2" /> {t('feeding.package.form.card.recipeInfo')}
                         </h5>
                     </CardHeader>
                     <CardBody>
@@ -190,10 +194,10 @@ const FeedingPackageDetails: React.FC<FeedingPackageDetailsProps> = ({ feedingPa
                 <Card className="flex-fill border-success border-opacity-25">
                     <CardHeader className="bg-success bg-opacity-10 d-flex justify-content-between align-items-center">
                         <h5 className="mb-0 text-success">
-                            <i className="ri-leaf-line me-2" /> Ingredientes y porcentajes
+                            <i className="ri-leaf-line me-2" /> {t('feeding.package.form.step.ingredients')}
                         </h5>
                         <Badge color={Math.abs(totalPercentage - 100) < 0.01 ? 'success' : 'danger'} className="fs-6">
-                            Total: {totalPercentage.toFixed(2)}%
+                            {t('feeding.package.detail.totalPercentage', { val: totalPercentage.toFixed(2) })}
                         </Badge>
                     </CardHeader>
                     <CardBody className="p-0">
@@ -206,8 +210,8 @@ const FeedingPackageDetails: React.FC<FeedingPackageDetailsProps> = ({ feedingPa
                         />
                         <div className="px-4 py-3 border-top bg-light">
                             <div className="d-flex justify-content-between align-items-center mb-2">
-                                <small className="text-muted">Distribución porcentual de la receta</small>
-                                <small className="text-muted">{feedingsItems.length} ingrediente(s)</small>
+                                <small className="text-muted">{t('feeding.package.form.card.percentageDistribution')}</small>
+                                <small className="text-muted">{feedingsItems.length} {t('feeding.package.form.card.ingredientCount')}</small>
                             </div>
                             <Progress
                                 value={Math.min(totalPercentage, 100)}
@@ -220,31 +224,31 @@ const FeedingPackageDetails: React.FC<FeedingPackageDetailsProps> = ({ feedingPa
             </div>
 
             <Modal size="md" isOpen={modals.deactivate} toggle={() => toggleModal("deactivate")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("deactivate")}>Desactivar receta</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("deactivate")}>{t('feeding.package.action.deactivate')}</ModalHeader>
                 <ModalBody>
-                    <p>¿Está seguro que desea desactivar esta receta? Una receta inactiva no podrá usarse en nuevas preparaciones.</p>
+                    <p>{t('feeding.package.action.deactivateConfirm')}</p>
                 </ModalBody>
                 <ModalFooter>
-                    <Button color="secondary" onClick={() => toggleModal('deactivate', false)}>Cancelar</Button>
-                    <Button color="danger" onClick={() => { toggleModal('deactivate'); deactivateRecipe(); }}>Confirmar</Button>
+                    <Button color="secondary" onClick={() => toggleModal('deactivate', false)}>{t('common.button.cancel')}</Button>
+                    <Button color="danger" onClick={() => { toggleModal('deactivate'); deactivateRecipe(); }}>{t('common.button.confirm')}</Button>
                 </ModalFooter>
             </Modal>
 
             <Modal size="md" isOpen={modals.activate} toggle={() => toggleModal("activate")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("activate")}>Activar receta</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("activate")}>{t('feeding.package.action.activate')}</ModalHeader>
                 <ModalBody>
-                    <p>¿Está seguro que desea activar esta receta?</p>
+                    <p>{t('feeding.package.action.activateConfirm')}</p>
                 </ModalBody>
                 <ModalFooter>
-                    <Button color="secondary" onClick={() => toggleModal('activate', false)}>Cancelar</Button>
-                    <Button color="success" onClick={() => { toggleModal('activate'); activateRecipe(); }}>Confirmar</Button>
+                    <Button color="secondary" onClick={() => toggleModal('activate', false)}>{t('common.button.cancel')}</Button>
+                    <Button color="success" onClick={() => { toggleModal('activate'); activateRecipe(); }}>{t('common.button.confirm')}</Button>
                 </ModalFooter>
             </Modal>
 
-            <SuccessModal isOpen={modals.deactivationSuccess} onClose={() => { toggleModal('deactivationSuccess'); fetchData(); }} message="Receta desactivada con éxito" />
-            <SuccessModal isOpen={modals.activationSuccess} onClose={() => { toggleModal('activationSuccess'); fetchData(); }} message="Receta activada con éxito" />
-            <ErrorModal isOpen={modals.deactivationError} onClose={() => toggleModal('deactivationError')} message="Ha ocurrido un error al desactivar la receta" />
-            <ErrorModal isOpen={modals.activationError} onClose={() => toggleModal('activationError')} message="Ha ocurrido un error al activar la receta" />
+            <SuccessModal isOpen={modals.deactivationSuccess} onClose={() => { toggleModal('deactivationSuccess'); fetchData(); }} message={t('feeding.package.success.deactivated')} />
+            <SuccessModal isOpen={modals.activationSuccess} onClose={() => { toggleModal('activationSuccess'); fetchData(); }} message={t('feeding.package.success.activated')} />
+            <ErrorModal isOpen={modals.deactivationError} onClose={() => toggleModal('deactivationError')} message={t('feeding.package.error.deactivate')} />
+            <ErrorModal isOpen={modals.activationError} onClose={() => toggleModal('activationError')} message={t('feeding.package.error.activate')} />
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} />
         </>
     );

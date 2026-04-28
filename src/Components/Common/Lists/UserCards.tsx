@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
     Badge,
     Button,
@@ -12,7 +13,6 @@ import { Column, ColumnType } from "common/data/data_types";
 import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
 import defaultProfile from '../../../assets/images/default-profile-mage.jpg';
-import { userRoles } from "common/user_roles";
 
 interface UserCardProps<T> {
     columns: Column<T>[];
@@ -24,10 +24,6 @@ interface UserCardProps<T> {
     imageAccessor?: keyof T;
     className?: string;
 }
-
-const roleLabelsMap: Record<string, string> = Object.fromEntries(
-    userRoles.map(r => [r.value, r.label])
-);
 
 const roleColorsMap: Record<string, string> = {
     Superadmin: "danger",
@@ -49,6 +45,7 @@ const UserCards = <T extends Record<string, any>>({
     imageAccessor,
     className = "",
 }: UserCardProps<T>) => {
+    const { t } = useTranslation();
 
     const mainColumns = columns.filter(col => col.accessor !== 'action');
     const titleColumn = mainColumns[0] || { accessor: '', header: '' };
@@ -171,7 +168,7 @@ const UserCards = <T extends Record<string, any>>({
                                                         {(Array.isArray(item.role) ? item.role : [item.role]).map(
                                                             (r: string, idx: number) => {
                                                                 const color = roleColorsMap[r] || "secondary";
-                                                                const label = roleLabelsMap[r] || r;
+                                                                const label = t(`roles.${r}`, { defaultValue: r });
 
                                                                 return (
                                                                     <Badge key={idx} color={color} pill>

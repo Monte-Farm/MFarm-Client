@@ -10,6 +10,7 @@ import SuccessModal from "../Shared/SuccessModal";
 import { HttpStatusCode } from "axios";
 import FileUploader from "../Shared/FileUploader";
 import AlertMessage from "../Shared/AlertMesagge";
+import { useTranslation } from "react-i18next";
 
 interface DiagnosisFormProps {
     insemination: any;
@@ -18,6 +19,7 @@ interface DiagnosisFormProps {
 }
 
 const DiagnosisForm = ({ insemination, onSave, onCancel }: DiagnosisFormProps) => {
+    const { t } = useTranslation();
     const userLogged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -34,8 +36,8 @@ const DiagnosisForm = ({ insemination, onSave, onCancel }: DiagnosisFormProps) =
     const validationSchema = Yup.object({
         result: Yup.string()
             .oneOf(['pregnant', 'empty', 'doubtful', 'resorption', 'abortion'])
-            .required('El resultado es obligatorio'),
-        diagnosisDate: Yup.date().required('La fecha es obligatoria'),
+            .required(t('medical.diagnose.validation.resultRequired', { defaultValue: 'El resultado es obligatorio' })),
+        diagnosisDate: Yup.date().required(t('medical.diagnose.validation.dateRequired', { defaultValue: 'La fecha es obligatoria' })),
     });
 
     const formik = useFormik({
@@ -96,7 +98,7 @@ const DiagnosisForm = ({ insemination, onSave, onCancel }: DiagnosisFormProps) =
                 }
                 setSuccessModalOpen(true)
             } catch (error) {
-                handleError(error, 'Ha ocurrido un error al guardar los datos, intentelo mas tarde')
+                handleError(error, t('medical.diagnose.error.save', { defaultValue: 'Ha ocurrido un error al guardar los datos, intentelo mas tarde' }))
             } finally {
                 setSubmitting(false)
             }
@@ -111,7 +113,7 @@ const DiagnosisForm = ({ insemination, onSave, onCancel }: DiagnosisFormProps) =
             formik.values.attachments.push(uploadResponse.data.data)
 
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al subir el archivo, por favor intentelo más tarde');
+            handleError(error, t('medical.diagnose.error.upload', { defaultValue: 'Ha ocurrido un error al subir el archivo, por favor intentelo más tarde' }));
         }
     };
 
@@ -119,18 +121,25 @@ const DiagnosisForm = ({ insemination, onSave, onCancel }: DiagnosisFormProps) =
         formik.setFieldValue('diagnosisDate', new Date())
     }, [])
 
+    const resultLabels: Record<string, string> = {
+        pregnant: t('medical.diagnose.result.pregnant', { defaultValue: 'Preñada' }),
+        empty: t('medical.diagnose.result.empty', { defaultValue: 'Vacía' }),
+        doubtful: t('medical.diagnose.result.doubtful', { defaultValue: 'Dudosa' }),
+        resorption: t('medical.diagnose.result.resorption', { defaultValue: 'Reabsorción' }),
+        abortion: t('medical.diagnose.result.abortion', { defaultValue: 'Aborto' }),
+    };
 
     return (
         <>
             <form onSubmit={formik.handleSubmit} className="">
 
                 <div className="mt-4">
-                    <Label htmlFor="imageInput" className="form-label">Archivos de diagnostico</Label>
+                    <Label htmlFor="imageInput" className="form-label">{t('medical.diagnose.field.attachments', { defaultValue: 'Archivos de diagnostico' })}</Label>
                     <FileUploader acceptedFileTypes={['image/*', 'application/pdf']} maxFiles={1} onFileUpload={(file) => setFileToUpload(file)} />
                 </div>
 
                 <div className="mt-4">
-                    <Label htmlFor="result" className="form-label">Diagnostico</Label>
+                    <Label htmlFor="result" className="form-label">{t('medical.diagnose.field.result', { defaultValue: 'Diagnostico' })}</Label>
                     <Input
                         type="select"
                         id="conservation_method"
@@ -140,11 +149,11 @@ const DiagnosisForm = ({ insemination, onSave, onCancel }: DiagnosisFormProps) =
                         onBlur={formik.handleBlur}
                         invalid={formik.touched.result && !!formik.errors.result}
                     >
-                        <option value="pregnant">Preñada</option>
-                        <option value="empty">Vacía</option>
-                        <option value="doubtful">Dudosa</option>
-                        <option value="resorption">Reabsorción</option>
-                        <option value="abortion">Aborto</option>
+                        <option value="pregnant">{t('medical.diagnose.result.pregnant', { defaultValue: 'Preñada' })}</option>
+                        <option value="empty">{t('medical.diagnose.result.empty', { defaultValue: 'Vacía' })}</option>
+                        <option value="doubtful">{t('medical.diagnose.result.doubtful', { defaultValue: 'Dudosa' })}</option>
+                        <option value="resorption">{t('medical.diagnose.result.resorption', { defaultValue: 'Reabsorción' })}</option>
+                        <option value="abortion">{t('medical.diagnose.result.abortion', { defaultValue: 'Aborto' })}</option>
                     </Input>
                     {formik.touched.result && formik.errors.result && (
                         <FormFeedback>{formik.errors.result}</FormFeedback>
@@ -153,7 +162,7 @@ const DiagnosisForm = ({ insemination, onSave, onCancel }: DiagnosisFormProps) =
 
                 <div className="d-flex gap-2 mt-4">
                     <div className="w-50">
-                        <Label htmlFor="diagnosisDate" className="form-label">Fecha de diagnostico</Label>
+                        <Label htmlFor="diagnosisDate" className="form-label">{t('medical.diagnose.field.date', { defaultValue: 'Fecha de diagnostico' })}</Label>
                         <DatePicker
                             id="diagnosisDate"
                             className={`form-control ${formik.touched.diagnosisDate && formik.errors.diagnosisDate ? 'is-invalid' : ''}`}
@@ -169,7 +178,7 @@ const DiagnosisForm = ({ insemination, onSave, onCancel }: DiagnosisFormProps) =
                     </div>
 
                     <div className="w-50">
-                        <Label htmlFor="responsible" className="form-label">Responsable</Label>
+                        <Label htmlFor="responsible" className="form-label">{t('medical.diagnose.field.responsible', { defaultValue: 'Responsable' })}</Label>
                         <Input
                             type="text"
                             id="responsible"
@@ -181,7 +190,7 @@ const DiagnosisForm = ({ insemination, onSave, onCancel }: DiagnosisFormProps) =
                 </div>
 
                 <div className="mt-4">
-                    <Label htmlFor="diagnose_notes" className="form-label">Notas</Label>
+                    <Label htmlFor="diagnose_notes" className="form-label">{t('medical.diagnose.field.notes', { defaultValue: 'Notas' })}</Label>
                     <Input
                         type="text"
                         id="diagnose_notes"
@@ -190,7 +199,7 @@ const DiagnosisForm = ({ insemination, onSave, onCancel }: DiagnosisFormProps) =
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
                         invalid={formik.touched.diagnose_notes && !!formik.errors.diagnose_notes}
-                        placeholder="Ej: Extracción parcial"
+                        placeholder={t('medical.diagnose.field.notesPlaceholder', { defaultValue: 'Ej: Extracción parcial' })}
                     />
                     {formik.touched.diagnose_notes && formik.errors.diagnose_notes && (
                         <FormFeedback>{formik.errors.diagnose_notes}</FormFeedback>
@@ -206,33 +215,27 @@ const DiagnosisForm = ({ insemination, onSave, onCancel }: DiagnosisFormProps) =
                         ) : (
                             <div>
                                 <i className="ri-check-line me-2" />
-                                Registrar
+                                {t('medical.diagnose.submit', { defaultValue: 'Registrar' })}
                             </div>
                         )}
                     </Button>
                 </div>
 
                 <Modal size="md" isOpen={confirmationModalOpen} toggle={() => setConfirmationModalOpen(false)} centered>
-                    <ModalHeader toggle={() => setConfirmationModalOpen(false)}> Confirmar diagnóstico</ModalHeader>
+                    <ModalHeader toggle={() => setConfirmationModalOpen(false)}>{t('medical.diagnose.confirm.title', { defaultValue: 'Confirmar diagnóstico' })}</ModalHeader>
                     <ModalBody>
                         <div className="d-flex flex-column align-items-center text-center gap-3">
                             <FiCheckCircle size={50} />
                             <div>
                                 <p className="mb-1 fs-5">
-                                    ¿Desea registrar el diagnóstico:{" "}
+                                    {t('medical.diagnose.confirm.question', { defaultValue: '¿Desea registrar el diagnóstico:' })}{" "}
                                     <strong>
-                                        {{
-                                            pregnant: "Preñada",
-                                            empty: "Vacía",
-                                            doubtful: "Dudosa",
-                                            resorption: "Reabsorción",
-                                            abortion: "Aborto"
-                                        }[formik.values.result]}
+                                        {resultLabels[formik.values.result]}
                                     </strong>?
                                 </p>
                                 {formik.values.result === "pregnant" && (
                                     <p className="text-muted fs-5">
-                                        Fecha de parto tentativa:{" "}
+                                        {t('medical.diagnose.confirm.tentativeFarrowing', { defaultValue: 'Fecha de parto tentativa:' })}{" "}
                                         {new Date(new Date(insemination.date).getTime() + 115 * 24 * 60 * 60 * 1000)
                                             .toLocaleDateString("es-MX")}
                                     </p>
@@ -247,7 +250,7 @@ const DiagnosisForm = ({ insemination, onSave, onCancel }: DiagnosisFormProps) =
                     <ModalFooter>
                         <div className="d-flex gap-2 mt-3">
                             <Button color="secondary" onClick={() => setConfirmationModalOpen(false)}>
-                                Cancelar
+                                {t('common.button.cancel', { defaultValue: 'Cancelar' })}
                             </Button>
                             <Button color="success" onClick={() => formik.handleSubmit()}>
                                 {formik.isSubmitting ? (
@@ -257,7 +260,7 @@ const DiagnosisForm = ({ insemination, onSave, onCancel }: DiagnosisFormProps) =
                                 ) : (
                                     <div>
                                         <i className="ri-check-line me-2" />
-                                        Confirmar
+                                        {t('medical.diagnose.confirm_btn', { defaultValue: 'Confirmar' })}
                                     </div>
                                 )}
                             </Button>
@@ -268,7 +271,7 @@ const DiagnosisForm = ({ insemination, onSave, onCancel }: DiagnosisFormProps) =
             </form>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={false} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
-            <SuccessModal isOpen={successModalOpen} onClose={onSave} message={"Diagnostico registrado con éxito"} />
+            <SuccessModal isOpen={successModalOpen} onClose={onSave} message={t('medical.diagnose.success', { defaultValue: 'Diagnostico registrado con éxito' })} />
         </>
     );
 };

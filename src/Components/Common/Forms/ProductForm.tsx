@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback, Row, Col } from "reactstrap";
 import * as Yup from "yup";
 import { useFormik } from "formik";
+import { useTranslation } from "react-i18next";
 import FileUploader from "../Shared/FileUploader";
 import { ProductCategory, ProductData } from "common/data_interfaces";
 import { ConfigContext } from "App";
@@ -17,6 +18,7 @@ interface ProductFormProps {
 }
 
 const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCancel, isCodeDisabled }) => {
+    const { t } = useTranslation();
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [fileToUpload, setFileToUpload] = useState<File | null>(null)
@@ -28,8 +30,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
 
     const validationSchema = Yup.object({
         id: Yup.string()
-            .required("Por favor, ingrese el código")
-            .test('unique_id', 'Este codigo ya existe, por favor ingrese otro', async (value) => {
+            .required(t('warehouse.productForm.validation.codeRequired'))
+            .test('unique_id', t('warehouse.productForm.validation.codeExists'), async (value) => {
                 if (initialData) return true
                 if (!value) return false
                 try {
@@ -40,10 +42,10 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                     return false
                 }
             }),
-        name: Yup.string().required("Por favor, ingrese el nombre del producto"),
-        category: Yup.string().required("Por favor, seleccione una categoría"),
-        unit_measurement: Yup.string().required("Por favor, seleccione una unidad de medida"),
-        description: Yup.string().required("Por favor, ingrese la descripción"),
+        name: Yup.string().required(t('warehouse.productForm.validation.nameRequired')),
+        category: Yup.string().required(t('warehouse.productForm.validation.categoryRequired')),
+        unit_measurement: Yup.string().required(t('warehouse.productForm.validation.unitRequired')),
+        description: Yup.string().required(t('warehouse.productForm.validation.descriptionRequired')),
     });
 
     const formik = useFormik({
@@ -70,7 +72,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                 await onSubmit(values);
             } catch (error) {
                 console.error('Error sending product data: ', error);
-                setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al guardar el producto, por favor intentelo más tarde' });
+                setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.productForm.error.save') });
             } finally {
                 setSubmitting(false);
             }
@@ -85,7 +87,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
             return uploadResponse.data.data;
         } catch (error) {
             console.error('Error uploading image: ', error);
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al guardar la imagen, por favor intentelo más tarde' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.productForm.error.uploadImage') });
         }
     };
 
@@ -101,7 +103,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                 {/* Imagen */}
                 <div className="mb-4">
                     <div className="text-uppercase text-muted fw-semibold mb-3" style={{ fontSize: '0.7rem', letterSpacing: '0.8px' }}>
-                        Imagen
+                        {t('warehouse.productForm.section.image')}
                     </div>
                     <FileUploader acceptedFileTypes={['image/*']} maxFiles={1} onFileUpload={(file) => setFileToUpload(file)} />
                 </div>
@@ -109,12 +111,12 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                 {/* Información del Producto */}
                 <div className="mb-4">
                     <div className="text-uppercase text-muted fw-semibold mb-3" style={{ fontSize: '0.7rem', letterSpacing: '0.8px' }}>
-                        Información del Producto
+                        {t('warehouse.productForm.section.info')}
                     </div>
 
                     <Row className="g-3">
                         <Col lg={4}>
-                            <Label htmlFor="idInput" className="form-label">Código</Label>
+                            <Label htmlFor="idInput" className="form-label">{t('common.field.code')}</Label>
                             <Input
                                 type="text"
                                 id="idInput"
@@ -130,12 +132,12 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                         </Col>
 
                         <Col lg={8}>
-                            <Label htmlFor="nameInput" className="form-label">Nombre</Label>
+                            <Label htmlFor="nameInput" className="form-label">{t('common.field.name')}</Label>
                             <Input
                                 type="text"
                                 id="nameInput"
                                 name="name"
-                                placeholder="Ingrese el nombre del producto"
+                                placeholder={t('warehouse.productForm.field.namePlaceholder')}
                                 value={formik.values.name}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
@@ -147,7 +149,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                         </Col>
 
                         <Col lg={6}>
-                            <Label htmlFor="categoryInput" className="form-label">Categoría</Label>
+                            <Label htmlFor="categoryInput" className="form-label">{t('warehouse.products.attr.category')}</Label>
                             <Input
                                 type="select"
                                 id="categoryInput"
@@ -158,18 +160,18 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                                 invalid={formik.touched.category && !!formik.errors.category}
                                 disabled={isCodeDisabled}
                             >
-                                <option value="">Seleccione una categoría</option>
-                                <option value="nutrition">Nutrición</option>
-                                <option value="medications">Medicamentos</option>
-                                <option value="vaccines">Vacunas</option>
-                                <option value="vitamins">Vitaminas</option>
-                                <option value="minerals">Minerales</option>
-                                <option value="supplies">Insumos</option>
-                                <option value="hygiene_cleaning">Higiene y desinfección</option>
-                                <option value="equipment_tools">Equipamiento y herramientas</option>
-                                <option value="spare_parts">Refacciones y repuestos</option>
-                                <option value="office_supplies">Material de oficina</option>
-                                <option value="others">Otros</option>
+                                <option value="">{t('warehouse.productForm.field.selectCategory')}</option>
+                                <option value="nutrition">{t('warehouse.common.productCategory.nutrition')}</option>
+                                <option value="medications">{t('warehouse.common.productCategory.medications')}</option>
+                                <option value="vaccines">{t('warehouse.common.productCategory.vaccines')}</option>
+                                <option value="vitamins">{t('warehouse.common.productCategory.vitamins')}</option>
+                                <option value="minerals">{t('warehouse.common.productCategory.minerals')}</option>
+                                <option value="supplies">{t('warehouse.common.productCategory.supplies')}</option>
+                                <option value="hygiene_cleaning">{t('warehouse.common.productCategory.hygiene_cleaning')}</option>
+                                <option value="equipment_tools">{t('warehouse.common.productCategory.equipment_tools')}</option>
+                                <option value="spare_parts">{t('warehouse.common.productCategory.spare_parts')}</option>
+                                <option value="office_supplies">{t('warehouse.common.productCategory.office_supplies')}</option>
+                                <option value="others">{t('warehouse.common.productCategory.others')}</option>
                             </Input>
                             {formik.touched.category && formik.errors.category && (
                                 <FormFeedback>{formik.errors.category}</FormFeedback>
@@ -177,7 +179,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                         </Col>
 
                         <Col lg={6}>
-                            <Label htmlFor="unit_measurementInput" className="form-label">Unidad de Medida</Label>
+                            <Label htmlFor="unit_measurementInput" className="form-label">{t('warehouse.products.attr.unit')}</Label>
                             <Input
                                 type="select"
                                 id="unit_measurementInput"
@@ -187,7 +189,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                                 onBlur={formik.handleBlur}
                                 invalid={formik.touched.unit_measurement && !!formik.errors.unit_measurement}
                             >
-                                <option value="">Seleccione una unidad</option>
+                                <option value="">{t('warehouse.productForm.field.selectUnit')}</option>
                                 {unitOptions.map((u) => (
                                     <option key={u} value={u}>{u}</option>
                                 ))}
@@ -198,13 +200,13 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                         </Col>
 
                         <Col lg={12}>
-                            <Label htmlFor="descriptionInput" className="form-label">Descripción</Label>
+                            <Label htmlFor="descriptionInput" className="form-label">{t('warehouse.inventoryDetails.attr.description')}</Label>
                             <Input
                                 type="textarea"
                                 id="descriptionInput"
                                 rows={3}
                                 name="description"
-                                placeholder="Describe brevemente el producto"
+                                placeholder={t('warehouse.productForm.field.descriptionPlaceholder')}
                                 value={formik.values.description}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
@@ -220,10 +222,10 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                 {/* Botones */}
                 <div className="d-flex justify-content-end mt-4 pt-3 gap-2 border-top">
                     <Button className="farm-secondary-button" onClick={() => setCancelModalOpen(true)} disabled={formik.isSubmitting}>
-                        Cancelar
+                        {t('common.button.cancel')}
                     </Button>
                     <Button className="farm-primary-button" type="submit" disabled={formik.isSubmitting}>
-                        {formik.isSubmitting ? "Guardando..." : initialData ? "Actualizar Producto" : "Registrar Producto"}
+                        {formik.isSubmitting ? t('common.button.saving') : initialData ? t('warehouse.productForm.button.update') : t('warehouse.productForm.button.register')}
                     </Button>
                 </div>
             </form>
@@ -232,16 +234,16 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
 
             {/* Modal de confirmación de cancelación */}
             <Modal isOpen={cancelModalOpen} centered toggle={() => setCancelModalOpen(!cancelModalOpen)}>
-                <ModalHeader>Confirmación de Cancelación</ModalHeader>
+                <ModalHeader>{t('warehouse.productForm.cancelModal.title')}</ModalHeader>
                 <ModalBody>
-                    ¿Estás seguro de que deseas cancelar? Los datos no se guardarán.
+                    {t('warehouse.productForm.cancelModal.body')}
                 </ModalBody>
                 <ModalFooter>
                     <Button className="farm-secondary-button" onClick={onCancel}>
-                        Sí, cancelar
+                        {t('warehouse.productForm.cancelModal.confirm')}
                     </Button>
                     <Button className="farm-primary-button" onClick={() => setCancelModalOpen(false)}>
-                        No, continuar
+                        {t('warehouse.productForm.cancelModal.reject')}
                     </Button>
                 </ModalFooter>
             </Modal>

@@ -1,6 +1,7 @@
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import LoadingAnimation from "../Shared/LoadingAnimation";
 import AlertMessage from "../Shared/AlertMesagge";
 import { Badge, Button, Card, CardBody, CardHeader, Col, Modal, ModalBody, ModalHeader, Row } from "reactstrap";
@@ -27,6 +28,7 @@ interface GroupMedicalDetailsProps {
 }
 
 const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId, onUpdate, isGroupSold = false }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true)
@@ -73,7 +75,7 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId, onUp
             setMedicalStats(statsResponse.data.data);
         } catch (error) {
             console.error('Error fetching data: ', { error });
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al obtener la informacion medica, intentelo mas tarde' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('medical.error.load') });
         } finally {
             setLoading(false)
         }
@@ -90,9 +92,9 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId, onUp
     }
 
     const healthStatusConfig: Record<string, { color: string; label: string; bg: string }> = {
-        healthy: { color: 'success', label: 'Sano', bg: '#d1fae5' },
-        treatment: { color: 'danger', label: 'En Tratamiento', bg: '#fee2e2' },
-        observation: { color: 'warning', label: 'En Observación', bg: '#fef3c7' },
+        healthy: { color: 'success', label: t('medical.health.status.healthy'), bg: '#d1fae5' },
+        treatment: { color: 'danger', label: t('medical.health.status.treatment'), bg: '#fee2e2' },
+        observation: { color: 'warning', label: t('medical.health.status.observation'), bg: '#fef3c7' },
     };
 
     const currentHealth = medicalStats ? healthStatusConfig[medicalStats.healthStatus] || healthStatusConfig.healthy : healthStatusConfig.healthy;
@@ -105,7 +107,7 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId, onUp
                     <Row className="g-3 mb-3">
                         <Col md={6} lg={3}>
                             <StatKpiCard
-                                title="Medicamentos"
+                                title={t('medical.kpi.medications')}
                                 value={medicalStats.kpis?.totalMedications || 0}
                                 icon={<RiMedicineBottleLine size={20} style={{ color: '#0ea5e9' }} />}
                                 animateValue={true}
@@ -114,7 +116,7 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId, onUp
                         </Col>
                         <Col md={6} lg={3}>
                             <StatKpiCard
-                                title="Eventos Sanitarios"
+                                title={t('medical.kpi.healthEvents')}
                                 value={medicalStats.kpis?.totalHealthEvents || 0}
                                 icon={<RiVirusLine size={20} style={{ color: '#ef4444' }} />}
                                 animateValue={true}
@@ -123,9 +125,9 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId, onUp
                         </Col>
                         <Col md={6} lg={3}>
                             <StatKpiCard
-                                title="Días desde Última Aplicación"
+                                title={t('medical.kpi.daysSinceLastApplication')}
                                 value={medicalStats.kpis?.daysSinceLastApplication ?? 0}
-                                suffix="días"
+                                suffix={t('medical.kpi.days')}
                                 icon={<RiTimerLine size={20} style={{ color: '#f59e0b' }} />}
                                 animateValue={true}
                                 decimals={0}
@@ -136,7 +138,7 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId, onUp
                                 <CardBody className="d-flex flex-column justify-content-center">
                                     <div className="text-muted small fw-medium mb-1">
                                         <RiHeartPulseLine className="me-1" />
-                                        Estado de Salud del Grupo
+                                        {t('medical.health.groupLabel')}
                                     </div>
                                     <Badge color={currentHealth.color} className="fw-normal px-3 py-2 align-self-start" style={{ fontSize: '0.9rem' }}>
                                         {currentHealth.label}
@@ -160,9 +162,9 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId, onUp
                                         </div>
                                     </Col>
                                     <Col>
-                                        <div className="fw-bold text-dark">⚠ Evento Sanitario Activo: {medicalStats.activeHealthEvent.name}</div>
+                                        <div className="fw-bold text-dark">{t('medical.healthEvent.active')} {medicalStats.activeHealthEvent.name}</div>
                                         <div className="small text-muted">
-                                            {medicalStats.activeHealthEvent.daysInTreatment} días en tratamiento · Cerdos afectados: <strong className="text-dark">{medicalStats.activeHealthEvent.affectedPigs}</strong>
+                                            {medicalStats.activeHealthEvent.daysInTreatment} {t('medical.healthEvent.days')} <strong className="text-dark">{medicalStats.activeHealthEvent.affectedPigs}</strong>
                                         </div>
                                     </Col>
                                 </Row>
@@ -207,28 +209,28 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId, onUp
             </div>
 
             <Modal size="xl" isOpen={modals.registerHealthEvent} toggle={() => toggleModal("registerHealthEvent")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("registerHealthEvent")}>Registar evento sanitario</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("registerHealthEvent")}>{t('medical.healthEvent.register')}</ModalHeader>
                 <ModalBody>
                     <GroupHealthEventForm groupId={groupId} onSave={() => { toggleModal('registerHealthEvent'); fetchMedicalInfo(); onUpdate?.(); }} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.asignMedicationPackage} toggle={() => toggleModal("asignMedicationPackage")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("asignMedicationPackage")}>Asignar paquete de medicacion</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("asignMedicationPackage")}>{t('medical.medication.packageAssign')}</ModalHeader>
                 <ModalBody>
                     <AsignGroupMedicationPackageForm groupId={groupId} onSave={() => { toggleModal('asignMedicationPackage'); fetchMedicalInfo(); onUpdate?.(); }} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.medicationPackageDetails} toggle={() => toggleModal("medicationPackageDetails")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("medicationPackageDetails")}>Detalles de paquete de medicacion</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("medicationPackageDetails")}>{t('medical.medication.packageDetails')}</ModalHeader>
                 <ModalBody>
                     <MedicationPackageDetails medicationPackageId={selectedMedicationPackage} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.healthEventDetails} toggle={() => toggleModal("healthEventDetails")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("healthEventDetails")}>Detalles del evento sanitario</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("healthEventDetails")}>{t('medical.healthEvent.details')}</ModalHeader>
                 <ModalBody>
                     <HealthEventDetails eventId={selectedSickness} groupId={groupId} />
                 </ModalBody>

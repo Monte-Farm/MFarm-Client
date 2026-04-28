@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
@@ -17,6 +18,7 @@ import { OUTCOME_TYPES, getOutcomeTypeLabel } from "common/enums/outcomes.enums"
 
 
 const SubwarehouseOutcomes = () => {
+    const { t } = useTranslation();
     document.title = "Ver salidas | Subalmacén"
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
@@ -43,16 +45,16 @@ const SubwarehouseOutcomes = () => {
     };
 
     const outcomesColumns: Column<any>[] = [
-        { header: 'Identificador', accessor: 'code', isFilterable: true, type: 'text' },
-        { header: 'Fecha de Salida', accessor: 'date', isFilterable: true, type: 'date' },
+        { header: t('common.field.code'), accessor: 'code', isFilterable: true, type: 'text' },
+        { header: t('common.field.date'), accessor: 'date', isFilterable: true, type: 'date' },
         {
-            header: 'Tipo de salida',
+            header: t('warehouse.subwarehouseDetails.tab.outcomes'),
             accessor: 'outcomeType',
             isFilterable: true,
             type: 'text',
             render: (_, row) => {
                 let color = 'secondary';
-                let label = getOutcomeTypeLabel(row.outcomeType);
+                const label = t(`warehouse.common.outcomeType.${row.outcomeType}`, { defaultValue: getOutcomeTypeLabel(row.outcomeType) });
 
                 switch (row.outcomeType) {
                     case OUTCOME_TYPES.TRANSFER:
@@ -89,7 +91,7 @@ const SubwarehouseOutcomes = () => {
         },
         { header: 'Valor', accessor: 'totalPrice', isFilterable: true, type: 'currency' },
         {
-            header: 'Acciones',
+            header: t('common.field.actions'),
             accessor: 'actions',
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
@@ -109,7 +111,7 @@ const SubwarehouseOutcomes = () => {
             setSubwarehouseOutcomes(response.data.data);
         } catch (error) {
             console.error('Error fetching data', { error })
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.subwarehouseDetails.error.fetchOutcomes') })
         }
     };
 
@@ -134,14 +136,14 @@ const SubwarehouseOutcomes = () => {
             const valueByType: DonutDataItem[] = [];
 
             // Mapeo de tipos con sus colores y etiquetas (adaptado para outcomes)
-            const typeConfig: Record<string, { label: string; color: string }> = {
-                [OUTCOME_TYPES.TRANSFER]: { label: 'Transferencia', color: '#3b82f6' },
-                [OUTCOME_TYPES.SALE]: { label: 'Venta', color: '#10b981' },
-                [OUTCOME_TYPES.LOSS]: { label: 'Pérdida', color: '#ef4444' },
-                [OUTCOME_TYPES.ADJUSTMENT]: { label: 'Ajuste', color: '#f59e0b' },
-                [OUTCOME_TYPES.RETURN]: { label: 'Devolución', color: '#6366f1' },
-                [OUTCOME_TYPES.CONSUMPTION]: { label: 'Consumo', color: '#6b7280' },
-                [OUTCOME_TYPES.WAREHOUSE_ORDER]: { label: 'Orden de Almacén', color: '#8b5cf6' }
+            const typeConfig: Record<string, { color: string }> = {
+                [OUTCOME_TYPES.TRANSFER]: { color: '#3b82f6' },
+                [OUTCOME_TYPES.SALE]: { color: '#10b981' },
+                [OUTCOME_TYPES.LOSS]: { color: '#ef4444' },
+                [OUTCOME_TYPES.ADJUSTMENT]: { color: '#f59e0b' },
+                [OUTCOME_TYPES.RETURN]: { color: '#6366f1' },
+                [OUTCOME_TYPES.CONSUMPTION]: { color: '#6b7280' },
+                [OUTCOME_TYPES.WAREHOUSE_ORDER]: { color: '#8b5cf6' }
             };
 
             // Procesar outcomesByType
@@ -151,7 +153,7 @@ const SubwarehouseOutcomes = () => {
                     if (numericValue > 0 && typeConfig[type]) {
                         outcomesByType.push({
                             id: type,
-                            label: typeConfig[type].label,
+                            label: t(`warehouse.common.outcomeType.${type}`, { defaultValue: type }),
                             value: numericValue,
                             color: typeConfig[type].color
                         });
@@ -166,7 +168,7 @@ const SubwarehouseOutcomes = () => {
                     if (numericValue > 0 && typeConfig[type]) {
                         valueByType.push({
                             id: type,
-                            label: typeConfig[type].label,
+                            label: t(`warehouse.common.outcomeType.${type}`, { defaultValue: type }),
                             value: numericValue,
                             color: typeConfig[type].color
                         });
@@ -217,13 +219,13 @@ const SubwarehouseOutcomes = () => {
     return (
         <div className="page-content">
             <Container fluid>
-                <BreadCrumb title={"Ver Salidas"} pageTitle={"Salidas"} />
+                <BreadCrumb title={t('warehouse.subwarehouseDetails.tab.outcomes')} pageTitle={t('warehouse.subwarehouseDetails.tab.outcomes')} />
 
                 {/* KPIs Section */}
                 <div className="row mb-3">
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
-                            title="Valor Total de Salidas"
+                            title={t('warehouse.subwarehouseDetails.kpi.outcomes.totalValue')}
                             value={outcomeStatistics.totalValue}
                             prefix="$"
                             decimals={2}
@@ -235,7 +237,7 @@ const SubwarehouseOutcomes = () => {
                     </div>
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
-                            title="Total de Salidas"
+                            title={t('warehouse.subwarehouseDetails.kpi.outcomes.totalOutcomes')}
                             value={outcomeStatistics.totalOutcomes}
                             icon={<i className="ri-file-list-3-line fs-20 text-info"></i>}
                             iconBgColor="#E3F2FD"
@@ -245,7 +247,7 @@ const SubwarehouseOutcomes = () => {
                     </div>
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
-                            title="Valor Promedio por Salida"
+                            title={t('warehouse.subwarehouseDetails.kpi.outcomes.avgValuePerOutcome')}
                             value={outcomeStatistics.averageValuePerOutcome}
                             prefix="$"
                             decimals={2}
@@ -261,7 +263,7 @@ const SubwarehouseOutcomes = () => {
                 <div className="row mb-4">
                     <div className="col-xl-6">
                         <DonutChartCard
-                            title="Salidas por Tipo"
+                            title={t('warehouse.subwarehouseDetails.chart.outcomesByType')}
                             data={chartData.outcomesByType}
                             legendItems={chartData.outcomesLegendItems}
                             height={200}
@@ -269,7 +271,7 @@ const SubwarehouseOutcomes = () => {
                     </div>
                     <div className="col-xl-6">
                         <DonutChartCard
-                            title="Valor de Salidas por Tipo"
+                            title={t('warehouse.subwarehouseDetails.chart.outcomeValueByType')}
                             data={chartData.valueByType}
                             legendItems={chartData.valueLegendItems}
                             height={200}
@@ -280,7 +282,7 @@ const SubwarehouseOutcomes = () => {
                 <Card>
                     <CardHeader>
                         <div className="d-flex">
-                            <h4>Salidas</h4>
+                            <h4>{t('warehouse.subwarehouseDetails.tab.outcomes')}</h4>
                             <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>
                                 <i className="ri-add-line me-2" />
                                 Nueva Salida
@@ -291,7 +293,7 @@ const SubwarehouseOutcomes = () => {
                         {subwarehouseOutcomes.length === 0 ? (
                             <>
                                 <i className="ri-archive-line text-muted mb-2" style={{ fontSize: "2rem" }} />
-                                <span className="fs-5 text-muted">Aún no hay salidas de inventario registradas</span>
+                                <span className="fs-5 text-muted">{t('warehouse.subwarehouseDetails.empty.outcomes')}</span>
                             </>
                         ) : (
                             <CustomTable columns={outcomesColumns} data={subwarehouseOutcomes} showSearchAndFilter={true} showPagination={false} />
@@ -302,14 +304,14 @@ const SubwarehouseOutcomes = () => {
 
             {/* Modal Create */}
             <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("create")}>Nueva salida</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("create")}>{t('warehouse.subwarehouseDetails.modal.outcomeDetails')}</ModalHeader>
                 <ModalBody>
                     <SubwarehouseOutcomeForm onSave={() => { toggleModal('create'); fetchData(); }} onCancel={() => toggleModal('create')} />
                 </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("details")}>Detalles de salida</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("details")}>{t('warehouse.subwarehouseDetails.modal.outcomeDetails')}</ModalHeader>
                 <ModalBody>
                     <OutcomeDetails outcomeId={selectedOutcome._id} />
                 </ModalBody>

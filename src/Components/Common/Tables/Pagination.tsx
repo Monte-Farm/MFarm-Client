@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "reactstrap";
 
 interface PaginationProps {
@@ -15,9 +16,10 @@ const Pagination: React.FC<PaginationProps> = ({
   currentPage,
   setCurrentPage,
   perPageData,
-  prevText = "Anterior",
-  nextText = "Siguiente",
+  prevText,
+  nextText,
 }) => {
+  const { t } = useTranslation();
   const totalPages = Math.ceil(data.length / perPageData);
   const indexOfLastItem = currentPage * perPageData;
   const indexOfFirstItem = indexOfLastItem - perPageData;
@@ -47,7 +49,11 @@ const Pagination: React.FC<PaginationProps> = ({
   return (
     <div className="d-flex justify-content-between align-items-center p-3 border-top">
       <div className="text-muted small">
-        Mostrando {indexOfFirstItem + 1} a {Math.min(indexOfLastItem, data.length)} de {data.length}
+        {t("shared.pagination.showing", {
+          from: indexOfFirstItem + 1,
+          to: Math.min(indexOfLastItem, data.length),
+          total: data.length,
+        })}
       </div>
       <div className="d-flex gap-2 align-items-center">
         <Button
@@ -57,10 +63,10 @@ const Pagination: React.FC<PaginationProps> = ({
           disabled={currentPage === 1}
         >
           <i className="ri-arrow-left-s-line me-1" />
-          {prevText}
+          {prevText ?? t("shared.pagination.prev")}
         </Button>
         <span className="text-muted small">
-          Página {currentPage} de {totalPages}
+          {t("shared.pagination.page", { current: currentPage, total: totalPages })}
         </span>
         <Button
           size="sm"
@@ -68,7 +74,7 @@ const Pagination: React.FC<PaginationProps> = ({
           onClick={handleNextPage}
           disabled={currentPage === totalPages}
         >
-          {nextText}
+          {nextText ?? t("shared.pagination.next")}
           <i className="ri-arrow-right-s-line ms-1" />
         </Button>
       </div>

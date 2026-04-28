@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import {
     Button,
     Input,
@@ -16,6 +16,7 @@ import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import FileUploader from "../Shared/FileUploader";
 import { userRoles } from "common/user_roles";
+import { useTranslation } from "react-i18next";
 import AlertMessage from "../Shared/AlertMesagge";
 import SuccessModal from "../Shared/SuccessModal";
 import ErrorModal from "../Shared/ErrorModal";
@@ -37,16 +38,9 @@ const UserForm: React.FC<UserFormProps> = ({
     defaultRole,
     currentUserRole,
 }) => {
-    const [alertConfig, setAlertConfig] = useState({
-        visible: false,
-        color: "",
-        message: "",
-    });
-    const [modals, setModals] = useState({
-        success: false,
-        error: false,
-        cancel: false,
-    });
+    const { t } = useTranslation();
+    const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
+    const [modals, setModals] = useState({ success: false, error: false, cancel: false });
     const [fileToUpload, setFileToUpload] = useState<File | null>(null);
 
     const configContext = useContext(ConfigContext);
@@ -61,26 +55,20 @@ const UserForm: React.FC<UserFormProps> = ({
         : userRoles.filter((role) => {
             if (currentUserRole === "Superadmin") return true;
             if (currentUserRole === "farm_manager") {
-                return (
-                    role.value !== "Superadmin" &&
-                    role.value !== "farm_manager"
-                );
+                return role.value !== "Superadmin" && role.value !== "farm_manager";
             }
-            return (
-                role.value !== "Superadmin" &&
-                role.value !== "farm_manager"
-            );
+            return role.value !== "Superadmin" && role.value !== "farm_manager";
         });
 
     const validationSchema = Yup.object({
-        name: Yup.string().required("Por favor, ingrese el nombre"),
-        lastname: Yup.string().required("Por favor, ingrese el apellido"),
+        name: Yup.string().required(t("users.form.validation.nameRequired")),
+        lastname: Yup.string().required(t("users.form.validation.lastnameRequired")),
         email: Yup.string()
-            .email("Por favor, ingrese un correo electrónico válido")
-            .required("Por favor, ingrese el correo electrónico"),
+            .email(t("users.form.validation.emailInvalid"))
+            .required(t("users.form.validation.emailRequired")),
         role: Yup.array()
             .of(Yup.string())
-            .min(1, "Por favor, seleccione al menos un rol"),
+            .min(1, t("users.form.validation.roleRequired")),
     });
 
     const formik = useFormik({
@@ -99,7 +87,6 @@ const UserForm: React.FC<UserFormProps> = ({
         validationSchema,
         validateOnChange: false,
         validateOnBlur: true,
-
         onSubmit: async (values, { setSubmitting }) => {
             try {
                 if (!configContext) return;
@@ -139,10 +126,9 @@ const UserForm: React.FC<UserFormProps> = ({
     return (
         <>
             <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }}>
-                {/* Imagen */}
                 <div className="mt-4">
                     <Label htmlFor="imageInput" className="form-label">
-                        Imagen del usuario
+                        {t("users.form.field.image")}
                     </Label>
                     <FileUploader
                         acceptedFileTypes={["image/*"]}
@@ -151,10 +137,9 @@ const UserForm: React.FC<UserFormProps> = ({
                     />
                 </div>
 
-                {/* Nombre - Apellido */}
                 <div className="d-flex gap-3">
                     <div className="mt-4 w-50">
-                        <Label className="form-label">Nombre</Label>
+                        <Label className="form-label">{t("users.form.field.name")}</Label>
                         <Input
                             type="text"
                             name="name"
@@ -169,39 +154,30 @@ const UserForm: React.FC<UserFormProps> = ({
                     </div>
 
                     <div className="mt-4 w-50">
-                        <Label className="form-label">Apellido</Label>
+                        <Label className="form-label">{t("users.form.field.lastname")}</Label>
                         <Input
                             type="text"
                             name="lastname"
                             value={formik.values.lastname}
                             onChange={formik.handleChange}
                             onBlur={formik.handleBlur}
-                            invalid={
-                                formik.touched.lastname &&
-                                !!formik.errors.lastname
-                            }
+                            invalid={formik.touched.lastname && !!formik.errors.lastname}
                         />
-                        {formik.touched.lastname &&
-                            formik.errors.lastname && (
-                                <FormFeedback>
-                                    {formik.errors.lastname}
-                                </FormFeedback>
-                            )}
+                        {formik.touched.lastname && formik.errors.lastname && (
+                            <FormFeedback>{formik.errors.lastname}</FormFeedback>
+                        )}
                     </div>
                 </div>
 
-                {/* Correo */}
                 <div className="mt-4">
-                    <Label className="form-label">Correo Electrónico</Label>
+                    <Label className="form-label">{t("users.form.field.email")}</Label>
                     <Input
                         type="email"
                         name="email"
                         value={formik.values.email}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
-                        invalid={
-                            formik.touched.email && !!formik.errors.email
-                        }
+                        invalid={formik.touched.email && !!formik.errors.email}
                     />
                     {formik.touched.email && formik.errors.email && (
                         <FormFeedback>{formik.errors.email}</FormFeedback>
@@ -209,19 +185,12 @@ const UserForm: React.FC<UserFormProps> = ({
                 </div>
 
                 <div className="mt-4">
-                    <Label className="form-label fw-bold">Roles</Label>
-
+                    <Label className="form-label fw-bold">{t("users.form.field.roles")}</Label>
                     <div className="role-selector-container d-flex flex-wrap gap-3">
                         {filteredRoles.map((role) => {
-                            const checked =
-                                formik.values.role.includes(role.value);
-
+                            const checked = formik.values.role.includes(role.value);
                             return (
-                                <label
-                                    key={role.value}
-                                    className={`role-card ${checked ? "selected" : ""
-                                        }`}
-                                >
+                                <label key={role.value} className={`role-card ${checked ? "selected" : ""}`}>
                                     <input
                                         type="checkbox"
                                         value={role.value}
@@ -229,44 +198,33 @@ const UserForm: React.FC<UserFormProps> = ({
                                         disabled={!!defaultRole}
                                         onChange={(e) => {
                                             if (defaultRole) return;
-
                                             const value = e.target.value;
                                             const isChecked = e.target.checked;
-
                                             formik.setFieldValue(
                                                 "role",
                                                 isChecked
-                                                    ? [
-                                                        ...formik.values.role,
-                                                        value,
-                                                    ]
-                                                    : formik.values.role.filter(
-                                                        (r) => r !== value
-                                                    )
+                                                    ? [...formik.values.role, value]
+                                                    : formik.values.role.filter((r) => r !== value)
                                             );
                                         }}
                                     />
-                                    <span>{role.label}</span>
+                                    <span>{t(`roles.${role.value}`, { defaultValue: role.label })}</span>
                                 </label>
                             );
                         })}
                     </div>
-
                     {formik.touched.role && formik.errors.role && (
-                        <FormFeedback className="d-block mt-2">
-                            {formik.errors.role}
-                        </FormFeedback>
+                        <FormFeedback className="d-block mt-2">{formik.errors.role}</FormFeedback>
                     )}
                 </div>
 
-                {/* Botones */}
                 <div className="d-flex justify-content-end mt-4 gap-2">
                     <Button
                         className="farm-secondary-button"
-                        onClick={() => toggleModal("cancel", false)}
+                        onClick={() => toggleModal("cancel", true)}
                         disabled={formik.isSubmitting}
                     >
-                        Cancelar
+                        {t("users.form.button.cancel")}
                     </Button>
                     <Button
                         className="farm-primary-button"
@@ -274,33 +232,47 @@ const UserForm: React.FC<UserFormProps> = ({
                         disabled={formik.isSubmitting}
                     >
                         {formik.isSubmitting
-                            ? "Guardando..."
+                            ? t("users.form.button.saving")
                             : initialData
-                                ? "Actualizar Usuario"
-                                : "Registrar Usuario"}
+                                ? t("users.form.button.update")
+                                : t("users.form.button.register")}
                     </Button>
                 </div>
             </form>
 
-            {/* Modal cancelar */}
-            <Modal isOpen={modals.cancel} centeredtoggle={() => toggleModal("cancel", false)}>
-                <ModalHeader>Confirmación de Cancelación</ModalHeader>
+            <Modal isOpen={modals.cancel} centered toggle={() => toggleModal("cancel", false)}>
+                <ModalHeader toggle={() => toggleModal("cancel", false)}>
+                    {t("users.form.cancelModal.title")}
+                </ModalHeader>
                 <ModalBody>
-                    ¿Estás seguro de que deseas cancelar? Los datos no se guardarán.
+                    {t("users.form.cancelModal.body")}
                 </ModalBody>
                 <ModalFooter>
                     <Button color="danger" onClick={onCancel}>
-                        Sí, cancelar
+                        {t("users.form.button.yesCancel")}
                     </Button>
                     <Button color="success" onClick={() => toggleModal("cancel", false)}>
-                        No, continuar
+                        {t("users.form.button.noCancel")}
                     </Button>
                 </ModalFooter>
             </Modal>
 
-            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
-            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={initialData ? "Usuario actualizado con éxito" : "Usuario registrado con éxito"} />
-            <ErrorModal isOpen={modals.error} onClose={() => toggleModal("error")} message={"Ha ocurrido un error, intentelo mas tarde"} />
+            <AlertMessage
+                color={alertConfig.color}
+                message={alertConfig.message}
+                visible={alertConfig.visible}
+                onClose={() => setAlertConfig({ ...alertConfig, visible: false })}
+            />
+            <SuccessModal
+                isOpen={modals.success}
+                onClose={() => onSave()}
+                message={initialData ? t("users.form.success.updated") : t("users.form.success.created")}
+            />
+            <ErrorModal
+                isOpen={modals.error}
+                onClose={() => toggleModal("error")}
+                message={t("users.form.error.save")}
+            />
         </>
     );
 };

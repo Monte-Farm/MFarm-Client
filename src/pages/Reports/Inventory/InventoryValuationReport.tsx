@@ -1,5 +1,6 @@
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardBody, CardHeader, Col, Nav, NavItem, NavLink, Row, TabContent, TabPane } from "reactstrap";
 import { useReportScope } from "hooks/useReportScope";
 import { buildReportUrl } from "helpers/reports_url_helper";
@@ -45,7 +46,8 @@ interface ValuationKpis {
 const categoryColors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4", "#6b7280"];
 
 const InventoryValuationReport = () => {
-    document.title = "Valoracion de Inventario | Reportes";
+    const { t } = useTranslation();
+    document.title = `${t("reports.invValuation.title")} | ${t("reports.inventory")}`;
 
     const configContext = useContext(ConfigContext);
     const { isGlobal, farmId, scopeKey } = useReportScope();
@@ -86,7 +88,7 @@ const InventoryValuationReport = () => {
             setKpis(data.kpis);
             setValueByCategory(data.valueByCategory || []);
         } catch {
-            setAlertConfig({ visible: true, color: "danger", message: "Error al cargar los datos del reporte." });
+            setAlertConfig({ visible: true, color: "danger", message: t("reports.error.loadData") });
         } finally {
             setLoading(false);
         }
@@ -113,26 +115,26 @@ const InventoryValuationReport = () => {
     }, [startDate, endDate, scopeKey]);
 
     const valuationColumns: Column<ProductValuation>[] = [
-        { header: "Producto", accessor: "productName", type: "text", isFilterable: true },
-        { header: "Categoria", accessor: "category", type: "text", isFilterable: true },
-        { header: "Almacen", accessor: "warehouse", type: "text", isFilterable: true },
+        { header: t("reports.col.product"), accessor: "productName", type: "text", isFilterable: true },
+        { header: t("reports.col.category"), accessor: "category", type: "text", isFilterable: true },
+        { header: t("reports.col.warehouse"), accessor: "warehouse", type: "text", isFilterable: true },
         {
-            header: "Stock", accessor: "currentStock", type: "text",
+            header: t("reports.invValuation.col.stock"), accessor: "currentStock", type: "text",
             render: (v: number, row: ProductValuation) => <span>{v?.toLocaleString()} {row.unit}</span>,
         },
-        { header: "Costo Prom.", accessor: "avgCost", type: "currency", bgColor: "#e3f2fd" },
-        { header: "Valor Total", accessor: "totalValue", type: "currency", bgColor: "#e8f5e9" },
+        { header: t("reports.invValuation.col.avgCost"), accessor: "avgCost", type: "currency", bgColor: "#e3f2fd" },
+        { header: t("reports.invValuation.col.totalValue"), accessor: "totalValue", type: "currency", bgColor: "#e8f5e9" },
     ];
 
     const costColumns: Column<CostByProduct>[] = [
-        { header: "Producto", accessor: "productName", type: "text", isFilterable: true },
-        { header: "Categoria", accessor: "category", type: "text", isFilterable: true },
-        { header: "Costo Prom.", accessor: "avgCost", type: "currency", bgColor: "#e3f2fd" },
-        { header: "Costo Min.", accessor: "minCost", type: "currency" },
-        { header: "Costo Max.", accessor: "maxCost", type: "currency" },
-        { header: "Ultimo Costo", accessor: "lastCost", type: "currency" },
+        { header: t("reports.col.product"), accessor: "productName", type: "text", isFilterable: true },
+        { header: t("reports.col.category"), accessor: "category", type: "text", isFilterable: true },
+        { header: t("reports.invValuation.col.avgCost"), accessor: "avgCost", type: "currency", bgColor: "#e3f2fd" },
+        { header: t("reports.invValuation.col.minCost"), accessor: "minCost", type: "currency" },
+        { header: t("reports.invValuation.col.maxCost"), accessor: "maxCost", type: "currency" },
+        { header: t("reports.invValuation.col.lastCost"), accessor: "lastCost", type: "currency" },
         {
-            header: "Variacion", accessor: "priceVariation", type: "text",
+            header: t("reports.invValuation.col.variation"), accessor: "priceVariation", type: "text",
             render: (v: number) => (
                 <span className={`fw-semibold ${v > 0 ? "text-danger" : v < 0 ? "text-success" : ""}`}>
                     {v > 0 ? "+" : ""}{v?.toFixed(1)}%
@@ -159,10 +161,10 @@ const InventoryValuationReport = () => {
 
     return (
         <ReportPageLayout
-            title="Valoracion de Inventario"
-            pageTitle="Reportes de Inventario"
+            title={t("reports.invValuation.title")}
+            pageTitle={t("reports.inventory")}
             onGeneratePdf={handleGeneratePdf}
-            pdfTitle="Reporte - Valoracion de Inventario"
+            pdfTitle={t("reports.invValuation.pdfTitle")}
             startDate={startDate}
             endDate={endDate}
             onDateChange={(s, e) => { setStartDate(s); setEndDate(e); }}
@@ -170,7 +172,7 @@ const InventoryValuationReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Valor Total Inventario"
+                        title={t("reports.invValuation.kpi.totalValue")}
                         value={kpis.totalInventoryValue}
                         icon={<i className="ri-money-dollar-circle-line fs-4 text-success"></i>}
                         animateValue
@@ -180,7 +182,7 @@ const InventoryValuationReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Total Productos"
+                        title={t("reports.invValuation.kpi.totalProducts")}
                         value={kpis.totalProducts}
                         icon={<i className="ri-box-3-line fs-4 text-primary"></i>}
                         animateValue
@@ -188,7 +190,7 @@ const InventoryValuationReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Costo Prom. / Producto"
+                        title={t("reports.invValuation.kpi.avgCostPerProduct")}
                         value={kpis.avgCostPerProduct}
                         icon={<i className="ri-price-tag-3-line fs-4 text-info"></i>}
                         animateValue
@@ -199,7 +201,7 @@ const InventoryValuationReport = () => {
                 </Col>
                 <Col xl={2} md={4} sm={6}>
                     <StatKpiCard
-                        title="Categorias"
+                        title={t("reports.invValuation.kpi.categories")}
                         value={kpis.totalCategories}
                         icon={<i className="ri-folder-line fs-4 text-warning"></i>}
                         animateValue
@@ -208,7 +210,7 @@ const InventoryValuationReport = () => {
                 </Col>
                 <Col xl={4} md={8}>
                     <StatKpiCard
-                        title="Producto de Mayor Valor"
+                        title={t("reports.invValuation.kpi.highestValue")}
                         value={kpis.highestValueAmount}
                         subtext={kpis.highestValueProduct}
                         icon={<i className="ri-vip-crown-line fs-4 text-warning"></i>}
@@ -223,7 +225,7 @@ const InventoryValuationReport = () => {
             <Row className="g-3 mb-3">
                 <Col xl={5}>
                     <DonutChartCard
-                        title="Valor por Categoria"
+                        title={t("reports.invValuation.chart.byCategory")}
                         data={donutData}
                         legendItems={donutLegend}
                         height={200}
@@ -240,7 +242,7 @@ const InventoryValuationReport = () => {
                                 onClick={() => setActiveTab("1")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-money-dollar-circle-line me-1"></i> Valor por Producto ({valuation.length})
+                                <i className="ri-money-dollar-circle-line me-1"></i> {t("reports.invValuation.tab.byProduct")} ({valuation.length})
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -249,7 +251,7 @@ const InventoryValuationReport = () => {
                                 onClick={() => setActiveTab("2")}
                                 style={{ cursor: "pointer" }}
                             >
-                                <i className="ri-price-tag-3-line me-1"></i> Costo Promedio ({costs.length})
+                                <i className="ri-price-tag-3-line me-1"></i> {t("reports.invValuation.tab.avgCost")} ({costs.length})
                             </NavLink>
                         </NavItem>
                     </Nav>

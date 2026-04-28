@@ -8,55 +8,57 @@ import AlertMessage from "../Shared/AlertMesagge";
 import LoadingAnimation from "../Shared/LoadingAnimation";
 import CustomTable from "../Tables/CustomTable";
 import ObjectDetails from "./ObjectDetails";
+import { useTranslation } from "react-i18next";
 
 interface FeedPreparationDetailsProps {
     preparationId: string;
 }
 
 const FeedPreparationDetails: React.FC<FeedPreparationDetailsProps> = ({ preparationId }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const [loading, setLoading] = useState<boolean>(true);
     const [preparation, setPreparation] = useState<any>({});
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' });
 
     const headerAttributes: Attribute[] = [
-        { key: 'code', label: 'Código', type: 'text' },
-        { key: 'preparationDate', label: 'Fecha de preparación', type: 'date' },
+        { key: 'code', label: t('feeding.preparation.detail.code'), type: 'text' },
+        { key: 'preparationDate', label: t('feeding.preparation.detail.prepDate'), type: 'date' },
         {
-            key: 'recipe', label: 'Receta',
+            key: 'recipe', label: t('feeding.preparation.detail.recipe'),
             render: (_, row) => <span>{row.recipe?.code} — {row.recipe?.name}</span>
         },
         {
-            key: 'preparedProduct', label: 'Producto generado',
+            key: 'preparedProduct', label: t('feeding.preparation.detail.generatedProduct'),
             render: (_, row) => <span>{row.preparedProduct?.name}</span>
         },
         {
-            key: 'responsible', label: 'Responsable',
+            key: 'responsible', label: t('feeding.preparation.detail.responsible'),
             render: (_, row) => <span>{row.responsible?.name} {row.responsible?.lastname}</span>
         },
-        { key: 'notes', label: 'Notas', type: 'text' },
+        { key: 'notes', label: t('feeding.preparation.detail.notes'), type: 'text' },
     ];
 
     const ingredientColumns: Column<any>[] = [
         {
-            header: "Ingrediente", accessor: "product.name",
+            header: t('feeding.preparation.detail.column.ingredient'), accessor: "product.name",
             type: "text",
             render: (_, row) => <span className="fw-semibold">{row.product?.name}</span>,
         },
         {
-            header: "Cantidad usada", accessor: "quantity",
+            header: t('feeding.preparation.detail.column.quantityUsed'), accessor: "quantity",
             type: "currency",
             bgColor: '#e3f2fd',
             render: (_, row) => <span className="fw-medium">{(row.quantity ?? 0).toFixed(2)} {row.product?.unit_measurement || 'kg'}</span>
         },
         {
-            header: "Precio unitario", accessor: "unitPrice",
+            header: t('feeding.preparation.detail.column.unitPrice'), accessor: "unitPrice",
             type: "currency",
             bgColor: '#f3e5f5',
             render: (_, row) => <span>${(row.unitPrice ?? 0).toFixed(2)}</span>
         },
         {
-            header: "Subtotal", accessor: "subtotal",
+            header: t('feeding.preparation.detail.column.subtotal'), accessor: "subtotal",
             type: "currency",
             bgColor: '#e8f5e9',
             render: (_, row) => <span className="fw-semibold">${(row.subtotal ?? 0).toFixed(2)}</span>
@@ -71,7 +73,7 @@ const FeedPreparationDetails: React.FC<FeedPreparationDetailsProps> = ({ prepara
             setPreparation(response.data.data);
         } catch (error) {
             console.error('Error fetching preparation:', error);
-            setAlertConfig({ visible: true, color: 'danger', message: 'Error al cargar la preparación' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('feeding.preparation.detail.loadError') });
         } finally {
             setLoading(false);
         }
@@ -90,7 +92,7 @@ const FeedPreparationDetails: React.FC<FeedPreparationDetailsProps> = ({ prepara
                 <Card className="border-primary border-opacity-25 flex-shrink-0" style={{ width: '340px' }}>
                     <CardHeader className="bg-primary bg-opacity-10">
                         <h5 className="mb-0 text-primary">
-                            <i className="ri-flask-line me-2" /> Información de la preparación
+                            <i className="ri-flask-line me-2" /> {t('feeding.preparation.detail.cardInfo')}
                         </h5>
                     </CardHeader>
                     <CardBody>
@@ -104,26 +106,26 @@ const FeedPreparationDetails: React.FC<FeedPreparationDetailsProps> = ({ prepara
                         <CardBody>
                             <div className="row text-center">
                                 <div className="col">
-                                    <div className="text-muted small">Mezcla preparada</div>
+                                    <div className="text-muted small">{t('feeding.preparation.detail.mixPrepared')}</div>
                                     <div className="fs-5 fw-bold">{(preparation.batchSize ?? 0).toFixed(2)} kg</div>
                                 </div>
                                 <div className="col border-start">
-                                    <div className="text-muted small">Producido</div>
+                                    <div className="text-muted small">{t('feeding.preparation.detail.produced')}</div>
                                     <div className="fs-5 fw-bold text-success">{(preparation.actualYield ?? 0).toFixed(2)} kg</div>
                                 </div>
                                 <div className="col border-start">
-                                    <div className="text-muted small">Merma</div>
+                                    <div className="text-muted small">{t('feeding.preparation.detail.waste')}</div>
                                     <div className="fs-5 fw-bold text-warning">
                                         {(preparation.shrinkage ?? 0).toFixed(2)} kg
                                         <span className="ms-1 small">({(preparation.shrinkagePercentage ?? 0).toFixed(2)}%)</span>
                                     </div>
                                 </div>
                                 <div className="col border-start">
-                                    <div className="text-muted small">Costo total</div>
+                                    <div className="text-muted small">{t('feeding.preparation.detail.totalCost')}</div>
                                     <div className="fs-5 fw-bold text-primary">${(preparation.totalCost ?? 0).toFixed(2)}</div>
                                 </div>
                                 <div className="col border-start">
-                                    <div className="text-muted small">Costo / kg</div>
+                                    <div className="text-muted small">{t('feeding.preparation.detail.costPerKg')}</div>
                                     <div className="fs-5 fw-bold text-primary">${(preparation.costPerKg ?? 0).toFixed(2)}</div>
                                 </div>
                             </div>
@@ -134,9 +136,11 @@ const FeedPreparationDetails: React.FC<FeedPreparationDetailsProps> = ({ prepara
                     <Card className="border-success border-opacity-25">
                         <CardHeader className="bg-success bg-opacity-10 d-flex justify-content-between align-items-center">
                             <h5 className="mb-0 text-success">
-                                <i className="ri-leaf-line me-2" /> Ingredientes consumidos
+                                <i className="ri-leaf-line me-2" /> {t('feeding.preparation.detail.cardIngredients')}
                             </h5>
-                            <Badge color="success">{(preparation.ingredientsUsed || []).length} ingrediente(s)</Badge>
+                            <Badge color="success">
+                                {(preparation.ingredientsUsed || []).length} {t('feeding.package.form.card.ingredientCount')}
+                            </Badge>
                         </CardHeader>
                         <CardBody className="p-0">
                             <CustomTable
