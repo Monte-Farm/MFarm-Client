@@ -1,6 +1,6 @@
 {
   "name": "velzon-ts",
-  "version": "4.3.0",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
     "@fullcalendar/core": "^6.1.19",

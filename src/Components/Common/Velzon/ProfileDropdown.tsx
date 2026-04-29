@@ -115,6 +115,15 @@ const ProfileDropdown = () => {
                     </div>
 
                     <div className="border-top py-1">
+                        <DropdownItem className='p-0'>
+                            <Link to="/user-manual" className="dropdown-item d-flex align-items-center py-2">
+                                <i className="ri-book-open-line fs-18 me-2 text-primary"></i>
+                                <span>{t('profile.userManual')}</span>
+                            </Link>
+                        </DropdownItem>
+                    </div>
+
+                    <div className="border-top py-1">
                         <LanguageSelector />
                     </div>
 

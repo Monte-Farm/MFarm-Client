@@ -69,7 +69,8 @@
         "settings": "Configuración",
         "darkMode": "Modo Oscuro",
         "lightMode": "Modo Claro",
-        "language": "Idioma"
+        "language": "Idioma",
+        "userManual": "Manual de Usuario"
     },
     "auth": {
         "login": {
@@ -7038,6 +7039,400 @@
         },
         "error": {
             "message": "Ha ocurrido un error al procesar la venta, inténtelo más tarde"
+        }
+    },
+    "manual": {
+        "title": "Manual de Usuario",
+        "search": "Buscar en el manual...",
+        "tipsLabel": "Consejos:",
+        "clickToZoom": "Haz clic en la imagen para ampliarla",
+        "noResults": "No se encontraron secciones",
+        "howToRegister": "¿Cómo registrar?",
+        "categories": {
+            "intro": "Introducción",
+            "admin": "Administración",
+            "pigs": "Cerdos",
+            "operation": "Operación",
+            "health": "Salud y Nutrición",
+            "reports": "Reportes",
+            "config": "Configuración"
+        },
+        "sections": {
+            "overview": {
+                "title": "Visión General",
+                "paragraphs": [
+                    "MFarm es un sistema integral de gestión porcina diseñado para acompañar todos los procesos de la granja: desde el control de inventarios y la reproducción, hasta la salud de los animales, la alimentación y los reportes financieros.",
+                    "El acceso a los módulos del sistema depende del rol asignado a tu usuario. Este manual cubre todas las funcionalidades disponibles; consulta con tu administrador si no ves alguna sección en el menú."
+                ],
+                "tips": [
+                    "Usa el buscador del sidebar para encontrar rápidamente cualquier sección del manual.",
+                    "Haz clic en cualquier imagen para ampliarla."
+                ]
+            },
+            "home": {
+                "title": "Inicio / Dashboard",
+                "paragraphs": [
+                    "El Dashboard es la pantalla principal del sistema. Muestra indicadores clave (KPIs) adaptados a tu rol de usuario, como inventario actual de cerdos, movimientos recientes, alertas de stock y resúmenes de actividad.",
+                    "El contenido del Dashboard varía según el rol: Superadmin ve una vista global de todas las granjas, mientras que el Gerente de Granja ve datos específicos de su granja. Puedes ajustar el período de análisis usando el selector de fechas en la parte superior."
+                ],
+                "tips": [
+                    "Cambia el rango de fechas con el selector de período para ver resúmenes históricos.",
+                    "Los KPIs en rojo indican alertas que requieren tu atención inmediata."
+                ]
+            },
+            "farms": {
+                "title": "Granjas",
+                "paragraphs": [
+                    "El módulo de Granjas permite registrar y administrar las granjas del sistema. Desde aquí puedes crear nuevas granjas, ver sus detalles, editar su información y gestionar su configuración.",
+                    "Cada granja tiene su propia configuración de parámetros productivos (pesos objetivo, días de etapa, etc.) que se configura desde el módulo de Configuraciones."
+                ],
+                "tips": [
+                    "Solo el Superadmin puede crear o eliminar granjas."
+                ]
+            },
+            "warehouseInventory": {
+                "title": "Inventario de Almacén",
+                "paragraphs": [
+                    "El módulo de Inventario muestra el stock actual de todos los productos del almacén principal. Puedes consultar cantidades disponibles, ver el historial de movimientos y recibir alertas cuando un producto cae por debajo del mínimo configurado.",
+                    "Los movimientos de inventario se generan automáticamente al registrar ingresos (compras) o salidas (consumos, órdenes). Desde esta pantalla puedes filtrar por producto, categoría o rango de fechas."
+                ],
+                "tips": [
+                    "Las filas en rojo indican productos con stock por debajo del mínimo configurado.",
+                    "Usa el botón Exportar para generar un reporte en Excel del estado actual del inventario."
+                ],
+                "formParagraphs": [
+                    "Para registrar una nueva entrada de inventario haz clic en '+ Nueva Entrada'. El sistema te pedirá elegir entre 'Con orden de compra' (vincula la entrada a una OC existente) o 'Entrada directa' (sin OC previa).",
+                    "Completa los datos generales: proveedor, fecha y datos de facturación. Luego selecciona los productos y las cantidades recibidas. Al guardar, el stock de cada producto se actualiza automáticamente."
+                ]
+            },
+            "warehouseSuppliers": {
+                "title": "Proveedores",
+                "paragraphs": [
+                    "El catálogo de Proveedores almacena la información de todos los proveedores con los que opera la granja. Desde aquí puedes crear, editar y desactivar proveedores.",
+                    "Los proveedores están vinculados a las órdenes de compra. Al registrar una compra, debes seleccionar el proveedor correspondiente para mantener la trazabilidad de las adquisiciones."
+                ],
+                "formParagraphs": [
+                    "Para agregar un nuevo proveedor haz clic en '+ Agregar Proveedor'. Completa la identificación (código y nombre), tipo de proveedor, datos de contacto (teléfono, correo, dirección) e información fiscal (RNC).",
+                    "El código se genera automáticamente pero puede editarse. Los campos de contacto son opcionales pero recomendados para facilitar la gestión de compras."
+                ]
+            },
+            "warehouseProducts": {
+                "title": "Catálogo de Productos",
+                "paragraphs": [
+                    "El catálogo de Productos define todos los ítems que pueden ser gestionados en el almacén: materias primas, medicamentos, alimentos, insumos, etc.",
+                    "Cada producto tiene un nombre, unidad de medida, categoría, precio de referencia y nivel de stock mínimo. Estos parámetros son usados en los reportes y alertas de inventario."
+                ],
+                "tips": [
+                    "Configura bien el stock mínimo de cada producto para recibir alertas oportunas antes de quedarte sin existencias."
+                ],
+                "formParagraphs": [
+                    "Para registrar un nuevo producto haz clic en '+ Agregar Producto'. Puedes cargar una imagen opcional del producto. Luego completa el nombre, categoría (Nutrición, Medicamento, Vacuna, Insumo) y unidad de medida.",
+                    "La descripción es opcional pero ayuda al equipo a identificar el producto correctamente. Una vez guardado, el producto estará disponible para registrar entradas y salidas."
+                ]
+            },
+            "warehouseIncomes": {
+                "title": "Ingresos de Almacén",
+                "paragraphs": [
+                    "El módulo de Ingresos registra todas las entradas de productos al almacén, ya sea por compra directa u otras fuentes. Cada ingreso incrementa el stock disponible del producto correspondiente.",
+                    "Al registrar un ingreso debes indicar el proveedor, producto, cantidad, precio unitario y fecha. El sistema calcula automáticamente el valor total y actualiza el inventario."
+                ],
+                "formParagraphs": [
+                    "Para registrar una nueva entrada haz clic en '+ Nueva Entrada'. Selecciona el modo: 'Con orden de compra' (si ya existe una OC aprobada) o 'Entrada directa' (para registros sin OC).",
+                    "Ingresa los datos del proveedor, fecha, número de factura y datos fiscales opcionales. En el siguiente paso selecciona los productos y las cantidades recibidas con su precio unitario."
+                ]
+            },
+            "warehouseOutcomes": {
+                "title": "Salidas de Almacén",
+                "paragraphs": [
+                    "El módulo de Salidas registra las salidas de productos del almacén principal. Estas pueden originarse por consumo directo, transferencias a subalmacenes o ajustes de inventario.",
+                    "Cada salida disminuye el stock del producto correspondiente. El sistema lleva un historial completo de todas las salidas para fines de auditoría y control."
+                ],
+                "formParagraphs": [
+                    "Para registrar una nueva salida haz clic en '+ Nueva salida'. El sistema asigna un código automático y toma la fecha actual. Selecciona el motivo de salida (consumo, transferencia, ajuste, etc.) y agrega una descripción opcional.",
+                    "En el siguiente paso selecciona los productos y las cantidades a retirar del inventario. El sistema verifica que haya stock suficiente antes de confirmar la salida."
+                ]
+            },
+            "purchaseOrders": {
+                "title": "Órdenes de Compra",
+                "paragraphs": [
+                    "Las Órdenes de Compra permiten gestionar el proceso de adquisición de productos. Desde aquí puedes crear solicitudes de compra, hacer seguimiento a su estado y registrar la recepción de los productos.",
+                    "Una orden de compra pasa por los estados: Pendiente → En proceso → Recibida. Al marcarla como recibida, el sistema genera automáticamente el ingreso correspondiente en el inventario."
+                ],
+                "tips": [
+                    "Usa las órdenes de compra para mantener un registro ordenado de todas las adquisiciones y facilitar la conciliación con proveedores."
+                ],
+                "formParagraphs": [
+                    "Para crear una nueva orden haz clic en '+ Nueva Orden de Compra'. Primero selecciona el proveedor de la lista. Luego elige los productos que deseas solicitar con sus cantidades y precios estimados.",
+                    "En el resumen puedes revisar el total antes de confirmar. Una vez creada la orden queda en estado 'Pendiente' hasta que se registre la recepción de los productos."
+                ]
+            },
+            "subwarehouse": {
+                "title": "Subalmacén",
+                "paragraphs": [
+                    "Los Subalmacenes son bodegas secundarias de la granja (por ejemplo, una bodega de medicamentos en la sala de maternidad). Cada subalmacén tiene su propio inventario independiente.",
+                    "Los productos llegan al subalmacén mediante órdenes enviadas desde el almacén principal. El encargado del subalmacén puede registrar salidas de los productos que tiene bajo su custodia."
+                ]
+            },
+            "orders": {
+                "title": "Órdenes de Transferencia",
+                "paragraphs": [
+                    "El módulo de Órdenes gestiona las transferencias de productos desde el almacén principal hacia los subalmacenes. El gerente de almacén crea la orden, el encargado del subalmacén la recibe y confirma.",
+                    "Una vez completada la orden, los productos se transfieren automáticamente del inventario principal al inventario del subalmacén destino."
+                ]
+            },
+            "sales": {
+                "title": "Ventas de Cerdos",
+                "paragraphs": [
+                    "El módulo de Ventas registra la comercialización de cerdos. Desde aquí puedes registrar ventas individuales o por lote, indicando el cliente, precio por kilogramo y peso de los animales.",
+                    "Cada venta genera un movimiento de salida en el inventario de cerdos. El sistema calcula automáticamente el valor total de la venta basándose en el peso y el precio acordado."
+                ],
+                "tips": [
+                    "Los reportes de ventas te permiten analizar el desempeño comercial por período, cliente o tipo de animal."
+                ],
+                "formParagraphs": [
+                    "Para registrar una nueva venta haz clic en '+ Nueva venta'. Primero indica el precio por kilogramo. Luego selecciona si la venta es 'Por grupo' (lote completo) o 'Individual' (animales específicos).",
+                    "Selecciona el grupo o los animales a vender. En el siguiente paso completa los datos del comprador y la fecha de la venta. El sistema calcula el valor total automáticamente según el peso y el precio."
+                ]
+            },
+            "expenses": {
+                "title": "Gastos",
+                "paragraphs": [
+                    "El módulo de Gastos permite registrar todos los costos operativos de la granja que no corresponden a compras de productos: mano de obra, servicios, mantenimiento, etc.",
+                    "Los gastos están categorizados y se incluyen en los reportes financieros para calcular la rentabilidad real de la operación."
+                ],
+                "formParagraphs": [
+                    "Para registrar un nuevo gasto haz clic en '+ Nuevo gasto'. Selecciona la fecha, la categoría del gasto (mano de obra, servicios, mantenimiento, etc.) y escribe una descripción clara.",
+                    "Ingresa el monto en la moneda configurada para la granja. Una vez guardado, el gasto queda registrado y se incluye automáticamente en los reportes financieros del período."
+                ]
+            },
+            "periodClosing": {
+                "title": "Cierre de Períodos",
+                "paragraphs": [
+                    "El Cierre de Períodos consolida la información financiera y productiva de un período determinado (mes, trimestre). Una vez cerrado el período, sus datos quedan bloqueados para edición.",
+                    "El cierre genera un resumen de ingresos, costos, gastos y resultados netos que puede consultarse en los reportes financieros."
+                ],
+                "tips": [
+                    "Asegúrate de haber registrado todos los ingresos y gastos del período antes de cerrarlo."
+                ]
+            },
+            "pigsView": {
+                "title": "Inventario de Cerdos",
+                "paragraphs": [
+                    "El módulo de Cerdos muestra el inventario completo de animales de la granja. Puedes ver todos los cerdos activos, filtrar por etapa productiva, sexo, raza y otros criterios.",
+                    "Al hacer clic en un cerdo puedes ver su historial completo: movimientos, eventos reproductivos, tratamientos médicos y datos de pesaje."
+                ],
+                "tips": [
+                    "Usa los filtros para encontrar rápidamente animales específicos.",
+                    "El botón de Detalles en cada fila te lleva al perfil completo del animal."
+                ]
+            },
+            "pigsDiscarded": {
+                "title": "Cerdos Descartados",
+                "paragraphs": [
+                    "El módulo de Cerdos Descartados muestra los animales que han sido retirados del inventario activo por muerte, venta o descarte productivo.",
+                    "Puedes consultar la causa del descarte, la fecha y el responsable del registro para fines de auditoría y análisis de mortalidad."
+                ]
+            },
+            "groups": {
+                "title": "Grupos",
+                "paragraphs": [
+                    "Los Grupos agrupan cerdos en lotes según su etapa productiva (Destete, Crecimiento, Finalización, etc.). Cada grupo tiene sus propios indicadores de desempeño: peso promedio, conversión alimenticia, mortalidad.",
+                    "El sistema ofrece vistas especializadas por tipo de grupo para facilitar el seguimiento de cada etapa del proceso productivo."
+                ],
+                "tips": [
+                    "Los grupos te permiten gestionar lotes de animales colectivamente, optimizando el registro de pesajes, alimentación y tratamientos."
+                ]
+            },
+            "replacementSows": {
+                "title": "Cerdas de Reemplazo",
+                "paragraphs": [
+                    "Las Cerdas de Reemplazo son hembras en desarrollo destinadas a ingresar al ciclo reproductivo de la granja. Desde aquí puedes registrar su progreso, pesajes y el momento en que son promovidas a reproductoras.",
+                    "El módulo permite hacer seguimiento al desarrollo de cada cerda de reemplazo hasta que está lista para su primer servicio."
+                ]
+            },
+            "replacementBoars": {
+                "title": "Verracos de Reemplazo",
+                "paragraphs": [
+                    "Los Verracos de Reemplazo son machos en desarrollo destinados a convertirse en donantes de semen. Desde aquí puedes registrar su progreso y habilitarlos para el programa de inseminación artificial.",
+                    "El módulo lleva el historial de desempeño de cada verraco, incluyendo la calidad de las extracciones realizadas en laboratorio."
+                ]
+            },
+            "labExtractions": {
+                "title": "Extracciones de Laboratorio",
+                "paragraphs": [
+                    "El módulo de Extracciones registra los eventos de recolección de semen de los verracos. Cada extracción incluye datos del verraco, volumen obtenido, concentración y resultado de la evaluación de calidad.",
+                    "Solo las extracciones con resultado aprobado están disponibles para ser utilizadas en los planes de inseminación."
+                ],
+                "tips": [
+                    "Mantén registros actualizados de extracciones para asegurar disponibilidad de semen de calidad para el programa reproductivo."
+                ],
+                "formParagraphs": [
+                    "Para registrar una nueva extracción haz clic en '+ Nueva Extracción'. Primero selecciona el verraco donante de la lista de reproductores activos.",
+                    "En el siguiente paso ingresa los datos de la extracción: volumen obtenido (ml), concentración, resultado de la evaluación de calidad (Aprobado/Rechazado), fecha y el responsable del procedimiento."
+                ]
+            },
+            "labSamples": {
+                "title": "Muestras de Laboratorio",
+                "paragraphs": [
+                    "El módulo de Muestras permite registrar los análisis de laboratorio realizados a los animales: análisis de sangre, PCR, serologías, etc.",
+                    "Cada muestra está vinculada al animal correspondiente y el resultado queda disponible en su historial clínico."
+                ],
+                "formParagraphs": [
+                    "Para registrar una nueva muestra haz clic en '+ Agregar muestra'. Primero selecciona la extracción base sobre la que se elaboró la muestra (lote de semen).",
+                    "Luego completa la información de la muestra: número de dosis, fecha de expiración, método de conservación (refrigeración o congelación) y la ubicación física dentro del laboratorio."
+                ]
+            },
+            "gestationInseminations": {
+                "title": "Inseminaciones",
+                "paragraphs": [
+                    "El módulo de Inseminaciones registra cada servicio realizado a las cerdas reproductoras. Se indica la cerda, el verraco donante, la dosis utilizada, la fecha y el técnico responsable.",
+                    "El sistema lleva control del estado de cada inseminación: Realizada → Confirmada (preñez) → Parto. Las inseminaciones no confirmadas generan alertas para verificación."
+                ],
+                "tips": [
+                    "Configura el número de días de confirmación de preñez en la configuración de la granja para que el sistema genere alertas automáticas."
+                ],
+                "formParagraphs": [
+                    "Para registrar una inseminación haz clic en '+ Registrar inseminación'. Selecciona la cerda reproductora que recibirá el servicio de la lista de hembras disponibles.",
+                    "En el siguiente paso selecciona el lote de semen (muestra) a utilizar e indica la dosis. Luego completa la información de la inseminación: fecha, técnico responsable y observaciones. El sistema actualiza el estado de la cerda automáticamente."
+                ]
+            },
+            "gestationPregnancies": {
+                "title": "Preñeces",
+                "paragraphs": [
+                    "El módulo de Preñeces muestra todas las cerdas confirmadas como gestantes, con su fecha de servicio, fecha estimada de parto y el estado de la gestación.",
+                    "Puedes registrar diagnósticos de preñez, repeticiones de servicio o pérdidas de gestación desde esta pantalla."
+                ]
+            },
+            "births": {
+                "title": "Partos y Nacimientos",
+                "paragraphs": [
+                    "El módulo de Nacimientos registra cada parto ocurrido en la granja: la cerda madre, fecha, número de lechones nacidos vivos, mortinatos y momias.",
+                    "Al registrar un parto se crea automáticamente una camada en el módulo de Lactancia para el seguimiento del período de lactación."
+                ],
+                "tips": [
+                    "Registra los partos lo antes posible para que el sistema actualice correctamente el inventario y los indicadores reproductivos."
+                ],
+                "formParagraphs": [
+                    "Para registrar un parto ve a 'Próximos partos' y haz clic en '+ Registrar parto'. Selecciona la inseminación correspondiente a la cerda que va a parir.",
+                    "Completa los datos del parto: fecha, número de lechones nacidos vivos, mortinatos y momias. En el paso de camada puedes registrar el peso total y sexo de los lechones. Al confirmar, se crea automáticamente la camada en Lactancia."
+                ]
+            },
+            "lactation": {
+                "title": "Lactancia",
+                "paragraphs": [
+                    "El módulo de Lactancia gestiona las camadas desde el nacimiento hasta el destete. Puedes registrar el peso de los lechones, bajas durante la lactancia y ajustes de camada (adopciones).",
+                    "Al registrar el destete de una camada, los lechones pasan automáticamente al inventario de cerdos y quedan disponibles para ser asignados a un grupo de destete."
+                ]
+            },
+            "weaning": {
+                "title": "Grupos de Destete",
+                "paragraphs": [
+                    "Los Grupos de Destete agrupan los lechones recién destetados. Desde aquí puedes registrar pesajes grupales, aplicar planes de alimentación y medicación, y hacer seguimiento a la mortalidad del lote.",
+                    "Cuando el grupo alcanza el peso o la edad objetivo, puede ser promovido a la etapa de Crecimiento."
+                ]
+            },
+            "growing": {
+                "title": "Grupos de Crecimiento y Ceba",
+                "paragraphs": [
+                    "Los Grupos de Crecimiento y Ceba gestionan los cerdos en las etapas intermedias y finales del proceso de engorde. El sistema hace seguimiento de la ganancia de peso, conversión alimenticia y costos acumulados.",
+                    "Al completar la etapa, los cerdos pueden ser transferidos a Finalización o destinados directamente a venta."
+                ],
+                "tips": [
+                    "Registra pesajes periódicos para mantener actualizados los indicadores de conversión alimenticia y poder comparar el desempeño entre grupos."
+                ]
+            },
+            "medication": {
+                "title": "Medicación",
+                "paragraphs": [
+                    "El módulo de Medicación permite crear y gestionar planes de tratamiento y programas de vacunación para los animales de la granja.",
+                    "Los planes de medicación pueden aplicarse a grupos de animales o a individuos específicos. El sistema registra las dosis aplicadas y descuenta los medicamentos del inventario automáticamente."
+                ],
+                "tips": [
+                    "Usa los planes de vacunación para programar calendarios sanitarios y recibir recordatorios de las fechas de aplicación."
+                ],
+                "formParagraphs": [
+                    "Para crear un nuevo paquete de medicación haz clic en '+ Nuevo paquete de medicación'. Ingresa el código, nombre del paquete y selecciona la etapa productiva a la que aplica (lechón, engorda, reproductor, etc.).",
+                    "La fecha y el responsable se asignan automáticamente. Agrega una descripción opcional. En el siguiente paso selecciona los medicamentos o vacunas del catálogo y define las dosis y frecuencia de aplicación."
+                ]
+            },
+            "feeding": {
+                "title": "Alimentación",
+                "paragraphs": [
+                    "El módulo de Alimentación gestiona los paquetes de dietas y el consumo de alimento por grupo de animales. Puedes definir raciones por etapa productiva y registrar el consumo real diario.",
+                    "El sistema calcula automáticamente la conversión alimenticia y genera alertas cuando el consumo se desvía significativamente de la ración planificada."
+                ],
+                "tips": [
+                    "Registra el consumo de alimento regularmente para que los reportes de conversión alimenticia sean precisos.",
+                    "Los paquetes de alimentación vinculan el consumo con el inventario, así el sistema descuenta el alimento automáticamente."
+                ]
+            },
+            "reportsProduction": {
+                "title": "Reportes de Producción",
+                "paragraphs": [
+                    "Los Reportes de Producción consolidan los indicadores productivos de la granja: inseminaciones, nacimientos, mortalidad, ganancia de peso y desempeño reproductivo.",
+                    "Puedes filtrar los reportes por período, granja y tipo de indicador. Los gráficos te permiten identificar tendencias y comparar desempeño entre períodos."
+                ]
+            },
+            "reportsInventory": {
+                "title": "Reportes de Inventario",
+                "paragraphs": [
+                    "Los Reportes de Inventario muestran el historial de movimientos del almacén, consumos por período, alertas de stock y valorización del inventario.",
+                    "Desde aquí puedes exportar reportes en PDF o Excel para uso externo o archivo."
+                ]
+            },
+            "reportsFinance": {
+                "title": "Reportes Financieros",
+                "paragraphs": [
+                    "Los Reportes Financieros consolidan ingresos, costos de producción, gastos operativos y resultados netos por período.",
+                    "Incluyen análisis de rentabilidad por lote, flujo de caja y comparativo de costos vs ingresos."
+                ]
+            },
+            "reportsSales": {
+                "title": "Reportes de Ventas",
+                "paragraphs": [
+                    "Los Reportes de Ventas muestran el histórico de comercialización de animales: volúmenes vendidos, precios promedio, clientes y desempeño por período.",
+                    "Puedes comparar el desempeño de ventas entre períodos y analizar la tendencia de precios."
+                ]
+            },
+            "reportsTraceability": {
+                "title": "Trazabilidad",
+                "paragraphs": [
+                    "El módulo de Trazabilidad permite rastrear el historial completo de un animal o lote: desde su ingreso a la granja hasta su salida, pasando por todos los eventos registrados.",
+                    "Es útil para auditorías sanitarias, certificaciones y para investigar cualquier incidencia que requiera reconstruir el historial de un animal."
+                ]
+            },
+            "reportsAudit": {
+                "title": "Reportes de Auditoría",
+                "paragraphs": [
+                    "Los Reportes de Auditoría registran todas las acciones realizadas en el sistema: creaciones, ediciones y eliminaciones, con el usuario responsable y la fecha y hora exacta.",
+                    "Estos registros son inmutables y sirven para verificar el cumplimiento de procesos y detectar inconsistencias en la información."
+                ]
+            },
+            "users": {
+                "title": "Gestión de Usuarios",
+                "paragraphs": [
+                    "El módulo de Usuarios permite crear, editar, activar y desactivar los usuarios del sistema. Cada usuario tiene asignado uno o varios roles que determinan a qué módulos tiene acceso.",
+                    "Los roles disponibles son: Superadmin, Gerente de Granja, Gerente de Almacén, Gerente de Subalmacén, Técnico de Reproducción, Veterinario y Trabajador General."
+                ],
+                "tips": [
+                    "Asigna solo los roles necesarios a cada usuario siguiendo el principio de mínimo privilegio.",
+                    "Los usuarios desactivados no pueden iniciar sesión pero sus registros históricos se conservan."
+                ],
+                "formParagraphs": [
+                    "Para registrar un nuevo usuario haz clic en '+ Registrar Usuario'. Opcionalmente puedes cargar una foto de perfil. Completa el nombre, apellido y correo electrónico del usuario.",
+                    "Selecciona uno o más roles haciendo clic en las etiquetas de roles disponibles. El sistema generará automáticamente las credenciales de acceso y las enviará al correo del usuario."
+                ]
+            },
+            "configurations": {
+                "title": "Configuraciones",
+                "paragraphs": [
+                    "El módulo de Configuraciones permite ajustar los parámetros globales del sistema y los parámetros específicos de cada granja: días de gestación, pesos objetivo por etapa, límites de alertas y otros valores de referencia.",
+                    "Los cambios en la configuración afectan los cálculos automáticos del sistema, por lo que deben realizarse con cuidado y conocimiento del impacto."
+                ],
+                "tips": [
+                    "Configura los parámetros productivos de tu granja antes de comenzar a registrar datos para asegurar que los cálculos sean correctos desde el inicio."
+                ]
+            }
         }
     }
 }

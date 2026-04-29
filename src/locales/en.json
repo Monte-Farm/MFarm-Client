@@ -69,7 +69,8 @@
         "settings": "Settings",
         "darkMode": "Dark Mode",
         "lightMode": "Light Mode",
-        "language": "Language"
+        "language": "Language",
+        "userManual": "User Manual"
     },
     "auth": {
         "login": {
@@ -7026,6 +7027,400 @@
         },
         "error": {
             "message": "An error occurred while processing the sale. Please try again later."
+        }
+    },
+    "manual": {
+        "title": "User Manual",
+        "search": "Search in manual...",
+        "tipsLabel": "Tips:",
+        "clickToZoom": "Click on the image to zoom in",
+        "noResults": "No sections found",
+        "howToRegister": "How to register?",
+        "categories": {
+            "intro": "Introduction",
+            "admin": "Administration",
+            "pigs": "Pigs",
+            "operation": "Operations",
+            "health": "Health & Nutrition",
+            "reports": "Reports",
+            "config": "Configuration"
+        },
+        "sections": {
+            "overview": {
+                "title": "Overview",
+                "paragraphs": [
+                    "MFarm is a comprehensive swine management system designed to support every process on the farm: from inventory control and reproduction tracking to animal health, feed management, and financial reporting.",
+                    "Access to modules depends on your assigned role. This manual covers all available features — contact your administrator if a section is missing from your menu."
+                ],
+                "tips": [
+                    "Use the sidebar search to quickly find any section of this manual.",
+                    "Click on any screenshot to zoom in."
+                ]
+            },
+            "home": {
+                "title": "Home / Dashboard",
+                "paragraphs": [
+                    "The Dashboard is the main screen of the system. It displays key performance indicators (KPIs) tailored to your role, including current herd inventory, recent movements, stock alerts, and activity summaries.",
+                    "Dashboard content varies by role: Superadmin sees a global view across all farms, while a Farm Manager sees data specific to their farm. Use the date range selector at the top to adjust the analysis period."
+                ],
+                "tips": [
+                    "Change the date range with the period selector to view historical summaries.",
+                    "KPIs highlighted in red indicate alerts that require your immediate attention."
+                ]
+            },
+            "farms": {
+                "title": "Farms",
+                "paragraphs": [
+                    "The Farms module allows you to register and manage the farms in the system. From here you can create new farms, view their details, edit their information, and manage their configuration.",
+                    "Each farm has its own set of production parameters (target weights, stage durations, etc.) configured from the Configurations module."
+                ],
+                "tips": [
+                    "Only Superadmin users can create or delete farms."
+                ]
+            },
+            "warehouseInventory": {
+                "title": "Warehouse Inventory",
+                "paragraphs": [
+                    "The Inventory module shows the current stock of all products in the main warehouse. You can check available quantities, view movement history, and receive alerts when a product falls below its configured minimum stock level.",
+                    "Inventory movements are generated automatically when recording inflows (purchases) or outflows (consumption, orders). Filter by product, category, or date range from this screen."
+                ],
+                "tips": [
+                    "Rows highlighted in red indicate products below the configured minimum stock level.",
+                    "Use the Export button to generate an Excel report of the current inventory status."
+                ],
+                "formParagraphs": [
+                    "To record a new inflow click '+ New Inflow'. The system will ask you to choose between 'From purchase order' (links the inflow to an existing PO) or 'Direct inflow' (no prior PO required).",
+                    "Fill in the general information: supplier, date, and optional billing details. Then select the products and received quantities. Once saved, each product's stock is updated automatically."
+                ]
+            },
+            "warehouseSuppliers": {
+                "title": "Suppliers",
+                "paragraphs": [
+                    "The Supplier catalog stores information for all vendors the farm works with. From here you can create, edit, and deactivate suppliers.",
+                    "Suppliers are linked to purchase orders. When recording a purchase, select the corresponding supplier to maintain procurement traceability."
+                ],
+                "formParagraphs": [
+                    "To add a new supplier click '+ Add Supplier'. Fill in the identification (code and name), supplier type, contact details (phone, email, address), and optional tax information (RNC).",
+                    "The code is auto-generated but can be edited. Contact fields are optional but recommended to facilitate procurement management."
+                ]
+            },
+            "warehouseProducts": {
+                "title": "Product Catalog",
+                "paragraphs": [
+                    "The Product catalog defines all items that can be managed in the warehouse: raw materials, medications, feed, supplies, etc.",
+                    "Each product has a name, unit of measure, category, reference price, and minimum stock level. These parameters are used in reports and inventory alerts."
+                ],
+                "tips": [
+                    "Set minimum stock levels accurately for each product so the system can generate timely alerts before you run out."
+                ],
+                "formParagraphs": [
+                    "To register a new product click '+ Add Product'. You can optionally upload a product image. Then fill in the name, category (Nutrition, Medication, Vaccine, Supply), and unit of measure.",
+                    "The description is optional but helps the team identify the product correctly. Once saved, the product becomes available for recording inflows and outflows."
+                ]
+            },
+            "warehouseIncomes": {
+                "title": "Warehouse Inflows",
+                "paragraphs": [
+                    "The Inflows module records all product entries into the warehouse, whether by direct purchase or other sources. Each inflow increases the available stock of the corresponding product.",
+                    "When registering an inflow, specify the supplier, product, quantity, unit price, and date. The system automatically calculates the total value and updates the inventory."
+                ],
+                "formParagraphs": [
+                    "To record a new inflow click '+ New Inflow'. Choose the mode: 'From purchase order' (if an approved PO already exists) or 'Direct inflow' (for records without a PO).",
+                    "Enter the supplier, date, invoice number, and optional tax data. In the next step select the products and received quantities with their unit price."
+                ]
+            },
+            "warehouseOutcomes": {
+                "title": "Warehouse Outflows",
+                "paragraphs": [
+                    "The Outflows module records product exits from the main warehouse. These may originate from direct consumption, transfers to sub-warehouses, or inventory adjustments.",
+                    "Each outflow decreases the stock of the corresponding product. The system maintains a complete history of all outflows for auditing and control purposes."
+                ],
+                "formParagraphs": [
+                    "To record a new outflow click '+ New Outflow'. The system assigns an automatic code and defaults to today's date. Select the outflow reason (consumption, transfer, adjustment, etc.) and add an optional description.",
+                    "In the next step select the products and quantities to remove from inventory. The system verifies sufficient stock before confirming the outflow."
+                ]
+            },
+            "purchaseOrders": {
+                "title": "Purchase Orders",
+                "paragraphs": [
+                    "Purchase Orders allow you to manage the procurement process. You can create purchase requests, track their status, and record receipt of products.",
+                    "A purchase order moves through these statuses: Pending → In Progress → Received. Marking an order as received automatically generates the corresponding warehouse inflow."
+                ],
+                "tips": [
+                    "Use purchase orders to maintain an organized record of all acquisitions and simplify supplier reconciliation."
+                ],
+                "formParagraphs": [
+                    "To create a new order click '+ New Purchase Order'. First select the supplier from the list. Then choose the products you want to request with their quantities and estimated prices.",
+                    "Review the order total in the summary before confirming. Once created, the order stays in 'Pending' status until product receipt is recorded."
+                ]
+            },
+            "subwarehouse": {
+                "title": "Sub-Warehouse",
+                "paragraphs": [
+                    "Sub-Warehouses are secondary storage locations on the farm (e.g., a medication room in the farrowing barn). Each sub-warehouse has its own independent inventory.",
+                    "Products reach the sub-warehouse through transfer orders sent from the main warehouse. The sub-warehouse manager can record outflows of products under their custody."
+                ]
+            },
+            "orders": {
+                "title": "Transfer Orders",
+                "paragraphs": [
+                    "The Orders module manages product transfers from the main warehouse to sub-warehouses. The warehouse manager creates the order; the sub-warehouse manager receives and confirms it.",
+                    "Once completed, products are automatically transferred from the main inventory to the destination sub-warehouse inventory."
+                ]
+            },
+            "sales": {
+                "title": "Pig Sales",
+                "paragraphs": [
+                    "The Sales module records the commercialization of pigs. You can register individual or batch sales, specifying the buyer, price per kilogram, and animal weights.",
+                    "Each sale generates an outflow movement in the pig inventory. The system automatically calculates the total sale value based on weight and agreed price."
+                ],
+                "tips": [
+                    "Sales reports allow you to analyze commercial performance by period, buyer, or animal type."
+                ],
+                "formParagraphs": [
+                    "To register a new sale click '+ New Sale'. First enter the price per kilogram. Then choose whether the sale is 'By group' (full batch) or 'Individual' (specific animals).",
+                    "Select the group or animals to sell. In the next step fill in the buyer's information and the sale date. The system automatically calculates the total value based on weight and price."
+                ]
+            },
+            "expenses": {
+                "title": "Expenses",
+                "paragraphs": [
+                    "The Expenses module lets you record all farm operating costs that are not product purchases: labor, utilities, maintenance, etc.",
+                    "Expenses are categorized and included in financial reports to calculate the true profitability of the operation."
+                ],
+                "formParagraphs": [
+                    "To register a new expense click '+ New Expense'. Select the date, expense category (labor, utilities, maintenance, etc.), and enter a clear description.",
+                    "Enter the amount in the farm's configured currency. Once saved, the expense is recorded and automatically included in the financial reports for the period."
+                ]
+            },
+            "periodClosing": {
+                "title": "Period Closing",
+                "paragraphs": [
+                    "Period Closing consolidates the financial and productive information for a given period (month, quarter). Once a period is closed, its data is locked for editing.",
+                    "The closing generates a summary of revenues, production costs, operating expenses, and net results, accessible through financial reports."
+                ],
+                "tips": [
+                    "Make sure all revenues and expenses for the period have been recorded before closing it."
+                ]
+            },
+            "pigsView": {
+                "title": "Pig Inventory",
+                "paragraphs": [
+                    "The Pigs module displays the complete herd inventory. You can view all active animals and filter by production stage, sex, breed, and other criteria.",
+                    "Clicking on a pig shows its complete history: movements, reproductive events, medical treatments, and weight records."
+                ],
+                "tips": [
+                    "Use filters to quickly locate specific animals.",
+                    "The Details button on each row takes you to the animal's full profile."
+                ]
+            },
+            "pigsDiscarded": {
+                "title": "Culled Pigs",
+                "paragraphs": [
+                    "The Culled Pigs module shows animals that have been removed from the active inventory due to death, sale, or productive culling.",
+                    "You can review the reason for culling, the date, and the responsible user for auditing and mortality analysis purposes."
+                ]
+            },
+            "groups": {
+                "title": "Groups",
+                "paragraphs": [
+                    "Groups aggregate pigs into batches by production stage (Nursery, Grow-Finish, etc.). Each group has its own performance indicators: average weight, feed conversion ratio, mortality.",
+                    "The system provides specialized views by group type to facilitate tracking at each stage of the production process."
+                ],
+                "tips": [
+                    "Groups allow you to manage batches of animals collectively, streamlining the recording of weights, feed, and treatments."
+                ]
+            },
+            "replacementSows": {
+                "title": "Replacement Gilts",
+                "paragraphs": [
+                    "Replacement Gilts are developing females destined to enter the farm's breeding herd. From here you can track their progress, record weights, and promote them to breeding status.",
+                    "The module tracks each replacement gilt's development until she is ready for her first service."
+                ]
+            },
+            "replacementBoars": {
+                "title": "Replacement Boars",
+                "paragraphs": [
+                    "Replacement Boars are developing males destined to become semen donors. From here you can track their progress and qualify them for the artificial insemination program.",
+                    "The module maintains a performance history for each boar, including the quality results of laboratory extractions."
+                ]
+            },
+            "labExtractions": {
+                "title": "Semen Collections",
+                "paragraphs": [
+                    "The Collections module records semen collection events for each boar. Each collection includes the boar, volume collected, concentration, and quality evaluation result.",
+                    "Only approved collections are available for use in insemination plans."
+                ],
+                "tips": [
+                    "Keep collection records up to date to ensure availability of quality semen for the breeding program."
+                ],
+                "formParagraphs": [
+                    "To record a new collection click '+ New Collection'. First select the donor boar from the list of active breeding males.",
+                    "In the next step enter the collection data: volume collected (ml), concentration, quality evaluation result (Approved/Rejected), date, and the technician responsible for the procedure."
+                ]
+            },
+            "labSamples": {
+                "title": "Lab Samples",
+                "paragraphs": [
+                    "The Samples module lets you register laboratory analyses performed on animals: blood panels, PCR, serology tests, etc.",
+                    "Each sample is linked to the corresponding animal, and results are available in the animal's clinical history."
+                ],
+                "formParagraphs": [
+                    "To register a new sample click '+ Add Sample'. First select the base collection (semen lot) from which the sample was prepared.",
+                    "Then fill in the sample details: number of doses, expiration date, storage method (refrigeration or freezing), and the physical location within the lab."
+                ]
+            },
+            "gestationInseminations": {
+                "title": "Inseminations",
+                "paragraphs": [
+                    "The Inseminations module records each breeding service performed on sows. You specify the sow, the donor boar, the dose used, the date, and the responsible technician.",
+                    "The system tracks each insemination through its lifecycle: Performed → Confirmed (pregnant) → Farrowed. Unconfirmed inseminations generate alerts for follow-up."
+                ],
+                "tips": [
+                    "Configure the pregnancy confirmation window in farm settings so the system automatically generates confirmation alerts."
+                ],
+                "formParagraphs": [
+                    "To record an insemination click '+ Record Insemination'. Select the sow that will receive the service from the list of available breeding females.",
+                    "In the next step select the semen lot to use and specify the dose. Then complete the insemination details: date, responsible technician, and any observations. The system automatically updates the sow's status."
+                ]
+            },
+            "gestationPregnancies": {
+                "title": "Pregnancies",
+                "paragraphs": [
+                    "The Pregnancies module shows all sows confirmed as gestating, with their service date, estimated farrowing date, and gestation status.",
+                    "You can record pregnancy diagnoses, repeat services, or gestation losses from this screen."
+                ]
+            },
+            "births": {
+                "title": "Farrowings",
+                "paragraphs": [
+                    "The Farrowings module records each farrowing event on the farm: the sow, farrowing date, number of live-born piglets, stillborns, and mummies.",
+                    "Recording a farrowing automatically creates a litter in the Lactation module for suckling period tracking."
+                ],
+                "tips": [
+                    "Record farrowings promptly so the system correctly updates inventory and reproductive performance indicators."
+                ],
+                "formParagraphs": [
+                    "To record a farrowing go to 'Upcoming Farrowings' and click '+ Record Farrowing'. Select the insemination record corresponding to the sow giving birth.",
+                    "Fill in the farrowing data: date, number of live-born piglets, stillborns, and mummies. In the litter step you can record total weight and piglet sex distribution. On confirmation, the litter is automatically created in the Lactation module."
+                ]
+            },
+            "lactation": {
+                "title": "Lactation",
+                "paragraphs": [
+                    "The Lactation module manages litters from birth to weaning. You can record piglet weights, pre-weaning mortality, and litter adjustments (fostering).",
+                    "Weaning a litter automatically moves piglets to the pig inventory, where they become available for assignment to a nursery group."
+                ]
+            },
+            "weaning": {
+                "title": "Nursery Groups",
+                "paragraphs": [
+                    "Nursery Groups aggregate freshly weaned piglets into batches. From here you can record group weights, apply feed and medication plans, and track batch mortality.",
+                    "When the group reaches its target weight or age, it can be moved to the Grow-Finish stage."
+                ]
+            },
+            "growing": {
+                "title": "Grow-Finish Groups",
+                "paragraphs": [
+                    "Grow-Finish Groups manage pigs through the intermediate and final fattening stages. The system tracks weight gain, feed conversion ratio, and accumulated costs.",
+                    "At completion, pigs can be moved to Finishing or directed to sale."
+                ],
+                "tips": [
+                    "Record weights regularly to keep feed conversion ratio indicators current and compare performance across groups."
+                ]
+            },
+            "medication": {
+                "title": "Medication",
+                "paragraphs": [
+                    "The Medication module lets you create and manage treatment plans and vaccination programs for the farm's animals.",
+                    "Medication plans can be applied to groups or individual animals. The system records doses administered and automatically deducts medications from inventory."
+                ],
+                "tips": [
+                    "Use vaccination programs to schedule herd health calendars and receive reminders for application dates."
+                ],
+                "formParagraphs": [
+                    "To create a new medication package click '+ New Medication Package'. Enter the code, package name, and select the target production stage (piglet, grower, breeding, etc.).",
+                    "The date and responsible user are assigned automatically. Add an optional description. In the next step select the medications or vaccines from the catalog and define the doses and application frequency."
+                ]
+            },
+            "feeding": {
+                "title": "Feeding",
+                "paragraphs": [
+                    "The Feeding module manages diet packages and feed consumption by animal group. You can define rations by production stage and record actual daily consumption.",
+                    "The system automatically calculates feed conversion ratio and flags alerts when consumption deviates significantly from the planned ration."
+                ],
+                "tips": [
+                    "Log feed consumption regularly so feed conversion reports remain accurate.",
+                    "Feeding packages link consumption to inventory, so the system automatically deducts feed from stock."
+                ]
+            },
+            "reportsProduction": {
+                "title": "Production Reports",
+                "paragraphs": [
+                    "Production Reports consolidate the farm's performance indicators: inseminations, farrowings, mortality, weight gain, and reproductive efficiency.",
+                    "Filter reports by period, farm, and indicator type. Charts help you identify trends and compare performance across periods."
+                ]
+            },
+            "reportsInventory": {
+                "title": "Inventory Reports",
+                "paragraphs": [
+                    "Inventory Reports display the complete warehouse movement history, consumption by period, stock alerts, and inventory valuation.",
+                    "Export reports to PDF or Excel for external use or archiving."
+                ]
+            },
+            "reportsFinance": {
+                "title": "Financial Reports",
+                "paragraphs": [
+                    "Financial Reports consolidate revenues, production costs, operating expenses, and net results by period.",
+                    "Includes profitability analysis by batch, cash flow statements, and cost vs. revenue comparisons."
+                ]
+            },
+            "reportsSales": {
+                "title": "Sales Reports",
+                "paragraphs": [
+                    "Sales Reports show the historical record of pig commercialization: volumes sold, average prices, buyers, and period performance.",
+                    "Compare sales performance across periods and analyze pricing trends."
+                ]
+            },
+            "reportsTraceability": {
+                "title": "Traceability",
+                "paragraphs": [
+                    "The Traceability module lets you trace the complete history of an animal or batch: from entry to the farm through all recorded events until departure.",
+                    "Useful for health audits, certifications, and investigating any incident requiring reconstruction of an animal's history."
+                ]
+            },
+            "reportsAudit": {
+                "title": "Audit Reports",
+                "paragraphs": [
+                    "Audit Reports log every action taken in the system: creations, edits, and deletions, with the responsible user and exact timestamp.",
+                    "These records are immutable and serve to verify process compliance and detect data inconsistencies."
+                ]
+            },
+            "users": {
+                "title": "User Management",
+                "paragraphs": [
+                    "The Users module allows you to create, edit, activate, and deactivate system users. Each user is assigned one or more roles that determine which modules they can access.",
+                    "Available roles are: Superadmin, Farm Manager, Warehouse Manager, Sub-Warehouse Manager, Reproduction Technician, Veterinarian, and General Worker."
+                ],
+                "tips": [
+                    "Assign only the necessary roles to each user following the principle of least privilege.",
+                    "Deactivated users cannot log in, but their historical records are preserved."
+                ],
+                "formParagraphs": [
+                    "To register a new user click '+ Register User'. Optionally upload a profile photo. Fill in the user's first name, last name, and email address.",
+                    "Select one or more roles by clicking on the available role tags. The system will automatically generate access credentials and send them to the user's email."
+                ]
+            },
+            "configurations": {
+                "title": "Configurations",
+                "paragraphs": [
+                    "The Configurations module lets you adjust global system parameters and farm-specific settings: gestation length, target weights by stage, alert thresholds, and other reference values.",
+                    "Changes to configuration affect the system's automatic calculations, so they should be made carefully and with full understanding of the impact."
+                ],
+                "tips": [
+                    "Configure your farm's production parameters before entering data to ensure calculations are accurate from the start."
+                ]
+            }
         }
     }
 }

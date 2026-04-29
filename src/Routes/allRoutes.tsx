@@ -118,6 +118,9 @@ import GlobalConfiguration from "pages/Configurations/GlobalConfiguration";
 import FarmConfiguration from "pages/Configurations/FarmConfiguration";
 import RoleProtected from "./RoleProtected";
 
+//User Manual
+import UserManual from "pages/UserManual/UserManual";
+
 
 const authProtectedRoutes = [
 
@@ -273,6 +276,9 @@ const authProtectedRoutes = [
     ),
   },
 
+
+  // User Manual
+  { path: "/user-manual", component: <UserManual /> },
 
   // this route should be at the end of all other routes
   // eslint-disable-next-line react/display-name
