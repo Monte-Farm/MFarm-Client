@@ -3,6 +3,7 @@ import { Column, ColumnType } from "common/data/data_types";
 import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
 import defaultFarmImage from '../../../assets/images/establo-cerdo.jpg'
+import { useTranslation } from "react-i18next";
 
 interface FarmCardsProps<T> {
     columns: Column<T>[];
@@ -28,6 +29,7 @@ const FarmCards = <T extends Record<string, any>>({
     className = "",
 }: FarmCardsProps<T>) => {
 
+    const { t } = useTranslation();
     const mainColumns = columns.filter(col => col.accessor !== 'action');
     const titleColumn = mainColumns[0] || { accessor: '', header: '' };
     const subtitleColumns = mainColumns.slice(1, 3);
@@ -148,8 +150,9 @@ const FarmCards = <T extends Record<string, any>>({
                         </Card>
                     ))
                 ) : (
-                    <div className="w-100 text-center py-5">
-                        No se encontraron granjas
+                    <div className="w-100 d-flex flex-column align-items-center justify-content-center py-5 text-muted" style={{ minHeight: "300px" }}>
+                        <i className="ri-store-3-line mb-3" style={{ fontSize: "56px", opacity: 0.35 }} />
+                        <p className="fs-5 fw-semibold mb-1">{t('farms.card.notFound')}</p>
                     </div>
                 )}
             </div>
