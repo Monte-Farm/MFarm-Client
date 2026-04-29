@@ -19,7 +19,10 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     endDate,
     onDateChange,
 }) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+
+    const dateLocaleMap: Record<string, string> = { sp: "es-MX", en: "en-US", pt: "pt-BR" };
+    const dateLocale = dateLocaleMap[i18n.language] ?? "es-MX";
     const [pickerOpen, setPickerOpen] = useState(false);
 
     const shortMonths = t("common.shortMonths", { returnObjects: true }) as string[];
@@ -29,7 +32,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         return `${parseInt(day)} ${shortMonths[parseInt(month) - 1]} ${year}`;
     };
 
-    const todayLabel = new Date().toLocaleDateString("es-MX", {
+    const todayLabel = new Date().toLocaleDateString(dateLocale, {
         weekday: "long",
         year: "numeric",
         month: "long",
