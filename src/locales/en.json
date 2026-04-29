@@ -47,6 +47,7 @@
         "yes": "Yes",
         "no": "No",
         "of": "of",
+        "allFarms": "— All Farms —",
         "field": {
             "code": "Code",
             "name": "Name",

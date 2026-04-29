@@ -47,6 +47,7 @@
         "yes": "Sim",
         "no": "Não",
         "of": "de",
+        "allFarms": "— Todas as granjas —",
         "field": {
             "code": "Código",
             "name": "Nome",

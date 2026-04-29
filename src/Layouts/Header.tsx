@@ -14,11 +14,13 @@ import { FarmData, SubwarehouseData } from 'common/data_interfaces';
 import ProfileDropdown from 'Components/Common/Velzon/ProfileDropdown';
 import NotificationDropdown from 'Components/Common/Notifications/NotificationDropdown';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
     const dispatch: any = useDispatch();
     const configContext = useContext(ConfigContext)
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const userLogged = getLoggedinUser();
     const impersonation = configContext?.impersonation ?? null;
     const [assigment, setAssigment] = useState<SubwarehouseData | null>(null)
@@ -173,7 +175,7 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
                                         onChange={(e) => configContext?.setSuperadminFarmId(e.target.value)}
                                         className="farm-selector-input"
                                     >
-                                        <option value="">— Todas las granjas —</option>
+                                        <option value="">{t('common.allFarms')}</option>
                                         {farms.map((f) => (
                                             <option key={f._id} value={f._id}>{f.name}</option>
                                         ))}
