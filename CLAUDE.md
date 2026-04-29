@@ -54,6 +54,27 @@ src/
 - **Modals**: SuccessModal / ErrorModal for form feedback
 - **Language**: Spanish-speaking team; UI may mix Spanish/English; code identifiers in English
 
+## Git Workflow
+
+### Branching
+- Work always happens on `dev` (or feature branches cut from `dev`).
+- `main` is reserved for stable, deployable code only.
+- Never commit directly to `main`.
+
+### Versioning (SemVer — mandatory on every commit+push)
+- Bump `"version"` in `package.json` in the **same commit** as the changes. Never a separate commit.
+- Project started at `1.0.0` (2026-04-29).
+- **PATCH** (`1.0.x`) — bugfixes, minor tweaks, translation-only changes
+- **MINOR** (`1.x.0`) — new features that don't break existing functionality
+- **MAJOR** (`x.0.0`) — breaking changes, large redesigns
+
+### Merging to main
+When the user says to merge into main:
+1. `git checkout main`
+2. `git merge dev`
+3. `git push origin main`
+4. `git checkout dev` — always return to dev immediately after
+
 ## i18n Rules (non-negotiable)
 - **Every new UI text must be localized from day one** — no hardcoded strings in components, ever. If you add a button, label, error message, or tooltip, it goes in `sp.json` / `en.json` / `pt.json` first.
 - **Translations must sound native**, not literal. For EN: use natural pig-farming industry terminology. For PT: use Brazilian suinocultura vocabulary. Never just word-for-word translate from Spanish.
