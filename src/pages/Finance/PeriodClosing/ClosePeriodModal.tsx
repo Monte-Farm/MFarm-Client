@@ -12,6 +12,7 @@ import { PERIOD_CLOSING_URLS } from "helpers/period_closing_urls";
 import { ClosingKpis, PeriodClosingByPeriod, PrecheckItem, PrecheckResponse, PrecheckStatus } from "common/data_interfaces";
 import { closePeriod, fetchClosingPrecheck } from "slices/periodClosing/thunk";
 import { formatCurrency } from "utils/closingFormatters";
+import { darkenHex } from "utils/colorUtils";
 
 interface ClosePeriodModalProps {
     isOpen: boolean;
@@ -40,6 +41,8 @@ const ClosePeriodModal = ({ isOpen, onClose, onSuccess, farmId }: ClosePeriodMod
     const precheck: PrecheckResponse | null = useSelector((state: any) => state.PeriodClosing.precheck);
     const loadingPrecheck: boolean = useSelector((state: any) => state.PeriodClosing.loadingPrecheck);
     const precheckError: string | null = useSelector((state: any) => state.PeriodClosing.precheckError);
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const bg = (color: string) => isDark ? darkenHex(color) : color;
     const [apiError, setApiError] = useState<string | null>(null);
 
     const [preview, setPreview] = useState<ClosingKpis | null>(null);
@@ -325,19 +328,19 @@ const ClosePeriodModal = ({ isOpen, onClose, onSuccess, farmId }: ClosePeriodMod
                             ) : preview ? (
                                 <div className="row g-2">
                                     <div className="col-md-6">
-                                        <div className="border rounded p-2" style={{ backgroundColor: "#E8F5E9" }}>
+                                        <div className="border rounded p-2" style={{ backgroundColor: bg("#E8F5E9") }}>
                                             <div className="text-muted small">{t("finance.periodClosing.modal.shared.preview.income")}</div>
                                             <div className="fw-bold fs-5 text-success">{formatCurrency(preview.totalIncome)}</div>
                                         </div>
                                     </div>
                                     <div className="col-md-6">
-                                        <div className="border rounded p-2" style={{ backgroundColor: "#FFEBEE" }}>
+                                        <div className="border rounded p-2" style={{ backgroundColor: bg("#FFEBEE") }}>
                                             <div className="text-muted small">{t("finance.periodClosing.modal.shared.preview.costs")}</div>
                                             <div className="fw-bold fs-5 text-danger">{formatCurrency(preview.totalCosts)}</div>
                                         </div>
                                     </div>
                                     <div className="col-md-6">
-                                        <div className="border rounded p-2" style={{ backgroundColor: "#FFF8E1" }}>
+                                        <div className="border rounded p-2" style={{ backgroundColor: bg("#FFF8E1") }}>
                                             <div className="text-muted small">{t("finance.periodClosing.modal.shared.preview.operatingResult")}</div>
                                             <div className={`fw-bold fs-5 ${preview.operatingResult >= 0 ? "text-success" : "text-danger"}`}>
                                                 {formatCurrency(preview.operatingResult)}
@@ -345,7 +348,7 @@ const ClosePeriodModal = ({ isOpen, onClose, onSuccess, farmId }: ClosePeriodMod
                                         </div>
                                     </div>
                                     <div className="col-md-6">
-                                        <div className="border rounded p-2" style={{ backgroundColor: "#E0F7FA" }}>
+                                        <div className="border rounded p-2" style={{ backgroundColor: bg("#E0F7FA") }}>
                                             <div className="text-muted small">{t("finance.periodClosing.modal.shared.preview.operatingMargin")}</div>
                                             <div className="fw-bold fs-5 text-info">{(preview.operatingMargin || 0).toFixed(1)}%</div>
                                         </div>

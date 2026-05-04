@@ -18,6 +18,8 @@ import SelectableTable from '../Tables/SelectableTable';
 import SelectableCustomTable from '../Tables/SelectableTable';
 import ObjectDetails from '../Details/ObjectDetails';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+import { darkenHex } from 'utils/colorUtils';
 
 interface OutcomeFormProps {
     initialData?: OutcomeData;
@@ -27,6 +29,8 @@ interface OutcomeFormProps {
 
 const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel }) => {
     const { t } = useTranslation();
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const bg = (color: string) => isDark ? darkenHex(color) : color;
     const [modals, setModals] = useState({ createWarehouse: false, cancel: false, success: false, error: false });
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const configContext = useContext(ConfigContext);
@@ -566,7 +570,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                     <TabPane id='step-summary-tab' tabId={3}>
                         <div className='d-flex gap-3 w-100'>
                             <Card className=''>
-                                <CardHeader style={{ backgroundColor: '#f0f4f8' }}>
+                                <CardHeader style={{ backgroundColor: bg('#f0f4f8') }}>
                                     <h5>{t('warehouse.outcomeForm.summary.outcomeInfo', { defaultValue: 'Informacion de salida' })}</h5>
                                 </CardHeader>
                                 <CardBody className="pt-4">
@@ -583,7 +587,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                             </Card>
 
                             <Card className='w-100'>
-                                <CardHeader style={{ backgroundColor: '#e8f5e8' }}>
+                                <CardHeader style={{ backgroundColor: bg('#e8f5e8') }}>
                                     <h5>{t('warehouse.outcomeForm.summary.selectedProducts', { defaultValue: 'Productos Seleccionados' })}</h5>
                                 </CardHeader>
                                 <CardBody className="border border-0 d-flex flex-column flex-grow-1 p-0">

@@ -1,8 +1,10 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 import { Alert, Card, CardBody, CardHeader, Col, Row, Table } from "reactstrap";
 import { ClosingSnapshot } from "common/data_interfaces";
 import { formatCurrency, formatWeightKg } from "utils/closingFormatters";
+import { darkenHex } from "utils/colorUtils";
 
 interface Props {
     snapshot: ClosingSnapshot;
@@ -10,6 +12,8 @@ interface Props {
 
 const FeedingTab: React.FC<Props> = ({ snapshot }) => {
     const { t } = useTranslation();
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const bg = (color: string) => isDark ? darkenHex(color) : color;
     const { feeding, meta } = snapshot;
 
     if (!feeding) {
@@ -33,7 +37,7 @@ const FeedingTab: React.FC<Props> = ({ snapshot }) => {
                             </div>
                         </Col>
                         <Col md={4}>
-                            <div className="border rounded p-3" style={{ backgroundColor: "#FFEBEE" }}>
+                            <div className="border rounded p-3" style={{ backgroundColor: bg("#FFEBEE") }}>
                                 <div className="text-muted small">{t("finance.periodClosing.tabs.feeding.summary.totalCost")}</div>
                                 <div className="fw-bold fs-5 text-danger">{formatCurrency(feeding.totalCost, meta)}</div>
                             </div>
@@ -61,7 +65,7 @@ const FeedingTab: React.FC<Props> = ({ snapshot }) => {
                                 <tr>
                                     <th>{t("finance.periodClosing.tabs.feeding.byPhase.col.phase")}</th>
                                     <th className="text-end">{t("finance.periodClosing.tabs.feeding.byPhase.col.consumed")}</th>
-                                    <th className="text-end" style={{ backgroundColor: "#FFEBEE" }}>{t("finance.periodClosing.tabs.feeding.byPhase.col.cost")}</th>
+                                    <th className="text-end" style={{ backgroundColor: bg("#FFEBEE") }}>{t("finance.periodClosing.tabs.feeding.byPhase.col.cost")}</th>
                                     <th className="text-end">{t("finance.periodClosing.tabs.feeding.byPhase.col.pct")}</th>
                                 </tr>
                             </thead>
@@ -72,7 +76,7 @@ const FeedingTab: React.FC<Props> = ({ snapshot }) => {
                                         <tr key={p.phase}>
                                             <td className="fw-semibold">{p.label}</td>
                                             <td className="text-end">{formatWeightKg(p.consumedKg, 0)}</td>
-                                            <td className="text-end fw-semibold" style={{ backgroundColor: "#FFEBEE" }}>{formatCurrency(p.cost, meta)}</td>
+                                            <td className="text-end fw-semibold" style={{ backgroundColor: bg("#FFEBEE") }}>{formatCurrency(p.cost, meta)}</td>
                                             <td className="text-end text-muted">{pct.toFixed(1)}%</td>
                                         </tr>
                                     );

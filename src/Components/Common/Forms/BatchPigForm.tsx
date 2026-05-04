@@ -14,6 +14,8 @@ import { FaMars, FaVenus } from "react-icons/fa";
 import CustomTable from "../Tables/CustomTable";
 import { Column } from "common/data/data_types";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
+import { darkenHex } from "utils/colorUtils";
 
 interface BatchPigFormProps {
     onSave: () => void;
@@ -22,6 +24,8 @@ interface BatchPigFormProps {
 
 const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
     const { t } = useTranslation();
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const bg = (color: string) => isDark ? darkenHex(color) : color;
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -139,7 +143,7 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                 <TabPane tabId={1}>
                     {/* Información del lote */}
                     <div className="card mb-3 shadow-sm">
-                        <div className="card-header fw-semibold d-flex justify-content-between align-items-center" style={{ backgroundColor: '#e3f2fd' }}>
+                        <div className="card-header fw-semibold d-flex justify-content-between align-items-center" style={{ backgroundColor: bg('#e3f2fd') }}>
                             <span><i className="ri-group-line me-2 text-primary"></i>{t('form.pig.section.batchInfo')}</span>
                             {sharedBatchAttributes.origin && (
                                 <Badge color={originBadgeColor[sharedBatchAttributes.origin] || 'secondary'} className="px-3 py-2">
@@ -169,7 +173,7 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                     {/* Datos de origen */}
                     {sharedBatchAttributes.origin !== '' && (
                         <div className="card mb-3 shadow-sm">
-                            <div className="card-header fw-semibold" style={{ backgroundColor: '#e8f5e9' }}>
+                            <div className="card-header fw-semibold" style={{ backgroundColor: bg('#e8f5e9') }}>
                                 <i className="ri-map-pin-line me-2 text-success"></i>{t('form.pig.section.originData')}
                             </div>
                             <div className="card-body">
@@ -206,13 +210,13 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                     )}
 
                     {!isBatchInfoComplete() ? (
-                        <div className="p-4 border rounded text-center" style={{ backgroundColor: '#e3f2fd' }}>
+                        <div className="p-4 border rounded text-center" style={{ backgroundColor: bg('#e3f2fd') }}>
                             <FiAlertCircle size={26} className="text-primary" />
                             <p className="mt-2 mb-0 fw-semibold text-primary">{t('form.pig.action.completeBatch')}</p>
                         </div>
                     ) : pigsBatch.length > 0 && (
                         <div className="card shadow-sm">
-                            <div className="card-header fw-semibold" style={{ backgroundColor: '#e0f2f1' }}>
+                            <div className="card-header fw-semibold" style={{ backgroundColor: bg('#e0f2f1') }}>
                                 <i className="ri-list-check-2 me-2 text-info"></i>{t('form.pig.section.individualData', { count: pigsBatch.length })} ({pigsBatch.length})
                             </div>
                             <div className="card-body p-0">

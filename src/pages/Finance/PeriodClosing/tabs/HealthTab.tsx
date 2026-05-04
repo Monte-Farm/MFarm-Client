@@ -1,8 +1,10 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 import { Alert, Card, CardBody, CardHeader, Col, Row, Table } from "reactstrap";
 import { ClosingSnapshot } from "common/data_interfaces";
 import { formatCurrency, formatNumber } from "utils/closingFormatters";
+import { darkenHex } from "utils/colorUtils";
 
 interface Props {
     snapshot: ClosingSnapshot;
@@ -10,6 +12,8 @@ interface Props {
 
 const HealthTab: React.FC<Props> = ({ snapshot }) => {
     const { t } = useTranslation();
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const bg = (color: string) => isDark ? darkenHex(color) : color;
     const { health, meta } = snapshot;
 
     if (!health) {
@@ -25,7 +29,7 @@ const HealthTab: React.FC<Props> = ({ snapshot }) => {
                 <CardBody>
                     <Row className="g-3">
                         <Col md={4}>
-                            <div className="border rounded p-3" style={{ backgroundColor: "#FFEBEE" }}>
+                            <div className="border rounded p-3" style={{ backgroundColor: bg("#FFEBEE") }}>
                                 <div className="text-muted small">{t("finance.periodClosing.tabs.health.summary.totalCost")}</div>
                                 <div className="fw-bold fs-5 text-danger">{formatCurrency(health.totalCost, meta)}</div>
                             </div>
@@ -60,7 +64,7 @@ const HealthTab: React.FC<Props> = ({ snapshot }) => {
                                     <th>{t("finance.periodClosing.tabs.health.medications.col.product")}</th>
                                     <th className="text-end">{t("finance.periodClosing.tabs.health.medications.col.applications")}</th>
                                     <th className="text-end">{t("finance.periodClosing.tabs.health.medications.col.totalQty")}</th>
-                                    <th className="text-end" style={{ backgroundColor: "#FFEBEE" }}>{t("finance.periodClosing.tabs.health.medications.col.cost")}</th>
+                                    <th className="text-end" style={{ backgroundColor: bg("#FFEBEE") }}>{t("finance.periodClosing.tabs.health.medications.col.cost")}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -69,7 +73,7 @@ const HealthTab: React.FC<Props> = ({ snapshot }) => {
                                         <td className="fw-semibold">{m.productName}</td>
                                         <td className="text-end">{formatNumber(m.applicationCount)}</td>
                                         <td className="text-end">{formatNumber(m.totalQuantity, 1)} {m.unit}</td>
-                                        <td className="text-end fw-semibold" style={{ backgroundColor: "#FFEBEE" }}>{formatCurrency(m.totalCost, meta)}</td>
+                                        <td className="text-end fw-semibold" style={{ backgroundColor: bg("#FFEBEE") }}>{formatCurrency(m.totalCost, meta)}</td>
                                     </tr>
                                 ))}
                             </tbody>

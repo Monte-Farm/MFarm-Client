@@ -11,6 +11,8 @@ import LoadingAnimation from "../Shared/LoadingAnimation";
 import SuccessModal from "../Shared/SuccessModal";
 import ErrorModal from "../Shared/ErrorModal";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
+import { darkenHex } from "utils/colorUtils";
 
 interface SinglePigFormProps {
     onSave: () => void;
@@ -19,6 +21,8 @@ interface SinglePigFormProps {
 
 const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
     const { t } = useTranslation();
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const bg = (color: string) => isDark ? darkenHex(color) : color;
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true);
@@ -129,7 +133,7 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
                     <TabPane tabId={1}>
                         {/* Identificación */}
                         <div className="card mb-3 shadow-sm">
-                            <div className="card-header fw-semibold" style={{ backgroundColor: '#e3f2fd' }}>
+                            <div className="card-header fw-semibold" style={{ backgroundColor: bg('#e3f2fd') }}>
                                 <i className="ri-fingerprint-line me-2 text-primary"></i>{t('form.pig.section.identification')}
                             </div>
                             <div className="card-body">
@@ -170,7 +174,7 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
 
                         {/* Origen */}
                         <div className="card mb-3 shadow-sm">
-                            <div className="card-header fw-semibold" style={{ backgroundColor: '#e8f5e9' }}>
+                            <div className="card-header fw-semibold" style={{ backgroundColor: bg('#e8f5e9') }}>
                                 <i className="ri-map-pin-line me-2 text-success"></i>{t('form.pig.section.origin')}
                             </div>
                             <div className="card-body">
@@ -223,7 +227,7 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
 
                         {/* Características físicas */}
                         <div className="card mb-3 shadow-sm">
-                            <div className="card-header fw-semibold" style={{ backgroundColor: '#ede7f6' }}>
+                            <div className="card-header fw-semibold" style={{ backgroundColor: bg('#ede7f6') }}>
                                 <i className="ri-scales-3-line me-2" style={{ color: '#7c4dff' }}></i>{t('form.pig.section.physicalTraits')}
                             </div>
                             <div className="card-body">

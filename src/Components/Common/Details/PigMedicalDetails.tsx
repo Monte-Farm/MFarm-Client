@@ -14,11 +14,15 @@ import SicknessDetails from "./SicknessDetailsModal";
 import AsignMedicationPackageForm from "../Forms/AsignMedicationPackageForm";
 import AsignMedicationForm from "../Forms/AsignMedicationForm";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
+import { darkenHex } from "utils/colorUtils";
 
 interface PigMedicalDetailsProps { pigId: string }
 
 const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
     const { t } = useTranslation();
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const bg = (color: string) => isDark ? darkenHex(color) : color;
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true)
@@ -200,7 +204,7 @@ const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
                             ) : (
                                 <div className="d-flex flex-column gap-3">
                                     {medicationPackages.map((p, index) => (
-                                        <div key={index} className="p-3 border rounded shadow-sm d-flex flex-column position-relative" style={{ backgroundColor: "#eef2ff" }}>
+                                        <div key={index} className="p-3 border rounded shadow-sm d-flex flex-column position-relative" style={{ backgroundColor: bg("#eef2ff") }}>
                                             <Button className="btn position-absolute" size="sm" style={{ top: "10px", right: "10px", borderRadius: "4px" }} onClick={() => { setSelectedMedicationPackage(p.packageId); toggleModal('medicationPackageDetails') }}>
                                                 <FiEye size={18} />
                                             </Button>

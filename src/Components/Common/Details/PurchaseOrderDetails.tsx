@@ -3,6 +3,8 @@ import { Attribute, PurchaseOrderData } from "common/data_interfaces";
 import { SUPPLIER_TYPES } from "common/enums/suppliers.enums";
 import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
+import { darkenHex } from "utils/colorUtils";
 import { Badge, Button, Card, CardBody, CardHeader, Col, Modal, ModalBody, ModalHeader, Row, Spinner } from "reactstrap";
 import { Column } from "common/data/data_types";
 import CustomTable from "Components/Common/Tables/CustomTable";
@@ -18,6 +20,8 @@ interface PurchaseOrderDetailsProps {
 
 const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId }) => {
     const { t } = useTranslation();
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const bg = (color: string) => isDark ? darkenHex(color) : color;
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -255,7 +259,7 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
                     <CardHeader className='bg-gradient bg-secondary-subtle d-flex justify-content-between align-items-center'>
                         <h5 className="mb-0 text-secondary">{t('warehouse.purchaseOrders.attr.orderProducts', { defaultValue: 'Productos de la Orden' })}</h5>
 
-                        <div className="d-flex justify-content-between align-items-center p-3 rounded" style={{ backgroundColor: '#f0f8ff' }}>
+                        <div className="d-flex justify-content-between align-items-center p-3 rounded" style={{ backgroundColor: bg('#f0f8ff') }}>
                             <h5 className="mb-0 me-2 fw-bold">{t('warehouse.purchaseOrders.attr.total', { defaultValue: 'Total:' })}</h5>
                             <h4 className="mb-0 text-primary fw-bold">
                                 {new Intl.NumberFormat('en-US', {

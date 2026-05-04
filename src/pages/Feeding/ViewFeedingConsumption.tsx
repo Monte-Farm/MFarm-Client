@@ -29,6 +29,8 @@ import {
     ModalFooter
 } from "reactstrap";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
+import { darkenHex } from "utils/colorUtils";
 
 interface GroupOption {
     value: string;
@@ -54,6 +56,8 @@ const ViewFeedingConsumption = () => {
     const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const bg = (color: string) => isDark ? darkenHex(color) : color;
 
     const [loading, setLoading] = useState<boolean>(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -974,7 +978,7 @@ const ViewFeedingConsumption = () => {
                                                 className="w-100 text-start d-flex align-items-center justify-content-between shadow-sm border-0"
                                                 onClick={() => setDateModalOpen(true)}
                                                 style={{
-                                                    backgroundColor: '#f8f9fa',
+                                                    backgroundColor: bg('#f8f9fa'),
                                                     padding: '0.6rem 1rem',
                                                     fontSize: '0.875rem',
                                                     minHeight: '42px'
@@ -1048,7 +1052,7 @@ const ViewFeedingConsumption = () => {
                                         className="w-100 text-start d-flex align-items-center justify-content-between shadow-sm border-0"
                                         onClick={handleGroupModalOpen}
                                         style={{
-                                            backgroundColor: '#f8f9fa',
+                                            backgroundColor: bg('#f8f9fa'),
                                             padding: '0.6rem 1rem',
                                             fontSize: '0.875rem',
                                             minHeight: '42px'
@@ -1077,7 +1081,7 @@ const ViewFeedingConsumption = () => {
                                         className="w-100 text-start d-flex align-items-center justify-content-between shadow-sm border-0"
                                         onClick={handleLitterModalOpen}
                                         style={{
-                                            backgroundColor: '#f8f9fa',
+                                            backgroundColor: bg('#f8f9fa'),
                                             padding: '0.6rem 1rem',
                                             fontSize: '0.875rem',
                                             minHeight: '42px'

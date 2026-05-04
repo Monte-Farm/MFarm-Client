@@ -1,8 +1,10 @@
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 import { Card, CardBody, CardHeader, Col, Input, Row } from "reactstrap";
 import SimpleBar from "simplebar-react";
+import { darkenHex } from "utils/colorUtils";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useReportScope } from "hooks/useReportScope";
 import { Column } from "common/data/data_types";
@@ -54,6 +56,8 @@ const formatCurrency = (value: number): string => {
 
 const SupplierStatementReport = () => {
     const { t } = useTranslation();
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const bg = (color: string) => isDark ? darkenHex(color) : color;
     document.title = "Estado de Cuenta por Proveedor | Reportes";
 
     const configContext = useContext(ConfigContext);
@@ -180,7 +184,7 @@ const SupplierStatementReport = () => {
             <Card className="mb-3">
                 <CardBody>
                     <div className="d-flex align-items-center gap-3 mb-3">
-                        <div className="d-flex align-items-center justify-content-center" style={{ width: 40, height: 40, borderRadius: "10px", backgroundColor: "#E8F5E9" }}>
+                        <div className="d-flex align-items-center justify-content-center" style={{ width: 40, height: 40, borderRadius: "10px", backgroundColor: bg("#E8F5E9") }}>
                             <i className="ri-truck-line fs-4 text-success"></i>
                         </div>
                         <div>
@@ -209,11 +213,11 @@ const SupplierStatementReport = () => {
                                             cursor: "pointer",
                                             transition: "all 0.15s",
                                             border: selectedSupplierId === s._id ? "2px solid #405189" : "1.5px solid #dee2e6",
-                                            backgroundColor: selectedSupplierId === s._id ? "#405189" : "#fff",
+                                            backgroundColor: selectedSupplierId === s._id ? "#405189" : isDark ? "#2c3238" : "#fff",
                                         }}
                                     >
                                         <i className="ri-checkbox-blank-circle-fill" style={{ fontSize: 8, color: selectedSupplierId === s._id ? "#fff" : "#adb5bd" }}></i>
-                                        <span className="fw-semibold" style={{ fontSize: 13, color: selectedSupplierId === s._id ? "#fff" : "#333" }}>{s.name}</span>
+                                        <span className="fw-semibold" style={{ fontSize: 13, color: selectedSupplierId === s._id ? "#fff" : isDark ? "#ced4da" : "#333" }}>{s.name}</span>
                                     </div>
                                 ))
                             }

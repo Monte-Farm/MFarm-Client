@@ -1,8 +1,10 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 import { Alert, Card, CardBody, CardHeader, Col, Row, Table } from "reactstrap";
 import { ClosingSnapshot } from "common/data_interfaces";
 import { formatCurrency, formatNumber, formatWeightKg } from "utils/closingFormatters";
+import { darkenHex } from "utils/colorUtils";
 
 interface Props {
     snapshot: ClosingSnapshot;
@@ -10,6 +12,8 @@ interface Props {
 
 const SalesDetailTab: React.FC<Props> = ({ snapshot }) => {
     const { t } = useTranslation();
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const bg = (color: string) => isDark ? darkenHex(color) : color;
     const { salesDetail, meta } = snapshot;
 
     if (!salesDetail) {
@@ -74,7 +78,7 @@ const SalesDetailTab: React.FC<Props> = ({ snapshot }) => {
                                     <th className="text-end">{t("finance.periodClosing.tabs.sales.byType.col.totalWeight")}</th>
                                     <th className="text-end">{t("finance.periodClosing.tabs.sales.byType.col.weightPerPig")}</th>
                                     <th className="text-end">{t("finance.periodClosing.tabs.sales.byType.col.pricePerKg")}</th>
-                                    <th className="text-end" style={{ backgroundColor: "#E8F5E9" }}>{t("finance.periodClosing.tabs.sales.byType.col.totalAmount")}</th>
+                                    <th className="text-end" style={{ backgroundColor: bg("#E8F5E9") }}>{t("finance.periodClosing.tabs.sales.byType.col.totalAmount")}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -85,7 +89,7 @@ const SalesDetailTab: React.FC<Props> = ({ snapshot }) => {
                                         <td className="text-end">{formatWeightKg(t_.totalWeightKg, 1)}</td>
                                         <td className="text-end">{formatWeightKg(t_.avgWeightPerPig, 1)}</td>
                                         <td className="text-end">{formatCurrency(t_.avgPricePerKg, meta)}</td>
-                                        <td className="text-end fw-semibold" style={{ backgroundColor: "#E8F5E9" }}>{formatCurrency(t_.totalAmount, meta)}</td>
+                                        <td className="text-end fw-semibold" style={{ backgroundColor: bg("#E8F5E9") }}>{formatCurrency(t_.totalAmount, meta)}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -111,7 +115,7 @@ const SalesDetailTab: React.FC<Props> = ({ snapshot }) => {
                                     <th className="text-end">{t("finance.periodClosing.tabs.sales.byClient.col.pigs")}</th>
                                     <th className="text-end">{t("finance.periodClosing.tabs.sales.byClient.col.weight")}</th>
                                     <th className="text-end">{t("finance.periodClosing.tabs.sales.byClient.col.pricePerKg")}</th>
-                                    <th className="text-end" style={{ backgroundColor: "#E8F5E9" }}>{t("finance.periodClosing.tabs.sales.byClient.col.totalAmount")}</th>
+                                    <th className="text-end" style={{ backgroundColor: bg("#E8F5E9") }}>{t("finance.periodClosing.tabs.sales.byClient.col.totalAmount")}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -123,7 +127,7 @@ const SalesDetailTab: React.FC<Props> = ({ snapshot }) => {
                                         <td className="text-end">{formatNumber(c.pigCount)}</td>
                                         <td className="text-end">{formatWeightKg(c.totalWeightKg, 1)}</td>
                                         <td className="text-end">{formatCurrency(c.avgPricePerKg, meta)}</td>
-                                        <td className="text-end fw-semibold" style={{ backgroundColor: "#E8F5E9" }}>{formatCurrency(c.totalAmount, meta)}</td>
+                                        <td className="text-end fw-semibold" style={{ backgroundColor: bg("#E8F5E9") }}>{formatCurrency(c.totalAmount, meta)}</td>
                                     </tr>
                                 ))}
                             </tbody>

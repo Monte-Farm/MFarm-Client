@@ -1,8 +1,10 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 import { Alert, Card, CardBody, CardHeader, Col, Row, Table } from "reactstrap";
 import { ClosingSnapshot } from "common/data_interfaces";
 import { formatCurrency, formatNumber, formatPercentDecimal, formatWeightKg, stageLabel } from "utils/closingFormatters";
+import { darkenHex } from "utils/colorUtils";
 
 interface Props {
     snapshot: ClosingSnapshot;
@@ -10,6 +12,8 @@ interface Props {
 
 const InventoryProductionTab: React.FC<Props> = ({ snapshot }) => {
     const { t } = useTranslation();
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const bg = (color: string) => isDark ? darkenHex(color) : color;
     const { inventory, production, meta } = snapshot;
 
     if (!inventory && !production) {
@@ -148,7 +152,7 @@ const InventoryProductionTab: React.FC<Props> = ({ snapshot }) => {
                                             </div>
                                         </Col>
                                         <Col md={4}>
-                                            <div className="border rounded p-3" style={{ backgroundColor: "#E8F5E9" }}>
+                                            <div className="border rounded p-3" style={{ backgroundColor: bg("#E8F5E9") }}>
                                                 <div className="text-muted small">{t("finance.periodClosing.tabs.inventory.valuation.totalValue")}</div>
                                                 <div className="fw-bold fs-5 text-success">{formatCurrency(inventory.valuation.totalValue, meta)}</div>
                                             </div>
@@ -222,13 +226,13 @@ const InventoryProductionTab: React.FC<Props> = ({ snapshot }) => {
                         <CardBody>
                             <Row className="g-3 mb-3">
                                 <Col md={4}>
-                                    <div className="border rounded p-3" style={{ backgroundColor: "#FFEBEE" }}>
+                                    <div className="border rounded p-3" style={{ backgroundColor: bg("#FFEBEE") }}>
                                         <div className="text-muted small">{t("finance.periodClosing.tabs.inventory.mortality.totalDeaths")}</div>
                                         <div className="fw-bold fs-5 text-danger">{formatNumber(production.mortality.totalDeaths)}</div>
                                     </div>
                                 </Col>
                                 <Col md={4}>
-                                    <div className="border rounded p-3" style={{ backgroundColor: "#FFEBEE" }}>
+                                    <div className="border rounded p-3" style={{ backgroundColor: bg("#FFEBEE") }}>
                                         <div className="text-muted small">{t("finance.periodClosing.tabs.inventory.mortality.mortalityRate")}</div>
                                         <div className="fw-bold fs-5 text-danger">{formatPercentDecimal(production.mortality.mortalityRate, 2)}</div>
                                     </div>

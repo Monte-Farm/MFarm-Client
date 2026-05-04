@@ -26,6 +26,7 @@ import { DATE_FORMAT_OPTIONS, DEFAULT_GLOBAL_CONFIG } from 'common/configuration
 import { GlobalConfiguration as GlobalConfigType } from 'common/data_interfaces';
 import { deriveCurrencySymbol, getCurrencyOptions, getLocaleOptions, getTimezoneOptions } from 'utils/intlHelpers';
 import { useTranslation } from 'react-i18next';
+import { darkenHex } from 'utils/colorUtils';
 
 const GlobalConfiguration = () => {
     const { t } = useTranslation();
@@ -33,6 +34,8 @@ const GlobalConfiguration = () => {
     const dispatch: any = useDispatch();
     const globalConfig: GlobalConfigType | null = useSelector((s: any) => s.Configurations.globalConfig);
     const loading: boolean = useSelector((s: any) => s.Configurations.loadingGlobal);
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const bg = (color: string) => isDark ? darkenHex(color) : color;
 
     const [modals, setModals] = useState({ success: false, error: false });
     const [errorMessage, setErrorMessage] = useState<string>('');
@@ -228,7 +231,7 @@ const GlobalConfiguration = () => {
                                                     height: 180,
                                                     borderRadius: 12,
                                                     border: '1px solid #E5E7EB',
-                                                    backgroundColor: '#F9FAFB',
+                                                    backgroundColor: bg('#F9FAFB'),
                                                     display: 'flex',
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
@@ -438,8 +441,8 @@ const GlobalConfiguration = () => {
                                                 key={unit}
                                                 className="unit-pill d-inline-flex align-items-center gap-2"
                                                 style={{
-                                                    backgroundColor: '#E8F1FD',
-                                                    color: '#0B5ED7',
+                                                    backgroundColor: bg('#E8F1FD'),
+                                                    color: isDark ? '#6ea8fe' : '#0B5ED7',
                                                     borderRadius: '999px',
                                                     padding: '6px 14px',
                                                     fontSize: '0.9rem',

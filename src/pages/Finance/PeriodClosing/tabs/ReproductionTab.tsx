@@ -1,8 +1,10 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 import { Alert, Card, CardBody, CardHeader, Col, Row } from "reactstrap";
 import { ClosingSnapshot } from "common/data_interfaces";
 import { formatNumber, formatPercentDecimal } from "utils/closingFormatters";
+import { darkenHex } from "utils/colorUtils";
 
 interface Props {
     snapshot: ClosingSnapshot;
@@ -10,6 +12,8 @@ interface Props {
 
 const ReproductionTab: React.FC<Props> = ({ snapshot }) => {
     const { t } = useTranslation();
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const bg = (color: string) => isDark ? darkenHex(color) : color;
     const { reproduction } = snapshot;
 
     if (!reproduction) {
@@ -75,7 +79,7 @@ const ReproductionTab: React.FC<Props> = ({ snapshot }) => {
                             </div>
                         </Col>
                         <Col md={4}>
-                            <div className="border rounded p-3" style={{ backgroundColor: "#E8F5E9" }}>
+                            <div className="border rounded p-3" style={{ backgroundColor: bg("#E8F5E9") }}>
                                 <div className="text-muted small">{t("finance.periodClosing.tabs.reproduction.activePregnancies.confirmed")}</div>
                                 <div className="fw-bold fs-5 text-success">{formatNumber(reproduction.activePregnancies.confirmedInPeriod)}</div>
                             </div>

@@ -1,5 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+import { darkenHex } from 'utils/colorUtils';
 import { Alert, Badge, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from 'reactstrap';
 import * as Yup from 'yup'
 import { useFormik } from 'formik';
@@ -29,6 +31,8 @@ interface OrderFormProps {
 
 const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) => {
     const { t } = useTranslation();
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const bg = (color: string) => isDark ? darkenHex(color) : color;
     const configContext = useContext(ConfigContext)
     const userLogged = getEffectiveUser();
     const [modals, setModals] = useState({ createWarehouse: false, cancel: false, success: false, error: false });
@@ -454,7 +458,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
                         </div>
 
                         {/* Información del Pedido */}
-                        <Card className="mt-4" style={{ backgroundColor: '#f8f9fa', border: '1px solid #dee2e6' }}>
+                        <Card className="mt-4" style={{ backgroundColor: bg('#f8f9fa'), border: '1px solid #dee2e6' }}>
                             <CardBody>
                                 <h6 className="mb-3 text-muted">{t('warehouse.orderDetails.attr.orderInfo', { defaultValue: 'Información del Pedido' })}</h6>
 
@@ -555,7 +559,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
                     <TabPane id='step-summary-tab' tabId={3}>
                         <div className='d-flex gap-3 w-100'>
                             <Card className=''>
-                                <CardHeader style={{ backgroundColor: '#f0f4f8' }}>
+                                <CardHeader style={{ backgroundColor: bg('#f0f4f8') }}>
                                     <h5>{t('warehouse.orderDetails.attr.orderInfo', { defaultValue: 'Información del pedido' })}</h5>
                                 </CardHeader>
                                 <CardBody className="pt-4">
@@ -571,7 +575,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
                             </Card>
 
                             <Card className='w-100'>
-                                <CardHeader style={{ backgroundColor: '#e8f5e8' }}>
+                                <CardHeader style={{ backgroundColor: bg('#e8f5e8') }}>
                                     <h5>{t('warehouse.orderDetails.attr.selectedProducts', { defaultValue: 'Productos seleccionados' })}</h5>
                                 </CardHeader>
                                 <CardBody className="border border-0 d-flex flex-column flex-grow-1 p-0">

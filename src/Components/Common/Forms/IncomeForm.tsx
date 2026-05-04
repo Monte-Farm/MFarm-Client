@@ -18,6 +18,8 @@ import SelectTable from "../Tables/SelectTable";
 import ObjectDetails from "../Details/ObjectDetails";
 import FileUploader from "../Shared/FileUploader";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
+import { darkenHex } from "utils/colorUtils";
 
 interface IncomeFormProps {
     initialData?: IncomeData;
@@ -27,6 +29,8 @@ interface IncomeFormProps {
 
 const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }) => {
     const { t } = useTranslation();
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const bg = (color: string) => isDark ? darkenHex(color) : color;
     const configContext = useContext(ConfigContext)
     const userLogged = getEffectiveUser();
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
@@ -836,7 +840,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                             <div className="d-flex gap-3">
                                 {selectedPurchaseOrder ? (
                                     <Card className="w-50">
-                                        <CardHeader className='bg-gradient' style={{ backgroundColor: '#e3f2fd' }}>
+                                        <CardHeader className='bg-gradient' style={{ backgroundColor: bg('#e3f2fd') }}>
                                             <h5 className="mb-0 text-primary">{t('warehouse.incomeForm.summary.purchaseOrder', { defaultValue: 'Orden de compra' })}</h5>
                                         </CardHeader>
                                         <CardBody className="pt-4">
@@ -845,7 +849,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                     </Card>
                                 ) : selectedSupplier ? (
                                     <Card className="w-50">
-                                        <CardHeader className='bg-gradient' style={{ backgroundColor: '#e3f2fd' }}>
+                                        <CardHeader className='bg-gradient' style={{ backgroundColor: bg('#e3f2fd') }}>
                                             <h5 className="mb-0 text-primary">{t('warehouse.suppliers.col.supplier', { defaultValue: 'Proveedor' })}</h5>
                                         </CardHeader>
                                         <CardBody className="pt-4">
@@ -859,7 +863,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                 ) : null}
 
                                 <Card className={selectedPurchaseOrder || selectedSupplier ? "w-50" : "w-100"}>
-                                    <CardHeader className='bg-gradient' style={{ backgroundColor: '#e8f5e9' }}>
+                                    <CardHeader className='bg-gradient' style={{ backgroundColor: bg('#e8f5e9') }}>
                                         <h5 className="mb-0 text-success">{t('warehouse.incomeForm.summary.income', { defaultValue: 'Entrada' })}</h5>
                                     </CardHeader>
                                     <CardBody className="pt-4">
@@ -870,7 +874,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
 
                             <div className="w-100">
                                 <Card >
-                                    <CardHeader className='bg-gradient' style={{ backgroundColor: '#f3e5f5' }}>
+                                    <CardHeader className='bg-gradient' style={{ backgroundColor: bg('#f3e5f5') }}>
                                         <h5 className="mb-0 text-purple">{t('warehouse.incomeForm.summary.products', { defaultValue: 'Productos' })}</h5>
                                     </CardHeader>
                                     <CardBody className="p-0">

@@ -1,8 +1,10 @@
 import { categoryLabels } from "common/product_categories";
 import React, { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 import { Input, Table } from "reactstrap";
 import SimpleBar from "simplebar-react";
+import { darkenHex } from "utils/colorUtils";
 
 interface PurchaseOrderProductsTableProps {
     data: any[];
@@ -12,6 +14,8 @@ interface PurchaseOrderProductsTableProps {
 
 const PurchaseOrderProductsTable: React.FC<PurchaseOrderProductsTableProps> = ({ data, productsDelivered, onProductEdit }) => {
     const { t } = useTranslation();
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const bg = (color: string) => isDark ? darkenHex(color) : color;
     const [filterText, setFilterText] = useState("");
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
     const [editingValues, setEditingValues] = useState<Record<string, { quantity: string; price: string; totalPrice: string }>>({});
@@ -111,7 +115,7 @@ const PurchaseOrderProductsTable: React.FC<PurchaseOrderProductsTableProps> = ({
                 <thead className="table-light sticky-top">
                     <tr>
                         {["id", "name", "category", "requested_quantity", "quantity", "price", "totalPrice"].map(key => (
-                            <th key={key} onClick={() => requestSort(key)} style={{ cursor: "pointer", backgroundColor: key === "quantity" ? "#f0f0ff" : key === "price" ? "#e6f0ff" : key === "totalPrice" ? "#e6ffe6" : "" }}>
+                            <th key={key} onClick={() => requestSort(key)} style={{ cursor: "pointer", backgroundColor: key === "quantity" ? bg("#f0f0ff") : key === "price" ? bg("#e6f0ff") : key === "totalPrice" ? bg("#e6ffe6") : "" }}>
                                 {columnHeaders[key] || key.charAt(0).toUpperCase() + key.slice(1)}
                                 {sortConfig?.key === key ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
                             </th>
@@ -129,7 +133,7 @@ const PurchaseOrderProductsTable: React.FC<PurchaseOrderProductsTableProps> = ({
                                     <td>{productInfo.name}</td>
                                     <td>{t(`warehouse.common.productCategory.${productInfo.category}`, { defaultValue: categoryLabels[productInfo.category] || productInfo.category })}</td>
                                     <td>{requestedQuantity || "0"} {productInfo.unit_measurement}</td>
-                                    <td style={{ backgroundColor: "#f0f0ff" }}>
+                                    <td style={{ backgroundColor: bg("#f0f0ff") }}>
                                         <div className="input-group">
                                             <Input
                                                 type="number"
@@ -142,7 +146,7 @@ const PurchaseOrderProductsTable: React.FC<PurchaseOrderProductsTableProps> = ({
                                             <span className="input-group-text" id="unit-addon">{productInfo.unit_measurement}</span>
                                         </div>
                                     </td>
-                                    <td style={{ backgroundColor: "#e6f0ff" }}>
+                                    <td style={{ backgroundColor: bg("#e6f0ff") }}>
                                         <div className="input-group">
                                             <span className="input-group-text">$</span>
                                             <Input
@@ -155,7 +159,7 @@ const PurchaseOrderProductsTable: React.FC<PurchaseOrderProductsTableProps> = ({
                                             />
                                         </div>
                                     </td>
-                                    <td style={{ backgroundColor: "#e6ffe6" }}>
+                                    <td style={{ backgroundColor: bg("#e6ffe6") }}>
                                         <div className="input-group">
                                             <span className="input-group-text">$</span>
                                             <Input

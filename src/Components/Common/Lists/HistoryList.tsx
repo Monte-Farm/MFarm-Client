@@ -1,5 +1,7 @@
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 import SimpleBar from "simplebar-react";
+import { darkenHex } from "utils/colorUtils";
 
 interface HistoryItem {
     [key: string]: any;
@@ -23,6 +25,8 @@ const HistoryList: React.FC<HistoryListProps> = ({
     badgeColors = {}
 }) => {
     const { t } = useTranslation();
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const bg = (color: string) => isDark ? darkenHex(color) : color;
 
     const getBadgeColor = (type: string) => {
         if (badgeColors[type]) return badgeColors[type];
@@ -49,7 +53,7 @@ const HistoryList: React.FC<HistoryListProps> = ({
                             <div
                                 key={idx}
                                 className="d-flex align-items-start gap-3 p-3 border rounded"
-                                style={{ backgroundColor: '#f8f9fa' }}
+                                style={{ backgroundColor: bg('#f8f9fa') }}
                             >
                                 <span
                                     className={`badge bg-${badgeColor} text-white fs-6 py-2 px-3`}

@@ -1,8 +1,10 @@
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 import { Badge, Card, CardBody, CardHeader, Col, Input, Row } from "reactstrap";
 import SimpleBar from "simplebar-react";
+import { darkenHex } from "utils/colorUtils";
 import { useReportScope } from "hooks/useReportScope";
 import { buildReportUrl } from "helpers/reports_url_helper";
 import { Column } from "common/data/data_types";
@@ -41,6 +43,8 @@ interface GroupInfo {
 
 const GroupTraceabilityReport = () => {
     const { t } = useTranslation();
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const bg = (color: string) => isDark ? darkenHex(color) : color;
 
     const eventTypeLabels: Record<string, { label: string; color: string; icon: string }> = {
         creation: { label: t("reports.traceability.event.creation"), color: "primary", icon: "ri-add-circle-line" },
@@ -172,7 +176,7 @@ const GroupTraceabilityReport = () => {
             <Card className="mb-3">
                 <CardBody>
                     <div className="d-flex align-items-center gap-3 mb-3">
-                        <div className="d-flex align-items-center justify-content-center" style={{ width: 40, height: 40, borderRadius: "10px", backgroundColor: "#EEF2FF" }}>
+                        <div className="d-flex align-items-center justify-content-center" style={{ width: 40, height: 40, borderRadius: "10px", backgroundColor: bg("#EEF2FF") }}>
                             <i className="ri-group-line fs-4 text-primary"></i>
                         </div>
                         <div>
@@ -201,11 +205,11 @@ const GroupTraceabilityReport = () => {
                                             cursor: "pointer",
                                             transition: "all 0.15s",
                                             border: selectedGroupId === g._id ? "2px solid #405189" : "1.5px solid #dee2e6",
-                                            backgroundColor: selectedGroupId === g._id ? "#405189" : "#fff",
+                                            backgroundColor: selectedGroupId === g._id ? "#405189" : isDark ? "#2c3238" : "#fff",
                                         }}
                                     >
                                         <i className="ri-checkbox-blank-circle-fill" style={{ fontSize: 8, color: selectedGroupId === g._id ? "#fff" : "#adb5bd" }}></i>
-                                        <span className="fw-semibold" style={{ fontSize: 13, color: selectedGroupId === g._id ? "#fff" : "#333" }}>{g.name}</span>
+                                        <span className="fw-semibold" style={{ fontSize: 13, color: selectedGroupId === g._id ? "#fff" : isDark ? "#ced4da" : "#333" }}>{g.name}</span>
                                         <Badge
                                             className="ms-1"
                                             style={{

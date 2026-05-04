@@ -1,5 +1,7 @@
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 import { Card, CardHeader, CardBody, Button, Badge } from "reactstrap";
+import { darkenHex } from "utils/colorUtils";
 import {
     FiAlertCircle,
     FiEye,
@@ -24,6 +26,8 @@ const VaccinationPlansCard = ({
     disabled = false,
 }: Props) => {
     const { t } = useTranslation();
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const bg = (color: string) => isDark ? darkenHex(color) : color;
     const hasData = plans && plans.length > 0;
 
     const STAGE_LABELS: Record<string, string> = {
@@ -74,7 +78,7 @@ const VaccinationPlansCard = ({
                             <div
                                 key={p._id || index}
                                 className="border rounded p-3 position-relative"
-                                style={{ backgroundColor: "#eef2ff" }}
+                                style={{ backgroundColor: bg("#eef2ff") }}
                             >
                                 <Button
                                     size="sm"

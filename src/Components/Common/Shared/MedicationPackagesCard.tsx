@@ -7,6 +7,8 @@ import {
     FiUser,
 } from "react-icons/fi";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
+import { darkenHex } from "utils/colorUtils";
 
 interface Props {
     packages: any[];
@@ -24,6 +26,8 @@ const MedicationPackagesCard = ({
     status
 }: Props) => {
     const { t } = useTranslation();
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const bg = (color: string) => isDark ? darkenHex(color) : color;
     const hasData = packages && packages.length > 0;
 
     return (
@@ -66,7 +70,7 @@ const MedicationPackagesCard = ({
                             <div
                                 key={p._id || index}
                                 className="border rounded p-3 position-relative"
-                                style={{ backgroundColor: "#eef2ff" }}
+                                style={{ backgroundColor: bg("#eef2ff") }}
                             >
                                 {/* Ver detalles */}
                                 <Button

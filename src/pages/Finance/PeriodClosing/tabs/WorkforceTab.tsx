@@ -1,8 +1,10 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 import { Alert, Card, CardBody, CardHeader, Col, Row } from "reactstrap";
 import { ClosingSnapshot } from "common/data_interfaces";
 import { formatCurrency, formatNumber } from "utils/closingFormatters";
+import { darkenHex } from "utils/colorUtils";
 
 interface Props {
     snapshot: ClosingSnapshot;
@@ -10,6 +12,8 @@ interface Props {
 
 const WorkforceTab: React.FC<Props> = ({ snapshot }) => {
     const { t } = useTranslation();
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const bg = (color: string) => isDark ? darkenHex(color) : color;
     const { workforce, meta } = snapshot;
 
     if (!workforce) {
@@ -25,7 +29,7 @@ const WorkforceTab: React.FC<Props> = ({ snapshot }) => {
                 <CardBody>
                     <Row className="g-3">
                         <Col md={6}>
-                            <div className="border rounded p-3" style={{ backgroundColor: "#FFEBEE" }}>
+                            <div className="border rounded p-3" style={{ backgroundColor: bg("#FFEBEE") }}>
                                 <div className="text-muted small">{t("finance.periodClosing.tabs.workforce.summary.totalCost")}</div>
                                 <div className="fw-bold fs-4 text-danger">{formatCurrency(workforce.totalLaborCost, meta)}</div>
                                 <small className="text-muted">{t("finance.periodClosing.tabs.workforce.summary.totalCostNote")}</small>
