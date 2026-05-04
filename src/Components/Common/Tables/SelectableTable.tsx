@@ -1,10 +1,12 @@
 import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 import { Table, Input, Label } from "reactstrap";
 import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
 import { Column, ColumnType } from "common/data/data_types";
 import Pagination from "./Pagination";
+import { darkenHex } from "utils/colorUtils";
 
 type SelectionMode = "single" | "multiple";
 
@@ -63,6 +65,8 @@ function SelectableCustomTable<T extends { id: string }>(props: SelectableCustom
     } = props;
 
     const { t } = useTranslation();
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const resolveBg = (color?: string) => color ? (isDark ? darkenHex(color) : color) : undefined;
     const [filterText, setFilterText] = useState<string>("");
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -214,9 +218,9 @@ function SelectableCustomTable<T extends { id: string }>(props: SelectableCustom
                                 <th
                                     key={idx}
                                     onClick={() => requestSort(col.accessor)}
-                                    style={{ 
+                                    style={{
                                         cursor: "pointer",
-                                        backgroundColor: col.bgColor,
+                                        backgroundColor: resolveBg(col.bgColor),
                                         ...(col.type === "currency" && { width: "1%", whiteSpace: "nowrap" })
                                     }}
                                 >
@@ -262,8 +266,8 @@ function SelectableCustomTable<T extends { id: string }>(props: SelectableCustom
                                             </Label>
                                         </td>
                                         {columns.map((col, cIdx) => (
-                                            <td key={cIdx} style={{ 
-                                                backgroundColor: col.bgColor,
+                                            <td key={cIdx} style={{
+                                                backgroundColor: resolveBg(col.bgColor),
                                                 textAlign: col.type === "currency" ? "right" : "left",
                                                 ...(col.type === "currency" && { whiteSpace: "nowrap" })
                                             }}>
