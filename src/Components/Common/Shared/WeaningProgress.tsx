@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 import { FaPiggyBank } from "react-icons/fa";
 
 interface WeaningProgressProps {
@@ -15,6 +16,7 @@ const WeaningProgress: React.FC<WeaningProgressProps> = ({
     litterStatus
 }) => {
     const { t } = useTranslation();
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
 
     const { daysOld, daysRemaining, progress, status, isWeaned } = useMemo(() => {
         const birth = new Date(birthDate);
@@ -57,26 +59,26 @@ const WeaningProgress: React.FC<WeaningProgressProps> = ({
     const theme = isWeaned
         ? {
             color: "#10b981",
-            bg: "#ecfdf5",
+            bg: isDark ? "rgba(16, 185, 129, 0.18)" : "#ecfdf5",
             text: t("shared.weaningProgress.status.weanedText"),
             icon: "fa-solid fa-circle-check"
         }
         : {
             normal: {
-                color: "#3b82f6",
-                bg: "#eff6ff",
+                color: isDark ? "#60a5fa" : "#3b82f6",
+                bg: isDark ? "rgba(59, 130, 246, 0.18)" : "#eff6ff",
                 text: t("shared.weaningProgress.status.normal", { count: daysRemaining }),
                 icon: "fa-solid fa-clock"
             },
             ready: {
                 color: "#10b981",
-                bg: "#ecfdf5",
+                bg: isDark ? "rgba(16, 185, 129, 0.18)" : "#ecfdf5",
                 text: t("shared.weaningProgress.status.ready"),
                 icon: "fa-solid fa-circle-check"
             },
             overdue: {
-                color: "#ef4444",
-                bg: "#fef2f2",
+                color: isDark ? "#f87171" : "#ef4444",
+                bg: isDark ? "rgba(239, 68, 68, 0.18)" : "#fef2f2",
                 text: t("shared.weaningProgress.status.overdue"),
                 icon: "fa-solid fa-triangle-exclamation"
             }
@@ -91,17 +93,17 @@ const WeaningProgress: React.FC<WeaningProgressProps> = ({
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
-                background: "#ffffff",
+                background: isDark ? "#212529" : "#ffffff",
                 padding: 20,
                 borderRadius: 14,
-                border: "1px solid #e5e7eb"
+                border: `1px solid ${isDark ? "#32383e" : "#e5e7eb"}`
             }}
         >
             {/* Header */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     <FaPiggyBank size={25} color={theme?.color} />
-                    <span style={{ fontWeight: 700, fontSize: 20 }}>
+                    <span style={{ fontWeight: 700, fontSize: 20, color: isDark ? "#e9ecef" : "#111827" }}>
                         {t("shared.weaningProgress.title")}
                     </span>
                 </div>
@@ -124,7 +126,7 @@ const WeaningProgress: React.FC<WeaningProgressProps> = ({
             <div
                 style={{
                     height: 14,
-                    background: "#f3f4f6",
+                    background: isDark ? "#32383e" : "#f3f4f6",
                     borderRadius: 10,
                     overflow: "hidden",
                     marginTop: 18

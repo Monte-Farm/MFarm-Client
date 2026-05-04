@@ -123,7 +123,7 @@ const LitterDetails = () => {
                     </div>
                 </div>
 
-                <div className="p-3 bg-white rounded">
+                <div className="p-3 rounded border">
                     <Nav tabs className="nav-tabs nav-justified">
                         <NavItem>
                             <NavLink
@@ -253,7 +253,7 @@ const LitterDetails = () => {
                                     <Row className="g-3 align-items-stretch mb-3">
                                         <Col lg={4} className="d-flex flex-column">
                                             <Card className="shadow-sm flex-grow-1 m-0 h-100 border-0">
-                                                <CardHeader className="bg-white">
+                                                <CardHeader>
                                                     <h5 className="mb-0 text-uppercase text-muted">{t('litter.card.litterData')}</h5>
                                                 </CardHeader>
                                                 <CardBody>
@@ -284,7 +284,7 @@ const LitterDetails = () => {
                                     </Row>
 
                                     <Card className="shadow-sm m-0 border-0">
-                                        <CardHeader className="bg-white">
+                                        <CardHeader>
                                             <h5 className="mb-0 fw-bold text-uppercase text-muted">
                                                 <FaPiggyBank className="me-2 text-primary" />
                                                 {t('litter.card.piglets')}
