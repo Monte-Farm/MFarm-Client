@@ -1,6 +1,7 @@
 import { Card, CardBody, CardHeader } from "reactstrap";
 import { ResponsiveBar, BarDatum } from "@nivo/bar";
 import { FaWeightHanging } from "react-icons/fa";
+import { useTranslation } from "react-i18next";
 
 interface DistributionItem extends BarDatum {
     range: string;
@@ -13,6 +14,7 @@ interface Props {
 }
 
 const WeightDistributionChart = ({ data, title }: Props) => {
+    const { t } = useTranslation();
     const hasData =
         data &&
         data.length > 0 &&
@@ -66,7 +68,7 @@ const WeightDistributionChart = ({ data, title }: Props) => {
                             className="mb-3"
                             style={{ fontSize: "3rem", opacity: 0.5 }}
                         />
-                        <span>No hay datos de distribución disponibles</span>
+                        <span>{t('shared.chart.noDistributionData')}</span>
                     </div>
                 )}
             </CardBody>

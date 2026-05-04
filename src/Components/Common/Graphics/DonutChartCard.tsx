@@ -2,6 +2,7 @@ import { ResponsivePie } from '@nivo/pie';
 import { Card, CardBody, CardHeader } from 'reactstrap';
 import { RiArrowUpLine, RiArrowDownLine } from 'react-icons/ri';
 import { FiInbox } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 
 export interface DonutDataItem {
     id: string;
@@ -45,7 +46,7 @@ const DonutChartCard = ({
     className = '',
     headerBgColor,
 }: DonutChartCardProps) => {
-    // Check if there's data to display
+    const { t } = useTranslation();
     const hasData = data && data.length > 0;
 
     if (!hasData) {
@@ -57,7 +58,7 @@ const DonutChartCard = ({
                 <CardBody style={{ height: `${height}px`, display: "flex", justifyContent: "center", alignItems: "center" }}>
                     <div style={{ textAlign: "center", color: "#9ca3af" }}>
                         <FiInbox size={48} style={{ marginBottom: 10 }} />
-                        <div>No hay datos disponibles</div>
+                        <div>{t('shared.chart.noData')}</div>
                     </div>
                 </CardBody>
             </Card>

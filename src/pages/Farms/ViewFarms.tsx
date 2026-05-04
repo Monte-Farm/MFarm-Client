@@ -3,10 +3,10 @@ import { ConfigContext } from "App";
 import { FarmData } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState, useMemo } from "react";
-import { Badge, Button, Card, CardBody, CardHeader, Container, Input, Modal, ModalBody, ModalHeader } from "reactstrap";
+import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, UncontrolledTooltip } from "reactstrap";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
-import FarmCards from "Components/Common/Lists/FarmCards";
-import LoadingGif from '../../assets/images/loading-gif.gif'
+import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
+import CustomTable from "Components/Common/Tables/CustomTable";
 import { useNavigate } from "react-router-dom";
 import FarmForm from "Components/Common/Forms/FarmForm";
 import { startImpersonation } from "helpers/impersonation_helper";
@@ -24,8 +24,7 @@ const ViewFarms = () => {
         : realUser?.role === 'Superadmin';
     const [loading, setLoading] = useState<boolean>(true);
     const [farms, setFarms] = useState<FarmData[]>([]);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [modals, setModals] = useState({ details: false, create: false, update: false, delete: false });
+    const [modals, setModals] = useState({ create: false, update: false });
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [selectedFarm, setSelectedFarm] = useState<FarmData | null>(null);
 
@@ -43,7 +42,59 @@ const ViewFarms = () => {
                 </Badge>
             ),
         },
-    ], [t]);
+        {
+            header: t('common.field.actions'),
+            accessor: 'action' as any,
+            render: (_: any, row: FarmData) => (
+                <div className="d-flex gap-1">
+                    {isSuperadmin && (
+                        <>
+                            <Button
+                                id={`enter-btn-${row._id}`}
+                                className="farm-secondary-button btn-icon"
+                                disabled={row.status === false}
+                                onClick={() => {
+                                    startImpersonation({ farm_id: row._id!, farm_name: row.name, effective_role: 'farm_manager' });
+                                    configContext?.setImpersonation({ farm_id: row._id!, farm_name: row.name, effective_role: 'farm_manager' });
+                                    navigate('/home');
+                                }}
+                            >
+                                <i className="ri-login-box-line" />
+                            </Button>
+                            <UncontrolledTooltip target={`enter-btn-${row._id}`}>
+                                {t('farms.card.enterManager')}
+                            </UncontrolledTooltip>
+                        </>
+                    )}
+                    <>
+                        <Button
+                            id={`edit-btn-${row._id}`}
+                            className="farm-secondary-button btn-icon"
+                            disabled={row.status === false}
+                            onClick={() => { setSelectedFarm(row); toggleModal('update', true); }}
+                        >
+                            <i className="ri-pencil-fill" />
+                        </Button>
+                        <UncontrolledTooltip target={`edit-btn-${row._id}`}>
+                            {t('common.button.edit')}
+                        </UncontrolledTooltip>
+                    </>
+                    <>
+                        <Button
+                            id={`details-btn-${row._id}`}
+                            className="farm-primary-button btn-icon"
+                            onClick={() => navigate(`/farms/farm_details/${row._id}`)}
+                        >
+                            <i className="ri-eye-fill" />
+                        </Button>
+                        <UncontrolledTooltip target={`details-btn-${row._id}`}>
+                            {t('common.button.viewDetails')}
+                        </UncontrolledTooltip>
+                    </>
+                </div>
+            ),
+        },
+    ], [t, isSuperadmin, configContext]);
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -56,7 +107,7 @@ const ViewFarms = () => {
     };
 
     const showAlert = (color: string, message: string) => {
-        setAlertConfig({ visible: true, color: color, message: message })
+        setAlertConfig({ visible: true, color, message });
         setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
     }
 
@@ -67,7 +118,6 @@ const ViewFarms = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/farm/find_all`)
             setFarms(response.data.data)
         } catch (error) {
-            console.error('Error fetching the farms:', error);
             handleError(error, t('farms.error.fetch'));
         } finally {
             setLoading(false);
@@ -78,103 +128,54 @@ const ViewFarms = () => {
         fetchFarms();
     }, [])
 
-    const filteredFarms = useMemo(() => {
-        if (!searchTerm) return farms;
-        const lowerSearch = searchTerm.toLowerCase();
-        return farms.filter(farm =>
-            farmColumns.some(col => {
-                const value = (farm as any)[col.accessor];
-                if (value === undefined || value === null) return false;
-                return value.toString().toLowerCase().includes(lowerSearch);
-            })
-        );
-    }, [searchTerm, farms, farmColumns]);
-
-    if (loading) {
-        return (
-            <div className="d-flex justify-content-center align-items-center vh-100 page-content">
-                <img src={LoadingGif} alt="Cargando..." style={{ width: "200px" }} />
-            </div>
-        );
-    }
+    if (loading) return <LoadingAnimation />;
 
     return (
         <div className="page-content">
             <Container fluid>
                 <BreadCrumb title={t('farms.breadcrumb')} pageTitle={t('farms.breadcrumbParent')} />
 
-                <Card style={{ minHeight: "calc(100vh - 262px)" }}>
+                <Card>
                     <CardHeader>
-                        <div className="d-flex gap-3">
-                            <Input
-                                placeholder={t('farms.search')}
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="fs-5"
-                            />
+                        <div className="d-flex align-items-center justify-content-end">
                             <Button
-                                className="ms-auto farm-primary-button fs-5"
+                                className="farm-primary-button"
                                 onClick={() => toggleModal('create')}
-                                style={{ width: '200px' }}
                             >
-                                <i className="ri-add-line me-3" />
+                                <i className="ri-add-line me-2" />
                                 {t('farms.button.new')}
                             </Button>
                         </div>
                     </CardHeader>
-
                     <CardBody>
-                        <FarmCards
+                        <CustomTable
                             columns={farmColumns}
-                            data={filteredFarms}
-                            onDetailsClick={(farm) => navigate(`/farms/farm_details/${farm._id}`)}
-                            onEditClick={(farm) => {
-                                setSelectedFarm(farm);
-                                toggleModal('update', true);
-                            }}
-                            onCardClick={(farm) => navigate(`/farms/farm_details/${farm._id}`)}
-                            onEnterClick={isSuperadmin ? (farm) => {
-                                startImpersonation({ farm_id: farm._id!, farm_name: farm.name, effective_role: 'farm_manager' });
-                                configContext?.setImpersonation({ farm_id: farm._id!, farm_name: farm.name, effective_role: 'farm_manager' });
-                                navigate('/home');
-                            } : undefined}
-                            imageAccessor="image"
+                            data={farms}
+                            showSearchAndFilter={true}
+                            rowsPerPage={10}
+                            showPagination={true}
                         />
                     </CardBody>
                 </Card>
             </Container>
 
-            {/* Modal Crear */}
-            <Modal isOpen={modals.create} toggle={() => toggleModal('create')} size="xl" keyboard={false} backdrop='static' centered>
+            <Modal isOpen={modals.create} toggle={() => toggleModal('create')} size="xl" keyboard={false} backdrop="static" centered>
                 <ModalHeader toggle={() => toggleModal('create')}>{t('farms.modal.create')}</ModalHeader>
                 <ModalBody>
                     <FarmForm
-                        onSave={() => {
-                            toggleModal('create');
-                            fetchFarms();
-                            showAlert('success', t('farms.success.created'));
-                        }}
+                        onSave={() => { toggleModal('create'); fetchFarms(); showAlert('success', t('farms.success.created')); }}
                         onCancel={() => toggleModal('create')}
                     />
                 </ModalBody>
             </Modal>
 
-            {/* Modal Editar */}
-            <Modal isOpen={modals.update} toggle={() => toggleModal('update')} size="xl" keyboard={false} backdrop='static' centered>
+            <Modal isOpen={modals.update} toggle={() => toggleModal('update')} size="xl" keyboard={false} backdrop="static" centered>
                 <ModalHeader toggle={() => toggleModal('update')}>{t('farms.modal.update')}</ModalHeader>
                 <ModalBody>
                     <FarmForm
                         data={selectedFarm || undefined}
-                        onSave={() => {
-                            toggleModal('update');
-                            fetchFarms();
-                            showAlert('success', t('farms.success.updated'));
-                            setSelectedFarm(null);
-                        }}
-                        onCancel={() => {
-                            toggleModal('update');
-                            setSelectedFarm(null);
-                        }}
+                        onSave={() => { toggleModal('update'); fetchFarms(); showAlert('success', t('farms.success.updated')); setSelectedFarm(null); }}
+                        onCancel={() => { toggleModal('update'); setSelectedFarm(null); }}
                     />
                 </ModalBody>
             </Modal>

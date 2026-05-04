@@ -8,6 +8,7 @@ import defaultProfile from '../../../assets/images/default-profile-mage.jpg';
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import FileUploader from '../Shared/FileUploader';
 import UserForm from './UserForm';
+import { useTranslation } from 'react-i18next';
 
 interface FarmFormProps {
     data?: Partial<FarmData> & { _id?: string };
@@ -16,6 +17,7 @@ interface FarmFormProps {
 }
 
 const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [managers, setManagers] = useState<UserData[]>([]);
@@ -39,12 +41,11 @@ const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
         setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
     }
 
-
     const validationSchema = Yup.object({
-        name: Yup.string().required('El nombre es obligatorio'),
+        name: Yup.string().required(t('farms.form.validationName')),
         code: Yup.string()
-            .required('El código es obligatorio')
-            .test('unique_code', 'Este codigo ya existe, por favor ingrese otro', async (value) => {
+            .required(t('farms.form.validationCode'))
+            .test('unique_code', t('farms.form.validationCodeExists'), async (value) => {
                 if (data) return true
                 if (!value) return false
                 if (!configContext) return true
@@ -56,7 +57,7 @@ const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
                     return false;
                 }
             }),
-        location: Yup.string().required('La ubicación es obligatoria'),
+        location: Yup.string().required(t('farms.form.validationLocation')),
     });
 
     const formik = useFormik({
@@ -77,7 +78,7 @@ const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
             if (!configContext) return;
 
             if (!values.manager) {
-                handleError(null, "Debes seleccionar un encargado para la granja");
+                handleError(null, t('farms.form.errorNoManager'));
                 setSubmitting(false);
                 return;
             }
@@ -94,12 +95,11 @@ const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
                 onSave();
             } catch (error) {
                 console.error('Error al guardar la granja:', error);
-                handleError(error, 'Ha ocurrido un error al guardar la granja, intentelo más tarde');
+                handleError(error, t('farms.form.errorSave'));
             } finally {
                 setSubmitting(false);
             }
         },
-
     });
 
     const getNextCode = async () => {
@@ -109,7 +109,7 @@ const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
             formik.setFieldValue('code', response.data.data)
         } catch (error) {
             console.error('Error fetching next farm code:', error);
-            setAlertConfig({ visible: true, color: "danger", message: "Ha ocurrido un error al obtener el siguiente código de granja" });
+            setAlertConfig({ visible: true, color: "danger", message: t('farms.form.errorNextCode') });
         }
     }
 
@@ -145,22 +145,14 @@ const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
             const uploadResponse = await configContext.axiosHelper.uploadImage(`${configContext.apiUrl}/upload/upload_file/`, file);
             formik.values.image = uploadResponse.data.data;
         } catch (error) {
-            handleError(error, 'Ha ocurrido un error al subir el archivo, por favor intentelo más tarde');
+            handleError(error, t('farms.form.errorUpload'));
         }
     };
 
-    const handleCreateUser = async (data: UserData) => {
-        if (!configContext) return;
-
-        try {
-            await configContext.axiosHelper.create(`${configContext.apiUrl}/user/create_user`, data);
-            showAlert('success', 'Usuario creado con éxito');
-            fetchManagerUsers();
-        } catch (error) {
-            handleError(error, 'Ha ocurrido un error al crear el usuario, intentelo más tarde');
-        } finally {
-            toggleModal('create', false);
-        }
+    const handleCreateUser = () => {
+        showAlert('success', t('farms.form.userCreated'));
+        fetchManagerUsers();
+        toggleModal('create', false);
     };
 
     useEffect(() => {
@@ -172,157 +164,152 @@ const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
 
     return (
         <Form onSubmit={formik.handleSubmit}>
-            <Row>
-                <Col lg={6}>
-                    <div className='d-flex justify-content-between align-items-center mb-3'>
-                        <h5>Información de la granja</h5>
-                    </div>
 
-                    <div className="mt-4">
-                        <Label htmlFor="imageInput" className="form-label">Imagen de la granja</Label>
+            {/* — Sección 1: Info de la granja — */}
+            <div className="farm-form-section mb-4">
+                <div className="farm-form-section-header mb-3">
+                    <i className="ri-store-3-line me-2 text-primary" />
+                    <span className="fw-semibold fs-6">{t('farms.form.sectionInfo')}</span>
+                </div>
 
+                <Row className="g-3 align-items-start">
+                    <Col md={12}>
+                        <Label className="form-label text-muted small">{t('farms.form.imageLabel')}</Label>
                         {formik.values.image && !hasNewImage && (
-                            <div className="mb-2">
-                                <img
-                                    src={formik.values.image}
-                                    alt="Imagen actual"
-                                    style={{ width: '100%', borderRadius: 8 }}
-                                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                                />
-                            </div>
+                            <img
+                                src={formik.values.image}
+                                alt=""
+                                className="mb-2 w-100"
+                                style={{ borderRadius: 8, maxHeight: 140, objectFit: 'cover' }}
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                            />
                         )}
-
                         <FileUploader
                             acceptedFileTypes={['image/*']}
                             maxFiles={1}
-                            onFileUpload={(file) => {
-                                setFileToUpload(file);
-                                setHasNewImage(true);
-                            }}
-                            onUpdateFiles={(files) => {
-                                if (files.length === 0) {
-                                    setHasNewImage(false);
-                                    setFileToUpload(null);
-                                }
-                            }}
+                            onFileUpload={(file) => { setFileToUpload(file); setHasNewImage(true); }}
+                            onUpdateFiles={(files) => { if (files.length === 0) { setHasNewImage(false); setFileToUpload(null); } }}
                         />
+                    </Col>
+
+                    <Col md={6}>
+                        <FormGroup className="mb-0">
+                            <Label className="form-label text-muted small">{t('farms.form.fieldCode')}</Label>
+                            <Input
+                                name="code"
+                                value={formik.values.code}
+                                onChange={formik.handleChange}
+                                onBlur={formik.handleBlur}
+                                invalid={formik.touched.code && !!formik.errors.code}
+                            />
+                            {formik.touched.code && formik.errors.code && (
+                                <FormFeedback>{formik.errors.code}</FormFeedback>
+                            )}
+                        </FormGroup>
+                    </Col>
+                    <Col md={6}>
+                        <FormGroup className="mb-0">
+                            <Label className="form-label text-muted small">{t('farms.form.fieldName')}</Label>
+                            <Input
+                                name="name"
+                                value={formik.values.name}
+                                onChange={formik.handleChange}
+                                onBlur={formik.handleBlur}
+                                invalid={formik.touched.name && !!formik.errors.name}
+                            />
+                            {formik.touched.name && formik.errors.name && (
+                                <FormFeedback>{formik.errors.name}</FormFeedback>
+                            )}
+                        </FormGroup>
+                    </Col>
+                    <Col md={12}>
+                        <FormGroup className="mb-0">
+                            <Label className="form-label text-muted small">{t('farms.form.fieldLocation')}</Label>
+                            <Input
+                                name="location"
+                                value={formik.values.location}
+                                onChange={formik.handleChange}
+                                onBlur={formik.handleBlur}
+                                invalid={formik.touched.location && !!formik.errors.location}
+                            />
+                            {formik.touched.location && formik.errors.location && (
+                                <FormFeedback>{formik.errors.location}</FormFeedback>
+                            )}
+                        </FormGroup>
+                    </Col>
+                </Row>
+            </div>
+
+            {/* Divisor */}
+            <hr className="my-3" />
+
+            {/* — Sección 2: Encargado — */}
+            <div className="farm-form-section">
+                <div className="d-flex align-items-center justify-content-between mb-3">
+                    <div className="farm-form-section-header">
+                        <i className="ri-user-line me-2 text-primary" />
+                        <span className="fw-semibold fs-6">{t('farms.form.sectionManager')}</span>
                     </div>
+                    <Button size="sm" color="light" className="border" onClick={() => toggleModal('create')}>
+                        <i className="ri-add-line me-1" />
+                        {t('farms.form.buttonNewManager')}
+                    </Button>
+                </div>
 
-                    <FormGroup className="">
-                        <Label>Código</Label>
-                        <Input
-                            name="code"
-                            value={formik.values.code}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            invalid={formik.touched.code && !!formik.errors.code}
-                        />
-                        {formik.touched.code && formik.errors.code && (
-                            <FormFeedback>{formik.errors.code}</FormFeedback>
-                        )}
-                    </FormGroup>
-
-                    <FormGroup className="">
-                        <Label>Nombre</Label>
-                        <Input
-                            name="name"
-                            value={formik.values.name}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            invalid={formik.touched.name && !!formik.errors.name}
-                        />
-                        {formik.touched.name && formik.errors.name && (
-                            <FormFeedback>{formik.errors.name}</FormFeedback>
-                        )}
-                    </FormGroup>
-
-
-                    <FormGroup>
-                        <Label>Ubicación</Label>
-                        <Input
-                            name="location"
-                            value={formik.values.location}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            invalid={formik.touched.location && !!formik.errors.location}
-                        />
-                        {formik.touched.location && formik.errors.location && (
-                            <FormFeedback>{formik.errors.location}</FormFeedback>
-                        )}
-                    </FormGroup>
-                </Col>
-
-                <Col lg={6}>
-                    <div className='d-flex align-items-center mb-3'>
-                        <h5 className="me-auto">Selecciona un encargado</h5>
-                        <Button size='sm' onClick={() => toggleModal('create')}>
-                            <i className="ri-add-line me-2" />
-                            Nuevo Encargado
-                        </Button>
+                {managers.length === 0 ? (
+                    <div className="d-flex flex-column align-items-center justify-content-center py-4 text-muted">
+                        <i className="ri-user-search-line mb-2" style={{ fontSize: 36, opacity: 0.4 }} />
+                        <span className="small">{t('farms.form.noManagers')}</span>
                     </div>
-
-                    <div className="managers-grid" style={{ maxHeight: 400, overflowY: 'auto' }}>
-                        {managers.length === 0 && <div>No se encontraron encargados</div>}
-                        {managers.map(manager => (
-                            <Card
-                                key={manager._id}
-                                className={`manager-card ${isSelected(manager._id || "") ? 'selected' : ''}`}
-                                style={{ cursor: 'pointer', position: 'relative' }}
-                                onClick={() => formik.setFieldValue('manager', manager._id)}
-                            >
-                                <CardImg
-                                    top
-                                    src={manager.profile_image || defaultProfile}
-                                    alt={`${manager.name} ${manager.lastname}`}
-                                    onError={e => { (e.target as HTMLImageElement).src = defaultProfile; }}
-                                    style={{ height: 120, objectFit: 'cover' }}
-                                />
-                                <CardBody>
-                                    <CardText className="fw-bold">{manager.username}</CardText>
-                                    <CardText className="fw-bold">{manager.name} {manager.lastname}</CardText>
-                                    <CardText className='fw-lighter'><small>{manager.email}</small></CardText>
-
-                                </CardBody>
-                                {isSelected(manager._id || "") && (
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: 8,
-                                        right: 8,
-                                        backgroundColor: '#0d6efd',
-                                        color: 'white',
-                                        borderRadius: '50%',
-                                        width: 22,
-                                        height: 22,
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        fontWeight: 'bold',
-                                        fontSize: 14,
-                                        userSelect: 'none',
-                                    }}>
-                                        ✓
+                ) : (
+                    <div className="farm-form-managers-list">
+                        {managers.map(manager => {
+                            const selected = isSelected(manager._id || "");
+                            return (
+                                <div
+                                    key={manager._id}
+                                    className={`farm-form-manager-row${selected ? ' selected' : ''}`}
+                                    onClick={() => formik.setFieldValue('manager', manager._id)}
+                                >
+                                    <img
+                                        src={manager.profile_image || defaultProfile}
+                                        alt=""
+                                        className="farm-form-manager-avatar"
+                                        onError={e => { (e.target as HTMLImageElement).src = defaultProfile; }}
+                                    />
+                                    <div className="farm-form-manager-info">
+                                        <span className="fw-semibold">{manager.name} {manager.lastname}</span>
+                                        <span className="text-muted small">{manager.email}</span>
                                     </div>
-                                )}
-                            </Card>
-                        ))}
+                                    <div className={`farm-form-manager-check${selected ? ' visible' : ''}`}>
+                                        <i className="ri-checkbox-circle-fill text-primary" style={{ fontSize: 22 }} />
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
-                </Col>
-            </Row>
+                )}
+            </div>
 
-            <div className="d-flex gap-2 mt-3">
-                <Button className='ms-auto' color="secondary" type="button" onClick={onCancel}>
-                    Cancelar
+            {/* Acciones */}
+            <div className="d-flex gap-2 mt-4">
+                <Button className="ms-auto" color="secondary" type="button" onClick={onCancel}>
+                    {t('common.button.cancel')}
                 </Button>
                 <Button color="primary" type="submit" disabled={formik.isSubmitting}>
-                    {formik.isSubmitting ? <Spinner size="sm" /> : 'Guardar'}
+                    {formik.isSubmitting ? <Spinner size="sm" /> : t('common.button.save')}
                 </Button>
             </div>
 
-            {/* Modal Create */}
-            <Modal isOpen={modals.create} toggle={() => toggleModal('create')} size="xl" keyboard={false} backdrop='static' centered>
-                <ModalHeader toggle={() => toggleModal('create')}>Nuevo Usuario</ModalHeader>
+            <Modal isOpen={modals.create} toggle={() => toggleModal('create')} size="xl" keyboard={false} backdrop="static" centered>
+                <ModalHeader toggle={() => toggleModal('create')}>{t('farms.form.modalNewUser')}</ModalHeader>
                 <ModalBody>
-                    <UserForm onSave={() => { toggleModal('create'); fetchManagerUsers() }} onCancel={() => toggleModal('create', false)} defaultRole="farm_manager" currentUserRole={userLogged.role} />
+                    <UserForm
+                        onSave={handleCreateUser}
+                        onCancel={() => toggleModal('create', false)}
+                        defaultRole="farm_manager"
+                        currentUserRole={userLogged.role}
+                    />
                 </ModalBody>
             </Modal>
 

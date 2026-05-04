@@ -97,7 +97,7 @@ const ReportDateRangeSelector: React.FC<ReportDateRangeSelectorProps> = ({
 
     return (
         <>
-            <ModalBody>
+            <ModalBody className="date-range-selector">
                 <div className="mb-4">
                     <Label className="form-label fw-bold">{t("shared.dateRangeSelector.quickPeriods")}</Label>
                     <div className="d-grid gap-2">

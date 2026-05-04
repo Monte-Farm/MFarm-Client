@@ -1,6 +1,7 @@
 import { Card, CardHeader, CardBody } from "reactstrap";
 import { ResponsivePie } from "@nivo/pie";
 import { FiInbox } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
 
 interface BasicPieChartProps {
     title: string;
@@ -14,6 +15,7 @@ const BasicPieChart = ({
     data,
     height = 300,
 }: BasicPieChartProps) => {
+    const { t } = useTranslation();
     const hasData = data && data.some(d => d.value > 0);
 
     return (
@@ -42,7 +44,7 @@ const BasicPieChart = ({
                 ) : (
                     <div style={{ textAlign: "center", color: "#888" }}>
                         <FiInbox size={48} style={{ marginBottom: 10 }} />
-                        <div>No hay datos disponibles</div>
+                        <div>{t('shared.chart.noData')}</div>
                     </div>
                 )}
             </CardBody>

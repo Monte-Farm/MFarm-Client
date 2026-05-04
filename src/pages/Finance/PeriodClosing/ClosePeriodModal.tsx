@@ -163,6 +163,7 @@ const ClosePeriodModal = ({ isOpen, onClose, onSuccess, farmId }: ClosePeriodMod
     const precheckCanForce = precheck?.canForceClose === true;
 
     const canSubmit =
+        !!farmId &&
         monthEnded &&
         !blockedByExisting &&
         !loadingPreview &&
@@ -171,6 +172,7 @@ const ClosePeriodModal = ({ isOpen, onClose, onSuccess, farmId }: ClosePeriodMod
         precheckOk;
 
     const canOfferForce =
+        !!farmId &&
         monthEnded &&
         !blockedByExisting &&
         !loadingPreview &&
@@ -204,6 +206,12 @@ const ClosePeriodModal = ({ isOpen, onClose, onSuccess, farmId }: ClosePeriodMod
                 </ModalHeader>
                 <Form onSubmit={formik.handleSubmit}>
                     <ModalBody>
+                        {!farmId && (
+                            <Alert color="warning" className="d-flex align-items-center mb-3">
+                                <i className="ri-store-3-line me-2 fs-5 text-warning" />
+                                <div>{t("finance.periodClosing.modal.closePeriod.noFarmSelected")}</div>
+                            </Alert>
+                        )}
                         <Alert color="info" className="d-flex align-items-start mb-3">
                             <i className="ri-information-line me-2 fs-5 mt-1 text-info" />
                             <div>

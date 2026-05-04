@@ -135,6 +135,7 @@ const CloseYearModal = ({ isOpen, onClose, onSuccess, farmId }: CloseYearModalPr
     const precheckOk = precheck?.canClose === true;
 
     const canSubmit =
+        !!farmId &&
         yearEnded &&
         !blockedByExisting &&
         !loadingPreview &&
@@ -165,6 +166,12 @@ const CloseYearModal = ({ isOpen, onClose, onSuccess, farmId }: CloseYearModalPr
             </ModalHeader>
             <Form onSubmit={formik.handleSubmit}>
                 <ModalBody>
+                    {!farmId && (
+                        <Alert color="warning" className="d-flex align-items-center mb-3">
+                            <i className="ri-store-3-line me-2 fs-5 text-warning" />
+                            <div>{t("finance.periodClosing.modal.closePeriod.noFarmSelected")}</div>
+                        </Alert>
+                    )}
                     <Alert color="info" className="d-flex align-items-start mb-3">
                         <i className="ri-information-line me-2 fs-5 mt-1 text-info" />
                         <div>

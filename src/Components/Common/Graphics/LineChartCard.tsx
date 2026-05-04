@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Card, CardBody, CardHeader, ButtonGroup, Button } from "reactstrap";
 import { ResponsiveLine } from "@nivo/line";
 import { FiInbox } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
 
 interface LineChartCardProps {
     stats: any;
@@ -20,6 +21,7 @@ const LineChartCard = ({
     color = "#0d6efd",
     height = 300,
 }: LineChartCardProps) => {
+    const { t } = useTranslation();
     const [view, setView] = useState<"day" | "week" | "month" | "year">("day");
 
     const mapKey = (period: string) => `${type}By${period.charAt(0).toUpperCase() + period.slice(1)}`;
@@ -130,7 +132,7 @@ const LineChartCard = ({
                 ) : (
                     <div style={{ textAlign: "center", color: "#888" }}>
                         <FiInbox size={48} style={{ marginBottom: 10 }} />
-                        <div>No hay datos disponibles</div>
+                        <div>{t('shared.chart.noData')}</div>
                     </div>
                 )}
             </CardBody>

@@ -75,22 +75,22 @@ const ReportPageLayout: React.FC<ReportPageLayoutProps> = ({
                 <div className="d-flex align-items-center gap-2 mb-3">
                     {showDateFilter && onDateChange && (
                         <Button
-                            color="white"
-                            className="d-flex align-items-center gap-2 shadow-sm"
+                            color="light"
+                            className="d-flex align-items-center gap-2 shadow-sm border"
                             onClick={() => setFilterDatePickerOpen(true)}
-                            style={{ border: "1.5px solid #dee2e6", borderRadius: "8px", padding: "8px 16px" }}
+                            style={{ borderRadius: "8px", padding: "8px 16px" }}
                         >
-                            <i className="ri-calendar-line" style={{ color: "#405189", fontSize: "16px" }}></i>
+                            <i className="ri-calendar-line text-primary" style={{ fontSize: "16px" }}></i>
                             {startDate && endDate ? (
                                 <span style={{ fontSize: "13px" }}>
-                                    <span className="fw-semibold" style={{ color: "#333" }}>{formatDateLabel(startDate)}</span>
-                                    <span style={{ color: "#999", margin: "0 6px" }}>—</span>
-                                    <span className="fw-semibold" style={{ color: "#333" }}>{formatDateLabel(endDate)}</span>
+                                    <span className="fw-semibold">{formatDateLabel(startDate)}</span>
+                                    <span className="text-muted" style={{ margin: "0 6px" }}>—</span>
+                                    <span className="fw-semibold">{formatDateLabel(endDate)}</span>
                                 </span>
                             ) : (
-                                <span style={{ fontSize: "13px", color: "#666" }}>{t("shared.reportLayout.selectPeriod")}</span>
+                                <span style={{ fontSize: "13px" }} className="text-muted">{t("shared.reportLayout.selectPeriod")}</span>
                             )}
-                            <i className="ri-arrow-down-s-line" style={{ color: "#666" }}></i>
+                            <i className="ri-arrow-down-s-line text-muted"></i>
                         </Button>
                     )}
 

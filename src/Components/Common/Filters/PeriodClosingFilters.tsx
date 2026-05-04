@@ -4,6 +4,7 @@ import Select from "react-select";
 import {
     Badge, Button, FormGroup, Label, Popover, PopoverBody, PopoverHeader,
 } from "reactstrap";
+import { useTranslation } from "react-i18next";
 
 export interface PeriodClosingFiltersState {
     year: string;
@@ -20,19 +21,6 @@ interface PeriodClosingFiltersProps {
     yearOptions: number[];
 }
 
-const statusOptions = [
-    { value: "", label: "Activos (cerrados y reabiertos)" },
-    { value: "closed", label: "Cerrados" },
-    { value: "reopened", label: "Reabiertos" },
-    { value: "archived", label: "Archivados" },
-];
-
-const periodTypeOptions = [
-    { value: "", label: "Todos" },
-    { value: "monthly", label: "Mensuales" },
-    { value: "annual", label: "Anuales" },
-];
-
 const PeriodClosingFilters: React.FC<PeriodClosingFiltersProps> = ({
     filters,
     onFilterChange,
@@ -41,12 +29,26 @@ const PeriodClosingFilters: React.FC<PeriodClosingFiltersProps> = ({
     onTogglePopover,
     yearOptions,
 }) => {
+    const { t } = useTranslation();
     const filterBtnRef = useRef(null);
 
     const activeFilterCount = Object.values(filters).filter((v) => v !== "").length;
 
+    const statusOptions = [
+        { value: "", label: t("finance.periodClosing.filters.status.active") },
+        { value: "closed", label: t("finance.periodClosing.filters.status.closed") },
+        { value: "reopened", label: t("finance.periodClosing.filters.status.reopened") },
+        { value: "archived", label: t("finance.periodClosing.filters.status.archived") },
+    ];
+
+    const periodTypeOptions = [
+        { value: "", label: t("finance.periodClosing.filters.periodType.all") },
+        { value: "monthly", label: t("finance.periodClosing.filters.periodType.monthly") },
+        { value: "annual", label: t("finance.periodClosing.filters.periodType.annual") },
+    ];
+
     const yearSelectOptions = [
-        { value: "", label: "Todos los años" },
+        { value: "", label: t("finance.periodClosing.filters.allYears") },
         ...yearOptions.map((y) => ({ value: String(y), label: String(y) })),
     ];
 
@@ -59,7 +61,7 @@ const PeriodClosingFilters: React.FC<PeriodClosingFiltersProps> = ({
                 className="d-flex align-items-center position-relative"
             >
                 <FiFilter className="me-2" />
-                Filtros
+                {t("finance.periodClosing.filters.button")}
                 {activeFilterCount > 0 && (
                     <Badge color="primary" pill className="position-absolute top-0 start-100 translate-middle">
                         {activeFilterCount}
@@ -75,12 +77,12 @@ const PeriodClosingFilters: React.FC<PeriodClosingFiltersProps> = ({
                 trigger="legacy"
             >
                 <PopoverHeader className="d-flex justify-content-between align-items-center popover-header">
-                    <span className="text-black">Filtrar cierres</span>
+                    <span className="text-black">{t("finance.periodClosing.filters.header")}</span>
                     <Button close onClick={onTogglePopover} />
                 </PopoverHeader>
                 <PopoverBody className="popover-body">
                     <FormGroup>
-                        <Label>Tipo de periodo</Label>
+                        <Label>{t("finance.periodClosing.filters.labelPeriodType")}</Label>
                         <Select
                             options={periodTypeOptions}
                             value={periodTypeOptions.find((opt) => opt.value === filters.periodType)}
@@ -90,7 +92,7 @@ const PeriodClosingFilters: React.FC<PeriodClosingFiltersProps> = ({
                         />
                     </FormGroup>
                     <FormGroup>
-                        <Label>Año</Label>
+                        <Label>{t("finance.periodClosing.filters.labelYear")}</Label>
                         <Select
                             options={yearSelectOptions}
                             value={yearSelectOptions.find((opt) => opt.value === filters.year)}
@@ -100,7 +102,7 @@ const PeriodClosingFilters: React.FC<PeriodClosingFiltersProps> = ({
                         />
                     </FormGroup>
                     <FormGroup>
-                        <Label>Estado</Label>
+                        <Label>{t("finance.periodClosing.filters.labelStatus")}</Label>
                         <Select
                             options={statusOptions}
                             value={statusOptions.find((opt) => opt.value === filters.status)}
@@ -111,7 +113,7 @@ const PeriodClosingFilters: React.FC<PeriodClosingFiltersProps> = ({
                     </FormGroup>
                     <div className="d-flex justify-content-end">
                         <Button color="danger" size="sm" onClick={onClearFilters} disabled={activeFilterCount === 0}>
-                            <i className="ri-refresh-line me-1" />Limpiar filtros
+                            <i className="ri-refresh-line me-1" />{t("common.button.clearFilters")}
                         </Button>
                     </div>
                 </PopoverBody>

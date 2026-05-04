@@ -663,7 +663,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                                     <div className="p-3 border-top">
                                         <Row className="justify-content-end">
                                             <Col sm={6} md={4}>
-                                                <div className="d-flex justify-content-between align-items-center p-3 rounded" style={{ backgroundColor: '#f0f8ff' }}>
+                                                <div className="d-flex justify-content-between align-items-center p-3 rounded grand-total-box">
                                                     <h5 className="mb-0 fw-bold">{t('warehouse.purchaseOrders.attr.grandTotal', { defaultValue: 'Total General:' })}</h5>
                                                     <h4 className="mb-0 text-primary fw-bold">
                                                         {new Intl.NumberFormat('en-US', {

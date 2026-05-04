@@ -13,6 +13,8 @@ import CustomTable from "Components/Common/Tables/CustomTable";
 import BasicLineChartCard from "Components/Common/Graphics/BasicLineChartCard";
 import BasicBarChart from "Components/Common/Graphics/BasicBarChart";
 import { saveAs } from "file-saver";
+import { useSelector } from "react-redux";
+import { darkenHex } from "utils/colorUtils";
 
 interface CashFlowEntry {
     _id: string;
@@ -57,6 +59,8 @@ const CashFlowReport = () => {
 
     const configContext = useContext(ConfigContext);
     const { isGlobal, farmId, scopeKey } = useReportScope();
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const bg = (color: string) => isDark ? darkenHex(color) : color;
 
     const [loading, setLoading] = useState(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -281,27 +285,27 @@ const CashFlowReport = () => {
                         <thead className="table-light">
                             <tr>
                                 <th>{t("reports.cashFlow.table.period")}</th>
-                                <th className="text-end" style={{ backgroundColor: "#e8f5e9" }}>{t("reports.cashFlow.table.inflows")}</th>
-                                <th className="text-end" style={{ backgroundColor: "#ffebee" }}>{t("reports.cashFlow.table.outflows")}</th>
-                                <th className="text-end" style={{ backgroundColor: "#e3f2fd" }}>{t("reports.cashFlow.table.netFlow")}</th>
+                                <th className="text-end" style={{ backgroundColor: bg("#e8f5e9") }}>{t("reports.cashFlow.table.inflows")}</th>
+                                <th className="text-end" style={{ backgroundColor: bg("#ffebee") }}>{t("reports.cashFlow.table.outflows")}</th>
+                                <th className="text-end" style={{ backgroundColor: bg("#e3f2fd") }}>{t("reports.cashFlow.table.netFlow")}</th>
                             </tr>
                         </thead>
                         <tbody>
                             {periods.map((p, i) => (
                                 <tr key={i}>
                                     <td className="fw-semibold">{p.period}</td>
-                                    <td className="text-end text-success" style={{ backgroundColor: "#e8f5e9" }}>{formatCurrency(p.totalInflows)}</td>
-                                    <td className="text-end text-danger" style={{ backgroundColor: "#ffebee" }}>{formatCurrency(p.totalOutflows)}</td>
-                                    <td className={`text-end fw-semibold ${p.netFlow >= 0 ? "text-success" : "text-danger"}`} style={{ backgroundColor: "#e3f2fd" }}>
+                                    <td className="text-end text-success" style={{ backgroundColor: bg("#e8f5e9") }}>{formatCurrency(p.totalInflows)}</td>
+                                    <td className="text-end text-danger" style={{ backgroundColor: bg("#ffebee") }}>{formatCurrency(p.totalOutflows)}</td>
+                                    <td className={`text-end fw-semibold ${p.netFlow >= 0 ? "text-success" : "text-danger"}`} style={{ backgroundColor: bg("#e3f2fd") }}>
                                         {formatCurrency(p.netFlow)}
                                     </td>
                                 </tr>
                             ))}
-                            <tr className="table-primary fw-bold">
+                            <tr className="fw-bold" style={{ backgroundColor: bg("#e3f2fd") }}>
                                 <td>{t("reports.cashFlow.table.total")}</td>
-                                <td className="text-end">{formatCurrency(kpis.totalInflows)}</td>
-                                <td className="text-end">{formatCurrency(kpis.totalOutflows)}</td>
-                                <td className="text-end">{formatCurrency(kpis.netCashFlow)}</td>
+                                <td className="text-end text-success">{formatCurrency(kpis.totalInflows)}</td>
+                                <td className="text-end text-danger">{formatCurrency(kpis.totalOutflows)}</td>
+                                <td className={`text-end ${kpis.netCashFlow >= 0 ? "text-success" : "text-danger"}`}>{formatCurrency(kpis.netCashFlow)}</td>
                             </tr>
                         </tbody>
                     </Table>

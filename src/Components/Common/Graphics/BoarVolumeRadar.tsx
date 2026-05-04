@@ -1,12 +1,14 @@
 import { Card, CardBody, CardHeader } from "reactstrap";
 import { ResponsiveRadar } from "@nivo/radar";
 import { FiInbox } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
 
 interface BoarVolumeRadarProps {
     data: any[];
 }
 
 const BoarVolumeRadar = ({ data }: BoarVolumeRadarProps) => {
+    const { t } = useTranslation();
     const hasData =
         data &&
         data.some((b) =>
@@ -64,7 +66,7 @@ const BoarVolumeRadar = ({ data }: BoarVolumeRadarProps) => {
                 ) : (
                     <div style={{ textAlign: "center", color: "#888" }}>
                         <FiInbox size={48} style={{ marginBottom: 10 }} />
-                        <div>No hay datos disponibles</div>
+                        <div>{t('shared.chart.noData')}</div>
                     </div>
                 )}
             </CardBody>

@@ -125,7 +125,7 @@ const UserForm: React.FC<UserFormProps> = ({
 
     return (
         <>
-            <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }}>
+            <form onSubmit={(e) => { e.preventDefault(); e.stopPropagation(); formik.handleSubmit(); }}>
                 <div className="mt-4">
                     <Label htmlFor="imageInput" className="form-label">
                         {t("users.form.field.image")}

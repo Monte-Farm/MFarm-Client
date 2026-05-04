@@ -1,6 +1,7 @@
 import { Card, CardHeader, CardBody } from "reactstrap";
 import { ResponsiveBar } from "@nivo/bar";
 import { FiInbox } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
 
 interface BasicBarChartProps {
     title: string;
@@ -23,6 +24,7 @@ const BasicBarChart = ({
     height = 300,
     colors,
 }: BasicBarChartProps) => {
+    const { t } = useTranslation();
     const hasData = data && data.length > 0;
 
     return (
@@ -70,7 +72,7 @@ const BasicBarChart = ({
                 ) : (
                     <div style={{ textAlign: "center", color: "#888" }}>
                         <FiInbox size={48} style={{ marginBottom: 10 }} />
-                        <div>No hay datos disponibles</div>
+                        <div>{t('shared.chart.noData')}</div>
                     </div>
                 )}
             </CardBody>

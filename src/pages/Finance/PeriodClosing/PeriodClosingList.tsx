@@ -218,22 +218,18 @@ const PeriodClosingList = () => {
                 )}
             </Container>
 
-            {farmId && (
-                <ClosePeriodModal
-                    isOpen={showCloseModal}
-                    onClose={() => setShowCloseModal(false)}
-                    onSuccess={handleCloseSuccess}
-                    farmId={farmId}
-                />
-            )}
-            {farmId && (
-                <CloseYearModal
-                    isOpen={showCloseYearModal}
-                    onClose={() => setShowCloseYearModal(false)}
-                    onSuccess={handleCloseYearSuccess}
-                    farmId={farmId}
-                />
-            )}
+            <ClosePeriodModal
+                isOpen={showCloseModal}
+                onClose={() => setShowCloseModal(false)}
+                onSuccess={handleCloseSuccess}
+                farmId={farmId ?? ""}
+            />
+            <CloseYearModal
+                isOpen={showCloseYearModal}
+                onClose={() => setShowCloseYearModal(false)}
+                onSuccess={handleCloseYearSuccess}
+                farmId={farmId ?? ""}
+            />
 
             <AlertMessage
                 color={alertConfig.color}

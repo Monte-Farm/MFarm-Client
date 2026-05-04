@@ -15,6 +15,8 @@ import BasicBarChart from "Components/Common/Graphics/BasicBarChart";
 import { PERIOD_CLOSING_URLS } from "helpers/period_closing_urls";
 import { PeriodClosingByPeriod } from "common/data_interfaces";
 import { saveAs } from "file-saver";
+import { useSelector } from "react-redux";
+import { darkenHex } from "utils/colorUtils";
 
 interface CostItem {
     category: string;
@@ -57,6 +59,8 @@ const OperationsClosingReport = () => {
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const { isGlobal, farmId, scopeKey } = useReportScope();
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const bg = (color: string) => isDark ? darkenHex(color) : color;
 
     const [loading, setLoading] = useState(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -358,7 +362,7 @@ const OperationsClosingReport = () => {
                                 <th className="text-end">{t("reports.col.pigs")}</th>
                                 <th className="text-end">{t("reports.operationsClosing.table.totalWeight")}</th>
                                 <th className="text-end">{t("reports.operationsClosing.table.avgPricePerKg")}</th>
-                                <th className="text-end" style={{ backgroundColor: "#e8f5e9" }}>{t("reports.operationsClosing.table.totalAmount")}</th>
+                                <th className="text-end" style={{ backgroundColor: bg("#e8f5e9") }}>{t("reports.operationsClosing.table.totalAmount")}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -368,12 +372,12 @@ const OperationsClosingReport = () => {
                                     <td className="text-end">{s.pigCount}</td>
                                     <td className="text-end">{s.totalWeight?.toFixed(1)}</td>
                                     <td className="text-end">{formatCurrency(s.avgPricePerKg)}</td>
-                                    <td className="text-end fw-semibold" style={{ backgroundColor: "#e8f5e9" }}>
+                                    <td className="text-end fw-semibold" style={{ backgroundColor: bg("#e8f5e9") }}>
                                         {formatCurrency(s.totalAmount)}
                                     </td>
                                 </tr>
                             ))}
-                            <tr className="table-success fw-bold">
+                            <tr className="fw-bold" style={{ backgroundColor: bg("#e8f5e9") }}>
                                 <td>{t("reports.operationsClosing.table.totalIncome")}</td>
                                 <td className="text-end">{kpis.totalPigsSold}</td>
                                 <td className="text-end">{kpis.totalKgSold?.toFixed(1)}</td>
@@ -398,7 +402,7 @@ const OperationsClosingReport = () => {
                         <thead className="table-light">
                             <tr>
                                 <th>{t("reports.col.description")}</th>
-                                <th className="text-end" style={{ width: "180px", backgroundColor: "#ffebee" }}>{t("reports.col.amount")}</th>
+                                <th className="text-end" style={{ width: "180px", backgroundColor: bg("#ffebee") }}>{t("reports.col.amount")}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -406,18 +410,18 @@ const OperationsClosingReport = () => {
                                 const categoryTotal = items.reduce((sum, i) => sum + i.amount, 0);
                                 return (
                                     <React.Fragment key={category}>
-                                        <tr className="table-light">
-                                            <td className="fw-bold text-uppercase" style={{ fontSize: "13px", color: "#6b7280" }}>
+                                        <tr style={{ backgroundColor: bg("#fff8e1") }}>
+                                            <td className="fw-bold text-uppercase text-muted" style={{ fontSize: "13px" }}>
                                                 {category}
                                             </td>
-                                            <td className="text-end fw-bold" style={{ backgroundColor: "#fff8e1" }}>
+                                            <td className="text-end fw-bold">
                                                 {formatCurrency(categoryTotal)}
                                             </td>
                                         </tr>
                                         {items.map((item, idx) => (
                                             <tr key={idx}>
                                                 <td style={{ paddingLeft: "2rem" }}>{item.description}</td>
-                                                <td className="text-end" style={{ backgroundColor: "#ffebee" }}>
+                                                <td className="text-end" style={{ backgroundColor: bg("#ffebee") }}>
                                                     {formatCurrency(item.amount)}
                                                 </td>
                                             </tr>
@@ -425,7 +429,7 @@ const OperationsClosingReport = () => {
                                     </React.Fragment>
                                 );
                             })}
-                            <tr className="table-danger fw-bold">
+                            <tr className="fw-bold" style={{ backgroundColor: bg("#ffebee") }}>
                                 <td>{t("reports.operationsClosing.table.totalCosts")}</td>
                                 <td className="text-end">{formatCurrency(totalCostsFromItems)}</td>
                             </tr>
@@ -453,7 +457,7 @@ const OperationsClosingReport = () => {
                                 <td className="fw-semibold">{t("reports.operationsClosing.result.totalCosts")}</td>
                                 <td className="text-end text-danger fw-bold fs-5">({formatCurrency(kpis.totalCosts)})</td>
                             </tr>
-                            <tr className={kpis.operatingResult >= 0 ? "table-success" : "table-danger"}>
+                            <tr style={{ backgroundColor: bg(kpis.operatingResult >= 0 ? "#e8f5e9" : "#ffebee") }}>
                                 <td className="fw-bold fs-5">{t("reports.operationsClosing.result.operating")}</td>
                                 <td className={`text-end fw-bold fs-5 ${kpis.operatingResult >= 0 ? "text-success" : "text-danger"}`}>
                                     {formatCurrency(kpis.operatingResult)}

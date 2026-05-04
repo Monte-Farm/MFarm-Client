@@ -3144,7 +3144,8 @@
                         "force": "Force closing",
                         "submit": "Close month",
                         "submitting": "Closing..."
-                    }
+                    },
+                    "noFarmSelected": "You must select a farm from the header selector before closing a period."
                 },
                 "forceClose": {
                     "header": "Force closing",
@@ -3530,6 +3531,25 @@
                         "pigs": "Avg. pigs",
                         "kg": "Avg. kg"
                     }
+                }
+            },
+            "filters": {
+                "button": "Filters",
+                "header": "Filter closings",
+                "labelPeriodType": "Period type",
+                "labelYear": "Year",
+                "labelStatus": "Status",
+                "allYears": "All years",
+                "status": {
+                    "active": "Active (closed and reopened)",
+                    "closed": "Closed",
+                    "reopened": "Reopened",
+                    "archived": "Archived"
+                },
+                "periodType": {
+                    "all": "All",
+                    "monthly": "Monthly",
+                    "annual": "Annual"
                 }
             }
         },
@@ -4781,6 +4801,32 @@
                 "username": "Username",
                 "lastname": "Last Name",
                 "email": "Email"
+            },
+            "dashboard": {
+                "title": "Farm Dashboard",
+                "sectionFinance": "Financials",
+                "sectionProduction": "Production",
+                "sectionReproduction": "Reproduction",
+                "sectionHealth": "Health",
+                "kpi": {
+                    "totalIncome": "Total Income",
+                    "totalCosts": "Total Costs",
+                    "operatingResult": "Operating Result",
+                    "operatingMargin": "Operating Margin",
+                    "activePigs": "Active Pigs",
+                    "activeGroups": "Active Groups",
+                    "mortalityRate": "Mortality Rate",
+                    "avgFcr": "Avg FCR",
+                    "inseminationEffectiveness": "Insemination Effectiveness",
+                    "upcomingBirths": "Upcoming Births",
+                    "avgBornAlive": "Avg Born Alive",
+                    "pendingInseminations": "Pending Inseminations",
+                    "totalDeaths": "Total Deaths",
+                    "medicationsApplied": "Medications Applied",
+                    "vaccinationsApplied": "Vaccinations Applied",
+                    "groupsWithAlerts": "Groups with Alerts"
+                },
+                "error": "Error loading dashboard data"
             }
         },
         "column": {
@@ -4810,6 +4856,26 @@
             "active": "Active",
             "inactive": "Inactive",
             "enterManager": "Enter as manager"
+        },
+        "form": {
+            "sectionInfo": "Farm Information",
+            "imageLabel": "Farm Image",
+            "fieldCode": "Code",
+            "fieldName": "Name",
+            "fieldLocation": "Location",
+            "sectionManager": "Select a Manager",
+            "buttonNewManager": "New Manager",
+            "noManagers": "No managers found",
+            "modalNewUser": "New User",
+            "errorNoManager": "You must select a manager for the farm",
+            "errorSave": "An error occurred while saving the farm, please try again later",
+            "errorUpload": "An error occurred while uploading the file, please try again later",
+            "errorNextCode": "An error occurred while fetching the next farm code",
+            "userCreated": "User created successfully",
+            "validationName": "Name is required",
+            "validationCode": "Code is required",
+            "validationCodeExists": "This code already exists, please enter another one",
+            "validationLocation": "Location is required"
         }
     },
     "shared": {
@@ -5059,6 +5125,11 @@
                 "unitPrice": "Unit Price"
             },
             "noProducts": "No products available."
+        },
+        "chart": {
+            "noData": "No data available",
+            "noDistributionData": "No distribution data available",
+            "noApplications": "No applications recorded"
         }
     },
     "reports": {

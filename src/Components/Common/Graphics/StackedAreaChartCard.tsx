@@ -1,5 +1,6 @@
 import { ResponsiveLine } from '@nivo/line';
 import { Card, CardBody, CardHeader } from 'reactstrap';
+import { useTranslation } from 'react-i18next';
 
 export interface AreaDataPoint {
     x: string | number;
@@ -63,6 +64,7 @@ const StackedAreaChartCard = ({
     headerBgColor,
     tooltipType = 'number',
 }: StackedAreaChartCardProps) => {
+    const { t } = useTranslation();
     // Transform data to Nivo format
     const nivoData = data.map(serie => ({
         id: serie.id,
@@ -90,7 +92,7 @@ const StackedAreaChartCard = ({
                 </CardHeader>
                 <CardBody style={{ height: typeof height === 'number' ? `${height}px` : height, display: "flex", justifyContent: "center", alignItems: "center" }}>
                     <div style={{ textAlign: "center", color: "#9ca3af" }}>
-                        <div style={{ fontSize: "14px" }}>No hay datos disponibles</div>
+                        <div style={{ fontSize: "14px" }}>{t('shared.chart.noData')}</div>
                     </div>
                 </CardBody>
             </Card>

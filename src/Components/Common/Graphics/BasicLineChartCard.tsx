@@ -2,6 +2,7 @@ import React from "react";
 import { Card, CardBody, CardHeader, Spinner } from "reactstrap";
 import { ResponsiveLine } from "@nivo/line";
 import { FiInbox, FiTrendingUp } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
 
 interface DataPoint {
     x: string | number;
@@ -66,13 +67,14 @@ const BasicLineChartCard: React.FC<BasicLineChartCardProps> = ({
     legendPosition = "top",
     loading = false,
     error,
-    emptyMessage = "No hay datos disponibles",
+    emptyMessage,
     className = "",
     margin = { top: 20, right: 20, bottom: 50, left: 60 },
     theme,
     headerBgColor,
 }) => {
-    // Verificar si hay datos válidos
+    const { t } = useTranslation();
+    const resolvedEmptyMessage = emptyMessage ?? t('shared.chart.noData');
     const hasData = data.some(serie => serie.data && serie.data.length > 0 && serie.data.some(point => point.y !== null && point.y !== undefined));
 
     // Formateo por defecto para tooltips
@@ -169,7 +171,7 @@ const BasicLineChartCard: React.FC<BasicLineChartCardProps> = ({
                 <CardBody style={{ height, display: "flex", justifyContent: "center", alignItems: "center" }}>
                     <div style={{ textAlign: "center", color: "#9ca3af" }}>
                         <FiInbox size={48} style={{ marginBottom: 10 }} />
-                        <div>{emptyMessage}</div>
+                        <div>{resolvedEmptyMessage}</div>
                     </div>
                 </CardBody>
             </Card>

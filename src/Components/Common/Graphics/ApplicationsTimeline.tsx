@@ -1,6 +1,7 @@
 import { Card, CardBody, CardHeader } from "reactstrap";
 import { RiMedicineBottleLine, RiTimerLine, RiVirusLine } from "react-icons/ri";
 import { IconType } from "react-icons";
+import { useTranslation } from "react-i18next";
 
 export interface TimelineEvent {
     date: string;
@@ -30,8 +31,10 @@ const ApplicationsTimeline = ({
     events,
     title = 'Timeline de Aplicaciones',
     typeConfig = defaultTypeConfig,
-    emptyMessage = 'Sin aplicaciones registradas',
+    emptyMessage,
 }: Props) => {
+    const { t } = useTranslation();
+    const resolvedEmptyMessage = emptyMessage ?? t('shared.chart.noApplications');
     return (
         <Card className="border-0 shadow-sm h-100">
             <CardHeader className="border-bottom py-3">
@@ -84,7 +87,7 @@ const ApplicationsTimeline = ({
                         </div>
                     </div>
                 ) : (
-                    <div className="text-center text-muted py-4">{emptyMessage}</div>
+                    <div className="text-center text-muted py-4">{resolvedEmptyMessage}</div>
                 )}
             </CardBody>
         </Card>

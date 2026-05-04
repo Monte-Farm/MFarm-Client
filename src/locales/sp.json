@@ -3144,7 +3144,8 @@
                         "force": "Forzar cierre",
                         "submit": "Cerrar mes",
                         "submitting": "Cerrando..."
-                    }
+                    },
+                    "noFarmSelected": "Debes seleccionar una granja en el selector del encabezado antes de cerrar un periodo."
                 },
                 "forceClose": {
                     "header": "Forzar cierre",
@@ -3530,6 +3531,25 @@
                         "pigs": "Cerdos prom.",
                         "kg": "Kg prom."
                     }
+                }
+            },
+            "filters": {
+                "button": "Filtros",
+                "header": "Filtrar cierres",
+                "labelPeriodType": "Tipo de periodo",
+                "labelYear": "Año",
+                "labelStatus": "Estado",
+                "allYears": "Todos los años",
+                "status": {
+                    "active": "Activos (cerrados y reabiertos)",
+                    "closed": "Cerrados",
+                    "reopened": "Reabiertos",
+                    "archived": "Archivados"
+                },
+                "periodType": {
+                    "all": "Todos",
+                    "monthly": "Mensuales",
+                    "annual": "Anuales"
                 }
             }
         },
@@ -4781,6 +4801,32 @@
                 "username": "Usuario",
                 "lastname": "Apellido",
                 "email": "Email"
+            },
+            "dashboard": {
+                "title": "Dashboard de Granja",
+                "sectionFinance": "Financiero",
+                "sectionProduction": "Producción",
+                "sectionReproduction": "Reproducción",
+                "sectionHealth": "Sanidad",
+                "kpi": {
+                    "totalIncome": "Ingresos totales",
+                    "totalCosts": "Costos totales",
+                    "operatingResult": "Resultado operativo",
+                    "operatingMargin": "Margen operativo",
+                    "activePigs": "Cerdos activos",
+                    "activeGroups": "Grupos activos",
+                    "mortalityRate": "Tasa de mortalidad",
+                    "avgFcr": "FCR promedio",
+                    "inseminationEffectiveness": "Efectividad inseminación",
+                    "upcomingBirths": "Partos próximos",
+                    "avgBornAlive": "Nacidos vivos prom.",
+                    "pendingInseminations": "Inseminaciones pendientes",
+                    "totalDeaths": "Muertes totales",
+                    "medicationsApplied": "Medicaciones aplicadas",
+                    "vaccinationsApplied": "Vacunaciones aplicadas",
+                    "groupsWithAlerts": "Grupos con alertas"
+                },
+                "error": "Error al cargar los datos del dashboard"
             }
         },
         "column": {
@@ -4810,6 +4856,26 @@
             "active": "Activo",
             "inactive": "Inactivo",
             "enterManager": "Entrar como gerente"
+        },
+        "form": {
+            "sectionInfo": "Información de la granja",
+            "imageLabel": "Imagen de la granja",
+            "fieldCode": "Código",
+            "fieldName": "Nombre",
+            "fieldLocation": "Ubicación",
+            "sectionManager": "Selecciona un encargado",
+            "buttonNewManager": "Nuevo Encargado",
+            "noManagers": "No se encontraron encargados",
+            "modalNewUser": "Nuevo Usuario",
+            "errorNoManager": "Debes seleccionar un encargado para la granja",
+            "errorSave": "Ha ocurrido un error al guardar la granja, intentelo más tarde",
+            "errorUpload": "Ha ocurrido un error al subir el archivo, por favor intentelo más tarde",
+            "errorNextCode": "Ha ocurrido un error al obtener el siguiente código de granja",
+            "userCreated": "Usuario creado con éxito",
+            "validationName": "El nombre es obligatorio",
+            "validationCode": "El código es obligatorio",
+            "validationCodeExists": "Este código ya existe, por favor ingrese otro",
+            "validationLocation": "La ubicación es obligatoria"
         }
     },
     "shared": {
@@ -5059,6 +5125,11 @@
                 "unitPrice": "Precio Unitario"
             },
             "noProducts": "No hay productos disponibles."
+        },
+        "chart": {
+            "noData": "No hay datos disponibles",
+            "noDistributionData": "No hay datos de distribución disponibles",
+            "noApplications": "Sin aplicaciones registradas"
         }
     },
     "reports": {
