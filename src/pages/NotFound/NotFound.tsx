@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from 'reactstrap';
 
-import systemLogo from '../../assets/images/system-logo.png';
+import systemLogo from '../../assets/images/system-logo-dark.png';
 import pigSilhouette from '../../assets/images/pig_silhouette.png';
 
 const NotFound = () => {

@@ -2,7 +2,8 @@ import BreadCrumb from 'Components/Common/Shared/BreadCrumb';
 import SuccessModal from 'Components/Common/Shared/SuccessModal';
 import ErrorModal from 'Components/Common/Shared/ErrorModal';
 import LoadingGif from '../../assets/images/loading-gif.gif';
-import systemLogo from '../../assets/images/system-logo.png';
+import systemLogoDark from '../../assets/images/system-logo-dark.png';
+import systemLogoLight from '../../assets/images/system-logo-light.png';
 import FileUploader from 'Components/Common/Shared/FileUploader';
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -177,6 +178,7 @@ const GlobalConfiguration = () => {
         setPendingLogoRemoval(true);
     };
 
+    const systemLogo = isDark ? systemLogoLight : systemLogoDark;
     const currentLogoSrc = pendingLogoPreview
         || (pendingLogoRemoval ? systemLogo : (globalConfig?.logoUrl || systemLogo));
     const hasCustomLogo = !!globalConfig?.logoUrl && !pendingLogoRemoval;

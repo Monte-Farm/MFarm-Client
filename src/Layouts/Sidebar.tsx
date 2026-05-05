@@ -4,12 +4,15 @@ import VerticalLayout from "./VerticalLayouts";
 import { Container } from "reactstrap";
 import { useSelector } from "react-redux";
 import { getEffectiveUser } from "helpers/impersonation_helper";
-import systemLogo from '../assets/images/system-logo.png'
+import systemLogoDark from '../assets/images/system-logo-dark.png'
+import systemLogoLight from '../assets/images/system-logo-light.png'
 import { GlobalConfiguration } from "common/data_interfaces";
 
 const Sidebar = ({ layoutType }: any) => {
   const userLogged = getEffectiveUser();
   const globalConfig: GlobalConfiguration | null = useSelector((s: any) => s.Configurations.globalConfig);
+  const layoutModeType = useSelector((s: any) => s.Layout.layoutModeType);
+  const systemLogo = layoutModeType === 'dark' ? systemLogoLight : systemLogoDark;
   const logoSrc = globalConfig?.logoUrl || systemLogo;
 
 
@@ -38,7 +41,7 @@ const Sidebar = ({ layoutType }: any) => {
       <div className="app-menu navbar-menu">
         <div className="navbar-brand-box mt-2 mb-3">
 
-          <img src={logoSrc} height={150} width={150} alt="Logo del sistema" style={{ objectFit: 'contain' }}/>
+          <img src={logoSrc} height={190} width={190} alt="Logo del sistema" style={{ objectFit: 'contain' }}/>
 
           <button
             onClick={addEventListenerOnSmHoverMenu}

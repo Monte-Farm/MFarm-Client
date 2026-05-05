@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { ConfigContext } from "App";
 import Aurora from "Components/Common/Velzon/Aurora";
 import LogoSystem from '../../assets/images/logo.png'
-import systemLogo from '../../assets/images/system-logo.png'
+import systemLogo from '../../assets/images/system-logo-dark.png'
 import loginBanner from '../../assets/images/login_banner.png'
 import { useDispatch } from "react-redux";
 import { connectNotificationSocket } from "helpers/socketService";
