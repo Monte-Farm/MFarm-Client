@@ -41,7 +41,7 @@ const Sidebar = ({ layoutType }: any) => {
       <div className="app-menu navbar-menu">
         <div className="navbar-brand-box mt-2 mb-3">
 
-          <img src={logoSrc} height={190} width={190} alt="Logo del sistema" style={{ objectFit: 'contain' }}/>
+          <img src={logoSrc} height={100} width={200} alt="Logo del sistema" style={{ objectFit: 'contain' }} />
 
           <button
             onClick={addEventListenerOnSmHoverMenu}

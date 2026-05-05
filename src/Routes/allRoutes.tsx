@@ -14,21 +14,14 @@ import ViewProducts from "pages/Products/ViewProducts";
 //Subwarehouse
 import ViewSubwarehouse from "pages/Subwarehouse/ViewSubwarehouse";
 
-
-import Basic404 from '../pages/AuthenticationInner/Errors/Basic404';
-import Cover404 from '../pages/AuthenticationInner/Errors/Cover404';
 import Alt404 from '../pages/AuthenticationInner/Errors/Alt404';
-import Error500 from '../pages/AuthenticationInner/Errors/Error500';
 import Offlinepage from "../pages/AuthenticationInner/Errors/Offlinepage";
 
 // //login
 import Login from "../pages/Authentication/Login";
-import ForgetPasswordPage from "../pages/Authentication/ForgetPassword";
-import Register from "../pages/Authentication/Register";
 
 
 // // User Profile
-import UserProfile from "../pages/Authentication/user-profile";
 import SubwarehouseDetails from "pages/Subwarehouse/SubwarehouseDetails";
 import ViewOutcomes from "pages/Outcomes/ViewOutcomes";
 
@@ -178,9 +171,6 @@ const authProtectedRoutes = [
   //Users
   { path: 'users/view_users', component: <ViewUsers /> },
 
-  //User Profile
-  { path: "/profile", component: <UserProfile /> },
-
   //Groups
   { path: "/groups/view_groups", component: <ViewGroups /> },
   { path: "/groups/group_details/:group_id", component: <GroupDetails /> },
@@ -293,14 +283,8 @@ const publicRoutes = [
   // Authentication Page
   { path: "/logout", component: <Logout /> },
   { path: "/login", component: <Login /> },
-  { path: "/forgot-password", component: <ForgetPasswordPage /> },
-  { path: "/register", component: <Register /> },
 
-
-  { path: "/auth-404-basic", component: <Basic404 /> },
-  { path: "/auth-404-cover", component: <Cover404 /> },
   { path: "/auth-404-alt", component: <Alt404 /> },
-  { path: "/auth-500", component: <Error500 /> },
   { path: "/auth-offline", component: <Offlinepage /> },
 
   { path: "*", component: <NotFound /> },

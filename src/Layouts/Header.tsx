@@ -2,7 +2,6 @@ import { logger } from 'utils/logger';
 import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Dropdown, DropdownMenu, DropdownToggle, Form, Input } from 'reactstrap';
-
 import { changeSidebarVisibility } from '../slices/thunks';
 import { useSelector, useDispatch } from "react-redux";
 import { createSelector } from 'reselect';
@@ -119,19 +118,19 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
                             <div className="navbar-brand-box horizontal-logo">
                                 <Link to="/home" className="logo logo-dark">
                                     <span className="logo-sm">
-                                        <img src={LogoSystem} alt="" height="60" />
+                                        <img src={LogoSystem} alt="" height="40" />
                                     </span>
                                     <span className="logo-lg">
-                                        <img src={LogoSystem} alt="" height="60" />
+                                        <img src={LogoSystem} alt="" height="40" />
                                     </span>
                                 </Link>
 
                                 <Link to="/home" className="logo logo-light">
                                     <span className="logo-sm">
-                                        <img src={LogoSystem} alt="" height="60" />
+                                        <img src={LogoSystem} alt="" height="40" />
                                     </span>
                                     <span className="logo-lg">
-                                        <img src={LogoSystem} alt="" height="60" />
+                                        <img src={LogoSystem} alt="" height="40" />
                                     </span>
                                 </Link>
                             </div>
@@ -226,8 +225,8 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
                             {/* FullScreenDropdown */}
                             {/* <FullScreenDropdown /> */}
 
-                            
-                            
+
+
 
                             {/* Dark/Light Mode set */}
                             {/* <LightDark
