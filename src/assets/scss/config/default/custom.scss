@@ -1,47 +1,381 @@
 /*
-Template Name: Velzon - Admin & Dashboard Template
-Author: Themesbrand
-Website: https://themesbrand.com/
-Contact: support@themesbrand.com
-File: Custom Css File
+File: PorcySys Custom CSS
+Palette: cream #F4EFE2 | creamSoft #FAF6EB | creamDeep #EBE3CF
+         terra #5C7A3A | terraDark #3F5524 | terraSoft #A8B97D
+         ink #23291A | inkSoft #3F4731 | inkMute #7A8266
+         olive #A87340 | oliveSoft #C99A6E
 */
 
+// ============================================
+// PorcySys Light Mode — Body & Layout Base
+// ============================================
 
-// //Nav-bar and page css
-// #page-topbar {
-//     // background-color: #2F4F4F !important;
-//     // border-bottom: 1px solid #2F4F4F !important;
-// }
+:root {
+    // Colors
+    --vz-body-bg:           #F4EFE2;
+    --vz-body-color:        #23291A;
+    --vz-card-bg:           #FAF8F2;
+    --vz-secondary-bg:      #FAF8F2;
+    --vz-tertiary-bg:       #EBE3CF;
+    --vz-border-color:      rgba(35, 41, 26, 0.12);
+    --vz-border-color-translucent: rgba(35, 41, 26, 0.07);
+    --vz-heading-color:     #23291A;
+    --vz-secondary-color:   #3F4731;
+    --vz-light:             #EBE3CF;
+    --vz-input-bg-custom:   #F4EFE2;
+    --vz-input-border-custom: rgba(35, 41, 26, 0.18);
 
-.navbar-menu {
-    background-color: #6B8E23 !important;
+    // Fonts — override Bootstrap/Velzon CSS vars
+    --vz-font-sans-serif:   'Inter', system-ui, -apple-system, sans-serif;
+    --vz-font-monospace:    'JetBrains Mono', 'Courier New', monospace;
+    --vz-body-font-family:  var(--vz-font-sans-serif);
+    --vz-heading-font-family: 'Instrument Serif', Georgia, serif;
 }
 
-// .page-content {
-//     // background-color: #F5F5DC;
-// }
+body {
+    background-color: #F4EFE2;
+    color: #23291A;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+// Instrument Serif — headings y números grandes KPI (el componente KPI usa h3)
+h1, h2, h3,
+.h1, .h2, .h3,
+.display-1, .display-2, .display-3, .display-4 {
+    font-family: 'Instrument Serif', Georgia, serif !important;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+}
+
+// KPI values — Inter normal (override the h3 serif rule)
+.kpi-value {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+}
+
+// JetBrains Mono — código y datos mono
+.font-monospace, code, pre, kbd, samp {
+    font-family: 'JetBrains Mono', 'Courier New', monospace !important;
+}
+
+// Page content bg
+.page-content {
+    background-color: #F4EFE2;
+}
+
+// Cards — claramente más claras que el fondo para dar separación visual
+.card {
+    background-color: #FAF8F2;
+    border: 1px solid rgba(35, 41, 26, 0.10);
+    box-shadow: 0 2px 8px rgba(35, 41, 26, 0.08);
+
+    .card-header,
+    .card-footer {
+        background-color: transparent;
+        border-color: rgba(35, 41, 26, 0.10);
+        color: #23291A;
+    }
+
+    .card-title { color: #23291A; }
+    .card-body  { color: #3F4731; }
+}
+
+// bg-white / bg-light overrides
+.bg-white { background-color: #FAF8F2 !important; }
+.bg-light  { background-color: #EDE5D5 !important; }
+
+// Text colors
+.text-muted { color: #7A8266 !important; }
+
+// Sidebar
+.navbar-menu {
+    background-color: #FAF6EB !important;
+}
 
 .navbar-menu i {
-    color: #FDFDFD;
+    color: #3F4731;
 }
-
-// html {
-//     // background-color: #F5F5DC;
-// }
-
-// span {
-//     color: #FDFDFD;
-// }
 
 .farm-text {
-    color: #FDFDFD;
+    color: #3F4731;
 }
 
+// Topbar
+#page-topbar {
+    background-color: #FAF6EB !important;
+    border-bottom: 1px solid rgba(35, 41, 26, 0.12) !important;
+}
 
+.topbar-user {
+    background-color: #EBE3CF !important;
+}
 
+// Inputs
+.form-control,
+.form-select {
+    background-color: #FAF6EB;
+    border-color: rgba(35, 41, 26, 0.18);
+    color: #23291A;
+
+    &:focus {
+        background-color: #FAF6EB;
+        border-color: #5C7A3A;
+        box-shadow: 0 0 0 0.2rem rgba(92, 122, 58, 0.15);
+        color: #23291A;
+    }
+
+    &::placeholder { color: #7A8266; }
+    &:disabled { background-color: #EBE3CF; color: #7A8266; }
+}
+
+.input-group-text {
+    background-color: #EBE3CF;
+    border-color: rgba(35, 41, 26, 0.18);
+    color: #3F4731;
+}
+
+.form-label,
+.col-form-label { color: #3F4731; }
+
+// Tables
+.table {
+    color: #23291A;
+    border-color: rgba(35, 41, 26, 0.12);
+
+    th, td { border-color: rgba(35, 41, 26, 0.12); color: #23291A; }
+    thead th { color: #23291A; background-color: #EBE3CF; }
+}
+
+.table-light {
+    --vz-table-bg: #EBE3CF;
+    background-color: #EBE3CF;
+    th, td { background-color: #EBE3CF; color: #23291A; }
+}
+
+.table-primary {
+    --vz-table-bg: rgba(92, 122, 58, 0.15);
+    background-color: rgba(92, 122, 58, 0.15) !important;
+    td, th { background-color: rgba(92, 122, 58, 0.15) !important; color: #23291A !important; }
+}
+
+.table-hover > tbody > tr.table-primary:hover > td,
+.table-hover > tbody > tr.table-primary:hover > th {
+    background-color: rgba(92, 122, 58, 0.25) !important;
+    color: #23291A !important;
+}
+
+// Modals
+.modal-content {
+    background-color: #FAF6EB;
+    border-color: rgba(35, 41, 26, 0.12);
+    color: #23291A;
+}
+
+.modal-header {
+    border-bottom-color: rgba(35, 41, 26, 0.12);
+    .modal-title { color: #23291A; }
+}
+
+.modal-footer { border-top-color: rgba(35, 41, 26, 0.12); }
+
+// Dropdowns
+.dropdown-menu {
+    background-color: #FAF6EB;
+    border-color: rgba(35, 41, 26, 0.12);
+
+    .dropdown-item {
+        color: #3F4731;
+        &:hover, &:focus { background-color: #EBE3CF; color: #23291A; }
+    }
+
+    .dropdown-header  { color: #7A8266; }
+    .dropdown-divider { border-color: rgba(35, 41, 26, 0.12); }
+}
+
+// Pagination
+.page-link {
+    background-color: #FAF6EB;
+    border-color: rgba(35, 41, 26, 0.12);
+    color: #3F4731;
+    &:hover { background-color: #EBE3CF; color: #5C7A3A; }
+}
+
+.page-item.active .page-link {
+    background-color: #5C7A3A;
+    border-color: #5C7A3A;
+    color: #fff;
+}
+
+// Nav tabs
+.nav-tabs {
+    border-color: rgba(35, 41, 26, 0.12);
+    .nav-link {
+        color: #7A8266;
+        &.active {
+            background-color: #FAF6EB;
+            border-color: rgba(35, 41, 26, 0.12) rgba(35, 41, 26, 0.12) #FAF6EB;
+            color: #5C7A3A;
+        }
+        &:hover { color: #3F5524; }
+    }
+}
+
+// List group
+.list-group-item {
+    background-color: #FAF6EB;
+    border-color: rgba(35, 41, 26, 0.12);
+    color: #3F4731;
+}
+
+// Accordion
+.accordion-item {
+    background-color: #FAF6EB;
+    border-color: rgba(35, 41, 26, 0.12);
+    color: #3F4731;
+}
+
+.accordion-button {
+    background-color: #EBE3CF;
+    color: #23291A;
+    &:not(.collapsed) { background-color: #F4EFE2; color: #5C7A3A; }
+}
+
+// Popover
+.popover {
+    background-color: #FAF6EB;
+    border-color: rgba(35, 41, 26, 0.12);
+    .popover-header {
+        background-color: #EBE3CF;
+        border-bottom-color: rgba(35, 41, 26, 0.12);
+        color: #23291A;
+    }
+    .popover-body { color: #3F4731; }
+}
+
+// Badges
+.badge.bg-light { background-color: #EBE3CF !important; color: #3F4731 !important; }
+
+// React Select
+.react-select__control {
+    background-color: #FAF6EB !important;
+    border-color: rgba(35, 41, 26, 0.18) !important;
+    &:hover { border-color: #5C7A3A !important; }
+}
+
+.react-select__single-value,
+.react-select__input-container,
+.react-select__input { color: #23291A !important; }
+
+.react-select__placeholder { color: #7A8266 !important; }
+
+.react-select__menu { background-color: #FAF6EB; border-color: rgba(35, 41, 26, 0.12); }
+.react-select__menu-list { background-color: #FAF6EB; }
+
+.react-select__option {
+    color: #3F4731;
+    background-color: transparent;
+    &:hover, &.react-select__option--is-focused { background-color: #EBE3CF; }
+    &.react-select__option--is-selected { background-color: #5C7A3A; color: #fff; }
+}
+
+.react-select__multi-value {
+    background-color: rgba(92, 122, 58, 0.15);
+    .react-select__multi-value__label { color: #3F5524; }
+}
+
+.react-select__indicator { color: #7A8266; &:hover { color: #3F4731; } }
+.react-select__indicator-separator { background-color: rgba(35, 41, 26, 0.12); }
+
+// Flatpickr
+.flatpickr-calendar {
+    background: #FAF6EB;
+    border-color: rgba(35, 41, 26, 0.15);
+    box-shadow: 0 4px 12px rgba(35, 41, 26, 0.12);
+
+    .flatpickr-months, .flatpickr-month { background: #EBE3CF; color: #23291A; }
+    .flatpickr-current-month .flatpickr-monthDropdown-months,
+    .flatpickr-current-month input.cur-year { background: #EBE3CF; color: #23291A; }
+    .flatpickr-weekdays { background: #EBE3CF; }
+    span.flatpickr-weekday { color: #7A8266; }
+
+    .flatpickr-day {
+        color: #23291A;
+        &:hover { background: #EBE3CF; border-color: #EBE3CF; }
+        &.today { border-color: #5C7A3A; }
+        &.selected { background: #5C7A3A; border-color: #5C7A3A; color: #fff; }
+        &.flatpickr-disabled { color: #7A8266; }
+    }
+
+    .flatpickr-prev-month, .flatpickr-next-month { color: #3F4731; fill: #3F4731; svg { fill: #3F4731; } }
+}
+
+html[data-bs-theme="light"],
+:not([data-bs-theme="dark"]) {
+    .flatpickr-calendar {
+        background: #FAF6EB;
+    }
+}
+
+// Farm name pill
+.farm-name-pill {
+    background: linear-gradient(135deg, rgba(92, 122, 58, 0.10) 0%, rgba(168, 179, 125, 0.10) 100%);
+    border: 1px solid rgba(92, 122, 58, 0.18);
+    box-shadow: 0 2px 6px rgba(35, 41, 26, 0.06);
+}
+
+.farm-name-pill-icon,
+.farm-name-pill-text { color: #5C7A3A; }
+
+.farm-name-pill--impersonating {
+    background: linear-gradient(135deg, rgba(168, 115, 64, 0.12) 0%, rgba(201, 154, 110, 0.10) 100%);
+    border-color: rgba(168, 115, 64, 0.35);
+
+    .farm-name-pill-icon,
+    .farm-name-pill-text { color: #A87340; }
+}
+
+.farm-selector-input {
+    min-width: 260px;
+    border-radius: 50rem;
+    border: 1px solid rgba(92, 122, 58, 0.25);
+    background: linear-gradient(135deg, rgba(92, 122, 58, 0.06) 0%, rgba(168, 179, 125, 0.06) 100%);
+    color: #3F5524;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 0.3rem 0.9rem;
+
+    &:focus {
+        border-color: rgba(92, 122, 58, 0.5);
+        box-shadow: 0 0 0 2px rgba(92, 122, 58, 0.12);
+    }
+}
+
+.farm-exit-impersonation-btn {
+    padding: 0.3rem 0.75rem;
+    border-radius: 50rem;
+    font-size: 12px;
+    font-weight: 600;
+    background-color: rgba(168, 115, 64, 0.12);
+    border: 1px solid rgba(168, 115, 64, 0.4);
+    color: #A87340;
+    transition: background-color 0.15s, border-color 0.15s;
+
+    &:hover {
+        background-color: rgba(168, 115, 64, 0.22);
+        border-color: rgba(168, 115, 64, 0.6);
+        color: #7A5230;
+    }
+}
+
+// Grand total box
+.grand-total-box {
+    background-color: rgba(92, 122, 58, 0.08);
+    h5 { color: #23291A; }
+}
+
+// Buttons
 .farm-primary-button {
-    background-color: #A3C293;
-    color: #FDFDFD;
+    background-color: #5C7A3A;
+    color: #FAF6EB;
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -49,33 +383,15 @@ File: Custom Css File
     text-align: center;
     outline: none;
 
-    &:hover {
-        background-color: darken(#A3C293, 10%);
-    }
-
-    &:active,
-    &.active {
-        background: darken(#A3C293, 15%);
-        transform: scale(0.98);
-    }
-
-    &:focus,
-    &.focus {
-        outline: none;
-        box-shadow: none !important;
-        background-color: darken(#A3C293, 30%) !important;
-    }
-
-    &:disabled {
-        background-color: #cccccc;
-        cursor: not-allowed;
-        opacity: 0.6;
-    }
+    &:hover  { background-color: #3F5524; }
+    &:active, &.active { background: #3F5524; transform: scale(0.98); }
+    &:focus, &.focus { outline: none; box-shadow: none !important; background-color: #3F5524 !important; }
+    &:disabled { background-color: #A8B97D; cursor: not-allowed; opacity: 0.6; }
 }
 
 .farm-secondary-button {
-    background-color: #8b4513;
-    color: #FDFDFD;
+    background-color: #A87340;
+    color: #FAF6EB;
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -83,36 +399,39 @@ File: Custom Css File
     text-align: center;
     outline: none;
 
-    &:hover {
-        background-color: darken(#8b4513, 10%);
-    }
-
-    &:active,
-    &.active {
-        background: darken(#8b4513, 15%) !important;
-        transform: scale(0.98);
-    }
-
-    &:focus,
-    &.focus {
-        outline: none;
-        box-shadow: none !important;
-        background-color: darken(#8b4513, 15%) !important;
-    }
-
-    &:disabled {
-        background-color: #cccccc;
-        cursor: not-allowed;
-        opacity: 0.6;
-    }
+    &:hover  { background-color: darken(#A87340, 10%); }
+    &:active, &.active { background: darken(#A87340, 15%) !important; transform: scale(0.98); }
+    &:focus, &.focus { outline: none; box-shadow: none !important; background-color: darken(#A87340, 15%) !important; }
+    &:disabled { background-color: #C99A6E; cursor: not-allowed; opacity: 0.6; }
 }
+
+// Farm action buttons
+.farm-action-btn, .pig-action-btn {
+    background-color: #5C7A3A;
+    color: #FAF6EB;
+    border: none;
+}
+
+.farm-card-header { background-color: #5C7A3A; color: #FAF6EB; }
+
+// Farm / pig cards
+.farm-card,
+.pig-card { background-color: #FAF6EB; }
+
+.farm-card-title,
+.pig-card-title { color: #23291A; }
+
+.farm-card-subtitle,
+.pig-card-subtitle { color: #3F4731; }
+
+.farm-card-text,
+.pig-card-text { color: #7A8266; }
 
 .page-link {
     &:hover {
         color: #FDFDFD;
     }
 }
-
 
 
 
@@ -1151,10 +1470,6 @@ File: Custom Css File
     h5 { color: #212529; }
 }
 
-// ============================================
-// Dark Mode Overrides
-// ============================================
-
 [data-bs-theme="dark"] {
 
     // bg-white y bg-light en dark mode → background oscuro
@@ -1192,9 +1507,16 @@ File: Custom Css File
         color: #878a99 !important;
     }
 
+    // Body y page-content bg
+    body,
+    .page-content {
+        background-color: #1a1d21;
+    }
+
     // Sidebar: usar background oscuro del template en lugar del verde granja
     .navbar-menu {
         background-color: #1a1d21 !important;
+        border-right-color: #1a1d21 !important;
     }
 
     // Cards
@@ -1517,7 +1839,7 @@ File: Custom Css File
         color: #ced4da;
     }
 
-    // ---- React Select (clases semánticas) ----
+    // ---- React Select ----
     .react-select__control {
         background-color: #262a2f !important;
         border-color: #32383e !important;
@@ -1561,7 +1883,6 @@ File: Custom Css File
 
     .react-select__multi-value {
         background-color: #405189;
-
         .react-select__multi-value__label { color: #fff; }
     }
 
@@ -1650,7 +1971,7 @@ File: Custom Css File
         border-color: rgba(255,255,255,0.12);
     }
 
-    // ---- Header / Topbar oscuro ----
+    // ---- Header / Topbar ----
     #page-topbar {
         background-color: #1a1d21 !important;
         border-bottom-color: #32383e !important;
@@ -1682,14 +2003,13 @@ File: Custom Css File
         }
     }
 
-    // ---- Grand Total box dark mode ----
+    // ---- Grand Total box ----
     .grand-total-box {
         background-color: rgba(64, 81, 137, 0.2) !important;
-
         h5 { color: #e9ecef !important; }
     }
 
-    // ---- table-primary (fila seleccionada) en dark mode ----
+    // ---- table-primary ----
     .table-primary {
         --vz-table-bg: rgba(64, 81, 137, 0.35) !important;
         --vz-table-color: #e9ecef !important;
@@ -1702,14 +2022,13 @@ File: Custom Css File
         }
     }
 
-    // ---- hover sobre fila seleccionada (table-hover + table-primary) ----
     .table-hover > tbody > tr.table-primary:hover > td,
     .table-hover > tbody > tr.table-primary:hover > th {
         background-color: rgba(64, 81, 137, 0.5) !important;
         color: #e9ecef !important;
     }
 
-    // ---- table-light en dark mode ----
+    // ---- table-light ----
     .table-light {
         --vz-table-bg: #262a2e !important;
         --vz-table-color: #e9ecef !important;
@@ -1722,18 +2041,16 @@ File: Custom Css File
         }
     }
 
-    // ---- Columnas coloreadas en tablas (reducir opacidad en dark) ----
     .table th[style*="background-color"],
     .table td[style*="background-color"] {
         color: #e9ecef !important;
     }
 
-    // ---- Nivo Charts SVG text ----
+    // ---- Nivo Charts ----
     .card-body svg text {
         fill: #878a99 !important;
     }
 
-    // ---- Nivo / custom chart tooltips ----
     .card-body [style*="background: white"],
     .card-body [style*="background:white"],
     .card-body [style*='background: "white"'] {
@@ -1742,23 +2059,15 @@ File: Custom Css File
         border-color: #32383e !important;
     }
 
-    // ---- Flatpickr calendar ----
+    // ---- Flatpickr ----
     .flatpickr-calendar {
         background: #212529;
         border-color: #32383e;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 
-        .flatpickr-months, .flatpickr-month {
-            background: #1a1d21;
-            color: #ced4da;
-        }
-
+        .flatpickr-months, .flatpickr-month { background: #1a1d21; color: #ced4da; }
         .flatpickr-current-month .flatpickr-monthDropdown-months,
-        .flatpickr-current-month input.cur-year {
-            background: #1a1d21;
-            color: #ced4da;
-        }
-
+        .flatpickr-current-month input.cur-year { background: #1a1d21; color: #ced4da; }
         .flatpickr-weekdays { background: #1a1d21; }
         span.flatpickr-weekday { color: #878a99; }
 
@@ -1778,12 +2087,11 @@ File: Custom Css File
         }
     }
 
-    // ---- .text-black ----
     .text-black {
         color: #e9ecef !important;
     }
 
-    // ---- ReportDateRangeSelector dark mode ----
+    // ---- ReportDateRangeSelector ----
     .date-range-selector {
         .btn-light {
             background-color: #2c3238 !important;
@@ -1809,7 +2117,7 @@ File: Custom Css File
         }
     }
 
-    // ---- Farm form manager selector dark mode ----
+    // ---- Farm form manager selector ----
     .farm-form-manager-row {
         background: #262a2e;
         border-color: #32383e;
@@ -1831,7 +2139,7 @@ File: Custom Css File
         border-color: #32383e;
     }
 
-    // ---- FilePond dark mode ----
+    // ---- FilePond ----
     .filepond--panel-root {
         background-color: #262a2e !important;
         border-color: #32383e !important;
@@ -1839,7 +2147,6 @@ File: Custom Css File
 
     .filepond--drop-label {
         color: #ced4da !important;
-
         label { color: #ced4da !important; }
     }
 
@@ -1862,25 +2169,16 @@ File: Custom Css File
     }
 }
 
-// Flatpickr dark mode — el calendario se monta en <body> (fuera de [data-bs-theme]),
-// así que se necesita un selector independiente desde html.
+// Flatpickr dark — montado en <body>, fuera de [data-bs-theme], requiere selector desde html
 html[data-bs-theme="dark"] {
     .flatpickr-calendar {
         background: #212529;
         border-color: #32383e;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 
-        .flatpickr-months, .flatpickr-month {
-            background: #1a1d21;
-            color: #ced4da;
-        }
-
+        .flatpickr-months, .flatpickr-month { background: #1a1d21; color: #ced4da; }
         .flatpickr-current-month .flatpickr-monthDropdown-months,
-        .flatpickr-current-month input.cur-year {
-            background: #1a1d21;
-            color: #ced4da;
-        }
-
+        .flatpickr-current-month input.cur-year { background: #1a1d21; color: #ced4da; }
         .flatpickr-weekdays { background: #1a1d21; }
         span.flatpickr-weekday { color: #878a99; }
 

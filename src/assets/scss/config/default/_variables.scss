@@ -9,9 +9,12 @@
 $variable-prefix:             vz-; // Deprecated in v5.2.0 for the shorter `$prefix`
 $prefix:                      $variable-prefix;
 
-// Font Family
-$font-family-primary:                             'Poppins', sans-serif;
-$font-family-secondary:                           'hkgrotesk', sans-serif;
+// Font Family — PorcySys
+$font-family-primary:                             'Inter', sans-serif;
+$font-family-secondary:                           'Inter', sans-serif;
+$font-family-sans-serif:                          'Inter', sans-serif;
+$font-family-base:                                'Inter', sans-serif;
+$headings-font-family:                            'Instrument Serif', serif;
 
 //custom variables managed by
 //light mode
@@ -322,8 +325,8 @@ $cyans: (
 // fusv-enable
 
 // scss-docs-start theme-color-variables
-$primary:       $indigo;
-$secondary:     $blue;
+$primary:       #5C7A3A;
+$secondary:     #A87340;
 $success:       $green;
 $info:          $cyan;
 $warning:       $yellow;
@@ -458,8 +461,8 @@ $position-values: (
 //
 // Settings for the `<body>` element.
 
-$body-bg:                   #f3f3f9;
-$body-color:                $gray-900;
+$body-bg:                   #F4EFE2;
+$body-color:                #23291A;
 $body-text-align:           null;
 
 $body-secondary-color:      $gray-600;

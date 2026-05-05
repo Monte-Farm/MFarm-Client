@@ -56,7 +56,7 @@ const KPI = ({
                 </h6>
 
                 <h3
-                    className="fw-bold mb-1 text-truncate w-100"
+                    className="fw-bold mb-1 text-truncate w-100 kpi-value"
                     style={{
                         fontSize: "clamp(16px, 2.5vw, 24px)",
                     }}
