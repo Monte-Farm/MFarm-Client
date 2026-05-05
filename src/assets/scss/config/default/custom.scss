@@ -372,6 +372,28 @@ html[data-bs-theme="light"],
     h5 { color: #23291A; }
 }
 
+// PDF button — azul para distinguirlo de los botones de confirmación verdes
+.btn-pdf {
+    background-color: #3577f1 !important;
+    border-color: #3577f1 !important;
+    color: #fff !important;
+
+    &:hover  { background-color: #2563d4 !important; border-color: #2563d4 !important; }
+    &:focus  { box-shadow: 0 0 0 0.2rem rgba(53, 119, 241, 0.35) !important; }
+    &:disabled { opacity: 0.65; }
+}
+
+// Cancel / negative action buttons — rojo suave
+.btn-cancel {
+    background-color: #e8534a !important;
+    border-color: #e8534a !important;
+    color: #fff !important;
+
+    &:hover  { background-color: #cf3d35 !important; border-color: #cf3d35 !important; }
+    &:focus  { box-shadow: 0 0 0 0.2rem rgba(232, 83, 74, 0.35) !important; }
+    &:disabled { opacity: 0.65; }
+}
+
 // Buttons
 .farm-primary-button {
     background-color: #5C7A3A;

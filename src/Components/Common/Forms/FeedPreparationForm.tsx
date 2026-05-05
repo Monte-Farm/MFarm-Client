@@ -420,7 +420,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
             )}
 
             <div className="d-flex justify-content-end gap-2 mt-4">
-                <Button color="secondary" outline onClick={onCancel}>{t('common.button.cancel')}</Button>
+                <Button color="secondary" className="btn-cancel" outline onClick={onCancel}>{t('common.button.cancel')}</Button>
                 <Button color="success" onClick={() => formik.handleSubmit()} disabled={formik.isSubmitting}>
                     {formik.isSubmitting ? <Spinner size="sm" /> : (<><i className="ri-check-line me-2" />{t('feeding.administration.form.action.register')}</>)}
                 </Button>

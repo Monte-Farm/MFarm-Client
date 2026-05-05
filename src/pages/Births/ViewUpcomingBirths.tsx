@@ -322,6 +322,7 @@ const ViewUpcomingBirths = () => {
                         <div className="d-flex gap-2">
                             <Button
                                 color="secondary"
+                                className="btn-pdf"
                                 onClick={() => toggleModal('dateRange')}
                                 disabled={pdfLoading}
                             >

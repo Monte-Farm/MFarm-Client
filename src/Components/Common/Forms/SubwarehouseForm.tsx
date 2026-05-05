@@ -481,7 +481,7 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
                     ¿Estás seguro de que deseas cancelar? Los datos no se guardarán.
                 </ModalBody>
                 <ModalFooter>
-                    <Button className='farm-secondary-button' onClick={onCancel}>
+                    <Button className='btn-cancel' onClick={onCancel}>
                         Sí, cancelar
                     </Button>
                     <Button className='farm-primary-button' onClick={() => toggleModal('cancel', false)}>

@@ -254,7 +254,7 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCa
         <ModalHeader>{t('warehouse.supplierForm.cancelModal.title')}</ModalHeader>
         <ModalBody>{t('warehouse.supplierForm.cancelModal.body')}</ModalBody>
         <ModalFooter>
-          <Button color="danger" onClick={onCancel}>{t('warehouse.supplierForm.cancelModal.confirm')}</Button>
+          <Button className="btn-cancel" onClick={onCancel}>{t('warehouse.supplierForm.cancelModal.confirm')}</Button>
           <Button color="success" onClick={() => setCancelModalOpen(false)}>{t('warehouse.supplierForm.cancelModal.reject')}</Button>
         </ModalFooter>
       </Modal>

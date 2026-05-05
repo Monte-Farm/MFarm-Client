@@ -249,7 +249,7 @@ const UserForm: React.FC<UserFormProps> = ({
                     {t("users.form.cancelModal.body")}
                 </ModalBody>
                 <ModalFooter>
-                    <Button color="danger" onClick={onCancel}>
+                    <Button className="btn-cancel" onClick={onCancel}>
                         {t("users.form.button.yesCancel")}
                     </Button>
                     <Button color="success" onClick={() => toggleModal("cancel", false)}>

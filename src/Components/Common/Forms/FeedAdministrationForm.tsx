@@ -260,7 +260,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
             </div>
 
             <div className="d-flex justify-content-end gap-2 mt-4">
-                <Button color="secondary" outline onClick={onCancel}>{t('feeding.administration.form.action.cancel')}</Button>
+                <Button color="secondary" className="btn-cancel" outline onClick={onCancel}>{t('feeding.administration.form.action.cancel')}</Button>
                 <Button
                     color="success"
                     onClick={() => formik.handleSubmit()}

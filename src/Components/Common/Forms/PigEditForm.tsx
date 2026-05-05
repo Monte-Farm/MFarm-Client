@@ -152,7 +152,7 @@ const PigEditForm: React.FC<PigEditFormProps> = ({ pigData, onSave, onCancel }) 
                 <ModalHeader>{t('form.pig.action.cancelEdit')}</ModalHeader>
                 <ModalBody>{t('form.pig.action.cancelConfirm')}</ModalBody>
                 <ModalFooter>
-                    <Button color="danger" onClick={onCancel}>{t('common.yes')}, {t('common.button.cancel').toLowerCase()}</Button>
+                    <Button className="btn-cancel" onClick={onCancel}>{t('common.yes')}, {t('common.button.cancel').toLowerCase()}</Button>
                     <Button color="success" onClick={() => toggleModal('cancel')}>{t('common.no')}</Button>
                 </ModalFooter>
             </Modal>

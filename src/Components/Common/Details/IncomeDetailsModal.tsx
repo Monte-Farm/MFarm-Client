@@ -228,6 +228,7 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
             <div className="d-flex gap-2 mb-4">
                 <Button
                     color="primary"
+                    className="btn-pdf"
                     onClick={handlePrintIncome}
                     disabled={pdfLoading}
                 >

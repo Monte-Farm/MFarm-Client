@@ -294,7 +294,7 @@ const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
 
             {/* Acciones */}
             <div className="d-flex gap-2 mt-4">
-                <Button className="ms-auto" color="secondary" type="button" onClick={onCancel}>
+                <Button className="ms-auto btn-cancel" color="secondary" type="button" onClick={onCancel}>
                     {t('common.button.cancel')}
                 </Button>
                 <Button color="primary" type="submit" disabled={formik.isSubmitting}>

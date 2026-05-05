@@ -165,6 +165,7 @@ const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => 
                     <div className="d-flex gap-2">
                         <Button
                             color="primary"
+                            className="btn-pdf"
                             onClick={handlePrintPregnancy}
                             disabled={pdfLoading}
                         >

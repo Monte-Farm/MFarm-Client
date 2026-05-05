@@ -161,7 +161,7 @@ const OrderDetails: React.FC<OrderDetailsProps> = ({ orderId }) => {
     return (
         <>
             <div className="d-flex gap-2 mb-4">
-                <Button className="farm-primary-button" onClick={handlePrintOrder}>
+                <Button className="btn-pdf" onClick={handlePrintOrder}>
                     <i className="ri-download-line me-2"></i>
                     {t('common.button.exportPdf', { defaultValue: 'Descargar Reporte' })}
                 </Button>

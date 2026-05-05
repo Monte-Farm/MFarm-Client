@@ -137,7 +137,7 @@ const ExtractionDetails: React.FC<ExtractionDetailsProps> = ({ extractionId }) =
     return (
         <div className="mt-2">
             <div className="d-flex gap-2 mb-4">
-                <Button color="primary" onClick={handlePrintExtraction} disabled={pdfLoading}>
+                <Button color="primary" className="btn-pdf" onClick={handlePrintExtraction} disabled={pdfLoading}>
                     {pdfLoading ? (
                         <>
                             <Spinner className="me-2" size='sm' />

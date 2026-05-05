@@ -134,7 +134,7 @@ const UserDetailsModal: React.FC<UserDetailsProps> = ({ userId }) => {
     return (
         <div>
             <div className="d-flex mb-3 gap-2">
-                <Button color="primary" onClick={handleGenerateReport} disabled={pdfLoading}>
+                <Button color="primary" className="btn-pdf" onClick={handleGenerateReport} disabled={pdfLoading}>
                     {pdfLoading ? (
                         <>
                             <Spinner className="me-2" size='sm' />

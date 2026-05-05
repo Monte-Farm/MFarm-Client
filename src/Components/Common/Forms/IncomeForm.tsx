@@ -915,7 +915,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                 <ModalHeader>{t('warehouse.productForm.cancelModal.title', { defaultValue: 'Confirmación' })}</ModalHeader>
                 <ModalBody>{t('warehouse.productForm.cancelModal.message', { defaultValue: '¿Estás seguro de que deseas cancelar? Los datos no se guardarán.' })}</ModalBody>
                 <ModalFooter>
-                    <Button color="danger" onClick={onCancel}>{t('warehouse.productForm.cancelModal.confirm', { defaultValue: 'Sí, cancelar' })}</Button>
+                    <Button className="btn-cancel" onClick={onCancel}>{t('warehouse.productForm.cancelModal.confirm', { defaultValue: 'Sí, cancelar' })}</Button>
                     <Button color="success" onClick={() => setCancelModalOpen(false)}>{t('warehouse.productForm.cancelModal.deny', { defaultValue: 'No, continuar' })}</Button>
                 </ModalFooter>
             </Modal>

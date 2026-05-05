@@ -153,6 +153,7 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId 
             <div className="d-flex gap-2 mb-3 justify-content-end">
                 <Button
                     color="primary"
+                    className="btn-pdf"
                     onClick={handleGenerateReport}
                     disabled={pdfLoading}
                 >

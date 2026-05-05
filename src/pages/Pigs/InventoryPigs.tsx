@@ -299,7 +299,7 @@ const InventoryPigs = () => {
                     <div className="text-center py-5">
                         <h5 className="mb-4 text-muted">{t('pigs.action.selectModeQuestion')}</h5>
                         <div className="d-flex justify-content-center gap-4">
-                            <Button color="secondary" size="lg" className="d-flex flex-column align-items-center p-4" onClick={() => { toggleModal('selectCreationMode'); toggleModal('createSingle') }}>
+                            <Button color="success" size="lg" className="d-flex flex-column align-items-center p-4" onClick={() => { toggleModal('selectCreationMode'); toggleModal('createSingle') }}>
                                 <FaKeyboard size={32} className="mb-2" />
                                 <span>{t('pigs.action.registerSingle')}</span>
                             </Button>

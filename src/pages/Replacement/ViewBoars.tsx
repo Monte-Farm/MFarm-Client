@@ -267,7 +267,7 @@ const ViewBoars = () => {
 
                             <Button
                                 color="secondary"
-                                className="ms-auto"
+                                className="ms-auto btn-pdf"
                                 onClick={handleGeneratePDF}
                                 disabled={generatingReport}
                             >

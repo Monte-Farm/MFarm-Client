@@ -249,7 +249,7 @@ const ViewInventory = () => {
                     </>
                   )}
                 </Button>
-                <Button className="" onClick={() => toggleModal('createIncome')}>
+                <Button className="farm-primary-button" onClick={() => toggleModal('createIncome')}>
                   <i className="ri-add-line pe-2" />
                   {t('warehouse.inventory.button.newIncome')}
                 </Button>

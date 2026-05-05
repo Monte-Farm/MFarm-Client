@@ -505,7 +505,7 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
                     </div>
 
                     <div className="d-flex justify-content-between mt-4">
-                        <Button color="secondary" outline onClick={onCancel}>{t('common.button.cancel')}</Button>
+                        <Button color="secondary" className="btn-cancel" outline onClick={onCancel}>{t('common.button.cancel')}</Button>
                         <Button className="btn btn-primary" onClick={() => checkBasicData()}>
                             {t('common.button.next')} <i className="ri-arrow-right-line ms-1" />
                         </Button>

@@ -167,7 +167,7 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel }) => {
                 </div>
 
                 <div className="d-flex justify-content-end gap-2 mt-4">
-                    <Button type="button" color="secondary" onClick={onCancel}>
+                    <Button type="button" color="secondary" className="btn-cancel" onClick={onCancel}>
                         {t("common.button.cancel")}
                     </Button>
                     <Button type="submit" color="primary" disabled={formik.isSubmitting}>

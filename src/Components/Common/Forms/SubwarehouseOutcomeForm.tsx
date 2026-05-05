@@ -582,7 +582,7 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSa
                 <ModalHeader>{t('warehouse.productForm.cancelModal.title', { defaultValue: 'Confirmación' })}</ModalHeader>
                 <ModalBody>{t('warehouse.productForm.cancelModal.message', { defaultValue: '¿Estás seguro de que deseas cancelar? Los datos no se guardarán.' })}</ModalBody>
                 <ModalFooter>
-                    <Button className='farm-secondary-button' onClick={onCancel}>{t('warehouse.productForm.cancelModal.confirm', { defaultValue: 'Sí, cancelar' })}</Button>
+                    <Button className='btn-cancel' onClick={onCancel}>{t('warehouse.productForm.cancelModal.confirm', { defaultValue: 'Sí, cancelar' })}</Button>
                     <Button className='farm-primary-button' onClick={() => toggleModal('cancel', false)}>{t('warehouse.productForm.cancelModal.deny', { defaultValue: 'No, continuar' })}</Button>
                 </ModalFooter>
             </Modal>

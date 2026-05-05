@@ -620,7 +620,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
                 <ModalHeader>{t('common.button.confirm')}</ModalHeader>
                 <ModalBody>{t('warehouse.orderDetails.confirm.cancel', { defaultValue: '¿Estás seguro de que deseas cancelar? Los datos no se guardarán.' })}</ModalBody>
                 <ModalFooter>
-                    <Button color="danger" onClick={onCancel}>{t('warehouse.orderDetails.confirm.yes', { defaultValue: 'Sí, cancelar' })}</Button>
+                    <Button className="btn-cancel" onClick={onCancel}>{t('warehouse.orderDetails.confirm.yes', { defaultValue: 'Sí, cancelar' })}</Button>
                     <Button color="success" onClick={() => toggleModal('cancel', false)}>{t('warehouse.orderDetails.confirm.no', { defaultValue: 'No, continuar' })}</Button>
                 </ModalFooter>
             </Modal>

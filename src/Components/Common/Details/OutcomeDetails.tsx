@@ -195,6 +195,7 @@ const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
             <div className="d-flex gap-2 mb-4">
                 <Button
                     color="primary"
+                    className="btn-pdf"
                     onClick={handlePrintOutcome}
                     disabled={pdfLoading}
                 >

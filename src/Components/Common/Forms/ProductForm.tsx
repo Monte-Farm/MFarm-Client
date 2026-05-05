@@ -240,7 +240,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                     {t('warehouse.productForm.cancelModal.body')}
                 </ModalBody>
                 <ModalFooter>
-                    <Button className="farm-secondary-button" onClick={onCancel}>
+                    <Button className="btn-cancel" onClick={onCancel}>
                         {t('warehouse.productForm.cancelModal.confirm')}
                     </Button>
                     <Button className="farm-primary-button" onClick={() => setCancelModalOpen(false)}>
