@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import React, { useContext, useEffect, useState } from 'react';
 import { Button, Form, FormGroup, Label, Input, Spinner, FormFeedback, Row, Col, Card, CardBody, CardImg, CardText, Modal, ModalBody, ModalHeader, Alert } from 'reactstrap';
 import { FarmData, UserData } from 'common/data_interfaces';
@@ -31,7 +32,7 @@ const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
     };
 
     const handleError = (error: any, message: string) => {
-        console.error(message, error);
+        logger.error(message, error);
         setAlertConfig({ visible: true, color: "danger", message });
         setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
     };
@@ -53,7 +54,7 @@ const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
                     const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/farm/check_code_exists/${value}`)
                     return !response.data.data.exists
                 } catch (error) {
-                    console.error('Error checking farm code:', error);
+                    logger.error('Error checking farm code:', error);
                     return false;
                 }
             }),
@@ -94,7 +95,7 @@ const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
                 }
                 onSave();
             } catch (error) {
-                console.error('Error al guardar la granja:', error);
+                logger.error('Error al guardar la granja:', error);
                 handleError(error, t('farms.form.errorSave'));
             } finally {
                 setSubmitting(false);
@@ -108,7 +109,7 @@ const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/farm/next_code`);
             formik.setFieldValue('code', response.data.data)
         } catch (error) {
-            console.error('Error fetching next farm code:', error);
+            logger.error('Error fetching next farm code:', error);
             setAlertConfig({ visible: true, color: "danger", message: t('farms.form.errorNextCode') });
         }
     }
@@ -134,7 +135,7 @@ const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
 
             setManagers(filtered);
         } catch (error) {
-            console.error('Error fetching manager users:', error);
+            logger.error('Error fetching manager users:', error);
         }
     };
 

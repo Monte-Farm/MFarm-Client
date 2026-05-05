@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
 import { Badge, Card, CardBody, CardHeader, Spinner } from "reactstrap";
@@ -218,7 +219,7 @@ const HealthEventDetails: React.FC<HealthEventDetailsProps> = ({ eventId, groupI
             );
             setEventData(response.data.data);
         } catch (error) {
-            console.error('Error fetching event details:', error);
+            logger.error('Error fetching event details:', error);
         } finally {
             setLoading(false);
         }

@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { getEffectiveUser } from "helpers/impersonation_helper";
@@ -224,7 +225,7 @@ const ViewInseminations = () => {
                 setSelectedInseminations([]);
                 bulkHeatFormik.resetForm();
             } catch (error) {
-                console.error('Error bulk registering heat:', error);
+                logger.error('Error bulk registering heat:', error);
                 setAlertConfig({ visible: true, color: 'danger', message: t('insemination.error.bulkHeat') });
             } finally {
                 setSubmitting(false);
@@ -312,7 +313,7 @@ const ViewInseminations = () => {
                 setSelectedInseminations([]);
                 bulkDiagnosisFormik.resetForm();
             } catch (error) {
-                console.error('Error bulk diagnosing:', error);
+                logger.error('Error bulk diagnosing:', error);
                 setAlertConfig({ visible: true, color: 'danger', message: t('insemination.error.bulkDiagnosis') });
             } finally {
                 setSubmitting(false);
@@ -343,7 +344,7 @@ const ViewInseminations = () => {
             setFileURL(url);
             toggleModal('viewPDF');
         } catch (error) {
-            console.error('Error generating PDF: ', { error });
+            logger.error('Error generating PDF: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: t('insemination.error.pdf') });
         } finally {
             setPdfLoading(false);
@@ -358,7 +359,7 @@ const ViewInseminations = () => {
                 fetchInseminationsStats()
             ]);
         } catch (error) {
-            console.error(error);
+            logger.error(error);
             setAlertConfig({ visible: true, color: 'danger', message: t('insemination.error.load') })
         } finally {
             setLoading(false);

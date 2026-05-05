@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
@@ -48,7 +49,7 @@ const LitterMedicalDetails: React.FC<LitterMedicalDetailsProps> = ({ litterId })
             setLitter(litterResponse.data.data);
             setMedicalStats(statsResponse.data.data);
         } catch (error) {
-            console.error('Error fetching data: ', { error });
+            logger.error('Error fetching data: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: t('medical.error.load') });
         } finally {
             setLoading(false)

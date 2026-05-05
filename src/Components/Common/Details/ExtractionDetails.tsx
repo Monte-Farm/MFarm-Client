@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
@@ -104,7 +105,7 @@ const ExtractionDetails: React.FC<ExtractionDetailsProps> = ({ extractionId }) =
             setFileURL(window.URL.createObjectURL(pdfBlob));
             toggleModal('viewPDF');
         } catch (error) {
-            console.error('Error generating report: ', { error });
+            logger.error('Error generating report: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: t('laboratory.extraction.error.generatePdf') });
         } finally {
             setPdfLoading(false);
@@ -122,7 +123,7 @@ const ExtractionDetails: React.FC<ExtractionDetailsProps> = ({ extractionId }) =
                 const boarResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/pig/find_by_id/${extraction.boar._id}`);
                 setBoarDetails(boarResponse.data.data);
             } catch (error) {
-                console.error("Error cargando datos", error);
+                logger.error("Error cargando datos", error);
                 setAlertConfig({ visible: true, color: "danger", message: t('laboratory.extraction.error.fetchData') });
             } finally {
                 setLoading(false);

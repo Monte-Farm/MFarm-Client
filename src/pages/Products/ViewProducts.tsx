@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { useTranslation } from "react-i18next";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import ObjectDetails from "Components/Common/Details/ObjectDetails";
@@ -256,7 +257,7 @@ const ViewProducts = () => {
             });
 
         } catch (error) {
-            console.error('Error fetching product data:', error);
+            logger.error('Error fetching product data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.products.error.fetch') });
         } finally {
             setLoading(false);
@@ -271,7 +272,7 @@ const ViewProducts = () => {
             setAlertConfig({ visible: true, color: 'success', message: t('warehouse.products.success.create') });
             fetchAllProductData();
         } catch (error) {
-            console.error('Error creating product:', error);
+            logger.error('Error creating product:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.products.error.create') });
         } finally {
             toggleModal('create');
@@ -287,7 +288,7 @@ const ViewProducts = () => {
 
             fetchAllProductData();
         } catch (error) {
-            console.error('Error updating products:', error);
+            logger.error('Error updating products:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.products.error.update') });
         } finally {
             toggleModal('update');
@@ -304,7 +305,7 @@ const ViewProducts = () => {
 
             fetchAllProductData();
         } catch (error) {
-            console.error('Error deactivating products:', error);
+            logger.error('Error deactivating products:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.products.error.deactivate') });
         } finally {
             toggleModal('delete');
@@ -319,7 +320,7 @@ const ViewProducts = () => {
             setAlertConfig({ visible: true, color: 'success', message: t('warehouse.products.success.activate') });
             fetchAllProductData();
         } catch (error) {
-            console.error('Error ctivating products:', error);
+            logger.error('Error ctivating products:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.products.error.activate') });
         } finally {
             toggleModal('activate');
@@ -341,7 +342,7 @@ const ViewProducts = () => {
             fetchAllProductData();
             setSelectedProducts([]);
         } catch (error) {
-            console.error('Error bulk deactivating products:', error);
+            logger.error('Error bulk deactivating products:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.products.error.bulkDeactivate') });
         } finally {
             toggleModal('bulkDelete');
@@ -361,7 +362,7 @@ const ViewProducts = () => {
             fetchAllProductData();
             setSelectedProducts([]);
         } catch (error) {
-            console.error('Error bulk activating products:', error);
+            logger.error('Error bulk activating products:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.products.error.bulkActivate') });
         } finally {
             toggleModal('bulkActivate');

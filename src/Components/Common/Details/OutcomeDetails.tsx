@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import { getEffectiveUser } from "helpers/impersonation_helper";
@@ -149,7 +150,7 @@ const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
 
             setProducts(outcomeDetailsResponse.products)
         } catch (error) {
-            console.error('Error fetching data: ', { error })
+            logger.error('Error fetching data: ', { error })
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.outcomeDetails.error.fetch') })
         } finally {
             setLoading(false)
@@ -172,7 +173,7 @@ const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
             setFileURL(url);
             toggleModal('viewPDF');
         } catch (error) {
-            console.error('Error generating report: ', { error })
+            logger.error('Error generating report: ', { error })
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.outcomeDetails.error.pdf') })
         } finally {
             setPdfLoading(false);

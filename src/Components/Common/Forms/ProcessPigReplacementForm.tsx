@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
@@ -193,7 +194,7 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
             setCompatibleReplacementGroups(replacementGroupsWithId);
             replacementGroupsData.length === 0 ? setNewReplacementGroup(true) : setNewReplacementGroup(false);
         } catch (error) {
-            console.error('Error fetching data:', { error });
+            logger.error('Error fetching data:', { error });
             toggleModal('error');
         } finally {
             setLoading(false);
@@ -310,7 +311,7 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
                     "userId": userLogged._id
                 });
         } catch (error) {
-            console.error('Error processing replacement group:', { error });
+            logger.error('Error processing replacement group:', { error });
             throw error;
         }
     };
@@ -329,7 +330,7 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
                 });
             }
         } catch (error) {
-            console.error('Error processing replacement boars:', { error });
+            logger.error('Error processing replacement boars:', { error });
             throw error;
         }
     };

@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { Attribute, MedicationPackage, ProductData } from "common/data_interfaces";
 import { useFormik } from "formik";
@@ -235,7 +236,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                 const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/medication_package/check_code_exists/${value}`);
                 return !response.data.codeExists
             } catch (error) {
-                console.error('Error validating unique code: ', error);
+                logger.error('Error validating unique code: ', error);
                 return false;
             }
         }),
@@ -292,7 +293,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                     toggleModal('success', true)
                 }
             } catch (error) {
-                console.error('Error saving the information: ', { error })
+                logger.error('Error saving the information: ', { error })
                 setAlertConfig({ visible: true, color: 'danger', message: t('medication.package.error.save') })
             }
         }
@@ -311,7 +312,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
             formik.setFieldValue('code', codeResponse.data.data)
             setProducts(productsResponse.data.data)
         } catch (error) {
-            console.error('Error fetching information: ', { error })
+            logger.error('Error fetching information: ', { error })
             setAlertConfig({ visible: true, color: 'danger', message: t('medication.package.form.validation.loadError') })
         } finally {
             setLoading(false)

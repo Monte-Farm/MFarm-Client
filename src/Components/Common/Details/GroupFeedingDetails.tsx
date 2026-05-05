@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { FEEDING_INFO_URLS } from "helpers/feeding_urls";
@@ -55,7 +56,7 @@ const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId, onUp
             setAdministrations(info?.feedAdministrationHistory ?? []);
             setFeedingStats(statsResponse.data.data);
         } catch (error) {
-            console.error('Error fetching data: ', { error });
+            logger.error('Error fetching data: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: t('common.status.noData') });
         } finally {
             setLoading(false);

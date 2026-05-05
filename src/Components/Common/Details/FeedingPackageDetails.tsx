@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { FEEDING_PACKAGE_URLS } from "helpers/feeding_urls";
@@ -111,7 +112,7 @@ const FeedingPackageDetails: React.FC<FeedingPackageDetailsProps> = ({ feedingPa
             setRecipe(data);
             setFeedingsItems(data.feedings || []);
         } catch (error) {
-            console.error('Error fetching data:', error);
+            logger.error('Error fetching data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('feeding.package.error.load') });
         } finally {
             setLoading(false);

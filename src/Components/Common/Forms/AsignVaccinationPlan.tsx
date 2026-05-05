@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import { getEffectiveUser } from "helpers/impersonation_helper";
@@ -282,7 +283,7 @@ const AsignVaccinationPlanForm: React.FC<AsignVaccinationPlanFormProps> = ({ pig
             setPigDetails(pigData)
             setVaccinationPlans(plansWithId)
         } catch (error) {
-            console.error('Error fetching data:', error);
+            logger.error('Error fetching data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al cargar los datos, intentelo mas tarde' })
         } finally {
             setLoading(false)
@@ -303,7 +304,7 @@ const AsignVaccinationPlanForm: React.FC<AsignVaccinationPlanFormProps> = ({ pig
             });
             setVaccinationPlanItems(combined)
         } catch (error) {
-            console.error('Error fetching data:', error);
+            logger.error('Error fetching data:', error);
         }
     }
 
@@ -338,7 +339,7 @@ const AsignVaccinationPlanForm: React.FC<AsignVaccinationPlanFormProps> = ({ pig
 
                 toggleModal('success', true)
             } catch (error: any) {
-                console.error('Error saving the information: ', { error })
+                logger.error('Error saving the information: ', { error })
                 if (error.response?.status === 400 && error.response?.data?.missing) {
                     setMissingItems(error.response.data.missing);
                     toggleModal('missingStock');

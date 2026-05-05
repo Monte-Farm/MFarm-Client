@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from 'reactstrap';
@@ -81,7 +82,7 @@ const CompleteOrderForm: React.FC<OrderFormProps> = ({ orderId, onSave, onCancel
 
                 toggleModal('success');
             } catch (error) {
-                console.error("Error al enviar el formulario:", error);
+                logger.error("Error al enviar el formulario:", error);
                 toggleModal('error');
             } finally {
                 setSubmitting(false);
@@ -102,7 +103,7 @@ const CompleteOrderForm: React.FC<OrderFormProps> = ({ orderId, onSave, onCancel
             const productsResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/product/find_products_by_array/`, orderDetailsResponse.productsRequested);
             setProductsRequested(productsResponse.data.data);
         } catch (error) {
-            console.error('Error fetching data:', { error })
+            logger.error('Error fetching data:', { error })
             toggleModal('error')
         } finally {
             setLoading(false)

@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import React, { useContext, useState } from "react";
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback, Row, Col } from "reactstrap";
 import * as Yup from "yup";
@@ -38,7 +39,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                     const response = await configContext?.axiosHelper.get(`${configContext.apiUrl}/product/product_id_exists/${value}`);
                     return !response?.data.data
                 } catch (error) {
-                    console.error(`Error al verificar el id: ${error}`)
+                    logger.error(`Error al verificar el id: ${error}`)
                     return false
                 }
             }),
@@ -71,7 +72,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                 }
                 await onSubmit(values);
             } catch (error) {
-                console.error('Error sending product data: ', error);
+                logger.error('Error sending product data: ', error);
                 setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.productForm.error.save') });
             } finally {
                 setSubmitting(false);
@@ -86,7 +87,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
             const uploadResponse = await configContext.axiosHelper.uploadImage(`${configContext.apiUrl}/upload/upload_file/`, file);
             return uploadResponse.data.data;
         } catch (error) {
-            console.error('Error uploading image: ', error);
+            logger.error('Error uploading image: ', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.productForm.error.uploadImage') });
         }
     };

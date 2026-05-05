@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import { GroupData } from "common/data_interfaces";
@@ -119,7 +120,7 @@ const ViewGroups = () => {
             ])
             setGroups(groupResponse.data.data)
         } catch (error) {
-            console.error('Error fetching data:', { error })
+            logger.error('Error fetching data:', { error })
             setAlertConfig({ visible: true, color: 'danger', message: t('groups.error.load') })
         } finally {
             setLoading(false)

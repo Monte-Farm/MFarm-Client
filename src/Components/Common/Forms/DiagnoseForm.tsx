@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { Alert, Button, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from "reactstrap";
 import { Formik, useFormik } from "formik";
 import * as Yup from "yup";
@@ -28,7 +29,7 @@ const DiagnosisForm = ({ insemination, onSave, onCancel }: DiagnosisFormProps) =
     const [confirmationModalOpen, setConfirmationModalOpen] = useState<boolean>(false)
 
     const handleError = (error: any, message: string) => {
-        console.error(message, error);
+        logger.error(message, error);
         setAlertConfig({ visible: true, color: "danger", message });
         setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
     };

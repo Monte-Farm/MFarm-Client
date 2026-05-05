@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom";
@@ -190,7 +191,7 @@ const Suppliers = () => {
             });
 
         } catch (error) {
-            console.error('Error fetching supplier data:', error);
+            logger.error('Error fetching supplier data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.suppliers.error.fetch') });
         } finally {
             setLoading(false);
@@ -220,7 +221,7 @@ const Suppliers = () => {
             setAlertConfig({ visible: true, color: 'success', message: t('warehouse.suppliers.success.create') })
             fetchAllSupplierData();
         } catch (error) {
-            console.error('Error creating supplier:', error);
+            logger.error('Error creating supplier:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.suppliers.error.create') });
         } finally {
             toggleModal('create', false);
@@ -234,7 +235,7 @@ const Suppliers = () => {
             fetchAllSupplierData();
             setAlertConfig({ visible: true, color: 'success', message: t('warehouse.suppliers.success.update') })
         } catch (error) {
-            console.error('Error updating supplier:', error);
+            logger.error('Error updating supplier:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.suppliers.error.update') });
         } finally {
             toggleModal('update', false);
@@ -249,7 +250,7 @@ const Suppliers = () => {
             fetchAllSupplierData();
             setAlertConfig({ visible: true, color: 'success', message: t('warehouse.suppliers.success.deactivate') })
         } catch (error) {
-            console.error('Error deactivating supplier:', error);
+            logger.error('Error deactivating supplier:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.suppliers.error.deactivate') });
         } finally {
             toggleModal('delete', false);
@@ -264,7 +265,7 @@ const Suppliers = () => {
             fetchAllSupplierData();
             setAlertConfig({ visible: true, color: 'success', message: t('warehouse.suppliers.success.activate') })
         } catch (error) {
-            console.error('Error activating supplier:', error);
+            logger.error('Error activating supplier:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.suppliers.error.activate') });
         } finally {
             toggleModal('activate', false);
@@ -282,7 +283,7 @@ const Suppliers = () => {
             fetchAllSupplierData();
             setSelectedSuppliers([]);
         } catch (error) {
-            console.error('Error bulk deactivating suppliers:', error);
+            logger.error('Error bulk deactivating suppliers:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.suppliers.error.bulkDeactivate') });
         } finally {
             toggleModal('bulkDelete');
@@ -300,7 +301,7 @@ const Suppliers = () => {
             fetchAllSupplierData();
             setSelectedSuppliers([]);
         } catch (error) {
-            console.error('Error bulk activating suppliers:', error);
+            logger.error('Error bulk activating suppliers:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.suppliers.error.bulkActivate') });
         } finally {
             toggleModal('bulkActivate');

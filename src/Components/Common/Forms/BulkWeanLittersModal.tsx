@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
@@ -113,7 +114,7 @@ const BulkWeanLittersModal: React.FC<BulkWeanLittersModalProps> = ({
                 }
             }
         } catch (error) {
-            console.error('Error fetching compatible groups:', error);
+            logger.error('Error fetching compatible groups:', error);
         }
     };
 
@@ -281,7 +282,7 @@ const BulkWeanLittersModal: React.FC<BulkWeanLittersModalProps> = ({
 
             toggleModal('success', true);
         } catch (error: any) {
-            console.error('Error weaning litters:', error);
+            logger.error('Error weaning litters:', error);
             toggleModal('error', true);
         } finally {
             setIsSubmitting(false);

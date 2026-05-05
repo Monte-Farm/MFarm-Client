@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import { getEffectiveUser } from "helpers/impersonation_helper";
@@ -314,7 +315,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
             const productsWithId = productsResponse.data.data.map((b: any) => ({ ...b, code: b.id, id: b._id }));
             setProducts(productsWithId)
         } catch (error) {
-            console.error('Error fetching data:', error);
+            logger.error('Error fetching data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al cargar los datos, intentelo mas tarde' })
         } finally {
             setLoading(false)
@@ -378,7 +379,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
 
                 toggleModal('success', true)
             } catch (error: any) {
-                console.error('Error saving the information: ', { error })
+                logger.error('Error saving the information: ', { error })
                 if (error.response?.status === 400 && error.response?.data?.missing) {
                     setMissingItems(error.response.data.missing);
                     toggleModal('missingStock');

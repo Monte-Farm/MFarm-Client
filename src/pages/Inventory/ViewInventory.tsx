@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { useContext, useEffect, useState } from "react";
 import { Button, Container, Alert, Card, CardHeader, CardBody, Modal, ModalBody, ModalHeader, Badge, Spinner } from "reactstrap";
 import { useTranslation } from "react-i18next";
@@ -106,7 +107,7 @@ const ViewInventory = () => {
       const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/farm/get_main_warehouse/${userLogged.farm_assigned}`);
       setMainWarehouseId(response.data.data)
     } catch (error) {
-      console.error('Error fetching main warehouse ID:', error);
+      logger.error('Error fetching main warehouse ID:', error);
     }
   }
 
@@ -118,7 +119,7 @@ const ViewInventory = () => {
       setProductsData(response.data.data);
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching products data:', error);
+      logger.error('Error fetching products data:', error);
       setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.inventory.error.fetchProducts') });
     }
   }
@@ -131,7 +132,7 @@ const ViewInventory = () => {
       setProductsStatistics(response.data.data.statistics);
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching products data:', error);
+      logger.error('Error fetching products data:', error);
       setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.inventory.error.fetchProducts') });
     }
   }
@@ -149,7 +150,7 @@ const ViewInventory = () => {
       setFileURL(url);
       toggleModal('viewPDF');
     } catch (error) {
-      console.error('Error generating inventory report:', error);
+      logger.error('Error generating inventory report:', error);
       setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.inventory.error.generateReport') });
     } finally {
       setPdfLoading(false);

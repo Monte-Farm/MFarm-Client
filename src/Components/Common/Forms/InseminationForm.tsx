@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import { InseminationData, PigData } from "common/data_interfaces";
@@ -135,7 +136,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
     }
 
     const handleError = (error: any, message: string) => {
-        console.error(`${message}: ${error}`)
+        logger.error(`${message}: ${error}`)
         setAlertConfig({ visible: true, color: 'danger', message: message })
         setTimeout(() => {
             setAlertConfig({ ...alertConfig, visible: false })
@@ -266,7 +267,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
 
             toggleModal();
         } catch (error) {
-            console.error("Error fetching details", error);
+            logger.error("Error fetching details", error);
         }
     };
 

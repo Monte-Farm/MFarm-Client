@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { ExtractionData, PigData, UserData } from "common/data_interfaces";
 import { useFormik } from "formik";
@@ -94,7 +95,7 @@ const ExtractionForm: React.FC<ExtractionFormProps> = ({ initialData, onSave, on
     }
 
     const handleError = (error: any, message: string) => {
-        console.error(`${message}: ${error}`)
+        logger.error(`${message}: ${error}`)
         setAlertConfig({ visible: true, color: 'danger', message: message })
         setTimeout(() => {
             setAlertConfig({ ...alertConfig, visible: false })
@@ -233,7 +234,7 @@ const ExtractionForm: React.FC<ExtractionFormProps> = ({ initialData, onSave, on
             const nextBatch = response.data.data;
             formik.setFieldValue("batch", nextBatch);
         } catch (error) {
-            console.error("Error al obtener el siguiente lote:", error);
+            logger.error("Error al obtener el siguiente lote:", error);
         }
     }
 

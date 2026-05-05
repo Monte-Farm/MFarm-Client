@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import DonutChartCard, { DonutDataItem, DonutLegendItem } from "Components/Common/Graphics/DonutChartCard";
@@ -127,7 +128,7 @@ const InventoryPigs = () => {
             setPigsInventory(pigsResponse.data.data)
             setPigStats(statsResponse.data.data)
         } catch (error: any) {
-            console.error('Error fetching data:', error)
+            logger.error('Error fetching data:', error)
             const errorMessage = error.response?.status === 404
                 ? t('common.status.noData')
                 : error.response?.status === 403
@@ -150,7 +151,7 @@ const InventoryPigs = () => {
             setFileURL(window.URL.createObjectURL(pdfBlob));
             toggleModal('viewPDF');
         } catch (error) {
-            console.error('Error generating PDF: ', { error });
+            logger.error('Error generating PDF: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: t('common.button.exportPdf') });
         } finally {
             setPdfLoading(false);

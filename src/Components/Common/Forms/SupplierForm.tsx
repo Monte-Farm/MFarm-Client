@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import React, { useContext, useEffect, useState } from "react";
 import { Button, Col, Row, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback } from "reactstrap";
 import * as Yup from "yup";
@@ -30,7 +31,7 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCa
           const result = await configContext?.axiosHelper.get(`${configContext.apiUrl}/supplier/supplier_id_exists/${value}`)
           return !result?.data.data
         } catch (error) {
-          console.error(`Error al validar el ID: ${error}`)
+          logger.error(`Error al validar el ID: ${error}`)
           return false
         }
       }),
@@ -63,7 +64,7 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCa
         setSubmitting(true);
         await onSubmit(values);
       } catch (error) {
-        console.error("Error al enviar el formulario:", error);
+        logger.error("Error al enviar el formulario:", error);
         setShowErrorAlert(true);
       } finally {
         setSubmitting(false);
@@ -79,7 +80,7 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCa
       const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/supplier/supplier_next_id`);
       formik.setFieldValue('id', response.data.data);
     } catch (error) {
-      console.error('Ha ocurrido un error al obtener el id');
+      logger.error('Ha ocurrido un error al obtener el id');
     }
   };
 

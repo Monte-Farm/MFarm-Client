@@ -1,4 +1,5 @@
 
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import { getEffectiveUser } from "helpers/impersonation_helper";
@@ -219,7 +220,7 @@ const AsignGroupMedicationPackageForm: React.FC<AsignGroupMedicationPackageFormP
             const activeResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/group/active_counts/${groupId}`)
             setActive(activeResponse.data.data)
         } catch (error) {
-            console.error('Error fetching data:', error);
+            logger.error('Error fetching data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('medication.assign.error.load') })
         } finally {
             setLoading(false)
@@ -240,7 +241,7 @@ const AsignGroupMedicationPackageForm: React.FC<AsignGroupMedicationPackageFormP
             });
             setMedicationsPackagesItems(combined)
         } catch (error) {
-            console.error('Error fetching data:', error);
+            logger.error('Error fetching data:', error);
         }
     }
 
@@ -252,7 +253,7 @@ const AsignGroupMedicationPackageForm: React.FC<AsignGroupMedicationPackageFormP
             setMedicationPackagePreview(previewData)
             return previewData
         } catch (error) {
-            console.error('Error fetching data:', error);
+            logger.error('Error fetching data:', error);
         }
     }
 
@@ -311,7 +312,7 @@ const AsignGroupMedicationPackageForm: React.FC<AsignGroupMedicationPackageFormP
 
                 toggleModal('success', true);
             } catch (error: any) {
-                console.error('Error saving the information: ', { error });
+                logger.error('Error saving the information: ', { error });
                 if (error.response?.status === 400 && error.response?.data?.missing) {
                     setMissingItems(error.response.data.missing);
                     toggleModal('missingStock');

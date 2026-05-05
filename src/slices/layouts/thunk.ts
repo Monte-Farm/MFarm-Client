@@ -52,9 +52,7 @@ export const changeSidebarTheme = (theme : any) => async (dispatch : any) => {
     try {
         changeHTMLAttribute("data-sidebar", theme);
         dispatch(changeSidebarThemeAction(theme));
-    } catch (error) {
-        // console.log(error);
-    }
+    } catch (error) { }
 };
 
 /**
@@ -82,9 +80,7 @@ export const changeLayoutPosition = (layoutposition : any) => async (dispatch : 
     try {
         changeHTMLAttribute("data-layout-position", layoutposition);
         dispatch(changeLayoutPositionAction(layoutposition));
-    } catch (error) {
-        // console.log(error);
-    }
+    } catch (error) { }
 };
 
 /**
@@ -96,9 +92,7 @@ export const changeTopbarTheme = (topbarTheme : any) => async (dispatch : any) =
         changeHTMLAttribute("data-topbar", topbarTheme);
         dispatch(changeTopbarThemeAction(topbarTheme));
 
-    } catch (error) {
-        // console.log(error);
-    }
+    } catch (error) { }
 };
 
 /**
@@ -109,9 +103,7 @@ export const changeSidebarImageType = (leftsidebarImagetype : any) => async (dis
     try {
         changeHTMLAttribute("data-sidebar-image", leftsidebarImagetype);
         dispatch(changeSidebarImageTypeAction(leftsidebarImagetype));
-    } catch (error) {
-        // console.log(error);
-    }
+    } catch (error) { }
 };
 
 /**
@@ -122,9 +114,7 @@ export const changePreLoader = (preloaderTypes : any) => async (dispatch : any) 
     try {
         changeHTMLAttribute("data-preloader", preloaderTypes);
         dispatch(changePreLoaderAction(preloaderTypes));
-    } catch (error) {
-        // console.log(error);
-    }
+    } catch (error) { }
 };
 
 /**
@@ -151,9 +141,7 @@ export const changeLeftsidebarSizeType = (leftsidebarSizetype : any) => async (d
         }
         dispatch(changeLeftsidebarSizeTypeAction(leftsidebarSizetype));
 
-    } catch (error) {
-        // console.log(error);
-    }
+    } catch (error) { }
 };
 
 /**
@@ -164,9 +152,7 @@ export const changeLeftsidebarViewType = (leftsidebarViewtype : any) => async (d
     try {
         changeHTMLAttribute("data-layout-style", leftsidebarViewtype);
         dispatch(changeLeftsidebarViewTypeAction(leftsidebarViewtype));
-    } catch (error) {
-        // console.log(error);
-    }
+    } catch (error) { }
 };
 
 /**

@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
@@ -155,7 +156,7 @@ const ViewLitters = () => {
             const littersWithId = litterResponse.data.data.map((litter: any) => ({ ...litter, id: litter._id }));
             setLitters(littersWithId)
         } catch (error) {
-            console.error('Error fetching data: ', error)
+            logger.error('Error fetching data: ', error)
         } finally {
             setLoading(false)
         }

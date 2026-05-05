@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { useTranslation } from "react-i18next";
 import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
@@ -97,7 +98,7 @@ const SubwarehouseInventory = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/get_inventory/${userLogged.assigment}`);
             setSubwarehouseInventory(response.data.data);
         } catch (error) {
-            console.error('Error fetching data', { error })
+            logger.error('Error fetching data', { error })
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.subwarehouseDetails.error.fetchInventory') })
         }
     };
@@ -108,7 +109,7 @@ const SubwarehouseInventory = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/warehouse_statistics/${userLogged.assigment}`);
             setWarehouseStatistics(response.data.data.statistics);
         } catch (error) {
-            console.error('Error fetching warehouse statistics:', error);
+            logger.error('Error fetching warehouse statistics:', error);
         }
     };
 
@@ -127,7 +128,7 @@ const SubwarehouseInventory = () => {
             setPdfUrl(url)
             toggleModal('viewPDF')
         } catch (error) {
-            console.error('Error generating report', { error })
+            logger.error('Error generating report', { error })
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.subwarehouseDetails.error.generateReport') })
         } finally {
             setLoadingPDF(false)

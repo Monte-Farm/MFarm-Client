@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { OrderData, OutcomeData } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
@@ -24,7 +25,7 @@ const CompleteOrder = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
 
     const handleError = (error: any, message: string) => {
-        console.error(message, error)
+        logger.error(message, error)
         setAlertConfig({ visible: true, color: 'danger', message: message })
         setTimeout(() => {
             setAlertConfig({ ...alertConfig, visible: false })
@@ -42,7 +43,7 @@ const CompleteOrder = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/orders/find_id/${id_order}`);
             setOrderDetails(response.data.data);
         } catch (error) {
-            console.error(error, 'Ha ocurrido un error obteniendo la información del pedido')
+            logger.error(error, 'Ha ocurrido un error obteniendo la información del pedido')
             toggleModal('error')
         } finally {
             setLoading(false)

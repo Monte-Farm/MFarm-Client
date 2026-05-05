@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
@@ -144,7 +145,7 @@ const SicknessDetails: React.FC<SicknessDetailsProps> = ({ pigId, sicknessId }) 
             setSicknessDetails(sicknessData);
             setTreatmentItems(sicknessData.treatment);
         } catch (error) {
-            console.error('Error fetching data:', error);
+            logger.error('Error fetching data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('medical.sickness.detail.error.load', { defaultValue: 'Ha ocurrido un error al cargar los datos, intentelo mas tarde' }) })
         } finally {
             setLoading(false);

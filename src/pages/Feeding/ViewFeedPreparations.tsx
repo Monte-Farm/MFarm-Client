@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import FeedPreparationDetails from "Components/Common/Details/FeedPreparationDetails";
@@ -102,7 +103,7 @@ const ViewFeedPreparations = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/${FEED_PREPARATION_URLS.findByFarm(userLogged.farm_assigned)}`);
             setPreparations(response.data.data || []);
         } catch (error) {
-            console.error('Error fetching preparations:', error);
+            logger.error('Error fetching preparations:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('common.status.noData') });
         } finally {
             setLoading(false);

@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { useFormik } from "formik";
 import { Trans, useTranslation } from "react-i18next";
@@ -114,7 +115,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
                     toggleModal('success', true);
                 }
             } catch (error: any) {
-                console.error('Error creating administration:', error);
+                logger.error('Error creating administration:', error);
                 const msg = error?.response?.data?.message || t('feeding.administration.form.error');
                 setAlertConfig({ visible: true, color: 'danger', message: msg });
                 toggleModal('error', true);
@@ -132,7 +133,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
             );
             setPreparedProducts(response.data.data || []);
         } catch (error) {
-            console.error('Error fetching prepared products:', error);
+            logger.error('Error fetching prepared products:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('common.status.noData') });
         } finally {
             setLoading(false);

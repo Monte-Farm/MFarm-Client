@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useState, useEffect, useContext } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom"
@@ -101,7 +102,7 @@ const ProductDetails = () => {
     };
 
     const handleError = (error: any, message: string) => {
-        console.error(message, error);
+        logger.error(message, error);
         setAlertConfig({ visible: true, color: "danger", message });
         setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
     };
@@ -176,7 +177,7 @@ const ProductDetails = () => {
             setFileURL(url);
             setShowPDFModal(true);
         } catch (error) {
-            console.error('Error generating product inventory PDF: ', { error });
+            logger.error('Error generating product inventory PDF: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.inventoryDetails.error.generatePdf', { defaultValue: 'Error al generar el PDF del inventario del producto' }) });
         } finally {
             setPdfLoading(false);

@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { Badge, Button, Card, CardBody, CardHeader, Col, Input, Label, Row } from "reactstrap";
@@ -118,7 +119,7 @@ const PigReproductionDetails = ({ pigId }: Props) => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/pig/reproduction_details/${pigId}`);
             setData(response.data.data);
         } catch (error) {
-            console.error('Error fetching reproduction details', error);
+            logger.error('Error fetching reproduction details', error);
         } finally {
             setLoading(false);
         }

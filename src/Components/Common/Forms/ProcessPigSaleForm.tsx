@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { useTranslation } from "react-i18next";
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
@@ -197,7 +198,7 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
             setCompatibleSalesGroups(saleGroupsWithId);
             saleGroupsData.length === 0 ? setNewSalesGroup(true) : setNewSalesGroup(false);
         } catch (error) {
-            console.error('Error fetching data:', { error });
+            logger.error('Error fetching data:', { error });
             toggleModal('error');
         } finally {
             setLoading(false);
@@ -298,7 +299,7 @@ const ProcessPigSaleForm: React.FC<ProcessPigSaleFormProps> = ({ groupId, onSave
 
             await configContext.axiosHelper.put(`${configContext.apiUrl}/group/deactivate/${groupId}`, { responsible: userLogged._id });
         } catch (error) {
-            console.error('Error processing sale group:', { error });
+            logger.error('Error processing sale group:', { error });
             throw error;
         }
     };

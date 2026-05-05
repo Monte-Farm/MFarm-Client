@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { HttpStatusCode } from "axios";
 import { PigData } from "common/data_interfaces";
@@ -56,7 +57,7 @@ const PigEditForm: React.FC<PigEditFormProps> = ({ pigData, onSave, onCancel }) 
                     toggleModal('success');
                 }
             } catch (error) {
-                console.error('Error saving data: ', { error });
+                logger.error('Error saving data: ', { error });
                 setAlertConfig({ visible: true, color: 'danger', message: t('form.pig.error.update') });
             } finally {
                 setSubmitting(false);

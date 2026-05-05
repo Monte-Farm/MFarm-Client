@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
@@ -74,7 +75,7 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId, onUp
             setHealthEvents(reversedHealthEvents)
             setMedicalStats(statsResponse.data.data);
         } catch (error) {
-            console.error('Error fetching data: ', { error });
+            logger.error('Error fetching data: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: t('medical.error.load') });
         } finally {
             setLoading(false)

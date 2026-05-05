@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { SemenSample } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
@@ -181,7 +182,7 @@ const ViewSamples = () => {
             setSamples(samplesWithId)
             setFilteredSamples(samplesWithId)
         } catch (error) {
-            console.error('Error fetching the data: ', { error })
+            logger.error('Error fetching the data: ', { error })
             setAlertConfig({ visible: true, color: 'danger', message: t('laboratory.sample.error.fetchData') })
         } finally {
             setLoading(false)
@@ -220,7 +221,7 @@ const ViewSamples = () => {
                 fetchSemenSamples();
                 setSelectedSamples([]);
             } catch (error) {
-                console.error('Error bulk discarding samples:', error);
+                logger.error('Error bulk discarding samples:', error);
                 setAlertConfig({ visible: true, color: 'danger', message: t('laboratory.sample.bulk.error') });
             } finally {
                 setSubmitting(false);

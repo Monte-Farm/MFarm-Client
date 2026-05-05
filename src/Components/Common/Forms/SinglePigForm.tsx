@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { PigData } from "common/data_interfaces";
 import { useFormik } from "formik";
@@ -93,7 +94,7 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
             const nextResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/pig/get_next_pig_code`);
             formik.setFieldValue('code', nextResponse.data.data);
         } catch (error) {
-            console.error('Error fetching the next code', { error });
+            logger.error('Error fetching the next code', { error });
         } finally {
             setLoading(false);
         }

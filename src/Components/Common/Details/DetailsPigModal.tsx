@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App"
 import { PigData } from "common/data_interfaces"
 import { useContext, useEffect, useState } from "react"
@@ -32,7 +33,7 @@ const PigDetailsModal: React.FC<PigDetailsModalProps> = ({ pigId, showAllDetails
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/pig/find_by_id/${pigId}`)
             setPigDetails(response.data.data)
         } catch (error) {
-            console.error(error)
+            logger.error(error)
             setAlertConfig({ visible: true, color: "danger", message: t('common.status.noData') })
         } finally {
             setLoading(false)

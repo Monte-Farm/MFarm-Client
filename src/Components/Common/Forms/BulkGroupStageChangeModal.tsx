@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
@@ -212,7 +213,7 @@ const BulkGroupStageChangeModal: React.FC<BulkGroupStageChangeModalProps> = ({
 
             toggleModal('success', true);
         } catch (error: any) {
-            console.error('Error bulk changing group stages:', error);
+            logger.error('Error bulk changing group stages:', error);
             toggleModal('error', true);
         } finally {
             setIsSubmitting(false);

@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
@@ -132,7 +133,7 @@ const ViewExpenses = () => {
                 })),
             });
         } catch (error) {
-            console.error("Error fetching expenses:", { error });
+            logger.error("Error fetching expenses:", { error });
             setAlertConfig({ visible: true, color: "danger", message: t('finance.expense.error.fetchData') });
         } finally {
             setLoading(false);

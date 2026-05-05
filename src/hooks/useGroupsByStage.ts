@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
@@ -34,7 +35,7 @@ export const useGroupsByStage = ({ stage, statsEndpoint = 'group_alive_stats' }:
             setGroups(groupsWithId);
             setStats(statsResponse.data.data);
         } catch (error) {
-            console.error('Error fetching data:', { error });
+            logger.error('Error fetching data:', { error });
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intenelo mas tarde' });
         } finally {
             setLoading(false);

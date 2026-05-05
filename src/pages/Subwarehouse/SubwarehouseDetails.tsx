@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { useTranslation } from "react-i18next";
 import { ConfigContext } from "App";
 import { Attribute, SubwarehouseData } from "common/data_interfaces";
@@ -232,7 +233,7 @@ const SubwarehouseDetails = () => {
     ]
 
     const handleError = (error: any, message: string) => {
-        console.error(message, error);
+        logger.error(message, error);
         setAlertConfig({ visible: true, color: "danger", message });
         setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
     };
@@ -350,7 +351,7 @@ const SubwarehouseDetails = () => {
 
             setIncomeChartData({ entriesByType, valueByType, entriesLegendItems, valueLegendItems });
         } catch (error) {
-            console.error('Error fetching income chart data:', error);
+            logger.error('Error fetching income chart data:', error);
         }
     };
 
@@ -438,7 +439,7 @@ const SubwarehouseDetails = () => {
 
             setOutcomeChartData({ outcomesByType, valueByType, outcomesLegendItems, valueLegendItems });
         } catch (error) {
-            console.error('Error fetching outcome chart data:', error);
+            logger.error('Error fetching outcome chart data:', error);
         }
     };
 
@@ -454,7 +455,7 @@ const SubwarehouseDetails = () => {
             setFileURL(url);
             toggleModal('viewPDF');
         } catch (error) {
-            console.error('Error generating inventory report:', error);
+            logger.error('Error generating inventory report:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.subwarehouseDetails.error.generateReport') });
         } finally {
             setPdfLoading(false);

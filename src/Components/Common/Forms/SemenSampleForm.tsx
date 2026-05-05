@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { ExtractionData, SemenSample } from "common/data_interfaces";
 import { useFormik } from "formik";
@@ -96,7 +97,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
     }
 
     const handleError = (error: any, message: string) => {
-        console.error(`${message}: ${error}`)
+        logger.error(`${message}: ${error}`)
         setAlertConfig({ visible: true, color: 'danger', message: message })
         setTimeout(() => {
             setAlertConfig({ ...alertConfig, visible: false })

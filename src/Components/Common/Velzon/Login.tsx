@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import React, { useState } from "react";
 import { Button, Form, FormFeedback, Input, Label } from "reactstrap";
 import * as Yup from "yup";
@@ -25,7 +26,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
                 setSubmitting(true);
                 await onSubmit(values);
             } catch (error: any) {
-                console.error("Error al iniciar sesión:", error);
+                logger.error("Error al iniciar sesión:", error);
                 if ((error && error.status === 401) || (error && error.status === 404)) {
                     setErrors({
                         username: "Nombre de usuario o contraseña incorrectos.",

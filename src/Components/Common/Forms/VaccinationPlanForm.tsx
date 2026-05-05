@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { Attribute, MedicationPackage, ProductData, VaccinationPlan } from "common/data_interfaces";
 import { useFormik } from "formik";
@@ -299,7 +300,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
                 const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/vaccination_plan/check_code_exists/${value}`);
                 return !response.data.codeExists
             } catch (error) {
-                console.error('Error validating unique code: ', error);
+                logger.error('Error validating unique code: ', error);
                 return false;
             }
         }),
@@ -348,7 +349,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
                     toggleModal('success', true)
                 }
             } catch (error) {
-                console.error('Error saving the information: ', { error })
+                logger.error('Error saving the information: ', { error })
                 setAlertConfig({ visible: true, color: 'danger', message: t('medication.vaccinePlan.form.error.save', { defaultValue: 'Ha ocurrido un error al guardar los datos, intentelo mas tarde' }) })
             }
         }
@@ -368,7 +369,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
             const productsWithId = productsResponse.data.data.map((b: any) => ({ ...b, code: b.id, id: b._id }));
             setProducts(productsWithId)
         } catch (error) {
-            console.error('Error fetching information: ', { error })
+            logger.error('Error fetching information: ', { error })
             setAlertConfig({ visible: true, color: 'danger', message: t('medication.vaccinePlan.form.error.load', { defaultValue: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' }) })
         } finally {
             setLoading(false)

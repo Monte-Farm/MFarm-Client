@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb"
 import { getEffectiveUser } from "helpers/impersonation_helper"
@@ -125,7 +126,7 @@ const ViewExtractions = () => {
             setFileURL(url);
             toggleModal('viewPDF');
         } catch (error) {
-            console.error('Error generating PDF: ', { error });
+            logger.error('Error generating PDF: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: t('laboratory.extraction.error.generatePdf') });
         } finally {
             setPdfLoading(false);
@@ -144,7 +145,7 @@ const ViewExtractions = () => {
             setExtractions(extractionsResponse.data.data)
             setStats(statsResponse.data.data)
         } catch (error) {
-            console.error('Error fetching data:', error);
+            logger.error('Error fetching data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('laboratory.extraction.error.fetchData') })
         } finally {
             setLoading(false);

@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import React, { useContext, useState } from "react";
 import { Card, Col, Container, Row } from "reactstrap";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
@@ -42,7 +43,7 @@ const CoverSignIn = () => {
             dispatch(fetchGlobalConfig());
             history('/home');
         } catch (error: any) {
-            console.error(error.response);
+            logger.error(error.response);
             throw error;
         }
     };

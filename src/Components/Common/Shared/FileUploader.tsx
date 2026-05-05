@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FilePond, registerPlugin } from 'react-filepond';
@@ -44,7 +45,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
         }}
         onaddfile={(error, fileItem) => {
           if (error) {
-            console.error('Error al agregar archivo:', error);
+            logger.error('Error al agregar archivo:', error);
             return;
           }
           const file = fileItem.file as File;

@@ -9,9 +9,17 @@ axios.defaults.baseURL = api.API_URL;
 // content type
 axios.defaults.headers.post["Content-Type"] = "application/json";
 
-// content type
-const authUser: any = sessionStorage.getItem("authUser")
-const token = JSON.parse(authUser) ? JSON.parse(authUser).token : null;
+const getInitialToken = (): string | null => {
+  try {
+    const raw = sessionStorage.getItem("authUser");
+    if (!raw) return null;
+    return JSON.parse(raw)?.token ?? null;
+  } catch {
+    return null;
+  }
+};
+
+const token = getInitialToken();
 if (token)
   axios.defaults.headers.common["Authorization"] = "Bearer " + token;
 

@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import FeedingPackageDetails from "Components/Common/Details/FeedingPackageDetails";
@@ -108,7 +109,7 @@ const ViewFeedingPackages = () => {
             const feedingResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/${FEEDING_PACKAGE_URLS.findByFarm(userLogged.farm_assigned)}`);
             setFeedingPackages(feedingResponse.data.data);
         } catch (error) {
-            console.error('Error fetching data:', error);
+            logger.error('Error fetching data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('common.status.noData') });
         } finally {
             setLoading(false);

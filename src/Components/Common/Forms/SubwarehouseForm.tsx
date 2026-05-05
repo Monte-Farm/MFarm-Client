@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from 'App';
 import { Attribute, SubwarehouseData } from 'common/data_interfaces';
 import { useFormik } from 'formik';
@@ -185,7 +186,7 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
                     const response = await configContext?.axiosHelper.get(`${configContext.apiUrl}/warehouse/warehouse_id_exists/${value}`);
                     return !response?.data.data
                 } catch (error) {
-                    console.error(`Error al verificar el id: ${error}`)
+                    logger.error(`Error al verificar el id: ${error}`)
                     return false
                 }
             }),
@@ -223,7 +224,7 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
 
                 toggleModal('success')
             } catch (error) {
-                console.error(`Error saving data: ${error}`)
+                logger.error(`Error saving data: ${error}`)
                 toggleModal('error')
             } finally {
                 setSubmitting(false)
@@ -245,7 +246,7 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
             const usersWithId = filteredUsers.map((b: any) => ({ ...b, id: b._id }));
             setUsers(usersWithId);
         } catch (error) {
-            console.error('Error fetching data: ', { error })
+            logger.error('Error fetching data: ', { error })
             toggleModal('error')
         } finally {
             setLoading(false)

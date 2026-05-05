@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { Attribute, FeedingPackage } from "common/data_interfaces";
 import { useFormik } from "formik";
@@ -191,7 +192,7 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
                     const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/${FEEDING_PACKAGE_URLS.checkCodeExists(value)}`);
                     return !response.data.codeExists;
                 } catch (error) {
-                    console.error('Error validating unique code: ', error);
+                    logger.error('Error validating unique code: ', error);
                     return false;
                 }
             }),
@@ -248,7 +249,7 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
                     toggleModal('success', true);
                 }
             } catch (error) {
-                console.error('Error saving the information: ', error);
+                logger.error('Error saving the information: ', error);
                 toggleModal('error', true);
             }
         }
@@ -311,7 +312,7 @@ const FeedingPackageForm: React.FC<FeedingPackageFormProps> = ({ onSave, onCance
                 formik.setFieldValue('creation_date', new Date());
             }
         } catch (error) {
-            console.error('Error fetching information: ', error);
+            logger.error('Error fetching information: ', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('common.status.noData') });
         } finally {
             setLoading(false);

@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { PigData } from "common/data_interfaces";
 import { getEffectiveUser } from "helpers/impersonation_helper";
@@ -85,7 +86,7 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
             await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, { event: `Registro de cerdos por lote` });
             toggleModal('success');
         } catch (error) {
-            console.error('Error creating pig batch:', { error });
+            logger.error('Error creating pig batch:', { error });
             toggleModal('error');
         } finally {
             setIsSubmitting(false);

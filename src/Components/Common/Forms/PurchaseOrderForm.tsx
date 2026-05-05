@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { Attribute, ProductData, PurchaseOrderData, SupplierData } from "common/data_interfaces";
 import { SUPPLIER_TYPES } from "common/enums/suppliers.enums";
 import classnames from "classnames";
@@ -311,7 +312,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                     const result = await configContext?.axiosHelper.get(`${configContext.apiUrl}/purchase_orders/purchase_order_id_exists/${value}`);
                     return !result?.data.data;
                 } catch (error) {
-                    console.error(`Error al validar el ID: ${error}`);
+                    logger.error(`Error al validar el ID: ${error}`);
                     return false;
                 }
             }),
@@ -329,7 +330,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/farm/get_main_warehouse/${userLogged.farm_assigned}`);
             formik.setFieldValue('warehouse', response.data.data);
         } catch (error) {
-            console.error('Error fetching main warehouse ID:', error);
+            logger.error('Error fetching main warehouse ID:', error);
         }
     }
 
@@ -340,7 +341,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/supplier/find_supplier_status/${true}`);
             setSuppliers(response.data.data);
         } catch (error) {
-            console.error(error, 'Error obtaining the suppliers')
+            logger.error(error, 'Error obtaining the suppliers')
         }
     };
 
@@ -351,7 +352,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/product`);
             setProducts(response.data.data);
         } catch (error) {
-            console.error(error, 'Error obtaining the products')
+            logger.error(error, 'Error obtaining the products')
         }
     };
 
@@ -363,7 +364,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                 formik.setFieldValue('code', nextId);
             }
         } catch (error) {
-            console.error("Ha ocurrido un error obteniendo el id");
+            logger.error("Ha ocurrido un error obteniendo el id");
         }
     };
 
@@ -409,7 +410,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                 const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/purchase_orders/create_purchase_order`, values);
                 toggleModal('success')
             } catch (error) {
-                console.error("Error al enviar el formulario:", error);
+                logger.error("Error al enviar el formulario:", error);
                 setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.purchaseOrders.error.save', { defaultValue: 'Ha ocurrido un error al guardar los datos, intentelo mas tarde' }) })
             } finally {
                 setSubmitting(false);

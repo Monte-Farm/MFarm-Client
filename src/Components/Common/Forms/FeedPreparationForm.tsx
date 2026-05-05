@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { useFormik } from "formik";
 import { useTranslation } from "react-i18next";
@@ -102,7 +103,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
                     toggleModal('success', true);
                 }
             } catch (error: any) {
-                console.error('Error creating preparation:', error);
+                logger.error('Error creating preparation:', error);
                 if (error?.response?.status === 400 && Array.isArray(error.response.data?.missing)) {
                     const items = error.response.data.missing.map((m: any) => ({
                         product: m.product || productsMap[m.productId]?.name || m.productName || m.productId,
@@ -140,7 +141,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
             }
             setProductsMap(map);
         } catch (error) {
-            console.error('Error fetching data:', error);
+            logger.error('Error fetching data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('common.status.noData') });
         } finally {
             setLoading(false);
@@ -172,7 +173,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
             }
             setPricesMap(map);
         } catch (error) {
-            console.error('Error fetching prices:', error);
+            logger.error('Error fetching prices:', error);
         }
     };
 

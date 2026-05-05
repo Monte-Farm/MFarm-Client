@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import React, { useContext, useEffect, useState } from "react";
 import { Button, Col, Row, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback, Nav, NavItem, NavLink, TabContent, TabPane, Card, CardBody, Spinner, Badge, CardHeader } from "reactstrap";
 import * as Yup from "yup";
@@ -211,7 +212,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                     const result = await configContext?.axiosHelper.get(`${configContext.apiUrl}/incomes/income_id_exists/${value}`);
                     return !result?.data.data;
                 } catch (error) {
-                    console.error(`Error al validar el ID: ${error}`);
+                    logger.error(`Error al validar el ID: ${error}`);
                     return false;
                 }
             }),
@@ -242,7 +243,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
 
             formik.setFieldValue('id', nextIdResponse.data.data);
         } catch (error) {
-            console.error('Error fetching initial data:', error);
+            logger.error('Error fetching initial data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos iniciales, intentelo mas tarde' });
         }
     };
@@ -253,7 +254,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/supplier/find_supplier_status/${true}`);
             setSuppliers(response.data.data);
         } catch (error) {
-            console.error('Error obtaining suppliers:', error);
+            logger.error('Error obtaining suppliers:', error);
         }
     };
 
@@ -264,7 +265,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
             const rawProducts = response.data.data.filter((p: any) => p.type === 'raw');
             setProducts(rawProducts);
         } catch (error) {
-            console.error('Error obtaining products:', error);
+            logger.error('Error obtaining products:', error);
         }
     };
 
@@ -274,7 +275,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/purchase_orders/find_not_purchased/${mainWarehouseId}`);
             setPurchaseOrders(response.data.data);
         } catch (error) {
-            console.error('Error obtaining the purchase orders:', error);
+            logger.error('Error obtaining the purchase orders:', error);
         }
     };
 
@@ -315,7 +316,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                 const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/incomes/create_income`, values);
                 toggleModal('success');
             } catch (error) {
-                console.error("Error al enviar el formulario:", error);
+                logger.error("Error al enviar el formulario:", error);
             } finally {
                 setSubmitting(false);
             }
@@ -333,7 +334,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                 throw error;
             }
         } catch (error) {
-            console.error('Error fetching data:', { error })
+            logger.error('Error fetching data:', { error })
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al guardar el archivo, intentelo mas tarde' })
         }
     }

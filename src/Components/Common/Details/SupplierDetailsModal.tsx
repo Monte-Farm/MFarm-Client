@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { SupplierData } from "common/data_interfaces";
 import SupplierForm from "Components/Common/Forms/SupplierForm";
@@ -81,7 +82,7 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId 
             const purchaseOrderResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/purchase_orders/find_purchase_order_supplier/${supplierId}`);
             setSupplierPurchaseOrders(purchaseOrderResponse.data.data);
         } catch (error) {
-            console.error("Error fetching data:", { error })
+            logger.error("Error fetching data:", { error })
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.suppliers.error.fetch', { defaultValue: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' }) })
         } finally {
             setLoading(false)
@@ -125,7 +126,7 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId 
             setFileURL(url);
             toggleModal('viewPDF');
         } catch (error) {
-            console.error('Error generating report:', { error });
+            logger.error('Error generating report:', { error });
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.suppliers.error.fetch', { defaultValue: 'Error al generar el PDF, intentelo más tarde' }) });
         } finally {
             setPdfLoading(false);

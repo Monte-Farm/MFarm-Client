@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
@@ -89,7 +90,7 @@ const ViewPurchaseOrders = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/farm/get_main_warehouse/${userLogged.farm_assigned}`);
             setMainWarehouseId(response.data.data)
         } catch (error) {
-            console.error('Error fetching main warehouse ID:', error);
+            logger.error('Error fetching main warehouse ID:', error);
         }
     }
 
@@ -100,7 +101,7 @@ const ViewPurchaseOrders = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/purchase_orders/find_purchase_order_warehouse/${mainWarehouseId}`);
             setPurchaseOrders(response.data.data);
         } catch (error) {
-            console.error('El servicio no esta disponible, intentelo mas tarde', { error })
+            logger.error('El servicio no esta disponible, intentelo mas tarde', { error })
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.purchaseOrders.error.fetch', { defaultValue: 'Ha ocurrido un error al obtener los datos intentelo, mas tarde' }) })
         } finally {
             setLoading(false);
@@ -131,7 +132,7 @@ const ViewPurchaseOrders = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/purchase_orders/purchase_statistics/${mainWarehouseId}`);
             setPurchaseStatistics(response.data.data.statistics);
         } catch (error) {
-            console.error('Error fetching purchase statistics:', error);
+            logger.error('Error fetching purchase statistics:', error);
         }
     };
 

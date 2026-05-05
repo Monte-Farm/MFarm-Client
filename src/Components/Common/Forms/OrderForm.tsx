@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -249,7 +250,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
                     const result = await configContext?.axiosHelper.get(`${configContext.apiUrl}/orders/order_id_exists/${value}`)
                     return !result?.data.data
                 } catch (error) {
-                    console.error(`Error al validar el ID: ${error}`)
+                    logger.error(`Error al validar el ID: ${error}`)
                     return false
                 }
             }),
@@ -284,7 +285,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
 
                 toggleModal('success')
             } catch (error) {
-                console.error("Error al enviar el formulario:", error);
+                logger.error("Error al enviar el formulario:", error);
                 toggleModal('error');
             } finally {
                 setSubmitting(false);
@@ -325,7 +326,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSave, onCancel }) 
             setOrderOrigin(orderOriginResponse.data.data.name);
             formik.setFieldValue('orderOrigin', orderOriginResponse.data.data._id);
         } catch (error) {
-            console.error('Error fetching data:', { error });
+            logger.error('Error fetching data:', { error });
             toggleModal('error');
         } finally {
             setLoading(false)

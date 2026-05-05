@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
@@ -317,7 +318,7 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
             replacementGroupsData.length === 0 ? setNewReplacementGroup(true) : setNewReplacementGroup(false)
             saleGroupsData.length === 0 ? setNewSalesGroup(true) : setNewSalesGroup(false)
         } catch (error) {
-            console.error('Error fetching data:', { error });
+            logger.error('Error fetching data:', { error });
             toggleModal('error')
         } finally {
             setLoading(false)
@@ -415,7 +416,7 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
                 )
             }
         } catch (error) {
-            console.error('Error processing replacement group:', { error })
+            logger.error('Error processing replacement group:', { error })
             throw error;
         }
     }
@@ -487,7 +488,7 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
                 )
             }
         } catch (error) {
-            console.error('Error processing replacement group:', { error })
+            logger.error('Error processing replacement group:', { error })
             throw error
         }
     }
@@ -508,7 +509,7 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
                 )
             }
         } catch (error) {
-            console.error('Error processing replacement group:', { error })
+            logger.error('Error processing replacement group:', { error })
             throw error;
         }
     }

@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { Attribute, PurchaseOrderData } from "common/data_interfaces";
 import { SUPPLIER_TYPES } from "common/enums/suppliers.enums";
@@ -171,7 +172,7 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
             setPurchaseOrderDetails(purchaseOrderFound);
             setProducts(purchaseOrderFound.products);
         } catch (error) {
-            console.error('Error fetching data:', { error })
+            logger.error('Error fetching data:', { error })
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.purchaseOrders.error.fetch', { defaultValue: 'Error al obtener los datos, intentelo mas tarde' }) })
         } finally {
             setLoading(false)
@@ -192,7 +193,7 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
             setFileURL(url);
             toggleModal('viewPDF');
         } catch (error) {
-            console.error('Error generating report:', { error })
+            logger.error('Error generating report:', { error })
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.purchaseOrders.error.fetch', { defaultValue: 'Error al generar el PDF, intentelo más tarde' }) })
         } finally {
             setPdfLoading(false);

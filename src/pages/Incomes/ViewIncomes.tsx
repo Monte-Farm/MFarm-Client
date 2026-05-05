@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App"
 import BreadCrumb from "Components/Common/Shared/BreadCrumb"
 import { useContext, useEffect, useState } from "react"
@@ -119,7 +120,7 @@ const ViewIncomes = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/farm/get_main_warehouse/${userLogged.farm_assigned}`);
             setMainWarehouseId(response.data.data)
         } catch (error) {
-            console.error('Error fetching main warehouse ID:', error);
+            logger.error('Error fetching main warehouse ID:', error);
         }
     }
 
@@ -131,7 +132,7 @@ const ViewIncomes = () => {
             const incomesData = response.data.data;
             setIncomes(incomesData);
         } catch (error) {
-            console.error('Error fetching data: ', { error })
+            logger.error('Error fetching data: ', { error })
             setAlertConfig({ visible: false, color: 'danger', message: t('finance.income.error.generatePdf') })
         } finally {
             setLoading(false)
@@ -144,7 +145,7 @@ const ViewIncomes = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/incomes/income_statistics/${mainWarehouseId}`);
             setIncomeStatistics(response.data.data.statistics);
         } catch (error) {
-            console.error('Error fetching income statistics:', error);
+            logger.error('Error fetching income statistics:', error);
         }
     };
 
@@ -199,7 +200,7 @@ const ViewIncomes = () => {
 
             setChartData({ entriesByType, valueByType, entriesLegendItems, valueLegendItems });
         } catch (error) {
-            console.error('Error fetching income chart data:', error);
+            logger.error('Error fetching income chart data:', error);
         }
     };
 
@@ -217,7 +218,7 @@ const ViewIncomes = () => {
                 fetchIncomeChartData()
             ]);
         } catch (error) {
-            console.error('Error fetching warehouse data:', error);
+            logger.error('Error fetching warehouse data:', error);
         }
     };
 

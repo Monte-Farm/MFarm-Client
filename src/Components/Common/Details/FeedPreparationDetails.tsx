@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { Attribute } from "common/data_interfaces";
 import { Column } from "common/data/data_types";
@@ -72,7 +73,7 @@ const FeedPreparationDetails: React.FC<FeedPreparationDetailsProps> = ({ prepara
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/${FEED_PREPARATION_URLS.findById(preparationId)}`);
             setPreparation(response.data.data);
         } catch (error) {
-            console.error('Error fetching preparation:', error);
+            logger.error('Error fetching preparation:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('feeding.preparation.detail.loadError') });
         } finally {
             setLoading(false);

@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
@@ -129,7 +130,7 @@ const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) =>
                 setInsertMode("tracked");
             }
         } catch (error) {
-            console.error("Error fetching data", { error });
+            logger.error("Error fetching data", { error });
             setAlertConfig({ visible: true, color: "danger", message: t('groups.form.insert.loadError', { defaultValue: 'Ha ocurrido un error al obtener los datos, inténtelo más tarde' }) });
         } finally {
             setLoading(false);
@@ -152,7 +153,7 @@ const GroupInsertForm: React.FC<GroupInsertFormProps> = ({ groupId, onSave }) =>
 
             toggleModal('success')
         } catch (error) {
-            console.error('Error in insertPigs:', { error })
+            logger.error('Error in insertPigs:', { error })
             toggleModal('error')
         } finally {
             setIsSubmitting(false)

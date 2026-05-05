@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
@@ -159,7 +160,7 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
             const groupsWithId = groupsResponse.data.data.map((b: any) => ({ ...b, id: b._id }));
             setCompatibleGroups(groupsWithId);
         } catch (error) {
-            console.error('Error fetching data:', { error });
+            logger.error('Error fetching data:', { error });
             toggleModal('error')
         } finally {
             setLoading(false)
@@ -221,7 +222,7 @@ const WeanLitterForm: React.FC<WeanLitterFormProps> = ({ litterId, onSave }) => 
 
             toggleModal('success')
         } catch (error) {
-            console.error('Error weaning the litter: ', { error })
+            logger.error('Error weaning the litter: ', { error })
             toggleModal('error')
         } finally {
             setIsSubmitting(false)

@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { HttpStatusCode } from "axios";
 import { Column } from "common/data/data_types";
@@ -183,7 +184,7 @@ const SampleDetails = () => {
                 fetchData();
             }
         } catch (error) {
-            console.error(`Error discarding the dose: ${selectedDose.code}:`, error)
+            logger.error(`Error discarding the dose: ${selectedDose.code}:`, error)
             toggleModal('discardDose')
             setAlertConfig({ visible: true, color: 'danger', message: t('laboratory.sample.detail.error.discardDose', { code: selectedDose.code }) })
         }
@@ -200,7 +201,7 @@ const SampleDetails = () => {
             setFileURL(url);
             toggleModal('viewPDF');
         } catch (error) {
-            console.error('Error generating PDF: ', { error });
+            logger.error('Error generating PDF: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: t('laboratory.sample.detail.error.generatePdf') });
         } finally {
             setPdfLoading(false);
@@ -238,7 +239,7 @@ const SampleDetails = () => {
             setExtractionDetails(extractionResponse.data.data);
             setTecnicianDetails(technicianResponse.data.data);
         } catch (error) {
-            console.error('Error fetching data:', error);
+            logger.error('Error fetching data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('laboratory.sample.detail.error.fetchData') })
         } finally {
             setLoading(false);

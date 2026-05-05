@@ -109,18 +109,6 @@ export interface SubwarehouseData {
     type: string
 }
 
-export interface SupplierData {
-    _id?: string;
-    id: string;
-    name: string;
-    address: string;
-    phone_number: string;
-    email: string;
-    supplier_type: string;
-    status: boolean;
-    rnc: string;
-}
-
 export interface Tax {
     taxName: string;
     percentage: number;

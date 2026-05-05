@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { useEffect, useState, useContext } from "react";
 import { Card, CardBody, CardHeader } from "reactstrap";
 import Flatpickr from "react-flatpickr";
@@ -56,7 +57,7 @@ const WeightEvolutionChart = ({ entityId, mode, title }: Props) => {
                 },
             ]);
         } catch (error) {
-            console.error("Error fetching weight evolution:", error);
+            logger.error("Error fetching weight evolution:", error);
             setData([]);
         } finally {
             setLoading(false);

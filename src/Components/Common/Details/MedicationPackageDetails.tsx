@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
@@ -160,7 +161,7 @@ const MedicationPackageDetails: React.FC<MedicationPackageDetailsProps> = ({ med
             }
             setCurrentPrices(pricesMap);
         } catch (error) {
-            console.error('Error fetching data:', error)
+            logger.error('Error fetching data:', error)
             setAlertConfig({ visible: true, color: 'danger', message: t('medication.package.error.load') })
         } finally {
             setLoading(false)

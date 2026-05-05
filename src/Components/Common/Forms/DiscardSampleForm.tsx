@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { HttpStatusCode } from "axios";
 import { useFormik } from "formik";
@@ -23,7 +24,7 @@ const DiscardSampleForm = ({ sample, onSave, onCancel }: DiscardSampleFormProps)
     const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
 
     const handleError = (error: any, message: string) => {
-        console.error(message, error);
+        logger.error(message, error);
         setAlertConfig({ visible: true, color: "danger", message });
         setTimeout(() => setAlertConfig({ ...alertConfig, visible: false }), 5000);
     };

@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
@@ -140,7 +141,7 @@ const ChangeStageGroup: React.FC<WeanLitterFormProps> = ({ groupId, onSave }) =>
             );
 
         } catch (error) {
-            console.error('Error fetching data:', { error });
+            logger.error('Error fetching data:', { error });
             toggleModal('error')
         } finally {
             setLoading(false)

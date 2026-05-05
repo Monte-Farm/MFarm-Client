@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { Alert, Button, FormFeedback, Input, Label, Spinner } from "reactstrap";
 import { Formik, useFormik } from "formik";
 import * as Yup from "yup";
@@ -70,7 +71,7 @@ const AbortionForm = ({ pregnancy, onSave, onCancel }: AbortionFormProps) => {
                 }
                 setSuccessModalOpen(true)
             } catch (error) {
-                console.error('Error saving data: ', { error })
+                logger.error('Error saving data: ', { error })
                 setAlertConfig({ visible: true, color: 'danger', message: t('reproduction.form.abortion.errorSave', { defaultValue: 'Ha ocurrido un error al guardar los datos, intentelo mas tarde' }) })
             } finally {
                 setSubmitting(false)

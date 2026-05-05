@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
@@ -141,7 +142,7 @@ const VaccinationPlanDetails: React.FC<VaccinationPlanDetailsProps> = ({ vaccina
             setVaccinationItems(vaccinationPlanData.vaccines)
             setLoading(false)
         } catch (error) {
-            console.error('Error fetching data:', error)
+            logger.error('Error fetching data:', error)
             setAlertConfig({ visible: true, color: 'danger', message: t('medication.vaccinePlan.error.load') })
         }
     }

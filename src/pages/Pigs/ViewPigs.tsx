@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App"
 import { PigData } from "common/data_interfaces"
 import BreadCrumb from "Components/Common/Shared/BreadCrumb"
@@ -134,7 +135,7 @@ const ViewPigs = () => {
             setPigs(pigsResponse.data.data)
             setStats(statsResponse.data.data)
         } catch (error) {
-            console.error('Error fetching pigs: ', { error });
+            logger.error('Error fetching pigs: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: t('pigs.page.noPigs') })
         } finally {
             setLoading(false)
@@ -155,7 +156,7 @@ const ViewPigs = () => {
             setFileURL(url);
             toggleModal('viewPDF');
         } catch (error) {
-            console.error('Error generating report: ', { error });
+            logger.error('Error generating report: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: t('pigs.page.noPigs') })
         } finally {
             setGeneratingReport(false);

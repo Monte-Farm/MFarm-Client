@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { Attribute, UserData } from "common/data_interfaces";
 import { getEffectiveUser } from "helpers/impersonation_helper";
@@ -117,7 +118,7 @@ const UserDetailsModal: React.FC<UserDetailsProps> = ({ userId }) => {
             setFileURL(window.URL.createObjectURL(pdfBlob));
             toggleModal('viewPDF');
         } catch (error) {
-            console.error('Error generating report:', { error });
+            logger.error('Error generating report:', { error });
             toggleModal('error');
         } finally {
             setPdfLoading(false);

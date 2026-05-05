@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App"
 import { Attribute, OrderData } from "common/data_interfaces"
 import BreadCrumb from "Components/Common/Shared/BreadCrumb"
@@ -53,7 +54,7 @@ const OrderDetails = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
 
     const handleError = (error: any, message: string) => {
-        console.error(message, error)
+        logger.error(message, error)
         setAlertConfig({ visible: true, color: 'danger', message: message })
         setTimeout(() => {
             setAlertConfig({ ...alertConfig, visible: false })
@@ -98,7 +99,7 @@ const OrderDetails = () => {
 
             setProducts(products);
         } catch (error) {
-            console.error('Error al obtener los datos del pedido', error);
+            logger.error('Error al obtener los datos del pedido', error);
         } finally {
             setLoading(false);
         }

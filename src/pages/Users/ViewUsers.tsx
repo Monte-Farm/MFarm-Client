@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App"
 import { UserData } from "common/data_interfaces"
 import BreadCrumb from "Components/Common/Shared/BreadCrumb"
@@ -143,7 +144,7 @@ const ViewUsers = () => {
             }
 
         } catch (error) {
-            console.error("Error fetching users:", error);
+            logger.error("Error fetching users:", error);
             setAlertConfig({ visible: true, color: "danger", message: t('users.error.fetch') });
         } finally {
             setLoading(false);
@@ -163,7 +164,7 @@ const ViewUsers = () => {
             handleFetchUsers();
             setSelectedUsers([]);
         } catch (error) {
-            console.error('Error bulk deactivating users:', error);
+            logger.error('Error bulk deactivating users:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('users.error.deactivate') });
         } finally {
             toggleModal('bulkDelete');
@@ -183,7 +184,7 @@ const ViewUsers = () => {
             handleFetchUsers();
             setSelectedUsers([]);
         } catch (error) {
-            console.error('Error bulk activating users:', error);
+            logger.error('Error bulk activating users:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('users.error.activate') });
         } finally {
             toggleModal('bulkActivate');

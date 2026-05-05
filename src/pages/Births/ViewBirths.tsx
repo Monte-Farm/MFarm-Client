@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
@@ -137,7 +138,7 @@ const ViewBirths = () => {
             setBirths(birthsResponse.data.data)
             setBirthStats(statsResponse.data.data)
         } catch (error) {
-            console.error('Error fetching data:', { error })
+            logger.error('Error fetching data:', { error })
             setAlertConfig({ visible: true, color: 'danger', message: t('birth.error.load') })
         } finally {
             setLoading(false)
@@ -161,7 +162,7 @@ const ViewBirths = () => {
             setFileURL(url);
             toggleModal('viewPDF');
         } catch (error) {
-            console.error('Error generating PDF: ', { error });
+            logger.error('Error generating PDF: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: t('birth.error.pdf') });
         } finally {
             setPdfLoading(false);

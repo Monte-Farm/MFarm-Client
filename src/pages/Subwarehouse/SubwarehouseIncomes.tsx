@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { useTranslation } from "react-i18next";
 import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
@@ -90,7 +91,7 @@ const SubwarehouseIncomes = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/incomes/find_warehouse_incomes/${userLogged.assigment}`);
             setSubwarehouseIncomes(response.data.data);
         } catch (error) {
-            console.error('Error fetching data', { error })
+            logger.error('Error fetching data', { error })
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.subwarehouseDetails.error.fetchIncomes') })
         }
     };
@@ -101,7 +102,7 @@ const SubwarehouseIncomes = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/incomes/income_statistics/${userLogged.assigment}`);
             setIncomeStatistics(response.data.data.statistics);
         } catch (error) {
-            console.error('Error fetching income statistics:', error);
+            logger.error('Error fetching income statistics:', error);
         }
     };
 
@@ -164,7 +165,7 @@ const SubwarehouseIncomes = () => {
 
             setChartData({ entriesByType, valueByType, entriesLegendItems, valueLegendItems });
         } catch (error) {
-            console.error('Error fetching income chart data:', error);
+            logger.error('Error fetching income chart data:', error);
         }
     };
 

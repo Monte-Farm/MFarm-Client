@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
@@ -97,7 +98,7 @@ const ViewUpcomingBirths = () => {
                 setSelectedBirths([]);
                 bulkAbortionFormik.resetForm();
             } catch (error) {
-                console.error('Error bulk registering abortion:', error);
+                logger.error('Error bulk registering abortion:', error);
                 setAlertConfig({ visible: true, color: 'danger', mesagge: t('birth.error.bulkLoss') });
             } finally {
                 setSubmitting(false);
@@ -238,7 +239,7 @@ const ViewUpcomingBirths = () => {
             setCalendarData(mappedData)
 
         } catch (error) {
-            console.error(`Error fetching data: ${error}`)
+            logger.error(`Error fetching data: ${error}`)
             setAlertConfig({ visible: true, mesagge: t('birth.error.load'), color: 'danger' });
         } finally {
             setLoading(false)
@@ -262,7 +263,7 @@ const ViewUpcomingBirths = () => {
             setFileURL(url);
             toggleModal('viewPDF');
         } catch (error) {
-            console.error('Error generating PDF: ', { error });
+            logger.error('Error generating PDF: ', { error });
             setAlertConfig({ visible: true, color: 'danger', mesagge: t('birth.error.pdf') });
         } finally {
             setPdfLoading(false);

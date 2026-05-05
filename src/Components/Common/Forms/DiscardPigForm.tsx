@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App"
 import { useFormik } from "formik"
 import { getEffectiveUser } from "helpers/impersonation_helper"
@@ -143,7 +144,7 @@ const DiscardPigForm: React.FC<DiscardPigFormProps> = ({ pig, onSave, onCancel }
                     toggleModal('success');
                 }
             } catch (error) {
-                console.error('Error discarding pig:', { error });
+                logger.error('Error discarding pig:', { error });
                 toggleModal('error');
             } finally {
                 setSubmitting(false);
@@ -158,7 +159,7 @@ const DiscardPigForm: React.FC<DiscardPigFormProps> = ({ pig, onSave, onCancel }
             const pigResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/pig/find_available_by_farm/${userLogged.farm_assigned}`);
             setPigs(pigResponse.data.data.map((b: any) => ({ ...b, id: b._id })));
         } catch (error) {
-            console.error('Error fetching pigs:', { error });
+            logger.error('Error fetching pigs:', { error });
             setAlertConfig({ visible: true, color: 'danger', message: t('common.status.noData') });
         } finally {
             setLoading(false);

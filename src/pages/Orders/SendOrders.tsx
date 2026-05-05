@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
@@ -103,7 +104,7 @@ const SendOrders = () => {
             setOrders(response.data.data);
 
         } catch (error) {
-            console.error('Error fetching data:', { error })
+            logger.error('Error fetching data:', { error })
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.orders.error.fetch') })
         } finally {
             setLoading(false)

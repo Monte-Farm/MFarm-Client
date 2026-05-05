@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import { getEffectiveUser } from "helpers/impersonation_helper";
@@ -106,7 +107,7 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
 
                 toggleModal('success', true);
             } catch (error: any) {
-                console.error('Error bulk assigning medication package to groups:', error);
+                logger.error('Error bulk assigning medication package to groups:', error);
                 
                 // Manejo crítico de errores
                 if (error.response?.status === 400 && error.response?.data?.missing) {
@@ -170,7 +171,7 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
             const packagesWithId = medicationResponse.data.data.map((p: any) => ({ ...p, id: p._id }));
             setMedicationPackages(packagesWithId);
         } catch (error) {
-            console.error('Error fetching medication packages:', error);
+            logger.error('Error fetching medication packages:', error);
         }
     };
 

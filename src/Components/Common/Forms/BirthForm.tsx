@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App"
 import { Column } from "common/data/data_types"
 import { useFormik } from "formik"
@@ -238,7 +239,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
 
                 setSuccessModalOpen(true)
             } catch (error) {
-                console.error('An error has ocurred', { error })
+                logger.error('An error has ocurred', { error })
                 setErrorModalOpen(true)
             } finally {
                 setSubmitting(false)
@@ -291,7 +292,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
             setUpcomingBirths(birthsWithId);
 
         } catch (error) {
-            console.error(`Error fetching data: ${error}`)
+            logger.error(`Error fetching data: ${error}`)
         } finally {
             setLoading(false)
         }
@@ -308,7 +309,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
             const { data } = await configContext.axiosHelper.get(`${configContext.apiUrl}/pig/find_by_id/${sowId}`);
             setSowDetails(data.data);
         } catch (error) {
-            console.error('Error fetching sow details', error);
+            logger.error('Error fetching sow details', error);
         }
     };
 

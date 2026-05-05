@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb"
@@ -157,7 +158,7 @@ const ViewPregnancies = () => {
                 setSelectedPregnancies([]);
                 bulkAbortionFormik.resetForm();
             } catch (error) {
-                console.error('Error bulk registering abortion:', error);
+                logger.error('Error bulk registering abortion:', error);
                 setAlertConfig({ visible: true, color: 'danger', message: t('pregnancy.error.bulkLoss') });
             } finally {
                 setSubmitting(false);
@@ -183,7 +184,7 @@ const ViewPregnancies = () => {
             setFileURL(url);
             toggleModal('reportPDF');
         } catch (error) {
-            console.error('Error generating pregnancies report:', error);
+            logger.error('Error generating pregnancies report:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('pregnancy.error.pdf') });
         } finally {
             setPdfLoading(false);
@@ -203,7 +204,7 @@ const ViewPregnancies = () => {
             setPregnancies(pregnanciesWithId)
             setPregnancyStats(statsResponse.data.data)
         } catch (error) {
-            console.error('An error has ocurred:', { error })
+            logger.error('An error has ocurred:', { error })
             setAlertConfig({ visible: true, color: 'danger', message: t('pregnancy.error.load') })
         } finally {
             setLoading(false)

@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import { ConfigContext } from "App";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
@@ -125,7 +126,7 @@ const InseminationDetails = () => {
             setSowDetails(sowResponse.data.data)
             setDosesDetails(dosesResponse.data.data)
         } catch (error) {
-            console.error('Error fetching data:', error);
+            logger.error('Error fetching data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('insemination.error.load') })
         } finally {
             setLoading(false);
@@ -143,7 +144,7 @@ const InseminationDetails = () => {
             setFileURL(url);
             toggleModal('viewPDF');
         } catch (error) {
-            console.error('Error generating PDF: ', { error });
+            logger.error('Error generating PDF: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: t('insemination.error.pdf') });
         } finally {
             setPdfLoading(false);

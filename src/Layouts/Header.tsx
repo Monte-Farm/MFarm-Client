@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Dropdown, DropdownMenu, DropdownToggle, Form, Input } from 'reactstrap';
@@ -40,7 +41,7 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
                 const farm = response?.data?.data
                 if (farm?.name) setFarmName(farm.name)
             } catch (error) {
-                console.error("Error fetching farm name:", error)
+                logger.error("Error fetching farm name:", error)
             }
         }
         fetchFarmName()

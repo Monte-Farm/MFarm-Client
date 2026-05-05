@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App"
 import { useFormik } from "formik"
 import { getEffectiveUser } from "helpers/impersonation_helper"
@@ -222,7 +223,7 @@ const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, 
                     toggleModal('success')
                 }
             } catch (error) {
-                console.error('An error has ocurred', { error })
+                logger.error('An error has ocurred', { error })
                 toggleModal('error')
             } finally {
                 setSubmitting(false)
@@ -239,7 +240,7 @@ const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, 
             const pigsFiltered = pigsWithId.filter((p: any) => p.status === 'alive')
             setPigs(pigsFiltered)
         } catch (error) {
-            console.error('Error fetching data: ', { error })
+            logger.error('Error fetching data: ', { error })
             setAlertConfig({ visible: true, color: 'danger', message: t('groups.form.discardPig.loadError', { defaultValue: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' }) })
         } finally {
             setLoading(false)

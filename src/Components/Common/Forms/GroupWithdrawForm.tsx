@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { useContext, useEffect, useState } from "react";
 import LoadingAnimation from "../Shared/LoadingAnimation";
@@ -119,7 +120,7 @@ const GroupWithDrawForm: React.FC<GroupWithDrawFormProps> = ({ groupId, onSave }
             const pigsFiltered = pigsWithId.filter((p: any) => p.status === 'alive')
             setPigs(pigsFiltered)
         } catch (error) {
-            console.error('Error fetching data', { error })
+            logger.error('Error fetching data', { error })
             setAlertConfig({ visible: true, color: 'danger', message: t('groups.form.withdraw.loadError', { defaultValue: 'Ha ocurrido un errro la obtener los datos, intentelo mas tarde' }) })
         } finally {
             setLoading(false)
@@ -142,7 +143,7 @@ const GroupWithDrawForm: React.FC<GroupWithDrawFormProps> = ({ groupId, onSave }
 
             toggleModal('success')
         } catch (error) {
-            console.error('Error in withdrawPigs:', { error })
+            logger.error('Error in withdrawPigs:', { error })
             toggleModal('error')
         } finally {
             setIsSubmitting(false)

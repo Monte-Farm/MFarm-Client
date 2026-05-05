@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { useTranslation } from "react-i18next";
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
@@ -40,7 +41,7 @@ const WeighGroupForm: React.FC<WeighGroupFormProps> = ({ groupId, onSave }) => {
             const filteredPigs = groupDetails.pigsInGroup.filter((p: any) => p.status === 'alive');
             setPigsArray(filteredPigs.map((pig: any) => ({ ...pig, newWeight: '' })));
         } catch (error) {
-            console.error('Error fetching group:', { error });
+            logger.error('Error fetching group:', { error });
             setAlertConfig({ visible: true, color: 'danger', message: t("weighGroup.error.fetchGroup", { defaultValue: "Error al obtener los datos del grupo" }) });
         } finally {
             setLoading(false);
@@ -95,7 +96,7 @@ const WeighGroupForm: React.FC<WeighGroupFormProps> = ({ groupId, onSave }) => {
 
             toggleModal('success');
         } catch (error) {
-            console.error('Error registering weights:', { error });
+            logger.error('Error registering weights:', { error });
             toggleModal('error');
         } finally {
             setIsSubmitting(false);

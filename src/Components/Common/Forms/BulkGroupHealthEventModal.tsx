@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
@@ -254,7 +255,7 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
 
                 toggleModal('success', true);
             } catch (error: any) {
-                console.error('Error registering bulk health events:', error);
+                logger.error('Error registering bulk health events:', error);
                 if (error.response?.status === 400 && error.response?.data?.missing) {
                     setMissingItems(error.response.data.missing);
                     toggleModal('missingStock', true);
@@ -355,7 +356,7 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
             const productsWithId = productsResponse.data.data.map((p: any) => ({ ...p, code: p.id, id: p._id }));
             setProducts(productsWithId);
         } catch (error) {
-            console.error('Error fetching products:', error);
+            logger.error('Error fetching products:', error);
         }
     };
 

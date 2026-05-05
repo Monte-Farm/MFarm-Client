@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { useContext, useEffect, useState } from 'react';
 import { Alert, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from 'reactstrap';
 import * as Yup from 'yup'
@@ -179,7 +180,7 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSa
                     const result = await configContext?.axiosHelper.get(`${configContext.apiUrl}/outcomes/outcome_id_exists/${value}`)
                     return !result?.data.data
                 } catch (error) {
-                    console.error(`Error al validar el ID: ${error}`)
+                    logger.error(`Error al validar el ID: ${error}`)
                     return false
                 }
             }),
@@ -232,11 +233,11 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSa
 
                     toggleModal('success')
                 } catch (error) {
-                    console.error(error, 'Ha ocurrido un error creando la salida')
+                    logger.error(error, 'Ha ocurrido un error creando la salida')
                     toggleModal('error')
                 }
             } catch (error) {
-                console.error("Error al enviar el formulario:", error);
+                logger.error("Error al enviar el formulario:", error);
             } finally {
                 setSubmitting(false);
             }
@@ -264,7 +265,7 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSa
             const subwarehousesWithId = filteredSubwarehouses.map((s: any) => ({ ...s, id: s._id }));
             setSubwarehouses(subwarehousesWithId);
         } catch (error) {
-            console.error('Error fetching data: ', { error });
+            logger.error('Error fetching data: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
         } finally {
             setLoading(false)

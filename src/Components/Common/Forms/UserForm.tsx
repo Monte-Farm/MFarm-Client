@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import React, { useContext, useState } from "react";
 import {
     Button,
@@ -109,7 +110,7 @@ const UserForm: React.FC<UserFormProps> = ({
                 }
                 toggleModal("success");
             } catch (error) {
-                console.error("Error al enviar el formulario:", error);
+                logger.error("Error al enviar el formulario:", error);
                 toggleModal("error");
             } finally {
                 setSubmitting(false);

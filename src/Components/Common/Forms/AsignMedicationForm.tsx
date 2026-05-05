@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import { Attribute, PigData } from "common/data_interfaces";
@@ -277,7 +278,7 @@ const AsignMedicationForm: React.FC<AsignMedicationFormProps> = ({ pigId, onSave
             setPigDetails(pigData);
             setMedicationsItems(medicationsWithId)
         } catch (error) {
-            console.error('Error fetching data:', error);
+            logger.error('Error fetching data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('medication.assign.error.load') })
         } finally {
             setLoading(false)
@@ -297,7 +298,7 @@ const AsignMedicationForm: React.FC<AsignMedicationFormProps> = ({ pigId, onSave
 
             toggleModal('success', true)
         } catch (error: any) {
-            console.error('Error saving the information: ', { error })
+            logger.error('Error saving the information: ', { error })
             if (error.response?.status === 400 && error.response?.data?.missing) {
                 setMissingItems(error.response.data.missing);
                 toggleModal('missingStock');

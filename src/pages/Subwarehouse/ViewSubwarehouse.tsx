@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { SubwarehouseData } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
@@ -196,7 +197,7 @@ const ViewSubwarehouse = () => {
             });
 
         } catch (error) {
-            console.error('Error fetching subwarehouses:', error);
+            logger.error('Error fetching subwarehouses:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.subwarehouse.error.fetch') });
         } finally {
             setLoading(false)

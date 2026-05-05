@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useState } from "react";
@@ -145,7 +146,7 @@ const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, pigle
 
             toggleModal("success", true);
         } catch (error) {
-            console.error("Error discarding piglets:", { error });
+            logger.error("Error discarding piglets:", { error });
             toggleModal("error", true);
         } finally {
             setIsSubmitting(false);

@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import { getEffectiveUser } from "helpers/impersonation_helper";
@@ -179,7 +180,7 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
             setIncomeDetails(incomeDetailsResponse)
             setProducts(incomeDetailsResponse.products)
         } catch (error) {
-            console.error('Error fetching data: ', { error })
+            logger.error('Error fetching data: ', { error })
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.incomeDetailsModal.error.fetch') })
         } finally {
             setLoading(false)
@@ -200,12 +201,12 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
             const url = window.URL.createObjectURL(pdfBlob);
 
             // Debug: Verificar la URL creada
-            console.log('PDF URL created:', url);
+            logger.log('PDF URL created:', url);
 
             setFileURL(url);
             toggleModal('viewPDF');
         } catch (error) {
-            console.error('Error generating report: ', { error })
+            logger.error('Error generating report: ', { error })
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.incomeDetailsModal.error.pdf') })
         } finally {
             setPdfLoading(false);

@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
@@ -83,7 +84,7 @@ const LitterDetails = () => {
             const litterResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/litter/find_by_id/${litter_id}`)
             setLitterDetails(litterResponse.data.data);
         } catch (error) {
-            console.error('Error fetching data:', { error });
+            logger.error('Error fetching data:', { error });
             setAlertConfig({ visible: true, color: 'danger', message: t('litter.error.load') });
         } finally {
             setLoading(false)

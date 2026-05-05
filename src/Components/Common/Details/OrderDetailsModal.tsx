@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
@@ -127,7 +128,7 @@ const OrderDetails: React.FC<OrderDetailsProps> = ({ orderId }) => {
 
             setProducts(combinedProducts);
         } catch (error) {
-            console.error('Error fetching data', { error });
+            logger.error('Error fetching data', { error });
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.orders.error.fetch', { defaultValue: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' }) })
         } finally {
             setLoading(false);
@@ -142,7 +143,7 @@ const OrderDetails: React.FC<OrderDetailsProps> = ({ orderId }) => {
             setFileURL(url);
             toggleModal('viewPDF')
         } catch (error) {
-            console.error('Error generating report:', { error });
+            logger.error('Error generating report:', { error });
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.orders.error.fetch', { defaultValue: 'Ha ocurrido un error al generar el reporte, intentelo mas tarde' }) })
         }
     };

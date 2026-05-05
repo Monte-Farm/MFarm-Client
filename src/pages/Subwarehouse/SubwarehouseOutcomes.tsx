@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { useTranslation } from "react-i18next";
 import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
@@ -110,7 +111,7 @@ const SubwarehouseOutcomes = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/outcomes/find_warehouse_outcomes/${userLogged.assigment}`);
             setSubwarehouseOutcomes(response.data.data);
         } catch (error) {
-            console.error('Error fetching data', { error })
+            logger.error('Error fetching data', { error })
             setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.subwarehouseDetails.error.fetchOutcomes') })
         }
     };
@@ -121,7 +122,7 @@ const SubwarehouseOutcomes = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/outcomes/outcome_statistics/${userLogged.assigment}`);
             setOutcomeStatistics(response.data.data.statistics);
         } catch (error) {
-            console.error('Error fetching outcome statistics:', error);
+            logger.error('Error fetching outcome statistics:', error);
         }
     };
 
@@ -191,7 +192,7 @@ const SubwarehouseOutcomes = () => {
 
             setChartData({ outcomesByType, valueByType, outcomesLegendItems, valueLegendItems });
         } catch (error) {
-            console.error('Error fetching outcome chart data:', error);
+            logger.error('Error fetching outcome chart data:', error);
         }
     };
 

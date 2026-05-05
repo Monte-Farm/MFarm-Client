@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { useFormik } from "formik";
 import { getEffectiveUser } from "helpers/impersonation_helper";
@@ -81,7 +82,7 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel }) => {
                 );
                 toggleModal("success");
             } catch (error) {
-                console.error("Error creating expense:", { error });
+                logger.error("Error creating expense:", { error });
                 toggleModal("error");
             }
         },

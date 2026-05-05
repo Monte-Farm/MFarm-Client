@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
@@ -115,7 +116,7 @@ const ViewFeedingConsumption = () => {
 
             setAvailableGroups(groups);
         } catch (error) {
-            console.error('Error fetching groups:', error);
+            logger.error('Error fetching groups:', error);
         }
     };
 
@@ -141,7 +142,7 @@ const ViewFeedingConsumption = () => {
 
             setAvailableLitters(litters);
         } catch (error) {
-            console.error('Error fetching litters:', error);
+            logger.error('Error fetching litters:', error);
         }
     };
 
@@ -184,7 +185,7 @@ const ViewFeedingConsumption = () => {
                 setConsumptionData(response.data.data);
             }
         } catch (error) {
-            console.error('Error fetching consumption data:', error);
+            logger.error('Error fetching consumption data:', error);
             setAlertConfig({
                 visible: true,
                 color: 'danger',

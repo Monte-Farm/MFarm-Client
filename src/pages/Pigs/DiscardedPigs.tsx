@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import { PigData } from "common/data_interfaces";
@@ -130,7 +131,7 @@ const DiscardedPigs = () => {
             setPigs(pigsResponse.data.data)
             setStats(statsResponse.data.data)
         } catch (error) {
-            console.error('Error fetching pigs: ', { error });
+            logger.error('Error fetching pigs: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: t('pigs.page.noDiscarded') })
         } finally {
             setLoading(false)

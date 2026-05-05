@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
@@ -126,7 +127,7 @@ const ViewOutcomes = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/farm/get_main_warehouse/${userLogged.farm_assigned}`);
             setMainWarehouseId(response.data.data)
         } catch (error) {
-            console.error('Error fetching main warehouse ID:', error);
+            logger.error('Error fetching main warehouse ID:', error);
         }
     }
 
@@ -137,7 +138,7 @@ const ViewOutcomes = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/outcomes/find_warehouse_outcomes/${mainWarehouseId}`);
             setOutcomes(response.data.data);
         } catch (error) {
-            console.error('Error fetching data', { error })
+            logger.error('Error fetching data', { error })
             setAlertConfig({ visible: true, color: 'danger', message: t('finance.outcome.error.fetchData') })
         } finally {
             setLoading(false)
@@ -150,7 +151,7 @@ const ViewOutcomes = () => {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/outcomes/outcome_statistics/${mainWarehouseId}`);
             setOutcomeStatistics(response.data.data.statistics);
         } catch (error) {
-            console.error('Error fetching outcome statistics:', error);
+            logger.error('Error fetching outcome statistics:', error);
         }
     };
 
@@ -205,7 +206,7 @@ const ViewOutcomes = () => {
 
             setChartData({ outcomesByType, valueByType, outcomesLegendItems, valueLegendItems });
         } catch (error) {
-            console.error('Error fetching outcome chart data:', error);
+            logger.error('Error fetching outcome chart data:', error);
         }
     };
 
@@ -223,7 +224,7 @@ const ViewOutcomes = () => {
                 fetchOutcomeChartData()
             ]);
         } catch (error) {
-            console.error('Error fetching warehouse data:', error);
+            logger.error('Error fetching warehouse data:', error);
         }
     };
 

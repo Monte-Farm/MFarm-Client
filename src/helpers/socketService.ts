@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { io, Socket } from 'socket.io-client';
 import { addNotification, resetNotifications } from 'slices/notifications/reducer';
 import { fetchUnreadCount } from 'slices/notifications/thunk';
@@ -44,7 +45,7 @@ export const connectNotificationSocket = (token: string, dispatch: any) => {
     });
 
     socket.on('connect_error', (err) => {
-        console.error('Socket connection error:', err.message);
+        logger.error('Socket connection error:', err.message);
     });
 };
 

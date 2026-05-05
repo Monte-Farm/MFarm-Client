@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App"
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react"
@@ -137,7 +138,7 @@ const BirthDetails: React.FC<BirthDetailsProps> = ({ birthId }) => {
             setPregnancyDetails(pregnancyResponse.data.data);
             setLitterDetails(litterResponse.data.data);
         } catch (error) {
-            console.error('Error al obtener los datos', { error });
+            logger.error('Error al obtener los datos', { error });
             setAlertConfig({ visible: true, color: 'danger', message: t('birth.detail.errorLoad', { defaultValue: 'Ha ocurrido un error al recuperar los datos, inténtelo más tarde' }) });
         } finally {
             setLoading(false);

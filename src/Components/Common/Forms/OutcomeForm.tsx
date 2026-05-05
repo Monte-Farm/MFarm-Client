@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import React, { useContext, useEffect, useState } from 'react';
 import { Badge, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from 'reactstrap';
 import * as Yup from 'yup'
@@ -215,7 +216,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                     const result = await configContext?.axiosHelper.get(`${configContext.apiUrl}/outcomes/outcome_id_exists/${value}`)
                     return !result?.data.data
                 } catch (error) {
-                    console.error(`Error al validar el ID: ${error}`)
+                    logger.error(`Error al validar el ID: ${error}`)
                     return false
                 }
             }),
@@ -251,7 +252,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                 await configContext.axiosHelper.create(`${configContext.apiUrl}/outcomes/create_outcome/${createIncome}/${values.outcomeType}`, values);
                 toggleModal('success')
             } catch (error) {
-                console.error("Error al enviar el formulario:", error);
+                logger.error("Error al enviar el formulario:", error);
                 toggleModal('error')
             } finally {
                 setSubmitting(false);
@@ -278,7 +279,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
             setMainWarehouseId(warehouseId);
             formik.setFieldValue('warehouseOrigin', warehouseId);
         } catch (error) {
-            console.error('Error fetching main warehouse ID:', error);
+            logger.error('Error fetching main warehouse ID:', error);
         }
     }
 
@@ -291,7 +292,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
             const subwarehousesWithId = subwarehouses.map((s: any) => ({ ...s, id: s._id }));
             setSubwarehouses(subwarehousesWithId)
         } catch (error) {
-            console.error(error);
+            logger.error(error);
         }
     };
 
@@ -302,7 +303,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
             const nextId = response.data.data;
             formik.setFieldValue('code', nextId);
         } catch (error) {
-            console.error('Ha ocurrido un error obteniendo el id');
+            logger.error('Ha ocurrido un error obteniendo el id');
         }
     };
 
@@ -316,7 +317,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
             const productsWithExistences = products.filter((obj: any) => obj.quantity !== 0);
             setProducts(productsWithExistences);
         } catch (error) {
-            console.error(error);
+            logger.error(error);
         }
     };
 

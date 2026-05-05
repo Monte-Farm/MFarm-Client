@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
@@ -119,7 +120,7 @@ const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => 
             const { sow, insemination, ...restPregnancy } = pregnancyData
             setPregnancyDetails(restPregnancy)
         } catch (error) {
-            console.error('Error fetching data:', { error })
+            logger.error('Error fetching data:', { error })
             setAlertConfig({ visible: true, color: 'danger', message: t('pregnancy.detail.errorLoad', { defaultValue: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' }) })
         } finally {
             setLoaging(false)
@@ -137,7 +138,7 @@ const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => 
             setFileURL(url);
             toggleModal('viewPDF');
         } catch (error) {
-            console.error('Error generating PDF: ', { error });
+            logger.error('Error generating PDF: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: t('pregnancy.detail.errorPdf', { defaultValue: 'Error al generar el PDF, intentelo más tarde' }) });
         } finally {
             setPdfLoading(false);

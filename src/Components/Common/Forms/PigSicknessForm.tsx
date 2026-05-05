@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import { getEffectiveUser } from "helpers/impersonation_helper";
@@ -344,7 +345,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
             const productsWithId = productsResponse.data.data.map((b: any) => ({ ...b, code: b.id, id: b._id }));
             setProducts(productsWithId)
         } catch (error) {
-            console.error('Error fetching data:', error);
+            logger.error('Error fetching data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('medical.sickness.form.error.load', { defaultValue: 'Ha ocurrido un error al cargar los datos, intentelo mas tarde' }) })
         } finally {
             setLoading(false)
@@ -395,7 +396,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
 
                 toggleModal('success', true)
             } catch (error: any) {
-                console.error('Error saving the information: ', { error })
+                logger.error('Error saving the information: ', { error })
                 if (error.response?.status === 400 && error.response?.data?.missing) {
                     setMissingItems(error.response.data.missing);
                     toggleModal('missingStock');

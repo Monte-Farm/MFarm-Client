@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardBody, CardHeader, Button, Badge } from "reactstrap";
@@ -40,7 +41,7 @@ const HealthEventsCard = ({ events, onAdd, onViewDetails, onResolve, disabled = 
             setResolveModal({ open: false, event: null });
             setAlertConfig({ visible: true, color: "success", message: t("shared.healthEvent.card.success") });
         } catch (error) {
-            console.error('Error al finalizar evento:', error);
+            logger.error('Error al finalizar evento:', error);
             setAlertConfig({ visible: true, color: "danger", message: t("shared.healthEvent.card.error") });
         } finally {
             setResolving(false);

@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useState } from "react";
@@ -42,7 +43,7 @@ const WeighSinglePigForm: React.FC<WeighSinglePigFormProps> = ({ pigId, currentW
             });
             toggleModal('success');
         } catch (error) {
-            console.error('Error registering weight:', { error });
+            logger.error('Error registering weight:', { error });
             toggleModal('error');
         } finally {
             setIsSubmitting(false);

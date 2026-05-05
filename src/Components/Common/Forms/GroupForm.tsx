@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { Attribute, GroupData, PigData } from "common/data_interfaces";
 import { useFormik } from "formik";
@@ -157,7 +158,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
                     const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/group/check_code_exists/${value}`);
                     return !response.data.codeExists;
                 } catch (error) {
-                    console.error('Error validating unique code: ', error);
+                    logger.error('Error validating unique code: ', error);
                     return false;
                 }
             }),
@@ -208,7 +209,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
                 }
                 toggleModal('success');
             } catch (error) {
-                console.error('Error saving the information: ', { error });
+                logger.error('Error saving the information: ', { error });
                 setAlertConfig({ visible: true, color: 'danger', message: t('groups.error.save') });
             }
         }
@@ -221,7 +222,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
             const codeResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/group/next_group_code`);
             formik.setFieldValue('code', codeResponse.data.data);
         } catch (error) {
-            console.error('Error fetching information: ', { error });
+            logger.error('Error fetching information: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: t('groups.error.load') });
         } finally {
             setLoading(false);
@@ -235,7 +236,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
             const pigsWithId = pigsResponse.data.data.map((b: any) => ({ ...b, id: b._id }));
             setPigs(pigsWithId);
         } catch (error) {
-            console.error('Error fetching information: ', { error });
+            logger.error('Error fetching information: ', { error });
         }
     };
 

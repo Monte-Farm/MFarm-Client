@@ -1,3 +1,4 @@
+import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
@@ -152,7 +153,7 @@ const SellPigsForm: React.FC<SellPigsFormProps> = ({ groupId, onSave }) => {
             setSelectedPigs(pigsWithSelection);
             setGroupPricePerKg(data.suggestedPricePerKg);
         } catch (error) {
-            console.error('Error fetching sale form data:', error);
+            logger.error('Error fetching sale form data:', error);
             toggleModal('error');
         } finally {
             setLoading(false);
@@ -320,7 +321,7 @@ const SellPigsForm: React.FC<SellPigsFormProps> = ({ groupId, onSave }) => {
             setPreviewData(response.data.data);
             setActiveStep(3);
         } catch (error) {
-            console.error('Error calculating preview:', error);
+            logger.error('Error calculating preview:', error);
             toggleModal('error');
         } finally {
             setLoadingPreview(false);
@@ -380,7 +381,7 @@ const SellPigsForm: React.FC<SellPigsFormProps> = ({ groupId, onSave }) => {
             
             toggleModal('success');
         } catch (error) {
-            console.error('Error creating sale:', error);
+            logger.error('Error creating sale:', error);
             toggleModal('error');
         } finally {
             setIsSubmitting(false);
