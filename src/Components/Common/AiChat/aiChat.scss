@@ -1,10 +1,62 @@
-$ai-primary: #405189;
-$ai-accent: #0ab39c;
-$ai-gradient: linear-gradient(135deg, #405189 0%, #3a4a7e 55%, #0ab39c 160%);
-$ai-user-bubble: #0ab39c;
-$ai-assistant-bubble: #dfe3ec;
+// ── Palette (extracted from screenshot) ──────────────────────────────────────
+$ai-accent:           #0ab39c;           // teal — send button, focus ring
+$ai-gradient:         linear-gradient(135deg, #405189 0%, #3a4a7e 55%, #0ab39c 160%);
+
+// Body / background
+$body-bg:             #fffefb;
+$messages-bg:         #fffefb;
+
+// Header
+$header-bg:           #fffefb;
+$header-icon-bg:      #23291a;
+$header-dot:          #22c55e;          // online green dot
+$header-text:         #000000;
+$header-sub:          rgba(0,0,0,0.5);
+$header-btn-hover:    rgba(0,0,0,0.07);
+
+// Bubbles
+$bubble-user-bg:      #23291a;
+$bubble-user-text:    #ffffff;
+$bubble-asst-bg:      #faf6eb;
+$bubble-asst-text:    #1a1e2d;
+
+// Typing indicator — compact inline bar style
+$typing-bg:           #edeae4;
+$typing-text:         #6b7280;
+
+// Input area
+$input-area-bg:       #e8e5e0;          // same as body bg — seamless
+$input-border:        #d0ccc6;
+$input-field-bg:      #f5f2ee;
+$input-field-focus-border: $ai-accent;
+$input-placeholder:   #a09890;
+
+// Cards / table inside bubbles
+$card-bg:             #ffffff;
+$card-border:         #e0d9d0;
+$card-header-text:    #8a8070;          // muted warm gray for "COMPARATIVO · Q ACTUAL"
+
+// Tags / chips below bubble
+$tag-bg:              #e8e3da;
+$tag-text:            #5a5248;
+$tag-border:          #d0c9c0;
+
+// Suggestions
+$chip-bg:             #faf7f3;
+$chip-border:         #ddd6cc;
+$chip-hover-border:   $ai-accent;
+$chip-hover-bg:       rgba(10,179,156,0.05);
+
+// Error bar
+$error-bg:            #fef3cd;
+$error-border:        #fcdf8f;
+$error-text:          #8a6d0e;
+
+// Widget z-index
 $ai-z: 1050;
 
+
+// ── Widget wrapper ────────────────────────────────────────────────────────────
 .ai-chat-widget {
     position: fixed;
     right: 24px;
@@ -16,19 +68,22 @@ $ai-z: 1050;
     gap: 12px;
     pointer-events: none;
 
-    > * {
-        pointer-events: auto;
-    }
+    > * { pointer-events: auto; }
 }
 
+
+// ── Panel ─────────────────────────────────────────────────────────────────────
 .ai-chat-panel {
     width: 640px;
     max-width: calc(100vw - 48px);
     height: 680px;
     max-height: calc(100vh - 120px);
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 20px 48px rgba(16, 24, 40, 0.25);
+    background: $body-bg;
+    border-radius: 20px;
+    box-shadow:
+        0 4px 6px -1px rgba(0,0,0,0.09),
+        0 24px 56px rgba(0,0,0,0.24),
+        0 0 0 1px rgba(0,0,0,0.07);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -36,56 +91,76 @@ $ai-z: 1050;
 }
 
 @keyframes ai-chat-pop {
-    from {
-        opacity: 0;
-        transform: translateY(10px) scale(0.98);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+    from { opacity: 0; transform: translateY(10px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0)   scale(1); }
 }
 
+
+// ── Header ────────────────────────────────────────────────────────────────────
 .ai-chat-header {
-    background: $ai-gradient;
-    color: #fff;
+    background: $header-bg;
+    color: $header-text;
     padding: 14px 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
     flex-shrink: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
 
     &__titles {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
         min-width: 0;
     }
 
+    // Teal rounded-square icon (matches screenshot star/sparkle)
     &__icon {
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.18);
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: $header-icon-bg;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 20px;
+        font-size: 18px;
         flex-shrink: 0;
+        color: #fff;
+    }
+
+    // Title + green dot on the same row
+    &__name-row {
+        display: flex;
+        align-items: center;
+        gap: 7px;
     }
 
     &__title {
         margin: 0;
         font-size: 15px;
         font-weight: 600;
-        color: #fff;
+        color: $header-text;
         line-height: 1.2;
+    }
+
+    // Small green online dot
+    &__dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: $header-dot;
+        flex-shrink: 0;
+        // Subtle pulse
+        box-shadow: 0 0 0 0 rgba(34,197,94,0.4);
+        animation: ai-dot-pulse 2.4s ease-out infinite;
     }
 
     &__subtitle {
         font-size: 11.5px;
-        opacity: 0.85;
+        color: $header-sub;
+        margin-top: 2px;
+        display: block;
     }
 
     &__actions {
@@ -96,7 +171,7 @@ $ai-z: 1050;
     &__btn {
         background: transparent;
         border: none;
-        color: #fff;
+        color: rgba(0,0,0,0.65);
         width: 32px;
         height: 32px;
         border-radius: 8px;
@@ -105,14 +180,23 @@ $ai-z: 1050;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: background 0.15s ease;
+        transition: background 0.15s ease, color 0.15s ease;
 
         &:hover {
-            background: rgba(255, 255, 255, 0.15);
+            background: $header-btn-hover;
+            color: #000000;
         }
     }
 }
 
+@keyframes ai-dot-pulse {
+    0%   { box-shadow: 0 0 0 0   rgba(34,197,94,0.45); }
+    70%  { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+    100% { box-shadow: 0 0 0 0   rgba(34,197,94,0); }
+}
+
+
+// ── Body wrapper ──────────────────────────────────────────────────────────────
 .ai-chat-panel__body {
     flex: 1;
     min-height: 0;
@@ -122,100 +206,85 @@ $ai-z: 1050;
     overflow: hidden;
 }
 
+
+// ── Messages scroll area ──────────────────────────────────────────────────────
 .ai-chat-messages {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
-    padding: 16px 20px;
+    padding: 20px 20px 12px;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    background: #fafbfc;
+    background: $messages-bg;
     scrollbar-width: thin;
-    scrollbar-color: rgba(10, 179, 156, 0.55) transparent;
+    scrollbar-color: rgba(10,179,156,0.35) transparent;
 
     &--loading {
         align-items: center;
         justify-content: center;
     }
 
-    &::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    &::-webkit-scrollbar-track {
-        background: transparent;
-        margin: 8px 0;
-    }
-
+    &::-webkit-scrollbar { width: 5px; }
+    &::-webkit-scrollbar-track { background: transparent; margin: 8px 0; }
     &::-webkit-scrollbar-thumb {
         background: transparent;
         border-radius: 3px;
         transition: background 0.25s ease;
     }
-
     &:hover::-webkit-scrollbar-thumb,
-    &:focus-within::-webkit-scrollbar-thumb {
-        background: rgba(10, 179, 156, 0.55);
-    }
-
-    &::-webkit-scrollbar-thumb:hover,
-    &::-webkit-scrollbar-thumb:active {
-        background: rgba(10, 179, 156, 0.85);
-    }
+    &:focus-within::-webkit-scrollbar-thumb { background: rgba(10,179,156,0.40); }
+    &::-webkit-scrollbar-thumb:hover        { background: rgba(10,179,156,0.70); }
 }
 
+
+// ── Bubbles ───────────────────────────────────────────────────────────────────
 .ai-chat-bubble {
-    max-width: 82%;
+    max-width: 80%;
 
     &:has(.ai-chart),
     &:has(.ai-report-card) {
         max-width: 95%;
         width: 95%;
     }
+
     padding: 10px 14px;
-    border-radius: 14px;
+    border-radius: 16px;
     font-size: 14px;
-    line-height: 1.45;
+    line-height: 1.5;
     word-wrap: break-word;
     overflow-wrap: break-word;
 
+    // User — dark teal-green, right side
     &--user {
         align-self: flex-end;
-        background: $ai-user-bubble;
-        color: #fff;
+        background: $bubble-user-bg;
+        color: $bubble-user-text;
         border-bottom-right-radius: 4px;
+        box-shadow: 0 1px 4px rgba(61,90,79,0.30);
     }
 
+    // Assistant — white card, left side
     &--assistant {
         align-self: flex-start;
-        background: $ai-assistant-bubble;
-        color: #1f2937;
+        background: $bubble-asst-bg;
+        color: $bubble-asst-text;
         border-bottom-left-radius: 4px;
+        border: 1px solid rgba(0,0,0,0.07);
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
     }
 
-    &__text {
-        white-space: pre-wrap;
-    }
+    &__text { white-space: pre-wrap; }
 
     &__markdown {
-        p {
-            margin: 0 0 8px 0;
-            &:last-child { margin-bottom: 0; }
-        }
-
-        ul, ol {
-            margin: 6px 0;
-            padding-left: 20px;
-        }
-
+        p { margin: 0 0 8px; &:last-child { margin-bottom: 0; } }
+        ul, ol { margin: 6px 0; padding-left: 20px; }
         li { margin-bottom: 2px; }
-
         strong { font-weight: 600; }
 
         code {
-            background: rgba(0, 0, 0, 0.06);
+            background: rgba(0,0,0,0.07);
             padding: 1px 5px;
             border-radius: 4px;
             font-size: 12.5px;
@@ -231,95 +300,107 @@ $ai-z: 1050;
             margin: 6px 0;
 
             &::-webkit-scrollbar { height: 6px; }
-            &::-webkit-scrollbar-thumb {
-                background: rgba(255, 255, 255, 0.25);
-                border-radius: 3px;
-            }
+            &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.25); border-radius: 3px; }
 
-            code {
-                background: transparent;
-                color: inherit;
-                padding: 0;
-            }
+            code { background: transparent; color: inherit; padding: 0; }
         }
 
+        // Wrap table in a scrollable container styled like the screenshot
         table {
             width: 100%;
             border-collapse: collapse;
             margin: 8px 0;
-            font-size: 12.5px;
+            font-size: 13px;
             display: block;
             overflow-x: auto;
+            background: $card-bg;
 
-            &::-webkit-scrollbar { height: 6px; }
-            &::-webkit-scrollbar-thumb {
-                background: rgba(10, 179, 156, 0.55);
-                border-radius: 3px;
-            }
+            &::-webkit-scrollbar { height: 4px; }
+            &::-webkit-scrollbar-thumb { background: $ai-accent; border-radius: 2px; }
+            &::-webkit-scrollbar-track { background: #e0ede9; }
         }
 
         th, td {
-            border: 1px solid #b8bfcc;
-            padding: 6px 8px;
+            border: 1px solid #e8e3da;
+            padding: 8px 12px;
             text-align: left;
+            white-space: nowrap;
         }
 
         th {
-            background: #c8cfdb;
+            background: #f4f1ec;
+            color: #7a7060;
             font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
-        h1, h2, h3, h4 {
-            margin: 8px 0 4px;
-            font-weight: 600;
-        }
+        td { color: $bubble-asst-text; }
 
+        h1, h2, h3, h4 { margin: 8px 0 4px; font-weight: 600; }
         h1 { font-size: 17px; }
         h2 { font-size: 15.5px; }
         h3 { font-size: 14.5px; }
         h4 { font-size: 14px; }
 
-        a {
-            color: $ai-primary;
-            text-decoration: underline;
-        }
+        a { color: darken(#0ab39c, 5%); text-decoration: underline; }
     }
 }
 
+
+// ── Typing indicator — compact pill style matching screenshot ─────────────────
 .ai-chat-typing {
     align-self: flex-start;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 14px;
-    background: $ai-assistant-bubble;
-    border-radius: 14px;
-    border-bottom-left-radius: 4px;
+    gap: 6px;
+    padding: 5px 12px;
+    background: $typing-bg;
+    border-radius: 20px;
     font-size: 12px;
-    color: #5a5e73;
+    color: $typing-text;
+    border: 1px solid rgba(0,0,0,0.07);
+
+    &__icon {
+        font-size: 13px;
+        color: $ai-accent;
+        line-height: 1;
+    }
+
+    &__label {
+        font-size: 12px;
+        color: $typing-text;
+        font-weight: 500;
+        letter-spacing: 0.01em;
+    }
 
     &__dots {
         display: inline-flex;
+        align-items: center;
         gap: 3px;
+        margin-left: 2px;
 
         span {
-            width: 6px;
-            height: 6px;
+            width: 4px;
+            height: 4px;
             border-radius: 50%;
-            background: $ai-accent;
+            background: $typing-text;
+            opacity: 0.5;
             animation: ai-chat-bounce 1s infinite;
-
             &:nth-child(2) { animation-delay: 0.15s; }
-            &:nth-child(3) { animation-delay: 0.3s; }
+            &:nth-child(3) { animation-delay: 0.30s; }
         }
     }
 }
 
 @keyframes ai-chat-bounce {
-    0%, 80%, 100% { transform: translateY(0); opacity: 0.5; }
-    40% { transform: translateY(-4px); opacity: 1; }
+    0%, 80%, 100% { transform: translateY(0);    opacity: 0.5; }
+    40%            { transform: translateY(-4px); opacity: 1;   }
 }
 
+
+// ── Suggestions (empty state) ─────────────────────────────────────────────────
 .ai-chat-suggestions {
     padding: 8px 4px 4px;
 
@@ -329,18 +410,14 @@ $ai-z: 1050;
         gap: 10px;
         margin-bottom: 16px;
 
-        p {
-            margin: 0;
-            font-size: 13.5px;
-            color: #5a5e73;
-        }
+        p { margin: 0; font-size: 13.5px; color: #7a7060; }
     }
 
     &__avatar {
         width: 36px;
         height: 36px;
         border-radius: 50%;
-        background: $ai-gradient;
+        background: $header-bg;
         color: #fff;
         display: flex;
         align-items: center;
@@ -359,31 +436,29 @@ $ai-z: 1050;
         text-align: left;
         padding: 10px 12px;
         border-radius: 10px;
-        border: 1px solid #e5e7eb;
-        background: #fff;
+        border: 1px solid $chip-border;
+        background: $chip-bg;
         font-size: 13px;
-        color: #1f2937;
+        color: $bubble-asst-text;
         cursor: pointer;
         transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
 
         &:hover {
-            border-color: $ai-accent;
-            background: rgba(10, 179, 156, 0.06);
+            border-color: $chip-hover-border;
+            background: $chip-hover-bg;
             transform: translateX(2px);
         }
 
-        &:disabled {
-            opacity: 0.55;
-            cursor: not-allowed;
-            transform: none;
-        }
+        &:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
     }
 }
 
+
+// ── Error bar ─────────────────────────────────────────────────────────────────
 .ai-chat-error {
-    background: #fef3cd;
-    border-top: 1px solid #fcdf8f;
-    color: #8a6d0e;
+    background: $error-bg;
+    border-top: 1px solid $error-border;
+    color: $error-text;
     font-size: 12.5px;
     padding: 8px 12px;
     display: flex;
@@ -402,77 +477,123 @@ $ai-z: 1050;
     }
 }
 
+
+// ── Input area ────────────────────────────────────────────────────────────────
 .ai-chat-input {
-    border-top: 1px solid #e5e7eb;
-    padding: 10px 12px;
+    border-top: 1px solid $input-border;
+    padding: 12px 16px;
     display: flex;
     align-items: flex-end;
-    gap: 8px;
-    background: #fff;
+    gap: 10px;
+    background: $input-area-bg;
     flex-shrink: 0;
 
     textarea {
         flex: 1;
         resize: none;
-        border: 1px solid #e5e7eb;
-        border-radius: 10px;
-        padding: 10px 12px;
+        border: 1.5px solid $input-border;
+        border-radius: 14px;
+        padding: 10px 14px;
         font-size: 13.5px;
         font-family: inherit;
         line-height: 1.4;
         max-height: 120px;
-        min-height: 40px;
+        min-height: 42px;
         outline: none;
-        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        background: $input-field-bg;
+        color: $bubble-asst-text;
+        transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
 
-        &::-webkit-scrollbar { width: 6px; }
-        &::-webkit-scrollbar-thumb {
-            background: rgba(10, 179, 156, 0.55);
-            border-radius: 3px;
-        }
+        &::placeholder { color: $input-placeholder; }
+
+        &::-webkit-scrollbar { width: 5px; }
+        &::-webkit-scrollbar-thumb { background: rgba(10,179,156,0.40); border-radius: 3px; }
 
         &:focus {
-            border-color: $ai-accent;
-            box-shadow: 0 0 0 3px rgba(10, 179, 156, 0.12);
+            border-color: $input-field-focus-border;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(10,179,156,0.10);
         }
 
-        &:disabled {
-            background: #f3f4f7;
-            cursor: not-allowed;
-        }
+        &:disabled { background: #ede8e0; cursor: not-allowed; }
     }
 
+    // Circular teal send button — exactly as in screenshot
     &__send {
         flex-shrink: 0;
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
         border: none;
-        background: $ai-gradient;
+        background: $ai-accent;
         color: #fff;
-        font-size: 18px;
+        font-size: 19px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: opacity 0.15s ease, transform 0.15s ease;
+        transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+        box-shadow: 0 2px 8px rgba(10,179,156,0.38);
 
         &:hover:not(:disabled) {
+            background: darken(#0ab39c, 6%);
             transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(10,179,156,0.48);
         }
 
-        &:disabled {
-            opacity: 0.45;
-            cursor: not-allowed;
-        }
+        &:disabled { opacity: 0.38; cursor: not-allowed; box-shadow: none; }
     }
 }
 
-@media (max-width: 576px) {
-    .ai-chat-widget {
-        right: 16px;
-        bottom: 16px;
+
+// ── Report card (PDF attachment) ──────────────────────────────────────────────
+.ai-report-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    background: $card-bg;
+    border: 1px solid $card-border;
+    border-radius: 10px;
+
+    &__icon { font-size: 28px; color: #dc2626; line-height: 1; flex-shrink: 0; }
+
+    &__body { flex: 1; min-width: 0; }
+
+    &__filename {
+        font-size: 13px;
+        font-weight: 600;
+        color: $bubble-asst-text;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
+
+    &__meta { font-size: 11px; color: #6b7280; margin-top: 2px; }
+
+    &__download { flex-shrink: 0; white-space: nowrap; }
+
+    &__expired { color: #b45309; font-size: 18px; }
+}
+
+
+// ── Chart wrapper ─────────────────────────────────────────────────────────────
+.ai-chart {
+    width: 100%;
+    margin-bottom: 8px;
+    background: $card-bg;
+    border-radius: 10px;
+    border: 1px solid $card-border;
+    padding: 4px 0;
+
+    .apexcharts-canvas { max-width: 100%; }
+}
+
+
+// ── Responsive ────────────────────────────────────────────────────────────────
+@media (max-width: 576px) {
+    .ai-chat-widget { right: 16px; bottom: 16px; }
 
     .ai-chat-panel {
         position: fixed;
@@ -483,72 +604,9 @@ $ai-z: 1050;
         border-radius: 0;
     }
 
-    .ai-chat-pig--idle {
-        width: 160px;
-        height: 90px;
-    }
+    .ai-chat-pig--idle { width: 160px; height: 90px; }
 
     .ai-chat-pig--attentive,
     .ai-chat-pig--thinking,
-    .ai-chat-pig--talking {
-        width: 110px;
-        height: 110px;
-    }
-}
-
-.ai-chart {
-    width: 100%;
-    margin-bottom: 8px;
-
-    .apexcharts-canvas {
-        max-width: 100%;
-    }
-}
-
-.ai-report-card {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    margin-bottom: 8px;
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-
-    &__icon {
-        font-size: 28px;
-        color: #dc2626;
-        line-height: 1;
-        flex-shrink: 0;
-    }
-
-    &__body {
-        flex: 1;
-        min-width: 0;
-    }
-
-    &__filename {
-        font-size: 13px;
-        font-weight: 600;
-        color: #1f2937;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    &__meta {
-        font-size: 11px;
-        color: #6b7280;
-        margin-top: 2px;
-    }
-
-    &__download {
-        flex-shrink: 0;
-        white-space: nowrap;
-    }
-
-    &__expired {
-        color: #b45309;
-        font-size: 18px;
-    }
+    .ai-chat-pig--talking { width: 110px; height: 110px; }
 }

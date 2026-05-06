@@ -40,7 +40,7 @@ const AiChatInput: React.FC<AiChatInputProps> = ({ disabled, onSend, externalVal
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
                 onKeyDown={onKeyDown}
-                placeholder="Escribe tu pregunta..."
+                placeholder="Pregúntale lo que quieras a tu granja..."
                 rows={1}
                 disabled={disabled}
                 maxLength={2000}
@@ -52,7 +52,7 @@ const AiChatInput: React.FC<AiChatInputProps> = ({ disabled, onSend, externalVal
                 disabled={disabled || !value.trim()}
                 aria-label="Enviar"
             >
-                <i className="ri-send-plane-2-fill"></i>
+                <i className="ri-arrow-up-line"></i>
             </button>
         </div>
     );

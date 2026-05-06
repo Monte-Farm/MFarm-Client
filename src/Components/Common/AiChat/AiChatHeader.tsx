@@ -10,10 +10,13 @@ const AiChatHeader: React.FC<AiChatHeaderProps> = ({ onNewConversation, onClose 
         <div className="ai-chat-header">
             <div className="ai-chat-header__titles">
                 <span className="ai-chat-header__icon">
-                    <i className="ri-robot-2-line"></i>
+                    <i className="ri-sparkling-2-fill"></i>
                 </span>
                 <div>
-                    <h6 className="ai-chat-header__title">Asistente MFarm</h6>
+                    <div className="ai-chat-header__name-row">
+                        <h6 className="ai-chat-header__title">Asistente PorcySys</h6>
+                        <span className="ai-chat-header__dot" aria-hidden="true" />
+                    </div>
                     <span className="ai-chat-header__subtitle">Pregúntame lo que sea sobre tu granja</span>
                 </div>
             </div>
