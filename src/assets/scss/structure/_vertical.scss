@@ -18,6 +18,11 @@
     @media (min-width: 768px) {
         margin-left: var(--#{$prefix}vertical-menu-width);
     }
+
+    // tablet: sidebar is hidden by default (overlay mode), no left margin
+    @media (min-width: 768px) and (max-width: 1024px) {
+        margin-left: 0;
+    }
 }
 
 .page-content {
@@ -36,6 +41,7 @@
     box-shadow: var(--#{$prefix}vertical-menu-box-shadow);
     padding: 0 0 calc(#{$header-height} + 25px) 0;
     transition: all .1s ease-out;
+    overscroll-behavior: contain;
 
     .navbar-nav {
         .nav-link {
@@ -305,6 +311,12 @@
             padding: 10px 0 20px 0;
         }
 
+        // tablet: also hidden by default, shown as overlay
+        @media (min-width: 768px) and (max-width: 1024px) {
+            margin-left: -100%;
+            padding: 10px 0 20px 0;
+        }
+
     }
 
     .navbar-menu {
@@ -527,7 +539,7 @@
             width: var(--#{$prefix}vertical-menu-width-sm);
             z-index: 1;
             top: 0;
-            background-color: var(--#{$prefix}vertical-menu-bg);
+            background-color: transparent;
         }
 
         .logo {
@@ -903,6 +915,13 @@
     background-color: rgba($dark, 0.35);
     z-index: 1003;
     display: none;
+}
+
+// When sidebar is open as overlay (tablet/mobile), push the clickable area
+// to start after the sidebar so touches on the sidebar don't close it
+.vertical-sidebar-enable .vertical-overlay {
+    left: var(--#{$prefix}vertical-menu-width);
+    width: calc(100vw - var(--#{$prefix}vertical-menu-width));
 }
 
 // Mobile Menu

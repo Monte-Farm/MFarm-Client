@@ -3,13 +3,11 @@ import SimpleBar from "simplebar-react";
 import VerticalLayout from "./VerticalLayouts";
 import { Container } from "reactstrap";
 import { useSelector } from "react-redux";
-import { getEffectiveUser } from "helpers/impersonation_helper";
 import systemLogoDark from '../assets/images/system-logo-dark.png'
 import systemLogoLight from '../assets/images/system-logo-light.png'
 import { GlobalConfiguration } from "common/data_interfaces";
 
 const Sidebar = ({ layoutType }: any) => {
-  const userLogged = getEffectiveUser();
   const globalConfig: GlobalConfiguration | null = useSelector((s: any) => s.Configurations.globalConfig);
   const layoutModeType = useSelector((s: any) => s.Layout.layoutModeType);
   const systemLogo = layoutModeType === 'dark' ? systemLogoLight : systemLogoDark;
@@ -17,13 +15,23 @@ const Sidebar = ({ layoutType }: any) => {
 
 
   useEffect(() => {
-    var verticalOverlay = document.getElementsByClassName("vertical-overlay");
-    if (verticalOverlay) {
-      verticalOverlay[0].addEventListener("click", function () {
-        document.body.classList.remove("vertical-sidebar-enable");
-      });
-    }
-  });
+    const overlay = document.querySelector(".vertical-overlay") as HTMLElement;
+    if (!overlay) return;
+
+    const closeMenu = () => {
+      document.body.classList.remove("vertical-sidebar-enable");
+      const humberIcon = document.querySelector(".hamburger-icon");
+      if (humberIcon) humberIcon.classList.remove("open");
+    };
+
+    overlay.addEventListener("click", closeMenu);
+    overlay.addEventListener("touchstart", closeMenu, { passive: true });
+
+    return () => {
+      overlay.removeEventListener("click", closeMenu);
+      overlay.removeEventListener("touchstart", closeMenu);
+    };
+  }, []);
 
   const addEventListenerOnSmHoverMenu = () => {
     // add listener Sidebar Hover icon on change layout from setting
@@ -38,10 +46,21 @@ const Sidebar = ({ layoutType }: any) => {
 
   return (
     <React.Fragment>
-      <div className="app-menu navbar-menu">
+      <div
+        className="app-menu navbar-menu"
+        onTouchStart={e => e.stopPropagation()}
+        onTouchMove={e => e.stopPropagation()}
+        onTouchEnd={e => e.stopPropagation()}
+      >
         <div className="navbar-brand-box mt-2 mb-3">
-
-          <img src={logoSrc} height={100} width={200} alt="Logo del sistema" style={{ objectFit: 'contain' }} />
+          <span className="logo">
+            <span className="logo-lg">
+              <img src={logoSrc} height={100} width={200} alt="Logo del sistema" style={{ objectFit: 'contain' }} />
+            </span>
+            <span className="logo-sm">
+              <img src={logoSrc} height={40} width={40} alt="Logo" style={{ objectFit: 'contain' }} />
+            </span>
+          </span>
 
           <button
             onClick={addEventListenerOnSmHoverMenu}
@@ -52,7 +71,10 @@ const Sidebar = ({ layoutType }: any) => {
             <i className="ri-record-circle-line"></i>
           </button>
         </div>
-        <SimpleBar id="scrollbar" style={{ maxHeight: "calc(100vh - 200px)" }}>
+        <SimpleBar
+          id="scrollbar"
+          style={{ maxHeight: "calc(100vh - 200px)", overscrollBehavior: 'contain' } as React.CSSProperties}
+        >
           <Container fluid>
             <div id="two-column-menu"></div>
             <ul className="navbar-nav" id="navbar-nav">

@@ -55,57 +55,72 @@ const CoverSignIn = () => {
                     html, body {
                         margin: 0;
                         padding: 0;
-                        overflow: hidden;
                         height: 100%;
+                    }
+                    .auth-scroll-wrapper {
+                        min-height: 100vh;
+                        overflow-y: auto;
+                        -webkit-overflow-scrolling: touch;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+                    @media (max-height: 600px) {
+                        .auth-scroll-wrapper {
+                            align-items: flex-start;
+                            padding: 16px 0;
+                        }
                     }
                 `}
             </style>
 
-            <div className="auth-page-wrapper d-flex justify-content-center align-items-center min-vh-100 position-relative">
-                {/* Aurora como fondo sin scroll */}
-                <div className="position-absolute top-0 start-0 w-100 h-100" style={{ overflow: "hidden" }}>
+            <div className="auth-page-wrapper position-relative" style={{ minHeight: '100vh' }}>
+                {/* Aurora fija como fondo */}
+                <div className="position-fixed top-0 start-0 w-100 h-100" style={{ overflow: "hidden", zIndex: 0 }}>
                     <Aurora colorStops={["#2F4F4F", "#8B4513", "#F5F5DC"]} speed={0.5} />
                 </div>
 
-                {/* Contenido */}
-                <div className="auth-page-content overflow-hidden pt-lg-5">
-                    <Container>
-                        <Row>
-                            <Col lg={12}>
-                                <Card className="overflow-hidden" style={{ borderRadius: '10px' }}>
-                                    <Row className="g-0">
-                                        <Col lg={8}>
-                                            <img src={loginBanner} className="img-fluid h-100" alt="Login Cover" />
-                                        </Col>
-                                        <Col lg={4} style={{ backgroundColor: '#F5F5DC' }}>
-                                            <div className="p-lg-5">
-                                                <div className="d-flex justify-content-center pb-0 mt-0">
-                                                    <img
-                                                        src={systemLogo}
-                                                        style={{ maxWidth: '300px', maxHeight: '300px', width: '220px', height: '200px' }}
-                                                        alt="Logo"
-                                                    />
-                                                </div>
-                                                <h4 className="text-center" style={{ color: '#2F4F4F' }}>{t('auth.login.welcome')}</h4>
-                                                <p className="text-muted text-center fs-5">{t('auth.login.subtitle')}</p>
+                {/* Contenido con scroll */}
+                <div className="auth-scroll-wrapper" style={{ position: 'relative', zIndex: 2 }}>
+                    <div className="auth-page-content w-100 py-4">
+                        <Container>
+                            <Row>
+                                <Col lg={12}>
+                                    <Card className="overflow-hidden" style={{ borderRadius: '10px' }}>
+                                        <Row className="g-0">
+                                            <Col lg={8} className="d-none d-lg-block">
+                                                <img src={loginBanner} className="img-fluid h-100" style={{ objectFit: 'cover' }} alt="Login Cover" />
+                                            </Col>
+                                            <Col lg={4} xs={12} style={{ backgroundColor: '#F5F5DC' }}>
+                                                <div className="p-4 p-lg-5">
+                                                    <div className="d-flex justify-content-center pb-0 mt-0">
+                                                        <img
+                                                            src={systemLogo}
+                                                            style={{ maxWidth: '220px', maxHeight: '160px', width: '100%', height: 'auto' }}
+                                                            alt="Logo"
+                                                        />
+                                                    </div>
+                                                    <h4 className="text-center" style={{ color: '#2F4F4F' }}>{t('auth.login.welcome')}</h4>
+                                                    <p className="text-muted text-center fs-5">{t('auth.login.subtitle')}</p>
 
-                                                <div className="mt-5">
-                                                    <LoginForm onSubmit={handleLogin} />
+                                                    <div className="mt-4">
+                                                        <LoginForm onSubmit={handleLogin} />
+                                                    </div>
                                                 </div>
-                                            </div>
 
-                                            <AlertMessage
-                                                color="danger"
-                                                message={t('auth.login.disabledUser')}
-                                                visible={showDisabledAlert}
-                                                onClose={() => setShowDisabledAlert(false)}
-                                            />
-                                        </Col>
-                                    </Row>
-                                </Card>
-                            </Col>
-                        </Row>
-                    </Container>
+                                                <AlertMessage
+                                                    color="danger"
+                                                    message={t('auth.login.disabledUser')}
+                                                    visible={showDisabledAlert}
+                                                    onClose={() => setShowDisabledAlert(false)}
+                                                />
+                                            </Col>
+                                        </Row>
+                                    </Card>
+                                </Col>
+                            </Row>
+                        </Container>
+                    </div>
                 </div>
             </div>
         </React.Fragment>

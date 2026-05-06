@@ -30,6 +30,13 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
     const realRoles: string[] = Array.isArray(userLogged?.role) ? userLogged.role : [userLogged?.role];
     const isSuperadmin = realRoles.includes('Superadmin');
 
+    // PC sidebar always starts open, so icon must start in "open" state (X = click to close)
+    useEffect(() => {
+        if (document.documentElement.clientWidth >= 1025) {
+            document.querySelector('.hamburger-icon')?.classList.add('open');
+        }
+    }, []);
+
     useEffect(() => {
         const fetchFarmName = async () => {
             if (!userLogged || !userLogged.farm_assigned) return;
@@ -77,10 +84,6 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
     const toogleMenuBtn = () => {
         var windowSize = document.documentElement.clientWidth;
         const humberIcon = document.querySelector(".hamburger-icon") as HTMLElement;
-        dispatch(changeSidebarVisibility("show"));
-
-        if (windowSize > 767)
-            humberIcon.classList.toggle('open');
 
         //For collapse horizontal menu
         if (document.documentElement.getAttribute('data-layout') === "horizontal") {
@@ -88,16 +91,28 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
         }
 
         //For collapse vertical and semibox menu
-        if (sidebarVisibilitytype === "show" && (document.documentElement.getAttribute('data-layout') === "vertical" || document.documentElement.getAttribute('data-layout') === "semibox")) {
-            if (windowSize < 1025 && windowSize > 767) {
+        if (document.documentElement.getAttribute('data-layout') === "vertical" || document.documentElement.getAttribute('data-layout') === "semibox") {
+            if (windowSize >= 1025) {
+                // PC: toggle between lg (open) and sm (collapsed)
                 document.body.classList.remove('vertical-sidebar-enable');
-                (document.documentElement.getAttribute('data-sidebar-size') === 'sm') ? document.documentElement.setAttribute('data-sidebar-size', '') : document.documentElement.setAttribute('data-sidebar-size', 'sm');
-            } else if (windowSize > 1025) {
-                document.body.classList.remove('vertical-sidebar-enable');
-                (document.documentElement.getAttribute('data-sidebar-size') === 'lg') ? document.documentElement.setAttribute('data-sidebar-size', 'sm') : document.documentElement.setAttribute('data-sidebar-size', 'lg');
-            } else if (windowSize <= 767) {
+                const isOpen = document.documentElement.getAttribute('data-sidebar-size') === 'lg';
+                document.documentElement.setAttribute('data-sidebar-size', isOpen ? 'sm' : 'lg');
+                if (humberIcon) isOpen ? humberIcon.classList.remove('open') : humberIcon.classList.add('open');
+            } else if (windowSize > 767) {
+                // tablet: toggle overlay
+                if (document.body.classList.contains('vertical-sidebar-enable')) {
+                    document.body.classList.remove('vertical-sidebar-enable');
+                    if (humberIcon) humberIcon.classList.remove('open');
+                } else {
+                    document.body.classList.add('vertical-sidebar-enable');
+                    document.documentElement.setAttribute('data-sidebar-size', 'lg');
+                    if (humberIcon) humberIcon.classList.add('open');
+                }
+            } else {
+                // mobile: always open as overlay
                 document.body.classList.add('vertical-sidebar-enable');
                 document.documentElement.setAttribute('data-sidebar-size', 'lg');
+                if (humberIcon) humberIcon.classList.add('open');
             }
         }
 
@@ -135,7 +150,7 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
                                 </Link>
                             </div>
 
-                            <button hidden
+                            <button
                                 onClick={toogleMenuBtn}
                                 type="button"
                                 className="btn btn-sm px-3 fs-16 header-item vertical-menu-btn topnav-hamburger"

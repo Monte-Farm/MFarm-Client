@@ -93,38 +93,51 @@ const VerticalLayout = (props: any) => {
             }
             if ((sidebarVisibilitytype === "show" || layoutType === "vertical" || layoutType === "twocolumn") && document.querySelector(".hamburger-icon")) {
                 if (hamburgerIcon !== null) {
-                    hamburgerIcon.classList.remove("open");
+                    hamburgerIcon.classList.add("open");
                 }
             } else {
                 if (hamburgerIcon !== null) {
-                    hamburgerIcon.classList.add("open");
+                    hamburgerIcon.classList.remove("open");
                 }
             }
         } else if (windowSize < 1025 && windowSize > 767) {
             document.body.classList.remove("twocolumn-panel");
+            document.body.classList.remove("vertical-sidebar-enable");
             if (document.documentElement.getAttribute("data-layout") === "vertical") {
-                document.documentElement.setAttribute("data-sidebar-size", "sm");
+                document.documentElement.setAttribute("data-sidebar-size", "lg");
             }
             if (document.documentElement.getAttribute("data-layout") === "semibox") {
-                document.documentElement.setAttribute("data-sidebar-size", "sm");
+                document.documentElement.setAttribute("data-sidebar-size", "lg");
             }
+            // sidebar starts hidden on tablet → icon shows "open" (3 lines)
             if (humberIcon) {
-                humberIcon.classList.add("open");
+                humberIcon.classList.remove("open");
             }
         } else if (windowSize <= 767) {
             document.body.classList.remove("vertical-sidebar-enable");
             if (document.documentElement.getAttribute("data-layout") !== "horizontal") {
                 document.documentElement.setAttribute("data-sidebar-size", "lg");
             }
+            // sidebar starts hidden on mobile → icon shows "open" (3 lines)
             if (humberIcon) {
-                humberIcon.classList.add("open");
+                humberIcon.classList.remove("open");
             }
         }
     }, [leftsidbarSizeType, sidebarVisibilitytype, layoutType]);
 
     useEffect(() => {
+        resizeSidebarMenu();
         window.addEventListener("resize", resizeSidebarMenu, true);
+        return () => window.removeEventListener("resize", resizeSidebarMenu, true);
     }, [resizeSidebarMenu]);
+
+    useEffect(() => {
+        if (document.body.classList.contains('vertical-sidebar-enable')) {
+            document.body.classList.remove('vertical-sidebar-enable');
+            const humberIcon = document.querySelector('.hamburger-icon');
+            if (humberIcon) humberIcon.classList.remove('open');
+        }
+    }, [path]);
 
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: 'smooth' });

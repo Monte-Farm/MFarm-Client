@@ -16,7 +16,8 @@
         box-shadow: $box-shadow;
     }
 
-    @media (min-width: 768px) {
+    // PC only: offset topbar by sidebar width
+    @media (min-width: 1025px) {
         left: var(--#{$prefix}vertical-menu-width);
     }
 }
@@ -370,7 +371,7 @@
 
     &:is([data-sidebar-size="sm"], [data-sidebar-size="sm-hover"]) {
         #page-topbar {
-            @media (min-width: 768px) {
+            @media (min-width: 1025px) {
                 left: var(--#{$prefix}vertical-menu-width-sm);
             }
         }
@@ -378,7 +379,7 @@
 
     &[data-sidebar-size="md"] {
         #page-topbar {
-            @media (min-width: 768px) {
+            @media (min-width: 1025px) {
                 left: var(--#{$prefix}vertical-menu-width-md);
             }
         }
