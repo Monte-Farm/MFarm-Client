@@ -926,6 +926,8 @@
 
 // Mobile Menu
 .vertical-sidebar-enable {
+    overflow: hidden; // lock page scroll while sidebar is open on tablet/mobile
+
     .vertical-overlay {
         display: block;
     }

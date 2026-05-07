@@ -24,12 +24,24 @@ const Sidebar = ({ layoutType }: any) => {
       if (humberIcon) humberIcon.classList.remove("open");
     };
 
+    // Touch: only close on tap, not when the user is scrolling
+    let touchStartY = 0;
+    const onTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0].clientY;
+    };
+    const onTouchEnd = (e: TouchEvent) => {
+      const deltaY = Math.abs(e.changedTouches[0].clientY - touchStartY);
+      if (deltaY < 10) closeMenu(); // treat as tap
+    };
+
     overlay.addEventListener("click", closeMenu);
-    overlay.addEventListener("touchstart", closeMenu, { passive: true });
+    overlay.addEventListener("touchstart", onTouchStart, { passive: true });
+    overlay.addEventListener("touchend", onTouchEnd, { passive: true });
 
     return () => {
       overlay.removeEventListener("click", closeMenu);
-      overlay.removeEventListener("touchstart", closeMenu);
+      overlay.removeEventListener("touchstart", onTouchStart);
+      overlay.removeEventListener("touchend", onTouchEnd);
     };
   }, []);
 
