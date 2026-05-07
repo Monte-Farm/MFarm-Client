@@ -206,6 +206,23 @@
     }
 }
 
+// Desktop logo: visible only on ≥1025px, fixed above the scrollbar
+.sidebar-logo-desktop {
+    @media (max-width: 1024px) {
+        display: none !important;
+    }
+}
+
+// Tablet logo: inside SimpleBar so it scrolls with the menu, smaller size
+.sidebar-logo-tablet {
+    display: none;
+    text-align: center;
+
+    @media (min-width: 768px) and (max-width: 1024px) {
+        display: block;
+    }
+}
+
 .hamburger-icon {
     width: 20px;
     height: 14px;

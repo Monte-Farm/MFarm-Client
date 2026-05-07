@@ -64,7 +64,7 @@ const Sidebar = ({ layoutType }: any) => {
         onTouchMove={e => e.stopPropagation()}
         onTouchEnd={e => e.stopPropagation()}
       >
-        <div className="navbar-brand-box mt-2 mb-3">
+        <div className="navbar-brand-box mt-2 mb-3 sidebar-logo-desktop">
           <span className="logo">
             <span className="logo-lg">
               <img src={logoSrc} height={100} width={200} alt="Logo del sistema" style={{ objectFit: 'contain' }} />
@@ -85,8 +85,13 @@ const Sidebar = ({ layoutType }: any) => {
         </div>
         <SimpleBar
           id="scrollbar"
-          style={{ maxHeight: "calc(100vh - 200px)", overscrollBehavior: 'contain' } as React.CSSProperties}
+          style={{ maxHeight: "100vh", overscrollBehavior: 'contain' } as React.CSSProperties}
         >
+          <div className="navbar-brand-box mt-2 mb-2 sidebar-logo-tablet">
+            <span className="logo">
+              <img src={logoSrc} height={50} width={120} alt="Logo del sistema" style={{ objectFit: 'contain' }} />
+            </span>
+          </div>
           <Container fluid>
             <div id="two-column-menu"></div>
             <ul className="navbar-nav" id="navbar-nav">
