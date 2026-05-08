@@ -15,6 +15,11 @@ import UserForm from "Components/Common/Forms/UserForm"
 import UserDetailsModal from "Components/Common/Details/UserDetails"
 import defaultProfile from '../../assets/images/default-profile-mage.jpg'
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const ViewUsers = () => {
     const { t } = useTranslation();
     document.title = t('users.pageTitle')
@@ -25,6 +30,7 @@ const ViewUsers = () => {
     const [selectedUser, setSelecteduser] = useState<any>()
     const [selectedUsers, setSelectedUsers] = useState<UserData[]>([]);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ details: false, create: false, update: false, delete: false, bulkDelete: false, bulkActivate: false });
     const [loading, setLoading] = useState<boolean>(true)
     const navigate = useNavigate();
@@ -193,6 +199,9 @@ const ViewUsers = () => {
 
     useEffect(() => {
         handleFetchUsers();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, [])
 
     if (loading) {
@@ -263,7 +272,7 @@ const ViewUsers = () => {
                 </Card>
 
                 {/* Modal Details */}
-                <Modal size="xl" isOpen={modals.details} toggle={() => { toggleModal("details"); handleFetchUsers(); }} backdrop='static' keyboard={false} centered>
+                <Modal size="xl" isOpen={modals.details} toggle={() => { toggleModal("details"); handleFetchUsers(); }} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                     <ModalHeader toggle={() => toggleModal("details")}><h4>{t('users.modal.details')}</h4></ModalHeader>
                     <ModalBody>
                         <UserDetailsModal userId={selectedUser?._id} />
@@ -271,7 +280,7 @@ const ViewUsers = () => {
                 </Modal>
 
                 {/* Modal Create */}
-                <Modal isOpen={modals.create} toggle={() => toggleModal('create')} size="xl" keyboard={false} backdrop='static' centered>
+                <Modal isOpen={modals.create} toggle={() => toggleModal('create')} size="xl" keyboard={false} backdrop='static' centered fullscreen={tabletMode}>
                     <ModalHeader toggle={() => toggleModal('create')}>{t('users.modal.create')}</ModalHeader>
                     <ModalBody>
                         <UserForm onSave={() => { toggleModal('create'); handleFetchUsers(); }} onCancel={() => toggleModal('create', false)} defaultRole={userLogged.role.includes('Superadmin') ? 'farm_manager' : ''} currentUserRole={userLogged.role} />
@@ -279,7 +288,7 @@ const ViewUsers = () => {
                 </Modal>
 
                 {/* Modal Update */}
-                <Modal isOpen={modals.update} toggle={() => toggleModal('update')} size="xl" keyboard={false} backdrop='static' centered>
+                <Modal isOpen={modals.update} toggle={() => toggleModal('update')} size="xl" keyboard={false} backdrop='static' centered fullscreen={tabletMode}>
                     <ModalHeader toggle={() => toggleModal('update')}>{t('users.modal.update')}</ModalHeader>
                     <ModalBody>
                         <UserForm initialData={selectedUser} isUsernameDisable={true} onSave={() => { toggleModal('update'); handleFetchUsers(); }} onCancel={() => toggleModal('update', false)} currentUserRole={userLogged.role} />

@@ -17,6 +17,11 @@ import DatePicker from "react-flatpickr";
 import { RiCalendarLine, RiScales3Line, RiHome4Line, RiGroupLine, RiInformationLine, RiMapPin2Line, RiErrorWarningLine, RiHistoryLine, RiArrowRightLine } from "react-icons/ri";
 import { useTranslation } from "react-i18next";
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const PigDetails = () => {
     const { pig_id } = useParams();
     const configContext = useContext(ConfigContext);
@@ -24,6 +29,7 @@ const PigDetails = () => {
     const { t } = useTranslation();
     const [loading, setLoading] = useState<boolean>(true)
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [pigInfo, setPigInfo] = useState<PigData | null>(null)
     const [pigHistory, setPigHistory] = useState<PigHistoryChanges[]>([])
     const [generalInfo, setGeneralInfo] = useState<any | null>(null)
@@ -128,7 +134,12 @@ const PigDetails = () => {
         }
     };
 
-    useEffect(() => { fetchData(); }, [])
+    useEffect(() => {
+        fetchData();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, [])
 
     if (loading) return <LoadingAnimation />
 
@@ -381,7 +392,7 @@ const PigDetails = () => {
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
 
-            <Modal size="md" isOpen={modals.weighPig} toggle={() => toggleModal('weighPig')} centered backdrop="static" keyboard={false}>
+            <Modal size="md" isOpen={modals.weighPig} toggle={() => toggleModal('weighPig')} centered backdrop="static" keyboard={false} fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal('weighPig')}>{t('pigs.action.registerWeight')}</ModalHeader>
                 <ModalBody>
                     <WeighSinglePigForm pigId={pig_id ?? ''} currentWeight={generalInfo?.basicInfo?.weight ?? 0} onSave={() => { toggleModal('weighPig'); fetchData(); }} />
@@ -389,7 +400,7 @@ const PigDetails = () => {
             </Modal>
 
             {/* Historial Completo */}
-            <Modal isOpen={fullHistoryModal} toggle={() => setFullHistoryModal(false)} size="xl" scrollable centered>
+            <Modal isOpen={fullHistoryModal} toggle={() => setFullHistoryModal(false)} size="xl" scrollable centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => setFullHistoryModal(false)}>
                     <RiHistoryLine className="me-2 text-primary" />{t('pigs.section.fullHistory')}
                 </ModalHeader>

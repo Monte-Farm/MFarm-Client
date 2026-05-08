@@ -16,11 +16,17 @@ import PDFViewer from "Components/Common/Shared/PDFViewer";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import { useTranslation } from "react-i18next";
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const ViewFeedPreparations = () => {
     const { t } = useTranslation();
     document.title = t('feeding.preparation.pageTitle') + ' | System Management';
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [loading, setLoading] = useState<boolean>(true);
     const [preparations, setPreparations] = useState<any[]>([]);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' });
@@ -112,6 +118,9 @@ const ViewFeedPreparations = () => {
 
     useEffect(() => {
         fetchData();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -145,12 +154,12 @@ const ViewFeedPreparations = () => {
                 </Card>
             </Container>
 
-            <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("create")}>{t('feeding.preparation.createModal')}</ModalHeader>
                 <ModalBody><FeedPreparationForm onSave={() => { toggleModal('create'); fetchData(); }} onCancel={() => toggleModal('create', false)} /></ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("details")}>{t('feeding.preparation.detailModal')}</ModalHeader>
                 <ModalBody>{selectedPreparation?._id && <FeedPreparationDetails preparationId={selectedPreparation._id} />}</ModalBody>
             </Modal>

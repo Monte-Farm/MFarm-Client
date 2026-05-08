@@ -19,6 +19,11 @@ import OutcomeDetails from "Components/Common/Details/OutcomeDetails";
 import { OUTCOME_TYPES, getOutcomeTypeLabel } from "common/enums/outcomes.enums";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const SubwarehouseDetails = () => {
     const { t } = useTranslation();
     document.title = t('warehouse.subwarehouseDetails.pageTitle')
@@ -55,6 +60,7 @@ const SubwarehouseDetails = () => {
         outcomesLegendItems: [] as DonutLegendItem[],
         valueLegendItems: [] as DonutLegendItem[]
     });
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ incomeDetails: false, outcomeDetails: false, viewPDF: false });
     const [selectedIncome, setSelectedIncome] = useState<any>({});
     const [selectedOutcome, setSelectedOutcome] = useState<any>({});
@@ -494,6 +500,9 @@ const SubwarehouseDetails = () => {
         }
 
         fetchData();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, [])
 
 
@@ -810,14 +819,14 @@ const SubwarehouseDetails = () => {
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.incomeDetails} toggle={() => toggleModal("incomeDetails")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.incomeDetails} toggle={() => toggleModal("incomeDetails")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("incomeDetails")}>{t('warehouse.subwarehouseDetails.modal.incomeDetails')}</ModalHeader>
                 <ModalBody>
                     <IncomeDetails incomeId={selectedIncome?._id} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.outcomeDetails} toggle={() => toggleModal("outcomeDetails")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.outcomeDetails} toggle={() => toggleModal("outcomeDetails")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("outcomeDetails")}>{t('warehouse.subwarehouseDetails.modal.outcomeDetails')}</ModalHeader>
                 <ModalBody>
                     <OutcomeDetails outcomeId={selectedOutcome._id} />

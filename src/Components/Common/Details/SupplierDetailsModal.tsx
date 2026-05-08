@@ -18,6 +18,11 @@ interface SupplierDetailsModalProps {
     supplierId: string;
 }
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId }) => {
     const { t } = useTranslation();
     const configContext = useContext(ConfigContext)
@@ -26,6 +31,7 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId 
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [loading, setLoading] = useState<boolean>(true);
     const [modals, setModals] = useState({ update: false, delete: false, updateSuccess: false, updateError: false, deleteSuccess: false, deleteError: false, purchaseOrderDetails: false, viewPDF: false });
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [selectedPurchaseOrder, setSelectedPurchaseOrder] = useState<string>('');
     const [pdfLoading, setPdfLoading] = useState(false);
     const [fileURL, setFileURL] = useState<string | null>(null);
@@ -135,6 +141,9 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId 
 
     useEffect(() => {
         handleGetSupplierDetails();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, []);
 
 
@@ -296,7 +305,7 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId 
             </Card>
 
             {/* Modales */}
-            <Modal size="lg" isOpen={modals.update} toggle={() => toggleModal("update")} backdrop='static' keyboard={false} centered>
+            <Modal size="lg" isOpen={modals.update} toggle={() => toggleModal("update")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("update")}>{t('warehouse.suppliers.action.modify', { defaultValue: 'Modificar Proveedor' })}</ModalHeader>
                 <ModalBody>
                     <SupplierForm initialData={supplierDetails} onSubmit={handleUpdateSupplier} onCancel={() => toggleModal("update", false)} isCodeDisabled={true} />
@@ -325,7 +334,7 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId 
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.purchaseOrderDetails} toggle={() => toggleModal("purchaseOrderDetails")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.purchaseOrderDetails} toggle={() => toggleModal("purchaseOrderDetails")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("purchaseOrderDetails")}>{t('warehouse.purchaseOrders.modal.details', { defaultValue: 'Detalles de orden de compra' })}</ModalHeader>
                 <ModalBody>
                     <PurchaseOrderDetails purchaseId={selectedPurchaseOrder} />

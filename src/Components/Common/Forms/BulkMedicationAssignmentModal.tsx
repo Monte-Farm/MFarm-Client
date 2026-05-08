@@ -20,6 +20,11 @@ interface BulkMedicationAssignmentModalProps {
     onSuccess: () => void;
 }
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const BulkMedicationAssignmentModal: React.FC<BulkMedicationAssignmentModalProps> = ({
     isOpen,
     onClose,
@@ -29,6 +34,7 @@ const BulkMedicationAssignmentModal: React.FC<BulkMedicationAssignmentModalProps
     const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ success: false, error: false, missingStock: false, subwarehouseError: false });
     const [medicationPackages, setMedicationPackages] = useState<any[]>([]);
     const [selectedMedicationPackage, setSelectedMedicationPackage] = useState<any>(null);
@@ -175,11 +181,17 @@ const BulkMedicationAssignmentModal: React.FC<BulkMedicationAssignmentModalProps
         }
     }, [isOpen]);
 
+    useEffect(() => {
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
+
     const activeLittersCount = selectedLitters.filter(l => l.status === 'active').length;
 
     return (
         <>
-            <Modal isOpen={isOpen} toggle={handleClose} size="lg" backdrop='static' keyboard={false} centered>
+            <Modal isOpen={isOpen} toggle={handleClose} size="lg" backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={handleClose}>
                     {t('medication.bulk.litter.title', { count: activeLittersCount })}
                 </ModalHeader>

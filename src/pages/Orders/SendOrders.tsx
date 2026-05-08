@@ -14,6 +14,11 @@ import OrderDetails from "Components/Common/Details/OrderDetailsModal";
 import CompleteOrderForm from "Components/Common/Forms/CompleteOrderForm";
 import { useTranslation } from "react-i18next";
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const SendOrders = () => {
     const { t } = useTranslation();
     document.title = t('warehouse.orders.pageTitle')
@@ -23,6 +28,7 @@ const SendOrders = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [orders, setOrders] = useState([])
     const [loading, setLoading] = useState<boolean>(true)
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [mainWarehouse, setMainWarehouse] = useState<string>('')
     const [modals, setModals] = useState({ create: false, details: false, completeOrder: false });
     const [selectedOrder, setSelectedOrder] = useState<any>({});
@@ -113,6 +119,9 @@ const SendOrders = () => {
 
     useEffect(() => {
         fetchData();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, []);
 
     if (loading) {
@@ -144,21 +153,21 @@ const SendOrders = () => {
                 </Card>
             </Container>
 
-            <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} centered>
+            <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal('create')}>{t('warehouse.orders.modal.create')}</ModalHeader>
                 <ModalBody>
                     <OrderForm onSave={() => { toggleModal('create'); fetchData(); }} onCancel={() => toggleModal('create')} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} centered>
+            <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal('details')}>{t('warehouse.orders.modal.details')}</ModalHeader>
                 <ModalBody>
                     <OrderDetails orderId={selectedOrder?._id} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.completeOrder} toggle={() => toggleModal("completeOrder")} centered>
+            <Modal size="xl" isOpen={modals.completeOrder} toggle={() => toggleModal("completeOrder")} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal('completeOrder')}>{t('warehouse.orders.modal.complete')}</ModalHeader>
                 <ModalBody>
                     <CompleteOrderForm orderId={selectedOrder._id} onSave={() => { toggleModal('completeOrder'); fetchData(); }} onCancel={() => { toggleModal('completeOrder') }} />

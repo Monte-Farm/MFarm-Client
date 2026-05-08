@@ -15,6 +15,11 @@ import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
 import DonutChartCard, { DonutDataItem, DonutLegendItem } from "Components/Common/Graphics/DonutChartCard";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const SubwarehouseIncomes = () => {
     const { t } = useTranslation();
     document.title = "Entradas de Subalmacén | Subalmacén"
@@ -24,6 +29,7 @@ const SubwarehouseIncomes = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [subwarehouseIncomes, setSubwarehouseIncomes] = useState([])
     const [loading, setLoading] = useState<boolean>(true)
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ details: false });
     const [selectedIncome, setSelectedIncome] = useState<any>({});
     const [incomeStatistics, setIncomeStatistics] = useState({
@@ -180,6 +186,9 @@ const SubwarehouseIncomes = () => {
         };
 
         fetchData();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, [])
 
     if (loading) {
@@ -271,7 +280,7 @@ const SubwarehouseIncomes = () => {
 
             </Container>
 
-            <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal('details')}>{t('warehouse.subwarehouseDetails.modal.incomeDetails')}</ModalHeader>
                 <ModalBody>
                     <IncomeDetails incomeId={selectedIncome._id} />

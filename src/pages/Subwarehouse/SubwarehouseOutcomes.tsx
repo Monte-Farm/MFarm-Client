@@ -18,6 +18,11 @@ import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import { OUTCOME_TYPES, getOutcomeTypeLabel } from "common/enums/outcomes.enums";
 
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const SubwarehouseOutcomes = () => {
     const { t } = useTranslation();
     document.title = "Ver salidas | Subalmacén"
@@ -27,6 +32,7 @@ const SubwarehouseOutcomes = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [subwarehouseOutcomes, setSubwarehouseOutcomes] = useState([])
     const [loading, setLoading] = useState<boolean>(true)
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ create: false, details: false });
     const [selectedOutcome, setSelectedOutcome] = useState<any>({});
     const [outcomeStatistics, setOutcomeStatistics] = useState({
@@ -209,6 +215,12 @@ const SubwarehouseOutcomes = () => {
         fetchData();
     }, [configContext])
 
+    useEffect(() => {
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, [])
+
 
     if (loading) {
         return (
@@ -304,14 +316,14 @@ const SubwarehouseOutcomes = () => {
             </Container>
 
             {/* Modal Create */}
-            <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("create")}>{t('warehouse.subwarehouseDetails.modal.outcomeDetails')}</ModalHeader>
                 <ModalBody>
                     <SubwarehouseOutcomeForm onSave={() => { toggleModal('create'); fetchData(); }} onCancel={() => toggleModal('create')} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("details")}>{t('warehouse.subwarehouseDetails.modal.outcomeDetails')}</ModalHeader>
                 <ModalBody>
                     <OutcomeDetails outcomeId={selectedOutcome._id} />

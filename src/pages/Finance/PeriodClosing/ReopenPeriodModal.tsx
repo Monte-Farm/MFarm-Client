@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Alert, Button, Form, FormFeedback, FormGroup, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
 import { useDispatch, useSelector } from "react-redux";
@@ -14,11 +14,23 @@ interface ReopenPeriodModalProps {
     periodLabel: string;
 }
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const ReopenPeriodModal = ({ isOpen, onClose, onSuccess, closingId, periodLabel }: ReopenPeriodModalProps) => {
     const { t } = useTranslation();
     const dispatch = useDispatch<any>();
     const submitting = useSelector((state: any) => state.PeriodClosing.submitting);
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [apiError, setApiError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
 
     const formik = useFormik({
         initialValues: { reason: "" },
@@ -49,7 +61,7 @@ const ReopenPeriodModal = ({ isOpen, onClose, onSuccess, closingId, periodLabel 
     };
 
     return (
-        <Modal isOpen={isOpen} toggle={handleClose} backdrop="static" keyboard={false} centered>
+        <Modal isOpen={isOpen} toggle={handleClose} backdrop="static" keyboard={false} centered fullscreen={tabletMode}>
             <ModalHeader toggle={handleClose}>{t("finance.periodClosing.modal.reopen.header")}</ModalHeader>
             <Form onSubmit={formik.handleSubmit}>
                 <ModalBody>

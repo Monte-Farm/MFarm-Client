@@ -16,6 +16,11 @@ import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSel
 import PDFViewer from "Components/Common/Shared/PDFViewer";
 import { useTranslation } from "react-i18next";
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const ViewPurchaseOrders = () => {
     const { t } = useTranslation();
     document.title = t('warehouse.purchaseOrders.pageTitle', { defaultValue: 'Ver Ordenes de compra' }) + ' | ' + t('warehouse.purchaseOrders.breadcrumb', { defaultValue: 'Ordenes de compra' });
@@ -24,6 +29,7 @@ const ViewPurchaseOrders = () => {
     const userLogged = getEffectiveUser();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [purchaseOrders, setPurchaseOrders] = useState([])
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ createPurchaseOrder: false, purchaseOrderDetails: false, dateRange: false, viewPDF: false });
     const [pdfLoading, setPdfLoading] = useState(false);
     const [fileURL, setFileURL] = useState<string | null>(null);
@@ -138,6 +144,9 @@ const ViewPurchaseOrders = () => {
 
     useEffect(() => {
         fetchWarehouseId();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, []);
 
     useEffect(() => {
@@ -241,14 +250,14 @@ const ViewPurchaseOrders = () => {
                 </Card>
             </Container>
 
-            <Modal size="xl" isOpen={modals.createPurchaseOrder} toggle={() => toggleModal("createPurchaseOrder")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.createPurchaseOrder} toggle={() => toggleModal("createPurchaseOrder")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("createPurchaseOrder")}>{t('warehouse.purchaseOrders.modal.new')}</ModalHeader>
                 <ModalBody>
                     <PurchaseOrderForm onSave={() => { toggleModal('createPurchaseOrder'); fetchPurchaseOrdersData(); }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.purchaseOrderDetails} toggle={() => toggleModal("purchaseOrderDetails")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.purchaseOrderDetails} toggle={() => toggleModal("purchaseOrderDetails")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("purchaseOrderDetails")}>{t('warehouse.purchaseOrders.modal.details')}</ModalHeader>
                 <ModalBody>
                     <PurchaseOrderDetails purchaseId={selectedPurchaseOrder} />

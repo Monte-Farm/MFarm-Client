@@ -18,6 +18,11 @@ interface LitterMedicalDetailsProps {
     litterId: string
 }
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const LitterMedicalDetails: React.FC<LitterMedicalDetailsProps> = ({ litterId }) => {
     const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
@@ -30,6 +35,7 @@ const LitterMedicalDetails: React.FC<LitterMedicalDetailsProps> = ({ litterId })
     const [medicalStats, setMedicalStats] = useState<any | null>(null);
 
     const [selectedMedicationPackage, setSelectedMedicationPackage] = useState<string>("")
+    const [tabletMode, setTabletMode] = useState(isTablet);
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -58,6 +64,9 @@ const LitterMedicalDetails: React.FC<LitterMedicalDetailsProps> = ({ litterId })
 
     useEffect(() => {
         fetchMedicalInfo();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, [])
 
     if (loading) {
@@ -167,21 +176,21 @@ const LitterMedicalDetails: React.FC<LitterMedicalDetailsProps> = ({ litterId })
                 />
             </div>
 
-            <Modal size="xl" isOpen={modals.asignMedicationPackage} toggle={() => toggleModal("asignMedicationPackage")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.asignMedicationPackage} toggle={() => toggleModal("asignMedicationPackage")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("asignMedicationPackage")}>{t('medical.medication.packageAssign')}</ModalHeader>
                 <ModalBody>
                     <AsignLitterMedicationPackageForm litterId={litterId} onSave={() => { toggleModal('asignMedicationPackage'); fetchMedicalInfo(); }} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.asignMedication} toggle={() => toggleModal("asignMedication")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.asignMedication} toggle={() => toggleModal("asignMedication")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("asignMedication")}>{t('medical.medication.assign')}</ModalHeader>
                 <ModalBody>
                     <AsignLitterMedicationForm litterId={litterId} onSave={() => { toggleModal('asignMedication'); fetchMedicalInfo(); }} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.medicationPackageDetails} toggle={() => toggleModal("medicationPackageDetails")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.medicationPackageDetails} toggle={() => toggleModal("medicationPackageDetails")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("medicationPackageDetails")}>{t('medical.medication.packageDetails')}</ModalHeader>
                 <ModalBody>
                     <MedicationPackageDetails medicationPackageId={selectedMedicationPackage} />

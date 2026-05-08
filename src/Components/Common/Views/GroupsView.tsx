@@ -18,7 +18,7 @@ import BulkGroupHealthEventModal from "Components/Common/Forms/BulkGroupHealthEv
 import KPI from "Components/Common/Graphics/Kpi";
 import { FaArrowDown, FaArrowUp, FaBalanceScale, FaLayerGroup, FaMars, FaPiggyBank, FaVenus, FaWeight } from "react-icons/fa";
 import { getActionsColumn } from "config/groupColumnsConfig";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 interface GroupsViewProps {
@@ -30,6 +30,11 @@ interface GroupsViewProps {
     transferStage?: string;
     headerActions?: React.ReactNode;
 }
+
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
 
 const GroupsView: React.FC<GroupsViewProps> = ({
     stage,
@@ -53,11 +58,18 @@ const GroupsView: React.FC<GroupsViewProps> = ({
         fetchData
     } = useGroupsByStage({ stage, statsEndpoint });
 
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [selectedGroups, setSelectedGroups] = useState<any[]>([]);
     const [bulkMedicationModalOpen, setBulkMedicationModalOpen] = useState(false);
     const [bulkFeedAdminModalOpen, setBulkFeedAdminModalOpen] = useState(false);
     const [bulkStageChangeModalOpen, setBulkStageChangeModalOpen] = useState(false);
     const [bulkHealthEventModalOpen, setBulkHealthEventModalOpen] = useState(false);
+
+    useEffect(() => {
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
 
     const handleSelectionChange = (selected: any[]) => {
         setSelectedGroups(selected);
@@ -184,28 +196,28 @@ const GroupsView: React.FC<GroupsViewProps> = ({
                 </Card>
             </Container>
 
-            <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} centered backdrop={'static'} keyboard={false}>
+            <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} centered backdrop={'static'} keyboard={false} fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("create")}>{t('groups.modal.createGroup')}</ModalHeader>
                 <ModalBody>
                     <GroupForm onSave={() => { fetchData(); toggleModal('create') }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.move} toggle={() => toggleModal("move")} centered backdrop={'static'} keyboard={false}>
+            <Modal size="xl" isOpen={modals.move} toggle={() => toggleModal("move")} centered backdrop={'static'} keyboard={false} fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("move")}>{t('groups.modal.moveGroup')}</ModalHeader>
                 <ModalBody>
                     <GroupTransferForm groupId={selectedGroup._id} onSave={() => { toggleModal('move'); fetchData(); }} stage={transferStage || stage} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.asign} toggle={() => toggleModal("asign")} centered backdrop={'static'} keyboard={false}>
+            <Modal size="xl" isOpen={modals.asign} toggle={() => toggleModal("asign")} centered backdrop={'static'} keyboard={false} fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("asign")}>{t('groups.modal.insertPigs')}</ModalHeader>
                 <ModalBody>
                     <GroupInsertForm groupId={selectedGroup?._id} onSave={() => { fetchData(); toggleModal('asign') }} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.withdraw} toggle={() => toggleModal("withdraw")} centered backdrop={'static'} keyboard={false}>
+            <Modal size="xl" isOpen={modals.withdraw} toggle={() => toggleModal("withdraw")} centered backdrop={'static'} keyboard={false} fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("withdraw")}>{t('groups.modal.withdrawPigs')}</ModalHeader>
                 <ModalBody>
                     <GroupWithDrawForm groupId={selectedGroup?._id} onSave={() => { fetchData(); toggleModal('withdraw') }} />

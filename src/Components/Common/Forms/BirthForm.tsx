@@ -27,10 +27,16 @@ interface BirthFormProps {
     onCancel: () => void
 }
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) => {
     const { t } = useTranslation()
     const configContext = useContext(ConfigContext)
     const userLogged = getEffectiveUser()
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [upcomingBirths, setUpcomingBirths] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true)
     const [activeStep, setActiveStep] = useState<number>(1);
@@ -328,6 +334,9 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
         }
 
         formik.setFieldValue('birth_date', new Date())
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, [])
 
     useEffect(() => {
@@ -931,7 +940,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
 
             </form >
 
-            <Modal isOpen={modals.sowDetails} toggle={() => toggleModal('sowDetails')} size="lg" centered className="border-0">
+            <Modal isOpen={modals.sowDetails} toggle={() => toggleModal('sowDetails')} size="lg" centered className="border-0" fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal('sowDetails')} className="border-0 pb-0">
                     <h4 className="modal-title text-primary fw-bold">{t('birth.form.modalExtractionTitle', { defaultValue: 'Detalles de la extracción' })}</h4>
                 </ModalHeader>

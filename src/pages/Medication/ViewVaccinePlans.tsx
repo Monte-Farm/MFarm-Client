@@ -14,6 +14,11 @@ import { useTranslation } from "react-i18next"
 import { FiInbox } from "react-icons/fi"
 import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader } from "reactstrap"
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const ViewVaccinationPlans = () => {
     const { t } = useTranslation();
     document.title = t('medication.vaccinePlan.pageTitle') + ' | System Management'
@@ -22,6 +27,7 @@ const ViewVaccinationPlans = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [vaccinationPlans, setVaccinationPlans] = useState<any[]>([]);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ create: false, details: false, update: false, delete: false, activate: false });
     const [selectedVaccinationPlan, setSelectedVaccinationPlan] = useState<any>(null);
 
@@ -99,6 +105,9 @@ const ViewVaccinationPlans = () => {
 
     useEffect(() => {
         fetchData()
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, [])
 
     if (loading) {
@@ -135,14 +144,14 @@ const ViewVaccinationPlans = () => {
             </Container>
 
 
-            <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("create")}>{t('medication.vaccinePlan.createModal')}</ModalHeader>
                 <ModalBody>
                     <VaccinationPlanForm onSave={() => { toggleModal('create'); fetchData(); }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => { toggleModal("details"); fetchData() }}>{t('medication.vaccinePlan.detailsModal')}</ModalHeader>
                 <ModalBody>
                     <VaccinationPlanDetails vaccinationPlanId={selectedVaccinationPlan?._id} />

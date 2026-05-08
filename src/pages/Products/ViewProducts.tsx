@@ -20,6 +20,11 @@ import { FiInbox } from "react-icons/fi";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
 
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const ViewProducts = () => {
     const { t } = useTranslation();
     document.title = t('warehouse.products.pageTitle');
@@ -29,6 +34,7 @@ const ViewProducts = () => {
     const [selectedProduct, setSelectedProduct] = useState<ProductData>()
     const [selectedProducts, setSelectedProducts] = useState<ProductData[]>([]);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ create: false, details: false, update: false, delete: false, activate: false, bulkDelete: false, bulkActivate: false, viewPDF: false });
     const [pdfLoading, setPdfLoading] = useState(false);
     const [fileURL, setFileURL] = useState<string | null>(null);
@@ -371,6 +377,9 @@ const ViewProducts = () => {
 
     useEffect(() => {
         fetchAllProductData();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, [])
 
     if (loading) {
@@ -515,7 +524,7 @@ const ViewProducts = () => {
             </Container>
 
             {/* Modal Details */}
-            <Modal size="lg" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered>
+            <Modal size="lg" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("details")}><h4>{t('warehouse.products.modal.details')}</h4></ModalHeader>
                 <ModalBody>
                     {selectedProduct && (
@@ -525,7 +534,7 @@ const ViewProducts = () => {
             </Modal>
 
             {/* Modal Create */}
-            <Modal size="lg" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered>
+            <Modal size="lg" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("create")}>{t('warehouse.products.modal.create')}</ModalHeader>
                 <ModalBody>
                     <ProductForm onSubmit={handleCreateProduct} onCancel={() => toggleModal("create", false)} />
@@ -533,7 +542,7 @@ const ViewProducts = () => {
             </Modal>
 
             {/* Modal Update */}
-            <Modal size="lg" isOpen={modals.update} toggle={() => toggleModal("update")} backdrop='static' keyboard={false} centered>
+            <Modal size="lg" isOpen={modals.update} toggle={() => toggleModal("update")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("update")}>{t('warehouse.products.modal.update')}</ModalHeader>
                 <ModalBody>
                     <ProductForm initialData={selectedProduct} onSubmit={handleUpdateProduct} onCancel={() => toggleModal("update", false)} isCodeDisabled={true} />

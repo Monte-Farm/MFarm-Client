@@ -19,6 +19,11 @@ import { darkenHex } from "utils/colorUtils";
 
 interface PigMedicalDetailsProps { pigId: string }
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
     const { t } = useTranslation();
     const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
@@ -34,6 +39,7 @@ const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
     const [medicalStats, setMedicalStats] = useState<any | null>(null);
     const [selectedMedicationPackage, setSelectedMedicationPackage] = useState<string>("")
     const [selectedSickness, setSelectedSickness] = useState<string>("");
+    const [tabletMode, setTabletMode] = useState(isTablet);
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -59,7 +65,12 @@ const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
         }
     }
 
-    useEffect(() => { fetchMedicalInfo(); }, [])
+    useEffect(() => {
+        fetchMedicalInfo();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, [])
 
     if (loading) return <LoadingAnimation />;
 
@@ -226,23 +237,23 @@ const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
                 </div>
             </div>
 
-            <Modal size="xl" isOpen={modals.registerSickness} toggle={() => toggleModal("registerSickness")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.registerSickness} toggle={() => toggleModal("registerSickness")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("registerSickness")}>{t('medical.sickness.action.register')}</ModalHeader>
                 <ModalBody><PigSicknessForm pigId={pigId ?? ""} onSave={() => { toggleModal('registerSickness'); fetchMedicalInfo(); }} /></ModalBody>
             </Modal>
-            <Modal size="xl" isOpen={modals.medicationPackage} toggle={() => toggleModal("medicationPackage")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.medicationPackage} toggle={() => toggleModal("medicationPackage")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("medicationPackage")}>{t('medical.medication.packageAssign')}</ModalHeader>
                 <ModalBody><AsignMedicationPackageForm pigId={pigId ?? ""} onSave={() => { toggleModal('medicationPackage'); fetchMedicalInfo(); }} /></ModalBody>
             </Modal>
-            <Modal size="xl" isOpen={modals.asignSingle} toggle={() => toggleModal("asignSingle")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.asignSingle} toggle={() => toggleModal("asignSingle")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("asignSingle")}>{t('medical.medication.assign')}</ModalHeader>
                 <ModalBody><AsignMedicationForm pigId={pigId ?? ""} onSave={() => { toggleModal('asignSingle'); fetchMedicalInfo(); }} /></ModalBody>
             </Modal>
-            <Modal size="xl" isOpen={modals.medicationPackageDetails} toggle={() => toggleModal("medicationPackageDetails")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.medicationPackageDetails} toggle={() => toggleModal("medicationPackageDetails")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("medicationPackageDetails")}>{t('medical.medication.packageDetails')}</ModalHeader>
                 <ModalBody><MedicationPackageDetails medicationPackageId={selectedMedicationPackage} /></ModalBody>
             </Modal>
-            <Modal size="xl" isOpen={modals.sicknessDetails} toggle={() => toggleModal("sicknessDetails")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.sicknessDetails} toggle={() => toggleModal("sicknessDetails")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("sicknessDetails")}>{t('medical.sickness.details')}</ModalHeader>
                 <ModalBody><SicknessDetails pigId={pigId} sicknessId={selectedSickness} /></ModalBody>
             </Modal>

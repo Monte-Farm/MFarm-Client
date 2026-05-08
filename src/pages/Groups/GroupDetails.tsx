@@ -60,6 +60,11 @@ const STATUS_COLORS: Record<string, string> = {
     sale: 'success', sold: 'success',
 };
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const GroupDetails = () => {
     const { t } = useTranslation();
     document.title = t('groups.tab.information') + " | Management System";
@@ -70,6 +75,7 @@ const GroupDetails = () => {
 
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [groupData, setGroupData] = useState<any>({});
     const [activeTab, setActiveTab] = useState("0");
     const [modals, setModals] = useState({ changeStage: false, registerDeath: false, discard: false, transfer: false, processSale: false, processReplacement: false, sellPigs: false, weighGroup: false });
@@ -183,6 +189,9 @@ const GroupDetails = () => {
 
     useEffect(() => {
         fetchData();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, []);
 
     if (loading) return <LoadingAnimation />;
@@ -554,49 +563,49 @@ const GroupDetails = () => {
                 </TabContent>
             </Container>
 
-            <Modal size="xl" isOpen={modals.changeStage} toggle={() => toggleModal("changeStage")} centered backdrop={'static'} keyboard={false}>
+            <Modal size="xl" isOpen={modals.changeStage} toggle={() => toggleModal("changeStage")} centered backdrop={'static'} keyboard={false} fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("changeStage")}>{t('groups.modal.changeStage')}</ModalHeader>
                 <ModalBody>
                     <ChangeStageGroup groupId={groupData._id} onSave={() => { toggleModal('changeStage'); fetchData(); setRefreshKey(prev => prev + 1); }} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.processReplacement} toggle={() => toggleModal("processReplacement")} centered backdrop={'static'} keyboard={false}>
+            <Modal size="xl" isOpen={modals.processReplacement} toggle={() => toggleModal("processReplacement")} centered backdrop={'static'} keyboard={false} fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("processReplacement")}>{t('groups.modal.processReplacement')}</ModalHeader>
                 <ModalBody>
                     <ProcessPigReplacementForm groupId={groupData._id} onSave={() => { toggleModal('processReplacement'); fetchData(); setRefreshKey(prev => prev + 1); }} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.transfer} toggle={() => toggleModal("transfer")} centered backdrop={'static'} keyboard={false}>
+            <Modal size="xl" isOpen={modals.transfer} toggle={() => toggleModal("transfer")} centered backdrop={'static'} keyboard={false} fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("transfer")}>{t('groups.modal.transferPigs')}</ModalHeader>
                 <ModalBody>
                     <GroupTransferForm groupId={group_id ?? ''} onSave={() => { toggleModal('transfer'); fetchData(); setRefreshKey(prev => prev + 1); }} stage={groupData.stage} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.discard} toggle={() => toggleModal("discard")} centered backdrop={'static'} keyboard={false}>
+            <Modal size="xl" isOpen={modals.discard} toggle={() => toggleModal("discard")} centered backdrop={'static'} keyboard={false} fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("discard")}>{t('groups.modal.withdrawPigs')}</ModalHeader>
                 <ModalBody>
                     <GroupWithDrawForm groupId={group_id ?? ''} onSave={() => { fetchData(); toggleModal('discard'); setRefreshKey(prev => prev + 1); }} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.registerDeath} toggle={() => toggleModal("registerDeath")} centered backdrop={'static'} keyboard={false}>
+            <Modal size="xl" isOpen={modals.registerDeath} toggle={() => toggleModal("registerDeath")} centered backdrop={'static'} keyboard={false} fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("registerDeath")}>{t('groups.modal.registerDeath')}</ModalHeader>
                 <ModalBody>
                     <DiscardPigInGroupForm groupId={group_id ?? ''} onSave={() => { fetchData(); toggleModal('registerDeath'); setRefreshKey(prev => prev + 1); }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.sellPigs} toggle={() => toggleModal("sellPigs")} centered backdrop={'static'} keyboard={false}>
+            <Modal size="xl" isOpen={modals.sellPigs} toggle={() => toggleModal("sellPigs")} centered backdrop={'static'} keyboard={false} fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("sellPigs")}>{t('groups.modal.sellPigs')}</ModalHeader>
                 <ModalBody>
                     <SellPigsForm groupId={groupData._id} onSave={() => { toggleModal('sellPigs'); fetchData(); setRefreshKey(prev => prev + 1); }} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="lg" isOpen={modals.weighGroup} toggle={() => toggleModal("weighGroup")} centered backdrop={'static'} keyboard={false}>
+            <Modal size="lg" isOpen={modals.weighGroup} toggle={() => toggleModal("weighGroup")} centered backdrop={'static'} keyboard={false} fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("weighGroup")}>{t('groups.modal.weighGroup')}</ModalHeader>
                 <ModalBody>
                     <WeighGroupForm groupId={group_id ?? ''} onSave={() => { toggleModal('weighGroup'); fetchData(); setRefreshKey(prev => prev + 1); }} />

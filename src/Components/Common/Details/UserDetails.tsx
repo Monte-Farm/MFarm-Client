@@ -19,6 +19,11 @@ interface UserDetailsProps {
     userId: string
 }
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const UserDetailsModal: React.FC<UserDetailsProps> = ({ userId }) => {
     const userLogged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
@@ -26,6 +31,7 @@ const UserDetailsModal: React.FC<UserDetailsProps> = ({ userId }) => {
     const [userDetails, setUserDetails] = useState<UserData | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [modals, setModals] = useState({ details: false, create: false, update: false, deactivate: false, activate: false, success: false, error: false, viewPDF: false });
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [pdfLoading, setPdfLoading] = useState(false);
     const [fileURL, setFileURL] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState('');
@@ -127,6 +133,9 @@ const UserDetailsModal: React.FC<UserDetailsProps> = ({ userId }) => {
 
     useEffect(() => {
         fetchUserDetails();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, []);
 
     if (isLoading) return <LoadingAnimation absolutePosition={false} />;
@@ -209,7 +218,7 @@ const UserDetailsModal: React.FC<UserDetailsProps> = ({ userId }) => {
                 </Col>
             </Row>
 
-            <Modal isOpen={modals.update} toggle={() => toggleModal('update')} size="xl" keyboard={false} backdrop='static' centered>
+            <Modal isOpen={modals.update} toggle={() => toggleModal('update')} size="xl" keyboard={false} backdrop='static' centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal('update')}>{t('users.modal.update')}</ModalHeader>
                 <ModalBody>
                     <UserForm

@@ -18,6 +18,11 @@ import PDFViewer from "Components/Common/Shared/PDFViewer";
 import { useTranslation } from "react-i18next";
 
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const ViewSubwarehouse = () => {
     const { t } = useTranslation();
     document.title = t('warehouse.subwarehouse.pageTitle')
@@ -26,6 +31,7 @@ const ViewSubwarehouse = () => {
     const userLogged = getEffectiveUser();
 
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ create: false, details: false, update: false, delete: false, viewPDF: false });
     const [pdfLoading, setPdfLoading] = useState(false);
     const [fileURL, setFileURL] = useState<string | null>(null);
@@ -206,6 +212,9 @@ const ViewSubwarehouse = () => {
 
     useEffect(() => {
         fetchSubwarehouses();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, [])
 
     if (loading) {
@@ -316,7 +325,7 @@ const ViewSubwarehouse = () => {
                 </Card>
 
                 {/* Modal Create */}
-                <Modal size="lg" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered>
+                <Modal size="lg" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                     <ModalHeader toggle={() => toggleModal("create")}>{t('warehouse.subwarehouse.modal.create')}</ModalHeader>
                     <ModalBody>
                         <SubwarehouseForm onCancel={() => toggleModal("create", false)} onSave={() => { toggleModal('create'); fetchSubwarehouses(); }} />

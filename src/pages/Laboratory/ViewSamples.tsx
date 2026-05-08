@@ -21,6 +21,11 @@ import SelectableCustomTable from "Components/Common/Tables/SelectableTable";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
 import { useTranslation } from "react-i18next";
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const ViewSamples = () => {
     const { t } = useTranslation();
     document.title = t('laboratory.sample.pageTitle')
@@ -28,6 +33,7 @@ const ViewSamples = () => {
     const configContext = useContext(ConfigContext)
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ create: false, discard: false, pigDetails: false, bulkDiscard: false, bulkDiscardForm: false, viewPDF: false });
     const [pdfLoading, setPdfLoading] = useState(false);
     const [fileURL, setFileURL] = useState<string | null>(null);
@@ -243,6 +249,9 @@ const ViewSamples = () => {
 
     useEffect(() => {
         fetchSemenSamples();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, [])
 
     if (loading) {
@@ -362,28 +371,28 @@ const ViewSamples = () => {
 
             </Container>
 
-            <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("create")}>{t('laboratory.sample.modal.create')}</ModalHeader>
                 <ModalBody>
                     <SemenSampleForm onSave={() => onSaveSample()} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="lg" isOpen={modals.pigDetails} toggle={() => toggleModal("pigDetails")} centered>
+            <Modal size="lg" isOpen={modals.pigDetails} toggle={() => toggleModal("pigDetails")} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("pigDetails")}>{t('laboratory.sample.modal.pigDetails')}</ModalHeader>
                 <ModalBody>
                     <PigDetailsModal pigId={selectedPig} showAllDetailsButton={true} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="lg" isOpen={modals.discard} toggle={() => toggleModal("discard")} backdrop="static" keyboard={false} centered>
+            <Modal size="lg" isOpen={modals.discard} toggle={() => toggleModal("discard")} backdrop="static" keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("discard")}>{t('laboratory.sample.modal.discard')}</ModalHeader>
                 <ModalBody>
                     <DiscardSampleForm sample={selectedSample} onSave={() => onDiscardedSample()} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
-            <Modal isOpen={modals.bulkDiscardForm} toggle={() => toggleModal("bulkDiscardForm")} backdrop='static' keyboard={false} centered>
+            <Modal isOpen={modals.bulkDiscardForm} toggle={() => toggleModal("bulkDiscardForm")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("bulkDiscardForm")}>
                     {t('laboratory.sample.bulk.title', { count: discardableCount })}
                 </ModalHeader>

@@ -31,6 +31,11 @@ const chartTypeColor: Record<string, string> = {
     own_production: '#6b7280',
 };
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const ViewIncomes = () => {
     const { t } = useTranslation();
     document.title = t('finance.income.pageTitle')
@@ -40,6 +45,7 @@ const ViewIncomes = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [incomes, setIncomes] = useState([])
     const [loading, setLoading] = useState<boolean>(true)
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ createIncome: false, details: false, dateRange: false, viewPDF: false });
     const [pdfLoading, setPdfLoading] = useState(false);
     const [fileURL, setFileURL] = useState<string | null>(null);
@@ -206,6 +212,9 @@ const ViewIncomes = () => {
 
     useEffect(() => {
         fetchWarehouseId();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, []);
 
     const fetchWarehouseData = async () => {
@@ -324,14 +333,14 @@ const ViewIncomes = () => {
                 </Card>
             </Container>
 
-            <Modal size="xl" isOpen={modals.createIncome} toggle={() => toggleModal("createIncome")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.createIncome} toggle={() => toggleModal("createIncome")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("createIncome")}>{t('finance.income.modal.create')}</ModalHeader>
                 <ModalBody>
                     <IncomeForm onSave={() => { toggleModal('createIncome'); fetchWarehouseData() }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("details")}>{t('finance.income.modal.details')}</ModalHeader>
                 <ModalBody>
                     <IncomeDetails incomeId={selectedIncome?._id} />

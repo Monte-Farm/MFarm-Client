@@ -25,10 +25,16 @@ interface DiscardPigFormProps {
     onCancel: () => void;
 }
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const DiscardPigForm: React.FC<DiscardPigFormProps> = ({ pig, onSave, onCancel }) => {
     const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ pigDetails: false, success: false, error: false });
     const [selectedPig, setSelectedPig] = useState<any>();
     const [activeStep, setActiveStep] = useState<number>(1);
@@ -177,7 +183,13 @@ const DiscardPigForm: React.FC<DiscardPigFormProps> = ({ pig, onSave, onCancel }
         try { await validationSchema.validate(formik.values, { abortEarly: false }); toggleArrowTab(3); } catch {}
     };
 
-    useEffect(() => { fetchPigs(); formik.setFieldValue('date', new Date()); }, []);
+    useEffect(() => {
+        fetchPigs();
+        formik.setFieldValue('date', new Date());
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
 
     if (loading) return <LoadingAnimation absolutePosition={false} />;
 
@@ -316,7 +328,7 @@ const DiscardPigForm: React.FC<DiscardPigFormProps> = ({ pig, onSave, onCancel }
                 </TabContent>
             </form>
 
-            <Modal isOpen={modals.pigDetails} toggle={() => toggleModal('pigDetails')} size="lg" centered className="border-0">
+            <Modal isOpen={modals.pigDetails} toggle={() => toggleModal('pigDetails')} size="lg" centered className="border-0" fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal('pigDetails')} className="border-0 pb-0">
                     <h4 className="modal-title text-primary fw-bold">{t('pigs.page.detailTitle')}</h4>
                 </ModalHeader>

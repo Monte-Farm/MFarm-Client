@@ -35,12 +35,18 @@ const categoryChartColor: Record<string, string> = {
     OTHER: "#ec4899",
 };
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const ViewExpenses = () => {
     const { t } = useTranslation();
     document.title = t('finance.expense.pageTitle');
 
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [entries, setEntries] = useState<any[]>([]);
@@ -142,6 +148,9 @@ const ViewExpenses = () => {
 
     useEffect(() => {
         fetchData();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, []);
 
     const donutData: DonutDataItem[] = statistics.byCategory
@@ -248,7 +257,7 @@ const ViewExpenses = () => {
                 </Card>
             </Container>
 
-            <Modal size="lg" isOpen={modals.createExpense} toggle={() => toggleModal("createExpense")} backdrop="static" keyboard={false} centered>
+            <Modal size="lg" isOpen={modals.createExpense} toggle={() => toggleModal("createExpense")} backdrop="static" keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("createExpense")}>{t('finance.expense.modal.create')}</ModalHeader>
                 <ModalBody>
                     <ExpenseForm onSave={() => { toggleModal("createExpense"); fetchData(); }} onCancel={() => toggleModal("createExpense")} />

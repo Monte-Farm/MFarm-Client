@@ -25,10 +25,16 @@ interface InseminationFormProps {
     onCancel: () => void;
 }
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave, onCancel }) => {
     const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [loading, setLoading] = useState<boolean>(false)
     const [activeStep, setActiveStep] = useState<number>(1);
@@ -275,6 +281,9 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
         fetchSows();
         fetchDoses();
         formik.setFieldValue('date', new Date())
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, [])
 
     return (
@@ -665,7 +674,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                 </TabContent>
             </form>
 
-            <Modal isOpen={modalOpen} toggle={toggleModal} size="lg" centered className="border-0">
+            <Modal isOpen={modalOpen} toggle={toggleModal} size="lg" centered className="border-0" fullscreen={tabletMode}>
                 <ModalHeader toggle={toggleModal} className="border-0 pb-0">
                     <h4 className="modal-title text-primary fw-bold">{t('insemination.form.modalExtraction', { defaultValue: 'Detalles de la extracción' })}</h4>
                 </ModalHeader>
@@ -758,7 +767,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                 </ModalBody>
             </Modal>
 
-            <Modal isOpen={pigDetailsmodalOpen} toggle={togglePigDetailsModal} size="lg" centered className="border-0">
+            <Modal isOpen={pigDetailsmodalOpen} toggle={togglePigDetailsModal} size="lg" centered className="border-0" fullscreen={tabletMode}>
                 <ModalHeader toggle={togglePigDetailsModal} className="border-0 pb-0">
                     <h4 className="modal-title text-primary fw-bold">{t('insemination.form.sowDetailsTitle', { defaultValue: 'Detalles de la cerda' })}</h4>
                 </ModalHeader>

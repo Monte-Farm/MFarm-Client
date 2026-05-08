@@ -27,6 +27,11 @@ const LITTER_STATUS_COLORS: Record<string, string> = {
     active: 'primary', ready_to_wean: 'warning', weaned: 'success', wean_overdue: 'black',
 };
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const LitterDetails = () => {
     const { t } = useTranslation();
     const { litter_id } = useParams();
@@ -35,6 +40,7 @@ const LitterDetails = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState<boolean>(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [litterDetails, setLitterDetails] = useState<any>({})
     const [activeTab, setActiveTab] = useState("1");
     const [modals, setModals] = useState({ weanLitter: false, discardPiglets: false });
@@ -93,6 +99,9 @@ const LitterDetails = () => {
 
     useEffect(() => {
         fetchData();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, [])
 
     if (loading) {
@@ -316,14 +325,14 @@ const LitterDetails = () => {
                 </TabContent>
             </Container>
 
-            <Modal size="xl" isOpen={modals.weanLitter} toggle={() => toggleModal("weanLitter")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.weanLitter} toggle={() => toggleModal("weanLitter")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("weanLitter")}>{t('litter.modal.weanLitter')}</ModalHeader>
                 <ModalBody>
                     <WeanLitterForm litterId={litter_id ?? ''} onSave={() => { toggleModal('weanLitter'); fetchData(); }} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.discardPiglets} toggle={() => toggleModal("discardPiglets")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.discardPiglets} toggle={() => toggleModal("discardPiglets")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("discardPiglets")}>{t('litter.modal.discardPiglets')}</ModalHeader>
                 <ModalBody>
                     <DiscardPigletsForm

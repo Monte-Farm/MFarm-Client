@@ -12,6 +12,11 @@ import { useTranslation } from "react-i18next"
 import { FiInbox } from "react-icons/fi"
 import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader } from "reactstrap"
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const ViewMedicationPackages = () => {
     const { t } = useTranslation();
     document.title = t('medication.package.pageTitle') + ' | System Management'
@@ -20,6 +25,7 @@ const ViewMedicationPackages = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [medicationsPackages, setMedicationsPackages] = useState<any[]>([]);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ create: false, details: false, update: false, delete: false, activate: false });
     const [selectedMedicationPackage, setSelectedMedicationPackage] = useState<any>(null);
 
@@ -98,6 +104,9 @@ const ViewMedicationPackages = () => {
 
     useEffect(() => {
         fetchData()
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, [])
 
     if (loading) {
@@ -134,14 +143,14 @@ const ViewMedicationPackages = () => {
             </Container>
 
 
-            <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("create")}>{t('medication.package.createModal')}</ModalHeader>
                 <ModalBody>
                     <MedicationPackageForm onSave={() => { toggleModal('create'); fetchData(); }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => { toggleModal("details"); fetchData() }}>{t('medication.package.detailsModal')}</ModalHeader>
                 <ModalBody>
                     <MedicationPackageDetails medicationPackageId={selectedMedicationPackage?._id} />

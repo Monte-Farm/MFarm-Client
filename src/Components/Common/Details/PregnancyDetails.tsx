@@ -19,6 +19,11 @@ interface PregnancyDetailsProps {
     pregnancyId: string;
 }
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => {
     document.title = "Detalles de embarazo | Management System"
     const { t } = useTranslation();
@@ -31,6 +36,7 @@ const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => 
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const navigate = useNavigate();
     const [modals, setModals] = useState({ abortion: false, birth: false, viewPDF: false });
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [allPregnancyData, setAllPregnancyData] = useState<any>({})
     const [pdfLoading, setPdfLoading] = useState(false);
     const [fileURL, setFileURL] = useState<string | null>(null);
@@ -147,6 +153,9 @@ const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => 
 
     useEffect(() => {
         fetchData();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, [])
 
 
@@ -287,7 +296,7 @@ const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => 
                 </Card>
             </div>
 
-            <Modal size="lg" isOpen={modals.abortion} toggle={() => toggleModal("abortion")} backdrop="static" keyboard={false} centered>
+            <Modal size="lg" isOpen={modals.abortion} toggle={() => toggleModal("abortion")} backdrop="static" keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("abortion")}>{t('pregnancy.detail.modalLossTitle', { defaultValue: 'Registrar perdida' })}</ModalHeader>
                 <ModalBody>
                     <AbortionForm pregnancy={{ _id: pregnancyId }} onSave={() => { toggleModal('abortion'); fetchData() }} onCancel={function (): void {
@@ -296,7 +305,7 @@ const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => 
                 </ModalBody>
             </Modal>
 
-            <Modal size="lg" isOpen={modals.birth} toggle={() => toggleModal("birth")} backdrop="static" keyboard={false} centered>
+            <Modal size="lg" isOpen={modals.birth} toggle={() => toggleModal("birth")} backdrop="static" keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("birth")}>{t('pregnancy.detail.modalBirthTitle', { defaultValue: 'Registrar parto' })}</ModalHeader>
                 <ModalBody>
                     <BirthForm pregnancy={allPregnancyData} onSave={() => { toggleModal('birth'); fetchData(); }} onCancel={() => { }} />

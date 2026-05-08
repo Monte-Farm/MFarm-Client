@@ -25,10 +25,16 @@ interface GroupFormProps {
     onCancel: () => void;
 }
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) => {
     const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
     const [pigs, setPigs] = useState<PigData[]>([]);
@@ -271,6 +277,9 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
     useEffect(() => {
         fetchData();
         formik.setFieldValue('creation_date', new Date());
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, []);
 
     useEffect(() => {
@@ -505,7 +514,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
                 </TabContent>
             </form>
 
-            <Modal size="lg" isOpen={modals.pigDetails} toggle={() => toggleModal("pigDetails")} centered>
+            <Modal size="lg" isOpen={modals.pigDetails} toggle={() => toggleModal("pigDetails")} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("pigDetails")}>{t('groups.modal.pigDetails')}</ModalHeader>
                 <ModalBody>
                     <PigDetailsModal pigId={selectedPig} showAllDetailsButton={true} />

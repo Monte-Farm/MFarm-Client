@@ -26,12 +26,18 @@ const BIRTH_TYPE_COLORS: Record<string, string> = {
     dystocia: 'warning', induced: 'info',
 };
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const ViewBirths = () => {
     document.title = 'Partos registrados | Management System'
     const { t } = useTranslation();
     const configContext = useContext(ConfigContext)
     const userLogged = getEffectiveUser()
     const navigate = useNavigate();
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' });
     const [births, setBirths] = useState<any[]>([]);
@@ -171,6 +177,9 @@ const ViewBirths = () => {
 
     useEffect(() => {
         fetchData();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, [])
 
     if (loading) {
@@ -255,7 +264,7 @@ const ViewBirths = () => {
                 </Card>
             </Container>
 
-            <Modal isOpen={modals.pregnancyDetails} toggle={() => toggleModal('pregnancyDetails')} size="xl" centered>
+            <Modal isOpen={modals.pregnancyDetails} toggle={() => toggleModal('pregnancyDetails')} size="xl" centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal('pregnancyDetails')}>
                     <h5>{t('birth.modal.pregnancyDetails')}</h5>
                 </ModalHeader>
@@ -264,7 +273,7 @@ const ViewBirths = () => {
                 </ModalBody>
             </Modal>
 
-            <Modal isOpen={modals.birthDetails} toggle={() => toggleModal('birthDetails')} size="xl" centered>
+            <Modal isOpen={modals.birthDetails} toggle={() => toggleModal('birthDetails')} size="xl" centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal('birthDetails')}>
                     <h5>{t('birth.modal.birthDetails')}</h5>
                 </ModalHeader>

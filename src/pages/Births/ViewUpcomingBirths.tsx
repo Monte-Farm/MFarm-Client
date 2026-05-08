@@ -26,12 +26,18 @@ const PREGNANCY_STATUS_COLORS: Record<string, string> = {
     overdue_farrowing: 'danger', farrowed: 'dark', abortion: 'dark',
 };
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const ViewUpcomingBirths = () => {
     document.title = 'Proximos partos | Management system';
     const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const navigate = useNavigate();
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [alertConfig, setAlertConfig] = useState({ visible: false, mesagge: '', color: '' })
     const [modals, setModals] = useState({ birth: false, selectedBirth: false, pregnancyDetails: false, abortion: false, viewPDF: false, dateRange: false, bulkAbortion: false })
     const [upcomingBirths, setUpcomingBirths] = useState<any[]>([])
@@ -272,6 +278,9 @@ const ViewUpcomingBirths = () => {
 
     useEffect(() => {
         fetchData();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, [])
 
     if (loading) {
@@ -375,35 +384,35 @@ const ViewUpcomingBirths = () => {
 
             </Container>
 
-            <Modal isOpen={modals.birth} size="xl" backdrop='static' keyboard={false} centered>
+            <Modal isOpen={modals.birth} size="xl" backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal('birth')}>{t('birth.modal.registerBirth')}</ModalHeader>
                 <ModalBody>
                     <BirthForm pregnancy={undefined} onSave={() => { toggleModal('birth'); fetchData(); }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
-            <Modal isOpen={modals.selectedBirth} size="xl" backdrop='static' keyboard={false} centered>
+            <Modal isOpen={modals.selectedBirth} size="xl" backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal('selectedBirth')}>{t('birth.modal.registerBirth')}</ModalHeader>
                 <ModalBody>
                     <BirthForm pregnancy={selectedBirth} onSave={() => { toggleModal('selectedBirth'); fetchData(); }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.pregnancyDetails} toggle={() => { toggleModal("pregnancyDetails"); fetchData(); }} centered>
+            <Modal size="xl" isOpen={modals.pregnancyDetails} toggle={() => { toggleModal("pregnancyDetails"); fetchData(); }} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => { toggleModal("pregnancyDetails"); fetchData(); }}>{t('birth.modal.pregnancyDetails')}</ModalHeader>
                 <ModalBody>
                     <PregnancyDetails pregnancyId={selectedPregnancyId} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="lg" isOpen={modals.abortion} toggle={() => { toggleModal("abortion"); fetchData(); }} backdrop="static" keyboard={false} centered>
+            <Modal size="lg" isOpen={modals.abortion} toggle={() => { toggleModal("abortion"); fetchData(); }} backdrop="static" keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("abortion")}>{t('pregnancy.modal.registerLoss')}</ModalHeader>
                 <ModalBody>
                     <AbortionForm pregnancy={selectedPregnancyAbort} onSave={() => { toggleModal('abortion'); fetchData(); }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
-            <Modal isOpen={modals.bulkAbortion} toggle={() => toggleModal("bulkAbortion")} backdrop='static' keyboard={false} centered>
+            <Modal isOpen={modals.bulkAbortion} toggle={() => toggleModal("bulkAbortion")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("bulkAbortion")}>
                     {t('birth.bulk.lossModal', { count: selectedBirths.filter(preg => preg.farrowing_status !== 'farrowed').length })}
                 </ModalHeader>

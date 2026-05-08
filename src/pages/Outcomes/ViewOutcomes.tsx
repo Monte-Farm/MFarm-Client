@@ -38,6 +38,11 @@ const chartTypeColor: Record<string, string> = {
     [OUTCOME_TYPES.WAREHOUSE_ORDER]: '#8b5cf6',
 };
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const ViewOutcomes = () => {
     const { t } = useTranslation();
     document.title = t('finance.outcome.pageTitle')
@@ -47,6 +52,7 @@ const ViewOutcomes = () => {
 
     const [outcomes, setOutcomes] = useState([])
     const [loading, setLoading] = useState<boolean>(false)
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ createOutcome: false, details: false, dateRange: false, viewPDF: false });
     const [pdfLoading, setPdfLoading] = useState(false);
     const [fileURL, setFileURL] = useState<string | null>(null);
@@ -212,6 +218,9 @@ const ViewOutcomes = () => {
 
     useEffect(() => {
         fetchWarehouseId();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, []);
 
     const fetchWarehouseData = async () => {
@@ -329,14 +338,14 @@ const ViewOutcomes = () => {
                 </Card>
             </Container>
 
-            <Modal size="xl" isOpen={modals.createOutcome} toggle={() => toggleModal("createOutcome")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.createOutcome} toggle={() => toggleModal("createOutcome")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("createOutcome")}>{t('finance.outcome.modal.create')}</ModalHeader>
                 <ModalBody>
                     <OutcomeForm onSave={() => { toggleModal('createOutcome'); fetchWarehouseData(); }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("details")}>{t('finance.outcome.modal.details')}</ModalHeader>
                 <ModalBody>
                     <OutcomeDetails outcomeId={selectedOutcome._id} />

@@ -31,6 +31,11 @@ const statusIcon = (status: PrecheckStatus) => {
     }
 };
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const CloseYearModal = ({ isOpen, onClose, onSuccess, farmId }: CloseYearModalProps) => {
     const { t } = useTranslation();
     const dispatch = useDispatch<any>();
@@ -42,6 +47,7 @@ const CloseYearModal = ({ isOpen, onClose, onSuccess, farmId }: CloseYearModalPr
     const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
     const bg = (color: string) => isDark ? darkenHex(color) : color;
 
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [apiError, setApiError] = useState<string | null>(null);
     const [preview, setPreview] = useState<ClosingKpis | null>(null);
     const [loadingPreview, setLoadingPreview] = useState(false);
@@ -98,6 +104,12 @@ const CloseYearModal = ({ isOpen, onClose, onSuccess, farmId }: CloseYearModalPr
     const endIso = `${selYear}-12-31`;
 
     const yearEnded = new Date(selYear, 11, 31) < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    useEffect(() => {
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
 
     useEffect(() => {
         if (!isOpen || !configContext || !farmId) return;
@@ -162,7 +174,7 @@ const CloseYearModal = ({ isOpen, onClose, onSuccess, farmId }: CloseYearModalPr
     );
 
     return (
-        <Modal isOpen={isOpen} toggle={handleClose} backdrop="static" keyboard={false} centered size="lg">
+        <Modal isOpen={isOpen} toggle={handleClose} backdrop="static" keyboard={false} centered size="lg" fullscreen={tabletMode}>
             <ModalHeader toggle={handleClose}>
                 <i className="ri-calendar-2-line me-2 text-primary" />
                 {t("finance.periodClosing.modal.closeYear.header")}

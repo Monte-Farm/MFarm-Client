@@ -20,6 +20,11 @@ interface BulkGroupMedicationAssignmentModalProps {
     onSuccess: () => void;
 }
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignmentModalProps> = ({
     isOpen,
     onClose,
@@ -29,6 +34,7 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
     const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ success: false, error: false, missingStock: false, subwarehouseError: false });
     const [medicationPackages, setMedicationPackages] = useState<any[]>([]);
     const [selectedMedicationPackage, setSelectedMedicationPackage] = useState<any>(null);
@@ -183,9 +189,15 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
         }
     }, [isOpen]);
 
+    useEffect(() => {
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
+
     return (
         <>
-            <Modal isOpen={isOpen} toggle={handleClose} size="lg" backdrop='static' keyboard={false} centered>
+            <Modal isOpen={isOpen} toggle={handleClose} size="lg" backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={handleClose}>
                     {t('medication.assign.bulkGroup.header', { count: selectedGroups.length })}
                 </ModalHeader>

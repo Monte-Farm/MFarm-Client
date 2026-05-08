@@ -14,6 +14,11 @@ import { startImpersonation } from "helpers/impersonation_helper";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useTranslation } from "react-i18next";
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const ViewFarms = () => {
     const { t } = useTranslation();
     document.title = t('farms.pageTitle')
@@ -23,6 +28,7 @@ const ViewFarms = () => {
     const isSuperadmin = Array.isArray(realUser?.role)
         ? realUser.role.includes('Superadmin')
         : realUser?.role === 'Superadmin';
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [loading, setLoading] = useState<boolean>(true);
     const [farms, setFarms] = useState<FarmData[]>([]);
     const [modals, setModals] = useState({ create: false, update: false });
@@ -127,6 +133,9 @@ const ViewFarms = () => {
 
     useEffect(() => {
         fetchFarms();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, [])
 
     if (loading) return <LoadingAnimation />;
@@ -160,7 +169,7 @@ const ViewFarms = () => {
                 </Card>
             </Container>
 
-            <Modal isOpen={modals.create} toggle={() => toggleModal('create')} size="xl" keyboard={false} backdrop="static" centered>
+            <Modal isOpen={modals.create} toggle={() => toggleModal('create')} size="xl" keyboard={false} backdrop="static" centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal('create')}>{t('farms.modal.create')}</ModalHeader>
                 <ModalBody>
                     <FarmForm
@@ -170,7 +179,7 @@ const ViewFarms = () => {
                 </ModalBody>
             </Modal>
 
-            <Modal isOpen={modals.update} toggle={() => toggleModal('update')} size="xl" keyboard={false} backdrop="static" centered>
+            <Modal isOpen={modals.update} toggle={() => toggleModal('update')} size="xl" keyboard={false} backdrop="static" centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal('update')}>{t('farms.modal.update')}</ModalHeader>
                 <ModalBody>
                     <FarmForm

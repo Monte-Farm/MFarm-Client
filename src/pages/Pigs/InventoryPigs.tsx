@@ -43,6 +43,11 @@ const statusBadgeColorMap: Record<string, string> = {
     dead: "danger", alive: "success", discarded: "warning",
 };
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const InventoryPigs = () => {
     document.title = 'Inventario de cerdos | Management System'
     const { t } = useTranslation();
@@ -50,6 +55,7 @@ const InventoryPigs = () => {
     const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true)
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' });
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ update: false, viewPDF: false, selectMedicationMode: false, asignSingle: false, medicationPackage: false, selectCreationMode: false, createSingle: false, createBatch: false });
     const [pigsInventory, setPigsInventory] = useState<PigInventory[]>([])
     const [pigStats, setPigStats] = useState<PigStats | null>(null)
@@ -158,7 +164,12 @@ const InventoryPigs = () => {
         }
     };
 
-    useEffect(() => { fetchData(); }, [])
+    useEffect(() => {
+        fetchData();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, [])
 
     if (loading) return <LoadingAnimation />
 
@@ -293,7 +304,7 @@ const InventoryPigs = () => {
                 </Card>
             </Container>
 
-            <Modal size="xl" isOpen={modals.selectCreationMode} toggle={() => toggleModal("selectCreationMode")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.selectCreationMode} toggle={() => toggleModal("selectCreationMode")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("selectCreationMode")}>{t('pigs.action.selectMode')}</ModalHeader>
                 <ModalBody>
                     <div className="text-center py-5">
@@ -312,12 +323,12 @@ const InventoryPigs = () => {
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.createSingle} toggle={() => toggleModal("createSingle")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.createSingle} toggle={() => toggleModal("createSingle")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("createSingle")}>{t('pigs.action.registerSingle')}</ModalHeader>
                 <ModalBody><SinglePigForm onSave={() => { toggleModal('createSingle'); fetchData(); }} onCancel={() => toggleModal('createSingle')} /></ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.createBatch} toggle={() => toggleModal("createBatch")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.createBatch} toggle={() => toggleModal("createBatch")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("createBatch")}>{t('pigs.action.registerBatch')}</ModalHeader>
                 <ModalBody><BatchPigForm onSave={() => { toggleModal('createBatch'); fetchData(); }} onCancel={() => { }} /></ModalBody>
             </Modal>

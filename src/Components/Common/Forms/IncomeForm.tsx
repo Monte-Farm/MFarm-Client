@@ -28,12 +28,18 @@ interface IncomeFormProps {
     onCancel: () => void;
 }
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }) => {
     const { t } = useTranslation();
     const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
     const bg = (color: string) => isDark ? darkenHex(color) : color;
     const configContext = useContext(ConfigContext)
     const userLogged = getEffectiveUser();
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
     const [suppliers, setSuppliers] = useState<any[]>([]);
     const [selectedSupplier, setSelectedSupplier] = useState<SupplierData | null>(null);
@@ -434,6 +440,9 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
     useEffect(() => {
         fetchAllInitialData();
         formik.setFieldValue('date', new Date())
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, [])
 
     useEffect(() => {
@@ -920,7 +929,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                 </ModalFooter>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.createPurchaseOrder} toggle={() => toggleModal("createPurchaseOrder")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.createPurchaseOrder} toggle={() => toggleModal("createPurchaseOrder")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("createPurchaseOrder")}>{t('warehouse.incomeForm.modal.newPurchaseOrder', { defaultValue: 'Nueva orden de compra' })}</ModalHeader>
                 <ModalBody>
                     <PurchaseOrderForm onSave={() => { toggleModal('createPurchaseOrder'); fetchPurchaseOrders(); }} onCancel={() => { }} />

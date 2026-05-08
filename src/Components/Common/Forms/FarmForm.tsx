@@ -17,10 +17,16 @@ interface FarmFormProps {
     onCancel: () => void;
 }
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
     const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [managers, setManagers] = useState<UserData[]>([]);
     const [modals, setModals] = useState({ details: false, create: false, update: false, delete: false });
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -159,6 +165,9 @@ const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
     useEffect(() => {
         getNextCode();
         fetchManagerUsers();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, []);
 
     const isSelected = (id: string) => formik.values.manager === id;
@@ -302,7 +311,7 @@ const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
                 </Button>
             </div>
 
-            <Modal isOpen={modals.create} toggle={() => toggleModal('create')} size="xl" keyboard={false} backdrop="static" centered>
+            <Modal isOpen={modals.create} toggle={() => toggleModal('create')} size="xl" keyboard={false} backdrop="static" centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal('create')}>{t('farms.form.modalNewUser')}</ModalHeader>
                 <ModalBody>
                     <UserForm

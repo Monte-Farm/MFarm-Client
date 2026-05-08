@@ -18,6 +18,11 @@ import { getSupplierTypeLabel } from "common/enums/suppliers.enums";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const Suppliers = () => {
     const { t } = useTranslation();
     document.title = t('warehouse.suppliers.pageTitle')
@@ -30,6 +35,7 @@ const Suppliers = () => {
     const [selectedSupplier, setSelectedSupplier] = useState<any | undefined>(undefined);
     const [selectedSuppliers, setSelectedSuppliers] = useState<SupplierData[]>([]);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ create: false, update: false, delete: false, activate: false, details: false, bulkDelete: false, bulkActivate: false, viewPDF: false });
     const [loading, setLoading] = useState<boolean>(false)
     const [supplierStatistics, setSupplierStatistics] = useState({
@@ -310,6 +316,9 @@ const Suppliers = () => {
 
     useEffect(() => {
         fetchAllSupplierData();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, [])
 
     if (loading) {
@@ -452,7 +461,7 @@ const Suppliers = () => {
                 </Card>
 
                 {/* Modal Create */}
-                <Modal isOpen={modals.create} toggle={() => toggleModal('create')} size="xl" keyboard={false} backdrop='static' centered>
+                <Modal isOpen={modals.create} toggle={() => toggleModal('create')} size="xl" keyboard={false} backdrop='static' centered fullscreen={tabletMode}>
                     <ModalHeader toggle={() => toggleModal('create')}>{t('warehouse.suppliers.modal.create')}</ModalHeader>
                     <ModalBody>
                         <SupplierForm onSubmit={handleCreateSupplier} onCancel={() => toggleModal('create', false)} isCodeDisabled={false}></SupplierForm>
@@ -460,7 +469,7 @@ const Suppliers = () => {
                 </Modal>
 
                 {/* Modal Update */}
-                <Modal isOpen={modals.update} toggle={() => toggleModal('update')} size="xl" keyboard={false} backdrop='static' centered>
+                <Modal isOpen={modals.update} toggle={() => toggleModal('update')} size="xl" keyboard={false} backdrop='static' centered fullscreen={tabletMode}>
                     <ModalHeader toggle={() => toggleModal('update')}>{t('warehouse.suppliers.modal.update')}</ModalHeader>
                     <ModalBody>
                         <SupplierForm initialData={selectedSupplier} onSubmit={handleUpdateSupplier} onCancel={() => toggleModal('update', false)} isCodeDisabled={true}></SupplierForm>
@@ -534,7 +543,7 @@ const Suppliers = () => {
                     </ModalFooter>
                 </Modal>
 
-                <Modal isOpen={modals.details} toggle={() => { toggleModal('details'); fetchAllSupplierData(); }} size="xl" keyboard={false} backdrop='static' centered>
+                <Modal isOpen={modals.details} toggle={() => { toggleModal('details'); fetchAllSupplierData(); }} size="xl" keyboard={false} backdrop='static' centered fullscreen={tabletMode}>
                     <ModalHeader toggle={() => { toggleModal('details'); fetchAllSupplierData(); }}>{t('warehouse.suppliers.modal.details')}</ModalHeader>
                     <ModalBody>
                         <SupplierDetailsModal supplierId={selectedSupplier?._id} />

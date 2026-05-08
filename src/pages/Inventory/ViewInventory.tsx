@@ -15,12 +15,18 @@ import CustomTable from "Components/Common/Tables/CustomTable";
 import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const ViewInventory = () => {
   const { t } = useTranslation();
   document.title = t('warehouse.inventory.pageTitle');
   const configContext = useContext(ConfigContext);
   const userLogged = getEffectiveUser();
   const navigate = useNavigate();
+  const [tabletMode, setTabletMode] = useState(isTablet);
 
   const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
   const [productsData, setProductsData] = useState<any[]>([]);
@@ -34,6 +40,7 @@ const ViewInventory = () => {
   const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
     setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
   };
+
 
   const columnsTable: Column<any>[] = [
     {
@@ -159,6 +166,9 @@ const ViewInventory = () => {
 
   useEffect(() => {
     fetchWarehouseId();
+    const onResize = () => setTabletMode(isTablet());
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, []);
 
   useEffect(() => {
@@ -285,7 +295,7 @@ const ViewInventory = () => {
         </ModalBody>
       </Modal>
 
-      <Modal size="xl" isOpen={modals.createIncome} toggle={() => toggleModal("createIncome")} backdrop='static' keyboard={false} centered>
+      <Modal size="xl" isOpen={modals.createIncome} toggle={() => toggleModal("createIncome")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
         <ModalHeader toggle={() => toggleModal("createIncome")}>{t('warehouse.inventory.modal.newIncome')}</ModalHeader>
         <ModalBody>
           <IncomeForm onSave={() => { toggleModal('createIncome'); fetchProductsData() }} onCancel={() => { }} />

@@ -16,6 +16,11 @@ import GroupInsertForm from "Components/Common/Forms/GroupInsertForm";
 import GroupTransferForm from "Components/Common/Forms/GroupTransferForm";
 import { useTranslation } from "react-i18next";
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const ViewGroups = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
@@ -23,6 +28,7 @@ const ViewGroups = () => {
     const userLogged = getEffectiveUser()
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ create: false, move: false, asign: false, withdraw: false });
     const [groups, setGroups] = useState<GroupData[]>([])
     const [selectedGroup, setSelectedGroup] = useState<any>({})
@@ -129,6 +135,9 @@ const ViewGroups = () => {
 
     useEffect(() => {
         fetchData();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, [])
 
     if (loading) {
@@ -165,28 +174,28 @@ const ViewGroups = () => {
                 </Card>
             </Container>
 
-            <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} centered backdrop={'static'} keyboard={false}>
+            <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} centered backdrop={'static'} keyboard={false} fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("create")}>{t('groups.modal.createGroup')}</ModalHeader>
                 <ModalBody>
                     <GroupForm onSave={() => { fetchData(); toggleModal('create') }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.move} toggle={() => toggleModal("move")} centered backdrop={'static'} keyboard={false}>
+            <Modal size="xl" isOpen={modals.move} toggle={() => toggleModal("move")} centered backdrop={'static'} keyboard={false} fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("move")}>{t('groups.modal.moveGroup')}</ModalHeader>
                 <ModalBody>
                     {/* <GroupTransferForm groupId={selectedGroup._id} onSave={() => { toggleModal('move'); fetchData(); }} /> */}
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.asign} toggle={() => toggleModal("asign")} centered backdrop={'static'} keyboard={false}>
+            <Modal size="xl" isOpen={modals.asign} toggle={() => toggleModal("asign")} centered backdrop={'static'} keyboard={false} fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("asign")}>{t('groups.modal.insertPigs')}</ModalHeader>
                 <ModalBody>
                     {/* <GroupInsertForm groupId={selectedGroup?._id} onSave={() => { fetchData(); toggleModal('asign') }} /> */}
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.withdraw} toggle={() => toggleModal("withdraw")} centered backdrop={'static'} keyboard={false}>
+            <Modal size="xl" isOpen={modals.withdraw} toggle={() => toggleModal("withdraw")} centered backdrop={'static'} keyboard={false} fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("withdraw")}>{t('groups.modal.withdrawPigs')}</ModalHeader>
                 <ModalBody>
                     {/* <GroupWithDrawForm groupId={selectedGroup?._id} onSave={() => { fetchData(); toggleModal('withdraw') }} /> */}

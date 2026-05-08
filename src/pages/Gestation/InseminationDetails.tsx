@@ -25,6 +25,11 @@ const RESULT_BG: Record<string, string> = {
     resorption: 'bg-danger', abortion: 'bg-black',
 };
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const InseminationDetails = () => {
     document.title = 'Detalles de inseminación | System Management'
     const { t } = useTranslation();
@@ -32,6 +37,7 @@ const InseminationDetails = () => {
     const navigate = useNavigate();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [loading, setLoading] = useState<boolean>(true)
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' });
     const [inseminationDetails, setInseminationDetails] = useState<any>({});
@@ -153,6 +159,9 @@ const InseminationDetails = () => {
 
     useEffect(() => {
         fetchData();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, [])
 
     if (loading) {
@@ -404,21 +413,21 @@ const InseminationDetails = () => {
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
 
-            <Modal size="lg" isOpen={modals.diagnosis} toggle={() => toggleModal("diagnosis")} backdrop="static" keyboard={false} centered>
+            <Modal size="lg" isOpen={modals.diagnosis} toggle={() => toggleModal("diagnosis")} backdrop="static" keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("diagnosis")}>{t('insemination.modal.diagnosis')}</ModalHeader>
                 <ModalBody>
                     <DiagnosisForm insemination={{ ...inseminationDetails, sow: { _id: inseminationDetails.sow } }} onSave={() => { toggleModal('diagnosis'); fetchData() }} onCancel={() => toggleModal('diagnosis')} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="lg" isOpen={modals.heat} toggle={() => toggleModal("heat")} backdrop="static" keyboard={false} centered>
+            <Modal size="lg" isOpen={modals.heat} toggle={() => toggleModal("heat")} backdrop="static" keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("heat")}>{t('insemination.modal.heat')}</ModalHeader>
                 <ModalBody>
                     {inseminationDetails && <HeatForm insemination={inseminationDetails} onSave={() => { toggleModal('heat'); fetchData() }} onCancel={() => toggleModal('heat')} />}
                 </ModalBody>
             </Modal>
 
-            <Modal size="lg" isOpen={modals.abortionDetails} toggle={() => toggleModal("abortionDetails")} backdrop="static" centered>
+            <Modal size="lg" isOpen={modals.abortionDetails} toggle={() => toggleModal("abortionDetails")} backdrop="static" centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("abortionDetails")}>{t('insemination.detail.modal.abortionDetails')}</ModalHeader>
                 <ModalBody className="mt-3">
                     <ObjectDetails attributes={abortionAttributes} object={abortionDetails} />

@@ -19,6 +19,11 @@ const paymentStatusColor: Record<string, string> = {
     completed: "success",
 };
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const ViewPigSales = () => {
     const { t } = useTranslation();
     document.title = t('finance.sale.pageTitle');
@@ -28,6 +33,7 @@ const ViewPigSales = () => {
 
     const [sales, setSales] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ newSale: false, details: false, dateRange: false, viewPDF: false });
     const [pdfLoading, setPdfLoading] = useState(false);
     const [fileURL, setFileURL] = useState<string | null>(null);
@@ -150,6 +156,9 @@ const ViewPigSales = () => {
 
     useEffect(() => {
         fetchSales();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, []);
 
     if (loading) return <LoadingAnimation />;
@@ -189,7 +198,7 @@ const ViewPigSales = () => {
                 </Card>
             </Container>
 
-            <Modal size="xl" isOpen={modals.newSale} toggle={() => toggleModal("newSale")} backdrop="static" keyboard={false} centered scrollable>
+            <Modal size="xl" isOpen={modals.newSale} toggle={() => toggleModal("newSale")} backdrop="static" keyboard={false} centered scrollable fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("newSale")}>{t('finance.sale.modal.create')}</ModalHeader>
                 <ModalBody>
                     <SellPigsFormV2
@@ -198,7 +207,7 @@ const ViewPigSales = () => {
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.details} toggle={() => { toggleModal("details"); setSelectedSaleId(null); }} centered scrollable>
+            <Modal size="xl" isOpen={modals.details} toggle={() => { toggleModal("details"); setSelectedSaleId(null); }} centered scrollable fullscreen={tabletMode}>
                 <ModalHeader toggle={() => { toggleModal("details"); setSelectedSaleId(null); }}>{t('finance.sale.modal.details')}</ModalHeader>
                 <ModalBody>
                     {selectedSaleId && <SaleDetails saleId={selectedSaleId} />}

@@ -28,6 +28,11 @@ interface GroupMedicalDetailsProps {
     isGroupSold?: boolean
 }
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId, onUpdate, isGroupSold = false }) => {
     const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
@@ -35,6 +40,7 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId, onUp
     const [loading, setLoading] = useState<boolean>(true)
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ asignMedication: false, asignMedicationPackage: false, medicationPackageDetails: false, asignVaccinationPlan: false, vaccinationPlanDetails: false, registerHealthEvent: false, healthEventDetails: false });
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [medicationPackages, setMedicationPackages] = useState<any[]>([]);
     const [medications, setMedications] = useState<any[]>([]);
     const [healthEvents, setHealthEvents] = useState<any[]>([]);
@@ -84,6 +90,9 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId, onUp
 
     useEffect(() => {
         fetchMedicalInfo();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, [])
 
     if (loading) {
@@ -209,28 +218,28 @@ const GroupMedicalDetails: React.FC<GroupMedicalDetailsProps> = ({ groupId, onUp
                 </div>
             </div>
 
-            <Modal size="xl" isOpen={modals.registerHealthEvent} toggle={() => toggleModal("registerHealthEvent")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.registerHealthEvent} toggle={() => toggleModal("registerHealthEvent")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("registerHealthEvent")}>{t('medical.healthEvent.register')}</ModalHeader>
                 <ModalBody>
                     <GroupHealthEventForm groupId={groupId} onSave={() => { toggleModal('registerHealthEvent'); fetchMedicalInfo(); onUpdate?.(); }} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.asignMedicationPackage} toggle={() => toggleModal("asignMedicationPackage")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.asignMedicationPackage} toggle={() => toggleModal("asignMedicationPackage")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("asignMedicationPackage")}>{t('medical.medication.packageAssign')}</ModalHeader>
                 <ModalBody>
                     <AsignGroupMedicationPackageForm groupId={groupId} onSave={() => { toggleModal('asignMedicationPackage'); fetchMedicalInfo(); onUpdate?.(); }} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.medicationPackageDetails} toggle={() => toggleModal("medicationPackageDetails")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.medicationPackageDetails} toggle={() => toggleModal("medicationPackageDetails")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("medicationPackageDetails")}>{t('medical.medication.packageDetails')}</ModalHeader>
                 <ModalBody>
                     <MedicationPackageDetails medicationPackageId={selectedMedicationPackage} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.healthEventDetails} toggle={() => toggleModal("healthEventDetails")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.healthEventDetails} toggle={() => toggleModal("healthEventDetails")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("healthEventDetails")}>{t('medical.healthEvent.details')}</ModalHeader>
                 <ModalBody>
                     <HealthEventDetails eventId={selectedSickness} groupId={groupId} />

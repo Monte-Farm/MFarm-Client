@@ -29,10 +29,16 @@ const statusColorMap: Record<string, string> = {
     alive: "success", discarded: "warning", dead: "danger",
 };
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const DiscardedPigs = () => {
     const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ discard: false, dateRange: false, viewPDF: false });
     const [pdfLoading, setPdfLoading] = useState(false);
     const [fileURL, setFileURL] = useState<string | null>(null);
@@ -138,7 +144,12 @@ const DiscardedPigs = () => {
         }
     }
 
-    useEffect(() => { fetchData() }, [])
+    useEffect(() => {
+        fetchData();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, [])
 
     if (loading) return <LoadingAnimation />;
 
@@ -231,7 +242,7 @@ const DiscardedPigs = () => {
                 </Card>
             </Container>
 
-            <Modal size="xl" isOpen={modals.discard} toggle={() => toggleModal("discard")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.discard} toggle={() => toggleModal("discard")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("discard")}>{t('pigs.action.discardPig')}</ModalHeader>
                 <ModalBody><DiscardPigForm onSave={() => { toggleModal('discard'); fetchData(); }} onCancel={() => { }} /></ModalBody>
             </Modal>

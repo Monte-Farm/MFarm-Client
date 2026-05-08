@@ -34,12 +34,18 @@ const RESULT_COLORS: Record<string, string> = {
     pregnant: 'success', empty: 'warning', doubtful: 'info', resorption: 'danger', abortion: 'dark',
 };
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const ViewInseminations = () => {
     document.title = "Ver inseminaciones | Management System"
     const { t } = useTranslation();
     const userLoggged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
     const navigate = useNavigate();
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [loading, setLoading] = useState<boolean>(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ create: false, update: false, viewPDF: false, diagnosis: false, heat: false, pigDetails: false, dateRange: false, bulkHeat: false, bulkDiagnosis: false });
@@ -368,6 +374,9 @@ const ViewInseminations = () => {
 
     useEffect(() => {
         loadData();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, []);
 
     if (loading) {
@@ -540,28 +549,28 @@ const ViewInseminations = () => {
                 </Card>
             </Container>
 
-            <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("create")}>{t('insemination.modal.create')}</ModalHeader>
                 <ModalBody>
                     <InseminationForm onSave={() => { toggleModal('create'); fetchInseminations(); fetchInseminationsStats(); }} onCancel={() => toggleModal('create')} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="lg" isOpen={modals.diagnosis} toggle={() => toggleModal("diagnosis")} backdrop="static" keyboard={false} centered>
+            <Modal size="lg" isOpen={modals.diagnosis} toggle={() => toggleModal("diagnosis")} backdrop="static" keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("diagnosis")}>{t('insemination.modal.diagnosis')}</ModalHeader>
                 <ModalBody>
                     <DiagnosisForm insemination={selectedInsemination} onSave={() => { toggleModal('diagnosis'); fetchInseminations(); fetchInseminationsStats(); }} onCancel={() => toggleModal('diagnosis')} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="lg" isOpen={modals.heat} toggle={() => toggleModal("heat")} backdrop="static" keyboard={false} centered>
+            <Modal size="lg" isOpen={modals.heat} toggle={() => toggleModal("heat")} backdrop="static" keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("heat")}>{t('insemination.modal.heat')}</ModalHeader>
                 <ModalBody>
                     {selectedInsemination && <HeatForm insemination={selectedInsemination} onSave={() => { toggleModal('heat'); fetchInseminations(); fetchInseminationsStats(); }} onCancel={() => toggleModal('heat')} />}
                 </ModalBody>
             </Modal>
 
-            <Modal isOpen={modals.bulkHeat} toggle={() => toggleModal("bulkHeat")} backdrop='static' keyboard={false} centered>
+            <Modal isOpen={modals.bulkHeat} toggle={() => toggleModal("bulkHeat")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("bulkHeat")}>
                     {t('insemination.modal.bulkHeat', { count: selectedInseminations.filter(ins => ins.status !== 'completed' && ins.status !== 'failed').length })}
                 </ModalHeader>
@@ -645,7 +654,7 @@ const ViewInseminations = () => {
                 </ModalFooter>
             </Modal>
 
-            <Modal isOpen={modals.bulkDiagnosis} toggle={() => toggleModal("bulkDiagnosis")} backdrop='static' keyboard={false} centered>
+            <Modal isOpen={modals.bulkDiagnosis} toggle={() => toggleModal("bulkDiagnosis")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("bulkDiagnosis")}>
                     {t('insemination.modal.bulkDiagnosis', { count: selectedInseminations.filter(ins => ins.status !== 'completed' && ins.status !== 'failed').length })}
                 </ModalHeader>
@@ -739,7 +748,7 @@ const ViewInseminations = () => {
                 </ModalFooter>
             </Modal>
 
-            <Modal size="lg" isOpen={modals.pigDetails} toggle={() => toggleModal("pigDetails")} centered>
+            <Modal size="lg" isOpen={modals.pigDetails} toggle={() => toggleModal("pigDetails")} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("pigDetails")}>{t('insemination.modal.pigDetails')}</ModalHeader>
                 <ModalBody>
                     <PigDetailsModal pigId={selectedPigId} showAllDetailsButton={true} />

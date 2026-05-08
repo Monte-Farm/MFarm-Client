@@ -28,10 +28,16 @@ interface OutcomeFormProps {
     onCancel: () => void;
 }
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel }) => {
     const { t } = useTranslation();
     const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
     const bg = (color: string) => isDark ? darkenHex(color) : color;
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ createWarehouse: false, cancel: false, success: false, error: false });
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const configContext = useContext(ConfigContext);
@@ -324,6 +330,9 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
     useEffect(() => {
         fetchWarehouseId();
         formik.setFieldValue('date', new Date())
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, []);
 
     useEffect(() => {
@@ -638,7 +647,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                 </ModalFooter>
             </Modal>
 
-            <Modal size='lg' isOpen={modals.createWarehouse} toggle={() => toggleModal('createWarehouse', false)} backdrop='static' keyboard={false} centered>
+            <Modal size='lg' isOpen={modals.createWarehouse} toggle={() => toggleModal('createWarehouse', false)} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal('createWarehouse')}>{t('warehouse.outcomeForm.modal.newSubwarehouse', { defaultValue: 'Nuevo Subalmacén' })}</ModalHeader>
                 <ModalBody>
                     <SubwarehouseForm onCancel={() => toggleModal('createWarehouse', false)} onSave={function (): void {

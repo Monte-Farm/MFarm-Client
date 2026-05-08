@@ -29,11 +29,18 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 type PeriodKey = "day" | "week" | "month" | "year";
+
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const ViewPregnancies = () => {
     document.title = "Ver embarazos | Management System"
     const { t } = useTranslation();
     const userLoggged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [loading, setLoading] = useState<boolean>(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [modals, setModals] = useState({ create: false, update: false, viewPDF: false, abortion: false, pigDetails: false, pregnancyDetails: false, bulkAbortion: false, reportPDF: false });
@@ -213,6 +220,9 @@ const ViewPregnancies = () => {
 
     useEffect(() => {
         fetchData();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, [])
 
     if (loading) {
@@ -356,21 +366,21 @@ const ViewPregnancies = () => {
                 </Card>
             </Container>
 
-            <Modal size="lg" isOpen={modals.pigDetails} toggle={() => toggleModal("pigDetails")} centered>
+            <Modal size="lg" isOpen={modals.pigDetails} toggle={() => toggleModal("pigDetails")} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("pigDetails")}>{t('pregnancy.modal.pigDetails')}</ModalHeader>
                 <ModalBody>
                     <PigDetailsModal pigId={selectedPigId} showAllDetailsButton={true} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="lg" isOpen={modals.abortion} toggle={() => toggleModal("abortion")} backdrop="static" keyboard={false} centered>
+            <Modal size="lg" isOpen={modals.abortion} toggle={() => toggleModal("abortion")} backdrop="static" keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("abortion")}>{t('pregnancy.modal.registerLoss')}</ModalHeader>
                 <ModalBody>
                     <AbortionForm pregnancy={selectedPregnancy} onSave={() => { fetchData(); toggleModal('abortion'); }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
-            <Modal isOpen={modals.bulkAbortion} toggle={() => toggleModal("bulkAbortion")} backdrop='static' keyboard={false} centered>
+            <Modal isOpen={modals.bulkAbortion} toggle={() => toggleModal("bulkAbortion")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("bulkAbortion")}>
                     {t('pregnancy.modal.bulkLoss', { count: selectedPregnancies.filter(preg => preg.farrowing_status !== 'farrowed' && preg.abortions.length === 0).length })}
                 </ModalHeader>
@@ -452,7 +462,7 @@ const ViewPregnancies = () => {
                 </ModalFooter>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.pregnancyDetails} toggle={() => { toggleModal("pregnancyDetails"); fetchData() }} centered>
+            <Modal size="xl" isOpen={modals.pregnancyDetails} toggle={() => { toggleModal("pregnancyDetails"); fetchData() }} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => { toggleModal("pregnancyDetails"); fetchData() }}>{t('pregnancy.modal.pregnancyDetails')}</ModalHeader>
                 <ModalBody>
                     <PregnancyDetails pregnancyId={selectedPregnancy._id} />

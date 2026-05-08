@@ -22,6 +22,11 @@ import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSel
 import SemenSampleForm from "Components/Common/Forms/SemenSampleForm";
 import { useTranslation } from "react-i18next";
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const ViewExtractions = () => {
     const { t } = useTranslation();
     document.title = t('laboratory.extraction.pageTitle')
@@ -29,6 +34,7 @@ const ViewExtractions = () => {
     const configContext = useContext(ConfigContext)
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [extractions, setExtractions] = useState<ExtractionData[] | null>(null)
     const [modals, setModals] = useState({ create: false, update: false, viewPDF: false, pigDetails: false, extractionDetails: false, dateRange: false, registerSample: false });
     const [stats, setStats] = useState<any>({})
@@ -154,6 +160,9 @@ const ViewExtractions = () => {
 
     useEffect(() => {
         fetchData();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, [])
 
 
@@ -298,21 +307,21 @@ const ViewExtractions = () => {
                 </Card>
             </Container>
 
-            <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("create")}>{t('laboratory.extraction.modal.create')}</ModalHeader>
                 <ModalBody>
                     <ExtractionForm onSave={() => { toggleModal('create'); fetchData(); }} onCancel={() => { }} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="lg" isOpen={modals.pigDetails} toggle={() => toggleModal("pigDetails")} centered>
+            <Modal size="lg" isOpen={modals.pigDetails} toggle={() => toggleModal("pigDetails")} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("pigDetails")}>{t('laboratory.extraction.modal.pigDetails')}</ModalHeader>
                 <ModalBody>
                     <PigDetailsModal pigId={selectedExtraction.boar?._id} showAllDetailsButton={true} />
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.extractionDetails} toggle={() => toggleModal("extractionDetails")} centered>
+            <Modal size="xl" isOpen={modals.extractionDetails} toggle={() => toggleModal("extractionDetails")} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("extractionDetails")}>{t('laboratory.extraction.modal.extractionDetails')}</ModalHeader>
                 <ModalBody>
                     <ExtractionDetails extractionId={selectedExtraction?._id} />
@@ -336,7 +345,7 @@ const ViewExtractions = () => {
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.registerSample} toggle={() => toggleModal("registerSample")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.registerSample} toggle={() => toggleModal("registerSample")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("registerSample")}>{t('laboratory.extraction.modal.registerSample')}</ModalHeader>
                 <ModalBody>
                     <SemenSampleForm

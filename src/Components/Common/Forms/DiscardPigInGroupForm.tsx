@@ -26,10 +26,16 @@ interface DiscardPigInGroupFormProps {
     onCancel: () => void
 }
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, onSave, onCancel }) => {
     const { t } = useTranslation();
     const configContext = useContext(ConfigContext)
     const userLogged = getEffectiveUser()
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ pigDetails: false, success: false, error: false })
     const [selectedPig, setSelectedPig] = useState<any>()
     const [activeStep, setActiveStep] = useState<number>(1);
@@ -275,6 +281,9 @@ const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, 
     useEffect(() => {
         fetchPigs();
         formik.setFieldValue('date', new Date())
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, [])
 
     if (loading) {
@@ -493,7 +502,7 @@ const DiscardPigInGroupForm: React.FC<DiscardPigInGroupFormProps> = ({ groupId, 
                 </TabContent>
             </form>
 
-            <Modal isOpen={modals.pigDetails} toggle={() => toggleModal('pigDetails')} size="lg" centered className="border-0">
+            <Modal isOpen={modals.pigDetails} toggle={() => toggleModal('pigDetails')} size="lg" centered className="border-0" fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal('pigDetails')} className="border-0 pb-0">
                     <h4 className="modal-title text-primary fw-bold">{t('groups.form.discardPig.pigDetailsTitle', { defaultValue: 'Detalles de la extracción' })}</h4>
                 </ModalHeader>

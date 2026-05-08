@@ -40,8 +40,14 @@ const statusColorMap: Record<string, string> = {
     dead: "danger",
 };
 
+const isTablet = () => {
+  const w = document.documentElement.clientWidth;
+  return w >= 768 && w <= 1024;
+};
+
 const ViewPigs = () => {
     const { t } = useTranslation();
+    const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ selectCreationMode: false, createSingle: false, createBatch: false, update: false, viewPDF: false });
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
@@ -163,7 +169,12 @@ const ViewPigs = () => {
         }
     };
 
-    useEffect(() => { fetchData() }, [])
+    useEffect(() => {
+        fetchData();
+        const onResize = () => setTabletMode(isTablet());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, [])
 
     if (loading) return <LoadingAnimation />;
 
@@ -232,7 +243,7 @@ const ViewPigs = () => {
                 <ModalBody>{fileURL && <PDFViewer fileUrl={fileURL} />}</ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.selectCreationMode} toggle={() => toggleModal("selectCreationMode")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.selectCreationMode} toggle={() => toggleModal("selectCreationMode")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("selectCreationMode")}>{t('pigs.action.selectMode')}</ModalHeader>
                 <ModalBody>
                     <div className="text-center py-5">
@@ -251,17 +262,17 @@ const ViewPigs = () => {
                 </ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.createSingle} toggle={() => toggleModal("createSingle")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.createSingle} toggle={() => toggleModal("createSingle")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("createSingle")}>{t('pigs.action.registerSingle')}</ModalHeader>
                 <ModalBody><SinglePigForm onSave={() => { toggleModal('createSingle'); fetchData(); }} onCancel={() => toggleModal('createSingle')} /></ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.createBatch} toggle={() => toggleModal("createBatch")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.createBatch} toggle={() => toggleModal("createBatch")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("createBatch")}>{t('pigs.action.registerBatch')}</ModalHeader>
                 <ModalBody><BatchPigForm onSave={() => { toggleModal('createBatch'); fetchData(); }} onCancel={() => { }} /></ModalBody>
             </Modal>
 
-            <Modal size="xl" isOpen={modals.update} toggle={() => toggleModal("update")} backdrop='static' keyboard={false} centered>
+            <Modal size="xl" isOpen={modals.update} toggle={() => toggleModal("update")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("update")}>{t('pigs.action.editPig')}</ModalHeader>
                 <ModalBody>
                     {selectedPig && <PigEditForm pigData={selectedPig} onSave={() => { toggleModal('update'); fetchData() }} onCancel={() => toggleModal('update')} />}
