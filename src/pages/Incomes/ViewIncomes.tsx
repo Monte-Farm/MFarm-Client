@@ -238,7 +238,7 @@ const ViewIncomes = () => {
             <Container fluid>
                 <BreadCrumb title={t('finance.income.breadcrumb.title')} pageTitle={t('finance.income.breadcrumb.parent')} />
 
-                <div className="row mb-3">
+                <div className="row g-3 mb-3">
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
                             title={t('finance.income.kpi.totalValue')}
@@ -275,7 +275,7 @@ const ViewIncomes = () => {
                     </div>
                 </div>
 
-                <div className="row mb-4">
+                <div className="row g-3 mb-4">
                     <div className="col-xl-6">
                         <DonutChartCard
                             title={t('finance.income.chart.byType')}

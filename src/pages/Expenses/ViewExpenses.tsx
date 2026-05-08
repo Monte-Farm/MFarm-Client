@@ -173,7 +173,7 @@ const ViewExpenses = () => {
             <Container fluid>
                 <BreadCrumb title={t('finance.expense.breadcrumb.title')} pageTitle={t('finance.expense.breadcrumb.parent')} />
 
-                <Row className="mb-3">
+                <Row className="g-3 mb-3">
                     <Col xl={4} md={6}>
                         <StatKpiCard
                             title={t('finance.expense.kpi.total')}

@@ -324,7 +324,7 @@ const Suppliers = () => {
                 <BreadCrumb pageTitle={t('warehouse.suppliers.pageHeader')} title={t('warehouse.suppliers.breadcrumb')} ></BreadCrumb>
 
                 {/* KPIs Section */}
-                <div className="row mb-3">
+                <div className="row g-3 mb-3">
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
                             title={t('warehouse.suppliers.kpi.total')}
@@ -370,7 +370,7 @@ const Suppliers = () => {
                 </div>
 
                 {/* Charts Section */}
-                <div className="row mb-4">
+                <div className="row g-3 mb-4">
                     <div className="col-xl-6">
                         <DonutChartCard
                             title={t('warehouse.suppliers.chart.status')}

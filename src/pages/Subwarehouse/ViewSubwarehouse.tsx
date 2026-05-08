@@ -220,7 +220,7 @@ const ViewSubwarehouse = () => {
                 <BreadCrumb title={t('warehouse.subwarehouse.breadcrumb')} pageTitle={t('warehouse.subwarehouse.pageHeader')}></BreadCrumb>
 
                 {/* KPIs Section */}
-                <div className="row mb-3">
+                <div className="row g-3 mb-3">
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
                             title={t('warehouse.subwarehouse.kpi.total')}
@@ -266,7 +266,7 @@ const ViewSubwarehouse = () => {
                 </div>
 
                 {/* Charts Section */}
-                <div className="row mb-4">
+                <div className="row g-3 mb-4">
                     <div className="col-xl-6">
                         <DonutChartCard
                             title={t('warehouse.subwarehouse.chart.byType')}

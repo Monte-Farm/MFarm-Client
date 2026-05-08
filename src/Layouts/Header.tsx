@@ -15,6 +15,7 @@ import ProfileDropdown from 'Components/Common/Velzon/ProfileDropdown';
 import NotificationDropdown from 'Components/Common/Notifications/NotificationDropdown';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { toggleOpen } from 'slices/ai/reducer';
 
 const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
     const dispatch: any = useDispatch();
@@ -250,6 +251,16 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
                             /> */}
 
                             {userLogged?.role === "Superadmin" && <Configuration />}
+
+                            {/* AI chat button — tablet only (hidden on desktop and mobile via CSS) */}
+                            <button
+                                type="button"
+                                className="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle header-ai-btn"
+                                onClick={() => dispatch(toggleOpen())}
+                                aria-label="Asistente IA"
+                            >
+                                <i className="ri-sparkling-2-line fs-22"></i>
+                            </button>
 
                             {/* NotificationDropdown */}
                             <NotificationDropdown />

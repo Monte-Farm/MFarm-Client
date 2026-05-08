@@ -178,7 +178,7 @@ const ViewInventory = () => {
         <BreadCrumb title={t('warehouse.inventory.breadcrumb')} pageTitle={t('warehouse.inventory.pageHeader')} />
 
         {/* KPIs Section */}
-        <div className="row mb-3">
+        <div className="row g-3 mb-3">
 
           <div className="col-xl-3 col-md-6">
             <StatKpiCard

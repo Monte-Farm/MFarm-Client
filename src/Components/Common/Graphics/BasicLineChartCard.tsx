@@ -77,11 +77,11 @@ const BasicLineChartCard: React.FC<BasicLineChartCardProps> = ({
     const resolvedEmptyMessage = emptyMessage ?? t('shared.chart.noData');
     const hasData = data.some(serie => serie.data && serie.data.length > 0 && serie.data.some(point => point.y !== null && point.y !== undefined));
 
-    // Formateo por defecto para tooltips
     const defaultFormatTooltip = (point: any) => {
         const value = typeof point.y === 'number' ? point.y.toLocaleString() : point.y;
         return `${point.serieId}: ${value}`;
     };
+
 
     // Tema por defecto mejorado
     const defaultTheme = {

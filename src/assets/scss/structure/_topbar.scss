@@ -20,6 +20,8 @@
     @media (min-width: 1025px) {
         left: var(--#{$prefix}vertical-menu-width);
     }
+
+
 }
 
 .navbar-header {
@@ -182,6 +184,14 @@
 
     .dropdown-menu {
         top: 6px !important;
+
+        @media (min-width: 768px) and (max-width: 1024px) {
+            position: fixed !important;
+            top: 60px !important;
+            right: 8px !important;
+            left: auto !important;
+            transform: none !important;
+        }
     }
 }
 

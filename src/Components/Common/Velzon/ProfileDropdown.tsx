@@ -18,7 +18,17 @@ const ProfileDropdown = () => {
     const userLogged = getLoggedinUser();
     const layoutModeType = useSelector((state: any) => state.Layout.layoutModeType);
     const [isProfileDropdown, setIsProfileDropdown] = useState(false);
-    const toggleProfileDropdown = () => setIsProfileDropdown(!isProfileDropdown);
+    const toggleProfileDropdown = () => {
+        setIsProfileDropdown(prev => {
+            // When opening on tablet, cancel Bootstrap's scrollbar padding compensation
+            if (!prev) {
+                requestAnimationFrame(() => {
+                    document.body.style.paddingRight = '0px';
+                });
+            }
+            return !prev;
+        });
+    };
     const [modals, setModals] = useState({ logout: false });
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {

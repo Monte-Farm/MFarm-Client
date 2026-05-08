@@ -157,7 +157,7 @@ const ViewPurchaseOrders = () => {
                 <BreadCrumb title={t('warehouse.purchaseOrders.pageTitle', { defaultValue: 'Ver Ordenes de Compra' })} pageTitle={t('warehouse.purchaseOrders.breadcrumb', { defaultValue: 'Ordenes de Compra' })} />
 
                 {/* KPIs Section */}
-                <div className="row mb-3">
+                <div className="row g-3 mb-3">
                     <div className="col-xl-3 col-md-6">
                         <StatKpiCard
                             title={t('warehouse.purchaseOrders.kpi.total', { defaultValue: 'Total de Órdenes del Mes' })}

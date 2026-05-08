@@ -85,7 +85,8 @@ const Sidebar = ({ layoutType }: any) => {
         </div>
         <SimpleBar
           id="scrollbar"
-          style={{ maxHeight: "100vh", overscrollBehavior: 'contain' } as React.CSSProperties}
+          className="sidebar-scrollbar"
+          style={{ overscrollBehavior: 'contain' } as React.CSSProperties}
         >
           <div className="navbar-brand-box mt-2 mb-2 sidebar-logo-tablet">
             <span className="logo">

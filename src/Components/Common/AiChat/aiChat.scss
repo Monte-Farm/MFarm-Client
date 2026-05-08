@@ -610,3 +610,184 @@ $ai-z: 1050;
     .ai-chat-pig--thinking,
     .ai-chat-pig--talking { width: 110px; height: 110px; }
 }
+
+// ── Tablet: FAB hidden, button in header, panel fullscreen ────────────────────
+@media (min-width: 768px) and (max-width: 1024px) {
+    // Hide the floating pig FAB — replaced by header button
+    .ai-chat-widget .ai-chat-pig { display: none; }
+
+    // Panel takes full screen on tablet
+    .ai-chat-panel {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        max-height: 100vh;
+        max-width: 100vw;
+        border-radius: 0;
+    }
+}
+
+// ── Dark mode ─────────────────────────────────────────────────────────────────
+[data-bs-theme="dark"] {
+    // Panel
+    .ai-chat-panel {
+        background: #22262b;
+        box-shadow:
+            0 4px 6px -1px rgba(0,0,0,0.30),
+            0 24px 56px rgba(0,0,0,0.55),
+            0 0 0 1px rgba(255,255,255,0.06);
+    }
+
+    // Header
+    .ai-chat-header {
+        background: #292e32;
+        color: #e9ecef;
+        border-bottom-color: rgba(255,255,255,0.07);
+
+        &__title  { color: #e9ecef; }
+        &__subtitle { color: #878a99; }
+        &__btn {
+            color: #878a99;
+            &:hover { background: rgba(255,255,255,0.08); color: #e9ecef; }
+        }
+    }
+
+    // Messages area
+    .ai-chat-messages {
+        background: #1a1d21;
+        scrollbar-color: rgba(10,179,156,0.35) transparent;
+    }
+
+    // Bubbles
+    .ai-chat-bubble {
+        &--user {
+            background: #2d3a2e;
+            color: #d1fae5;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+        }
+
+        &--assistant {
+            background: #262b30;
+            color: #ced4da;
+            border-color: rgba(255,255,255,0.08);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+        }
+
+        &__markdown {
+            code {
+                background: rgba(255,255,255,0.10);
+                color: #e9ecef;
+            }
+
+            table { background: #1e2227; }
+
+            th {
+                background: #262b30;
+                color: #878a99;
+            }
+
+            td {
+                color: #ced4da;
+                border-color: #32383e;
+            }
+
+            th, td { border-color: #32383e; }
+
+            a { color: #0ab39c; }
+        }
+    }
+
+    // Typing indicator
+    .ai-chat-typing {
+        background: #262b30;
+        color: #878a99;
+        border-color: rgba(255,255,255,0.08);
+
+        &__label { color: #878a99; }
+        &__dots span { background: #878a99; }
+    }
+
+    // Suggestions
+    .ai-chat-suggestions {
+        &__intro p { color: #878a99; }
+
+        &__chip {
+            background: #262b30;
+            border-color: #32383e;
+            color: #ced4da;
+
+            &:hover {
+                border-color: #0ab39c;
+                background: rgba(10,179,156,0.08);
+            }
+        }
+    }
+
+    // Error bar
+    .ai-chat-error {
+        background: #2d2410;
+        border-top-color: #5a3e0a;
+        color: #fbbf24;
+    }
+
+    // Input area
+    .ai-chat-input {
+        background: #202428;
+        border-top-color: #2a2f34;
+
+        textarea {
+            background: #262a2f;
+            border-color: #2a2f34;
+            color: #ced4da;
+
+            &::placeholder { color: #4b5563; }
+
+            &:focus {
+                border-color: #0ab39c;
+                background: #2a2f34;
+                box-shadow: 0 0 0 3px rgba(10,179,156,0.12);
+            }
+
+            &:disabled { background: #1e2227; }
+        }
+    }
+
+    // Report card
+    .ai-report-card {
+        background: #262b30;
+        border-color: #32383e;
+
+        &__filename { color: #ced4da; }
+        &__meta { color: #878a99; }
+    }
+
+    // Chart wrapper
+    .ai-chart {
+        background: #262b30;
+        border-color: #32383e;
+    }
+}
+
+
+// Header AI button: hidden on desktop and mobile, visible only on tablet
+.header-ai-btn {
+    display: none;
+
+    @media (min-width: 768px) and (max-width: 1024px) {
+        display: flex;
+        margin-right: 8px;
+        background: $ai-accent !important;
+        color: #fff !important;
+        box-shadow: 0 2px 8px rgba(10, 179, 156, 0.45);
+        transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+
+        i { color: #fff !important; }
+
+        &:hover {
+            background: darken(#0ab39c, 6%) !important;
+            box-shadow: 0 4px 14px rgba(10, 179, 156, 0.55);
+            transform: translateY(-1px);
+        }
+    }
+}

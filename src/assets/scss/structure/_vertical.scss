@@ -1,6 +1,13 @@
 //
 // _vertical.scss
-// 
+//
+
+// Tablet: reserve scrollbar space so its appearance/disappearance doesn't shift the layout
+@media (min-width: 768px) and (max-width: 1024px) {
+    html {
+        scrollbar-gutter: stable;
+    }
+}
 
 .app-content {
     margin-left: var(--#{$prefix}vertical-menu-width);
@@ -14,6 +21,7 @@
 
 .main-content {
     transition: all .1s ease-out;
+    overflow-x: hidden;
 
     @media (min-width: 768px) {
         margin-left: var(--#{$prefix}vertical-menu-width);
@@ -220,6 +228,16 @@
 
     @media (min-width: 768px) and (max-width: 1024px) {
         display: block;
+    }
+}
+
+// SimpleBar height: desktop reserves space for the fixed logo, tablet uses full height
+.sidebar-scrollbar {
+    max-height: calc(100vh - 200px); // desktop: logo is fixed outside, subtract its height
+
+    @media (min-width: 768px) and (max-width: 1024px) {
+        max-height: calc(100vh - 80px); // tablet: logo inside scroll + bottom breathing room for browser chrome
+        padding-bottom: 10px;
     }
 }
 
