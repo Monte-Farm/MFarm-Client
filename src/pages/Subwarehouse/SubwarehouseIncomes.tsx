@@ -4,13 +4,16 @@ import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Badge, Button, Container, Card, CardHeader, CardBody, Row, Col, Modal, ModalHeader, ModalBody } from "reactstrap";
+import { Badge, Button, Container, Card, CardHeader, CardBody, Row, Col, Modal, ModalHeader, ModalBody, Spinner } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Column } from "common/data/data_types";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import IncomeDetails from "Components/Common/Details/IncomeDetailsModal";
+import IncomeForm from "Components/Common/Forms/IncomeForm";
+import ConfirmModal from "Components/Common/Shared/ConfirmModal";
+import { getApprovalErrorMessage } from "helpers/income_error_helper";
 import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
 import DonutChartCard, { DonutDataItem, DonutLegendItem } from "Components/Common/Graphics/DonutChartCard";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
@@ -19,6 +22,15 @@ const isTablet = () => {
   const w = document.documentElement.clientWidth;
   return w >= 768 && w <= 1024;
 };
+
+const approvalStatusColor: Record<string, string> = {
+    pending: 'warning',
+    approved: 'success',
+    released: 'info',
+};
+
+const canApproveOrRelease = (role: string[]) =>
+    role.includes('farm_manager') || role.includes('finance_manager');
 
 const SubwarehouseIncomes = () => {
     const { t } = useTranslation();
@@ -30,7 +42,9 @@ const SubwarehouseIncomes = () => {
     const [subwarehouseIncomes, setSubwarehouseIncomes] = useState([])
     const [loading, setLoading] = useState<boolean>(true)
     const [tabletMode, setTabletMode] = useState(isTablet);
-    const [modals, setModals] = useState({ details: false });
+    const [modals, setModals] = useState({ details: false, editIncome: false });
+    const [confirmModal, setConfirmModal] = useState<{ open: boolean; action: 'approve' | 'release' | null; income: any }>({ open: false, action: null, income: null });
+    const [confirmLoading, setConfirmLoading] = useState(false);
     const [selectedIncome, setSelectedIncome] = useState<any>({});
     const [incomeStatistics, setIncomeStatistics] = useState({
         totalValue: 0,
@@ -78,17 +92,100 @@ const SubwarehouseIncomes = () => {
         },
         { header: 'Precio Total', accessor: 'totalPrice', type: 'currency', bgColor: '#E8F5E9' },
         {
+            header: t('finance.income.column.approvalStatus'),
+            accessor: 'approvalStatus',
+            type: 'text',
+            render: (_, row) => {
+                const status = row.approvalStatus ?? 'pending';
+                return <Badge color={approvalStatusColor[status] || 'secondary'}>{t(`finance.income.approvalStatus.${status}`, { defaultValue: status })}</Badge>;
+            },
+        },
+        {
             header: t('common.field.actions'),
             accessor: "action",
-            render: (value: any, row: any) => (
-                <div className="d-flex gap-1">
-                    <Button className="farm-primary-button btn-icon" onClick={() => { setSelectedIncome(row); toggleModal('details') }}>
-                        <i className="ri-eye-fill align-middle" />
-                    </Button>
-                </div>
-            )
+            render: (value: any, row: any) => {
+                const status = row.approvalStatus ?? 'pending';
+                const canManage = canApproveOrRelease(userLogged?.role ?? []);
+                return (
+                    <div className="d-flex gap-1">
+                        <Button className="farm-primary-button btn-icon" onClick={() => { setSelectedIncome(row); toggleModal('details') }}>
+                            <i className="ri-eye-fill align-middle" />
+                        </Button>
+                        <Button
+                            className="btn-icon btn-soft-warning"
+                            onClick={() => { setSelectedIncome(row); toggleModal('editIncome') }}
+                            disabled={status === 'approved'}
+                            title={t('common.button.edit')}
+                        >
+                            <i className="ri-pencil-fill align-middle" />
+                        </Button>
+                        {canManage && status !== 'approved' && (
+                            <Button
+                                className="btn-icon btn-soft-success"
+                                onClick={() => handleApproveIncome(row)}
+                                title={t('finance.income.action.approve')}
+                            >
+                                <i className="ri-check-double-line align-middle" />
+                            </Button>
+                        )}
+                        {canManage && status === 'approved' && (
+                            <Button
+                                className="btn-icon btn-soft-info"
+                                onClick={() => handleReleaseIncome(row)}
+                                title={t('finance.income.action.release')}
+                            >
+                                <i className="ri-lock-unlock-line align-middle" />
+                            </Button>
+                        )}
+                    </div>
+                );
+            }
         }
     ]
+
+    const fetchAllData = async () => {
+        await Promise.all([
+            handleFetchWarehouseIncomes(),
+            fetchIncomeStatistics(),
+            fetchIncomeChartData(),
+        ]);
+    };
+
+    const handleApproveIncome = (income: any) => {
+        setConfirmModal({ open: true, action: 'approve', income });
+    };
+
+    const handleReleaseIncome = (income: any) => {
+        setConfirmModal({ open: true, action: 'release', income });
+    };
+
+    const handleConfirmAction = async () => {
+        if (!configContext || !confirmModal.income || !confirmModal.action) return;
+        try {
+            setConfirmLoading(true);
+            const endpoint = confirmModal.action === 'approve'
+                ? `${configContext.apiUrl}/incomes/approve/${confirmModal.income._id}`
+                : `${configContext.apiUrl}/incomes/release/${confirmModal.income._id}`;
+            await configContext.axiosHelper.update(endpoint, {});
+            setAlertConfig({
+                visible: true,
+                color: 'success',
+                message: confirmModal.action === 'approve'
+                    ? t('finance.income.success.approved')
+                    : t('finance.income.success.released'),
+            });
+            fetchAllData();
+        } catch (error) {
+            setAlertConfig({
+                visible: true,
+                color: 'danger',
+                message: getApprovalErrorMessage(error, confirmModal.action, t),
+            });
+        } finally {
+            setConfirmLoading(false);
+            setConfirmModal({ open: false, action: null, income: null });
+        }
+    };
 
     const handleFetchWarehouseIncomes = async () => {
         if (!configContext || !userLogged) return;
@@ -177,11 +274,7 @@ const SubwarehouseIncomes = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            await Promise.all([
-                handleFetchWarehouseIncomes(),
-                fetchIncomeStatistics(),
-                fetchIncomeChartData(),
-            ]);
+            await fetchAllData();
             setLoading(false);
         };
 
@@ -280,12 +373,31 @@ const SubwarehouseIncomes = () => {
 
             </Container>
 
+            <Modal size="xl" isOpen={modals.editIncome} toggle={() => toggleModal("editIncome")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
+                <ModalHeader toggle={() => toggleModal("editIncome")}>{t('finance.income.modal.edit')}</ModalHeader>
+                <ModalBody>
+                    <IncomeForm initialData={selectedIncome} onSave={() => { toggleModal('editIncome'); fetchAllData(); }} onCancel={() => toggleModal('editIncome')} />
+                </ModalBody>
+            </Modal>
+
             <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal('details')}>{t('warehouse.subwarehouseDetails.modal.incomeDetails')}</ModalHeader>
                 <ModalBody>
-                    <IncomeDetails incomeId={selectedIncome._id} />
+                    <IncomeDetails incomeId={selectedIncome._id} onApproveOrRelease={fetchAllData} />
                 </ModalBody>
             </Modal>
+
+            <ConfirmModal
+                isOpen={confirmModal.open}
+                title={confirmModal.action === 'approve' ? t('finance.income.confirm.approveTitle') : t('finance.income.confirm.releaseTitle')}
+                message={confirmModal.action === 'approve' ? t('finance.income.confirm.approveMessage') : t('finance.income.confirm.releaseMessage')}
+                confirmLabel={confirmModal.action === 'approve' ? t('finance.income.action.approve') : t('finance.income.action.release')}
+                cancelLabel={t('common.button.cancel')}
+                confirmColor={confirmModal.action === 'approve' ? 'success' : 'info'}
+                loading={confirmLoading}
+                onConfirm={handleConfirmAction}
+                onCancel={() => setConfirmModal({ open: false, action: null, income: null })}
+            />
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </div>

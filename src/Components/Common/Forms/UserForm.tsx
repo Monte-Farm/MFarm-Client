@@ -58,7 +58,7 @@ const UserForm: React.FC<UserFormProps> = ({
             if (currentUserRole === "farm_manager") {
                 return role.value !== "Superadmin" && role.value !== "farm_manager";
             }
-            return role.value !== "Superadmin" && role.value !== "farm_manager";
+            return role.value !== "Superadmin" && role.value !== "farm_manager" && role.value !== "finance_manager";
         });
 
     const validationSchema = Yup.object({

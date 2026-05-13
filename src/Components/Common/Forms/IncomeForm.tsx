@@ -10,6 +10,7 @@ import classnames from "classnames";
 import PurchaseOrderProductsTable from "../Tables/PurchaseOrderProductsTable";
 import { Column } from "common/data/data_types";
 import AlertMessage from "../Shared/AlertMesagge";
+import { getUpdateErrorResult } from "helpers/income_error_helper";
 import PurchaseOrderForm from "./PurchaseOrderForm";
 import SuccessModal from "../Shared/SuccessModal";
 import { getEffectiveUser } from "helpers/impersonation_helper";
@@ -46,6 +47,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
     const [modals, setModals] = useState({ success: false, createSupplier: false, createProduct: false, selectPurchaseOrder: false, createPurchaseOrder: false });
     const [products, setProducts] = useState([])
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
+    const [missingStock, setMissingStock] = useState<Array<{ id: string; required: number; available: number }> | null>(null);
     const [fileToUpload, setFileToUpload] = useState<File | null>(null)
     const [selectedProducts, setSelectedProducts] = useState<Array<any>>([])
     const [purchaseOrders, setPurchaseOrders] = useState([])
@@ -214,6 +216,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
             .required(t('warehouse.incomeForm.validation.idRequired'))
             .test('unique_id', t('warehouse.incomeForm.validation.idExists'), async (value) => {
                 if (!value) return false;
+                if (initialData?.id && value === initialData.id) return true;
                 try {
                     const result = await configContext?.axiosHelper.get(`${configContext.apiUrl}/incomes/income_id_exists/${value}`);
                     return !result?.data.data;
@@ -238,16 +241,15 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
         if (!configContext || !userLogged) return;
 
         try {
-            const [warehouseResponse, nextIdResponse] = await Promise.all([
-                configContext.axiosHelper.get(`${configContext.apiUrl}/farm/get_main_warehouse/${userLogged.farm_assigned}`),
-                configContext.axiosHelper.get(`${configContext.apiUrl}/incomes/income_next_id`)
-            ]);
-
+            const warehouseResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/farm/get_main_warehouse/${userLogged.farm_assigned}`);
             const warehouseId = warehouseResponse.data.data;
             setMainWarehouseId(warehouseId);
             formik.setFieldValue('warehouse', warehouseId);
 
-            formik.setFieldValue('id', nextIdResponse.data.data);
+            if (!initialData) {
+                const nextIdResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/incomes/income_next_id`);
+                formik.setFieldValue('id', nextIdResponse.data.data);
+            }
         } catch (error) {
             logger.error('Error fetching initial data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos iniciales, intentelo mas tarde' });
@@ -306,6 +308,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
             invoiceNumber: "",
             fiscalRecord: "",
             currency: "MXN",
+            approvalStatus: 'pending',
         },
         enableReinitialize: true,
         validationSchema,
@@ -315,14 +318,28 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
             if (!configContext) return;
             try {
                 setSubmitting(true);
+                setMissingStock(null);
                 if (fileToUpload) {
                     await uploadFile(fileToUpload)
                 }
 
-                const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/incomes/create_income`, values);
+                if (initialData?._id) {
+                    await configContext.axiosHelper.put(`${configContext.apiUrl}/incomes/update_income/${initialData._id}`, values);
+                } else {
+                    await configContext.axiosHelper.create(`${configContext.apiUrl}/incomes/create_income`, values);
+                }
                 toggleModal('success');
             } catch (error) {
                 logger.error("Error al enviar el formulario:", error);
+                if (initialData?._id) {
+                    const result = getUpdateErrorResult(error, t);
+                    if (result.missing && result.missing.length > 0) {
+                        setMissingStock(result.missing);
+                    }
+                    setAlertConfig({ visible: true, color: 'danger', message: result.message });
+                } else {
+                    setAlertConfig({ visible: true, color: 'danger', message: t('finance.income.error.create') });
+                }
             } finally {
                 setSubmitting(false);
             }
@@ -446,6 +463,41 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
     }, [])
 
     useEffect(() => {
+        if (!initialData) return;
+        if (initialData.purchaseOrder) {
+            setEntryMode("purchase_order");
+            setHasSelectedPurchaseOrder(true);
+            const orderProducts = initialData.products.map((p: any) => ({
+                id: typeof p.id === 'object' ? p.id._id : p.id,
+                quantity: p.quantity,
+                price: p.price ?? p.unitPrice ?? 0,
+                totalPrice: p.totalPrice ?? 0,
+            }));
+            setSelectecOrderProducts(orderProducts);
+            loadPurchaseOrderForEdit(initialData.purchaseOrder);
+        } else {
+            setEntryMode("direct");
+            fetchSuppliers();
+            fetchCatalogProducts();
+        }
+        setActiveStep(2);
+        setPassedarrowSteps([1, 2]);
+    }, [initialData?._id])
+
+    const loadPurchaseOrderForEdit = async (purchaseOrder: any) => {
+        if (!configContext) return;
+        try {
+            const orderId = typeof purchaseOrder === 'object' ? purchaseOrder._id : purchaseOrder;
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/purchase_orders/find_purchase_order_id/${orderId}`);
+            const order = response.data.data;
+            setSelectedPurchaseOrder(order);
+            setProducts(order.products);
+        } catch (error) {
+            logger.error('Error loading purchase order for edit:', error);
+        }
+    }
+
+    useEffect(() => {
         fetchPurchaseOrders();
     }, [mainWarehouseId])
 
@@ -460,8 +512,47 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
         formik.validateForm();
     }, [formik.values]);
 
+    const isApproved = initialData?.approvalStatus === 'approved';
+    const isReleased = initialData?.approvalStatus === 'released';
+
     return (
         <>
+            {isApproved && (
+                <div className="alert alert-danger d-flex align-items-center gap-2 mb-3">
+                    <i className="ri-lock-line fs-5" />
+                    <span>{t('finance.income.form.approvedWarning')}</span>
+                </div>
+            )}
+            {isReleased && (
+                <div className="alert alert-warning d-flex align-items-center gap-2 mb-3">
+                    <i className="ri-information-line fs-5" />
+                    <span>{t('finance.income.form.releasedWarning')}</span>
+                </div>
+            )}
+            {missingStock && missingStock.length > 0 && (
+                <div className="alert alert-danger mb-3">
+                    <div className="d-flex align-items-center gap-2 mb-2">
+                        <i className="ri-error-warning-line fs-5" />
+                        <strong>{t('finance.income.form.insufficientStockTitle')}</strong>
+                    </div>
+                    <p className="mb-2">{t('finance.income.form.insufficientStockMessage')}</p>
+                    <ul className="mb-0">
+                        {missingStock.map((m) => {
+                            const product = formik.values.products.find((p: any) => {
+                                const pid = typeof p.id === 'object' ? p.id._id : p.id;
+                                return pid === m.id;
+                            });
+                            const productLabel = (product as any)?.id?.name || (product as any)?.id?.id || m.id;
+                            return (
+                                <li key={m.id}>
+                                    <strong>{productLabel}</strong>{' '}
+                                    — {t('finance.income.form.insufficientStockItem', { required: m.required, available: m.available })}
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </div>
+            )}
             <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }} className="form-steps" noValidate>
                 <div className="step-arrow-nav mb-4">
                     <Nav className="nav-pills custom-nav nav-justified">
@@ -814,6 +905,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                         data={products}
                                         onProductSelect={handleProductSelect}
                                         showPagination={false}
+                                        initialSelected={initialData ? formik.values.products.map(p => ({ id: p.id as string, quantity: p.quantity, price: p.price ?? 0 })) : undefined}
                                     />
                                 )}
                             </div>
@@ -906,7 +998,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                 {t('common.button.back', { defaultValue: 'Atras' })}
                             </Button>
 
-                            <Button className="farm-primary-button ms-auto" type="submit" disabled={formik.isSubmitting}>
+                            <Button className="farm-primary-button ms-auto" type="submit" disabled={formik.isSubmitting || isApproved}>
                                 {formik.isSubmitting ?
                                     <>
                                         <Spinner size='sm' className="me-3" />

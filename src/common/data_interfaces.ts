@@ -22,6 +22,7 @@ interface ProductComplete {
 }
 
 export interface IncomeData {
+    _id?: string;
     id: string;
     warehouse: string;
     date: Date | null;
@@ -38,6 +39,7 @@ export interface IncomeData {
     invoiceNumber: string;
     fiscalRecord: string;
     currency: string;
+    approvalStatus: 'pending' | 'approved' | 'released';
 }
 
 export interface SupplierData {

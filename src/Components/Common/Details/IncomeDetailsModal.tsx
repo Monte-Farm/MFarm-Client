@@ -9,21 +9,32 @@ import ObjectDetails from "./ObjectDetails";
 import CustomTable from "../Tables/CustomTable";
 import PDFViewer from "../Shared/PDFViewer";
 import AlertMessage from "../Shared/AlertMesagge";
+import ConfirmModal from "../Shared/ConfirmModal";
+import { getApprovalErrorMessage } from "helpers/income_error_helper";
 import { useNavigate } from "react-router-dom";
 import { Attribute } from "common/data_interfaces";
 import { useTranslation } from "react-i18next";
 
+const approvalStatusColor: Record<string, string> = {
+    pending: 'warning',
+    approved: 'success',
+    released: 'info',
+};
+
 interface IncomeDetailsProps {
     incomeId: string;
+    onApproveOrRelease?: () => void;
 }
 
-const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
+const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId, onApproveOrRelease }) => {
     const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [pdfLoading, setPdfLoading] = useState(false);
+    const [actionLoading, setActionLoading] = useState(false);
+    const [confirmModal, setConfirmModal] = useState<{ open: boolean; action: 'approve' | 'release' | null }>({ open: false, action: null });
     const [modals, setModals] = useState({ viewPDF: false });
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const [fileURL, setFileURL] = useState<string>('')
@@ -132,6 +143,16 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
                 return <Badge color={color}>{t(`warehouse.common.incomeType.${value}`, { defaultValue: value })}</Badge>;
             },
         },
+        {
+            key: 'approvalStatus',
+            label: t('finance.income.column.approvalStatus'),
+            type: 'text',
+            render: (value: string) => {
+                const status = value ?? 'pending';
+                const color = approvalStatusColor[status] || 'secondary';
+                return <Badge color={color}>{t(`finance.income.approvalStatus.${status}`, { defaultValue: status })}</Badge>;
+            },
+        },
     ]
 
     const financialAttributes: Attribute[] = [
@@ -169,6 +190,39 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
             ),
         },
     ]
+
+    const handleApprove = () => setConfirmModal({ open: true, action: 'approve' });
+
+    const handleRelease = () => setConfirmModal({ open: true, action: 'release' });
+
+    const handleConfirmAction = async () => {
+        if (!configContext || !confirmModal.action) return;
+        try {
+            setActionLoading(true);
+            const endpoint = confirmModal.action === 'approve'
+                ? `${configContext.apiUrl}/incomes/approve/${incomeId}`
+                : `${configContext.apiUrl}/incomes/release/${incomeId}`;
+            await configContext.axiosHelper.update(endpoint, {});
+            setAlertConfig({
+                visible: true,
+                color: 'success',
+                message: confirmModal.action === 'approve'
+                    ? t('finance.income.success.approved')
+                    : t('finance.income.success.released'),
+            });
+            await fetchData();
+            onApproveOrRelease?.();
+        } catch (error) {
+            setAlertConfig({
+                visible: true,
+                color: 'danger',
+                message: getApprovalErrorMessage(error, confirmModal.action, t),
+            });
+        } finally {
+            setActionLoading(false);
+            setConfirmModal({ open: false, action: null });
+        }
+    };
 
     const fetchData = async () => {
         if (!configContext || !userLogged) return;
@@ -223,6 +277,9 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
         )
     }
 
+    const approvalStatus = incomeDetails?.approvalStatus ?? 'pending';
+    const canManage = (userLogged?.role ?? []).includes('farm_manager') || (userLogged?.role ?? []).includes('finance_manager');
+
     return (
         <>
             <div className="d-flex gap-2 mb-4">
@@ -244,6 +301,18 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
                         </>
                     )}
                 </Button>
+                {canManage && approvalStatus !== 'approved' && (
+                    <Button color="success" onClick={handleApprove} disabled={actionLoading}>
+                        {actionLoading ? <Spinner size="sm" className="me-2" /> : <i className="ri-check-double-line me-2" />}
+                        {t('finance.income.action.approve')}
+                    </Button>
+                )}
+                {canManage && approvalStatus === 'approved' && (
+                    <Button color="info" onClick={handleRelease} disabled={actionLoading}>
+                        {actionLoading ? <Spinner size="sm" className="me-2" /> : <i className="ri-lock-unlock-line me-2" />}
+                        {t('finance.income.action.release')}
+                    </Button>
+                )}
             </div>
             <div className="d-flex flex-column gap-3">
                 <div className="d-flex gap-3">
@@ -312,6 +381,18 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ incomeId }) => {
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>
             </Modal>
+
+            <ConfirmModal
+                isOpen={confirmModal.open}
+                title={confirmModal.action === 'approve' ? t('finance.income.confirm.approveTitle') : t('finance.income.confirm.releaseTitle')}
+                message={confirmModal.action === 'approve' ? t('finance.income.confirm.approveMessage') : t('finance.income.confirm.releaseMessage')}
+                confirmLabel={confirmModal.action === 'approve' ? t('finance.income.action.approve') : t('finance.income.action.release')}
+                cancelLabel={t('common.button.cancel')}
+                confirmColor={confirmModal.action === 'approve' ? 'success' : 'info'}
+                loading={actionLoading}
+                onConfirm={handleConfirmAction}
+                onCancel={() => setConfirmModal({ open: false, action: null })}
+            />
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </>

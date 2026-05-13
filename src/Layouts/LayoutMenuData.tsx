@@ -194,7 +194,7 @@ const Navdata = () => {
             label: t('menu.home'),
             icon: "ri-home-2-line",
             link: "/home",
-            roles: ["Superadmin", 'farm_manager', 'warehouse_manager', 'subwarehouse_manager', 'general_worker', 'reproduction_technician', 'veterinarian'],
+            roles: ["Superadmin", 'farm_manager', 'warehouse_manager', 'subwarehouse_manager', 'general_worker', 'reproduction_technician', 'veterinarian', 'finance_manager'],
             click: function (e: any) {
                 e.preventDefault();
                 setIscurrentState('Home');
@@ -206,7 +206,7 @@ const Navdata = () => {
             id: "header-admin",
             label: t('menu.admin'),
             isHeader: true,
-            roles: ["Superadmin", 'farm_manager', 'warehouse_manager', 'subwarehouse_manager', 'general_worker'],
+            roles: ["Superadmin", 'farm_manager', 'warehouse_manager', 'subwarehouse_manager', 'general_worker', 'reproduction_technician', 'veterinarian', 'finance_manager'],
         },
         {
             id: "farms",
@@ -224,7 +224,7 @@ const Navdata = () => {
             label: t('menu.warehouse'),
             icon: "ri-community-line",
             link: "/#",
-            roles: ['farm_manager', 'warehouse_manager'],
+            roles: ['farm_manager', 'warehouse_manager', 'finance_manager'],
             click: function (e: any) {
                 e.preventDefault();
                 setIsWarehouse(!isWarehouse);
@@ -237,7 +237,7 @@ const Navdata = () => {
                     id: "inventory",
                     label: t('menu.warehouseInventory'),
                     link: "/warehouse/inventory/view_inventory",
-                    roles: ['farm_manager', 'warehouse_manager'],
+                    roles: ['farm_manager', 'warehouse_manager', 'finance_manager'],
                     parentId: "warehouse",
                     click: function (e: any) {
                         e.preventDefault();
@@ -250,7 +250,7 @@ const Navdata = () => {
                     label: t('menu.purchaseOrders'),
                     icon: 'ri-currency-line',
                     link: '/purchase_orders/view_purchase_orders',
-                    roles: ['farm_manager', 'warehouse_manager'],
+                    roles: ['farm_manager', 'warehouse_manager', 'finance_manager'],
                     click: function (e: any) {
                         e.preventDefault();
                         setIsPurchaseOrders(!isPurchaseOrders);
@@ -261,7 +261,7 @@ const Navdata = () => {
                     id: "incomes",
                     label: t('menu.incomes'),
                     link: "/warehouse/incomes/view_incomes",
-                    roles: ['farm_manager', 'warehouse_manager'],
+                    roles: ['farm_manager', 'warehouse_manager', 'finance_manager'],
                     parentId: "warehouse",
                     click: function (e: any) {
                         e.preventDefault();
@@ -273,7 +273,7 @@ const Navdata = () => {
                     id: "outcomes",
                     label: t('menu.outcomes'),
                     link: "/warehouse/outcomes/view_outcomes",
-                    roles: ['farm_manager', 'warehouse_manager'],
+                    roles: ['farm_manager', 'warehouse_manager', 'finance_manager'],
                     parentId: "warehouse",
                     click: function (e: any) {
                         e.preventDefault();
@@ -285,7 +285,7 @@ const Navdata = () => {
                     id: 'suppliers',
                     label: t('menu.suppliers'),
                     link: '/warehouse/suppliers/view_suppliers',
-                    roles: ['farm_manager', 'warehouse_manager'],
+                    roles: ['farm_manager', 'warehouse_manager', 'finance_manager'],
                     parentId: "warehouse",
                     click: function (e: any) {
                         e.preventDefault();
@@ -391,7 +391,7 @@ const Navdata = () => {
             label: t('menu.sales'),
             icon: 'ri-money-dollar-circle-line',
             link: '/#',
-            roles: ['farm_manager', 'general_worker',],
+            roles: ['farm_manager', 'finance_manager'],
             click: function (e: any) {
                 e.preventDefault();
                 setIscurrentState('Sale')
@@ -404,7 +404,7 @@ const Navdata = () => {
                     id: "pigSales",
                     label: t('menu.salesRegistered'),
                     link: "/sale/view_pig_sales",
-                    roles: ['farm_manager', 'general_worker'],
+                    roles: ['farm_manager', 'finance_manager'],
                     parentId: "sale",
                     click: function (e: any) {
                         e.preventDefault();
@@ -419,7 +419,7 @@ const Navdata = () => {
             label: t('menu.expenses'),
             icon: 'ri-wallet-3-line',
             link: '/expenses/view_expenses',
-            roles: ['farm_manager'],
+            roles: ['farm_manager', 'finance_manager'],
             stateVariables: isExpenses,
             click: function (e: any) {
                 e.preventDefault();
@@ -433,7 +433,7 @@ const Navdata = () => {
             label: t('menu.periodClosure'),
             icon: 'ri-lock-2-line',
             link: '/finance/period-closing',
-            roles: ['Superadmin', 'farm_manager'],
+            roles: ['Superadmin', 'farm_manager', 'finance_manager'],
             stateVariables: isPeriodClosing,
             click: function (e: any) {
                 e.preventDefault();
@@ -535,7 +535,7 @@ const Navdata = () => {
             label: t('menu.reproduction'),
             icon: 'bx bx-heart',
             link: '/#',
-            roles: ['farm_manager', 'reproduction_technician',],
+            roles: ['farm_manager', 'reproduction_technician', 'general_worker', 'veterinarian'],
             click: function (e: any) {
                 e.preventDefault();
                 setIscurrentState('Reproduction')
@@ -548,7 +548,7 @@ const Navdata = () => {
                     id: "laboratory",
                     label: t('menu.laboratory'),
                     link: "/#",
-                    roles: ['farm_manager', 'reproduction_technician',],
+                    roles: ['farm_manager', 'reproduction_technician', 'general_worker', 'veterinarian'],
                     parentId: "reproduction",
                     isChildItem: true,
                     click: function (e: any) {
@@ -561,14 +561,14 @@ const Navdata = () => {
                             id: 1,
                             label: t('menu.labExtractions'),
                             link: "/laboratory/extractions/view_extractions",
-                            roles: ['farm_manager', 'reproduction_technician'],
+                            roles: ['farm_manager', 'reproduction_technician', 'general_worker', 'veterinarian'],
                             parentId: "laboratory"
                         },
                         {
                             id: 2,
                             label: t('menu.labSamples'),
                             link: "/laboratory/samples/view_samples",
-                            roles: ['farm_manager', 'reproduction_technician'],
+                            roles: ['farm_manager', 'reproduction_technician', 'general_worker', 'veterinarian'],
                             parentId: "laboratory"
                         },
                     ]
@@ -577,7 +577,7 @@ const Navdata = () => {
                     id: "gestation",
                     label: t('menu.gestation'),
                     link: "/#",
-                    roles: ['farm_manager', 'reproduction_technician'],
+                    roles: ['farm_manager', 'reproduction_technician', 'general_worker', 'veterinarian'],
                     parentId: "reproduction",
                     isChildItem: true,
                     click: function (e: any) {
@@ -590,14 +590,14 @@ const Navdata = () => {
                             id: 1,
                             label: t('menu.gestationInseminations'),
                             link: "/gestation/view_inseminations",
-                            roles: ['farm_manager', 'reproduction_technician'],
+                            roles: ['farm_manager', 'reproduction_technician', 'general_worker', 'veterinarian'],
                             parentId: "laboratory"
                         },
                         {
                             id: 2,
                             label: t('menu.gestationPregnancies'),
                             link: "/gestation/view_pregnancies",
-                            roles: ['farm_manager', 'reproduction_technician'],
+                            roles: ['farm_manager', 'reproduction_technician', 'general_worker', 'veterinarian'],
                             parentId: "laboratory"
                         },
                     ]
@@ -606,7 +606,7 @@ const Navdata = () => {
                     id: 'births',
                     label: t('menu.births'),
                     link: '/#',
-                    roles: ['farm_manager', 'reproduction_technician'],
+                    roles: ['farm_manager', 'reproduction_technician', 'general_worker', 'veterinarian'],
                     parentId: 'reproduction',
                     isChildItem: true,
                     click: function (e: any) {
@@ -619,14 +619,14 @@ const Navdata = () => {
                             id: 1,
                             label: t('menu.birthsUpcoming'),
                             link: "/births/view_upcoming_births",
-                            roles: ['farm_manager', 'reproduction_technician'],
+                            roles: ['farm_manager', 'reproduction_technician', 'general_worker', 'veterinarian'],
                             parentId: "births"
                         },
                         {
                             id: 2,
                             label: t('menu.birthsRegistered'),
                             link: "/births/view_births",
-                            roles: ['farm_manager', 'reproduction_technician'],
+                            roles: ['farm_manager', 'reproduction_technician', 'general_worker', 'veterinarian'],
                             parentId: "births"
                         },
                     ]
@@ -638,7 +638,7 @@ const Navdata = () => {
             label: t('menu.lactation'),
             icon: 'mdi mdi-baby-bottle-outline',
             link: '/#',
-            roles: ['farm_manager', 'veterinarian', 'general_worker',],
+            roles: ['farm_manager', 'veterinarian', 'general_worker', 'reproduction_technician'],
             click: function (e: any) {
                 e.preventDefault();
                 setIscurrentState('Lactation')
@@ -651,7 +651,7 @@ const Navdata = () => {
                     id: "litters",
                     label: t('menu.litters'),
                     link: "/lactation/view_litters",
-                    roles: ['farm_manager', 'veterinarian', 'general_worker'],
+                    roles: ['farm_manager', 'veterinarian', 'general_worker', 'reproduction_technician'],
                     parentId: "lactation",
                     click: function (e: any) {
                         e.preventDefault();
@@ -666,7 +666,7 @@ const Navdata = () => {
             label: t('menu.weaning'),
             icon: 'mdi mdi-baby-carriage',
             link: '/#',
-            roles: ['farm_manager', 'veterinarian', 'general_worker',],
+            roles: ['farm_manager', 'veterinarian', 'general_worker', 'reproduction_technician'],
             click: function (e: any) {
                 e.preventDefault();
                 setIscurrentState('Pre-initiation')
@@ -679,7 +679,7 @@ const Navdata = () => {
                     id: "weanedGroups",
                     label: t('menu.weanedGroups'),
                     link: "/groups/view_weaned_groups",
-                    roles: ['farm_manager', 'veterinarian', 'general_worker'],
+                    roles: ['farm_manager', 'veterinarian', 'general_worker', 'reproduction_technician'],
                     parentId: "initiation",
                     click: function (e: any) {
                         e.preventDefault();
@@ -694,7 +694,7 @@ const Navdata = () => {
             label: t('menu.growthFattening'),
             icon: 'mdi mdi-chart-line-variant',
             link: '/#',
-            roles: ['farm_manager', 'general_worker',],
+            roles: ['farm_manager', 'general_worker', 'reproduction_technician', 'veterinarian'],
             click: function (e: any) {
                 e.preventDefault();
                 setIscurrentState('Growing')
@@ -707,7 +707,7 @@ const Navdata = () => {
                     id: "growingGroups",
                     label: t('menu.growingGroups'),
                     link: "/groups/view_growing_groups",
-                    roles: ['farm_manager', 'general_worker'],
+                    roles: ['farm_manager', 'general_worker', 'reproduction_technician', 'veterinarian'],
                     parentId: "growing",
                     click: function (e: any) {
                         e.preventDefault();
@@ -723,14 +723,14 @@ const Navdata = () => {
             id: "header-health",
             label: t('menu.healthNutrition'),
             isHeader: true,
-            roles: ['farm_manager', 'veterinarian'],
+            roles: ['farm_manager', 'veterinarian', 'general_worker', 'reproduction_technician'],
         },
         {
             id: 'medication',
             label: t('menu.medication'),
             icon: 'mdi mdi-heart-pulse',
             link: '/#',
-            roles: ['farm_manager', 'veterinarian',],
+            roles: ['farm_manager', 'veterinarian', 'general_worker', 'reproduction_technician'],
             click: function (e: any) {
                 e.preventDefault();
                 setIscurrentState('Medication')
@@ -743,7 +743,7 @@ const Navdata = () => {
                     id: "medicationPackages",
                     label: t('menu.medicationPackages'),
                     link: "/medication/view_medication_package",
-                    roles: ['farm_manager', 'veterinarian',],
+                    roles: ['farm_manager', 'veterinarian', 'general_worker', 'reproduction_technician'],
                     parentId: "medication",
                     click: function (e: any) {
                         e.preventDefault();
@@ -758,7 +758,7 @@ const Navdata = () => {
             label: t('menu.feeding'),
             icon: 'ri-plant-line',
             link: '/#',
-            roles: ['farm_manager', 'veterinarian',],
+            roles: ['farm_manager', 'veterinarian', 'general_worker', 'reproduction_technician'],
             click: function (e: any) {
                 e.preventDefault();
                 setIscurrentState('Feeding')
@@ -771,7 +771,7 @@ const Navdata = () => {
                     id: "feedingPackages",
                     label: t('menu.feedingPackages'),
                     link: "/feeding/view_feeding_packages",
-                    roles: ['farm_manager', 'veterinarian',],
+                    roles: ['farm_manager', 'veterinarian', 'general_worker', 'reproduction_technician'],
                     parentId: "feeding",
                     click: function (e: any) {
                         e.preventDefault();
@@ -783,7 +783,7 @@ const Navdata = () => {
                     id: "feedPreparations",
                     label: t('menu.feedPreparations'),
                     link: "/feeding/view_feed_preparations",
-                    roles: ['farm_manager', 'veterinarian',],
+                    roles: ['farm_manager', 'veterinarian', 'general_worker', 'reproduction_technician'],
                     parentId: "feeding",
                 },
             ]
@@ -794,14 +794,14 @@ const Navdata = () => {
             id: "header-reports",
             label: t('menu.reports'),
             isHeader: true,
-            roles: ["Superadmin", 'farm_manager'],
+            roles: ["Superadmin", 'farm_manager', 'warehouse_manager', 'finance_manager'],
         },
         {
             id: 'reports',
             label: t('menu.reports'),
             icon: 'ri-bar-chart-box-line',
             link: '/#',
-            roles: ['Superadmin', 'farm_manager'],
+            roles: ['Superadmin', 'farm_manager', 'finance_manager'],
             click: function (e: any) {
                 e.preventDefault();
                 setIscurrentState('Reports')
@@ -864,7 +864,7 @@ const Navdata = () => {
                     id: "inventoryReports",
                     label: t('menu.inventoryReports'),
                     link: "/#",
-                    roles: ['Superadmin', 'farm_manager', 'warehouse_manager'],
+                    roles: ['Superadmin', 'farm_manager', 'warehouse_manager', 'finance_manager'],
                     parentId: "reports",
                     isChildItem: true,
                     click: function (e: any) {
@@ -877,28 +877,28 @@ const Navdata = () => {
                             id: 1,
                             label: t('menu.inventoryMovements'),
                             link: "/reports/inventory/movements",
-                            roles: ['Superadmin', 'farm_manager', 'warehouse_manager'],
+                            roles: ['Superadmin', 'farm_manager', 'warehouse_manager', 'finance_manager'],
                             parentId: "inventoryReports"
                         },
                         {
                             id: 2,
                             label: t('menu.feedConsumption'),
                             link: "/reports/inventory/feed-consumption",
-                            roles: ['Superadmin', 'farm_manager', 'warehouse_manager'],
+                            roles: ['Superadmin', 'farm_manager', 'warehouse_manager', 'finance_manager'],
                             parentId: "inventoryReports"
                         },
                         {
                             id: 3,
                             label: t('menu.inventoryAnalysis'),
                             link: "/reports/inventory/alerts",
-                            roles: ['Superadmin', 'farm_manager', 'warehouse_manager'],
+                            roles: ['Superadmin', 'farm_manager', 'warehouse_manager', 'finance_manager'],
                             parentId: "inventoryReports"
                         },
                         {
                             id: 4,
                             label: t('menu.inventoryValuation'),
                             link: "/reports/inventory/valuation",
-                            roles: ['Superadmin', 'farm_manager', 'warehouse_manager'],
+                            roles: ['Superadmin', 'farm_manager', 'warehouse_manager', 'finance_manager'],
                             parentId: "inventoryReports"
                         },
                     ]
@@ -907,7 +907,7 @@ const Navdata = () => {
                     id: "financeReports",
                     label: t('menu.financeReports'),
                     link: "/#",
-                    roles: ['Superadmin', 'farm_manager'],
+                    roles: ['Superadmin', 'farm_manager', 'finance_manager'],
                     parentId: "reports",
                     isChildItem: true,
                     click: function (e: any) {
@@ -920,49 +920,49 @@ const Navdata = () => {
                             id: 1,
                             label: t('menu.purchasesAndPrices'),
                             link: "/reports/finance/purchases",
-                            roles: ['Superadmin', 'farm_manager'],
+                            roles: ['Superadmin', 'farm_manager', 'finance_manager'],
                             parentId: "financeReports"
                         },
                         {
                             id: 2,
                             label: t('menu.costAnalysis'),
                             link: "/reports/finance/costs",
-                            roles: ['Superadmin', 'farm_manager'],
+                            roles: ['Superadmin', 'farm_manager', 'finance_manager'],
                             parentId: "financeReports"
                         },
                         {
                             id: 3,
                             label: t('menu.profitability'),
                             link: "/reports/finance/profitability",
-                            roles: ['Superadmin', 'farm_manager'],
+                            roles: ['Superadmin', 'farm_manager', 'finance_manager'],
                             parentId: "financeReports"
                         },
                         {
                             id: 4,
                             label: t('menu.incomeStatement'),
                             link: "/reports/finance/operations-closing",
-                            roles: ['Superadmin', 'farm_manager'],
+                            roles: ['Superadmin', 'farm_manager', 'finance_manager'],
                             parentId: "financeReports"
                         },
                         {
                             id: 5,
                             label: t('menu.cashFlow'),
                             link: "/reports/finance/cash-flow",
-                            roles: ['Superadmin', 'farm_manager'],
+                            roles: ['Superadmin', 'farm_manager', 'finance_manager'],
                             parentId: "financeReports"
                         },
                         {
                             id: 6,
                             label: t('menu.supplierStatement'),
                             link: "/reports/finance/supplier-statement",
-                            roles: ['Superadmin', 'farm_manager'],
+                            roles: ['Superadmin', 'farm_manager', 'finance_manager'],
                             parentId: "financeReports"
                         },
                         {
                             id: 7,
                             label: t('menu.operativeExpenses'),
                             link: "/reports/finance/expenses",
-                            roles: ['Superadmin', 'farm_manager'],
+                            roles: ['Superadmin', 'farm_manager', 'finance_manager'],
                             parentId: "financeReports"
                         },
                     ]
@@ -971,7 +971,7 @@ const Navdata = () => {
                     id: "salesReports",
                     label: t('menu.salesReports'),
                     link: "/#",
-                    roles: ['Superadmin', 'farm_manager'],
+                    roles: ['Superadmin', 'farm_manager', 'finance_manager'],
                     parentId: "reports",
                     isChildItem: true,
                     click: function (e: any) {
@@ -984,14 +984,14 @@ const Navdata = () => {
                             id: 1,
                             label: t('menu.salesReport'),
                             link: "/reports/sales/overview",
-                            roles: ['Superadmin', 'farm_manager'],
+                            roles: ['Superadmin', 'farm_manager', 'finance_manager'],
                             parentId: "salesReports"
                         },
                         {
                             id: 2,
                             label: t('menu.clientAnalysis'),
                             link: "/reports/sales/clients",
-                            roles: ['Superadmin', 'farm_manager'],
+                            roles: ['Superadmin', 'farm_manager', 'finance_manager'],
                             parentId: "salesReports"
                         },
                     ]

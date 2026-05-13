@@ -1,6 +1,7 @@
 export const userRoles = [
     { value: "Superadmin", label: "Superadmin" },
     { value: "farm_manager", label: "Gerente de granja" },
+    { value: "finance_manager", label: "Gerente de finanzas" },
     { value: "warehouse_manager", label: "Encargado de almacen" },
     { value: "subwarehouse_manager", label: "Encargado de subalmacen" },
     { value: "general_worker", label: "Trabajador general" },

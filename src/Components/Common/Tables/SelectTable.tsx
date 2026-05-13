@@ -12,18 +12,20 @@ interface SelectTableProps {
   ) => void;
   showStock?: boolean;
   showPagination?: boolean;
+  initialSelected?: Array<{ id: string; quantity: number; price: number }>;
 }
 
 const SelectTable: React.FC<SelectTableProps> = ({
   data,
   onProductSelect,
   showStock = false,
-  showPagination = true
+  showPagination = true,
+  initialSelected,
 }) => {
   const { t } = useTranslation();
   const [selectedProducts, setSelectedProducts] = useState<
     Array<{ id: string; quantity: number; price: number }>
-  >([]);
+  >(initialSelected ?? []);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [filterText, setFilterText] = useState<string>("");
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
