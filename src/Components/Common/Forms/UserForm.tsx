@@ -28,7 +28,7 @@ interface UserFormProps {
     onCancel: () => void;
     isUsernameDisable?: boolean;
     defaultRole?: string;
-    currentUserRole: string;
+    currentUserRole: string | string[];
 }
 
 const UserForm: React.FC<UserFormProps> = ({
@@ -51,11 +51,14 @@ const UserForm: React.FC<UserFormProps> = ({
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
     };
 
+    const hasRole = (r: string) =>
+        Array.isArray(currentUserRole) ? currentUserRole.includes(r) : currentUserRole === r;
+
     const filteredRoles = defaultRole
         ? userRoles.filter((r) => r.value === defaultRole)
         : userRoles.filter((role) => {
-            if (currentUserRole === "Superadmin") return true;
-            if (currentUserRole === "farm_manager") {
+            if (hasRole("Superadmin")) return true;
+            if (hasRole("farm_manager")) {
                 return role.value !== "Superadmin" && role.value !== "farm_manager";
             }
             return role.value !== "Superadmin" && role.value !== "farm_manager" && role.value !== "finance_manager";
