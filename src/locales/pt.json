@@ -18,7 +18,9 @@
       "generating": "Gerando...",
       "saving": "Salvando...",
       "accept": "OK",
-      "clearFilters": "Limpar filtros"
+      "clearFilters": "Limpar filtros",
+      "done": "Pronto",
+      "remove": "Remover"
     },
     "shortMonths": [
       "Jan",
@@ -1196,12 +1198,12 @@
       },
       "form": {
         "field": {
-          "recipe": "Dieta *",
-          "recipeSelect": "Selecione uma dieta",
+          "recipeOptional": "Dieta base (opcional)",
+          "recipeNone": "Sem dieta — mistura personalizada",
           "subwarehouse": "Almoxarifado de origem *",
           "subwarehouseSelect": "Selecione um almoxarifado",
-          "mixAmount": "Quantidade de mistura a preparar *",
           "producedAmount": "Quantidade real produzida (kg) *",
+          "producedHint": "O que realmente saiu do misturador (pode ser menor que a mistura por perda).",
           "date": "Data do arraçoamento *",
           "responsible": "Responsável",
           "notes": "Observações",
@@ -1211,9 +1213,20 @@
           "ingredient": "Ingrediente",
           "recipePercent": "% dieta",
           "quantity": "Quantidade",
+          "percentage": "Proporção",
           "avgPrice": "Preço médio",
           "subtotal": "Subtotal"
         },
+        "ingredients": "Ingredientes da mistura",
+        "selectIngredients": "Adicionar ingredientes",
+        "selectIngredientsTitle": "Selecionar ingredientes",
+        "noIngredientsYet": "Ainda não há ingredientes. Adicione alguns para começar.",
+        "batchTotal": "Total da mistura",
+        "total": "Total",
+        "recipeModified": "Você está alterando a dieta original.",
+        "originalPct": "Original: {{val}}%",
+        "sumOk": "As proporções somam 100%",
+        "sumNote": "Soma atual: {{val}}%. Será ajustada automaticamente conforme você altera as quantidades.",
         "ingredientPreview": "Prévia dos ingredientes",
         "estimatedCost": "Custo estimado: R$ {{val}}",
         "costNote": "Custo estimado com base nos preços médios atuais. O custo real é calculado pelo sistema no momento do registro conforme o almoxarifado selecionado.",
@@ -1221,7 +1234,29 @@
         "costPerKgProduced": "Custo / kg produzido",
         "realYield": "Rendimento real",
         "success": "Arraçoamento registrado com sucesso",
-        "error": "Ocorreu um erro ao registrar o arraçoamento"
+        "error": {
+          "generic": "Ocorreu um erro ao registrar o arraçoamento",
+          "noIngredients": "Adicione ao menos um ingrediente com quantidade maior que 0.",
+          "yieldExceedsBatch": "A quantidade produzida não pode ser maior que a mistura total.",
+          "recipeFieldsRequired": "Para salvar como nova dieta, informe código e nome."
+        },
+        "saveOptions": {
+          "title": "Como deseja salvar este arraçoamento?",
+          "intro": "O arraçoamento será registrado de qualquer forma. Opcionalmente, você pode salvar essa mistura como dieta para reutilizar.",
+          "confirm": "Confirmar e registrar",
+          "none": {
+            "title": "Apenas registrar o arraçoamento",
+            "desc": "Nenhuma dieta é criada nem alterada."
+          },
+          "new": {
+            "title": "Salvar como nova dieta",
+            "desc": "Cria uma nova dieta com essas proporções para reutilizar em arraçoamentos futuros."
+          },
+          "update": {
+            "title": "Atualizar a dieta original",
+            "desc": "Substitui as proporções de \"{{name}}\" pelas deste arraçoamento. Arraçoamentos anteriores não são afetados."
+          }
+        }
       },
       "detail": {
         "code": "Código",

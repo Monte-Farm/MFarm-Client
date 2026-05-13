@@ -18,7 +18,9 @@
       "generating": "Generando...",
       "saving": "Guardando...",
       "accept": "Aceptar",
-      "clearFilters": "Limpiar filtros"
+      "clearFilters": "Limpiar filtros",
+      "done": "Listo",
+      "remove": "Quitar"
     },
     "shortMonths": [
       "Ene",
@@ -1196,12 +1198,12 @@
       },
       "form": {
         "field": {
-          "recipe": "Receta *",
-          "recipeSelect": "Seleccione una receta",
+          "recipeOptional": "Receta base (opcional)",
+          "recipeNone": "Sin receta — mezcla personalizada",
           "subwarehouse": "Subalmacén origen *",
           "subwarehouseSelect": "Seleccione un subalmacén",
-          "mixAmount": "Cantidad de mezcla a preparar *",
           "producedAmount": "Cantidad real producida (kg) *",
+          "producedHint": "Lo que realmente salió del mezclador (puede ser menor a la mezcla por merma).",
           "date": "Fecha de preparación *",
           "responsible": "Responsable",
           "notes": "Notas",
@@ -1211,9 +1213,20 @@
           "ingredient": "Ingrediente",
           "recipePercent": "% receta",
           "quantity": "Cantidad",
+          "percentage": "Proporción",
           "avgPrice": "Precio prom.",
           "subtotal": "Subtotal"
         },
+        "ingredients": "Ingredientes de la mezcla",
+        "selectIngredients": "Agregar ingredientes",
+        "selectIngredientsTitle": "Seleccionar ingredientes",
+        "noIngredientsYet": "Aún no hay ingredientes. Agréguelos para comenzar.",
+        "batchTotal": "Total de la mezcla",
+        "total": "Total",
+        "recipeModified": "Estás modificando la receta original.",
+        "originalPct": "Original: {{val}}%",
+        "sumOk": "Las proporciones suman 100%",
+        "sumNote": "Suma actual: {{val}}%. Se ajustará automáticamente conforme cambies las cantidades.",
         "ingredientPreview": "Preview de ingredientes",
         "estimatedCost": "Costo estimado: ${{val}}",
         "costNote": "Costo estimado con precios promedio actuales. El costo real lo calcula el sistema al momento del registro según el subalmacén seleccionado.",
@@ -1221,7 +1234,29 @@
         "costPerKgProduced": "Costo / kg producido",
         "realYield": "Rendimiento real",
         "success": "Preparación registrada con éxito",
-        "error": "Ha ocurrido un error al registrar la preparación"
+        "error": {
+          "generic": "Ha ocurrido un error al registrar la preparación",
+          "noIngredients": "Debes agregar al menos un ingrediente con cantidad mayor a 0.",
+          "yieldExceedsBatch": "La cantidad producida no puede ser mayor a la mezcla total.",
+          "recipeFieldsRequired": "Para guardar como receta nueva, ingresa código y nombre."
+        },
+        "saveOptions": {
+          "title": "¿Cómo quieres guardar esta preparación?",
+          "intro": "La preparación se va a registrar de todas formas. Opcionalmente, puedes guardar esta mezcla como receta para reutilizarla.",
+          "confirm": "Confirmar y registrar",
+          "none": {
+            "title": "Solo registrar la preparación",
+            "desc": "No se crea ni modifica ninguna receta."
+          },
+          "new": {
+            "title": "Guardar como nueva receta",
+            "desc": "Se crea una receta nueva con estas proporciones para reutilizarla en futuras preparaciones."
+          },
+          "update": {
+            "title": "Actualizar la receta original",
+            "desc": "Reemplaza las proporciones de \"{{name}}\" con las de esta preparación. Las preparaciones anteriores no se ven afectadas."
+          }
+        }
       },
       "detail": {
         "code": "Código",

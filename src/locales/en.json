@@ -18,7 +18,9 @@
       "generating": "Generating...",
       "saving": "Saving...",
       "accept": "Accept",
-      "clearFilters": "Clear filters"
+      "clearFilters": "Clear filters",
+      "done": "Done",
+      "remove": "Remove"
     },
     "shortMonths": [
       "Jan",
@@ -1196,12 +1198,12 @@
       },
       "form": {
         "field": {
-          "recipe": "Formula *",
-          "recipeSelect": "Select a formula",
+          "recipeOptional": "Base formula (optional)",
+          "recipeNone": "No formula — custom mix",
           "subwarehouse": "Source store *",
           "subwarehouseSelect": "Select a store",
-          "mixAmount": "Mix quantity to prepare *",
           "producedAmount": "Actual quantity produced (kg) *",
+          "producedHint": "What actually came out of the mixer (may be less than the mix due to shrinkage).",
           "date": "Preparation date *",
           "responsible": "Prepared by",
           "notes": "Notes",
@@ -1211,17 +1213,50 @@
           "ingredient": "Ingredient",
           "recipePercent": "Recipe %",
           "quantity": "Quantity",
+          "percentage": "Share",
           "avgPrice": "Avg. price",
           "subtotal": "Subtotal"
         },
+        "ingredients": "Mix ingredients",
+        "selectIngredients": "Add ingredients",
+        "selectIngredientsTitle": "Select ingredients",
+        "noIngredientsYet": "No ingredients yet. Add some to get started.",
+        "batchTotal": "Mix total",
+        "total": "Total",
+        "recipeModified": "You are modifying the original formula.",
+        "originalPct": "Original: {{val}}%",
+        "sumOk": "Shares add up to 100%",
+        "sumNote": "Current sum: {{val}}%. It will adjust automatically as you change quantities.",
         "ingredientPreview": "Ingredient preview",
         "estimatedCost": "Estimated cost: ${{val}}",
         "costNote": "Estimated cost based on current average prices. Actual cost is calculated by the system at the time of registration based on the selected store.",
-        "waste": "Waste",
+        "waste": "Shrinkage",
         "costPerKgProduced": "Cost / kg produced",
         "realYield": "Actual yield",
         "success": "Feed batch recorded successfully",
-        "error": "An error occurred while recording the batch"
+        "error": {
+          "generic": "An error occurred while recording the batch",
+          "noIngredients": "Add at least one ingredient with a quantity greater than 0.",
+          "yieldExceedsBatch": "Produced quantity cannot exceed the total mix.",
+          "recipeFieldsRequired": "To save as a new formula, enter a code and name."
+        },
+        "saveOptions": {
+          "title": "How do you want to save this batch?",
+          "intro": "The batch will be recorded either way. Optionally, you can save this mix as a formula to reuse it later.",
+          "confirm": "Confirm and record",
+          "none": {
+            "title": "Just record the batch",
+            "desc": "No formula is created or modified."
+          },
+          "new": {
+            "title": "Save as a new formula",
+            "desc": "Creates a new formula with these shares so you can reuse it in future batches."
+          },
+          "update": {
+            "title": "Update the original formula",
+            "desc": "Replaces the shares in \"{{name}}\" with the ones from this batch. Past batches are not affected."
+          }
+        }
       },
       "detail": {
         "code": "Code",
