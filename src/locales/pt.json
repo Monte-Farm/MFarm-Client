@@ -1200,6 +1200,8 @@
         "field": {
           "recipeOptional": "Dieta base (opcional)",
           "recipeNone": "Sem dieta — mistura personalizada",
+          "targetBatch": "Quantidade a preparar (kg)",
+          "targetBatchHint": "Informe o total em kg e as quantidades de cada ingrediente serão calculadas automaticamente.",
           "subwarehouse": "Almoxarifado de origem *",
           "subwarehouseSelect": "Selecione um almoxarifado",
           "producedAmount": "Quantidade real produzida (kg) *",

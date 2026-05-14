@@ -1200,6 +1200,8 @@
         "field": {
           "recipeOptional": "Receta base (opcional)",
           "recipeNone": "Sin receta — mezcla personalizada",
+          "targetBatch": "Cantidad a preparar (kg)",
+          "targetBatchHint": "Ingresa los kg totales y se calcularán las cantidades de cada ingrediente.",
           "subwarehouse": "Subalmacén origen *",
           "subwarehouseSelect": "Seleccione un subalmacén",
           "producedAmount": "Cantidad real producida (kg) *",

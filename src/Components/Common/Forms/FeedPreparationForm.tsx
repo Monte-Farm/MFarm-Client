@@ -68,6 +68,8 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
     const [modals, setModals] = useState({ success: false, error: false, missingStock: false, saveOptions: false });
     const [missingItems, setMissingItems] = useState<Array<{ product: string; required: number; available: number }>>([]);
 
+    const [targetBatchInput, setTargetBatchInput] = useState<string>('');
+
     const [recipeSaveMode, setRecipeSaveMode] = useState<RecipeSaveMode>('none');
     const [newRecipeCode, setNewRecipeCode] = useState<string>('');
     const [newRecipeName, setNewRecipeName] = useState<string>('');
@@ -131,6 +133,20 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
             );
             return recomputePercentages(updated);
         });
+    };
+
+    const handleTargetBatchChange = (rawInput: string) => {
+        if (rawInput !== '' && !/^\d*\.?\d*$/.test(rawInput)) return;
+        setTargetBatchInput(rawInput);
+        const targetKg = rawInput === '' || rawInput === '.' ? 0 : Number(rawInput);
+        if (targetKg <= 0 || Object.keys(originalRecipePercentages).length === 0) return;
+        setIngredients(prev =>
+            prev.map(r => {
+                const pct = originalRecipePercentages[r.productId] ?? r.percentage;
+                const qty = roundN((targetKg * pct) / 100, 4);
+                return { ...r, quantity: qty, quantityInput: qty > 0 ? String(qty) : '', percentage: pct, percentageInput: pct > 0 ? String(pct) : '' };
+            })
+        );
     };
 
     // Editar % de una fila → mantener kg de las demás, ajustar kg de esta fila
@@ -335,6 +351,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
 
     const handleRecipeChange = async (recipeId: string) => {
         formik.setFieldValue('recipeId', recipeId);
+        setTargetBatchInput('');
 
         if (!recipeId) {
             setSelectedRecipe(null);
@@ -414,6 +431,11 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    useEffect(() => {
+        if (batchSize > 0) formik.setFieldValue('actualYield', roundN(batchSize, 2));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [batchSize]);
+
     const shrinkage = Math.max(0, batchSize - formik.values.actualYield);
     const shrinkagePercentage = batchSize > 0 ? (shrinkage / batchSize) * 100 : 0;
     const costPerKgEstimated = formik.values.actualYield > 0 ? totalCostEstimated / formik.values.actualYield : 0;
@@ -481,6 +503,22 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
                         <small className="text-warning d-block mt-1">
                             <i className="ri-edit-line me-1" />{t('feeding.preparation.form.recipeModified')}
                         </small>
+                    )}
+                    {selectedRecipe && (
+                        <div className="mt-2">
+                            <Label className="form-label">{t('feeding.preparation.form.field.targetBatch')}</Label>
+                            <div className="input-group">
+                                <Input
+                                    type="text"
+                                    inputMode="decimal"
+                                    value={targetBatchInput}
+                                    onChange={e => handleTargetBatchChange(e.target.value)}
+                                    placeholder="0.00"
+                                />
+                                <span className="input-group-text">kg</span>
+                            </div>
+                            <small className="text-muted">{t('feeding.preparation.form.field.targetBatchHint')}</small>
+                        </div>
                     )}
                 </div>
                 <div className="w-50">

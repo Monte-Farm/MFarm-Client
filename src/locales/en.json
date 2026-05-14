@@ -1200,6 +1200,8 @@
         "field": {
           "recipeOptional": "Base formula (optional)",
           "recipeNone": "No formula — custom mix",
+          "targetBatch": "Batch size (kg)",
+          "targetBatchHint": "Enter the total kg and each ingredient's amount will be calculated automatically.",
           "subwarehouse": "Source store *",
           "subwarehouseSelect": "Select a store",
           "producedAmount": "Actual quantity produced (kg) *",
