@@ -2464,8 +2464,9 @@
       "columnGeneticLiquid": "Liquid genetics",
       "columnDiluentVolume": "Diluent vol.",
       "columnTotalVolume": "Total vol.",
-      "columnBoar": "Boar",
+      "columnBoar": "Boar / Supplier",
       "columnExtractionDetails": "Extraction details",
+      "lot": "Lot",
       "doseOrder": "Order {{number}}",
       "doseDateTime": "Date & time applied",
       "doseNotes": "Notes",
@@ -4060,14 +4061,19 @@
         "parent": "Liquid Genetics"
       },
       "column": {
-        "batch": "Batch",
-        "boar": "Boar",
+        "batch": "Lot",
+        "boar": "Boar / Supplier",
         "totalDoses": "Total Doses",
         "availableDoses": "Available Doses",
         "expirationDate": "Expiration Date",
         "conservationMethod": "Conservation Method",
         "technician": "Technician",
-        "lotStatus": "Lot Status"
+        "lotStatus": "Lot Status",
+        "origin": "Origin"
+      },
+      "origin": {
+        "internal": "Internal",
+        "external": "External"
       },
       "lotStatus": {
         "available": "Available",
@@ -4177,7 +4183,13 @@
           "lotInfo": "Lot Information",
           "discardInfo": "Discard Information",
           "extractionInfo": "Extraction Information",
+          "supplierInfo": "Supplier Information",
           "dosesInfo": "Dose Information"
+        },
+        "supplierAttr": {
+          "name": "Supplier",
+          "lot": "Supplier lot",
+          "purchaseDate": "Purchase date"
         },
         "responsible": "Responsible:",
         "action": {
@@ -4205,6 +4217,7 @@
       "form": {
         "step": {
           "selectExtraction": "Extraction Selection",
+          "selectOrigin": "Sample Origin",
           "sampleInfo": "Sample Information",
           "dosesInfo": "Dose Information",
           "summary": "Summary"
@@ -4212,7 +4225,8 @@
         "section": {
           "doseConfig": "Dose Configuration",
           "semenAnalysis": "Semen Analysis",
-          "dilution": "Dilution and Preservation"
+          "dilution": "Dilution and Preservation",
+          "supplier": "Supplier Details"
         },
         "field": {
           "expirationDate": "Expiration date",
@@ -4229,7 +4243,17 @@
           "diluentLot": "Diluent lot",
           "diluentVolume": "Diluent volume",
           "conservationMethod": "Conservation method",
-          "postDilutionMotility": "Post-dilution motility (%)"
+          "postDilutionMotility": "Post-dilution motility (%)",
+          "originLabel": "Sample origin",
+          "originInternal": "Internal (own extraction)",
+          "originExternal": "External (purchased from supplier)",
+          "supplierName": "Supplier name",
+          "supplierLot": "Supplier lot",
+          "purchaseDate": "Purchase date",
+          "semenVolume": "Semen volume",
+          "unit": "Unit of measure",
+          "sampleLotCode": "Sample lot code",
+          "sampleLotCodeHint": "(unique per registration)"
         },
         "conservationOptions": {
           "select": "Select a method",
@@ -4247,6 +4271,10 @@
           "generatedDoses": "Generated Doses",
           "noExtraction": "Not selected",
           "noDoses": "No doses have been generated",
+          "supplierData": "Supplier Data",
+          "supplierName": "Supplier:",
+          "supplierLot": "Supplier lot:",
+          "purchaseDate": "Purchase date:",
           "batch": "Batch:",
           "date": "Date:",
           "boar": "Boar:",
@@ -4270,6 +4298,10 @@
         },
         "validation": {
           "selectExtraction": "Please select an extraction",
+          "supplierName": "Please enter the supplier name",
+          "supplierLot": "Please enter the supplier lot",
+          "purchaseDate": "Please enter the purchase date",
+          "semenVolume": "Please enter the semen volume",
           "minZero": "Number cannot be less than 0",
           "requiredNumber": "Please enter a number",
           "max100": "Number cannot be greater than 100",
@@ -4284,13 +4316,15 @@
         },
         "alert": {
           "selectExtraction": "Please select an extraction",
+          "fillSupplierFields": "Please complete all supplier details and semen volume",
           "requiredFields": "Please complete all required fields before continuing",
           "requiredFieldsDetail": "Please complete the required fields:"
         },
         "action": {
           "back": "Back",
           "next": "Next",
-          "register": "Register"
+          "register": "Register",
+          "changeOrigin": "Change origin"
         },
         "success": "Sample registered successfully",
         "error": "Error registering the sample. Please try again.",

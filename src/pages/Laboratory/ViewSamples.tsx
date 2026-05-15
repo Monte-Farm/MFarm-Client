@@ -60,27 +60,53 @@ const ViewSamples = () => {
 
     const samplesColumns: Column<any>[] = [
         {
+            header: t('laboratory.sample.column.origin'),
+            accessor: 'origin',
+            type: 'text',
+            isFilterable: true,
+            render: (_, row) => {
+                const isExternal = row.origin === 'external';
+                return (
+                    <Badge color={isExternal ? 'info' : 'secondary'}>
+                        {isExternal
+                            ? t('laboratory.sample.origin.external')
+                            : t('laboratory.sample.origin.internal')}
+                    </Badge>
+                );
+            }
+        },
+        {
             header: t('laboratory.sample.column.batch'),
             accessor: 'extraction_id',
             type: 'text',
             isFilterable: true,
-            render: (_, row) => row.extraction_id.batch || t('laboratory.sample.noBatch')
+            render: (_, row) => {
+                if (row.origin === 'external') {
+                    return row.supplier?.lot || t('laboratory.sample.noBatch');
+                }
+                return row.extraction_id?.batch || t('laboratory.sample.noBatch');
+            }
         },
         {
             header: t('laboratory.sample.column.boar'),
             accessor: 'boar',
-            render: (_, row) => (
-                <Button
-                    className="text-underline fs-5"
-                    color="link"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        openPigDetailsModal(row)
-                    }}
-                >
-                    {row.extraction_id?.boar?.code} ↗
-                </Button>
-            )
+            render: (_, row) => {
+                if (row.origin === 'external') {
+                    return <span className="text-muted">{row.supplier?.name || '-'}</span>;
+                }
+                return (
+                    <Button
+                        className="text-underline fs-5"
+                        color="link"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            openPigDetailsModal(row)
+                        }}
+                    >
+                        {row.extraction_id?.boar?.code} ↗
+                    </Button>
+                );
+            }
         },
         {
             header: t('laboratory.sample.column.totalDoses'),
@@ -148,6 +174,7 @@ const ViewSamples = () => {
     };
 
     const openPigDetailsModal = (data: any) => {
+        if (!data.extraction_id?.boar?._id) return;
         setSelectedPig(data.extraction_id?.boar?._id);
         toggleModal('pigDetails')
     }

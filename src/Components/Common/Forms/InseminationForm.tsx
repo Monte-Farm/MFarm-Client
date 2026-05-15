@@ -106,22 +106,41 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
             isFilterable: true,
             render: (_, row) => `${row.total_volume} ${row.unit_measurement}` || 0
         },
-        { header: t('insemination.form.columnBoar', { defaultValue: 'Verraco' }), accessor: 'boar_code', type: 'text', isFilterable: true },
+        {
+            header: t('insemination.form.columnBoar', { defaultValue: 'Verraco' }),
+            accessor: 'boar_code',
+            type: 'text',
+            isFilterable: true,
+            render: (_, row) => {
+                if (row.origin === 'external' || !row.boar_code) {
+                    if (row.supplier) {
+                        return <span>{row.supplier.name} <small className="text-muted">({t('insemination.form.lot', { defaultValue: 'Lote' })}: {row.supplier.lot})</small></span>;
+                    }
+                    return <span className="text-muted">-</span>;
+                }
+                return <span>{row.boar_code}</span>;
+            }
+        },
         {
             header: t('insemination.form.columnExtractionDetails', { defaultValue: 'Detalles de extracción' }),
             accessor: 'action',
-            render: (_, row) => (
-                <Button
-                    className="text-underline"
-                    color="link"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        fetchExtractionDetails(row.extraction_id, row.semen_sample_id);
-                    }}
-                >
-                    {t('common.button.viewDetails', { defaultValue: 'Ver detalles' })} ↗
-                </Button>
-            )
+            render: (_, row) => {
+                if (row.origin === 'external' || !row.extraction_id) {
+                    return <span className="text-muted">-</span>;
+                }
+                return (
+                    <Button
+                        className="text-underline"
+                        color="link"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            fetchExtractionDetails(row.extraction_id, row.semen_sample_id);
+                        }}
+                    >
+                        {t('common.button.viewDetails', { defaultValue: 'Ver detalles' })} ↗
+                    </Button>
+                );
+            }
         }
     ]
 

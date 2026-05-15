@@ -421,7 +421,14 @@ export interface ExtractionData {
 export interface SemenSample {
     _id?: string;
     id?: string;
-    extraction_id: string
+    origin?: 'internal' | 'external';
+    farm?: string;
+    extraction_id: string;
+    supplier?: {
+        name: string;
+        lot: string;
+        purchase_date: Date | null;
+    };
     concentration_million: number;
     motility_percent: number;
     vitality_percent: number;

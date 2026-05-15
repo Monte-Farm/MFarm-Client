@@ -29,6 +29,7 @@ const SampleDetails = () => {
     const [alerConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' });
     const [sampleDetails, setSampleDetails] = useState<any>({});
     const [extractionDetails, setExtractionDetails] = useState<any>({});
+    const [supplierDetails, setSupplierDetails] = useState<any>(null);
     const [technicianDetails, setTecnicianDetails] = useState<any>({});
     const [dosesDetails, setDosesDetails] = useState<any[]>([]);
     const [discardDetails, setDiscardDetails] = useState<{ userId: string, discardResponsible: string, discardDate: string, discardReason: string }>()
@@ -129,6 +130,12 @@ const SampleDetails = () => {
         { key: "notes", label: t('laboratory.sample.detail.extractionAttr.notes'), type: "text" },
     ];
 
+    const SupplierAttributes: Attribute[] = [
+        { key: "name", label: t('laboratory.sample.detail.supplierAttr.name'), type: "text" },
+        { key: "lot", label: t('laboratory.sample.detail.supplierAttr.lot'), type: "text" },
+        { key: "purchase_date", label: t('laboratory.sample.detail.supplierAttr.purchaseDate'), type: "date" },
+    ];
+
     const dosesColumns: Column<any>[] = [
         { header: t('laboratory.sample.detail.doseColumn.code'), accessor: 'code', type: 'text', isFilterable: true },
         {
@@ -214,30 +221,36 @@ const SampleDetails = () => {
             const axiosResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/semen_sample/find_by_id/${sample_id}`);
             const sampleData = axiosResponse.data.data;
             setSampleDetails(sampleData);
-            setDosesDetails(sampleData.doses)
+            setDosesDetails(sampleData.doses);
 
-            const [extractionResponse, technicianResponse] = await Promise.all([
-                configContext.axiosHelper.get(`${configContext.apiUrl}/extraction/find_by_id/${sampleData.extraction_id}`),
+            const isExternal = sampleData.origin === 'external';
+
+            const promises: Promise<any>[] = [
                 configContext.axiosHelper.get(`${configContext.apiUrl}/user/find_by_mongo_id/${sampleData.technician}`),
-            ]);
+            ];
+            if (!isExternal && sampleData.extraction_id) {
+                promises.push(configContext.axiosHelper.get(`${configContext.apiUrl}/extraction/find_by_id/${sampleData.extraction_id}`));
+            }
+
+            const results = await Promise.all(promises);
+            setTecnicianDetails(results[0].data.data);
+
+            if (!isExternal && results[1]) {
+                setExtractionDetails(results[1].data.data);
+            } else if (isExternal && sampleData.supplier) {
+                setSupplierDetails(sampleData.supplier);
+            }
 
             if (sampleData.lot_status === 'discarded') {
-                const discardResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/user/find_by_mongo_id/${sampleData.discarded_by}`)
-
-                const discardData = discardResponse.data.data
-
-                const discardInfo = {
+                const discardResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/user/find_by_mongo_id/${sampleData.discarded_by}`);
+                const discardData = discardResponse.data.data;
+                setDiscardDetails({
                     userId: discardData._id,
                     discardResponsible: discardData.name + " " + discardData.lastname,
                     discardDate: sampleData.discard_date,
                     discardReason: sampleData.discard_reason
-                }
-
-                setDiscardDetails(discardInfo)
+                });
             }
-
-            setExtractionDetails(extractionResponse.data.data);
-            setTecnicianDetails(technicianResponse.data.data);
         } catch (error) {
             logger.error('Error fetching data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('laboratory.sample.detail.error.fetchData') })
@@ -326,13 +339,24 @@ const SampleDetails = () => {
                             </Card>
                         )}
 
-                        {extractionDetails && (
+                        {sampleDetails.origin !== 'external' && extractionDetails && Object.keys(extractionDetails).length > 0 && (
                             <Card className={`shadow-md m-0 ${sampleDetails.lot_status === "discarded" ? "" : "h-100"}`}>
                                 <CardHeader className="d-flex justify-content-between align-items-center" style={{ backgroundColor: 'lightsteelblue' }}>
                                     <h5>{t('laboratory.sample.detail.card.extractionInfo')}</h5>
                                 </CardHeader>
                                 <CardBody>
                                     <ObjectDetails attributes={ExtractionAttributes} object={extractionDetails} />
+                                </CardBody>
+                            </Card>
+                        )}
+
+                        {sampleDetails.origin === 'external' && supplierDetails && (
+                            <Card className={`shadow-md m-0 ${sampleDetails.lot_status === "discarded" ? "" : "h-100"}`}>
+                                <CardHeader className="d-flex justify-content-between align-items-center" style={{ backgroundColor: 'lightsteelblue' }}>
+                                    <h5>{t('laboratory.sample.detail.card.supplierInfo')}</h5>
+                                </CardHeader>
+                                <CardBody>
+                                    <ObjectDetails attributes={SupplierAttributes} object={supplierDetails} />
                                 </CardBody>
                             </Card>
                         )}

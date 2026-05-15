@@ -3,7 +3,7 @@ import { ConfigContext } from "App";
 import { ExtractionData, SemenSample } from "common/data_interfaces";
 import { useFormik } from "formik";
 import { getEffectiveUser } from "helpers/impersonation_helper";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { Alert, Button, FormFeedback, Input, Label, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, Table, TabPane } from "reactstrap";
 import * as Yup from 'yup';
 import classnames from "classnames";
@@ -29,7 +29,6 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [loading, setLoading] = useState<boolean>(false)
     const [successModalOpen, setSuccessModalOpen] = useState<boolean>(false)
     const [extractions, setExtractions] = useState<any[]>([])
     const [activeStep, setActiveStep] = useState<number>(preselectedExtraction ? 2 : 1);
@@ -39,6 +38,11 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
     const [selectedExtraction, setSelectedExtraction] = useState<ExtractionData | null>(null)
     const [idSelectedPig, setIdSelectedPig] = useState<string>("");
     const [modalOpen, setModalOpen] = useState(false);
+    type SampleOrigin = 'internal' | 'external' | null;
+    const [origin, setOrigin] = useState<SampleOrigin>(null);
+    const [externalSemenVolume, setExternalSemenVolume] = useState<number>(0);
+    const [externalUnit, setExternalUnit] = useState<string>('ml');
+    const [externalLotCode, setExternalLotCode] = useState<string>('');
 
     const extractionsColumns: Column<any>[] = [
         { header: t('laboratory.sample.form.column.batch', { defaultValue: 'Lote' }), accessor: 'batch', type: 'text', isFilterable: true },
@@ -79,11 +83,9 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
 
     const toggleModal = () => setModalOpen(!modalOpen);
 
-
     function toggleArrowTab(tab: any) {
         if (activeStep !== tab) {
             var modifiedSteps = [...passedarrowSteps, tab];
-
             if (tab >= 1 && tab <= 4) {
                 setActiveStep(tab);
                 setPassedarrowSteps(modifiedSteps);
@@ -104,8 +106,17 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
         }, 5000);
     }
 
-    const validationSchema = Yup.object({
-        extraction_id: Yup.string().required(t('laboratory.sample.form.validation.selectExtraction', { defaultValue: 'Por favor seleccione una extracción' })),
+    const validationSchema = useMemo(() => Yup.object({
+        extraction_id: origin === 'internal'
+            ? Yup.string().required(t('laboratory.sample.form.validation.selectExtraction', { defaultValue: 'Por favor seleccione una extracción' }))
+            : Yup.string().notRequired(),
+        supplier: origin === 'external'
+            ? Yup.object({
+                name: Yup.string().required(t('laboratory.sample.form.validation.supplierName', { defaultValue: 'Por favor, ingrese el nombre del proveedor' })),
+                lot: Yup.string().required(t('laboratory.sample.form.validation.supplierLot', { defaultValue: 'Por favor, ingrese el lote del proveedor' })),
+                purchase_date: Yup.date().nullable().required(t('laboratory.sample.form.validation.purchaseDate', { defaultValue: 'Por favor, ingrese la fecha de compra' })),
+            })
+            : Yup.object().notRequired(),
         concentration_million: Yup.number()
             .min(0, t('laboratory.sample.form.validation.minZero', { defaultValue: 'El número no puede ser menor a 0' }))
             .required(t('laboratory.sample.form.validation.requiredNumber', { defaultValue: 'Por favor, ingrese un número' })),
@@ -142,11 +153,14 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
         alert_hours_before_expiration: Yup.number()
             .min(0, t('laboratory.sample.form.validation.minZero', { defaultValue: 'El número no puede ser menor a 0' }))
             .required(t('laboratory.sample.form.validation.alertHours', { defaultValue: 'Por favor, ingrese un numero' })),
-    });
+    }), [origin, t]);
 
     const formik = useFormik<SemenSample>({
         initialValues: initialData || {
+            origin: 'internal',
+            farm: userLogged.farm_assigned || '',
             extraction_id: preselectedExtraction?._id || '',
+            supplier: { name: '', lot: '', purchase_date: null },
             concentration_million: 0,
             motility_percent: 0,
             vitality_percent: 0,
@@ -176,15 +190,43 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
         onSubmit: async (values, { setSubmitting }) => {
             if (!configContext) return;
             try {
-                const selectedExtraction = extractions.find(e => e._id === formik.values.extraction_id);
-                const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/semen_sample/create`, values);
+                const payload: any = {
+                    origin,
+                    farm: userLogged.farm_assigned,
+                    technician: values.technician,
+                    concentration_million: values.concentration_million,
+                    motility_percent: values.motility_percent,
+                    vitality_percent: values.vitality_percent,
+                    abnormal_percent: values.abnormal_percent,
+                    pH: values.pH,
+                    temperature: values.temperature,
+                    diluent: values.diluent,
+                    conservation_method: values.conservation_method,
+                    expiration_date: values.expiration_date,
+                    post_dilution_motility: values.post_dilution_motility,
+                    doses: values.doses,
+                    total_doses: values.total_doses,
+                    available_doses: values.available_doses,
+                    lot_status: values.lot_status,
+                    alert_hours_before_expiration: values.alert_hours_before_expiration,
+                };
+
+                if (origin === 'internal') {
+                    payload.extraction_id = values.extraction_id;
+                } else {
+                    payload.supplier = values.supplier;
+                }
+
+                const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/semen_sample/create`, payload);
                 if (response.status === HttpStatusCode.Created) {
+                    const eventMessage = origin === 'external'
+                        ? `Muestras de semen externas del proveedor ${values.supplier?.name} registradas`
+                        : `Muestras de semen del lote ${extractions.find(e => e._id === values.extraction_id)?.batch} registradas`;
                     await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
-                        event: `Muestras de semen del lote ${selectedExtraction.batch} registradas`
+                        event: eventMessage
                     });
                     setSuccessModalOpen(true)
                 }
-
             } catch (err: any) {
                 handleError(err, t('laboratory.sample.form.error', { defaultValue: 'Error al registrar la muestra. Por favor, inténtelo nuevamente.' }));
             } finally {
@@ -193,13 +235,53 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
         }
     })
 
-    const checkExtractionSelected = () => {
-        if (formik.values.extraction_id === "" || !formik.values.extraction_id) {
-            setAlertExtractionEmpty(true);
-            setTimeout(() => {
-                setAlertExtractionEmpty(false);
-            }, 4000);
-            return false;
+    const selectOrigin = (newOrigin: SampleOrigin) => {
+        setOrigin(newOrigin);
+        formik.setFieldValue('origin', newOrigin ?? '');
+        if (newOrigin === 'external') {
+            formik.setFieldValue('extraction_id', '');
+            formik.setFieldValue('doses', []);
+            formik.setFieldValue('diluent.unit_measurement', externalUnit);
+            setSelectedExtraction(null);
+        } else if (newOrigin === 'internal') {
+            formik.setFieldValue('supplier', { name: '', lot: '', purchase_date: null });
+            setExternalSemenVolume(0);
+            fetchExtractions();
+        } else {
+            // reset to pick again
+            formik.setFieldValue('extraction_id', '');
+            formik.setFieldValue('supplier', { name: '', lot: '', purchase_date: null });
+            formik.setFieldValue('doses', []);
+            setSelectedExtraction(null);
+            setExternalSemenVolume(0);
+            setExternalLotCode('');
+        }
+    };
+
+    const handleExternalUnitChange = (unit: string) => {
+        setExternalUnit(unit);
+        formik.setFieldValue('diluent.unit_measurement', unit);
+    };
+
+    const generateLotCode = (supplierLot: string) => {
+        const uid = Date.now().toString(36).toUpperCase();
+        return supplierLot ? `${supplierLot}-${uid}` : uid;
+    };
+
+    const checkStep1 = () => {
+        if (!origin) return false;
+        if (origin === 'internal') {
+            if (!formik.values.extraction_id) {
+                setAlertExtractionEmpty(true);
+                setTimeout(() => setAlertExtractionEmpty(false), 4000);
+                return false;
+            }
+        } else {
+            const s = formik.values.supplier;
+            if (!s?.name || !s?.lot || !s?.purchase_date || externalSemenVolume <= 0) {
+                showAlert('danger', t('laboratory.sample.form.alert.fillSupplierFields', { defaultValue: 'Por favor complete todos los datos del proveedor y el volumen de semen' }));
+                return false;
+            }
         }
         toggleArrowTab(2);
         return true;
@@ -252,68 +334,106 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
     }
 
     useEffect(() => {
-        fetchExtractions();
+        if (preselectedExtraction) {
+            fetchExtractions();
+        }
     }, [])
 
+    // Dose calculation effect
     useEffect(() => {
-        const selected = extractions.find(e => e._id === formik.values.extraction_id);
-        setSelectedExtraction(selected || null);
+        if (origin === 'internal') {
+            const selected = extractions.find(e => e._id === formik.values.extraction_id);
+            setSelectedExtraction(selected || null);
 
-        if (!selected) {
-            formik.setFieldValue('doses', []);
-            return;
-        }
+            if (!selected) {
+                formik.setFieldValue('doses', []);
+                return;
+            }
 
-        formik.setFieldValue('diluent.unit_measurement', selected.unit_measurement);
+            formik.setFieldValue('diluent.unit_measurement', selected.unit_measurement);
 
-        const semenTotal = selected.volume;
-        const diluentTotal = Number(formik.values.diluent.volume || 0);
-        const totalVolume = semenTotal + diluentTotal;
+            const semenTotal = selected.volume;
+            const diluentTotal = Number(formik.values.diluent.volume || 0);
+            const totalVolume = semenTotal + diluentTotal;
 
-        if (doseSize <= 0) {
-            formik.setFieldValue('doses', []);
-            return;
-        }
+            if (doseSize <= 0) {
+                formik.setFieldValue('doses', []);
+                return;
+            }
 
-        const dosesCount = Math.floor(totalVolume / doseSize);
-        const remainder = totalVolume % doseSize;
+            const dosesCount = Math.floor(totalVolume / doseSize);
+            const remainder = totalVolume % doseSize;
+            const semenRatio = semenTotal / totalVolume;
+            const diluentRatio = diluentTotal / totalVolume;
+            const unit = selected.unit_measurement;
+            const batchCode = selected.batch;
 
-        const semenRatio = semenTotal / totalVolume;
-        const diluentRatio = diluentTotal / totalVolume;
-
-        const unit = selected.unit_measurement;
-        const batchCode = selected.batch;
-
-        const dosesArray = Array.from({ length: dosesCount }, (_, i) => {
-            const semen_volume = Number((doseSize * semenRatio).toFixed(2));
-            const diluent_volume = Number((doseSize * diluentRatio).toFixed(2));
-            return {
+            const dosesArray = Array.from({ length: dosesCount }, (_, i) => ({
                 code: `${batchCode}-${(i + 1).toString().padStart(4, '0')}`,
-                semen_volume,
-                diluent_volume,
+                semen_volume: Number((doseSize * semenRatio).toFixed(2)),
+                diluent_volume: Number((doseSize * diluentRatio).toFixed(2)),
                 total_volume: doseSize,
                 unit_measurement: unit,
                 status: 'available' as const,
-            };
-        });
+            }));
 
-        if (remainder > 0) {
-            const semen_volume = Number((remainder * semenRatio).toFixed(2));
-            const diluent_volume = Number((remainder * diluentRatio).toFixed(2));
-            dosesArray.push({
-                code: `${batchCode}-${(dosesArray.length + 1).toString().padStart(4, '0')}`,
-                semen_volume,
-                diluent_volume,
-                total_volume: remainder,
+            if (remainder > 0) {
+                dosesArray.push({
+                    code: `${batchCode}-${(dosesArray.length + 1).toString().padStart(4, '0')}`,
+                    semen_volume: Number((remainder * semenRatio).toFixed(2)),
+                    diluent_volume: Number((remainder * diluentRatio).toFixed(2)),
+                    total_volume: remainder,
+                    unit_measurement: unit,
+                    status: 'available' as const,
+                });
+            }
+
+            formik.setFieldValue('doses', dosesArray);
+            formik.setFieldValue('total_doses', dosesArray.length);
+            formik.setFieldValue('available_doses', dosesArray.length);
+        } else {
+            // External origin: use externalSemenVolume
+            const semenTotal = externalSemenVolume;
+            const diluentTotal = Number(formik.values.diluent.volume || 0);
+            const totalVolume = semenTotal + diluentTotal;
+            const batchCode = externalLotCode || formik.values.supplier?.lot || 'EXT';
+            const unit = externalUnit;
+
+            if (doseSize <= 0 || semenTotal <= 0) {
+                formik.setFieldValue('doses', []);
+                return;
+            }
+
+            const dosesCount = Math.floor(totalVolume / doseSize);
+            const remainder = totalVolume % doseSize;
+            const semenRatio = totalVolume > 0 ? semenTotal / totalVolume : 0;
+            const diluentRatio = totalVolume > 0 ? diluentTotal / totalVolume : 0;
+
+            const dosesArray = Array.from({ length: dosesCount }, (_, i) => ({
+                code: `${batchCode}-${(i + 1).toString().padStart(4, '0')}`,
+                semen_volume: Number((doseSize * semenRatio).toFixed(2)),
+                diluent_volume: Number((doseSize * diluentRatio).toFixed(2)),
+                total_volume: doseSize,
                 unit_measurement: unit,
                 status: 'available' as const,
-            });
-        }
+            }));
 
-        formik.setFieldValue('doses', dosesArray);
-        formik.setFieldValue('total_doses', dosesArray.length);
-        formik.setFieldValue('available_doses', dosesArray.length);
-    }, [formik.values.extraction_id, formik.values.diluent.volume, extractions, doseSize]);
+            if (remainder > 0) {
+                dosesArray.push({
+                    code: `${batchCode}-${(dosesArray.length + 1).toString().padStart(4, '0')}`,
+                    semen_volume: Number((remainder * semenRatio).toFixed(2)),
+                    diluent_volume: Number((remainder * diluentRatio).toFixed(2)),
+                    total_volume: remainder,
+                    unit_measurement: unit,
+                    status: 'available' as const,
+                });
+            }
+
+            formik.setFieldValue('doses', dosesArray);
+            formik.setFieldValue('total_doses', dosesArray.length);
+            formik.setFieldValue('available_doses', dosesArray.length);
+        }
+    }, [formik.values.extraction_id, formik.values.diluent.volume, formik.values.supplier?.lot, extractions, doseSize, origin, externalSemenVolume, externalUnit, externalLotCode]);
 
     return (
         <>
@@ -329,17 +449,20 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                             <NavItem>
                                 <NavLink
                                     href='#'
-                                    id="step-extractionselect-tab"
+                                    id="step-originsource-tab"
                                     className={classnames({
                                         active: activeStep === 1,
                                         done: activeStep > 1,
                                     })}
                                     onClick={() => toggleArrowTab(1)}
                                     aria-selected={activeStep === 1}
-                                    aria-controls="step-extractionselect-tab"
                                     disabled
                                 >
-                                    {t('laboratory.sample.form.step.selectExtraction', { defaultValue: 'Selección de extracción' })}
+                                    {origin === 'internal'
+                                        ? t('laboratory.sample.form.step.selectExtraction', { defaultValue: 'Selección de extracción' })
+                                        : origin === 'external'
+                                            ? t('laboratory.sample.form.section.supplier', { defaultValue: 'Datos del proveedor' })
+                                            : t('laboratory.sample.form.step.selectOrigin', { defaultValue: 'Origen de la muestra' })}
                                 </NavLink>
                             </NavItem>
                         )}
@@ -348,13 +471,9 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                             <NavLink
                                 href='#'
                                 id="step-sampleinfo-tab"
-                                className={classnames({
-                                    active: activeStep === 2,
-                                    done: activeStep > 2,
-                                })}
+                                className={classnames({ active: activeStep === 2, done: activeStep > 2 })}
                                 onClick={() => toggleArrowTab(2)}
                                 aria-selected={activeStep === 2}
-                                aria-controls="step-sampleinfo-tab"
                                 disabled
                             >
                                 {t('laboratory.sample.form.step.sampleInfo', { defaultValue: 'Información de la muestra' })}
@@ -365,13 +484,9 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                             <NavLink
                                 href='#'
                                 id="step-dosesinfo-tab"
-                                className={classnames({
-                                    active: activeStep === 3,
-                                    done: activeStep > 3,
-                                })}
+                                className={classnames({ active: activeStep === 3, done: activeStep > 3 })}
                                 onClick={() => toggleArrowTab(3)}
                                 aria-selected={activeStep === 3}
-                                aria-controls="step-dosesinfo-tab"
                                 disabled
                             >
                                 {t('laboratory.sample.form.step.dosesInfo', { defaultValue: 'Información de las dosis' })}
@@ -382,13 +497,9 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                             <NavLink
                                 href='#'
                                 id="step-summary-tab"
-                                className={classnames({
-                                    active: activeStep === 4,
-                                    done: activeStep > 4,
-                                })}
+                                className={classnames({ active: activeStep === 4, done: activeStep > 4 })}
                                 onClick={() => toggleArrowTab(4)}
                                 aria-selected={activeStep === 4}
-                                aria-controls="step-summary-tab"
                                 disabled
                             >
                                 {t('laboratory.sample.form.step.summary', { defaultValue: 'Resumen' })}
@@ -397,24 +508,181 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                     </Nav>
                 </div>
 
-
                 <TabContent activeTab={activeStep}>
                     {!preselectedExtraction && (
-                        <TabPane id="step-extractionselect-tab" tabId={1}>
-                            <SelectableTable data={extractions} columns={extractionsColumns} selectionMode="single" showPagination={true} rowsPerPage={15} onSelect={(rows) => formik.setFieldValue('extraction_id', rows[0]?._id)} />
-                            <div className="mt-4 d-flex">
-                                <Button className="ms-auto" onClick={() => checkExtractionSelected()}>
-                                    {t('laboratory.sample.form.action.next', { defaultValue: 'Siguiente' })}
-                                    <i className="ri-arrow-right-line" />
-                                </Button>
-                            </div>
-                            {alertExtractionEmpty && (
-                                <Alert color='danger' className="d-flex align-items-center gap-2 shadow rounded-3 p-3 mt-3">
-                                    <FiXCircle size={22} />
-                                    <span className="flex-grow-1 text-black">{t('laboratory.sample.form.alert.selectExtraction', { defaultValue: 'Por favor, seleccione una extracción' })}</span>
+                        <TabPane id="step-originsource-tab" tabId={1}>
+                            {/* Sin selección: dos tarjetas grandes */}
+                            {!origin ? (
+                                <div className="d-flex flex-column align-items-center gap-4 py-4">
+                                    <h5 className="text-muted">{t('laboratory.sample.form.field.originLabel', { defaultValue: '¿Cuál es el origen de la muestra?' })}</h5>
+                                    <div className="d-flex gap-4 w-75">
+                                        <div
+                                            className="w-50 text-center border rounded shadow-sm"
+                                            style={{ cursor: 'pointer' }}
+                                            onClick={() => selectOrigin('internal')}
+                                        >
+                                            <div className="py-5 px-3">
+                                                <i className="ri-drop-line text-primary" style={{ fontSize: '3rem' }}></i>
+                                                <h5 className="mt-3">{t('laboratory.sample.origin.internal', { defaultValue: 'Interna' })}</h5>
+                                                <p className="text-muted mb-0">{t('laboratory.sample.form.field.originInternal', { defaultValue: 'Extracción propia registrada en el sistema' })}</p>
+                                            </div>
+                                        </div>
+                                        <div
+                                            className="w-50 text-center border rounded shadow-sm"
+                                            style={{ cursor: 'pointer' }}
+                                            onClick={() => selectOrigin('external')}
+                                        >
+                                            <div className="py-5 px-3">
+                                                <i className="ri-store-2-line text-success" style={{ fontSize: '3rem' }}></i>
+                                                <h5 className="mt-3">{t('laboratory.sample.origin.external', { defaultValue: 'Externa' })}</h5>
+                                                <p className="text-muted mb-0">{t('laboratory.sample.form.field.originExternal', { defaultValue: 'Comprada a un proveedor externo' })}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : origin === 'internal' ? (
+                                /* Interna: tabla de extracciones */
+                                <div>
+                                    <div className="d-flex justify-content-between align-items-center mb-3">
+                                        <h5 className="text-muted mb-0">{t('laboratory.sample.form.step.selectExtraction', { defaultValue: 'Seleccione una extracción' })}</h5>
+                                        <Button size="sm" onClick={() => selectOrigin(null)}>
+                                            <i className="ri-arrow-go-back-line me-1"></i>
+                                            {t('laboratory.sample.form.action.changeOrigin', { defaultValue: 'Cambiar origen' })}
+                                        </Button>
+                                    </div>
+                                    <SelectableTable data={extractions} columns={extractionsColumns} selectionMode="single" showPagination={true} rowsPerPage={15} onSelect={(rows) => formik.setFieldValue('extraction_id', rows[0]?._id)} />
+                                    {alertExtractionEmpty && (
+                                        <Alert color='danger' className="d-flex align-items-center gap-2 shadow rounded-3 p-3 mt-3">
+                                            <FiXCircle size={22} />
+                                            <span className="flex-grow-1 text-black">{t('laboratory.sample.form.alert.selectExtraction', { defaultValue: 'Por favor, seleccione una extracción' })}</span>
+                                            <Button close onClick={() => setAlertExtractionEmpty(false)} />
+                                        </Alert>
+                                    )}
+                                    <div className="mt-4 d-flex">
+                                        <Button className="ms-auto" onClick={() => checkStep1()}>
+                                            {t('laboratory.sample.form.action.next', { defaultValue: 'Siguiente' })}
+                                            <i className="ri-arrow-right-line ms-2" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            ) : (
+                                /* Externa: campos del proveedor */
+                                <div>
+                                    <div className="d-flex justify-content-between align-items-center mb-3">
+                                        <h5 className="text-muted mb-0">{t('laboratory.sample.form.section.supplier', { defaultValue: 'Datos del proveedor' })}</h5>
+                                        <Button size="sm" onClick={() => selectOrigin(null)}>
+                                            <i className="ri-arrow-go-back-line me-1"></i>
+                                            {t('laboratory.sample.form.action.changeOrigin', { defaultValue: 'Cambiar origen' })}
+                                        </Button>
+                                    </div>
+                                    <div className="card shadow-sm border-0 rounded-3 mb-4">
+                                        <div className="card-body">
+                                            <div className="row g-3">
+                                                <div className="col-md-6">
+                                                    <Label htmlFor="supplier_name" className="form-label">{t('laboratory.sample.form.field.supplierName', { defaultValue: 'Nombre del proveedor' })}</Label>
+                                                    <Input
+                                                        type="text"
+                                                        id="supplier_name"
+                                                        name="supplier.name"
+                                                        value={formik.values.supplier?.name || ''}
+                                                        onChange={formik.handleChange}
+                                                        onBlur={formik.handleBlur}
+                                                        invalid={(formik.touched.supplier as any)?.name && !!(formik.errors.supplier as any)?.name}
+                                                        placeholder="Ej: Genética Ibérica S.A."
+                                                    />
+                                                    {(formik.touched.supplier as any)?.name && (formik.errors.supplier as any)?.name && (
+                                                        <FormFeedback>{(formik.errors.supplier as any).name}</FormFeedback>
+                                                    )}
+                                                </div>
 
-                                    <Button close onClick={() => setAlertExtractionEmpty(false)} />
-                                </Alert>
+                                                <div className="col-md-6">
+                                                    <Label htmlFor="supplier_lot" className="form-label">{t('laboratory.sample.form.field.supplierLot', { defaultValue: 'Lote del proveedor' })}</Label>
+                                                    <Input
+                                                        type="text"
+                                                        id="supplier_lot"
+                                                        name="supplier.lot"
+                                                        value={formik.values.supplier?.lot || ''}
+                                                        onChange={formik.handleChange}
+                                                        onBlur={(e) => {
+                                                            formik.handleBlur(e);
+                                                            if (!externalLotCode) {
+                                                                setExternalLotCode(generateLotCode(e.target.value));
+                                                            }
+                                                        }}
+                                                        invalid={(formik.touched.supplier as any)?.lot && !!(formik.errors.supplier as any)?.lot}
+                                                        placeholder="Ej: EXT-2025-004"
+                                                    />
+                                                    {(formik.touched.supplier as any)?.lot && (formik.errors.supplier as any)?.lot && (
+                                                        <FormFeedback>{(formik.errors.supplier as any).lot}</FormFeedback>
+                                                    )}
+                                                </div>
+
+                                                <div className="col-md-6">
+                                                    <Label htmlFor="external_lot_code" className="form-label">
+                                                        {t('laboratory.sample.form.field.sampleLotCode', { defaultValue: 'Código de lote de muestra' })}
+                                                        <small className="text-muted ms-1">{t('laboratory.sample.form.field.sampleLotCodeHint', { defaultValue: '(único por registro)' })}</small>
+                                                    </Label>
+                                                    <Input
+                                                        type="text"
+                                                        id="external_lot_code"
+                                                        value={externalLotCode}
+                                                        onChange={(e) => setExternalLotCode(e.target.value)}
+                                                        placeholder="Ej: EXT-2025-004-202505151430"
+                                                    />
+                                                </div>
+
+                                                <div className="col-md-4">
+                                                    <Label htmlFor="purchase_date" className="form-label">{t('laboratory.sample.form.field.purchaseDate', { defaultValue: 'Fecha de compra' })}</Label>
+                                                    <DatePicker
+                                                        id="purchase_date"
+                                                        className={`form-control ${(formik.touched.supplier as any)?.purchase_date && (formik.errors.supplier as any)?.purchase_date ? 'is-invalid' : ''}`}
+                                                        value={formik.values.supplier?.purchase_date ?? undefined}
+                                                        onChange={(date: Date[]) => {
+                                                            if (date[0]) formik.setFieldValue('supplier.purchase_date', date[0]);
+                                                        }}
+                                                        options={{ dateFormat: 'd/m/Y' }}
+                                                    />
+                                                    {(formik.touched.supplier as any)?.purchase_date && (formik.errors.supplier as any)?.purchase_date && (
+                                                        <FormFeedback className="d-block">{(formik.errors.supplier as any).purchase_date}</FormFeedback>
+                                                    )}
+                                                </div>
+
+                                                <div className="col-md-4">
+                                                    <Label htmlFor="external_semen_volume" className="form-label">{t('laboratory.sample.form.field.semenVolume', { defaultValue: 'Volumen de semen' })}</Label>
+                                                    <Input
+                                                        type="number"
+                                                        id="external_semen_volume"
+                                                        value={externalSemenVolume}
+                                                        onChange={(e) => setExternalSemenVolume(Number(e.target.value))}
+                                                        onFocus={(e) => e.target.select()}
+                                                        placeholder="Ej: 250"
+                                                        min={0}
+                                                    />
+                                                </div>
+
+                                                <div className="col-md-4">
+                                                    <Label htmlFor="external_unit" className="form-label">{t('laboratory.sample.form.field.unit', { defaultValue: 'Unidad de medida' })}</Label>
+                                                    <Input
+                                                        type="select"
+                                                        id="external_unit"
+                                                        value={externalUnit}
+                                                        onChange={(e) => handleExternalUnitChange(e.target.value)}
+                                                    >
+                                                        <option value="ml">ml</option>
+                                                        <option value="L">L</option>
+                                                        <option value="cc">cc</option>
+                                                    </Input>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="mt-4 d-flex">
+                                        <Button className="ms-auto" onClick={() => checkStep1()}>
+                                            {t('laboratory.sample.form.action.next', { defaultValue: 'Siguiente' })}
+                                            <i className="ri-arrow-right-line ms-2" />
+                                        </Button>
+                                    </div>
+                                </div>
                             )}
                         </TabPane>
                     )}
@@ -651,7 +919,10 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                     </div>
 
                                     <div className="col-md-4">
-                                        <Label htmlFor="diluent_final_volume" className="form-label">{t('laboratory.sample.form.field.diluentVolume', { defaultValue: 'Volumen de diluyente' })} ({selectedExtraction?.unit_measurement})</Label>
+                                        <Label htmlFor="diluent_final_volume" className="form-label">
+                                            {t('laboratory.sample.form.field.diluentVolume', { defaultValue: 'Volumen de diluyente' })}
+                                            {' '}({origin === 'internal' ? selectedExtraction?.unit_measurement : externalUnit})
+                                        </Label>
                                         <Input
                                             type="number"
                                             id="diluent_final_concentration"
@@ -806,40 +1077,68 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                             </div>
                             <div className="card-body p-3">
                                 <div className="row g-3">
-                                    {/* Datos de extracción - Compacto */}
+                                    {/* Datos de origen - Compacto */}
                                     <div className="col-lg-4">
                                         <div className="border rounded-2 p-3 bg-light h-100 d-flex flex-column">
-                                            <h6 className="text-primary fw-bold mb-3">
-                                                <i className="ri-drop-line me-2"></i>{t('laboratory.sample.form.summary.extractionData', { defaultValue: 'Datos Extracción' })}
-                                            </h6>
-                                            {(() => {
-                                                const selectedExtraction = extractions.find(e => e._id === formik.values.extraction_id);
-                                                if (!selectedExtraction) return <p className="text-muted">{t('laboratory.sample.form.summary.noExtraction', { defaultValue: 'No seleccionada' })}</p>;
-                                                return (
+                                            {origin === 'internal' ? (
+                                                <>
+                                                    <h6 className="text-primary fw-bold mb-3">
+                                                        <i className="ri-drop-line me-2"></i>{t('laboratory.sample.form.summary.extractionData', { defaultValue: 'Datos Extracción' })}
+                                                    </h6>
+                                                    {(() => {
+                                                        const sel = extractions.find(e => e._id === formik.values.extraction_id);
+                                                        if (!sel) return <p className="text-muted">{t('laboratory.sample.form.summary.noExtraction', { defaultValue: 'No seleccionada' })}</p>;
+                                                        return (
+                                                            <div className="flex-grow-1">
+                                                                <div className="d-flex justify-content-between mb-2">
+                                                                    <span className="text-muted">{t('laboratory.sample.form.summary.batch', { defaultValue: 'Lote:' })}</span>
+                                                                    <span className="fw-semibold">{sel.batch}</span>
+                                                                </div>
+                                                                <div className="d-flex justify-content-between mb-2">
+                                                                    <span className="text-muted">{t('laboratory.sample.form.summary.date', { defaultValue: 'Fecha:' })}</span>
+                                                                    <span>{sel.date ? new Date(sel.date).toLocaleDateString() : "-"}</span>
+                                                                </div>
+                                                                <div className="d-flex justify-content-between mb-2">
+                                                                    <span className="text-muted">{t('laboratory.sample.form.summary.boar', { defaultValue: 'Verraco:' })}</span>
+                                                                    <span className="fw-semibold">{sel.boar?.code || "-"}</span>
+                                                                </div>
+                                                                <div className="d-flex justify-content-between mb-2">
+                                                                    <span className="text-muted">{t('laboratory.sample.form.summary.technician', { defaultValue: 'Técnico:' })}</span>
+                                                                    <span>{sel.technician ? `${sel.technician.name} ${sel.technician.lastname}` : "-"}</span>
+                                                                </div>
+                                                                <div className="d-flex justify-content-between">
+                                                                    <span className="text-muted">{t('laboratory.sample.form.summary.volume', { defaultValue: 'Volumen:' })}</span>
+                                                                    <span className="fw-semibold">{sel.volume} {sel.unit_measurement}</span>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })()}
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <h6 className="text-primary fw-bold mb-3">
+                                                        <i className="ri-store-2-line me-2"></i>{t('laboratory.sample.form.summary.supplierData', { defaultValue: 'Datos Proveedor' })}
+                                                    </h6>
                                                     <div className="flex-grow-1">
                                                         <div className="d-flex justify-content-between mb-2">
-                                                            <span className="text-muted">{t('laboratory.sample.form.summary.batch', { defaultValue: 'Lote:' })}</span>
-                                                            <span className="fw-semibold">{selectedExtraction.batch}</span>
+                                                            <span className="text-muted">{t('laboratory.sample.form.summary.supplierName', { defaultValue: 'Proveedor:' })}</span>
+                                                            <span className="fw-semibold">{formik.values.supplier?.name || "-"}</span>
                                                         </div>
                                                         <div className="d-flex justify-content-between mb-2">
-                                                            <span className="text-muted">{t('laboratory.sample.form.summary.date', { defaultValue: 'Fecha:' })}</span>
-                                                            <span>{selectedExtraction.date ? new Date(selectedExtraction.date).toLocaleDateString() : "-"}</span>
+                                                            <span className="text-muted">{t('laboratory.sample.form.summary.supplierLot', { defaultValue: 'Lote proveedor:' })}</span>
+                                                            <span className="fw-semibold">{formik.values.supplier?.lot || "-"}</span>
                                                         </div>
                                                         <div className="d-flex justify-content-between mb-2">
-                                                            <span className="text-muted">{t('laboratory.sample.form.summary.boar', { defaultValue: 'Verraco:' })}</span>
-                                                            <span className="fw-semibold">{selectedExtraction.boar?.code || "-"}</span>
-                                                        </div>
-                                                        <div className="d-flex justify-content-between mb-2">
-                                                            <span className="text-muted">{t('laboratory.sample.form.summary.technician', { defaultValue: 'Técnico:' })}</span>
-                                                            <span>{selectedExtraction.technician ? `${selectedExtraction.technician.name} ${selectedExtraction.technician.lastname}` : "-"}</span>
+                                                            <span className="text-muted">{t('laboratory.sample.form.summary.purchaseDate', { defaultValue: 'Fecha de compra:' })}</span>
+                                                            <span>{formik.values.supplier?.purchase_date ? new Date(formik.values.supplier.purchase_date).toLocaleDateString() : "-"}</span>
                                                         </div>
                                                         <div className="d-flex justify-content-between">
                                                             <span className="text-muted">{t('laboratory.sample.form.summary.volume', { defaultValue: 'Volumen:' })}</span>
-                                                            <span className="fw-semibold">{selectedExtraction.volume} {selectedExtraction.unit_measurement}</span>
+                                                            <span className="fw-semibold">{externalSemenVolume} {externalUnit}</span>
                                                         </div>
                                                     </div>
-                                                );
-                                            })()}
+                                                </>
+                                            )}
                                         </div>
                                     </div>
 
@@ -901,7 +1200,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                                 </div>
                                                 <div className="d-flex justify-content-between mb-2">
                                                     <span className="text-muted">{t('laboratory.sample.form.summary.diluentVolume', { defaultValue: 'Vol. Diluyente:' })}</span>
-                                                    <span className="fw-semibold">{formik.values.diluent.volume} {selectedExtraction?.unit_measurement}</span>
+                                                    <span className="fw-semibold">{formik.values.diluent.volume} {origin === 'internal' ? selectedExtraction?.unit_measurement : externalUnit}</span>
                                                 </div>
                                                 <div className="d-flex justify-content-between mb-2">
                                                     <span className="text-muted">{t('laboratory.sample.form.summary.method', { defaultValue: 'Método:' })}</span>
@@ -965,9 +1264,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
 
                             <Button className="ms-auto btn-success" onClick={() => formik.handleSubmit()} disabled={formik.isSubmitting}>
                                 {formik.isSubmitting ? (
-                                    <div>
-                                        <Spinner size="sm" />
-                                    </div>
+                                    <div><Spinner size="sm" /></div>
                                 ) : (
                                     <div>
                                         <i className="ri-check-line me-2" />
@@ -986,9 +1283,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                     {alertConfig.color === "danger" && <FiXCircle size={22} />}
                     {alertConfig.color === "warning" && <FiAlertCircle size={22} />}
                     {alertConfig.color === "info" && <FiInfo size={22} />}
-
                     <span className="flex-grow-1 text-black">{alertConfig.message}</span>
-
                     <Button close onClick={() => setAlertConfig({ ...alertConfig, visible: false })} />
                 </Alert>
             )}
