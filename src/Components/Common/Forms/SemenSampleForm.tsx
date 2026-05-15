@@ -3,7 +3,7 @@ import { ConfigContext } from "App";
 import { ExtractionData, SemenSample } from "common/data_interfaces";
 import { useFormik } from "formik";
 import { getEffectiveUser } from "helpers/impersonation_helper";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Button, FormFeedback, Input, Label, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, Table, TabPane } from "reactstrap";
 import * as Yup from 'yup';
 import classnames from "classnames";
@@ -43,6 +43,8 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
     const [externalSemenVolume, setExternalSemenVolume] = useState<number>(0);
     const [externalUnit, setExternalUnit] = useState<string>('ml');
     const [externalLotCode, setExternalLotCode] = useState<string>('');
+    const [internalLotCode, setInternalLotCode] = useState<string>('');
+    const prevSupplierLotRef = useRef<string>('');
 
     const extractionsColumns: Column<any>[] = [
         { header: t('laboratory.sample.form.column.batch', { defaultValue: 'Lote' }), accessor: 'batch', type: 'text', isFilterable: true },
@@ -255,6 +257,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
             setSelectedExtraction(null);
             setExternalSemenVolume(0);
             setExternalLotCode('');
+            setInternalLotCode('');
         }
     };
 
@@ -343,6 +346,12 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
     useEffect(() => {
         if (origin === 'internal') {
             const selected = extractions.find(e => e._id === formik.values.extraction_id);
+
+            // Reset lot code when extraction changes
+            if (!selected || selected._id !== selectedExtraction?._id) {
+                setInternalLotCode('');
+            }
+
             setSelectedExtraction(selected || null);
 
             if (!selected) {
@@ -351,6 +360,10 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
             }
 
             formik.setFieldValue('diluent.unit_measurement', selected.unit_measurement);
+
+            // Generate a stable lot code for this registration session
+            const currentLotCode = internalLotCode || generateLotCode(selected.batch);
+            if (!internalLotCode) setInternalLotCode(currentLotCode);
 
             const semenTotal = selected.volume;
             const diluentTotal = Number(formik.values.diluent.volume || 0);
@@ -366,7 +379,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
             const semenRatio = semenTotal / totalVolume;
             const diluentRatio = diluentTotal / totalVolume;
             const unit = selected.unit_measurement;
-            const batchCode = selected.batch;
+            const batchCode = currentLotCode;
 
             const dosesArray = Array.from({ length: dosesCount }, (_, i) => ({
                 code: `${batchCode}-${(i + 1).toString().padStart(4, '0')}`,
@@ -396,8 +409,21 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
             const semenTotal = externalSemenVolume;
             const diluentTotal = Number(formik.values.diluent.volume || 0);
             const totalVolume = semenTotal + diluentTotal;
-            const batchCode = externalLotCode || formik.values.supplier?.lot || 'EXT';
+            const supplierLot = formik.values.supplier?.lot || '';
             const unit = externalUnit;
+
+            // Reset lot code when supplier lot changes (mirrors internal internalLotCode reset)
+            if (supplierLot !== prevSupplierLotRef.current) {
+                prevSupplierLotRef.current = supplierLot;
+                setExternalLotCode('');
+                formik.setFieldValue('doses', []);
+                return;
+            }
+
+            // Lazily generate a unique lot code for this session (same pattern as internal)
+            const currentLotCode = externalLotCode || generateLotCode(supplierLot || 'EXT');
+            if (!externalLotCode) setExternalLotCode(currentLotCode);
+            const batchCode = currentLotCode;
 
             if (doseSize <= 0 || semenTotal <= 0) {
                 formik.setFieldValue('doses', []);
@@ -433,7 +459,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
             formik.setFieldValue('total_doses', dosesArray.length);
             formik.setFieldValue('available_doses', dosesArray.length);
         }
-    }, [formik.values.extraction_id, formik.values.diluent.volume, formik.values.supplier?.lot, extractions, doseSize, origin, externalSemenVolume, externalUnit, externalLotCode]);
+    }, [formik.values.extraction_id, formik.values.diluent.volume, formik.values.supplier?.lot, extractions, doseSize, origin, externalSemenVolume, externalUnit, externalLotCode, internalLotCode]);
 
     return (
         <>
@@ -603,12 +629,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                                         name="supplier.lot"
                                                         value={formik.values.supplier?.lot || ''}
                                                         onChange={formik.handleChange}
-                                                        onBlur={(e) => {
-                                                            formik.handleBlur(e);
-                                                            if (!externalLotCode) {
-                                                                setExternalLotCode(generateLotCode(e.target.value));
-                                                            }
-                                                        }}
+                                                        onBlur={formik.handleBlur}
                                                         invalid={(formik.touched.supplier as any)?.lot && !!(formik.errors.supplier as any)?.lot}
                                                         placeholder="Ej: EXT-2025-004"
                                                     />
@@ -617,7 +638,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                                     )}
                                                 </div>
 
-                                                <div className="col-md-6">
+                                                <div className="col-md-4">
                                                     <Label htmlFor="external_lot_code" className="form-label">
                                                         {t('laboratory.sample.form.field.sampleLotCode', { defaultValue: 'Código de lote de muestra' })}
                                                         <small className="text-muted ms-1">{t('laboratory.sample.form.field.sampleLotCodeHint', { defaultValue: '(único por registro)' })}</small>
@@ -627,7 +648,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                                         id="external_lot_code"
                                                         value={externalLotCode}
                                                         onChange={(e) => setExternalLotCode(e.target.value)}
-                                                        placeholder="Ej: EXT-2025-004-202505151430"
+                                                        placeholder="Ej: EXT-MP7AZEVN"
                                                     />
                                                 </div>
 
@@ -649,29 +670,28 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
 
                                                 <div className="col-md-4">
                                                     <Label htmlFor="external_semen_volume" className="form-label">{t('laboratory.sample.form.field.semenVolume', { defaultValue: 'Volumen de semen' })}</Label>
-                                                    <Input
-                                                        type="number"
-                                                        id="external_semen_volume"
-                                                        value={externalSemenVolume}
-                                                        onChange={(e) => setExternalSemenVolume(Number(e.target.value))}
-                                                        onFocus={(e) => e.target.select()}
-                                                        placeholder="Ej: 250"
-                                                        min={0}
-                                                    />
-                                                </div>
-
-                                                <div className="col-md-4">
-                                                    <Label htmlFor="external_unit" className="form-label">{t('laboratory.sample.form.field.unit', { defaultValue: 'Unidad de medida' })}</Label>
-                                                    <Input
-                                                        type="select"
-                                                        id="external_unit"
-                                                        value={externalUnit}
-                                                        onChange={(e) => handleExternalUnitChange(e.target.value)}
-                                                    >
-                                                        <option value="ml">ml</option>
-                                                        <option value="L">L</option>
-                                                        <option value="cc">cc</option>
-                                                    </Input>
+                                                    <div className="input-group">
+                                                        <Input
+                                                            type="number"
+                                                            id="external_semen_volume"
+                                                            value={externalSemenVolume}
+                                                            onChange={(e) => setExternalSemenVolume(Number(e.target.value))}
+                                                            onFocus={(e) => e.target.select()}
+                                                            placeholder="Ej: 250"
+                                                            min={0}
+                                                        />
+                                                        <Input
+                                                            type="select"
+                                                            id="external_unit"
+                                                            value={externalUnit}
+                                                            onChange={(e) => handleExternalUnitChange(e.target.value)}
+                                                            style={{ maxWidth: '80px' }}
+                                                        >
+                                                            <option value="ml">ml</option>
+                                                            <option value="L">L</option>
+                                                            <option value="cc">cc</option>
+                                                        </Input>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
