@@ -146,7 +146,7 @@ const PigSicknessForm: React.FC<PigSicknessFormProps> = ({ pigId, onSave }) => {
     const columns: Column<any>[] = [
         {
             header: t('medical.sickness.form.column.image', { defaultValue: 'Imagen' }), accessor: 'image', render: (_, row) => (
-                <img src={row.image || noImageUrl} alt="Imagen del Producto" style={{ height: "70px" }} />
+                <img src={row.image || noImageUrl} alt="" style={{ height: "70px" }} />
             ),
         },
         { header: t('medical.sickness.form.column.code', { defaultValue: 'Codigo' }), accessor: "code", type: "text", isFilterable: true },

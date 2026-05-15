@@ -25,7 +25,7 @@ const isTablet = () => {
 
 const SubwarehouseOutcomes = () => {
     const { t } = useTranslation();
-    document.title = "Ver salidas | Subalmacén"
+    document.title = `${t("menu.subwarehouseOutcomes")} | ${t("systemName")}`;
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
@@ -90,13 +90,13 @@ const SubwarehouseOutcomes = () => {
             },
         },
         {
-            header: 'Subalmacén de destino',
+            header: t('warehouse.subwarehouseDetails.col.destWarehouse'),
             accessor: 'warehouseDestiny',
             isFilterable: true,
             type: 'text',
             render: (_, row) => <span>{row.warehouseDestiny?.name || "N/A"}</span>
         },
-        { header: 'Valor', accessor: 'totalPrice', isFilterable: true, type: 'currency' },
+        { header: t('warehouse.subwarehouseDetails.col.value'), accessor: 'totalPrice', isFilterable: true, type: 'currency' },
         {
             header: t('common.field.actions'),
             accessor: 'actions',

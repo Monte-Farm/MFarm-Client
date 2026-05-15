@@ -64,7 +64,7 @@ const ViewProducts = () => {
     const columns: Column<any>[] = [
         {
             header: t('common.field.image', { defaultValue: 'Imagen' }), accessor: 'image', render: (_, row) => (
-                <img src={row.image || noImageUrl} alt="Imagen del Producto" style={{ height: "70px" }} />
+                <img src={row.image || noImageUrl} alt="" style={{ height: "70px" }} />
             ),
         },
         { header: t('common.field.code'), accessor: 'id', isFilterable: true, type: 'text' },

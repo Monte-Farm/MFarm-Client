@@ -45,7 +45,7 @@ interface ClientsKpis {
 
 const ClientsReport = () => {
     const { t } = useTranslation();
-    document.title = "Analisis de Clientes | Reportes";
+    document.title = `${t("reports.clients.title")} | ${t("reports.title")} | ${t("systemName")}`;
 
     const configContext = useContext(ConfigContext);
     const { isGlobal, farmId, scopeKey } = useReportScope();

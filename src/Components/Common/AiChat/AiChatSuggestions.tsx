@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface AiChatSuggestionsProps {
     onPick: (text: string) => void;
@@ -13,13 +14,14 @@ const SUGGESTIONS = [
 ];
 
 const AiChatSuggestions: React.FC<AiChatSuggestionsProps> = ({ onPick, disabled }) => {
+    const { t } = useTranslation();
     return (
         <div className="ai-chat-suggestions">
             <div className="ai-chat-suggestions__intro">
                 <span className="ai-chat-suggestions__avatar">
                     <i className="ri-robot-2-line"></i>
                 </span>
-                <p>Pregúntame lo que sea sobre tu granja</p>
+                <p>{t("ai.panel.subtitle")}</p>
             </div>
             <div className="ai-chat-suggestions__chips">
                 {SUGGESTIONS.map((label) => (

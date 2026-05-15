@@ -1,5 +1,6 @@
 import React from "react";
 import { Badge } from "reactstrap";
+import { useTranslation } from "react-i18next";
 
 interface Attribute {
     key: string;
@@ -25,13 +26,14 @@ const ObjectDetails: React.FC<ObjectDetailsProps> = ({
     showImage = true,
     imageSrc,
 }) => {
+    const { t } = useTranslation();
     return (
         <div className="table-card table-responsive">
             {showImage && imageSrc && (
                 <div className="mb-3 text-center">
                     <img
                         src={imageSrc}
-                        alt="Detalle del objeto"
+                        alt=""
                         className="rounded-top"
                         style={{
                             maxHeight: "250px",
@@ -61,14 +63,14 @@ const ObjectDetails: React.FC<ObjectDetailsProps> = ({
                                         value === true ||
                                             value === "activo" ||
                                             value === "vivo" ? (
-                                            <Badge color="success">Activo</Badge>
+                                            <Badge color="success">{t("common.status.active")}</Badge>
                                         ) : value === false ||
                                             value === "inactivo" ||
                                             value === "muerto" ? (
-                                            <Badge color="danger">Inactivo</Badge>
+                                            <Badge color="danger">{t("common.status.inactive")}</Badge>
                                         ) : (
                                             <Badge color="secondary">
-                                                {value ?? "No disponible"}
+                                                {value ?? t("common.status.notAvailable")}
                                             </Badge>
                                         )
                                     ) : type === "date" && value && value !== "-" ? (

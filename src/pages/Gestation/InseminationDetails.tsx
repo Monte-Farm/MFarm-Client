@@ -31,8 +31,8 @@ const isTablet = () => {
 };
 
 const InseminationDetails = () => {
-    document.title = 'Detalles de inseminación | System Management'
     const { t } = useTranslation();
+    document.title = `${t("insemination.breadcrumb.detailTitle")} | ${t("systemName")}`;
     const { insemination_id } = useParams();
     const navigate = useNavigate();
     const configContext = useContext(ConfigContext);

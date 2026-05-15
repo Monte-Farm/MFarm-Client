@@ -20,7 +20,9 @@
       "accept": "OK",
       "clearFilters": "Limpar filtros",
       "done": "Pronto",
-      "remove": "Remover"
+      "remove": "Remover",
+      "previous": "Anterior",
+      "send": "Enviar"
     },
     "shortMonths": [
       "Jan",
@@ -40,11 +42,16 @@
       "active": "Ativo",
       "inactive": "Inativo",
       "loading": "Carregando…",
-      "noData": "Nenhum dado encontrado"
+      "noData": "Nenhum dado encontrado",
+      "notAvailable": "Não disponível",
+      "pending": "Pendente",
+      "completed": "Concluído"
     },
     "sex": {
       "male": "♂ Macho",
-      "female": "♀ Fêmea"
+      "female": "♀ Fêmea",
+      "maleShort": "Macho",
+      "femaleShort": "Fêmea"
     },
     "yes": "Sim",
     "no": "Não",
@@ -64,7 +71,21 @@
       "qty": "Quantidade",
       "unitPrice": "Preço Unitário",
       "totalPrice": "Preço Total",
-      "observations": "Observações"
+      "observations": "Observações",
+      "sex": "Sexo",
+      "creationDate": "Data de criação",
+      "origin": "Origem"
+    },
+    "error": {
+      "loadData": "Ocorreu um erro ao carregar os dados, tente novamente mais tarde",
+      "generic": "Ocorreu um erro, tente novamente mais tarde"
+    },
+    "select": "Selecione...",
+    "other": "Outro",
+    "total": "Total",
+    "placeholder": {
+      "exNumber": "Ex.: {{n}}",
+      "selectDate": "Selecione a data"
     }
   },
   "profile": {
@@ -78,15 +99,29 @@
   "auth": {
     "login": {
       "label": "Entrar",
-      "pageTitle": "Login | MFarm",
+      "pageTitle": "Login | PorcySys",
       "welcome": "Bem-vindo!",
       "subtitle": "Faça login para continuar.",
-      "disabledUser": "Este usuário foi desativado, entre em contato com o administrador"
+      "disabledUser": "Este usuário foi desativado, entre em contato com o administrador",
+      "field": {
+        "username": "Nome de usuário",
+        "usernamePlaceholder": "Informe o número de usuário",
+        "password": "Senha",
+        "passwordPlaceholder": "Informe a sua senha"
+      },
+      "validation": {
+        "username": "Por favor, informe o nome de usuário",
+        "password": "Por favor, informe a senha"
+      },
+      "submit": "Entrar",
+      "submitting": "Entrando...",
+      "invalidCredentials": "Nome de usuário ou senha incorretos.",
+      "serviceUnavailable": "Serviço indisponível. Tente novamente mais tarde."
     },
     "logout": "Sair",
     "logoutConfirm": "Tem certeza de que deseja sair do sistema?",
     "register": {
-      "pageTitle": "Registro | MFarm",
+      "pageTitle": "Registro | PorcySys",
       "title": "Criar Nova Conta",
       "subtitle": "Crie sua conta gratuita agora",
       "field": {
@@ -115,7 +150,7 @@
       "createWith": "Criar conta com"
     },
     "profile": {
-      "pageTitle": "Perfil | MFarm",
+      "pageTitle": "Perfil | PorcySys",
       "emailId": "E-mail:",
       "idNo": "Id:",
       "changeUsername": "Alterar Nome de Usuário",
@@ -130,7 +165,7 @@
       "successUpdate": "Nome de usuário atualizado para"
     },
     "forgotPassword": {
-      "pageTitle": "Esqueci minha senha | MFarm",
+      "pageTitle": "Esqueci minha senha | PorcySys",
       "title": "Esqueceu a senha?",
       "subtitle": "Redefinir senha",
       "instruction": "Digite seu e-mail e as instruções serão enviadas para você",
@@ -483,12 +518,17 @@
         "observations": "Observações"
       },
       "reason": {
-        "select": "Selecione uma razão",
+        "select": "Selecione um motivo",
         "DEATH": "Morte",
         "SACRIFICE": "Sacrifício",
         "TRANSFER": "Transferência",
         "DEFECT": "Defeito",
-        "OTHER": "Outro"
+        "OTHER": "Outro",
+        "death": "Morte",
+        "sacrifice": "Abate",
+        "transfer": "Transferência",
+        "defect": "Defeito",
+        "other": "Outro"
       },
       "stats": {
         "selectedMales": "Machos selecionados",
@@ -1564,6 +1604,9 @@
       "positive": "Deve ser maior que 0",
       "exceedsStock": "A quantidade supera o estoque disponível",
       "completeRequired": "Por favor, preencha todos os campos obrigatórios"
+    },
+    "action": {
+      "prev": "Anterior"
     }
   },
   "roles": {
@@ -1669,7 +1712,8 @@
       "birthDate": "Data nasc.",
       "sex": "Sexo",
       "weight": "Peso atual",
-      "observations": "Observações"
+      "observations": "Observações",
+      "pigCount": "Suínos"
     },
     "area": {
       "unknown": "Desconhecido",
@@ -2121,7 +2165,8 @@
         "error": "Ocorreu um erro ao registrar o evento sanitário. Por favor, tente novamente mais tarde.",
         "validationConfig": "Por favor, configure o tipo e número de afetados para todos os grupos",
         "validationRequired": "Por favor, complete todos os campos obrigatórios",
-        "validationTreatment": "Por favor, preencha todos os dados dos tratamentos selecionados"
+        "validationTreatment": "Por favor, preencha todos os dados dos tratamentos selecionados",
+        "pigsCount": "suínos"
       },
       "bulkStageChange": {
         "modalTitle": "Mudar Fase de {{count}} Grupos",
@@ -2169,7 +2214,31 @@
         "validationWeightsNext": "Por favor, insira o peso total para todas as camadas antes de continuar",
         "validationGroup": "Por favor, selecione um grupo de destino ou marque \"Criar novo grupo\"",
         "success": "{{count}} camadas foram desmamadas com sucesso.",
-        "error": "Ocorreu um erro ao desmamar as camadas. Por favor, tente novamente mais tarde."
+        "error": "Ocorreu um erro ao desmamar as camadas. Por favor, tente novamente mais tarde.",
+        "autoGroupCreation": "Um novo lote será criado automaticamente ao desmamar as camadas"
+      },
+      "processReplacement": {
+        "selectPigsTitle": "Seleção de Suínos para Reposição",
+        "pigsSelected": "Suínos selecionados:",
+        "weightTitle": "Registro de Peso",
+        "weightIndividual": "Informar peso individual de cada suíno",
+        "weightIndividualHint": "Informe o peso de cada suíno individualmente",
+        "weightTotalHint": "Informe o peso total do lote e o peso médio será atribuído a cada suíno",
+        "noCompatibleGroups": "Nenhum lote de reposição compatível",
+        "newGroupWillBeCreated": "Um novo lote de reposição será criado",
+        "targetGroup": "Lote de reposição destino",
+        "pigWeight": "Peso dos suínos",
+        "avgWeight": "Peso médio",
+        "createNewGroup": "Criar novo lote de reposição",
+        "createNewGroupDesc": "As matrizes não serão misturadas com lotes existentes",
+        "newGroupInfo": "Novo lote de reposição",
+        "newGroupCreationInfo": "Um novo lote de reposição será criado ao processar",
+        "step": {
+          "pigSelection": "Seleção de suínos",
+          "pigWeight": "Peso dos suínos",
+          "groupIntegration": "Integração ao lote de reposição",
+          "summary": "Resumo"
+        }
       }
     },
     "validation": {
@@ -2190,7 +2259,22 @@
         "add": "ENTRADA",
         "withdraw": "RETIRADA",
         "transfer": "TRANSFERÊNCIA"
-      }
+      },
+      "eventType": {
+        "creation": "Criação",
+        "entry": "Entrada",
+        "withdrawal": "Retirada",
+        "transfer": "Transferência",
+        "death": "Morte",
+        "discard": "Descarte",
+        "stageChange": "Mudança de fase",
+        "replacement": "Substituição",
+        "sale": "Venda",
+        "partialSale": "Venda parcial",
+        "sold": "Vendido"
+      },
+      "noEvents": "Nenhum evento registrado",
+      "by": "Por"
     }
   },
   "insemination": {
@@ -2616,7 +2700,10 @@
       "initialMale": "Nascidos machos",
       "initialFemale": "Nascidas fêmeas",
       "status": "Status",
-      "registeredBy": "Registrado por"
+      "registeredBy": "Registrado por",
+      "currentMale": "Machos atuais",
+      "currentFemale": "Fêmeas atuais",
+      "responsible": "Responsável"
     },
     "motherAttr": {
       "code": "Código",
@@ -3036,7 +3123,7 @@
         "archived": "Arquivado"
       },
       "list": {
-        "pageTitle": "Fechamento de Períodos | MFarm",
+        "pageTitle": "Fechamento de Períodos | PorcySys",
         "breadcrumb": "Fechamento de Períodos",
         "cardHeader": "Fechamentos registrados",
         "cardSubheader": "Histórico de fechamentos mensais da granja",
@@ -3591,7 +3678,7 @@
       }
     },
     "expense": {
-      "pageTitle": "Despesas | MFarm",
+      "pageTitle": "Despesas | PorcySys",
       "breadcrumb": {
         "title": "Despesas",
         "parent": "Financeiro"
@@ -3678,7 +3765,7 @@
       }
     },
     "income": {
-      "pageTitle": "Entradas de Estoque | MFarm",
+      "pageTitle": "Entradas de Estoque | PorcySys",
       "breadcrumb": {
         "title": "Entradas",
         "parent": "Almoxarifado"
@@ -3763,7 +3850,7 @@
       }
     },
     "outcome": {
-      "pageTitle": "Saídas de Estoque | MFarm",
+      "pageTitle": "Saídas de Estoque | PorcySys",
       "breadcrumb": {
         "title": "Saídas",
         "parent": "Almoxarifado"
@@ -3811,7 +3898,7 @@
       }
     },
     "sale": {
-      "pageTitle": "Venda de Suínos | MFarm",
+      "pageTitle": "Venda de Suínos | PorcySys",
       "breadcrumb": {
         "title": "Vendas de Suínos",
         "parent": "Vendas"
@@ -3858,7 +3945,7 @@
   },
   "laboratory": {
     "extraction": {
-      "pageTitle": "Ver coletas | Management System",
+      "pageTitle": "Ver coletas | PorcySys",
       "breadcrumb": {
         "title": "Ver coletas",
         "parent": "Coletas"
@@ -3959,7 +4046,7 @@
         "success": "Coleta registrada com sucesso"
       },
       "details": {
-        "pageTitle": "Detalhes da coleta | System Management",
+        "pageTitle": "Detalhes da coleta | PorcySys",
         "responsible": "Responsável:",
         "cardExtraction": "Dados da coleta",
         "cardBoar": "Dados do reprodutor",
@@ -3967,7 +4054,7 @@
       }
     },
     "sample": {
-      "pageTitle": "Ver genética líquida | Management System",
+      "pageTitle": "Ver genética líquida | PorcySys",
       "breadcrumb": {
         "title": "Lotes",
         "parent": "Genética líquida"
@@ -4046,7 +4133,7 @@
         "generatePdf": "Erro ao gerar o PDF, tente novamente mais tarde"
       },
       "detail": {
-        "pageTitle": "Detalhes de genética líquida | System Management",
+        "pageTitle": "Detalhes de genética líquida | PorcySys",
         "breadcrumb": {
           "title": "Detalhes do lote",
           "parent": "Genética líquida"
@@ -4362,7 +4449,8 @@
         "route": "Administração",
         "age": "Idade alvo",
         "frequency": "Frequência",
-        "days": "dias"
+        "days": "dias",
+        "totalDose": "Dose total"
       },
       "frequency": {
         "single": "Dose única",
@@ -4495,6 +4583,15 @@
         "success": "Plano de vacinação registrado com sucesso",
         "errorSuccess": "Ocorreu um erro ao registrar o plano, tente novamente",
         "register": "Registrar"
+      },
+      "adminRouteDisplay": {
+        "oral": "Oral",
+        "intramuscular": "Intramuscular",
+        "subcutaneous": "Subcutânea",
+        "intravenous": "Intravenosa",
+        "intranasal": "Intranasal",
+        "topical": "Tópica",
+        "rectal": "Retal"
       }
     },
     "assign": {
@@ -4535,7 +4632,9 @@
       "error": {
         "load": "Ocorreu um erro ao carregar os dados",
         "submit": "Ocorreu um erro, tente novamente",
-        "noSubwarehouse": "Armazém satélite médico não encontrado. Contate o responsável pelo almoxarifado."
+        "noSubwarehouse": "Armazém satélite médico não encontrado. Contate o responsável pelo almoxarifado.",
+        "subwarehouseTitle": "Sem subalmoxarifado médico",
+        "subwarehouseHeading": "Subalmoxarifado não atribuído"
       },
       "button": {
         "assign": "Aplicar"
@@ -4570,7 +4669,14 @@
         "noPackagesBody": "Nenhum protocolo encontrado para a fase leitão. Cadastre um protocolo antes de continuar.",
         "selectedPackage": "Protocolo selecionado: {{name}} ({{code}})",
         "success": "Protocolo sanitário aplicado a todas as leitegadas selecionadas.",
-        "error": "Ocorreu um erro ao aplicar o protocolo sanitário. Tente novamente."
+        "error": "Ocorreu um erro ao aplicar o protocolo sanitário. Tente novamente.",
+        "description": "Selecione o pacote de medicação a atribuir às camadas ativas.",
+        "selectPackage": "Pacote de medicação",
+        "subwarehouseBody": "Certifique-se de ter um subalmoxarifado médico atribuído antes de continuar.",
+        "confirm": "Atribuir",
+        "validation": {
+          "selectPackage": "Por favor, selecione um pacote de medicação"
+        }
       },
       "group": {
         "title": "Aplicar medicação a {{count}} lotes",
@@ -4608,7 +4714,36 @@
       "packages": {
         "notes": "Observações:"
       }
-    }
+    },
+    "vaccination": {
+      "assign": {
+        "stepSelectPlan": "Seleção do plano de vacinação",
+        "stepSummary": "Resumo",
+        "fieldApplicationDate": "Data de aplicação",
+        "fieldResponsible": "Responsável pela aplicação",
+        "fieldObservations": "Observações",
+        "fieldSelectPlan": "Seleção do plano de vacinação",
+        "placeholderObservations": "Observações da aplicação",
+        "cardGroupInfo": "Informações do lote",
+        "cardPlanInfo": "Informações do plano de vacinação",
+        "cardVaccines": "Vacinas",
+        "cardLitterInfo": "Informações da leitegada",
+        "cardPigInfo": "Informações do suíno",
+        "btnAssign": "Atribuir",
+        "successGroup": "Plano de vacinação atribuído com sucesso",
+        "successPig": "Plano de vacinação atribuído com sucesso",
+        "errorGeneric": "Ocorreu um erro, tente novamente",
+        "success": "Plano de vacinação atribuído com sucesso"
+      }
+    },
+    "categoryDisplay": {
+      "vaccines": "Vacinas",
+      "medications": "Medicamentos"
+    },
+    "product": {
+      "category": "Categoria"
+    },
+    "label": "Medicamento"
   },
   "config": {
     "farm": {
@@ -4948,6 +5083,10 @@
       "validationCode": "O código é obrigatório",
       "validationCodeExists": "Este código já existe, por favor insira outro",
       "validationLocation": "A localização é obrigatória"
+    },
+    "action": {
+      "enterAsManager": "Entrar como gerente",
+      "exitImpersonation": "Sair do modo granja"
     }
   },
   "shared": {
@@ -5201,7 +5340,9 @@
     "chart": {
       "noData": "Nenhum dado disponível",
       "noDistributionData": "Nenhum dado de distribuição disponível",
-      "noApplications": "Nenhuma aplicação registrada"
+      "noApplications": "Nenhuma aplicação registrada",
+      "legend": "Legenda",
+      "applicationsTimeline": "Linha do Tempo de Aplicações"
     }
   },
   "reports": {
@@ -5719,7 +5860,9 @@
         "activeClients": "Clientes Ativos",
         "avgSalesPerClient": "Méd. Vendas / Cliente",
         "avgRevenuePerClient": "Méd. Receita / Cliente",
-        "topClient": "Principal Cliente"
+        "topClient": "Principal Cliente",
+        "avgSales": "Média de Vendas",
+        "avgRevenue": "Receita Média"
       },
       "chart": {
         "top10ByRevenue": "Top 10 Clientes por Receita"
@@ -5959,7 +6102,9 @@
         "lastPurchase": "Última Compra"
       },
       "chart": {
-        "spendByProduct": "Gasto por Produto"
+        "spendByProduct": "Gasto por Produto",
+        "xProduct": "Produto",
+        "ySpend": "Gasto (R$)"
       },
       "productSummary": "Resumo por Produto",
       "purchaseDetails": "Detalhes de Compras",
@@ -6145,7 +6290,23 @@
       "error": {
         "fetch": "Erro ao obter os dados dos subarmazéns.",
         "generatePdf": "Erro ao gerar o PDF, tente novamente"
-      }
+      },
+      "typeLabel": "Tipo de subalmoxarifado",
+      "stepSelectManager": "Seleção do responsável",
+      "stepSubwarehouseData": "Informações do subalmoxarifado",
+      "stepSummary": "Resumo",
+      "infoSubwarehouse": "Informações do subalmoxarifado",
+      "infoManager": "Informações do responsável",
+      "fieldIdentifier": "Identificador",
+      "fieldName": "Nome",
+      "fieldType": "Tipo de armazém",
+      "registerBtn": "Registrar subalmoxarifado",
+      "successCreate": "Subalmoxarifado criado com sucesso",
+      "errorService": "Serviço indisponível, tente novamente mais tarde",
+      "cancelTitle": "Confirmação de cancelamento",
+      "cancelBody": "Tem certeza que deseja cancelar? Os dados não serão salvos.",
+      "cancelYes": "Sim, cancelar",
+      "cancelNo": "Não, continuar"
     },
     "subwarehouseDetails": {
       "tab": {
@@ -6422,7 +6583,7 @@
       }
     },
     "purchaseOrders": {
-      "pageTitle": "Ordens de Compra | MFarm",
+      "pageTitle": "Ordens de Compra | PorcySys",
       "breadcrumb": "Ordens de Compra",
       "col": {
         "orderNumber": "Nº da Ordem",
@@ -6718,6 +6879,9 @@
         "newPurchaseOrder": "Nova ordem de compra"
       },
       "success": "Entrada registrada com sucesso"
+    },
+    "subwarehouseInventory": {
+      "products": "Produtos"
     }
   },
   "notification": {
@@ -7193,7 +7357,7 @@
       "overview": {
         "title": "Visão Geral",
         "paragraphs": [
-          "O MFarm é um sistema integrado de gestão suinícola desenvolvido para acompanhar todos os processos da granja: desde o controle de estoques e a reprodução até a saúde dos animais, a nutrição e os relatórios financeiros.",
+          "O PorcySys é um sistema integrado de gestão suinícola desenvolvido para acompanhar todos os processos da granja: desde o controle de estoques e a reprodução até a saúde dos animais, a nutrição e os relatórios financeiros.",
           "O acesso aos módulos do sistema depende do perfil atribuído ao seu usuário. Este manual cobre todas as funcionalidades disponíveis — consulte seu administrador caso alguma seção não apareça no seu menu."
         ],
         "tips": [
@@ -7565,6 +7729,103 @@
           "Configure os parâmetros zootécnicos da sua granja antes de iniciar os registros para garantir que os cálculos sejam corretos desde o início."
         ]
       }
+    }
+  },
+  "systemName": "PorcySys",
+  "notFound": {
+    "pageTitle": "Página não encontrada"
+  },
+  "health": {
+    "label": "Evento sanitário",
+    "field": {
+      "disease": "Doença",
+      "severity": "Gravidade",
+      "eventType": "Tipo de evento",
+      "affectedPigs": "Suínos afetados",
+      "observedSymptoms": "Sintomas observados",
+      "symptoms": "Sintomas",
+      "diseasePlaceholder": "Ex.: Gripe suína, Diarreia, etc.",
+      "pigCountPlaceholder": "Número de suínos",
+      "observationsPlaceholder": "Informações adicionais sobre o evento..."
+    },
+    "status": {
+      "active": "Ativo",
+      "controlled": "Controlado",
+      "resolved": "Resolvido"
+    },
+    "severity": {
+      "low": "Baixa",
+      "medium": "Média",
+      "high": "Alta"
+    },
+    "eventScope": {
+      "partial": "Parcial",
+      "total": "Total",
+      "partialDesc": "Parcial (alguns suínos)",
+      "totalDesc": "Total (todo o lote)"
+    }
+  },
+  "ai": {
+    "action": {
+      "newConversation": "Nova conversa",
+      "close": "Fechar assistente IA",
+      "openAssistant": "Assistente IA",
+      "open": "Abrir assistente IA",
+      "closeAssistant": "Fechar assistente IA",
+      "thinkingClose": "Assistente pensando — fechar",
+      "respondingClose": "Assistente respondendo — fechar"
+    },
+    "panel": {
+      "title": "Assistente PorcySys",
+      "subtitle": "Pergunte o que quiser sobre a sua granja"
+    },
+    "input": {
+      "placeholder": "Pergunte o que quiser à sua granja..."
+    },
+    "typing": {
+      "label": "consultando"
+    }
+  },
+  "sales": {
+    "buyerType": {
+      "individual": "Pessoa física",
+      "company": "Empresa",
+      "slaughterhouse": "Frigorífico"
+    },
+    "paymentMethod": {
+      "cash": "Dinheiro",
+      "transfer": "Transferência",
+      "check": "Cheque",
+      "credit": "Crédito"
+    },
+    "paymentStatus": {
+      "partial": "Parcial"
+    },
+    "field": {
+      "buyerName": "Nome do comprador",
+      "buyerType": "Tipo de comprador",
+      "contact": "Contato",
+      "contactPlaceholder": "Telefone ou e-mail",
+      "taxId": "CNPJ / CPF",
+      "taxIdPlaceholder": "CNPJ/CPF",
+      "paymentMethod": "Forma de pagamento",
+      "paymentStatus": "Status do pagamento",
+      "additionalCosts": "Custos adicionais",
+      "noAdditionalCosts": "Sem custos adicionais",
+      "costConcept": "Descrição",
+      "notesPlaceholder": "Observações adicionais sobre a venda...",
+      "saleWeight": "Peso de venda (kg)",
+      "pricePerKg": "Preço/kg"
+    },
+    "step": {
+      "preview": "Pré-visualização e Confirmação"
+    },
+    "summary": {
+      "title": "Resumo da Venda",
+      "totalPigs": "Total de suínos",
+      "totalWeight": "Peso total",
+      "avgWeight": "Peso médio",
+      "avgPrice": "Preço médio"
     }
   }
 }

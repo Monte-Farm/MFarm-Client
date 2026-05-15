@@ -54,7 +54,7 @@ const formatCurrency = (value: number): string => {
 
 const OperationsClosingReport = () => {
     const { t } = useTranslation();
-    document.title = "Estado de Resultados | Reportes";
+    document.title = `${t("reports.operationsClosing.title")} | ${t("reports.title")} | ${t("systemName")}`;
 
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();

@@ -58,7 +58,7 @@ const SupplierStatementReport = () => {
     const { t } = useTranslation();
     const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
     const bg = (color: string) => isDark ? darkenHex(color) : color;
-    document.title = "Estado de Cuenta por Proveedor | Reportes";
+    document.title = `${t("reports.supplierStatement.title")} | ${t("reports.title")} | ${t("systemName")}`;
 
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();

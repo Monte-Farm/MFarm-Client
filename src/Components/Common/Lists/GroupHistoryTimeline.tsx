@@ -7,6 +7,7 @@ import {
     RiSkullLine, RiUploadLine
 } from "react-icons/ri";
 import { IconType } from "react-icons";
+import { useTranslation } from "react-i18next";
 
 export interface GroupHistoryItem {
     date: string;
@@ -21,19 +22,6 @@ interface ActionConfig {
     icon: IconType;
 }
 
-const actionConfig: Record<string, ActionConfig> = {
-    created: { color: '#10b981', label: 'Creación', icon: RiAddCircleLine },
-    add: { color: '#3b82f6', label: 'Ingreso', icon: RiCheckboxCircleLine },
-    withdraw: { color: '#ef4444', label: 'Retiro', icon: RiUploadLine },
-    transfer: { color: '#f59e0b', label: 'Transferencia', icon: RiArrowLeftRightLine },
-    death: { color: '#1f2937', label: 'Muerte', icon: RiSkullLine },
-    discard: { color: '#dc2626', label: 'Descarte', icon: RiCloseCircleLine },
-    stage_change: { color: '#8b5cf6', label: 'Cambio de etapa', icon: RiExchangeLine },
-    replacement: { color: '#0ea5e9', label: 'Reemplazo', icon: RiRefreshLine },
-    sale: { color: '#059669', label: 'Venta', icon: RiShoppingCartLine },
-    partial_sale: { color: '#0891b2', label: 'Venta parcial', icon: RiShoppingCartLine },
-    sold: { color: '#059669', label: 'Vendido', icon: RiShoppingCartLine },
-};
 
 const translateDescription = (item: GroupHistoryItem): string => {
     const desc = item.description || '';
@@ -77,7 +65,22 @@ interface Props {
 }
 
 const GroupHistoryTimeline: React.FC<Props> = ({ data }) => {
+    const { t } = useTranslation();
     const [filters, setFilters] = useState({ start_date: '', end_date: '', action: '', user: '' });
+
+    const actionConfig: Record<string, ActionConfig> = useMemo(() => ({
+        created: { color: '#10b981', label: t("groups.history.eventType.creation"), icon: RiAddCircleLine },
+        add: { color: '#3b82f6', label: t("groups.history.eventType.entry"), icon: RiCheckboxCircleLine },
+        withdraw: { color: '#ef4444', label: t("groups.history.eventType.withdrawal"), icon: RiUploadLine },
+        transfer: { color: '#f59e0b', label: t("groups.history.eventType.transfer"), icon: RiArrowLeftRightLine },
+        death: { color: '#1f2937', label: t("groups.history.eventType.death"), icon: RiSkullLine },
+        discard: { color: '#dc2626', label: t("groups.history.eventType.discard"), icon: RiCloseCircleLine },
+        stage_change: { color: '#8b5cf6', label: t("groups.history.eventType.stageChange"), icon: RiExchangeLine },
+        replacement: { color: '#0ea5e9', label: t("groups.history.eventType.replacement"), icon: RiRefreshLine },
+        sale: { color: '#059669', label: t("groups.history.eventType.sale"), icon: RiShoppingCartLine },
+        partial_sale: { color: '#0891b2', label: t("groups.history.eventType.partialSale"), icon: RiShoppingCartLine },
+        sold: { color: '#059669', label: t("groups.history.eventType.sold"), icon: RiShoppingCartLine },
+    }), [t]);
 
     const sortedData = useMemo(
         () => [...data].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
@@ -131,7 +134,7 @@ const GroupHistoryTimeline: React.FC<Props> = ({ data }) => {
                 <div className="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
                     <h6 className="mb-0 fw-bold">
                         <RiHistoryLine className="me-2 text-primary" />
-                        Historial del Grupo
+                        {t("groups.tab.history")}
                     </h6>
                     {countByAction.length > 0 && (
                         <div className="d-flex gap-2 flex-wrap">
@@ -150,10 +153,10 @@ const GroupHistoryTimeline: React.FC<Props> = ({ data }) => {
 
                 <Row className="g-2 align-items-end">
                     <Col md={3}>
-                        <Label className="form-label small text-muted mb-1"><RiFilter3Line className="me-1" />Desde</Label>
+                        <Label className="form-label small text-muted mb-1"><RiFilter3Line className="me-1" />{t("pigs.history.from")}</Label>
                         <DatePicker
                             className="form-control form-control-sm"
-                            placeholder="Seleccione fecha"
+                            placeholder={t("common.placeholder.selectDate")}
                             value={filters.start_date || undefined}
                             options={{ dateFormat: 'Y-m-d', allowInput: true }}
                             onChange={(dates: Date[]) => {
@@ -163,10 +166,10 @@ const GroupHistoryTimeline: React.FC<Props> = ({ data }) => {
                         />
                     </Col>
                     <Col md={3}>
-                        <Label className="form-label small text-muted mb-1">Hasta</Label>
+                        <Label className="form-label small text-muted mb-1">{t("pigs.history.to")}</Label>
                         <DatePicker
                             className="form-control form-control-sm"
-                            placeholder="Seleccione fecha"
+                            placeholder={t("common.placeholder.selectDate")}
                             value={filters.end_date || undefined}
                             options={{ dateFormat: 'Y-m-d', allowInput: true }}
                             onChange={(dates: Date[]) => {
@@ -176,28 +179,28 @@ const GroupHistoryTimeline: React.FC<Props> = ({ data }) => {
                         />
                     </Col>
                     <Col md={2}>
-                        <Label className="form-label small text-muted mb-1">Tipo</Label>
+                        <Label className="form-label small text-muted mb-1">{t("health.field.eventType")}</Label>
                         <Input
                             type="select"
                             bsSize="sm"
                             value={filters.action}
                             onChange={(e) => setFilters({ ...filters, action: e.target.value })}
                         >
-                            <option value="">Todos</option>
+                            <option value="">{t("pigs.history.all")}</option>
                             {availableActions.map((a) => (
                                 <option key={a} value={a}>{actionConfig[a]?.label || a}</option>
                             ))}
                         </Input>
                     </Col>
                     <Col md={2}>
-                        <Label className="form-label small text-muted mb-1">Usuario</Label>
+                        <Label className="form-label small text-muted mb-1">{t("pigs.history.user")}</Label>
                         <Input
                             type="select"
                             bsSize="sm"
                             value={filters.user}
                             onChange={(e) => setFilters({ ...filters, user: e.target.value })}
                         >
-                            <option value="">Todos</option>
+                            <option value="">{t("pigs.history.all")}</option>
                             {users.map((u) => (
                                 <option key={u.id} value={u.id}>{u.name}</option>
                             ))}
@@ -210,7 +213,7 @@ const GroupHistoryTimeline: React.FC<Props> = ({ data }) => {
                             className="border w-100"
                             onClick={() => setFilters({ start_date: '', end_date: '', action: '', user: '' })}
                         >
-                            Limpiar filtros
+                            {t("common.button.clearFilters")}
                         </Button>
                     </Col>
                 </Row>
@@ -241,7 +244,7 @@ const GroupHistoryTimeline: React.FC<Props> = ({ data }) => {
                                         <div className="fw-semibold mb-1">{translateDescription(item)}</div>
                                         {item.userId?.name && (
                                             <div className="text-muted small">
-                                                Por <strong>{item.userId.name} {item.userId.lastname}</strong>
+                                                {t("groups.history.by")} <strong>{item.userId.name} {item.userId.lastname}</strong>
                                             </div>
                                         )}
                                     </div>
@@ -252,7 +255,7 @@ const GroupHistoryTimeline: React.FC<Props> = ({ data }) => {
                 ) : (
                     <div className="text-center text-muted py-5">
                         <RiHistoryLine size={36} className="mb-2 opacity-50" />
-                        <div>Sin eventos registrados</div>
+                        <div>{t("groups.history.noEvents")}</div>
                     </div>
                 )}
             </CardBody>

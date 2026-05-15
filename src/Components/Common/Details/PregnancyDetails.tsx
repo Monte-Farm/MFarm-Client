@@ -25,8 +25,8 @@ const isTablet = () => {
 };
 
 const PregnancyDetails: React.FC<PregnancyDetailsProps> = ({ pregnancyId, }) => {
-    document.title = "Detalles de embarazo | Management System"
     const { t } = useTranslation();
+    document.title = `${t("pregnancy.breadcrumb.title")} | ${t("systemName")}`;
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [pregnancyDetails, setPregnancyDetails] = useState<any>({});

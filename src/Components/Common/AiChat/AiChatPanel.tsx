@@ -44,7 +44,7 @@ const AiChatPanel: React.FC<AiChatPanelProps> = ({ onClose }) => {
     };
 
     return (
-        <div className="ai-chat-panel" role="dialog" aria-label="Asistente MFarm">
+        <div className="ai-chat-panel" role="dialog" aria-label="Asistente PorcySys">
             <AiChatHeader onNewConversation={handleNew} onClose={onClose} />
             <div className="ai-chat-panel__body">
                 <AiChatMessages

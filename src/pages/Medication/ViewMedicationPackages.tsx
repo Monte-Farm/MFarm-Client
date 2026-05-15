@@ -19,7 +19,7 @@ const isTablet = () => {
 
 const ViewMedicationPackages = () => {
     const { t } = useTranslation();
-    document.title = t('medication.package.pageTitle') + ' | System Management'
+    document.title = `${t("medication.package.pageTitle")} | ${t("systemName")}`;
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true);

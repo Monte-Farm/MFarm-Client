@@ -17,6 +17,7 @@ import MissingStockModal from "../Shared/MissingStockModal";
 import AlertMessage from "../Shared/AlertMesagge";
 import { Column } from "common/data/data_types";
 import noImageUrl from '../../../assets/images/no-image.png';
+import { useTranslation } from "react-i18next";
 
 interface BulkGroupHealthEventModalProps {
     isOpen: boolean;
@@ -40,6 +41,7 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
     selectedGroups,
     onSuccess
 }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [activeStep, setActiveStep] = useState<number>(1);
@@ -67,27 +69,27 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
     }
 
     const selectedMedicationsColumns: Column<any>[] = [
-        { header: "Codigo", accessor: "code", type: "text", isFilterable: true },
-        { header: "Producto", accessor: "name", type: "text", isFilterable: true },
+        { header: t("groups.column.code"), accessor: "code", type: "text", isFilterable: true },
+        { header: t("medication.vaccinePlan.form.column.product"), accessor: "name", type: "text", isFilterable: true },
         {
-            header: "Dosis por cerdo",
+            header: t("medication.package.form.column.dosePerHead"),
             accessor: "dose",
             type: "text",
             render: (_, row) => <span>{row.quantityPerPig} {row.unit_measurement}</span>
         },
         {
-            header: "Administracion",
+            header: t("medication.vaccinePlan.vaccineColumn.route"),
             accessor: "administrationRoute",
             type: "text",
             render: (value: string) => {
                 const routeLabels: Record<string, { color: string; label: string }> = {
-                    oral: { color: "info", label: "Oral" },
-                    intramuscular: { color: "primary", label: "Intramuscular" },
-                    subcutaneous: { color: "primary", label: "Subcutánea" },
-                    intravenous: { color: "primary", label: "Intravenosa" },
-                    intranasal: { color: "primary", label: "Intranasal" },
-                    topical: { color: "primary", label: "Tópica" },
-                    rectal: { color: "primary", label: "Rectal" },
+                    oral: { color: "info", label: t("medication.vaccinePlan.adminRouteDisplay.oral") },
+                    intramuscular: { color: "primary", label: t("medication.vaccinePlan.adminRouteDisplay.intramuscular") },
+                    subcutaneous: { color: "primary", label: t("medication.vaccinePlan.adminRouteDisplay.subcutaneous") },
+                    intravenous: { color: "primary", label: t("medication.vaccinePlan.adminRouteDisplay.intravenous") },
+                    intranasal: { color: "primary", label: t("medication.vaccinePlan.adminRouteDisplay.intranasal") },
+                    topical: { color: "primary", label: t("medication.vaccinePlan.adminRouteDisplay.topical") },
+                    rectal: { color: "primary", label: t("medication.vaccinePlan.adminRouteDisplay.rectal") },
                 };
                 const route = routeLabels[value] || { color: "secondary", label: value };
                 return <Badge color={route.color}>{route.label}</Badge>;
@@ -97,26 +99,26 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
 
     const productsColumns: Column<any>[] = [
         {
-            header: 'Imagen', accessor: 'image', render: (_, row) => (
-                <img src={row.image || noImageUrl} alt="Imagen del Producto" style={{ height: "70px" }} />
+            header: t('medication.vaccinePlan.form.column.image'), accessor: 'image', render: (_, row) => (
+                <img src={row.image || noImageUrl} alt="" style={{ height: "70px" }} />
             ),
         },
-        { header: "Codigo", accessor: "code", type: "text", isFilterable: true },
-        { header: "Producto", accessor: "name", type: "text", isFilterable: true },
+        { header: t("groups.column.code"), accessor: "code", type: "text", isFilterable: true },
+        { header: t("medication.vaccinePlan.form.column.product"), accessor: "name", type: "text", isFilterable: true },
         {
-            header: 'Categoria',
+            header: t("medication.product.category"),
             accessor: 'category',
             render: (value: string) => {
                 const categoryLabels: Record<string, { color: string; label: string }> = {
-                    vaccines: { color: "info", label: "Vacunas" },
-                    medications: { color: "primary", label: "Medicamentos" },
+                    vaccines: { color: "info", label: t("medication.categoryDisplay.vaccines") },
+                    medications: { color: "primary", label: t("medication.categoryDisplay.medications") },
                 };
                 const category = categoryLabels[value] || { color: "secondary", label: value };
                 return <Badge color={category.color}>{category.label}</Badge>;
             },
         },
         {
-            header: "Dosis por cerdo",
+            header: t("medication.package.form.column.dosePerHead"),
             accessor: "dose",
             type: "number",
             render: (value, row, isSelected) => {
@@ -143,7 +145,7 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
             },
         },
         {
-            header: "Vía de administración",
+            header: t("medication.vaccinePlan.vaccineColumn.route"),
             accessor: "administration_route",
             type: "text",
             render: (value, row, isSelected) => {
@@ -161,14 +163,14 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
                         }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <option value="">Seleccione...</option>
-                        <option value="oral">Oral</option>
-                        <option value="intramuscular">Intramuscular</option>
-                        <option value="subcutaneous">Subcutánea</option>
-                        <option value="intravenous">Intravenosa</option>
-                        <option value="intranasal">Intranasal</option>
-                        <option value="topical">Tópica</option>
-                        <option value="rectal">Rectal</option>
+                        <option value="">{t("common.select")}</option>
+                        <option value="oral">{t("medication.vaccinePlan.adminRouteDisplay.oral")}</option>
+                        <option value="intramuscular">{t("medication.vaccinePlan.adminRouteDisplay.intramuscular")}</option>
+                        <option value="subcutaneous">{t("medication.vaccinePlan.adminRouteDisplay.subcutaneous")}</option>
+                        <option value="intravenous">{t("medication.vaccinePlan.adminRouteDisplay.intravenous")}</option>
+                        <option value="intranasal">{t("medication.vaccinePlan.adminRouteDisplay.intranasal")}</option>
+                        <option value="topical">{t("medication.vaccinePlan.adminRouteDisplay.topical")}</option>
+                        <option value="rectal">{t("medication.vaccinePlan.adminRouteDisplay.rectal")}</option>
                     </Input>
                 );
             }
@@ -213,7 +215,7 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
             // Validar que todos los grupos tengan configuración
             const missingConfig = groupConfigs.filter(g => !g.eventType || g.affectedCount === 0);
             if (missingConfig.length > 0) {
-                setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, configure el tipo y número de afectados para todos los grupos' });
+                setAlertConfig({ visible: true, color: 'danger', message: t('groups.form.bulkHealthEvent.validationConfig') });
                 return;
             }
 
@@ -281,7 +283,7 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
             await validationSchema.validate(formik.values, { abortEarly: false });
             toggleArrowTab(activeStep + 1);
         } catch (error) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, complete todos los campos obligatorios' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('groups.form.bulkHealthEvent.validationRequired') });
         }
     };
 
@@ -303,7 +305,7 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
         setTreatmentErrors(errors);
 
         if (Object.keys(errors).length > 0) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, llene todos los datos de los tratamientos seleccionados' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('groups.form.bulkHealthEvent.validationTreatment') });
             return false;
         }
 
@@ -382,7 +384,7 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
         <>
             <Modal isOpen={isOpen} toggle={handleClose} size="xl" backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={handleClose}>
-                    Registrar Evento Sanitario a {selectedGroups.length} Grupos
+                    {t('groups.form.bulkHealthEvent.modalTitle', { count: selectedGroups.length })}
                 </ModalHeader>
                 <ModalBody>
                     <div className="step-arrow-nav mb-4">
@@ -395,7 +397,7 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
                                     })}
                                     disabled
                                 >
-                                    Información y Síntomas
+                                    {t("groups.form.bulkHealthEvent.step.infoSymptoms")}
                                 </NavLink>
                             </NavItem>
                             <NavItem>
@@ -406,7 +408,7 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
                                     })}
                                     disabled
                                 >
-                                    Tratamiento
+                                    {t("groups.form.bulkHealthEvent.step.treatment")}
                                 </NavLink>
                             </NavItem>
                             <NavItem>
@@ -417,7 +419,7 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
                                     })}
                                     disabled
                                 >
-                                    Configuración y Resumen
+                                    {t("groups.form.bulkHealthEvent.step.configSummary")}
                                 </NavLink>
                             </NavItem>
                         </Nav>
@@ -427,9 +429,9 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
                         {/* PASO 1: Información del Evento y Síntomas */}
                         <TabPane tabId={1}>
                             <div className="mb-3">
-                                <h5 className="mb-1">Información del evento sanitario</h5>
+                                <h5 className="mb-1">{t('groups.form.bulkHealthEvent.eventInfoTitle')}</h5>
                                 <small className="text-muted">
-                                    Esta información se aplicará a todos los grupos seleccionados
+                                    {t('groups.form.bulkHealthEvent.eventInfoSubtitle')}
                                 </small>
                             </div>
 
@@ -438,12 +440,12 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
                                     <div className="row g-3">
                                         <div className="col-md-6">
                                             <Label className="form-label fw-semibold">
-                                                Nombre del evento <span className="text-danger">*</span>
+                                                {t('groups.form.bulkHealthEvent.eventNameLabel')} <span className="text-danger">*</span>
                                             </Label>
                                             <Input
                                                 type="text"
                                                 name="name"
-                                                placeholder="Ej: Gripe porcina, Diarrea, etc."
+                                                placeholder={t('groups.form.bulkHealthEvent.eventNamePlaceholder')}
                                                 value={formik.values.name}
                                                 onChange={formik.handleChange}
                                                 onBlur={formik.handleBlur}
@@ -456,7 +458,7 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
 
                                         <div className="col-md-3">
                                             <Label className="form-label fw-semibold">
-                                                Severidad <span className="text-danger">*</span>
+                                                {t('groups.form.bulkHealthEvent.severityLabel')} <span className="text-danger">*</span>
                                             </Label>
                                             <Input
                                                 type="select"
@@ -466,10 +468,10 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
                                                 onBlur={formik.handleBlur}
                                                 invalid={formik.touched.severity && !!formik.errors.severity}
                                             >
-                                                <option value="">Seleccione...</option>
-                                                <option value="low">Baja</option>
-                                                <option value="medium">Media</option>
-                                                <option value="high">Alta</option>
+                                                <option value="">{t("common.select")}</option>
+                                                <option value="low">{t("health.severity.low")}</option>
+                                                <option value="medium">{t("health.severity.medium")}</option>
+                                                <option value="high">{t("health.severity.high")}</option>
                                             </Input>
                                             {formik.touched.severity && formik.errors.severity && (
                                                 <FormFeedback>{formik.errors.severity}</FormFeedback>
@@ -478,7 +480,7 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
 
                                         <div className="col-md-3">
                                             <Label className="form-label fw-semibold">
-                                                Fecha de inicio <span className="text-danger">*</span>
+                                                {t('groups.form.bulkHealthEvent.startDateLabel')} <span className="text-danger">*</span>
                                             </Label>
                                             <DatePicker
                                                 className={`form-control ${formik.touched.startDate && formik.errors.startDate ? 'is-invalid' : ''}`}
@@ -487,7 +489,7 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
                                                     if (date[0]) formik.setFieldValue('startDate', date[0]);
                                                 }}
                                                 options={{ dateFormat: 'd/m/Y' }}
-                                                placeholder="Seleccione fecha"
+                                                placeholder={t("common.placeholder.selectDate")}
                                             />
                                             {formik.touched.startDate && formik.errors.startDate && (
                                                 <FormFeedback className="d-block">{formik.errors.startDate as string}</FormFeedback>
@@ -498,7 +500,7 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
                                     <div className="row g-3 mt-2">
                                         <div className="col-md-6">
                                             <Label className="form-label fw-semibold">
-                                                Estado <span className="text-danger">*</span>
+                                                {t('groups.form.bulkHealthEvent.statusLabel')} <span className="text-danger">*</span>
                                             </Label>
                                             <Input
                                                 type="select"
@@ -513,10 +515,10 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
                                                 onBlur={formik.handleBlur}
                                                 invalid={formik.touched.status && !!formik.errors.status}
                                             >
-                                                <option value="">Seleccione...</option>
-                                                <option value="active">Activo</option>
-                                                <option value="controlled">Controlado</option>
-                                                <option value="resolved">Resuelto</option>
+                                                <option value="">{t("common.select")}</option>
+                                                <option value="active">{t("health.status.active")}</option>
+                                                <option value="controlled">{t("health.status.controlled")}</option>
+                                                <option value="resolved">{t("health.status.resolved")}</option>
                                             </Input>
                                             {formik.touched.status && formik.errors.status && (
                                                 <FormFeedback>{formik.errors.status}</FormFeedback>
@@ -526,7 +528,7 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
                                         {formik.values.status === 'resolved' && (
                                             <div className="col-md-6">
                                                 <Label className="form-label fw-semibold">
-                                                    Fecha de término <span className="text-danger">*</span>
+                                                    {t("medical.healthEvent.attribute.endDate")} <span className="text-danger">*</span>
                                                 </Label>
                                                 <DatePicker
                                                     className={`form-control ${formik.touched.endDate && formik.errors.endDate ? 'is-invalid' : ''}`}
@@ -535,7 +537,7 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
                                                         if (date[0]) formik.setFieldValue('endDate', date[0]);
                                                     }}
                                                     options={{ dateFormat: 'd/m/Y' }}
-                                                    placeholder="Seleccione fecha"
+                                                    placeholder={t("common.placeholder.selectDate")}
                                                 />
                                                 {formik.touched.endDate && formik.errors.endDate && (
                                                     <FormFeedback className="d-block">{formik.errors.endDate as string}</FormFeedback>
@@ -544,12 +546,12 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
                                         )}
 
                                         <div className="col-md-12">
-                                            <Label className="form-label fw-semibold">Observaciones</Label>
+                                            <Label className="form-label fw-semibold">{t('groups.form.bulkHealthEvent.observationsLabel')}</Label>
                                             <Input
                                                 type="textarea"
                                                 name="observations"
                                                 rows={2}
-                                                placeholder="Información adicional sobre el evento..."
+                                                placeholder={t('groups.form.bulkHealthEvent.observationsPlaceholder')}
                                                 value={formik.values.observations}
                                                 onChange={formik.handleChange}
                                             />
@@ -559,9 +561,9 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
                             </Card>
 
                             <div className="mb-3">
-                                <h5 className="mb-1">Síntomas observados (Opcional)</h5>
+                                <h5 className="mb-1">{t('groups.form.bulkHealthEvent.symptomsTitle')}</h5>
                                 <small className="text-muted">
-                                    Seleccione todos los síntomas observados
+                                    {t('groups.form.bulkHealthEvent.symptomsSubtitle')}
                                 </small>
                             </div>
 
@@ -572,7 +574,7 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
 
                             <div className="d-flex justify-content-end mt-4">
                                 <Button className="farm-primary-button" onClick={checkEventData}>
-                                    Siguiente
+                                    {t('common.button.next')}
                                     <i className="ri-arrow-right-line ms-1" />
                                 </Button>
                             </div>
@@ -581,9 +583,9 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
                         {/* PASO 2: Tratamiento */}
                         <TabPane tabId={2}>
                             <div className="mb-3">
-                                <h5 className="mb-1">Tratamiento (Opcional)</h5>
+                                <h5 className="mb-1">{t('groups.form.bulkHealthEvent.treatmentTitle')}</h5>
                                 <small className="text-muted">
-                                    Seleccione los medicamentos a aplicar. Si no se requiere tratamiento, puede continuar sin seleccionar ninguno.
+                                    {t('groups.form.bulkHealthEvent.treatmentSubtitle')}
                                 </small>
                             </div>
 
@@ -614,7 +616,7 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
                             <div className="d-flex justify-content-between mt-4">
                                 <Button color="secondary" onClick={() => toggleArrowTab(activeStep - 1)}>
                                     <i className="ri-arrow-left-line me-1" />
-                                    Anterior
+                                    {t('common.button.previous')}
                                 </Button>
 
                                 <Button
@@ -627,7 +629,7 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
                                         toggleArrowTab(activeStep + 1);
                                     }}
                                 >
-                                    Siguiente
+                                    {t('common.button.next')}
                                     <i className="ri-arrow-right-line ms-1" />
                                 </Button>
                             </div>
@@ -636,9 +638,9 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
                         {/* PASO 3: Configuración por Grupo y Resumen */}
                         <TabPane tabId={3}>
                             <div className="mb-3">
-                                <h5 className="mb-1">Configuración por grupo</h5>
+                                <h5 className="mb-1">{t('groups.form.bulkHealthEvent.configTitle')}</h5>
                                 <small className="text-muted">
-                                    Configure el alcance del evento para cada grupo
+                                    {t('groups.form.bulkHealthEvent.configSubtitle')}
                                 </small>
                             </div>
 
@@ -653,29 +655,29 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
                                                 </h6>
                                                 <Badge color="light" className="text-dark border px-3 py-2">
                                                     <i className="ri-group-line me-1"></i>
-                                                    <strong>{group.totalPigs}</strong> cerdos
+                                                    <strong>{group.totalPigs}</strong> {t("groups.form.bulkHealthEvent.pigsCount")}
                                                 </Badge>
                                             </div>
 
                                             <div className="row g-3">
                                                 <div className="col-md-6">
                                                     <Label className="form-label fw-semibold">
-                                                        Tipo de evento <span className="text-danger">*</span>
+                                                        {t('groups.form.bulkHealthEvent.eventTypeLabel')} <span className="text-danger">*</span>
                                                     </Label>
                                                     <Input
                                                         type="select"
                                                         value={group.eventType}
                                                         onChange={(e) => handleGroupConfigChange(group.groupId, 'eventType', e.target.value)}
                                                     >
-                                                        <option value="">Seleccione...</option>
-                                                        <option value="partial">Parcial (algunos cerdos)</option>
-                                                        <option value="total">Total (todo el grupo)</option>
+                                                        <option value="">{t("common.select")}</option>
+                                                        <option value="partial">{t("health.eventScope.partialDesc")}</option>
+                                                        <option value="total">{t("health.eventScope.totalDesc")}</option>
                                                     </Input>
                                                 </div>
 
                                                 <div className="col-md-6">
                                                     <Label className="form-label fw-semibold">
-                                                        Cerdos afectados <span className="text-danger">*</span>
+                                                        {t('groups.form.bulkHealthEvent.affectedCountLabel')} <span className="text-danger">*</span>
                                                     </Label>
                                                     <Input
                                                         type="number"
@@ -688,16 +690,16 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
                                                         disabled={group.eventType === 'total'}
                                                         min={1}
                                                         max={group.totalPigs}
-                                                        placeholder="Número de cerdos"
+                                                        placeholder={t('groups.form.bulkHealthEvent.affectedCountPlaceholder')}
                                                     />
                                                     {group.eventType === 'total' && (
                                                         <small className="text-muted d-block mt-1">
-                                                            <i className="ri-information-line" /> Se asignará a todos los cerdos del grupo
+                                                            <i className="ri-information-line" /> {t('groups.form.bulkHealthEvent.affectedCountTotal')}
                                                         </small>
                                                     )}
                                                     {group.eventType === 'partial' && (
                                                         <small className="text-muted d-block mt-1">
-                                                            <i className="ri-information-line" /> Máximo: {group.totalPigs} cerdos
+                                                            <i className="ri-information-line" /> {t('groups.form.bulkHealthEvent.affectedCountMax', { count: group.totalPigs })}
                                                         </small>
                                                     )}
                                                 </div>
@@ -708,42 +710,42 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
                             </div>
 
                             <div className="mb-3">
-                                <h5 className="mb-1">Resumen del evento</h5>
+                                <h5 className="mb-1">{t('groups.form.bulkHealthEvent.summaryTitle')}</h5>
                             </div>
 
                             <div className="row g-3">
                                 <div className="col-md-6">
                                     <Card className="h-100">
                                         <CardBody>
-                                            <h6 className="fw-bold mb-3">Información General</h6>
+                                            <h6 className="fw-bold mb-3">{t('groups.form.bulkHealthEvent.summaryGeneral')}</h6>
                                             <div className="mb-2">
-                                                <strong>Evento:</strong> {formik.values.name}
+                                                <strong>{t('groups.form.bulkHealthEvent.summaryEvent')}</strong> {formik.values.name}
                                             </div>
                                             <div className="mb-2">
-                                                <strong>Severidad:</strong>{' '}
+                                                <strong>{t('groups.form.bulkHealthEvent.summarySeverity')}</strong>{' '}
                                                 <Badge color={
                                                     formik.values.severity === 'high' ? 'danger' :
                                                         formik.values.severity === 'medium' ? 'warning' : 'success'
                                                 }>
-                                                    {formik.values.severity === 'high' ? 'Alta' :
-                                                        formik.values.severity === 'medium' ? 'Media' : 'Baja'}
+                                                    {formik.values.severity === 'high' ? t("health.severity.high") :
+                                                        formik.values.severity === 'medium' ? t("health.severity.medium") : t("health.severity.low")}
                                                 </Badge>
                                             </div>
                                             <div className="mb-2">
-                                                <strong>Estado:</strong>{' '}
+                                                <strong>{t('groups.form.bulkHealthEvent.summaryStatus')}</strong>{' '}
                                                 <Badge color={
                                                     formik.values.status === 'resolved' ? 'success' :
                                                         formik.values.status === 'controlled' ? 'warning' : 'danger'
                                                 }>
-                                                    {formik.values.status === 'resolved' ? 'Resuelto' :
-                                                        formik.values.status === 'controlled' ? 'Controlado' : 'Activo'}
+                                                    {formik.values.status === 'resolved' ? t("health.status.resolved") :
+                                                        formik.values.status === 'controlled' ? t("health.status.controlled") : t("health.status.active")}
                                                 </Badge>
                                             </div>
                                             <div className="mb-2">
-                                                <strong>Grupos afectados:</strong> {groupConfigs.length}
+                                                <strong>{t('groups.form.bulkHealthEvent.summaryGroupsAffected')}</strong> {groupConfigs.length}
                                             </div>
                                             <div className="mb-2">
-                                                <strong>Total cerdos afectados:</strong>{' '}
+                                                <strong>{t('groups.form.bulkHealthEvent.summaryTotalPigs')}</strong>{' '}
                                                 {groupConfigs.reduce((sum, g) => sum + g.affectedCount, 0)}
                                             </div>
                                         </CardBody>
@@ -753,27 +755,27 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
                                 <div className="col-md-6">
                                     <Card className="h-100">
                                         <CardBody>
-                                            <h6 className="fw-bold mb-3">Síntomas y Tratamiento</h6>
+                                            <h6 className="fw-bold mb-3">{t('groups.form.bulkHealthEvent.symptomsTreatmentTitle')}</h6>
                                             {formik.values.symptoms && formik.values.symptoms.length > 0 ? (
                                                 <div className="mb-3">
-                                                    <strong>Síntomas:</strong>
+                                                    <strong>{t("health.field.symptoms")}:</strong>
                                                     <SicknessSymptomsSummary symptoms={formik.values.symptoms} />
                                                 </div>
                                             ) : (
                                                 <div className="text-muted fst-italic mb-3">
                                                     <i className="ri-information-line me-1"></i>
-                                                    No se registraron síntomas
+                                                    {t('groups.form.bulkHealthEvent.noSymptoms')}
                                                 </div>
                                             )}
 
                                             {treatmentSelected.length > 0 ? (
                                                 <div>
-                                                    <strong>Tratamientos:</strong> {treatmentSelected.length} medicamentos
+                                                    <strong>{t('groups.form.bulkHealthEvent.treatmentsLabel')}</strong> {treatmentSelected.length} medicamentos
                                                 </div>
                                             ) : (
                                                 <div className="text-muted fst-italic">
                                                     <i className="ri-information-line me-1"></i>
-                                                    No se asignó tratamiento
+                                                    {t('groups.form.bulkHealthEvent.noTreatment')}
                                                 </div>
                                             )}
                                         </CardBody>
@@ -783,7 +785,7 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
 
                             {treatmentSelected.length > 0 && (
                                 <div className="mt-3">
-                                    <h6 className="fw-bold mb-2">Detalle de Tratamientos</h6>
+                                    <h6 className="fw-bold mb-2">{t('groups.form.bulkHealthEvent.treatmentDetail')}</h6>
                                     <CustomTable
                                         columns={selectedMedicationsColumns}
                                         data={treatmentSelected.map(ms => ({
@@ -800,7 +802,7 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
                             <div className="d-flex justify-content-between mt-4">
                                 <Button color="secondary" onClick={() => toggleArrowTab(activeStep - 1)}>
                                     <i className="ri-arrow-left-line me-1" />
-                                    Anterior
+                                    {t('common.button.previous')}
                                 </Button>
 
                                 <Button
@@ -813,7 +815,7 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
                                     ) : (
                                         <>
                                             <i className="ri-check-line me-1" />
-                                            Registrar Evento en {groupConfigs.length} Grupos
+                                            {t('groups.form.bulkHealthEvent.registerButton', { count: groupConfigs.length })}
                                         </>
                                     )}
                                 </Button>
@@ -835,13 +837,13 @@ const BulkGroupHealthEventModal: React.FC<BulkGroupHealthEventModalProps> = ({
             <SuccessModal
                 isOpen={modals.success}
                 onClose={handleSuccessClose}
-                message={`El evento sanitario "${formik.values.name}" ha sido registrado exitosamente en ${groupConfigs.length} grupos.`}
+                message={t('groups.form.bulkHealthEvent.success', { name: formik.values.name, count: groupConfigs.length })}
             />
 
             <ErrorModal
                 isOpen={modals.error}
                 onClose={() => toggleModal('error', false)}
-                message="Ha ocurrido un error al registrar el evento sanitario. Por favor, inténtelo más tarde."
+                message={t('groups.form.bulkHealthEvent.error')}
             />
 
             <MissingStockModal

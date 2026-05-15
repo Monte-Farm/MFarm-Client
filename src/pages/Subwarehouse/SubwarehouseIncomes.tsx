@@ -34,7 +34,7 @@ const canApproveOrRelease = (role: string[]) =>
 
 const SubwarehouseIncomes = () => {
     const { t } = useTranslation();
-    document.title = "Entradas de Subalmacén | Subalmacén"
+    document.title = `${t("menu.subwarehouseIncomes")} | ${t("systemName")}`;
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
@@ -65,7 +65,7 @@ const SubwarehouseIncomes = () => {
     const incomesColumns: Column<any>[] = [
         { header: t('common.field.code'), accessor: 'id', isFilterable: true, type: 'text' },
         {
-            header: 'Proveedor',
+            header: t('reports.col.supplier'),
             accessor: 'originName',
             isFilterable: true,
             type: 'text',
@@ -90,7 +90,7 @@ const SubwarehouseIncomes = () => {
                 return <Badge color={color}>{text}</Badge>;
             },
         },
-        { header: 'Precio Total', accessor: 'totalPrice', type: 'currency', bgColor: '#E8F5E9' },
+        { header: t('common.field.totalPrice'), accessor: 'totalPrice', type: 'currency', bgColor: '#E8F5E9' },
         {
             header: t('finance.income.column.approvalStatus'),
             accessor: 'approvalStatus',

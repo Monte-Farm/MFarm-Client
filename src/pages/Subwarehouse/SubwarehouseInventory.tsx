@@ -17,7 +17,7 @@ import AlertMessage from "Components/Common/Shared/AlertMesagge";
 
 const SubwarehouseInventory = () => {
     const { t } = useTranslation();
-    document.title = 'Inventario de Subalmacen | Subalmacen';
+    document.title = `${t("menu.subwarehouseInventory")} | ${t("systemName")}`;
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
@@ -211,7 +211,7 @@ const SubwarehouseInventory = () => {
                 <Card>
                     <CardHeader>
                         <div className="d-flex gap-2">
-                            <h4 className="me-auto">Productos</h4>
+                            <h4 className="me-auto">{t("warehouse.subwarehouseInventory.products")}</h4>
                             <Button className="farm-primary-button" onClick={handlePrintInventory} disabled={loadingPDF}>
                                 {loadingPDF ? (
                                     <>

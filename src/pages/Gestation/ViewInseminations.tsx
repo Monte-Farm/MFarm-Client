@@ -40,8 +40,8 @@ const isTablet = () => {
 };
 
 const ViewInseminations = () => {
-    document.title = "Ver inseminaciones | Management System"
     const { t } = useTranslation();
+    document.title = `${t("insemination.breadcrumb.title")} | ${t("systemName")}`;
     const userLoggged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
     const navigate = useNavigate();

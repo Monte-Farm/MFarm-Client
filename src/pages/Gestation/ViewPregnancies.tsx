@@ -36,8 +36,8 @@ const isTablet = () => {
 };
 
 const ViewPregnancies = () => {
-    document.title = "Ver embarazos | Management System"
     const { t } = useTranslation();
+    document.title = `${t("pregnancy.breadcrumb.title")} | ${t("systemName")}`;
     const userLoggged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
     const [tabletMode, setTabletMode] = useState(isTablet);

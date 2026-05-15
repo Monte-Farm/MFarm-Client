@@ -22,31 +22,34 @@ interface Props {
     emptyMessage?: string;
 }
 
-const defaultTypeConfig: Record<string, TypeConfigEntry> = {
-    medication: { color: '#0ea5e9', icon: RiMedicineBottleLine, label: 'Medicamento' },
-    sickness: { color: '#ef4444', icon: RiVirusLine, label: 'Evento sanitario' },
-};
-
 const ApplicationsTimeline = ({
     events,
-    title = 'Timeline de Aplicaciones',
-    typeConfig = defaultTypeConfig,
+    title,
+    typeConfig,
     emptyMessage,
 }: Props) => {
     const { t } = useTranslation();
+
+    const defaultTypeConfig: Record<string, TypeConfigEntry> = {
+        medication: { color: '#0ea5e9', icon: RiMedicineBottleLine, label: t("medication.label") },
+        sickness: { color: '#ef4444', icon: RiVirusLine, label: t("health.label") },
+    };
+
+    const resolvedTypeConfig = typeConfig ?? defaultTypeConfig;
+    const resolvedTitle = title ?? t("shared.chart.applicationsTimeline", { defaultValue: "Timeline de Aplicaciones" });
     const resolvedEmptyMessage = emptyMessage ?? t('shared.chart.noApplications');
     return (
         <Card className="border-0 shadow-sm h-100">
             <CardHeader className="border-bottom py-3">
                 <h6 className="mb-0 fw-bold">
                     <RiTimerLine className="me-2 text-primary" />
-                    {title}
+                    {resolvedTitle}
                 </h6>
             </CardHeader>
             <CardBody>
                 <div className="d-flex align-items-center gap-3 flex-wrap mb-3">
-                    <span className="small text-muted">Leyenda:</span>
-                    {Object.entries(typeConfig).map(([key, cfg]) => (
+                    <span className="small text-muted">{t("shared.chart.legend", { defaultValue: "Leyenda" })}:</span>
+                    {Object.entries(resolvedTypeConfig).map(([key, cfg]) => (
                         <span key={key} className="small d-flex align-items-center gap-1">
                             <span className="rounded-circle" style={{ width: 10, height: 10, background: cfg.color, display: 'inline-block' }} />
                             <span>{cfg.label}</span>
@@ -59,7 +62,7 @@ const ApplicationsTimeline = ({
                         <div className="position-absolute" style={{ left: 60, right: 60, top: 16, height: 2, background: '#e9ecef' }} />
                         <div className="position-relative" style={{ height: '100%' }}>
                             {events.map((ev, idx) => {
-                                const cfg = typeConfig[ev.type] || { color: '#64748b', icon: RiMedicineBottleLine, label: ev.type };
+                                const cfg = resolvedTypeConfig[ev.type] || { color: '#64748b', icon: RiMedicineBottleLine, label: ev.type };
                                 const Icon = cfg.icon;
                                 const leftPercent = events.length === 1 ? 50 : (idx / (events.length - 1)) * 100;
                                 return (

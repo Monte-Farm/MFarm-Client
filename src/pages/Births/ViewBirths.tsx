@@ -32,8 +32,8 @@ const isTablet = () => {
 };
 
 const ViewBirths = () => {
-    document.title = 'Partos registrados | Management System'
     const { t } = useTranslation();
+    document.title = `${t("birth.breadcrumb.title")} | ${t("systemName")}`;
     const configContext = useContext(ConfigContext)
     const userLogged = getEffectiveUser()
     const navigate = useNavigate();

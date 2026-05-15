@@ -6,6 +6,7 @@ import { Badge, Button, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader
 import SuccessModal from "../Shared/SuccessModal";
 import ErrorModal from "../Shared/ErrorModal";
 import SimpleBar from "simplebar-react";
+import { useTranslation } from "react-i18next";
 
 interface BulkGroupStageChangeModalProps {
     isOpen: boolean;
@@ -37,6 +38,7 @@ const BulkGroupStageChangeModal: React.FC<BulkGroupStageChangeModalProps> = ({
     selectedGroups,
     onSuccess
 }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [modals, setModals] = useState({ success: false, error: false });
@@ -307,7 +309,7 @@ const BulkGroupStageChangeModal: React.FC<BulkGroupStageChangeModalProps> = ({
                                                         step="0.01"
                                                         value={group.totalWeight}
                                                         onChange={(e) => handleWeightChange(group.groupId, e.target.value)}
-                                                        placeholder="Ingresa el peso total"
+                                                        placeholder={t("groups.form.bulkStageChange.totalWeightPlaceholder")}
                                                         className={!group.totalWeight || Number(group.totalWeight) <= 0 ? 'border-danger' : ''}
                                                     />
                                                     {(!group.totalWeight || Number(group.totalWeight) <= 0) && (
@@ -359,14 +361,14 @@ const BulkGroupStageChangeModal: React.FC<BulkGroupStageChangeModalProps> = ({
                         <div className="alert alert-danger d-flex align-items-center" role="alert">
                             <i className="ri-error-warning-line fs-4 me-2"></i>
                             <div>
-                                <strong>No hay grupos válidos para cambio de etapa</strong>
+                                <strong>{t("groups.form.bulkStageChange.noValidGroups")}</strong>
                                 <p className="mb-0 mt-1">Todos los grupos seleccionados no cumplen los criterios necesarios.</p>
                             </div>
                         </div>
                     )}
                 </ModalBody>
                 <ModalFooter>
-                    <Button className="farm-secondary-button" onClick={handleClose}>Cancelar</Button>
+                    <Button className="farm-secondary-button" onClick={handleClose}>{t("common.button.cancel")}</Button>
                     <Button
                         className="farm-primary-button"
                         onClick={handleConfirm}
@@ -386,7 +388,7 @@ const BulkGroupStageChangeModal: React.FC<BulkGroupStageChangeModalProps> = ({
             <ErrorModal
                 isOpen={modals.error}
                 onClose={() => toggleModal('error', false)}
-                message="Ha ocurrido un error al cambiar la etapa de los grupos. Por favor, inténtelo más tarde."
+                message={t("common.error.generic")}
             />
         </>
     );

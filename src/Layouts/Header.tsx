@@ -175,7 +175,7 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
                                     <button
                                         className="btn btn-sm farm-exit-impersonation-btn"
                                         onClick={handleExitImpersonation}
-                                        title="Salir del modo granja"
+                                        title={t("farms.action.exitImpersonation")}
                                     >
                                         <i className="ri-logout-box-line me-1" />
                                         Salir
@@ -257,7 +257,7 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
                                 type="button"
                                 className="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle header-ai-btn"
                                 onClick={() => dispatch(toggleOpen())}
-                                aria-label="Asistente IA"
+                                aria-label={t("ai.action.openAssistant")}
                             >
                                 <i className="ri-sparkling-2-line fs-22"></i>
                             </button>

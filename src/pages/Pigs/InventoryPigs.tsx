@@ -49,8 +49,8 @@ const isTablet = () => {
 };
 
 const InventoryPigs = () => {
-    document.title = 'Inventario de cerdos | Management System'
     const { t } = useTranslation();
+    document.title = `${t("pigs.page.inventoryTitle")} | ${t("systemName")}`;
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true)

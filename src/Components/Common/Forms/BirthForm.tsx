@@ -588,7 +588,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                             onBlur={() => {
                                                 if (femaleCount === "") setFemaleCount(0);
                                             }}
-                                            placeholder="Ej: 5"
+                                            placeholder={t("common.placeholder.exNumber", { n: "5" })}
                                             min="0"
                                         />
                                     </div>
@@ -610,7 +610,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                             onBlur={() => {
                                                 if (maleCount === "") setMaleCount(0);
                                             }}
-                                            placeholder="Ej: 6"
+                                            placeholder={t("common.placeholder.exNumber", { n: "6" })}
                                             min="0"
                                         />
                                     </div>
@@ -628,7 +628,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                             name="stillborn"
                                             value={formik.values.stillborn}
                                             onChange={formik.handleChange}
-                                            placeholder="Ej: 0"
+                                            placeholder={t("common.placeholder.exNumber", { n: "0" })}
                                             min="0"
                                         />
                                     </div>
@@ -644,7 +644,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                             name="mummies"
                                             value={formik.values.mummies}
                                             onChange={formik.handleChange}
-                                            placeholder="Ej: 0"
+                                            placeholder={t("common.placeholder.exNumber", { n: "0" })}
                                             min="0"
                                         />
                                     </div>
@@ -697,7 +697,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                                 onBlur={() => {
                                                     if (totalLitterWeight === "") setTotalLitterWeight(0);
                                                 }}
-                                                placeholder="Ej: 15.5"
+                                                placeholder={t("common.placeholder.exNumber", { n: "15.5" })}
                                                 min="0"
                                             />
                                             {Number(totalLitterWeight) > 0 && (
@@ -758,7 +758,7 @@ const BirthForm: React.FC<BirthFormProps> = ({ pregnancy, onSave, onCancel }) =>
                                                                         setPigletsArray(newArray);
                                                                     }
                                                                 }}
-                                                                placeholder="Ej: 1.2"
+                                                                placeholder={t("common.placeholder.exNumber", { n: "1.2" })}
                                                                 min="0"
                                                             />
                                                         </div>

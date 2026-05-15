@@ -9,7 +9,7 @@ import "./userManual.scss";
 
 const UserManual = () => {
   const { t } = useTranslation();
-  document.title = t("manual.title") + " | MFarm";
+  document.title = `${t("manual.title")} | ${t("systemName")}`;
 
   const initialId = window.location.hash.replace("#", "") || "overview";
   const [activeSectionId, setActiveSectionId] = useState(initialId);
@@ -68,7 +68,7 @@ const UserManual = () => {
     <React.Fragment>
       <div className="page-content">
         <Container fluid>
-          <BreadCrumb title={t("manual.title")} pageTitle="MFarm" />
+          <BreadCrumb title={t("manual.title")} pageTitle={t("systemName")} />
           <Row>
             <Col lg={3} className="d-none d-lg-block">
               <UserManualSidebar

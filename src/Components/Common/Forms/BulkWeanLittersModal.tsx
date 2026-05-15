@@ -9,6 +9,7 @@ import classnames from "classnames";
 import { Column } from "common/data/data_types";
 import SelectableCustomTable from "../Tables/SelectableTable";
 import { FaInfo } from "react-icons/fa";
+import { useTranslation } from "react-i18next";
 
 interface BulkWeanLittersModalProps {
     isOpen: boolean;
@@ -23,6 +24,7 @@ const BulkWeanLittersModal: React.FC<BulkWeanLittersModalProps> = ({
     selectedLitters,
     onSuccess
 }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [modals, setModals] = useState({ success: false, error: false });
@@ -51,45 +53,45 @@ const BulkWeanLittersModal: React.FC<BulkWeanLittersModalProps> = ({
     }
 
     const groupsColumns: Column<any>[] = [
-        { header: 'Código', accessor: 'code', type: 'text', isFilterable: true },
-        { header: 'Nombre', accessor: 'name', type: 'text', isFilterable: true },
+        { header: t('groups.column.code'), accessor: 'code', type: 'text', isFilterable: true },
+        { header: t('groups.column.name'), accessor: 'name', type: 'text', isFilterable: true },
         {
-            header: 'Área',
+            header: t('groups.column.area'),
             accessor: 'area',
             type: 'text',
             isFilterable: true,
             render: (_, row) => {
                 let color = "secondary";
-                let text = "Desconocido";
+                let text = t("groups.area.unknown");
 
                 switch (row.area) {
-                    case "weaning": color = "success"; text = "Destete"; break;
-                    case "nursery": color = "warning"; text = "Preceba / Levante inicial"; break;
-                    case "fattening": color = "dark"; text = "Ceba / Engorda"; break;
+                    case "weaning": color = "success"; text = t("groups.area.weaning"); break;
+                    case "nursery": color = "warning"; text = t("groups.area.nursery"); break;
+                    case "fattening": color = "dark"; text = t("groups.area.fattening"); break;
                 }
 
                 return <Badge color={color}>{text}</Badge>;
             },
         },
         {
-            header: 'Etapa',
+            header: t('groups.column.stage'),
             accessor: 'stage',
             render: (_, row) => {
                 let color = "secondary";
                 let label = row.stage;
 
                 switch (row.stage) {
-                    case "weaning": color = "warning"; label = "Destete"; break;
-                    case "fattening": color = "primary"; label = "Engorda"; break;
-                    case "breeder": color = "success"; label = "Reproductor"; break;
+                    case "weaning": color = "warning"; label = t("groups.stage.weaning"); break;
+                    case "fattening": color = "primary"; label = t("groups.stage.fattening"); break;
+                    case "breeder": color = "success"; label = t("groups.stage.breeder"); break;
                 }
 
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { header: 'Cerdos', accessor: 'pigCount', type: 'text', isFilterable: true },
-        { header: 'Machos', accessor: 'maleCount', type: 'text', isFilterable: true },
-        { header: 'Hembras', accessor: 'femaleCount', type: 'text', isFilterable: true },
+        { header: t('groups.column.total'), accessor: 'pigCount', type: 'text', isFilterable: true },
+        { header: t('groups.column.maleCount'), accessor: 'maleCount', type: 'text', isFilterable: true },
+        { header: t('groups.column.femaleCount'), accessor: 'femaleCount', type: 'text', isFilterable: true },
     ];
 
     const fetchCompatibleGroups = async () => {
@@ -129,13 +131,13 @@ const BulkWeanLittersModal: React.FC<BulkWeanLittersModalProps> = ({
         // Validar que todas las camadas listas tengan peso
         const missingWeights = readyLitters.filter(litter => !litterWeights[litter._id] || Number(litterWeights[litter._id]) <= 0);
         if (missingWeights.length > 0) {
-            setErrorMessage('Por favor, ingresa el peso total para todas las camadas');
+            setErrorMessage(t('groups.form.bulkWean.validationWeights'));
             return;
         }
 
         // Validar selección de grupo
         if (!createNewGroup && !selectedGroup) {
-            setErrorMessage('Por favor, selecciona un grupo destino o marca "Crear nuevo grupo"');
+            setErrorMessage(t('groups.form.bulkWean.validationGroup'));
             return;
         }
 
@@ -333,7 +335,7 @@ const BulkWeanLittersModal: React.FC<BulkWeanLittersModalProps> = ({
         );
         const missingWeights = readyLitters.filter(litter => !litterWeights[litter._id] || Number(litterWeights[litter._id]) <= 0);
         if (missingWeights.length > 0) {
-            setErrorMessage('Por favor, ingresa el peso total para todas las camadas antes de continuar');
+            setErrorMessage(t('groups.form.bulkWean.validationWeightsNext'));
             return;
         }
         setErrorMessage('');
@@ -361,7 +363,7 @@ const BulkWeanLittersModal: React.FC<BulkWeanLittersModalProps> = ({
         <>
             <Modal isOpen={isOpen} toggle={handleClose} size="lg" backdrop='static' keyboard={false} centered>
                 <ModalHeader toggle={handleClose}>
-                    Destetar {readyLitters.length} Camadas
+                    {t('groups.form.bulkWean.modalTitle', { count: readyLitters.length })}
                 </ModalHeader>
                 <ModalBody>
                     <div className="step-arrow-nav mb-4">
@@ -393,7 +395,7 @@ const BulkWeanLittersModal: React.FC<BulkWeanLittersModalProps> = ({
                     <TabContent activeTab={activeStep}>
                         <TabPane tabId={1}>
                             <div className="mb-3">
-                                <Label className="form-label fw-semibold">Ingresa el peso total de cada camada:</Label>
+                                <Label className="form-label fw-semibold">{t('groups.form.bulkWean.weightsLabel')}</Label>
 
                                 <div className="border rounded p-3 mb-3" style={{ maxHeight: '400px', overflowY: 'auto' }}>
                                     {readyLitters.map((litter, index) => (
@@ -438,15 +440,15 @@ const BulkWeanLittersModal: React.FC<BulkWeanLittersModalProps> = ({
                                     <CardBody>
                                         <div className="row text-center">
                                             <div className="col-4">
-                                                <div className="text-muted small">Total lechones</div>
+                                                <div className="text-muted small">{t('groups.form.bulkWean.totalPiglets')}</div>
                                                 <h4 className="mb-0 text-primary">{totalPiglets}</h4>
                                             </div>
                                             <div className="col-4">
-                                                <div className="text-muted small">Peso total</div>
+                                                <div className="text-muted small">{t('groups.form.bulkWean.totalWeight')}</div>
                                                 <h4 className="mb-0 text-success">{totalWeight.toFixed(2)} kg</h4>
                                             </div>
                                             <div className="col-4">
-                                                <div className="text-muted small">Peso promedio</div>
+                                                <div className="text-muted small">{t('groups.form.bulkWean.avgWeight')}</div>
                                                 <h4 className="mb-0 text-info">{avgWeight.toFixed(2)} kg</h4>
                                             </div>
                                         </div>
@@ -456,7 +458,7 @@ const BulkWeanLittersModal: React.FC<BulkWeanLittersModalProps> = ({
 
                             <div className="d-flex justify-content-end mt-4">
                                 <Button className="farm-primary-button" onClick={checkWeightsBeforeNext}>
-                                    Siguiente
+                                    {t('common.button.next')}
                                     <i className="ri-arrow-right-line ms-1" />
                                 </Button>
                             </div>
@@ -464,14 +466,14 @@ const BulkWeanLittersModal: React.FC<BulkWeanLittersModalProps> = ({
 
                         <TabPane tabId={2}>
                             <div className="mb-3">
-                                <Label className="form-label fw-semibold">Selecciona el grupo destino:</Label>
+                                <Label className="form-label fw-semibold">{t('groups.form.bulkWean.groupDestinyLabel')}</Label>
 
                                 {compatibleGroups.length === 0 ? (
                                     <div className="alert alert-info d-flex align-items-center gap-2">
                                         <FaInfo size={22} />
                                         <div>
-                                            <div className="fw-semibold">No hay grupos compatibles</div>
-                                            <div className="small">Se creará un nuevo grupo automáticamente al destetar las camadas</div>
+                                            <div className="fw-semibold">{t("groups.form.bulkWean.noCompatibleGroups")}</div>
+                                            <div className="small">{t("groups.form.bulkWean.autoGroupCreation")}</div>
                                         </div>
                                     </div>
                                 ) : (
@@ -491,9 +493,9 @@ const BulkWeanLittersModal: React.FC<BulkWeanLittersModalProps> = ({
                                                 />
                                                 <FaInfo className="text-primary" size={20} />
                                                 <div>
-                                                    <div className="fw-semibold">Crear nuevo grupo</div>
+                                                    <div className="fw-semibold">{t('groups.form.bulkWean.createNewGroup')}</div>
                                                     <div className="small text-muted">
-                                                        Todas las camadas irán a un grupo nuevo
+                                                        {t('groups.form.bulkWean.createNewGroupDesc')}
                                                     </div>
                                                 </div>
                                             </div>
@@ -521,14 +523,14 @@ const BulkWeanLittersModal: React.FC<BulkWeanLittersModalProps> = ({
 
                                 {!createNewGroup && selectedGroup && (
                                     <div className="alert alert-success mt-3">
-                                        <strong>Grupo seleccionado:</strong> {selectedGroup.code} - {selectedGroup.name}
+                                        <strong>{t('groups.form.bulkWean.selectedGroup')}</strong> {selectedGroup.code} - {selectedGroup.name}
                                     </div>
                                 )}
 
                                 {createNewGroup && (
                                     <div className="alert alert-info mt-3">
                                         <FaInfo className="me-2" />
-                                        Se creará un nuevo grupo con todas las camadas destetadas
+                                        {t('groups.form.bulkWean.createNewGroupInfo')}
                                     </div>
                                 )}
                             </div>
@@ -536,7 +538,7 @@ const BulkWeanLittersModal: React.FC<BulkWeanLittersModalProps> = ({
                             <div className="d-flex justify-content-between mt-4">
                                 <Button color="danger" onClick={() => toggleArrowTab(1)}>
                                     <i className="ri-arrow-left-line me-1" />
-                                    Atrás
+                                    {t('common.button.back')}
                                 </Button>
                                 <Button
                                     color="success"
@@ -548,7 +550,7 @@ const BulkWeanLittersModal: React.FC<BulkWeanLittersModalProps> = ({
                                     ) : (
                                         <>
                                             <i className="ri-check-line me-1" />
-                                            Destetar Camadas
+                                            {t('groups.form.bulkWean.weanButton')}
                                         </>
                                     )}
                                 </Button>
@@ -561,13 +563,13 @@ const BulkWeanLittersModal: React.FC<BulkWeanLittersModalProps> = ({
             <SuccessModal
                 isOpen={modals.success}
                 onClose={handleSuccessClose}
-                message={`${readyLitters.length} camadas han sido destetadas exitosamente.`}
+                message={t('groups.form.bulkWean.success', { count: readyLitters.length })}
             />
 
             <ErrorModal
                 isOpen={modals.error}
                 onClose={() => toggleModal('error', false)}
-                message="Ha ocurrido un error al destetar las camadas. Por favor, inténtelo más tarde."
+                message={t('groups.form.bulkWean.error')}
             />
         </>
     );

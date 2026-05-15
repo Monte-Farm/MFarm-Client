@@ -21,7 +21,7 @@ const isTablet = () => {
 
 const ViewVaccinationPlans = () => {
     const { t } = useTranslation();
-    document.title = t('medication.vaccinePlan.pageTitle') + ' | System Management'
+    document.title = `${t("medication.vaccinePlan.pageTitle")} | ${t("systemName")}`;
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true);

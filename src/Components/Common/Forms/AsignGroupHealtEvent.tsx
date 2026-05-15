@@ -3,6 +3,7 @@ import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Badge, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from "reactstrap";
 import LoadingAnimation from "../Shared/LoadingAnimation";
 import { Attribute, GroupData, GroupHealthEvents, medicationPackagesEntry, PigData, SicknessHistory, VaccinationPlanEntry } from "common/data_interfaces";
@@ -31,6 +32,7 @@ interface GroupHealthEventFormProps {
 const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, onSave }) => {
     const userLogged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
+    const { t } = useTranslation();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
@@ -58,24 +60,24 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
     };
 
     const selectedMedicationsColumns: Column<any>[] = [
-        { header: "Codigo", accessor: "code", type: "text", isFilterable: true },
-        { header: "Producto", accessor: "name", type: "text", isFilterable: true },
+        { header: t("common.field.code"), accessor: "code", type: "text", isFilterable: true },
+        { header: t("medication.vaccinePlan.vaccineColumn.name"), accessor: "name", type: "text", isFilterable: true },
         {
-            header: "Dosis por cerdo",
+            header: t("medication.package.medicationColumn.quantity"),
             accessor: "dose",
             type: "text",
             isFilterable: true,
             render: (_, row) => <span>{row.quantityPerPig} {row.unit_measurement}</span>
         },
         {
-            header: "Dosis total",
+            header: t("medication.vaccinePlan.vaccineColumn.totalDose"),
             accessor: "totalQuantity",
             type: "text",
             isFilterable: true,
             render: (_, row) => <span>{row.totalQuantity} {row.unit_measurement}</span>
         },
         {
-            header: "Administracion",
+            header: t("medication.package.medicationColumn.route"),
             accessor: "administrationRoute",
             type: "text",
             isFilterable: true,
@@ -86,31 +88,31 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                 switch (value) {
                     case "oral":
                         color = "info";
-                        label = "Oral";
+                        label = t("medication.vaccinePlan.adminRouteDisplay.oral");
                         break;
                     case "intramuscular":
                         color = "primary";
-                        label = "Intramuscular";
+                        label = t("medication.vaccinePlan.adminRouteDisplay.intramuscular");
                         break;
                     case "subcutaneous":
                         color = "primary";
-                        label = "Subcutánea";
+                        label = t("medication.vaccinePlan.adminRouteDisplay.subcutaneous");
                         break;
                     case "intravenous":
                         color = "primary";
-                        label = "Intravenosa";
+                        label = t("medication.vaccinePlan.adminRouteDisplay.intravenous");
                         break;
                     case "intranasal":
                         color = "primary";
-                        label = "Intranasal";
+                        label = t("medication.vaccinePlan.adminRouteDisplay.intranasal");
                         break;
                     case "topical":
                         color = "primary";
-                        label = "Tópica";
+                        label = t("medication.vaccinePlan.adminRouteDisplay.topical");
                         break;
                     case "rectal":
                         color = "primary";
-                        label = "Rectal";
+                        label = t("medication.vaccinePlan.adminRouteDisplay.rectal");
                         break;
                 }
 
@@ -121,14 +123,14 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
 
     const columns: Column<any>[] = [
         {
-            header: 'Imagen', accessor: 'image', render: (_, row) => (
-                <img src={row.image || noImageUrl} alt="Imagen del Producto" style={{ height: "70px" }} />
+            header: t('medication.vaccinePlan.form.column.image'), accessor: 'image', render: (_, row) => (
+                <img src={row.image || noImageUrl} alt="" style={{ height: "70px" }} />
             ),
         },
-        { header: "Codigo", accessor: "code", type: "text", isFilterable: true },
-        { header: "Producto", accessor: "name", type: "text", isFilterable: true },
+        { header: t("common.field.code"), accessor: "code", type: "text", isFilterable: true },
+        { header: t("medication.vaccinePlan.vaccineColumn.name"), accessor: "name", type: "text", isFilterable: true },
         {
-            header: 'Categoria',
+            header: t('reports.col.category'),
             accessor: 'category',
             render: (value: string) => {
                 let color = "secondary";
@@ -137,11 +139,11 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                 switch (value) {
                     case "vaccines":
                         color = "info";
-                        label = "Vacunas";
+                        label = t("medication.categoryDisplay.vaccines");
                         break;
                     case "medications":
                         color = "primary";
-                        label = "Medicamentos";
+                        label = t("medication.categoryDisplay.medications");
                         break;
                 }
 
@@ -149,7 +151,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
             },
         },
         {
-            header: "Dosis",
+            header: t("medical.healthEvent.column.dosePerPig"),
             accessor: "dose",
             type: "number",
             render: (value, row, isSelected) => {
@@ -181,7 +183,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
             },
         },
         {
-            header: "Vía de administración",
+            header: t("medical.healthEvent.column.adminRoute"),
             accessor: "administration_route",
             type: "text",
             render: (value, row, isSelected) => {
@@ -201,14 +203,14 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                         }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <option value="">Seleccione...</option>
-                        <option value="oral">Oral</option>
-                        <option value="intramuscular">Intramuscular</option>
-                        <option value="subcutaneous">Subcutánea</option>
-                        <option value="intravenous">Intravenosa</option>
-                        <option value="intranasal">Intranasal</option>
-                        <option value="topical">Tópica</option>
-                        <option value="rectal">Rectal</option>
+                        <option value="">{t("medication.vaccinePlan.form.select")}</option>
+                        <option value="oral">{t("medication.vaccinePlan.adminRouteDisplay.oral")}</option>
+                        <option value="intramuscular">{t("medication.vaccinePlan.adminRouteDisplay.intramuscular")}</option>
+                        <option value="subcutaneous">{t("medication.vaccinePlan.adminRouteDisplay.subcutaneous")}</option>
+                        <option value="intravenous">{t("medication.vaccinePlan.adminRouteDisplay.intravenous")}</option>
+                        <option value="intranasal">{t("medication.vaccinePlan.adminRouteDisplay.intranasal")}</option>
+                        <option value="topical">{t("medication.vaccinePlan.adminRouteDisplay.topical")}</option>
+                        <option value="rectal">{t("medication.vaccinePlan.adminRouteDisplay.rectal")}</option>
                     </Input>
                 );
             }
@@ -216,10 +218,10 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
     ];
 
     const sicknessAttributes: Attribute[] = [
-        { key: 'name', label: 'Enfermedad', type: 'text' },
+        { key: 'name', label: t("health.field.disease"), type: 'text' },
         {
             key: 'status',
-            label: 'Estado',
+            label: t("common.field.status"),
             type: 'text',
             render: (value: string) => {
                 let color = "secondary";
@@ -228,15 +230,16 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                 switch (value) {
                     case "active":
                         color = "info";
-                        label = "Activo";
+                        label = t("health.status.active");
                         break;
                     case "controlled":
                         color = "success";
-                        label = "Controlado";
+                        label = t("health.status.controlled");
                         break;
                     case "resulved":
+                    case "resolved":
                         color = "primary";
-                        label = "Resuelto";
+                        label = t("health.status.resolved");
                         break;
                 }
 
@@ -245,7 +248,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
         },
         {
             key: 'severity',
-            label: 'Severidad',
+            label: t("health.field.severity"),
             type: 'text',
             render: (value: string) => {
                 let color = "secondary";
@@ -254,15 +257,15 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                 switch (value) {
                     case "low":
                         color = "success";
-                        label = "Baja";
+                        label = t("health.severity.low");
                         break;
                     case "medium":
                         color = "warning";
-                        label = "Media";
+                        label = t("health.severity.medium");
                         break;
                     case "high":
                         color = "danger";
-                        label = "Alta";
+                        label = t("health.severity.high");
                         break;
                 }
 
@@ -271,7 +274,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
         },
         {
             key: 'scope.type',
-            label: 'Tipo de evento',
+            label: t("health.field.eventType"),
             type: 'text',
             render: (value: string) => {
                 let color = "secondary";
@@ -280,11 +283,11 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                 switch (value) {
                     case "partial":
                         color = "success";
-                        label = "Parcial";
+                        label = t("health.eventScope.partial");
                         break;
                     case "total":
                         color = "warning";
-                        label = "Total";
+                        label = t("health.eventScope.total");
                         break;
                 }
 
@@ -293,11 +296,11 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
         },
         {
             key: 'affectedCount',
-            label: 'Cerdos afectados',
+            label: t("health.field.affectedPigs"),
             type: 'text',
             render: (value, object) => <span>{object.scope.affectedCount}</span>
         },
-        { key: 'observations', label: 'Observaciones', type: 'text' },
+        { key: 'observations', label: t("common.field.observations"), type: 'text' },
 
     ]
 
@@ -316,7 +319,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
             setProducts(productsWithId)
         } catch (error) {
             logger.error('Error fetching data:', error);
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al cargar los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t("common.error.loadData") })
         } finally {
             setLoading(false)
         }
@@ -479,7 +482,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                             aria-controls="step-packageSelect-tab"
                             disabled
                         >
-                            Informacion de evento
+                            {t("medical.healthEvent.details.title")}
                         </NavLink>
                     </NavItem>
 
@@ -492,7 +495,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                             aria-selected={activeStep === 2}
                             disabled
                         >
-                            Sintomas
+                            {t("health.field.symptoms")}
                         </NavLink>
                     </NavItem>
 
@@ -505,7 +508,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                             aria-selected={activeStep === 3}
                             disabled
                         >
-                            Tratamiento
+                            {t("groups.form.bulkHealthEvent.step.treatment")}
                         </NavLink>
                     </NavItem>
 
@@ -519,7 +522,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                             aria-selected={activeStep === 4}
                             disabled
                         >
-                            Resumen
+                            {t("medication.assign.step.summary")}
                         </NavLink>
                     </NavItem>
                 </Nav>
@@ -528,9 +531,9 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
             <TabContent activeTab={activeStep}>
                 <TabPane tabId={1}>
                     <div className="mb-3">
-                        <h5 className="mb-1">Información del evento sanitario</h5>
+                        <h5 className="mb-1">{t("groups.form.bulkHealthEvent.eventInfoTitle")}</h5>
                         <small className="text-muted">
-                            Complete la información básica del evento. La fecha de término solo es necesaria si el evento ya está resuelto.
+                            {t("groups.form.bulkHealthEvent.eventInfoSubtitle")}
                         </small>
                     </div>
 
@@ -539,12 +542,12 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                             <div className="row g-3">
                                 <div className="col-md-6">
                                     <Label className="form-label fw-semibold">
-                                        Nombre del evento <span className="text-danger">*</span>
+                                        {t("medical.healthEvent.attribute.name")} <span className="text-danger">*</span>
                                     </Label>
                                     <Input
                                         type="text"
                                         name="name"
-                                        placeholder="Ej: Gripe porcina, Diarrea, etc."
+                                        placeholder={t("health.field.diseasePlaceholder")}
                                         value={formik.values.name}
                                         onChange={formik.handleChange}
                                         onBlur={formik.handleBlur}
@@ -557,7 +560,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
 
                                 <div className="col-md-3">
                                     <Label htmlFor="severityInput" className="form-label fw-semibold">
-                                        Severidad <span className="text-danger">*</span>
+                                        {t("health.field.severity")} <span className="text-danger">*</span>
                                     </Label>
                                     <Input
                                         type="select"
@@ -568,10 +571,10 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                                         onBlur={formik.handleBlur}
                                         invalid={formik.touched.severity && !!formik.errors.severity}
                                     >
-                                        <option value="">Seleccione...</option>
-                                        <option value="low">Baja</option>
-                                        <option value="medium">Media</option>
-                                        <option value="high">Alta</option>
+                                        <option value="">{t("common.select")}</option>
+                                        <option value="low">{t("health.severity.low")}</option>
+                                        <option value="medium">{t("health.severity.medium")}</option>
+                                        <option value="high">{t("health.severity.high")}</option>
                                     </Input>
                                     {formik.touched.severity && formik.errors.severity && (
                                         <FormFeedback>{formik.errors.severity}</FormFeedback>
@@ -580,7 +583,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
 
                                 <div className="col-md-3">
                                     <Label htmlFor="startDate" className="form-label fw-semibold">
-                                        Fecha de inicio <span className="text-danger">*</span>
+                                        {t("medical.healthEvent.attribute.startDate")} <span className="text-danger">*</span>
                                     </Label>
                                     <DatePicker
                                         id="startDate"
@@ -590,7 +593,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                                             if (date[0]) formik.setFieldValue('startDate', date[0]);
                                         }}
                                         options={{ dateFormat: 'd/m/Y' }}
-                                        placeholder="Seleccione fecha"
+                                        placeholder={t("common.placeholder.selectDate")}
                                     />
                                     {formik.touched.startDate && formik.errors.startDate && (
                                         <FormFeedback className="d-block">{formik.errors.startDate as string}</FormFeedback>
@@ -601,7 +604,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                             <div className="row g-3 mt-2">
                                 <div className="col-md-4">
                                     <Label htmlFor="typeInput" className="form-label fw-semibold">
-                                        Tipo de evento <span className="text-danger">*</span>
+                                        {t("health.field.eventType")} <span className="text-danger">*</span>
                                     </Label>
                                     <Input
                                         type="select"
@@ -612,9 +615,9 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                                         onBlur={formik.handleBlur}
                                         invalid={formik.touched.scope?.type && !!formik.errors.scope?.type}
                                     >
-                                        <option value="">Seleccione...</option>
-                                        <option value="partial">Parcial (algunos cerdos)</option>
-                                        <option value="total">Total (todo el grupo)</option>
+                                        <option value="">{t("common.select")}</option>
+                                        <option value="partial">{t("health.eventScope.partialDesc")}</option>
+                                        <option value="total">{t("health.eventScope.totalDesc")}</option>
                                     </Input>
                                     {formik.touched.scope?.type && formik.errors.scope?.type && (
                                         <FormFeedback>{formik.errors.scope.type}</FormFeedback>
@@ -623,12 +626,12 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
 
                                 <div className="col-md-4">
                                     <Label className="form-label fw-semibold">
-                                        Cerdos afectados <span className="text-danger">*</span>
+                                        {t("health.field.affectedPigs")} <span className="text-danger">*</span>
                                     </Label>
                                     <Input
                                         type="number"
                                         name="scope.affectedCount"
-                                        placeholder="Número de cerdos"
+                                        placeholder={t("health.field.pigCountPlaceholder")}
                                         value={formik.values.scope.affectedCount === 0 ? '' : formik.values.scope.affectedCount}
                                         onChange={(e) => {
                                             const value = e.target.value === '' ? 0 : Number(e.target.value);
@@ -664,7 +667,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
 
                                 <div className="col-md-4">
                                     <Label htmlFor="statusInput" className="form-label fw-semibold">
-                                        Estado <span className="text-danger">*</span>
+                                        {t("common.field.status")} <span className="text-danger">*</span>
                                     </Label>
                                     <Input
                                         type="select"
@@ -680,10 +683,10 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                                         onBlur={formik.handleBlur}
                                         invalid={formik.touched.status && !!formik.errors.status}
                                     >
-                                        <option value="">Seleccione...</option>
-                                        <option value="active">Activo</option>
-                                        <option value="controlled">Controlado</option>
-                                        <option value="resolved">Resuelto</option>
+                                        <option value="">{t("common.select")}</option>
+                                        <option value="active">{t("health.status.active")}</option>
+                                        <option value="controlled">{t("health.status.controlled")}</option>
+                                        <option value="resolved">{t("health.status.resolved")}</option>
                                     </Input>
                                     {formik.touched.status && formik.errors.status && (
                                         <FormFeedback>{formik.errors.status}</FormFeedback>
@@ -694,7 +697,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                             {formik.values.status === 'resolved' && (
                                 <div className="w-100 mt-2">
                                     <Label htmlFor="endDate" className="form-label fw-semibold">
-                                        Fecha de término <span className="text-danger">*</span>
+                                        {t("medical.healthEvent.attribute.endDate")} <span className="text-danger">*</span>
                                     </Label>
                                     <DatePicker
                                         id="endDate"
@@ -704,7 +707,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                                             if (date[0]) formik.setFieldValue('endDate', date[0]);
                                         }}
                                         options={{ dateFormat: 'd/m/Y' }}
-                                        placeholder="Seleccione fecha"
+                                        placeholder={t("common.placeholder.selectDate")}
                                     />
                                     {formik.touched.endDate && formik.errors.endDate && (
                                         <FormFeedback className="d-block">{formik.errors.endDate as string}</FormFeedback>
@@ -717,7 +720,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
 
                             <div className="row g-3 mt-2">
                                 <div className="col-md-6">
-                                    <Label htmlFor="user" className="form-label fw-semibold">Detectada por</Label>
+                                    <Label htmlFor="user" className="form-label fw-semibold">{t("medical.healthEvent.attribute.detectedBy")}</Label>
                                     <Input
                                         type="text"
                                         id="user"
@@ -728,12 +731,12 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                                 </div>
 
                                 <div className="col-md-6">
-                                    <Label className="form-label fw-semibold">Observaciones</Label>
+                                    <Label className="form-label fw-semibold">{t("common.field.observations")}</Label>
                                     <Input
                                         type="textarea"
                                         name="observations"
                                         rows={1}
-                                        placeholder="Información adicional sobre el evento..."
+                                        placeholder={t("health.field.observationsPlaceholder")}
                                         value={formik.values.observations}
                                         onChange={formik.handleChange}
                                         onBlur={formik.handleBlur}
@@ -749,7 +752,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
 
                     <div className="d-flex justify-content-between mt-4">
                         <Button className="btn btn-primary ms-auto" onClick={() => checkSicknessData()}>
-                            Siguiente
+                            {t("common.button.next")}
                             <i className="ri-arrow-right-line ms-1" />
                         </Button>
                     </div>
@@ -757,7 +760,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
 
                 <TabPane tabId={2}>
                     <div className="mb-3">
-                        <h5 className="mb-1">Síntomas observados</h5>
+                        <h5 className="mb-1">{t("health.field.observedSymptoms")}</h5>
                         <small className="text-muted">
                             Seleccione todos los síntomas observados en el cerdo
                         </small>
@@ -768,11 +771,11 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                     <div className="d-flex justify-content-between mt-4">
                         <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                             <i className="me-2 ri-arrow-left-line" />
-                            Anterior
+                            {t("common.button.previous")}
                         </Button>
 
                         <Button className="btn" onClick={() => checkSymptomsData()}>
-                            Siguiente
+                            {t("common.button.next")}
                             <i className="ms-2 ri-arrow-right-line" />
                         </Button>
                     </div>
@@ -806,7 +809,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                     <div className="d-flex justify-content-between mt-4">
                         <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                             <i className="me-2 ri-arrow-left-line" />
-                            Anterior
+                            {t("common.button.previous")}
                         </Button>
 
                         <Button
@@ -817,7 +820,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                                 toggleArrowTab(activeStep + 1);
                             }}
                         >
-                            Siguiente
+                            {t("common.button.next")}
                             <i className="ri-arrow-right-line ms-1" />
                         </Button>
                     </div>
@@ -829,7 +832,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                             <div className="d-flex gap-3 align-items-stretch" style={{ flex: 1 }}>
                                 <Card className="shadow-sm w-50 h-100">
                                     <CardHeader className="bg-light fw-bold fs-5">
-                                        Información de evento
+                                        {t("medical.healthEvent.details.title")}
                                     </CardHeader>
                                     <CardBody>
                                         <ObjectDetails
@@ -841,7 +844,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
 
                                 <Card className="shadow-sm w-50 h-100">
                                     <CardHeader className="bg-light fw-bold fs-5">
-                                        Síntomas
+                                        {t("health.field.symptoms")}
                                     </CardHeader>
 
                                     <CardBody className="d-flex flex-column">
@@ -850,7 +853,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                                         ) : (
                                             <div className="text-muted fst-italic d-flex align-items-center justify-content-center flex-grow-1 gap-2">
                                                 <i className="fa-solid fa-circle-info" />
-                                                No se registraron síntomas
+                                                {t("groups.form.bulkHealthEvent.noSymptoms")}
                                             </div>
                                         )}
                                     </CardBody>
@@ -860,7 +863,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                             <div style={{ flex: 1 }}>
                                 <Card className="shadow-sm h-100">
                                     <CardHeader className="bg-light fw-bold fs-5">
-                                        Tratamiento
+                                        {t("groups.form.bulkHealthEvent.step.treatment")}
                                     </CardHeader>
 
                                     <CardBody className="d-flex flex-column p-0">
@@ -878,7 +881,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                                         ) : (
                                             <div className="text-muted fst-italic d-flex align-items-center justify-content-center flex-grow-1 gap-2">
                                                 <i className="fa-solid fa-pills" />
-                                                No se asignó tratamiento
+                                                {t("groups.form.bulkHealthEvent.noTreatment")}
                                             </div>
                                         )}
                                     </CardBody>
@@ -890,7 +893,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                     <div className="mt-4 d-flex">
                         <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                             <i className="ri-arrow-left-line me-2" />
-                            Atrás
+                            {t("common.button.back")}
                         </Button>
 
                         <Button className="ms-auto btn-success" onClick={() => formik.handleSubmit()} disabled={formik.isSubmitting}>
@@ -899,7 +902,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
                             ) : (
                                 <>
                                     <i className="ri-check-line me-2" />
-                                    Asignar
+                                    {t("medication.assign.button.assign")}
                                 </>
                             )}
                         </Button>
@@ -910,7 +913,7 @@ const GroupHealthEventForm: React.FC<GroupHealthEventFormProps> = ({ groupId, on
             </TabContent>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} autoClose={3000} />
-            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message={"Ha ocurrido un error, intentelo mas tarde"} />
+            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message={t("common.error.generic")} />
             <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={"Evento sanitario registrado correctamente"} />
             <MissingStockModal isOpen={modals.missingStock} onClose={() => toggleModal('missingStock', false)} missingItems={missingItems} />
         </>

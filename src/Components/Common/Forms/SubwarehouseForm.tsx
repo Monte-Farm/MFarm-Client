@@ -63,11 +63,11 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
     }
 
     const usersColumns: Column<any>[] = [
-        { header: 'Usuario', accessor: 'username', isFilterable: true, type: 'text' },
-        { header: 'Nombre', accessor: 'name', isFilterable: true, type: 'text' },
-        { header: 'Apellido', accessor: 'lastname', isFilterable: true, type: 'text' },
+        { header: t('users.column.username'), accessor: 'username', isFilterable: true, type: 'text' },
+        { header: t('common.field.name'), accessor: 'name', isFilterable: true, type: 'text' },
+        { header: t('users.column.lastname'), accessor: 'lastname', isFilterable: true, type: 'text' },
         {
-            header: 'Rol',
+            header: t('users.column.role'),
             accessor: 'role',
             isFilterable: true,
             render: (value: string | string[] | undefined) => {
@@ -96,24 +96,24 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
             },
         },
         {
-            header: 'Estado',
+            header: t('common.field.status'),
             accessor: 'status',
             isFilterable: true,
             render: (value: boolean) => (
                 <Badge color={value ? 'success' : 'danger'}>
-                    {value ? 'Activo' : 'Inactivo'}
+                    {value ? t('common.status.active') : t('common.status.inactive')}
                 </Badge>
             ),
         },
     ];
 
     const userAttributes: Attribute[] = [
-        { key: 'username', label: 'Usuario', type: 'text' },
-        { key: 'name', label: 'Nombre', type: 'text' },
-        { key: 'lastname', label: 'Apellido', type: 'text' },
+        { key: 'username', label: t('users.column.username'), type: 'text' },
+        { key: 'name', label: t('common.field.name'), type: 'text' },
+        { key: 'lastname', label: t('users.column.lastname'), type: 'text' },
         {
             key: 'role',
-            label: 'Rol',
+            label: t('users.column.role'),
             type: 'text',
             render: (value: string | string[] | undefined) => {
                 const roles = Array.isArray(value)
@@ -143,11 +143,11 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
     ]
 
     const subwarehouseAttributes: Attribute[] = [
-        { key: 'code', label: 'Codigo', type: 'text' },
-        { key: 'name', label: 'Nombre', type: 'text' },
+        { key: 'code', label: t('common.field.code'), type: 'text' },
+        { key: 'name', label: t('common.field.name'), type: 'text' },
         {
             key: 'type',
-            label: 'Tipo de subalmacen',
+            label: t('warehouse.subwarehouse.typeLabel'),
             type: 'text',
             render: (value: string) => {
                 let color = "secondary";
@@ -156,19 +156,19 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
                 switch (value) {
                     case "medical":
                         color = "info";
-                        label = "Medico";
+                        label = t("warehouse.common.subwarehouseType.medical");
                         break;
                     case "feed":
                         color = "success";
-                        label = "Alimento";
+                        label = t("warehouse.common.subwarehouseType.feed");
                         break;
                     case "cleaning":
                         color = "primary";
-                        label = "Limpieza";
+                        label = t("warehouse.common.subwarehouseType.cleaning");
                         break;
                     case "supplies":
                         color = "warning";
-                        label = "Insumos";
+                        label = t("warehouse.common.subwarehouseType.supplies");
                         break;
                 }
 
@@ -311,7 +311,7 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
                                 aria-selected={activeStep === 1}
                                 aria-controls="step-managerselect-tab"
                             >
-                                Selección de encargado
+                                {t("warehouse.subwarehouse.stepSelectManager")}
                             </NavLink>
                         </NavItem>
 
@@ -327,7 +327,7 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
                                 aria-selected={activeStep === 2}
                                 aria-controls="step-subwarehouseData-tab"
                             >
-                                Información del subalmacen
+                                {t("warehouse.subwarehouse.stepSubwarehouseData")}
                             </NavLink>
                         </NavItem>
 
@@ -343,7 +343,7 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
                                 aria-selected={activeStep === 3}
                                 aria-controls="step-summary-tab"
                             >
-                                Resumen
+                                {t("warehouse.subwarehouse.stepSummary")}
                             </NavLink>
                         </NavItem>
                     </Nav>
@@ -354,7 +354,7 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
                         <SelectableTable data={users} columns={usersColumns} selectionMode="single" showPagination={true} rowsPerPage={6} onSelect={(rows) => changeSelectedUser(rows?.[0] ?? null)} />
                         <div className="mt-4 d-flex">
                             <Button className="ms-auto" onClick={() => checkSelectedManager()}>
-                                Siguiente
+                                {t("common.button.next")}
                                 <i className="ri-arrow-right-line" />
                             </Button>
                         </div>
@@ -362,7 +362,7 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
 
                     <TabPane id="step-subwarehouseData-tab" tabId={2}>
                         <div className="mt-4">
-                            <Label htmlFor="idInput" className="form-label">Identificador</Label>
+                            <Label htmlFor="idInput" className="form-label">{t("warehouse.subwarehouse.fieldIdentifier")}</Label>
                             <Input
                                 type="text"
                                 id="idInput"
@@ -380,7 +380,7 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
                         </div>
 
                         <div className='mt-4'>
-                            <Label htmlFor='nameInput' className='form-input'>Nombre</Label>
+                            <Label htmlFor='nameInput' className='form-input'>{t('warehouse.subwarehouse.fieldName')}</Label>
                             <Input
                                 type='text'
                                 id='nameInput'
@@ -397,7 +397,7 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
                         </div>
 
                         <div className="mt-4">
-                            <Label className="form-label fw-bold">Tipo de almacén</Label>
+                            <Label className="form-label fw-bold">{t("warehouse.subwarehouse.fieldType")}</Label>
 
                             <div className="role-selector-container d-flex flex-wrap gap-3">
                                 {subwarehouseTypes.map((type) => {
@@ -429,11 +429,11 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
                         <div className="d-flex justify-content-end mt-4 gap-2">
                             <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                                 <i className="ri-arrow-left-line me-2" />
-                                Atrás
+                                {t("common.button.back")}
                             </Button>
 
                             <Button className="ms-auto" onClick={() => checkSubwarehouseData()}>
-                                Siguiente
+                                {t("common.button.next")}
                                 <i className="ri-arrow-right-line" />
                             </Button>
 
@@ -444,7 +444,7 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
                         <div className='d-flex gap-3'>
                             <Card className="w-50">
                                 <CardHeader>
-                                    <h5>Información del subalmacen</h5>
+                                    <h5>{t("warehouse.subwarehouse.infoSubwarehouse")}</h5>
                                 </CardHeader>
                                 <CardBody>
                                     <ObjectDetails attributes={subwarehouseAttributes} object={formik.values || {}} />
@@ -453,7 +453,7 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
 
                             <Card className="w-50">
                                 <CardHeader>
-                                    <h5>Información del encargado</h5>
+                                    <h5>{t("warehouse.subwarehouse.infoManager")}</h5>
                                 </CardHeader>
                                 <CardBody>
                                     <ObjectDetails attributes={userAttributes} object={selectedUser || {}} showImage={true} imageSrc={selectedUser?.profile_image || defaultImageProfila}></ObjectDetails>
@@ -465,10 +465,10 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
                         <div className="d-flex justify-content-between mt-4 gap-2">
                             <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                                 <i className="ri-arrow-left-line me-2" />
-                                Atrás
+                                {t("common.button.back")}
                             </Button>
                             <Button className='farm-primary-button' type="submit" disabled={formik.isSubmitting}>
-                                {formik.isSubmitting ? <Spinner></Spinner> : "Registrar Subalmacén"}
+                                {formik.isSubmitting ? <Spinner></Spinner> : t("warehouse.subwarehouse.registerBtn")}
                             </Button>
                         </div>
                     </TabPane>
@@ -476,22 +476,22 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
             </form>
 
             <Modal isOpen={modals.cancel} centered toggle={() => toggleModal('cancel', false)}>
-                <ModalHeader>Confirmación de Cancelación</ModalHeader>
+                <ModalHeader>{t("warehouse.subwarehouse.cancelTitle")}</ModalHeader>
                 <ModalBody>
-                    ¿Estás seguro de que deseas cancelar? Los datos no se guardarán.
+                    {t("warehouse.subwarehouse.cancelBody")}
                 </ModalBody>
                 <ModalFooter>
                     <Button className='btn-cancel' onClick={onCancel}>
-                        Sí, cancelar
+                        {t("warehouse.subwarehouse.cancelYes")}
                     </Button>
                     <Button className='farm-primary-button' onClick={() => toggleModal('cancel', false)}>
-                        No, continuar
+                        {t("warehouse.subwarehouse.cancelNo")}
                     </Button>
                 </ModalFooter>
             </Modal>
 
-            <SuccessModal isOpen={modals.success} message={'Subalmacen creado con exito'} onClose={() => onSave()} />
-            <ErrorModal isOpen={modals.error} message={'El servicio no esta disponible, intentelo mas tarde'} onClose={() => toggleModal('error', false)} />
+            <SuccessModal isOpen={modals.success} message={t('warehouse.subwarehouse.successCreate')} onClose={() => onSave()} />
+            <ErrorModal isOpen={modals.error} message={t('warehouse.subwarehouse.errorService')} onClose={() => toggleModal('error', false)} />
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} autoClose={3000} absolutePosition={false} />
         </>
     )

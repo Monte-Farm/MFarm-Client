@@ -46,7 +46,7 @@ const FarmCards = <T extends Record<string, any>>({
                                     <CardImg
                                         top
                                         src={item[imageAccessor] || defaultFarmImage}
-                                        alt="User image"
+                                        alt=""
                                         className="user-card-img"
                                         onError={(e) => {
                                             (e.target as HTMLImageElement).src = defaultFarmImage;
@@ -56,7 +56,7 @@ const FarmCards = <T extends Record<string, any>>({
                                     <CardImg
                                         top
                                         src={defaultFarmImage}
-                                        alt="User image"
+                                        alt=""
                                         className="user-card-img"
                                         onError={(e) => {
                                             (e.target as HTMLImageElement).src = defaultFarmImage;
@@ -68,7 +68,7 @@ const FarmCards = <T extends Record<string, any>>({
                                         <Button
                                             color="warning"
                                             size="sm"
-                                            title="Entrar como gerente"
+                                            title={t("farms.action.enterAsManager")}
                                             onClick={(e) => { e.stopPropagation(); onEnterClick(item); }}
                                             className="farm-action-btn"
                                             disabled={item.status === false}
@@ -138,7 +138,7 @@ const FarmCards = <T extends Record<string, any>>({
                                                     ? col.render(item[col.accessor], item)
                                                     : col.type === ('status' as ColumnType) ? (
                                                         <Badge color={item[col.accessor] ? "success" : "danger"} className="farm-status-badge">
-                                                            {item[col.accessor] ? "Activo" : "Inactivo"}
+                                                            {item[col.accessor] ? t("common.status.active") : t("common.status.inactive")}
                                                         </Badge>
                                                     ) : item[col.accessor]
                                                 }

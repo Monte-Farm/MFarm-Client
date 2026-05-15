@@ -20,7 +20,9 @@
       "accept": "Aceptar",
       "clearFilters": "Limpiar filtros",
       "done": "Listo",
-      "remove": "Quitar"
+      "remove": "Quitar",
+      "previous": "Anterior",
+      "send": "Enviar"
     },
     "shortMonths": [
       "Ene",
@@ -40,11 +42,16 @@
       "active": "Activo",
       "inactive": "Inactivo",
       "loading": "Cargando…",
-      "noData": "Sin datos"
+      "noData": "Sin datos",
+      "notAvailable": "No disponible",
+      "pending": "Pendiente",
+      "completed": "Completado"
     },
     "sex": {
       "male": "♂ Macho",
-      "female": "♀ Hembra"
+      "female": "♀ Hembra",
+      "maleShort": "Macho",
+      "femaleShort": "Hembra"
     },
     "yes": "Sí",
     "no": "No",
@@ -64,7 +71,21 @@
       "qty": "Cantidad",
       "unitPrice": "Precio Unitario",
       "totalPrice": "Precio Total",
-      "observations": "Observaciones"
+      "observations": "Observaciones",
+      "sex": "Sexo",
+      "creationDate": "Fecha de creación",
+      "origin": "Origen"
+    },
+    "error": {
+      "loadData": "Ha ocurrido un error al cargar los datos, inténtelo más tarde",
+      "generic": "Ha ocurrido un error, inténtelo más tarde"
+    },
+    "select": "Seleccione...",
+    "other": "Otro",
+    "total": "Total",
+    "placeholder": {
+      "exNumber": "Ej: {{n}}",
+      "selectDate": "Seleccione fecha"
     }
   },
   "profile": {
@@ -78,15 +99,29 @@
   "auth": {
     "login": {
       "label": "Iniciar sesión",
-      "pageTitle": "Inicio de sesión | MFarm",
+      "pageTitle": "Inicio de sesión | PorcySys",
       "welcome": "¡Bienvenido!",
       "subtitle": "Inicie Sesión para continuar.",
-      "disabledUser": "Este usuario ha sido desactivado, pongase en contacto con el administrador"
+      "disabledUser": "Este usuario ha sido desactivado, pongase en contacto con el administrador",
+      "field": {
+        "username": "Nombre de usuario",
+        "usernamePlaceholder": "Ingrese su número de usuario",
+        "password": "Contraseña",
+        "passwordPlaceholder": "Ingrese su contraseña"
+      },
+      "validation": {
+        "username": "Por favor, ingrese su número de usuario",
+        "password": "Por favor, ingrese su contraseña"
+      },
+      "submit": "Iniciar Sesión",
+      "submitting": "Iniciando sesión...",
+      "invalidCredentials": "Nombre de usuario o contraseña incorrectos.",
+      "serviceUnavailable": "El servicio no está disponible. Inténtelo de nuevo más tarde."
     },
     "logout": "Cerrar Sesión",
     "logoutConfirm": "¿Estás seguro de que desea cerrar sesión?",
     "register": {
-      "pageTitle": "Registro | MFarm",
+      "pageTitle": "Registro | PorcySys",
       "title": "Crear Nueva Cuenta",
       "subtitle": "Crea tu cuenta gratuita",
       "field": {
@@ -115,7 +150,7 @@
       "createWith": "Crear cuenta con"
     },
     "profile": {
-      "pageTitle": "Perfil | MFarm",
+      "pageTitle": "Perfil | PorcySys",
       "emailId": "Email Id:",
       "idNo": "Id No.:",
       "changeUsername": "Cambiar Nombre de Usuario",
@@ -130,7 +165,7 @@
       "successUpdate": "Nombre de usuario actualizado a"
     },
     "forgotPassword": {
-      "pageTitle": "Olvidé mi contraseña | MFarm",
+      "pageTitle": "Olvidé mi contraseña | PorcySys",
       "title": "¿Olvidaste tu contraseña?",
       "subtitle": "Recupera tu contraseña",
       "instruction": "Ingresa tu correo y te enviaremos las instrucciones para recuperar tu contraseña",
@@ -488,7 +523,12 @@
         "SACRIFICE": "Sacrificio",
         "TRANSFER": "Transferencia",
         "DEFECT": "Defecto",
-        "OTHER": "Otro"
+        "OTHER": "Otro",
+        "death": "Muerte",
+        "sacrifice": "Sacrificio",
+        "transfer": "Transferencia",
+        "defect": "Defecto",
+        "other": "Otro"
       },
       "stats": {
         "selectedMales": "Machos seleccionados",
@@ -1564,6 +1604,9 @@
       "positive": "Debe ser mayor a 0",
       "exceedsStock": "La cantidad supera el stock disponible",
       "completeRequired": "Por favor, complete todos los campos obligatorios"
+    },
+    "action": {
+      "prev": "Anterior"
     }
   },
   "roles": {
@@ -1669,7 +1712,8 @@
       "birthDate": "Fecha de N.",
       "sex": "Sexo",
       "weight": "Peso actual",
-      "observations": "Observaciones"
+      "observations": "Observaciones",
+      "pigCount": "Cerdos"
     },
     "area": {
       "unknown": "Desconocido",
@@ -2121,7 +2165,8 @@
         "error": "Ha ocurrido un error al registrar el evento sanitario. Por favor, inténtelo más tarde.",
         "validationConfig": "Por favor, configure el tipo y número de afectados para todos los grupos",
         "validationRequired": "Por favor, complete todos los campos obligatorios",
-        "validationTreatment": "Por favor, llene todos los datos de los tratamientos seleccionados"
+        "validationTreatment": "Por favor, llene todos los datos de los tratamientos seleccionados",
+        "pigsCount": "cerdos"
       },
       "bulkStageChange": {
         "modalTitle": "Cambiar Etapa a {{count}} Grupos",
@@ -2169,7 +2214,31 @@
         "validationWeightsNext": "Por favor, ingresa el peso total para todas las camadas antes de continuar",
         "validationGroup": "Por favor, selecciona un grupo destino o marca \"Crear nuevo grupo\"",
         "success": "{{count}} camadas han sido destetadas exitosamente.",
-        "error": "Ha ocurrido un error al destetar las camadas. Por favor, inténtelo más tarde."
+        "error": "Ha ocurrido un error al destetar las camadas. Por favor, inténtelo más tarde.",
+        "autoGroupCreation": "Se creará un nuevo grupo automáticamente al destetar las camadas"
+      },
+      "processReplacement": {
+        "selectPigsTitle": "Selección de Cerdos para Reemplazo",
+        "pigsSelected": "Cerdos seleccionados:",
+        "weightTitle": "Registro de Peso",
+        "weightIndividual": "Ingresar peso individual de cada cerdo",
+        "weightIndividualHint": "Ingresa el peso de cada cerdo individualmente",
+        "weightTotalHint": "Ingresa el peso total del grupo y se asignará el peso promedio a cada cerdo",
+        "noCompatibleGroups": "No hay grupos de reemplazo compatibles",
+        "newGroupWillBeCreated": "Se creará un nuevo grupo de reemplazo",
+        "targetGroup": "Grupo de reemplazo destino",
+        "pigWeight": "Peso de los cerdos",
+        "avgWeight": "Peso Promedio",
+        "createNewGroup": "Crear nuevo grupo de reemplazo",
+        "createNewGroupDesc": "Las cerdas no se mezclarán con grupos existentes",
+        "newGroupInfo": "Nuevo grupo de reemplazo",
+        "newGroupCreationInfo": "Se creará un nuevo grupo de reemplazo al procesar",
+        "step": {
+          "pigSelection": "Selección de cerdos",
+          "pigWeight": "Peso de cerdos",
+          "groupIntegration": "Integración a grupo de reemplazo",
+          "summary": "Resumen"
+        }
       }
     },
     "validation": {
@@ -2190,7 +2259,22 @@
         "add": "INGRESO",
         "withdraw": "RETIRO",
         "transfer": "TRANSFERENCIA"
-      }
+      },
+      "eventType": {
+        "creation": "Creación",
+        "entry": "Ingreso",
+        "withdrawal": "Retiro",
+        "transfer": "Transferencia",
+        "death": "Muerte",
+        "discard": "Descarte",
+        "stageChange": "Cambio de etapa",
+        "replacement": "Reemplazo",
+        "sale": "Venta",
+        "partialSale": "Venta parcial",
+        "sold": "Vendido"
+      },
+      "noEvents": "Sin eventos registrados",
+      "by": "Por"
     }
   },
   "insemination": {
@@ -2616,7 +2700,10 @@
       "initialMale": "Nacidos macho",
       "initialFemale": "Nacidos hembra",
       "status": "Estado",
-      "registeredBy": "Registrado por"
+      "registeredBy": "Registrado por",
+      "currentMale": "Machos actuales",
+      "currentFemale": "Hembras actuales",
+      "responsible": "Responsable"
     },
     "motherAttr": {
       "code": "Código",
@@ -3036,7 +3123,7 @@
         "archived": "Archivado"
       },
       "list": {
-        "pageTitle": "Cierre de Periodos | MFarm",
+        "pageTitle": "Cierre de Periodos | PorcySys",
         "breadcrumb": "Cierre de Periodos",
         "cardHeader": "Cierres registrados",
         "cardSubheader": "Historial de cierres mensuales de la granja",
@@ -3591,7 +3678,7 @@
       }
     },
     "expense": {
-      "pageTitle": "Gastos | MFarm",
+      "pageTitle": "Gastos | PorcySys",
       "breadcrumb": {
         "title": "Gastos",
         "parent": "Finanzas"
@@ -3678,7 +3765,7 @@
       }
     },
     "income": {
-      "pageTitle": "Entradas de Inventario | MFarm",
+      "pageTitle": "Entradas de Inventario | PorcySys",
       "breadcrumb": {
         "title": "Entradas",
         "parent": "Almacén"
@@ -3763,7 +3850,7 @@
       }
     },
     "outcome": {
-      "pageTitle": "Salidas de Inventario | MFarm",
+      "pageTitle": "Salidas de Inventario | PorcySys",
       "breadcrumb": {
         "title": "Salidas",
         "parent": "Almacén"
@@ -3811,7 +3898,7 @@
       }
     },
     "sale": {
-      "pageTitle": "Venta de Cerdos | MFarm",
+      "pageTitle": "Venta de Cerdos | PorcySys",
       "breadcrumb": {
         "title": "Ventas de Cerdos",
         "parent": "Ventas"
@@ -3858,7 +3945,7 @@
   },
   "laboratory": {
     "extraction": {
-      "pageTitle": "Ver extracciones | Management System",
+      "pageTitle": "Ver extracciones | PorcySys",
       "breadcrumb": {
         "title": "Ver extracciones",
         "parent": "Extracciones"
@@ -3959,7 +4046,7 @@
         "success": "Extracción registrada con éxito"
       },
       "details": {
-        "pageTitle": "Detalles de extracción | System Management",
+        "pageTitle": "Detalles de extracción | PorcySys",
         "responsible": "Responsable:",
         "cardExtraction": "Información de la extracción",
         "cardBoar": "Información del verraco",
@@ -3967,7 +4054,7 @@
       }
     },
     "sample": {
-      "pageTitle": "Ver génetica liquida | Management System",
+      "pageTitle": "Ver génetica liquida | PorcySys",
       "breadcrumb": {
         "title": "Lotes",
         "parent": "Génetica liquida"
@@ -4046,7 +4133,7 @@
         "generatePdf": "Error al generar el PDF, intentelo más tarde"
       },
       "detail": {
-        "pageTitle": "Detalles de genetica liquida | System Management",
+        "pageTitle": "Detalles de genetica liquida | PorcySys",
         "breadcrumb": {
           "title": "Detalles de lote",
           "parent": "Genetica liquida"
@@ -4362,7 +4449,8 @@
         "route": "Administración",
         "age": "Edad objetivo",
         "frequency": "Frecuencia",
-        "days": "días"
+        "days": "días",
+        "totalDose": "Dosis total"
       },
       "frequency": {
         "single": "Única dosis",
@@ -4495,6 +4583,15 @@
         "success": "Paquete de medicamentos registrado con exito",
         "errorSuccess": "Ha ocurrido un error al registrar el paquete de medicamentos, intentelo mas tarde",
         "register": "Registrar"
+      },
+      "adminRouteDisplay": {
+        "oral": "Oral",
+        "intramuscular": "Intramuscular",
+        "subcutaneous": "Subcutánea",
+        "intravenous": "Intravenosa",
+        "intranasal": "Intranasal",
+        "topical": "Tópica",
+        "rectal": "Rectal"
       }
     },
     "assign": {
@@ -4535,7 +4632,9 @@
       "error": {
         "load": "Ha ocurrido un error al cargar los datos",
         "submit": "Ha ocurrido un error, intentelo más tarde",
-        "noSubwarehouse": "No existe un subalmacén médico. Póngase en contacto con el encargado de almacén."
+        "noSubwarehouse": "No existe un subalmacén médico. Póngase en contacto con el encargado de almacén.",
+        "subwarehouseTitle": "Sin subalmacén médico",
+        "subwarehouseHeading": "Subalmacén no asignado"
       },
       "button": {
         "assign": "Asignar"
@@ -4570,7 +4669,14 @@
         "noPackagesBody": "No se encontraron paquetes de medicación para la etapa de lechón. Por favor, cree un paquete antes de continuar.",
         "selectedPackage": "Paquete seleccionado: {{name}} ({{code}})",
         "success": "El paquete de medicación ha sido asignado exitosamente a las camadas seleccionadas.",
-        "error": "Ha ocurrido un error al asignar el paquete de medicación. Por favor, inténtelo más tarde."
+        "error": "Ha ocurrido un error al asignar el paquete de medicación. Por favor, inténtelo más tarde.",
+        "description": "Seleccione el paquete de medicación a asignar a las camadas activas.",
+        "selectPackage": "Paquete de medicación",
+        "subwarehouseBody": "Asegúrese de tener un subalmacén médico asignado antes de continuar.",
+        "confirm": "Asignar",
+        "validation": {
+          "selectPackage": "Por favor, seleccione un paquete de medicación"
+        }
       },
       "group": {
         "title": "Asignar Medicación a {{count}} Grupos",
@@ -4608,7 +4714,36 @@
       "packages": {
         "notes": "Notas:"
       }
-    }
+    },
+    "vaccination": {
+      "assign": {
+        "stepSelectPlan": "Selección de plan de vacunación",
+        "stepSummary": "Resumen",
+        "fieldApplicationDate": "Fecha de aplicación",
+        "fieldResponsible": "Responsable de aplicación",
+        "fieldObservations": "Observaciones",
+        "fieldSelectPlan": "Selección de plan de vacunación",
+        "placeholderObservations": "Observaciones de la aplicación",
+        "cardGroupInfo": "Información del grupo",
+        "cardPlanInfo": "Información del plan de vacunación",
+        "cardVaccines": "Vacunas",
+        "cardLitterInfo": "Información de la camada",
+        "cardPigInfo": "Información del cerdo",
+        "btnAssign": "Asignar",
+        "successGroup": "Plan de vacunación asignado correctamente",
+        "successPig": "Plan de vacunación asignado correctamente",
+        "errorGeneric": "Ha ocurrido un error, inténtelo más tarde",
+        "success": "Plan de vacunación asignado correctamente"
+      }
+    },
+    "categoryDisplay": {
+      "vaccines": "Vacunas",
+      "medications": "Medicamentos"
+    },
+    "product": {
+      "category": "Categoría"
+    },
+    "label": "Medicamento"
   },
   "config": {
     "farm": {
@@ -4948,6 +5083,10 @@
       "validationCode": "El código es obligatorio",
       "validationCodeExists": "Este código ya existe, por favor ingrese otro",
       "validationLocation": "La ubicación es obligatoria"
+    },
+    "action": {
+      "enterAsManager": "Entrar como gerente",
+      "exitImpersonation": "Salir del modo granja"
     }
   },
   "shared": {
@@ -5201,7 +5340,9 @@
     "chart": {
       "noData": "No hay datos disponibles",
       "noDistributionData": "No hay datos de distribución disponibles",
-      "noApplications": "Sin aplicaciones registradas"
+      "noApplications": "Sin aplicaciones registradas",
+      "legend": "Leyenda",
+      "applicationsTimeline": "Timeline de Aplicaciones"
     }
   },
   "reports": {
@@ -5719,7 +5860,9 @@
         "activeClients": "Clientes Activos",
         "avgSalesPerClient": "Prom. Ventas / Cliente",
         "avgRevenuePerClient": "Prom. Ingreso / Cliente",
-        "topClient": "Cliente Principal"
+        "topClient": "Cliente Principal",
+        "avgSales": "Promedio de Ventas",
+        "avgRevenue": "Ingreso Promedio"
       },
       "chart": {
         "top10ByRevenue": "Top 10 Clientes por Ingreso"
@@ -6147,7 +6290,23 @@
       "error": {
         "fetch": "Error al obtener los datos de los subalmacenes.",
         "generatePdf": "Error al generar el PDF, intentelo más tarde"
-      }
+      },
+      "typeLabel": "Tipo de subalmacén",
+      "stepSelectManager": "Selección de encargado",
+      "stepSubwarehouseData": "Información del subalmacén",
+      "stepSummary": "Resumen",
+      "infoSubwarehouse": "Información del subalmacén",
+      "infoManager": "Información del encargado",
+      "fieldIdentifier": "Identificador",
+      "fieldName": "Nombre",
+      "fieldType": "Tipo de almacén",
+      "registerBtn": "Registrar Subalmacén",
+      "successCreate": "Subalmacén creado con éxito",
+      "errorService": "El servicio no está disponible, inténtelo más tarde",
+      "cancelTitle": "Confirmación de Cancelación",
+      "cancelBody": "¿Estás seguro de que deseas cancelar? Los datos no se guardarán.",
+      "cancelYes": "Sí, cancelar",
+      "cancelNo": "No, continuar"
     },
     "subwarehouseDetails": {
       "tab": {
@@ -6372,7 +6531,7 @@
       }
     },
     "orders": {
-      "pageTitle": "Pedidos enviados | Management System",
+      "pageTitle": "Pedidos enviados | PorcySys",
       "breadcrumb": {
         "sent": "Pedidos enviados",
         "received": "Pedidos recibidos",
@@ -6720,6 +6879,9 @@
         "newPurchaseOrder": "Nueva orden de compra"
       },
       "success": "Entrada creada con éxito"
+    },
+    "subwarehouseInventory": {
+      "products": "Productos"
     }
   },
   "notification": {
@@ -7205,7 +7367,7 @@
       "overview": {
         "title": "Visión General",
         "paragraphs": [
-          "MFarm es un sistema integral de gestión porcina diseñado para acompañar todos los procesos de la granja: desde el control de inventarios y la reproducción, hasta la salud de los animales, la alimentación y los reportes financieros.",
+          "PorcySys es un sistema integral de gestión porcina diseñado para acompañar todos los procesos de la granja: desde el control de inventarios y la reproducción, hasta la salud de los animales, la alimentación y los reportes financieros.",
           "El acceso a los módulos del sistema depende del rol asignado a tu usuario. Este manual cubre todas las funcionalidades disponibles; consulta con tu administrador si no ves alguna sección en el menú."
         ],
         "tips": [
@@ -7577,6 +7739,103 @@
           "Configura los parámetros productivos de tu granja antes de comenzar a registrar datos para asegurar que los cálculos sean correctos desde el inicio."
         ]
       }
+    }
+  },
+  "systemName": "PorcySys",
+  "notFound": {
+    "pageTitle": "Página no encontrada"
+  },
+  "health": {
+    "label": "Evento sanitario",
+    "field": {
+      "disease": "Enfermedad",
+      "severity": "Severidad",
+      "eventType": "Tipo de evento",
+      "affectedPigs": "Cerdos afectados",
+      "observedSymptoms": "Síntomas observados",
+      "symptoms": "Síntomas",
+      "diseasePlaceholder": "Ej: Gripe porcina, Diarrea, etc.",
+      "pigCountPlaceholder": "Número de cerdos",
+      "observationsPlaceholder": "Información adicional sobre el evento..."
+    },
+    "status": {
+      "active": "Activo",
+      "controlled": "Controlado",
+      "resolved": "Resuelto"
+    },
+    "severity": {
+      "low": "Baja",
+      "medium": "Media",
+      "high": "Alta"
+    },
+    "eventScope": {
+      "partial": "Parcial",
+      "total": "Total",
+      "partialDesc": "Parcial (algunos cerdos)",
+      "totalDesc": "Total (todo el grupo)"
+    }
+  },
+  "ai": {
+    "action": {
+      "newConversation": "Nueva conversación",
+      "close": "Cerrar asistente IA",
+      "openAssistant": "Asistente IA",
+      "open": "Abrir asistente IA",
+      "closeAssistant": "Cerrar asistente IA",
+      "thinkingClose": "Asistente pensando — cerrar",
+      "respondingClose": "Asistente respondiendo — cerrar"
+    },
+    "panel": {
+      "title": "Asistente PorcySys",
+      "subtitle": "Pregúntame lo que sea sobre tu granja"
+    },
+    "input": {
+      "placeholder": "Pregúntale lo que quieras a tu granja..."
+    },
+    "typing": {
+      "label": "consultando"
+    }
+  },
+  "sales": {
+    "buyerType": {
+      "individual": "Individual",
+      "company": "Empresa",
+      "slaughterhouse": "Matadero"
+    },
+    "paymentMethod": {
+      "cash": "Efectivo",
+      "transfer": "Transferencia",
+      "check": "Cheque",
+      "credit": "Crédito"
+    },
+    "paymentStatus": {
+      "partial": "Parcial"
+    },
+    "field": {
+      "buyerName": "Nombre del comprador",
+      "buyerType": "Tipo de comprador",
+      "contact": "Contacto",
+      "contactPlaceholder": "Teléfono o email",
+      "taxId": "RFC / Identificación Fiscal",
+      "taxIdPlaceholder": "RFC",
+      "paymentMethod": "Método de Pago",
+      "paymentStatus": "Estado de Pago",
+      "additionalCosts": "Costos Adicionales",
+      "noAdditionalCosts": "No hay costos adicionales",
+      "costConcept": "Concepto",
+      "notesPlaceholder": "Observaciones adicionales sobre la venta...",
+      "saleWeight": "Peso venta (kg)",
+      "pricePerKg": "Precio/kg"
+    },
+    "step": {
+      "preview": "Vista previa y Confirmación"
+    },
+    "summary": {
+      "title": "Resumen de Venta",
+      "totalPigs": "Total de Cerdos",
+      "totalWeight": "Peso Total",
+      "avgWeight": "Peso Promedio",
+      "avgPrice": "Precio Promedio"
     }
   }
 }

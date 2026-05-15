@@ -1,5 +1,6 @@
 import React from 'react';
 import './aiChatPig.scss';
+import { useTranslation } from 'react-i18next';
 
 export type PigState = 'idle' | 'attentive' | 'thinking' | 'talking';
 
@@ -8,14 +9,16 @@ interface AiChatPigProps {
     onClick: () => void;
 }
 
-const ariaLabelByState: Record<PigState, string> = {
-    idle: 'Abrir asistente IA',
-    attentive: 'Cerrar asistente IA',
-    thinking: 'Asistente pensando — cerrar',
-    talking: 'Asistente respondiendo — cerrar',
-};
-
 const AiChatPig: React.FC<AiChatPigProps> = ({ pigState, onClick }) => {
+    const { t } = useTranslation();
+
+    const ariaLabelByState: Record<PigState, string> = {
+        idle: t('ai.action.open'),
+        attentive: t('ai.action.closeAssistant'),
+        thinking: t('ai.action.thinkingClose'),
+        talking: t('ai.action.respondingClose'),
+    };
+
     return (
         <button
             type="button"

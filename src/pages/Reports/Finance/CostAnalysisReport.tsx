@@ -56,7 +56,7 @@ const typeColors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4
 
 const CostAnalysisReport = () => {
     const { t } = useTranslation();
-    document.title = "Analisis de Costos | Reportes";
+    document.title = `${t("reports.costAnalysis.title")} | ${t("reports.title")} | ${t("systemName")}`;
 
     const configContext = useContext(ConfigContext);
     const { isGlobal, farmId, scopeKey } = useReportScope();

@@ -20,7 +20,9 @@
       "accept": "Accept",
       "clearFilters": "Clear filters",
       "done": "Done",
-      "remove": "Remove"
+      "remove": "Remove",
+      "previous": "Previous",
+      "send": "Send"
     },
     "shortMonths": [
       "Jan",
@@ -40,11 +42,16 @@
       "active": "Active",
       "inactive": "Inactive",
       "loading": "Loading…",
-      "noData": "No data"
+      "noData": "No data",
+      "notAvailable": "N/A",
+      "pending": "Pending",
+      "completed": "Completed"
     },
     "sex": {
       "male": "♂ Male",
-      "female": "♀ Female"
+      "female": "♀ Female",
+      "maleShort": "Male",
+      "femaleShort": "Female"
     },
     "yes": "Yes",
     "no": "No",
@@ -64,7 +71,21 @@
       "qty": "Quantity",
       "unitPrice": "Unit Price",
       "totalPrice": "Total Price",
-      "observations": "Observations"
+      "observations": "Observations",
+      "sex": "Sex",
+      "creationDate": "Creation date",
+      "origin": "Origin"
+    },
+    "error": {
+      "loadData": "An error occurred while loading data, please try again later",
+      "generic": "An error occurred, please try again later"
+    },
+    "select": "Select...",
+    "other": "Other",
+    "total": "Total",
+    "placeholder": {
+      "exNumber": "e.g. {{n}}",
+      "selectDate": "Select date"
     }
   },
   "profile": {
@@ -78,15 +99,29 @@
   "auth": {
     "login": {
       "label": "Sign in",
-      "pageTitle": "Sign In | MFarm",
+      "pageTitle": "Sign In | PorcySys",
       "welcome": "Welcome!",
       "subtitle": "Sign in to continue.",
-      "disabledUser": "This user has been deactivated, please contact the administrator"
+      "disabledUser": "This user has been deactivated, please contact the administrator",
+      "field": {
+        "username": "Username",
+        "usernamePlaceholder": "Enter your user number",
+        "password": "Password",
+        "passwordPlaceholder": "Enter your password"
+      },
+      "validation": {
+        "username": "Please enter your username",
+        "password": "Please enter your password"
+      },
+      "submit": "Sign In",
+      "submitting": "Signing in...",
+      "invalidCredentials": "Incorrect username or password.",
+      "serviceUnavailable": "Service unavailable. Please try again later."
     },
     "logout": "Sign out",
     "logoutConfirm": "Are you sure you want to sign out?",
     "register": {
-      "pageTitle": "Register | MFarm",
+      "pageTitle": "Register | PorcySys",
       "title": "Create New Account",
       "subtitle": "Get your free account now",
       "field": {
@@ -115,7 +150,7 @@
       "createWith": "Create account with"
     },
     "profile": {
-      "pageTitle": "Profile | MFarm",
+      "pageTitle": "Profile | PorcySys",
       "emailId": "Email Id:",
       "idNo": "Id No.:",
       "changeUsername": "Change User Name",
@@ -130,7 +165,7 @@
       "successUpdate": "Username updated to"
     },
     "forgotPassword": {
-      "pageTitle": "Forgot Password | MFarm",
+      "pageTitle": "Forgot Password | PorcySys",
       "title": "Forgot Password?",
       "subtitle": "Reset password",
       "instruction": "Enter your email and instructions will be sent to you",
@@ -488,7 +523,12 @@
         "SACRIFICE": "Sacrifice",
         "TRANSFER": "Transfer",
         "DEFECT": "Defect",
-        "OTHER": "Other"
+        "OTHER": "Other",
+        "death": "Death",
+        "sacrifice": "Culling",
+        "transfer": "Transfer",
+        "defect": "Defect",
+        "other": "Other"
       },
       "stats": {
         "selectedMales": "Selected males",
@@ -1564,6 +1604,9 @@
       "positive": "Must be greater than 0",
       "exceedsStock": "Quantity exceeds available stock",
       "completeRequired": "Please complete all required fields"
+    },
+    "action": {
+      "prev": "Previous"
     }
   },
   "roles": {
@@ -1669,7 +1712,8 @@
       "birthDate": "DOB",
       "sex": "Sex",
       "weight": "Current weight",
-      "observations": "Notes"
+      "observations": "Notes",
+      "pigCount": "Pigs"
     },
     "area": {
       "unknown": "Unknown",
@@ -2121,7 +2165,8 @@
         "error": "An error occurred while registering the health event. Please try again later.",
         "validationConfig": "Please configure the type and number of affected pigs for all groups",
         "validationRequired": "Please complete all required fields",
-        "validationTreatment": "Please fill all data for selected treatments"
+        "validationTreatment": "Please fill all data for selected treatments",
+        "pigsCount": "pigs"
       },
       "bulkStageChange": {
         "modalTitle": "Change Stage for {{count}} Groups",
@@ -2169,7 +2214,31 @@
         "validationWeightsNext": "Please enter the total weight for all litters before continuing",
         "validationGroup": "Please select a destination group or check \"Create new group\"",
         "success": "{{count}} litters have been successfully weaned.",
-        "error": "An error occurred while weaning the litters. Please try again later."
+        "error": "An error occurred while weaning the litters. Please try again later.",
+        "autoGroupCreation": "A new group will be automatically created when weaning the litters"
+      },
+      "processReplacement": {
+        "selectPigsTitle": "Select Pigs for Replacement",
+        "pigsSelected": "Pigs selected:",
+        "weightTitle": "Weight Record",
+        "weightIndividual": "Enter individual weight per pig",
+        "weightIndividualHint": "Enter the weight of each pig individually",
+        "weightTotalHint": "Enter the total group weight and the average weight will be assigned to each pig",
+        "noCompatibleGroups": "No compatible replacement groups",
+        "newGroupWillBeCreated": "A new replacement group will be created",
+        "targetGroup": "Target replacement group",
+        "pigWeight": "Pig weights",
+        "avgWeight": "Average weight",
+        "createNewGroup": "Create new replacement group",
+        "createNewGroupDesc": "Sows will not be mixed with existing groups",
+        "newGroupInfo": "New replacement group",
+        "newGroupCreationInfo": "A new replacement group will be created upon processing",
+        "step": {
+          "pigSelection": "Pig selection",
+          "pigWeight": "Pig weights",
+          "groupIntegration": "Replacement group integration",
+          "summary": "Summary"
+        }
       }
     },
     "validation": {
@@ -2190,7 +2259,22 @@
         "add": "ENTRY",
         "withdraw": "WITHDRAWAL",
         "transfer": "TRANSFER"
-      }
+      },
+      "eventType": {
+        "creation": "Creation",
+        "entry": "Entry",
+        "withdrawal": "Withdrawal",
+        "transfer": "Transfer",
+        "death": "Death",
+        "discard": "Discard",
+        "stageChange": "Stage change",
+        "replacement": "Replacement",
+        "sale": "Sale",
+        "partialSale": "Partial sale",
+        "sold": "Sold"
+      },
+      "noEvents": "No events recorded",
+      "by": "By"
     }
   },
   "insemination": {
@@ -2616,7 +2700,10 @@
       "initialMale": "Male born",
       "initialFemale": "Female born",
       "status": "Status",
-      "registeredBy": "Recorded by"
+      "registeredBy": "Recorded by",
+      "currentMale": "Current males",
+      "currentFemale": "Current females",
+      "responsible": "Responsible"
     },
     "motherAttr": {
       "code": "Code",
@@ -3036,7 +3123,7 @@
         "archived": "Archived"
       },
       "list": {
-        "pageTitle": "Period Closings | MFarm",
+        "pageTitle": "Period Closings | PorcySys",
         "breadcrumb": "Period Closings",
         "cardHeader": "Recorded Closings",
         "cardSubheader": "Farm monthly closing history",
@@ -3591,7 +3678,7 @@
       }
     },
     "expense": {
-      "pageTitle": "Expenses | MFarm",
+      "pageTitle": "Expenses | PorcySys",
       "breadcrumb": {
         "title": "Expenses",
         "parent": "Finance"
@@ -3678,7 +3765,7 @@
       }
     },
     "income": {
-      "pageTitle": "Inventory Receipts | MFarm",
+      "pageTitle": "Inventory Receipts | PorcySys",
       "breadcrumb": {
         "title": "Receipts",
         "parent": "Warehouse"
@@ -3763,7 +3850,7 @@
       }
     },
     "outcome": {
-      "pageTitle": "Inventory Issues | MFarm",
+      "pageTitle": "Inventory Issues | PorcySys",
       "breadcrumb": {
         "title": "Issues",
         "parent": "Warehouse"
@@ -3811,7 +3898,7 @@
       }
     },
     "sale": {
-      "pageTitle": "Pig Sales | MFarm",
+      "pageTitle": "Pig Sales | PorcySys",
       "breadcrumb": {
         "title": "Pig Sales",
         "parent": "Sales"
@@ -3858,7 +3945,7 @@
   },
   "laboratory": {
     "extraction": {
-      "pageTitle": "View Extractions | Management System",
+      "pageTitle": "View Extractions | PorcySys",
       "breadcrumb": {
         "title": "View Extractions",
         "parent": "Extractions"
@@ -3959,7 +4046,7 @@
         "success": "Extraction recorded successfully"
       },
       "details": {
-        "pageTitle": "Extraction Details | System Management",
+        "pageTitle": "Extraction Details | PorcySys",
         "responsible": "Responsible:",
         "cardExtraction": "Extraction information",
         "cardBoar": "Boar information",
@@ -3967,7 +4054,7 @@
       }
     },
     "sample": {
-      "pageTitle": "View Liquid Genetics | Management System",
+      "pageTitle": "View Liquid Genetics | PorcySys",
       "breadcrumb": {
         "title": "Lots",
         "parent": "Liquid Genetics"
@@ -4046,7 +4133,7 @@
         "generatePdf": "Error generating PDF, please try again later"
       },
       "detail": {
-        "pageTitle": "Liquid Genetics Details | System Management",
+        "pageTitle": "Liquid Genetics Details | PorcySys",
         "breadcrumb": {
           "title": "Lot Details",
           "parent": "Liquid Genetics"
@@ -4362,7 +4449,8 @@
         "route": "Administration",
         "age": "Target age",
         "frequency": "Frequency",
-        "days": "days"
+        "days": "days",
+        "totalDose": "Total dose"
       },
       "frequency": {
         "single": "Single dose",
@@ -4495,6 +4583,15 @@
         "success": "Vaccination plan registered successfully",
         "errorSuccess": "An error occurred registering the plan, please try again",
         "register": "Register"
+      },
+      "adminRouteDisplay": {
+        "oral": "Oral",
+        "intramuscular": "Intramuscular",
+        "subcutaneous": "Subcutaneous",
+        "intravenous": "Intravenous",
+        "intranasal": "Intranasal",
+        "topical": "Topical",
+        "rectal": "Rectal"
       }
     },
     "assign": {
@@ -4535,7 +4632,9 @@
       "error": {
         "load": "An error occurred while loading the data",
         "submit": "An error occurred, please try again",
-        "noSubwarehouse": "No medical store found. Please contact the warehouse manager."
+        "noSubwarehouse": "No medical store found. Please contact the warehouse manager.",
+        "subwarehouseTitle": "No medical subwarehouse",
+        "subwarehouseHeading": "Subwarehouse not assigned"
       },
       "button": {
         "assign": "Apply"
@@ -4570,7 +4669,14 @@
         "noPackagesBody": "No treatment protocols found for the piglet stage. Please create a protocol before continuing.",
         "selectedPackage": "Selected protocol: {{name}} ({{code}})",
         "success": "Treatment protocol applied to all selected litters.",
-        "error": "An error occurred while applying the treatment protocol. Please try again."
+        "error": "An error occurred while applying the treatment protocol. Please try again.",
+        "description": "Select the medication package to assign to active litters.",
+        "selectPackage": "Medication package",
+        "subwarehouseBody": "Make sure you have a medical subwarehouse assigned before proceeding.",
+        "confirm": "Assign",
+        "validation": {
+          "selectPackage": "Please select a medication package"
+        }
       },
       "group": {
         "title": "Apply treatment to {{count}} groups",
@@ -4608,7 +4714,36 @@
       "packages": {
         "notes": "Notes:"
       }
-    }
+    },
+    "vaccination": {
+      "assign": {
+        "stepSelectPlan": "Vaccination plan selection",
+        "stepSummary": "Summary",
+        "fieldApplicationDate": "Application date",
+        "fieldResponsible": "Responsible applicator",
+        "fieldObservations": "Observations",
+        "fieldSelectPlan": "Vaccination plan selection",
+        "placeholderObservations": "Application notes",
+        "cardGroupInfo": "Group information",
+        "cardPlanInfo": "Vaccination plan information",
+        "cardVaccines": "Vaccines",
+        "cardLitterInfo": "Litter information",
+        "cardPigInfo": "Pig information",
+        "btnAssign": "Assign",
+        "successGroup": "Vaccination plan assigned successfully",
+        "successPig": "Vaccination plan assigned successfully",
+        "errorGeneric": "An error occurred, please try again",
+        "success": "Vaccination plan assigned successfully"
+      }
+    },
+    "categoryDisplay": {
+      "vaccines": "Vaccines",
+      "medications": "Medications"
+    },
+    "product": {
+      "category": "Category"
+    },
+    "label": "Medication"
   },
   "config": {
     "farm": {
@@ -4948,6 +5083,10 @@
       "validationCode": "Code is required",
       "validationCodeExists": "This code already exists, please enter another one",
       "validationLocation": "Location is required"
+    },
+    "action": {
+      "enterAsManager": "Log in as manager",
+      "exitImpersonation": "Exit farm mode"
     }
   },
   "shared": {
@@ -5201,7 +5340,9 @@
     "chart": {
       "noData": "No data available",
       "noDistributionData": "No distribution data available",
-      "noApplications": "No applications recorded"
+      "noApplications": "No applications recorded",
+      "legend": "Legend",
+      "applicationsTimeline": "Applications Timeline"
     }
   },
   "reports": {
@@ -5719,7 +5860,9 @@
         "activeClients": "Active Clients",
         "avgSalesPerClient": "Avg. Sales / Client",
         "avgRevenuePerClient": "Avg. Revenue / Client",
-        "topClient": "Top Client"
+        "topClient": "Top Client",
+        "avgSales": "Avg. Sales",
+        "avgRevenue": "Avg. Revenue"
       },
       "chart": {
         "top10ByRevenue": "Top 10 Clients by Revenue"
@@ -5959,7 +6102,9 @@
         "lastPurchase": "Last Purchase"
       },
       "chart": {
-        "spendByProduct": "Spend by Product"
+        "spendByProduct": "Spend by Product",
+        "xProduct": "Product",
+        "ySpend": "Spend ($)"
       },
       "productSummary": "Product Summary",
       "purchaseDetails": "Purchase Details",
@@ -6145,7 +6290,23 @@
       "error": {
         "fetch": "Error fetching subwarehouse data.",
         "generatePdf": "Error generating PDF, please try again"
-      }
+      },
+      "typeLabel": "Warehouse type",
+      "stepSelectManager": "Select manager",
+      "stepSubwarehouseData": "Warehouse information",
+      "stepSummary": "Summary",
+      "infoSubwarehouse": "Warehouse information",
+      "infoManager": "Manager information",
+      "fieldIdentifier": "Identifier",
+      "fieldName": "Name",
+      "fieldType": "Warehouse type",
+      "registerBtn": "Register subwarehouse",
+      "successCreate": "Subwarehouse created successfully",
+      "errorService": "Service unavailable, please try again later",
+      "cancelTitle": "Cancel confirmation",
+      "cancelBody": "Are you sure you want to cancel? Data will not be saved.",
+      "cancelYes": "Yes, cancel",
+      "cancelNo": "No, continue"
     },
     "subwarehouseDetails": {
       "tab": {
@@ -6370,7 +6531,7 @@
       }
     },
     "orders": {
-      "pageTitle": "Sent orders | Management System",
+      "pageTitle": "Sent orders | PorcySys",
       "breadcrumb": {
         "sent": "Sent orders",
         "received": "Received orders",
@@ -6422,7 +6583,7 @@
       }
     },
     "purchaseOrders": {
-      "pageTitle": "Purchase Orders | MFarm",
+      "pageTitle": "Purchase Orders | PorcySys",
       "breadcrumb": "Purchase Orders",
       "col": {
         "orderNumber": "Order No.",
@@ -6718,6 +6879,9 @@
         "newPurchaseOrder": "New purchase order"
       },
       "success": "Receipt recorded successfully"
+    },
+    "subwarehouseInventory": {
+      "products": "Products"
     }
   },
   "notification": {
@@ -7193,7 +7357,7 @@
       "overview": {
         "title": "Overview",
         "paragraphs": [
-          "MFarm is a comprehensive swine management system designed to support every process on the farm: from inventory control and reproduction tracking to animal health, feed management, and financial reporting.",
+          "PorcySys is a comprehensive swine management system designed to support every process on the farm: from inventory control and reproduction tracking to animal health, feed management, and financial reporting.",
           "Access to modules depends on your assigned role. This manual covers all available features — contact your administrator if a section is missing from your menu."
         ],
         "tips": [
@@ -7565,6 +7729,103 @@
           "Configure your farm's production parameters before entering data to ensure calculations are accurate from the start."
         ]
       }
+    }
+  },
+  "systemName": "PorcySys",
+  "notFound": {
+    "pageTitle": "Page not found"
+  },
+  "health": {
+    "label": "Health event",
+    "field": {
+      "disease": "Disease",
+      "severity": "Severity",
+      "eventType": "Event type",
+      "affectedPigs": "Affected pigs",
+      "observedSymptoms": "Observed symptoms",
+      "symptoms": "Symptoms",
+      "diseasePlaceholder": "e.g. Swine flu, Diarrhea, etc.",
+      "pigCountPlaceholder": "Number of pigs",
+      "observationsPlaceholder": "Additional information about the event..."
+    },
+    "status": {
+      "active": "Active",
+      "controlled": "Controlled",
+      "resolved": "Resolved"
+    },
+    "severity": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "eventScope": {
+      "partial": "Partial",
+      "total": "Total",
+      "partialDesc": "Partial (some pigs)",
+      "totalDesc": "Total (entire group)"
+    }
+  },
+  "ai": {
+    "action": {
+      "newConversation": "New conversation",
+      "close": "Close AI assistant",
+      "openAssistant": "AI Assistant",
+      "open": "Open AI assistant",
+      "closeAssistant": "Close AI assistant",
+      "thinkingClose": "Assistant thinking — close",
+      "respondingClose": "Assistant responding — close"
+    },
+    "panel": {
+      "title": "PorcySys Assistant",
+      "subtitle": "Ask me anything about your farm"
+    },
+    "input": {
+      "placeholder": "Ask your farm anything..."
+    },
+    "typing": {
+      "label": "thinking"
+    }
+  },
+  "sales": {
+    "buyerType": {
+      "individual": "Individual",
+      "company": "Company",
+      "slaughterhouse": "Slaughterhouse"
+    },
+    "paymentMethod": {
+      "cash": "Cash",
+      "transfer": "Bank transfer",
+      "check": "Check",
+      "credit": "Credit"
+    },
+    "paymentStatus": {
+      "partial": "Partial"
+    },
+    "field": {
+      "buyerName": "Buyer name",
+      "buyerType": "Buyer type",
+      "contact": "Contact",
+      "contactPlaceholder": "Phone or email",
+      "taxId": "Tax ID",
+      "taxIdPlaceholder": "Tax ID",
+      "paymentMethod": "Payment method",
+      "paymentStatus": "Payment status",
+      "additionalCosts": "Additional costs",
+      "noAdditionalCosts": "No additional costs",
+      "costConcept": "Description",
+      "notesPlaceholder": "Additional notes about the sale...",
+      "saleWeight": "Sale weight (kg)",
+      "pricePerKg": "Price/kg"
+    },
+    "step": {
+      "preview": "Preview & Confirmation"
+    },
+    "summary": {
+      "title": "Sale Summary",
+      "totalPigs": "Total pigs",
+      "totalWeight": "Total weight",
+      "avgWeight": "Average weight",
+      "avgPrice": "Average price"
     }
   }
 }

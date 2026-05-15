@@ -11,6 +11,7 @@ import classnames from "classnames";
 import Flatpickr from "react-flatpickr";
 import SelectableCustomTable from "../Tables/SelectableTable";
 import { Column } from "common/data/data_types";
+import { useTranslation } from "react-i18next";
 
 interface DiscardPigletsFormProps {
     litterId: string;
@@ -18,19 +19,20 @@ interface DiscardPigletsFormProps {
     onSave: () => void;
 }
 
-const REASON_OPTIONS = [
-    { value: "", label: "Seleccione una razón" },
-    { value: "DEATH", label: "Muerte" },
-    { value: "SACRIFICE", label: "Sacrificio" },
-    { value: "TRANSFER", label: "Transferencia" },
-    { value: "DEFECT", label: "Defecto" },
-    { value: "OTHER", label: "Otro" },
-];
-
-const getReasonLabel = (value: string) => REASON_OPTIONS.find((o) => o.value === value)?.label ?? value;
-
 const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, piglets, onSave }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
+
+    const REASON_OPTIONS = [
+        { value: "", label: t("pigs.discardPiglets.reason.select") },
+        { value: "DEATH", label: t("pigs.discardPiglets.reason.death") },
+        { value: "SACRIFICE", label: t("pigs.discardPiglets.reason.sacrifice") },
+        { value: "TRANSFER", label: t("pigs.discardPiglets.reason.transfer") },
+        { value: "DEFECT", label: t("pigs.discardPiglets.reason.defect") },
+        { value: "OTHER", label: t("pigs.discardPiglets.reason.other") },
+    ];
+
+    const getReasonLabel = (value: string) => REASON_OPTIONS.find((o) => o.value === value)?.label ?? value;
     const userLogged = getEffectiveUser();
 
     const [activeStep, setActiveStep] = useState(1);
@@ -61,17 +63,17 @@ const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, pigle
             render: (_: any, row: any) => <span>{alivePiglets.indexOf(row) + 1}</span>,
         },
         {
-            header: "Sexo",
+            header: t("litter.pigletColumn.sex"),
             accessor: "sex",
             type: "text",
             render: (value: string) => (
                 <Badge color={value === "male" ? "info" : "danger"}>
-                    {value === "male" ? "♂ Macho" : "♀ Hembra"}
+                    {value === "male" ? t("common.sex.male") : t("common.sex.female")}
                 </Badge>
             ),
         },
         {
-            header: "Peso",
+            header: t("litter.pigletColumn.weight"),
             accessor: "weight",
             type: "text",
             render: (value: any) => `${Number(value).toFixed(2)} kg`,
@@ -85,11 +87,11 @@ const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, pigle
     // Validaciones por paso
     const validateStep1 = (): boolean => {
         if (!reason) {
-            setAlertConfig({ visible: true, color: "danger", message: "Seleccione una razón de descarte" });
+            setAlertConfig({ visible: true, color: "danger", message: t('pigs.discardPiglets.validation.selectReason') });
             return false;
         }
         if (!date) {
-            setAlertConfig({ visible: true, color: "danger", message: "Seleccione una fecha" });
+            setAlertConfig({ visible: true, color: "danger", message: t('pigs.discardPiglets.validation.selectDate') });
             return false;
         }
         return true;
@@ -97,7 +99,7 @@ const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, pigle
 
     const validateStep2 = (): boolean => {
         if (selectedPiglets.length === 0) {
-            setAlertConfig({ visible: true, color: "danger", message: "Seleccione al menos un lechón" });
+            setAlertConfig({ visible: true, color: "danger", message: t('pigs.discardPiglets.validation.selectPiglet') });
             return false;
         }
         return true;
@@ -164,7 +166,7 @@ const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, pigle
                             className={classnames({ active: activeStep === 1, done: activeStep > 1 })}
                             disabled
                         >
-                            Datos del descarte
+                            {t('pigs.discardPiglets.step.discardData')}
                         </NavLink>
                     </NavItem>
                     <NavItem>
@@ -173,7 +175,7 @@ const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, pigle
                             className={classnames({ active: activeStep === 2, done: activeStep > 2 })}
                             disabled
                         >
-                            Seleccionar lechones
+                            {t('pigs.discardPiglets.step.selectPiglets')}
                         </NavLink>
                     </NavItem>
                     <NavItem>
@@ -182,7 +184,7 @@ const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, pigle
                             className={classnames({ active: activeStep === 3 })}
                             disabled
                         >
-                            Resumen
+                            {t('pigs.discardPiglets.step.summary')}
                         </NavLink>
                     </NavItem>
                 </Nav>
@@ -191,11 +193,11 @@ const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, pigle
             <TabContent activeTab={activeStep}>
                 {/* ========== PASO 1: Datos del descarte ========== */}
                 <TabPane tabId={1}>
-                    <h5 className="mb-3">Información del descarte</h5>
+                    <h5 className="mb-3">{t('pigs.discardPiglets.title.discardInfo')}</h5>
 
                     <Row className="g-3">
                         <Col md={6}>
-                            <Label className="form-label">Razón del descarte *</Label>
+                            <Label className="form-label">{t('pigs.discardPiglets.field.reason')}</Label>
                             <Input type="select" value={reason} onChange={(e) => setReason(e.target.value)}>
                                 {REASON_OPTIONS.map((opt) => (
                                     <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -203,7 +205,7 @@ const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, pigle
                             </Input>
                         </Col>
                         <Col md={6}>
-                            <Label className="form-label">Fecha *</Label>
+                            <Label className="form-label">{t('pigs.discardPiglets.field.date')}</Label>
                             <Flatpickr
                                 className="form-control"
                                 value={date}
@@ -212,7 +214,7 @@ const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, pigle
                             />
                         </Col>
                         <Col md={12}>
-                            <Label className="form-label">Observaciones</Label>
+                            <Label className="form-label">{t('pigs.discardPiglets.field.observations')}</Label>
                             <Input
                                 type="textarea"
                                 rows={3}
@@ -225,7 +227,7 @@ const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, pigle
 
                     <div className="mt-4 d-flex">
                         <Button className="ms-auto" onClick={() => goToStep(2)}>
-                            Siguiente
+                            {t('common.button.next')}
                             <i className="ri-arrow-right-line ms-2" />
                         </Button>
                     </div>
@@ -234,7 +236,7 @@ const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, pigle
                 {/* ========== PASO 2: Selección de lechones ========== */}
                 <TabPane tabId={2}>
                     <div className="d-flex justify-content-between align-items-center mb-3">
-                        <h5 className="mb-0">Seleccione los lechones a descartar</h5>
+                        <h5 className="mb-0">{t('pigs.discardPiglets.title.selectPiglets')}</h5>
                         <Badge color="primary" className="fs-6">
                             {selectedPiglets.length} / {alivePiglets.length} seleccionados
                         </Badge>
@@ -246,7 +248,7 @@ const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, pigle
                             <div className="border rounded p-2 text-center bg-light">
                                 <div className="d-flex align-items-center justify-content-center mb-1">
                                     <i className="ri-men-line fs-5 text-info me-1"></i>
-                                    <span className="text-muted fw-semibold">Machos seleccionados</span>
+                                    <span className="text-muted fw-semibold">{t('pigs.discardPiglets.stats.selectedMales')}</span>
                                 </div>
                                 <h4 className="mb-0 text-info fw-bold">{selectedMaleCount}</h4>
                             </div>
@@ -255,7 +257,7 @@ const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, pigle
                             <div className="border rounded p-2 text-center bg-light">
                                 <div className="d-flex align-items-center justify-content-center mb-1">
                                     <i className="ri-women-line fs-5 text-danger me-1"></i>
-                                    <span className="text-muted fw-semibold">Hembras seleccionadas</span>
+                                    <span className="text-muted fw-semibold">{t('pigs.discardPiglets.stats.selectedFemales')}</span>
                                 </div>
                                 <h4 className="mb-0 text-danger fw-bold">{selectedFemaleCount}</h4>
                             </div>
@@ -274,10 +276,10 @@ const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, pigle
                     <div className="mt-4 d-flex">
                         <Button className="btn-danger" onClick={() => setActiveStep(1)}>
                             <i className="ri-arrow-left-line me-2" />
-                            Atrás
+                            {t('common.button.back')}
                         </Button>
                         <Button className="ms-auto" onClick={() => goToStep(3)}>
-                            Siguiente
+                            {t('common.button.next')}
                             <i className="ri-arrow-right-line ms-2" />
                         </Button>
                     </div>
@@ -289,8 +291,8 @@ const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, pigle
                     <div className="alert alert-danger d-flex align-items-center gap-3 mb-4">
                         <i className="ri-error-warning-line fs-1"></i>
                         <div>
-                            <div className="fw-semibold fs-6">Confirmar descarte de lechones</div>
-                            <div className="small">Revisa la información antes de confirmar. Esta acción no se puede deshacer.</div>
+                            <div className="fw-semibold fs-6">{t('pigs.discardPiglets.summary.confirm')}</div>
+                            <div className="small">{t('pigs.discardPiglets.summary.confirmWarning')}</div>
                         </div>
                     </div>
 
@@ -300,7 +302,7 @@ const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, pigle
                             <Card className="w-100 mb-0 flex-fill">
                                 <CardHeader className="d-flex align-items-center bg-light fs-5">
                                     <i className="ri-file-list-3-line me-2 text-danger"></i>
-                                    <span className="text-black">Datos del descarte</span>
+                                    <span className="text-black">{t('pigs.discardPiglets.summary.discardData')}</span>
                                 </CardHeader>
                                 <CardBody>
                                     <div className="d-flex align-items-center mb-3">
@@ -349,7 +351,7 @@ const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, pigle
                             <Card className="w-100 mb-0 flex-fill">
                                 <CardHeader className="d-flex align-items-center bg-light fs-5">
                                     <i className="ri-group-line me-2 text-danger"></i>
-                                    <span className="text-black">Lechones a descartar</span>
+                                    <span className="text-black">{t('pigs.discardPiglets.summary.piglets')}</span>
                                 </CardHeader>
                                 <CardBody className="p-3">
                                     {/* Estadísticas */}
@@ -358,7 +360,7 @@ const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, pigle
                                             <div className="border rounded p-2 text-center bg-danger-subtle">
                                                 <div className="d-flex align-items-center justify-content-center mb-1">
                                                     <i className="ri-parent-line fs-5 text-danger me-1"></i>
-                                                    <span className="text-muted fw-semibold">Total</span>
+                                                    <span className="text-muted fw-semibold">{t('pigs.discardPiglets.stats.total')}</span>
                                                 </div>
                                                 <h4 className="mb-0 text-danger fw-bold">{selectedPiglets.length}</h4>
                                             </div>
@@ -367,7 +369,7 @@ const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, pigle
                                             <div className="border rounded p-2 text-center bg-light">
                                                 <div className="d-flex align-items-center justify-content-center mb-1">
                                                     <i className="ri-men-line fs-5 text-info me-1"></i>
-                                                    <span className="text-muted fw-semibold">Machos</span>
+                                                    <span className="text-muted fw-semibold">{t('pigs.discardPiglets.stats.males')}</span>
                                                 </div>
                                                 <h4 className="mb-0 text-info fw-bold">{selectedMaleCount}</h4>
                                             </div>
@@ -376,7 +378,7 @@ const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, pigle
                                             <div className="border rounded p-2 text-center bg-light">
                                                 <div className="d-flex align-items-center justify-content-center mb-1">
                                                     <i className="ri-women-line fs-5 text-danger me-1"></i>
-                                                    <span className="text-muted fw-semibold">Hembras</span>
+                                                    <span className="text-muted fw-semibold">{t('pigs.discardPiglets.stats.females')}</span>
                                                 </div>
                                                 <h4 className="mb-0 text-danger fw-bold">{selectedFemaleCount}</h4>
                                             </div>
@@ -384,14 +386,14 @@ const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, pigle
                                     </div>
 
                                     {/* Tabla */}
-                                    <span className="text-muted fw-semibold d-block mb-2">Detalle:</span>
+                                    <span className="text-muted fw-semibold d-block mb-2">{t('pigs.discardPiglets.stats.detail')}</span>
                                     <SimpleBar style={{ maxHeight: "200px" }}>
                                         <table className="table table-sm table-hover mb-0">
                                             <thead className="table-light">
                                                 <tr>
                                                     <th className="text-center">#</th>
-                                                    <th className="text-center">Sexo</th>
-                                                    <th className="text-center">Peso</th>
+                                                    <th className="text-center">{t('litter.pigletColumn.sex')}</th>
+                                                    <th className="text-center">{t('litter.pigletColumn.weight')}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -400,7 +402,7 @@ const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, pigle
                                                         <td className="text-center">{index + 1}</td>
                                                         <td className="text-center">
                                                             <Badge color={piglet.sex === "male" ? "info" : "danger"}>
-                                                                {piglet.sex === "male" ? "♂ Macho" : "♀ Hembra"}
+                                                                {piglet.sex === "male" ? t("common.sex.male") : t("common.sex.female")}
                                                             </Badge>
                                                         </td>
                                                         <td className="text-center">{Number(piglet.weight).toFixed(2)} kg</td>
@@ -417,7 +419,7 @@ const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, pigle
                     <div className="mt-4 d-flex">
                         <Button className="btn-danger" onClick={() => setActiveStep(2)}>
                             <i className="ri-arrow-left-line me-2" />
-                            Atrás
+                            {t('common.button.back')}
                         </Button>
                         <Button className="ms-auto btn-danger" onClick={handleSubmit} disabled={isSubmitting}>
                             {isSubmitting ? (
@@ -425,7 +427,7 @@ const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, pigle
                             ) : (
                                 <>
                                     <i className="ri-close-circle-line me-1" />
-                                    Confirmar descarte
+                                    {t('pigs.discardPiglets.button.confirmDiscard')}
                                 </>
                             )}
                         </Button>
@@ -442,8 +444,8 @@ const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, pigle
                 autoClose={3000}
             />
 
-            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message="Lechones descartados con éxito" />
-            <ErrorModal isOpen={modals.error} onClose={() => toggleModal("error", false)} message="Ha ocurrido un error al descartar los lechones, inténtelo más tarde" />
+            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={t('pigs.discardPiglets.success')} />
+            <ErrorModal isOpen={modals.error} onClose={() => toggleModal("error", false)} message={t('pigs.discardPiglets.error')} />
         </>
     );
 };

@@ -15,6 +15,7 @@ import SimpleBar from "simplebar-react";
 import ObjectDetails from "../Details/ObjectDetails";
 import SelectableCustomTable from "../Tables/SelectableTable";
 import AlertMessage from "../Shared/AlertMesagge";
+import { useTranslation } from "react-i18next";
 
 interface ProcessPigExitFormProps {
     groupId: string;
@@ -22,6 +23,7 @@ interface ProcessPigExitFormProps {
 }
 
 const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [modals, setModals] = useState({ confirm: false, success: false, error: false });
@@ -55,61 +57,61 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
     }
 
     const groupsColumns: Column<any>[] = [
-        { header: 'Codigo', accessor: 'code', type: 'text', isFilterable: true },
-        { header: 'Nombre', accessor: 'name', type: 'text', isFilterable: true },
+        { header: t('groups.column.code'), accessor: 'code', type: 'text', isFilterable: true },
+        { header: t('groups.column.name'), accessor: 'name', type: 'text', isFilterable: true },
         {
-            header: 'Área',
+            header: t('groups.column.area'),
             accessor: 'area',
             type: 'text',
             isFilterable: true,
             render: (_, row) => {
                 let color = "secondary";
-                let text = "Desconocido";
+                let text = t("groups.area.unknown");
 
                 switch (row.area) {
                     case "gestation":
                         color = "info";
-                        text = "Gestación";
+                        text = t("groups.area.gestation");
                         break;
                     case "farrowing":
                         color = "primary";
-                        text = "Paridera";
+                        text = t("groups.area.farrowing");
                         break;
                     case "maternity":
                         color = "primary";
-                        text = "Maternidad";
+                        text = t("groups.area.maternity");
                         break;
                     case "weaning":
                         color = "success";
-                        text = "Destete";
+                        text = t("groups.area.weaning");
                         break;
                     case "nursery":
                         color = "warning";
-                        text = "Preceba / Levante inicial";
+                        text = t("groups.area.nursery");
                         break;
                     case "fattening":
                         color = "dark";
-                        text = "Ceba / Engorda";
+                        text = t("groups.area.fattening");
                         break;
                     case "replacement":
                         color = "secondary";
-                        text = "Reemplazo / Recría";
+                        text = t("groups.area.replacement");
                         break;
                     case "boars":
                         color = "info";
-                        text = "Área de verracos";
+                        text = t("groups.area.boars");
                         break;
                     case "quarantine":
                         color = "danger";
-                        text = "Cuarentena / Aislamiento";
+                        text = t("groups.area.quarantine");
                         break;
                     case "hospital":
                         color = "danger";
-                        text = "Hospital / Enfermería";
+                        text = t("groups.area.hospital");
                         break;
                     case "shipping":
                         color = "secondary";
-                        text = "Corrales de venta / embarque";
+                        text = t("groups.area.shipping");
                         break;
                 }
 
@@ -117,7 +119,7 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
             },
         },
         {
-            header: 'Etapa',
+            header: t('groups.column.stage'),
             accessor: 'currentStage',
             render: (value, obj) => {
                 let color = "secondary";
@@ -126,108 +128,108 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
                 switch (obj.stage) {
                     case "piglet":
                         color = "info";
-                        label = "Lechón";
+                        label = t("groups.stage.piglet");
                         break;
                     case "weaning":
                         color = "warning";
-                        label = "Destete";
+                        label = t("groups.stage.weaning");
                         break;
                     case "fattening":
                         color = "primary";
-                        label = "Engorda";
+                        label = t("groups.stage.fattening");
                         break;
                     case "breeder":
                         color = "success";
-                        label = "Reproductor";
+                        label = t("groups.stage.breeder");
                         break;
                 }
 
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { header: 'Fecha de creación', accessor: 'creationDate', type: 'date', isFilterable: true },
-        { header: 'No. de hembras', accessor: 'femaleCount', type: 'text', isFilterable: true },
-        { header: 'No. de machos', accessor: 'maleCount', type: 'text', isFilterable: true },
+        { header: t('groups.column.creationDate'), accessor: 'creationDate', type: 'date', isFilterable: true },
+        { header: t('groups.column.femaleCount'), accessor: 'femaleCount', type: 'text', isFilterable: true },
+        { header: t('groups.column.maleCount'), accessor: 'maleCount', type: 'text', isFilterable: true },
     ]
 
     const pigletsColumns: Column<any>[] = [
         {
-            header: 'Cerdo',
+            header: t('pigs.field.code'),
             accessor: '',
             type: 'text',
             render: (_, row,) => <span className="text-black">Cerdo {row.code}</span>
         },
         {
-            header: 'Sexo',
+            header: t('common.field.sex'),
             accessor: 'sex',
             render: (value: string) => (
                 <Badge color={value === 'male' ? "info" : "danger"}>
-                    {value === 'male' ? "♂ Macho" : "♀ Hembra"}
+                    {value === 'male' ? t("common.sex.male") : t("common.sex.female")}
                 </Badge>
             ),
         },
-        { header: 'Peso', accessor: 'weight', type: 'text' },
+        { header: t('common.field.weight'), accessor: 'weight', type: 'text' },
     ]
 
     const groupAttributes: Attribute[] = [
-        { key: "code", label: "Codigo", type: "text" },
-        { key: "name", label: "Nombre", type: "text" },
+        { key: "code", label: t("common.field.code"), type: "text" },
+        { key: "name", label: t("common.field.name"), type: "text" },
         {
             key: "area",
-            label: "Area",
+            label: t("groups.column.area"),
             type: "text",
             render: (_, row) => {
                 let color = "secondary";
-                let text = "Desconocido";
+                let text = t("groups.area.unknown");
 
                 switch (row?.area) {
                     case "gestation":
                         color = "info";
-                        text = "Gestación";
+                        text = t("groups.area.gestation");
                         break;
                     case "farrowing":
                         color = "primary";
-                        text = "Paridera";
+                        text = t("groups.area.farrowing");
                         break;
                     case "maternity":
                         color = "primary";
-                        text = "Maternidad";
+                        text = t("groups.area.maternity");
                         break;
                     case "weaning":
                         color = "success";
-                        text = "Destete";
+                        text = t("groups.area.weaning");
                         break;
                     case "nursery":
                         color = "warning";
-                        text = "Preceba / Levante inicial";
+                        text = t("groups.area.nursery");
                         break;
                     case "fattening":
                         color = "dark";
-                        text = "Ceba / Engorda";
+                        text = t("groups.area.fattening");
                         break;
                     case "replacement":
                         color = "secondary";
-                        text = "Reemplazo / Recría";
+                        text = t("groups.area.replacement");
                         break;
                     case "boars":
                         color = "info";
-                        text = "Área de verracos";
+                        text = t("groups.area.boars");
                         break;
                     case "quarantine":
                         color = "danger";
-                        text = "Cuarentena / Aislamiento";
+                        text = t("groups.area.quarantine");
                         break;
                     case "hospital":
                         color = "danger";
-                        text = "Hospital / Enfermería";
+                        text = t("groups.area.hospital");
                         break;
                     case "shipping":
                         color = "secondary";
-                        text = "Corrales de venta / embarque";
+                        text = t("groups.area.shipping");
                         break;
                     case "exit":
                         color = "secondary";
-                        text = "Salida";
+                        text = t("groups.area.exit");
                         break;
                 }
 
@@ -236,52 +238,52 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
         },
         {
             key: "status",
-            label: "Estado",
+            label: t("common.field.status"),
             type: "text",
             render: (_, row) => {
                 let color = "secondary";
-                let text = "Desconocido";
+                let text = t("groups.area.unknown");
 
                 switch (row?.status) {
                     case "weaning":
                         color = "info";
-                        text = "En destete";
+                        text = t("groups.status.weaning");
                         break;
                     case "ready_to_grow":
                         color = "primary";
-                        text = "Listo para crecimiento";
+                        text = t("groups.status.ready_to_grow");
                         break;
                     case "grow_overdue":
                         color = "warning";
-                        text = "Retradado en crecimiento";
+                        text = t("groups.status.grow_overdue");
                         break;
                     case "growing":
                         color = "success";
-                        text = "En crecimiento y ceba";
+                        text = t("groups.status.growing");
                         break;
                     case "replacement":
                         color = "secondary";
-                        text = "Reemplazo";
+                        text = t("groups.status.replacement");
                         break;
                     case "ready_for_sale":
                         color = "success";
-                        text = "Listo para venta";
+                        text = t("groups.status.ready_for_sale");
                         break;
                     case "sale":
                         color = "success";
-                        text = "En venta";
+                        text = t("groups.status.sale");
                         break;
                     case "sold":
                         color = "success";
-                        text = "Vendido";
+                        text = t("groups.status.sold");
                         break;
                 }
 
                 return <Badge color={color}>{text}</Badge>;
             },
         },
-        { key: "creationDate", label: "Fecha de creacion", type: "date" },
-        { key: "observations", label: "Observaciones", type: "text" },
+        { key: "creationDate", label: t("groups.column.creationDate"), type: "date" },
+        { key: "observations", label: t("common.field.observations"), type: "text" },
     ];
 
 
@@ -552,7 +554,7 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
         if (newReplacementGroup) toggleArrowTab(activeStep + 1);
 
         if (!selectedReplacementCompatibleGroup && !newReplacementGroup) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor seleccione un grupo para integrar a las cerdas de reemplazo' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('pigs.exit.validation.selectReplacementGroup') });
         } else {
             toggleArrowTab(activeStep + 1)
         }
@@ -562,7 +564,7 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
         if (newSalesGroup) toggleArrowTab(activeStep + 1);
 
         if (!selectedSaleCompatibleGroup && !newSalesGroup) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor seleccione un grupo para integrar a los cerdos de venta' });
+            setAlertConfig({ visible: true, color: 'danger', message: t('pigs.exit.validation.selectSaleGroup') });
         } else {
             toggleArrowTab(activeStep + 1)
         }
@@ -594,7 +596,7 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
                             aria-controls="step-packageSelect-tab"
                             disabled
                         >
-                            Peso y destino
+                            {t('pigs.exit.step.weightDestination')}
                         </NavLink>
                     </NavItem>
 
@@ -610,7 +612,7 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
                             aria-controls="step-groupIntegration-tab"
                             disabled
                         >
-                            Integracion a grupo de reemplazo
+                            {t('pigs.exit.step.replacementGroup')}
                         </NavLink>
                     </NavItem>
 
@@ -626,7 +628,7 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
                             aria-controls="step-groupIntegration-tab"
                             disabled
                         >
-                            Integracion a grupo de venta
+                            {t('pigs.exit.step.saleGroup')}
                         </NavLink>
                     </NavItem>
 
@@ -642,7 +644,7 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
                             aria-controls="step-summary-tab"
                             disabled
                         >
-                            Resumen
+                            {t('pigs.exit.step.summary')}
                         </NavLink>
                     </NavItem>
                 </Nav>
@@ -651,7 +653,7 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
             <TabContent activeTab={activeStep}>
                 <TabPane tabId={1}>
                     <Label>
-                        <h5>Peso de los cerdos</h5>
+                        <h5>{t('pigs.exit.field.pigWeight')}</h5>
                     </Label>
                     <div className="mt-3">
                         <SimpleBar style={{ maxHeight: 450, paddingRight: 12 }}>
@@ -674,7 +676,7 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
                                                 <div className="col">
                                                     <h6 className="mb-0 fw-bold text-dark">Cerdo {pig.code}</h6>
                                                     <span className={`badge bg-${accentColor} bg-opacity-25 text-${accentColor} text-uppercase px-2`} style={{ fontSize: '0.65rem', fontWeight: '700' }}>
-                                                        {isMale ? 'Macho' : 'Hembra'}
+                                                        {isMale ? t('common.sex.male') : t('common.sex.female')}
                                                     </span>
                                                 </div>
 
@@ -682,7 +684,7 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
                                                 {/* Input de Peso */}
                                                 <div className="col-sm-5 col-12 mt-3 mt-sm-0">
                                                     <small className="text-muted">
-                                                        Actual: {pig.weight} kg
+                                                        {t('pigs.exit.field.current')} {pig.weight} kg
                                                     </small>
 
                                                     <div className="input-group">
@@ -722,7 +724,7 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
 
                                                 <div className="col-sm-5 col-12 mt-3 mt-sm-0">
                                                     <small className="text-muted">
-                                                        Destino del cerdo
+                                                        {t('pigs.exit.field.destination')}
                                                     </small>
 
                                                     <div className="input-group">
@@ -740,9 +742,9 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
                                                                 setPigsArray(newArray);
                                                             }}
                                                         >
-                                                            <option value="" disabled>Seleccionar destino</option>
-                                                            <option value="sale">Venta</option>
-                                                            <option value="replacement">Reemplazo</option>
+                                                            <option value="" disabled>{t('pigs.exit.destination.select')}</option>
+                                                            <option value="sale">{t('pigs.exit.destination.sale')}</option>
+                                                            <option value="replacement">{t('pigs.exit.destination.replacement')}</option>
                                                             {/* <option value="slaughter">Sacrificio</option> */}
                                                         </select>
                                                     </div>
@@ -757,10 +759,10 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
 
                         <div className="mt-4 pt-2 border-top d-flex align-items-center justify-content-between">
                             <span className="text-muted small">
-                                Total registros: <strong>{pigsArray.length}</strong>
+                                {t('pigs.exit.field.totalRecords')} <strong>{pigsArray.length}</strong>
                             </span>
                             <Button className="ms-auto shadow-sm px-4" color="primary" onClick={() => setActiveStep(activeStep + 1)}>
-                                Siguiente
+                                {t('common.button.next')}
                                 <i className="ri-arrow-right-line ms-2" />
                             </Button>
                         </div>
@@ -775,10 +777,10 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
 
                                 <div>
                                     <div className="fw-semibold">
-                                        No hay grupos de reemplazo compatibles
+                                        {t('pigs.exit.replacement.noCompatible')}
                                     </div>
                                     <div className="small">
-                                        Se creará un nuevo grupo de reemplazo
+                                        {t('pigs.exit.replacement.willCreate')}
                                     </div>
                                 </div>
                             </div>
@@ -797,10 +799,10 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
 
                                         <div>
                                             <div className="fw-semibold">
-                                                Crear nuevo grupo de reemplazo
+                                                {t('pigs.exit.replacement.createNew')}
                                             </div>
                                             <div className="small text-muted">
-                                                Las cerdas no se mezclará con grupos existentes
+                                                {t('pigs.exit.replacement.noMix')}
                                             </div>
                                         </div>
                                     </div>
@@ -821,11 +823,11 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
                     <div className="mt-4 d-flex">
                         <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                             <i className="ri-arrow-left-line me-2" />
-                            Atrás
+                            {t('common.button.back')}
                         </Button>
 
                         <Button className="ms-auto" onClick={() => checkSelectedReplacementGroup()}>
-                            Siguiente
+                            {t('common.button.next')}
                             < i className="ri-arrow-right-line ms-2" />
                         </Button>
                     </div>
@@ -839,10 +841,10 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
 
                                 <div>
                                     <div className="fw-semibold">
-                                        No hay grupos de venta compatibles
+                                        {t('pigs.exit.sale.noCompatible')}
                                     </div>
                                     <div className="small">
-                                        Se creará un nuevo grupo de venta
+                                        {t('pigs.exit.sale.willCreate')}
                                     </div>
                                 </div>
                             </div>
@@ -861,10 +863,10 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
 
                                         <div>
                                             <div className="fw-semibold">
-                                                Crear nuevo grupo de venta
+                                                {t('pigs.exit.sale.createNew')}
                                             </div>
                                             <div className="small text-muted">
-                                                Los cerdos no se mezclarán con grupos existentes
+                                                {t('pigs.exit.sale.noMix')}
                                             </div>
                                         </div>
                                     </div>
@@ -885,11 +887,11 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
                     <div className="mt-4 d-flex">
                         <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                             <i className="ri-arrow-left-line me-2" />
-                            Atrás
+                            {t('common.button.back')}
                         </Button>
 
                         <Button className="ms-auto" onClick={() => checkSelectedSaleGroup()}>
-                            Siguiente
+                            {t('common.button.next')}
                             < i className="ri-arrow-right-line ms-2" />
                         </Button>
                     </div>
@@ -900,7 +902,7 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
                         <div className="d-flex flex-column w-50">
                             <Card className="w-100">
                                 <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
-                                    <span className="text-black">Información del grupo</span>
+                                    <span className="text-black">{t('pigs.exit.summary.groupInfo')}</span>
                                 </CardHeader>
                                 <CardBody className="flex-fill">
                                     <ObjectDetails attributes={groupAttributes} object={group} />
@@ -909,7 +911,7 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
 
                             <Card className="w-100 m-0">
                                 <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
-                                    <span className="text-black">Grupo de venta destino</span>
+                                    <span className="text-black">{t('pigs.exit.summary.saleGroupDest')}</span>
                                 </CardHeader>
                                 <CardBody className="flex-fill">
                                     {newReplacementGroup && newReplacementGroup === true ? (
@@ -918,10 +920,10 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
 
                                             <div>
                                                 <div className="fw-semibold">
-                                                    Nuevo grupo de venta
+                                                    {t('pigs.exit.summary.newSaleGroup')}
                                                 </div>
                                                 <div className="small">
-                                                    Se creará un nuevo grupo de venta al procesar la salida
+                                                    {t('pigs.exit.summary.willCreateSale')}
                                                 </div>
                                             </div>
                                         </div>
@@ -935,7 +937,7 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
                         <div className="d-flex flex-column w-50 gap-3">
                             <Card className="w-100 h-100 m-0">
                                 <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
-                                    <span className="text-black">Peso de los cerdos</span>
+                                    <span className="text-black">{t('pigs.exit.summary.pigWeight')}</span>
                                 </CardHeader>
                                 <CardBody className='flex-fill p-0'>
                                     <SimpleBar style={{ maxHeight: 400 }}>
@@ -952,7 +954,7 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
 
                             <Card className="w-100 m-0">
                                 <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
-                                    <span className="text-black">Grupo de reemplazo destino</span>
+                                    <span className="text-black">{t('pigs.exit.summary.replacementGroupDest')}</span>
                                 </CardHeader>
                                 <CardBody className="flex-fill">
                                     {newReplacementGroup && newReplacementGroup === true ? (
@@ -961,10 +963,10 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
 
                                             <div>
                                                 <div className="fw-semibold">
-                                                    Nuevo grupo de reemplazo
+                                                    {t('pigs.exit.summary.newReplacementGroup')}
                                                 </div>
                                                 <div className="small">
-                                                    Se creará un nuevo grupo de reemplazo al procesar la salida
+                                                    {t('pigs.exit.summary.willCreateReplacement')}
                                                 </div>
                                             </div>
                                         </div>
@@ -980,7 +982,7 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
                     <div className="mt-4 d-flex">
                         <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                             <i className="ri-arrow-left-line me-2" />
-                            Atrás
+                            {t('common.button.back')}
                         </Button>
 
                         <Button className="ms-auto btn-success" disabled={isSubmitting} onClick={() => toggleModal('confirm')}>
@@ -991,7 +993,7 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
                             ) : (
                                 <div>
                                     <i className="ri-check-line me-2" />
-                                    Procesar salida
+                                    {t('pigs.exit.button.process')}
                                 </div>
                             )}
                         </Button>
@@ -1001,23 +1003,23 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
 
 
             <Modal size="md" isOpen={modals.confirm} toggle={() => toggleModal("confirm")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("confirm")}>Procesar salidaa</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("confirm")}>{t('pigs.exit.confirm.title')}</ModalHeader>
                 <ModalBody>
                     <div className="d-flex justify-content-center mb-3">
                         <FaQuestionCircle size={56} className="text-primary opacity-75" />
                     </div>
 
                     <div className="text-center mb-2">
-                        <h4 className="fw-semibold mb-1">¿Deseas procesar la salida de este grupo?</h4>
+                        <h4 className="fw-semibold mb-1">{t('pigs.exit.confirm.question')}</h4>
                     </div>
 
                     <div className="text-center text-muted fs-5 mb-4">
-                        Al confirmar la salida, el grupo ya no estara disponible.
+                        {t('pigs.exit.confirm.body')}
                         <br />
                     </div>
 
                     <div className="border rounded p-3 bg-light-subtle text-center mb-4">
-                        <strong>Asegúrate de que toda la información esté correcta antes de continuar.</strong>
+                        <strong>{t('pigs.exit.confirm.warning')}</strong>
                     </div>
                 </ModalBody>
 
@@ -1028,7 +1030,7 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
                         ) : (
                             <>
                                 <i className="ri ri-check-line me-2" />
-                                Confirmar
+                                {t('pigs.exit.button.confirm')}
                             </>
                         )}
                     </Button>
@@ -1037,8 +1039,8 @@ const ProcessPigExitForm: React.FC<ProcessPigExitFormProps> = ({ groupId, onSave
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} autoClose={3000} />
 
-            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={"Salida procesada con exito"} />
-            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={"Ha ocurrido un error al procesar la salida, intentelo mas tarde"} />
+            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={t('pigs.exit.success')} />
+            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={t('pigs.exit.error')} />
         </>
     );
 };

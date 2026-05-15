@@ -2,8 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom"
 import { Button, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
 import { stopImpersonation } from "helpers/impersonation_helper";
+import { useTranslation } from "react-i18next";
 
 const Logout = () => {
+    const { t } = useTranslation();
     const history = useNavigate();
     const [modals, setModals] = useState({ logout: false });
 
@@ -30,14 +32,14 @@ const Logout = () => {
             </div>
 
             <Modal isOpen={modals.logout} toggle={() => toggleModal('logout')} size="md" keyboard={false} backdrop="static" centered>
-                <ModalHeader toggle={() => toggleModal('logout')}>Cerrar Sesión</ModalHeader>
+                <ModalHeader toggle={() => toggleModal('logout')}>{t("auth.logout")}</ModalHeader>
                 <ModalBody>
-                    {`¿Estás seguro de que desea cerrar sesión?`}
+                    {t("auth.logoutConfirm")}
                 </ModalBody>
                 <ModalFooter>
-                    <Button className="farm-secondary-button" onClick={() => toggleModal('logout', false)}>Cancelar</Button>
+                    <Button className="farm-secondary-button" onClick={() => toggleModal('logout', false)}>{t("common.button.cancel")}</Button>
                     <Button className="farm-primary-button" onClick={clicLogout}>
-                        Cerrar Sesión
+                        {t("auth.logout")}
                     </Button>
                 </ModalFooter>
             </Modal>

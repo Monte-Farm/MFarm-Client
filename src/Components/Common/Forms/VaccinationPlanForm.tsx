@@ -55,7 +55,7 @@ const VaccinationPlanForm: React.FC<VaccinationPlanFormProps> = ({ onSave, onCan
     const columns: Column<any>[] = [
         {
             header: t('medication.vaccinePlan.form.column.image', { defaultValue: 'Imagen' }), accessor: 'image', render: (_, row) => (
-                <img src={row.image || noImageUrl} alt="Imagen del Producto" style={{ height: "70px" }} />
+                <img src={row.image || noImageUrl} alt="" style={{ height: "70px" }} />
             ),
         },
         { header: t('medication.vaccinePlan.form.column.code', { defaultValue: 'Codigo' }), accessor: "code", type: "text", isFilterable: true },

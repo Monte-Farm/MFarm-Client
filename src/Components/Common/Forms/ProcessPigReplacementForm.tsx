@@ -2,6 +2,7 @@ import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FaInfo, FaQuestionCircle } from "react-icons/fa";
 import ErrorModal from "../Shared/ErrorModal";
 import SuccessModal from "../Shared/SuccessModal";
@@ -23,6 +24,7 @@ interface ProcessPigReplacementFormProps {
 const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ groupId, onSave }) => {
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
+    const { t } = useTranslation();
     const [modals, setModals] = useState({ confirm: false, success: false, error: false });
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
@@ -55,21 +57,21 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
     }
 
     const groupsColumns: Column<any>[] = [
-        { header: 'Codigo', accessor: 'code', type: 'text', isFilterable: true },
-        { header: 'Nombre', accessor: 'name', type: 'text', isFilterable: true },
+        { header: t('common.field.code'), accessor: 'code', type: 'text', isFilterable: true },
+        { header: t('common.field.name'), accessor: 'name', type: 'text', isFilterable: true },
         {
-            header: 'Área',
+            header: t('groups.column.area'),
             accessor: 'area',
             type: 'text',
             isFilterable: true,
             render: (_, row) => {
                 let color = "secondary";
-                let text = "Desconocido";
+                let text = t("groups.area.unknown");
 
                 switch (row.area) {
                     case "replacement":
                         color = "secondary";
-                        text = "Reemplazo / Recría";
+                        text = t("groups.area.replacement")
                         break;
                 }
 
@@ -77,7 +79,7 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
             },
         },
         {
-            header: 'Etapa',
+            header: t("common.field.stage"),
             accessor: 'currentStage',
             render: (value, obj) => {
                 let color = "secondary";
@@ -86,37 +88,37 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
                 switch (obj.stage) {
                     case "breeder":
                         color = "success";
-                        label = "Reproductor";
+                        label = t("groups.stage.breeder");
                         break;
                 }
 
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { header: 'Fecha de creación', accessor: 'creationDate', type: 'date', isFilterable: true },
-        { header: 'No. de hembras', accessor: 'femaleCount', type: 'text', isFilterable: true },
-        { header: 'No. de machos', accessor: 'maleCount', type: 'text', isFilterable: true },
+        { header: t('groups.column.creationDate'), accessor: 'creationDate', type: 'date', isFilterable: true },
+        { header: t('groups.column.femaleCount'), accessor: 'femaleCount', type: 'text', isFilterable: true },
+        { header: t('groups.column.maleCount'), accessor: 'maleCount', type: 'text', isFilterable: true },
     ];
 
     const groupAttributes: Attribute[] = [
-        { key: "code", label: "Codigo", type: "text" },
-        { key: "name", label: "Nombre", type: "text" },
+        { key: "code", label: t("common.field.code"), type: "text" },
+        { key: "name", label: t("common.field.name"), type: "text" },
         {
             key: "area",
-            label: "Area",
+            label: t("groups.column.area"),
             type: "text",
             render: (_, row) => {
                 let color = "secondary";
-                let text = "Desconocido";
+                let text = t("groups.area.unknown");
 
                 switch (row?.area) {
                     case "fattening":
                         color = "dark";
-                        text = "Ceba / Engorda";
+                        text = t("groups.area.fattening")
                         break;
                     case "replacement":
                         color = "secondary";
-                        text = "Reemplazo / Recría";
+                        text = t("groups.area.replacement");
                         break;
                 }
 
@@ -125,52 +127,52 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
         },
         {
             key: "status",
-            label: "Estado",
+            label: t("common.field.status"),
             type: "text",
             render: (_, row) => {
                 let color = "secondary";
-                let text = "Desconocido";
+                let text = t("groups.area.unknown");
 
                 switch (row?.status) {
                     case "weaning":
                         color = "info";
-                        text = "En destete";
+                        text = t("groups.status.weaning")
                         break;
                     case "ready_to_grow":
                         color = "primary";
-                        text = "Listo para crecimiento";
+                        text = t("groups.status.ready_to_grow");
                         break;
                     case "grow_overdue":
                         color = "warning";
-                        text = "Retradado en crecimiento";
+                        text = t("groups.status.grow_overdue");
                         break;
                     case "growing":
                         color = "success";
-                        text = "En crecimiento y ceba";
+                        text = t("groups.status.growing");
                         break;
                     case "replacement":
                         color = "secondary";
-                        text = "Reemplazo";
+                        text = t("groups.status.replacement");
                         break;
                     case "ready_for_sale":
                         color = "success";
-                        text = "Listo para venta";
+                        text = t("groups.status.ready_for_sale");
                         break;
                     case "sale":
                         color = "success";
-                        text = "En venta";
+                        text = t("groups.status.sale");
                         break;
                     case "sold":
                         color = "success";
-                        text = "Vendido";
+                        text = t("groups.status.sold");
                         break;
                 }
 
                 return <Badge color={color}>{text}</Badge>;
             },
         },
-        { key: "creationDate", label: "Fecha de creacion", type: "date" },
-        { key: "observations", label: "Observaciones", type: "text" },
+        { key: "creationDate", label: t("groups.column.creationDate"), type: "date" },
+        { key: "observations", label: t("common.field.observations"), type: "text" },
     ];
 
     const fetchGroup = async () => {
@@ -429,7 +431,7 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
                             aria-controls="step-selection-tab"
                             disabled
                         >
-                            Selección de cerdos
+                            {t("groups.form.processReplacement.step.pigSelection")}
                         </NavLink>
                     </NavItem>
 
@@ -445,7 +447,7 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
                             aria-controls="step-weight-tab"
                             disabled
                         >
-                            Peso de cerdos
+                            {t("groups.form.processReplacement.step.pigWeight")}
                         </NavLink>
                     </NavItem>
 
@@ -461,7 +463,7 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
                             aria-controls="step-groupIntegration-tab"
                             disabled
                         >
-                            Integración a grupo de reemplazo
+                            {t("groups.form.processReplacement.step.groupIntegration")}
                         </NavLink>
                     </NavItem>
 
@@ -477,7 +479,7 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
                             aria-controls="step-summary-tab"
                             disabled
                         >
-                            Resumen
+                            {t("groups.form.processReplacement.step.summary")}
                         </NavLink>
                     </NavItem>
                 </Nav>
@@ -486,14 +488,14 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
             <TabContent activeTab={activeStep}>
                 <TabPane tabId={1}>
                     <div className="mb-4">
-                        <h5 className="fw-bold mb-1 text-dark">Selección de Cerdos para Reemplazo</h5>
+                        <h5 className="fw-bold mb-1 text-dark">{t("groups.form.processReplacement.selectPigsTitle")}</h5>
                         <p className="text-muted small">Selecciona los cerdos que serán destinados a reemplazo reproductivo.</p>
                     </div>
 
                     <SelectableCustomTable
                         columns={[
                             {
-                                header: 'Cerdo',
+                                header: t('pigs.field.code'),
                                 accessor: 'code',
                                 type: 'text',
                                 render: (_, row) => {
@@ -502,15 +504,15 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
                                 }
                             },
                             {
-                                header: 'Sexo',
+                                header: t('common.field.sex'),
                                 accessor: 'sex',
                                 render: (value: string) => (
                                     <Badge color={value === 'male' ? "info" : "danger"}>
-                                        {value === 'male' ? "♂ Macho" : "♀ Hembra"}
+                                        {value === 'male' ? t("common.sex.male") : t("common.sex.female")}
                                     </Badge>
                                 ),
                             },
-                            { header: 'Peso actual', accessor: 'weight', type: 'text' },
+                            { header: t("common.field.weightCurrent"), accessor: 'weight', type: 'text' },
                         ]}
                         data={allPigs}
                         selectionMode="multiple"
@@ -520,7 +522,7 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
 
                     <div className="mt-4 pt-2 border-top d-flex align-items-center justify-content-between">
                         <span className="text-muted small">
-                            Cerdos seleccionados: <strong>{selectedPigs.length}</strong> de <strong>{allPigs.length}</strong>
+                            {t("groups.form.processReplacement.pigsSelected")} <strong>{selectedPigs.length}</strong> de <strong>{allPigs.length}</strong>
                         </span>
                         <Button
                             className="ms-auto shadow-sm px-4"
@@ -536,7 +538,7 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
 
                 <TabPane tabId={2}>
                     <div className="mb-4">
-                        <h5 className="fw-bold mb-1 text-dark">Registro de Peso</h5>
+                        <h5 className="fw-bold mb-1 text-dark">{t("groups.form.processReplacement.weightTitle")}</h5>
                         <p className="text-muted small">Actualiza el pesaje de los cerdos seleccionados para reemplazo.</p>
                     </div>
 
@@ -551,12 +553,12 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
                             <FaQuestionCircle className="text-primary" size={20} />
                             <div>
                                 <div className="fw-semibold">
-                                    Ingresar peso individual de cada cerdo
+                                    {t("groups.form.processReplacement.weightIndividual")}
                                 </div>
                                 <div className="small text-muted">
                                     {useIndividualWeight
-                                        ? "Ingresa el peso de cada cerdo individualmente"
-                                        : "Ingresa el peso total del grupo y se asignará el peso promedio a cada cerdo"}
+                                        ? t("groups.form.processReplacement.weightIndividualHint")
+                                        : t("groups.form.processReplacement.weightTotalHint")}
                                 </div>
                             </div>
                         </div>
@@ -620,7 +622,7 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
                                                 <div className="col">
                                                     <h6 className="mb-0 fw-bold text-dark">Cerdo {pig.code}</h6>
                                                     <span className={`badge bg-${accentColor} bg-opacity-25 text-${accentColor} text-uppercase px-2`} style={{ fontSize: '0.65rem', fontWeight: '700' }}>
-                                                        {isMale ? 'Macho' : 'Hembra'}
+                                                        {isMale ? t("common.sex.maleShort") : t("common.sex.femaleShort")}
                                                     </span>
                                                 </div>
 
@@ -694,10 +696,10 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
 
                                 <div>
                                     <div className="fw-semibold">
-                                        No hay grupos de reemplazo compatibles
+                                        {t("groups.form.processReplacement.noCompatibleGroups")}
                                     </div>
                                     <div className="small">
-                                        Se creará un nuevo grupo de reemplazo
+                                        {t("groups.form.processReplacement.newGroupWillBeCreated")}
                                     </div>
                                 </div>
                             </div>
@@ -716,10 +718,10 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
 
                                         <div>
                                             <div className="fw-semibold">
-                                                Crear nuevo grupo de reemplazo
+                                                {t("groups.form.processReplacement.createNewGroup")}
                                             </div>
                                             <div className="small text-muted">
-                                                Las cerdas no se mezclarán con grupos existentes
+                                                {t("groups.form.processReplacement.createNewGroupDesc")}
                                             </div>
                                         </div>
                                     </div>
@@ -755,7 +757,7 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
 
                         <Card className="w-100 m-0">
                             <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
-                                <span className="text-black">Grupo de reemplazo destino</span>
+                                <span className="text-black">{t("groups.form.processReplacement.targetGroup")}</span>
                             </CardHeader>
                             <CardBody className="flex-fill">
                                 {newReplacementGroup && newReplacementGroup === true ? (
@@ -764,10 +766,10 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
 
                                         <div>
                                             <div className="fw-semibold">
-                                                Nuevo grupo de reemplazo
+                                                {t("groups.form.processReplacement.newGroupInfo")}
                                             </div>
                                             <div className="small">
-                                                Se creará un nuevo grupo de reemplazo al procesar
+                                                {t("groups.form.processReplacement.newGroupCreationInfo")}
                                             </div>
                                         </div>
                                     </div>
@@ -780,7 +782,7 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
                         <div className="d-flex flex-column w-50 gap-3">
                             <Card className="w-100 h-100 m-0">
                                 <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
-                                    <span className="text-black">Peso de los cerdos</span>
+                                    <span className="text-black">{t("groups.form.processReplacement.pigWeight")}</span>
                                 </CardHeader>
                                 <CardBody className='p-3'>
                                     <div className="row g-2 mb-3">
@@ -788,7 +790,7 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
                                             <div className="border rounded p-2 text-center">
                                                 <div className="d-flex align-items-center justify-content-center mb-1">
                                                     <i className="ri-parent-line fs-5 text-primary me-1"></i>
-                                                    <span className="text-muted fw-semibold">Total</span>
+                                                    <span className="text-muted fw-semibold">{t("common.total")}</span>
                                                 </div>
                                                 <h4 className="mb-0 text-primary fw-bold">{selectedPigs.length}</h4>
                                             </div>
@@ -797,7 +799,7 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
                                             <div className="border rounded p-2 text-center">
                                                 <div className="d-flex align-items-center justify-content-center mb-1">
                                                     <i className="ri-scales-3-line fs-5 text-success me-1"></i>
-                                                    <span className="text-muted fw-semibold">Peso Promedio</span>
+                                                    <span className="text-muted fw-semibold">{t("groups.form.processReplacement.avgWeight")}</span>
                                                 </div>
                                                 <h4 className="mb-0 text-success fw-bold">
                                                     {selectedPigs.length > 0
@@ -816,8 +818,8 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
                                             <thead className="table-light">
                                                 <tr>
                                                     <th className="text-center">#</th>
-                                                    <th className="text-center">Sexo</th>
-                                                    <th className="text-center">Peso</th>
+                                                    <th className="text-center">{t("common.field.sex")}</th>
+                                                    <th className="text-center">{t("common.field.weight")}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -863,7 +865,7 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
             </TabContent>
 
             <Modal size="md" isOpen={modals.confirm} toggle={() => toggleModal("confirm")} backdrop='static' keyboard={false} centered>
-                <ModalHeader toggle={() => toggleModal("confirm")}>Procesar reemplazo</ModalHeader>
+                <ModalHeader toggle={() => toggleModal("confirm")}>{t("groups.modal.processReplacement")}</ModalHeader>
                 <ModalBody>
                     <div className="d-flex justify-content-center mb-3">
                         <FaQuestionCircle size={56} className="text-primary opacity-75" />
@@ -900,7 +902,7 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} autoClose={3000} />
 
             <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={"Reemplazo procesado con éxito"} />
-            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={"Ha ocurrido un error al procesar el reemplazo, inténtelo más tarde"} />
+            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={t("common.error.generic")} />
         </>
     );
 };

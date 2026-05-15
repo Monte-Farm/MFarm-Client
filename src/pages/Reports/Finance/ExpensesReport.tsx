@@ -49,7 +49,7 @@ const categoryColors: Record<string, string> = {
 
 const ExpensesReport = () => {
     const { t } = useTranslation();
-    document.title = "Reporte de Gastos | Reportes";
+    document.title = `${t("reports.expenses.title")} | ${t("reports.title")} | ${t("systemName")}`;
 
     const configContext = useContext(ConfigContext);
     const { isGlobal, farmId, scopeKey } = useReportScope();

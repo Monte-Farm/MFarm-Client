@@ -88,7 +88,7 @@ const PeriodClosingDetail = () => {
         ? userLogged.role.includes("Superadmin")
         : userLogged?.role === "Superadmin";
 
-    document.title = current ? `${formatPeriod(current)} | ${t("finance.periodClosing.detail.breadcrumb")}` : "Cierre | MFarm";
+    document.title = current ? `${formatPeriod(current)} | ${t("finance.periodClosing.detail.breadcrumb")}` : `${t("finance.periodClosing.detail.breadcrumb")} | ${t("systemName")}`;
 
     const loadDetail = () => {
         if (!closingId) return;

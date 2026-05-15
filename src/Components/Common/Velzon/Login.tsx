@@ -3,12 +3,14 @@ import React, { useState } from "react";
 import { Button, Form, FormFeedback, Input, Label } from "reactstrap";
 import * as Yup from "yup";
 import { useFormik } from "formik";
+import { useTranslation } from "react-i18next";
 
 interface LoginFormProps {
     onSubmit: (values: { username: string; password: string }) => Promise<void>;
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
+    const { t } = useTranslation();
     const [passwordShow, setPasswordShow] = useState<boolean>(false);
     const [showErrorAlert, setShowErrorAlert] = useState<boolean>(false);
 
@@ -18,8 +20,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
             password: "",
         },
         validationSchema: Yup.object({
-            username: Yup.string().required("Por favor, ingrese su número de usuario"),
-            password: Yup.string().required("Por favor, ingrese su contraseña"),
+            username: Yup.string().required(t("auth.login.validation.username")),
+            password: Yup.string().required(t("auth.login.validation.password")),
         }),
         onSubmit: async (values, { setSubmitting, setErrors }) => {
             try {
@@ -29,8 +31,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
                 logger.error("Error al iniciar sesión:", error);
                 if ((error && error.status === 401) || (error && error.status === 404)) {
                     setErrors({
-                        username: "Nombre de usuario o contraseña incorrectos.",
-                        password: "Nombre de usuario o contraseña incorrectos.",
+                        username: t("auth.login.invalidCredentials"),
+                        password: t("auth.login.invalidCredentials"),
                     });
                 } else {
                     setShowErrorAlert(true);
@@ -52,13 +54,13 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
             >
                 <div className="mb-3">
                     <Label htmlFor="username" className="form-label fs-5">
-                        Nombre de usuario
+                        {t("auth.login.field.username")}
                     </Label>
                     <Input
                         type="text"
                         className="form-control"
                         id="username"
-                        placeholder="Ingrese su número de usuario"
+                        placeholder={t("auth.login.field.usernamePlaceholder")}
                         name="username"
                         onChange={validation.handleChange}
                         onBlur={validation.handleBlur}
@@ -77,13 +79,13 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
 
                 <div className="mb-3">
                     <Label className="form-label fs-5" htmlFor="password-input">
-                        Contraseña
+                        {t("auth.login.field.password")}
                     </Label>
                     <div className="position-relative auth-pass-inputgroup mb-3">
                         <Input
                             type={passwordShow ? "text" : "password"}
                             className="form-control pe-5 password-input"
-                            placeholder="Ingrese su contraseña"
+                            placeholder={t("auth.login.field.passwordPlaceholder")}
                             id="password-input"
                             name="password"
                             value={validation.values.password || ""}
@@ -116,7 +118,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
                         type="submit"
                         disabled={validation.isSubmitting}
                     >
-                        {validation.isSubmitting ? "Iniciando sesión..." : "Iniciar Sesión"}
+                        {validation.isSubmitting ? t("auth.login.submitting") : t("auth.login.submit")}
                     </Button>
                 </div>
             </Form>
@@ -130,7 +132,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
                         maxWidth: "500px",
                     }}
                 >
-                    <span>El servicio no está disponible. Inténtelo de nuevo más tarde.</span>
+                    <span>{t("auth.login.serviceUnavailable")}</span>
                 </div>
             )}
         </>

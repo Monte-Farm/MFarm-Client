@@ -59,7 +59,7 @@ const AsignGroupMedicationForm: React.FC<AsignGroupMedicationFormProps> = ({ gro
     const medicationsColumns: Column<any>[] = [
         {
             header: t('feeding.package.form.column.image'), accessor: 'image', render: (_, row) => (
-                <img src={row.image || noImageUrl} alt="Imagen del Producto" style={{ height: "70px" }} />
+                <img src={row.image || noImageUrl} alt="" style={{ height: "70px" }} />
             ),
         },
         { header: t('common.field.code'), accessor: "code", type: "text", isFilterable: true },
@@ -129,7 +129,7 @@ const AsignGroupMedicationForm: React.FC<AsignGroupMedicationFormProps> = ({ gro
                         }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <option value="">{t('common.select.placeholder')}</option>
+                        <option value="">{t('common.select')}</option>
                         <option value="oral">{t('medical.medication.route.oral')}</option>
                         <option value="intramuscular">{t('medical.medication.route.intramuscular')}</option>
                         <option value="subcutaneous">{t('medical.medication.route.subcutaneous')}</option>

@@ -3,6 +3,7 @@ import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Badge, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from "reactstrap";
 import LoadingAnimation from "../Shared/LoadingAnimation";
 import { Attribute, GroupData, GroupVaccinationPlansHistory, medicationPackagesEntry, PigData, VaccinationPlanEntry } from "common/data_interfaces";
@@ -29,6 +30,7 @@ interface AsignGroupVaccinationPlanFormProps {
 const AsignGroupVaccinationPlanForm: React.FC<AsignGroupVaccinationPlanFormProps> = ({ groupId, onSave }) => {
     const userLogged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
+    const { t } = useTranslation();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [activeStep, setActiveStep] = useState<number>(1);
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
@@ -56,38 +58,38 @@ const AsignGroupVaccinationPlanForm: React.FC<AsignGroupVaccinationPlanFormProps
     };
 
     const vaccinationPlanColumns: Column<any>[] = [
-        { header: 'Codigo', accessor: 'code', type: 'text', isFilterable: true },
-        { header: 'Nombre', accessor: 'name', type: 'text', isFilterable: true },
-        { header: 'Fecha de creacion', accessor: 'creation_date', type: 'date', isFilterable: true },
+        { header: t('common.field.code'), accessor: 'code', type: 'text', isFilterable: true },
+        { header: t('common.field.name'), accessor: 'name', type: 'text', isFilterable: true },
+        { header: t('groups.column.creationDate'), accessor: 'creation_date', type: 'date', isFilterable: true },
         {
-            header: 'Etapa',
+            header: t('common.field.stage'),
             accessor: 'stage',
             type: 'text',
             isFilterable: true,
             render: (_, row) => {
                 let color = "secondary";
-                let text = "Desconocido";
+                let text = t("groups.area.unknown");
 
                 switch (row.stage) {
                     case "general":
                         color = "info";
-                        text = "General";
+                        text = t("groups.stage.general");
                         break;
                     case "piglet":
                         color = "info";
-                        text = "Lechón";
+                        text = t("groups.stage.piglet");
                         break;
                     case "weaning":
                         color = "warning";
-                        text = "Destete";
+                        text = t("groups.stage.weaning");
                         break;
                     case "fattening":
                         color = "primary";
-                        text = "Engorda";
+                        text = t("groups.stage.fattening");
                         break;
                     case "breeder":
                         color = "success";
-                        text = "Reproductor";
+                        text = t("groups.stage.breeder");
                         break;
                 }
 
@@ -97,60 +99,60 @@ const AsignGroupVaccinationPlanForm: React.FC<AsignGroupVaccinationPlanFormProps
     ]
 
     const groupAttributes: Attribute[] = [
-        { label: 'Codigo', key: 'code', type: 'text' },
-        { label: 'Nombre', key: 'name', type: 'text' },
+        { label: t('common.field.code'), key: 'code', type: 'text' },
+        { label: t('common.field.name'), key: 'name', type: 'text' },
         {
-            label: 'Area',
+            label: t('groups.column.area'),
             key: 'area',
             type: 'text',
             render: (value, object) => {
                 let color = "secondary";
-                let text = "Desconocido";
+                let text = t("groups.area.unknown");
 
                 switch (object.area) {
                     case "gestation":
                         color = "info";
-                        text = "Gestación";
+                        text = t("groups.area.gestation");
                         break;
                     case "farrowing":
                         color = "primary";
-                        text = "Paridera";
+                        text = t("groups.area.farrowing");
                         break;
                     case "maternity":
                         color = "primary";
-                        text = "Maternidad";
+                        text = t("groups.area.maternity");
                         break;
                     case "weaning":
                         color = "success";
-                        text = "Destete";
+                        text = t("groups.area.weaning");
                         break;
                     case "nursery":
                         color = "warning";
-                        text = "Preceba / Levante inicial";
+                        text = t("groups.area.nursery");
                         break;
                     case "fattening":
                         color = "dark";
-                        text = "Ceba / Engorda";
+                        text = t("groups.area.fattening");
                         break;
                     case "replacement":
                         color = "secondary";
-                        text = "Reemplazo / Recría";
+                        text = t("groups.area.replacement");
                         break;
                     case "boars":
                         color = "info";
-                        text = "Área de verracos";
+                        text = t("groups.area.boars");
                         break;
                     case "quarantine":
                         color = "danger";
-                        text = "Cuarentena / Aislamiento";
+                        text = t("groups.area.quarantine");
                         break;
                     case "hospital":
                         color = "danger";
-                        text = "Hospital / Enfermería";
+                        text = t("groups.area.hospital");
                         break;
                     case "shipping":
                         color = "secondary";
-                        text = "Corrales de venta / embarque";
+                        text = t("groups.area.shipping");
                         break;
                 }
 
@@ -158,7 +160,7 @@ const AsignGroupVaccinationPlanForm: React.FC<AsignGroupVaccinationPlanFormProps
             },
         },
         {
-            label: 'Etapa',
+            label: t("common.field.stage"),
             key: 'stage',
             type: 'text',
             render: (value, object) => {
@@ -168,49 +170,49 @@ const AsignGroupVaccinationPlanForm: React.FC<AsignGroupVaccinationPlanFormProps
                 switch (object.stage) {
                     case "piglet":
                         color = "info";
-                        label = "Lechón";
+                        label = t("groups.stage.piglet");
                         break;
                     case "weaning":
                         color = "warning";
-                        label = "Destete";
+                        label = t("groups.stage.weaning");
                         break;
                     case "fattening":
                         color = "primary";
-                        label = "Engorda";
+                        label = t("groups.stage.fattening");
                         break;
                     case "breeder":
                         color = "success";
-                        label = "Reproductor";
+                        label = t("groups.stage.breeder");
                         break;
                 }
 
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { label: 'Cerdos', key: 'pigCount', type: 'text' },
-        { label: 'Fecha de creacion', key: 'creationDate', type: 'date' },
-        { label: 'Observaciones', key: 'observations', type: 'text' },
+        { label: t("groups.column.total"), key: 'pigCount', type: 'text' },
+        { label: t('common.field.creationDate'), key: 'creationDate', type: 'date' },
+        { label: t('common.field.observations'), key: 'observations', type: 'text' },
     ]
 
     const selectedVaccinesColumns: Column<any>[] = [
-        { header: "Codigo", accessor: "id", type: "text", isFilterable: true },
-        { header: "Producto", accessor: "name", type: "text", isFilterable: true },
+        { header: t("common.field.code"), accessor: "id", type: "text", isFilterable: true },
+        { header: t("medication.vaccinePlan.vaccineColumn.name"), accessor: "name", type: "text", isFilterable: true },
         {
-            header: "Dosis",
+            header: t("medication.vaccinePlan.vaccineColumn.dose"),
             accessor: "dose",
             type: "text",
             isFilterable: true,
             render: (_, row) => <span>{row.dose} {row.unit_measurement}</span>
         },
         {
-            header: "Dosis total",
+            header: t("medication.vaccinePlan.vaccineColumn.totalDose"),
             accessor: "totalDose",
             type: "text",
             isFilterable: true,
             render: (_, row) => <span>{row.totalDose} {row.unit_measurement}</span>
         },
         {
-            header: "Via de administracion",
+            header: t("medication.vaccinePlan.vaccineColumn.route"),
             accessor: "administration_route",
             type: "text",
             isFilterable: true,
@@ -221,31 +223,31 @@ const AsignGroupVaccinationPlanForm: React.FC<AsignGroupVaccinationPlanFormProps
                 switch (value) {
                     case "oral":
                         color = "info";
-                        label = "Oral";
+                        label = t("medication.vaccinePlan.adminRouteDisplay.oral");
                         break;
                     case "intramuscular":
                         color = "primary";
-                        label = "Intramuscular";
+                        label = t("medication.vaccinePlan.adminRouteDisplay.intramuscular");
                         break;
                     case "subcutaneous":
                         color = "primary";
-                        label = "Subcutánea";
+                        label = t("medication.vaccinePlan.adminRouteDisplay.subcutaneous");
                         break;
                     case "intravenous":
                         color = "primary";
-                        label = "Intravenosa";
+                        label = t("medication.vaccinePlan.adminRouteDisplay.intravenous");
                         break;
                     case "intranasal":
                         color = "primary";
-                        label = "Intranasal";
+                        label = t("medication.vaccinePlan.adminRouteDisplay.intranasal");
                         break;
                     case "topical":
                         color = "primary";
-                        label = "Tópica";
+                        label = t("medication.vaccinePlan.adminRouteDisplay.topical");
                         break;
                     case "rectal":
                         color = "primary";
-                        label = "Rectal";
+                        label = t("medication.vaccinePlan.adminRouteDisplay.rectal");
                         break;
                 }
 
@@ -255,11 +257,11 @@ const AsignGroupVaccinationPlanForm: React.FC<AsignGroupVaccinationPlanFormProps
     ]
 
     const vaccinationPlanAttributes: Attribute[] = [
-        { label: 'Codigo', key: 'code', type: 'text' },
-        { label: 'Nombre', key: 'name', type: 'text', },
-        { label: 'Fecha de creacion', key: 'creation_date', type: 'date', },
+        { label: t('common.field.code'), key: 'code', type: 'text' },
+        { label: t('common.field.name'), key: 'name', type: 'text', },
+        { label: t('groups.column.creationDate'), key: 'creation_date', type: 'date', },
         {
-            label: 'Etapa',
+            label: t('common.field.stage'),
             key: 'stage',
             type: 'text',
             render: (_, row) => {
@@ -307,7 +309,7 @@ const AsignGroupVaccinationPlanForm: React.FC<AsignGroupVaccinationPlanFormProps
             setVaccinationPlans(plansWithId)
         } catch (error) {
             logger.error('Error fetching data:', error);
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al cargar los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t("common.error.loadData") })
         } finally {
             setLoading(false)
         }
@@ -432,7 +434,7 @@ const AsignGroupVaccinationPlanForm: React.FC<AsignGroupVaccinationPlanFormProps
                             aria-controls="step-packageSelect-tab"
                             disabled
                         >
-                            Selección de plan de vacunacion
+                            {t("medication.vaccination.assign.stepSelectPlan")}
                         </NavLink>
                     </NavItem>
 
@@ -448,7 +450,7 @@ const AsignGroupVaccinationPlanForm: React.FC<AsignGroupVaccinationPlanFormProps
                             aria-controls="step-summary-tab"
                             disabled
                         >
-                            Resumen
+                            {t("medication.vaccination.assign.stepSummary")}
                         </NavLink>
                     </NavItem>
                 </Nav>
@@ -458,7 +460,7 @@ const AsignGroupVaccinationPlanForm: React.FC<AsignGroupVaccinationPlanFormProps
                 <TabPane id="step-planSelect-tab" tabId={1}>
                     <div className="d-flex gap-2 mt-4">
                         <div className="w-50">
-                            <Label htmlFor="applicationDate" className="form-label">Fecha de aplicacion</Label>
+                            <Label htmlFor="applicationDate" className="form-label">{t("medication.vaccination.assign.fieldApplicationDate")}</Label>
                             <DatePicker
                                 id="applicationDate"
                                 className={`form-control ${formik.touched.applicationDate && formik.errors.applicationDate ? 'is-invalid' : ''}`}
@@ -474,7 +476,7 @@ const AsignGroupVaccinationPlanForm: React.FC<AsignGroupVaccinationPlanFormProps
                         </div>
 
                         <div className="w-50">
-                            <Label htmlFor="user" className="form-label">Responsable de aplicacion</Label>
+                            <Label htmlFor="user" className="form-label">{t("medication.vaccination.assign.fieldResponsible")}</Label>
                             <Input
                                 type="text"
                                 id="user"
@@ -486,7 +488,7 @@ const AsignGroupVaccinationPlanForm: React.FC<AsignGroupVaccinationPlanFormProps
                     </div>
 
                     <div className="mt-4">
-                        <Label htmlFor="observations" className="form-label">Observaciones</Label>
+                        <Label htmlFor="observations" className="form-label">{t("medication.vaccination.assign.fieldObservations")}</Label>
                         <Input
                             type="text"
                             id="observations"
@@ -495,7 +497,7 @@ const AsignGroupVaccinationPlanForm: React.FC<AsignGroupVaccinationPlanFormProps
                             onChange={formik.handleChange}
                             onBlur={formik.handleBlur}
                             invalid={formik.touched.observations && !!formik.errors.observations}
-                            placeholder="Observaciones de la aplicacion"
+                            placeholder={t("medication.vaccination.assign.placeholderObservations")}
                         />
                         {formik.touched.observations && formik.errors.observations && (
                             <FormFeedback>{formik.errors.observations}</FormFeedback>
@@ -503,7 +505,7 @@ const AsignGroupVaccinationPlanForm: React.FC<AsignGroupVaccinationPlanFormProps
                     </div>
 
                     <div className="mt-4">
-                        <Label htmlFor="observations" className="form-label">Seleccion de plan de vacunacion</Label>
+                        <Label htmlFor="observations" className="form-label">{t("medication.vaccination.assign.fieldSelectPlan")}</Label>
 
                         <SelectableCustomTable
                             columns={vaccinationPlanColumns}
@@ -519,7 +521,7 @@ const AsignGroupVaccinationPlanForm: React.FC<AsignGroupVaccinationPlanFormProps
 
                     <div className="d-flex justify-content-between mt-4">
                         <Button className="btn btn-primary ms-auto" onClick={() => checkVaccinationPlanData()}>
-                            Siguiente
+                            {t("common.button.next")}
                             <i className="ri-arrow-right-line ms-1" />
                         </Button>
                     </div>
@@ -530,7 +532,7 @@ const AsignGroupVaccinationPlanForm: React.FC<AsignGroupVaccinationPlanFormProps
                         <div className="">
                             <Card className="shadow-sm h-100">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
-                                    Información del grupo
+                                    {t("medication.vaccination.assign.cardGroupInfo")}
                                 </CardHeader>
                                 <CardBody>
                                     <ObjectDetails
@@ -544,7 +546,7 @@ const AsignGroupVaccinationPlanForm: React.FC<AsignGroupVaccinationPlanFormProps
                         <div className="w-100 align-items-stretch d-flex flex-column gap-1">
                             <Card className="shadow-sm h-100">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
-                                    Información del plan de vacunacion
+                                    {t("medication.vaccination.assign.cardPlanInfo")}
                                 </CardHeader>
                                 <CardBody>
                                     <ObjectDetails
@@ -556,7 +558,7 @@ const AsignGroupVaccinationPlanForm: React.FC<AsignGroupVaccinationPlanFormProps
 
                             <Card className="shadow-sm h-100">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
-                                    <h5>Vacunas</h5>
+                                    <h5>{t("medication.vaccination.assign.cardVaccines")}</h5>
                                 </CardHeader>
                                 <CardBody className="p-0">
                                     <CustomTable
@@ -574,7 +576,7 @@ const AsignGroupVaccinationPlanForm: React.FC<AsignGroupVaccinationPlanFormProps
                     <div className="mt-4 d-flex">
                         <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                             <i className="ri-arrow-left-line me-2" />
-                            Atrás
+                            {t("common.button.back")}
                         </Button>
 
                         <Button className="ms-auto btn-success" onClick={() => formik.handleSubmit()} disabled={formik.isSubmitting}>
@@ -585,7 +587,7 @@ const AsignGroupVaccinationPlanForm: React.FC<AsignGroupVaccinationPlanFormProps
                             ) : (
                                 <div>
                                     <i className="ri-check-line me-2" />
-                                    Asignar
+                                    {t("medication.vaccination.assign.btnAssign")}
                                 </div>
                             )}
 
@@ -596,8 +598,8 @@ const AsignGroupVaccinationPlanForm: React.FC<AsignGroupVaccinationPlanFormProps
             </TabContent>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} autoClose={3000} />
-            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message={"Ha ocurrido un error, intentelo mas tarde"} />
-            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={"Plan de vacunacion asignado correctamente"} />
+            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message={t("medication.vaccination.assign.errorGeneric")} />
+            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={t("medication.vaccination.assign.successGroup")} />
             <MissingStockModal isOpen={modals.missingStock} onClose={() => toggleModal('missingStock', false)} missingItems={missingItems} />
         </>
     )

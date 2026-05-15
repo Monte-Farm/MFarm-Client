@@ -2,6 +2,7 @@ import { logger } from 'utils/logger';
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Badge, Button, Card, CardBody, CardHeader, Col, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Nav, NavItem, NavLink, Row, Spinner, TabContent, TabPane } from "reactstrap";
 import LoadingAnimation from "../Shared/LoadingAnimation";
 import classnames from "classnames";
@@ -74,6 +75,7 @@ interface PreviewData {
 }
 
 const SellPigsForm: React.FC<SellPigsFormProps> = ({ groupId, onSave }) => {
+    const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     
@@ -462,7 +464,7 @@ const SellPigsForm: React.FC<SellPigsFormProps> = ({ groupId, onSave }) => {
                             })}
                             disabled
                         >
-                            Preview y Confirmación
+                            {t("sales.step.preview")}
                         </NavLink>
                     </NavItem>
                 </Nav>
@@ -548,19 +550,19 @@ const SellPigsForm: React.FC<SellPigsFormProps> = ({ groupId, onSave }) => {
                         <SelectableCustomTable
                             columns={[
                                 {
-                                    header: 'Código',
+                                    header: t('common.field.code'),
                                     accessor: 'code',
                                     type: 'text',
                                     render: (_, row) => <span className="fw-semibold">{row.code}</span>
                                 },
                                 {
-                                    header: 'Peso Actual',
+                                    header: t('common.field.weightCurrent'),
                                     accessor: 'originalWeight',
                                     type: 'text',
                                     render: (value) => <span className="text-muted">{value.toFixed(2)} kg</span>
                                 },
                                 {
-                                    header: 'Peso Venta (kg)',
+                                    header: t('sales.field.saleWeight'),
                                     accessor: 'weight',
                                     type: 'text',
                                     render: (value, row) => {
@@ -583,7 +585,7 @@ const SellPigsForm: React.FC<SellPigsFormProps> = ({ groupId, onSave }) => {
                                     }
                                 },
                                 {
-                                    header: 'Precio/kg ($)',
+                                    header: t('sales.field.pricePerKg'),
                                     accessor: 'pricePerKg',
                                     type: 'text',
                                     render: (value, row) => {
@@ -606,7 +608,7 @@ const SellPigsForm: React.FC<SellPigsFormProps> = ({ groupId, onSave }) => {
                                     }
                                 },
                                 {
-                                    header: 'Total',
+                                    header: t('common.total'),
                                     accessor: 'total',
                                     type: 'text',
                                     render: (value) => <span className="fw-bold">${value.toFixed(2)}</span>
@@ -630,19 +632,19 @@ const SellPigsForm: React.FC<SellPigsFormProps> = ({ groupId, onSave }) => {
                             <Row>
                                 <Col md={3}>
                                     <div className="text-center">
-                                        <div className="text-muted small">Total Cerdos</div>
+                                        <div className="text-muted small">{t("sales.summary.totalPigs")}</div>
                                         <div className="fs-4 fw-bold text-primary">{totals.totalPigs}</div>
                                     </div>
                                 </Col>
                                 <Col md={3}>
                                     <div className="text-center">
-                                        <div className="text-muted small">Peso Total</div>
+                                        <div className="text-muted small">{t("sales.summary.totalWeight")}</div>
                                         <div className="fs-4 fw-bold text-info">{totals.totalWeight.toFixed(2)} kg</div>
                                     </div>
                                 </Col>
                                 <Col md={3}>
                                     <div className="text-center">
-                                        <div className="text-muted small">Precio Promedio</div>
+                                        <div className="text-muted small">{t("sales.summary.avgPrice")}</div>
                                         <div className="fs-4 fw-bold text-warning">${totals.averagePricePerKg.toFixed(2)}/kg</div>
                                     </div>
                                 </Col>
@@ -696,11 +698,11 @@ const SellPigsForm: React.FC<SellPigsFormProps> = ({ groupId, onSave }) => {
                                             ...formData,
                                             buyer: { ...formData.buyer, name: e.target.value }
                                         })}
-                                        placeholder="Nombre del comprador"
+                                        placeholder={t("sales.field.buyerName")}
                                     />
                                 </Col>
                                 <Col md={6} className="mb-3">
-                                    <Label className="form-label">Tipo</Label>
+                                    <Label className="form-label">{t("sales.field.buyerType")}</Label>
                                     <Input
                                         type="select"
                                         value={formData.buyer.type}
@@ -709,14 +711,14 @@ const SellPigsForm: React.FC<SellPigsFormProps> = ({ groupId, onSave }) => {
                                             buyer: { ...formData.buyer, type: e.target.value }
                                         })}
                                     >
-                                        <option value="individual">Individual</option>
-                                        <option value="company">Empresa</option>
-                                        <option value="slaughterhouse">Matadero</option>
-                                        <option value="other">Otro</option>
+                                        <option value="individual">{t("sales.buyerType.individual")}</option>
+                                        <option value="company">{t("sales.buyerType.company")}</option>
+                                        <option value="slaughterhouse">{t("sales.buyerType.slaughterhouse")}</option>
+                                        <option value="other">{t("common.other")}</option>
                                     </Input>
                                 </Col>
                                 <Col md={6} className="mb-3">
-                                    <Label className="form-label">Contacto</Label>
+                                    <Label className="form-label">{t("sales.field.contact")}</Label>
                                     <Input
                                         type="text"
                                         value={formData.buyer.contact}
@@ -724,11 +726,11 @@ const SellPigsForm: React.FC<SellPigsFormProps> = ({ groupId, onSave }) => {
                                             ...formData,
                                             buyer: { ...formData.buyer, contact: e.target.value }
                                         })}
-                                        placeholder="Teléfono o email"
+                                        placeholder={t("sales.field.contactPlaceholder")}
                                     />
                                 </Col>
                                 <Col md={6} className="mb-3">
-                                    <Label className="form-label">RFC / Identificación Fiscal</Label>
+                                    <Label className="form-label">{t("sales.field.taxId")}</Label>
                                     <Input
                                         type="text"
                                         value={formData.buyer.fiscalId}
@@ -736,7 +738,7 @@ const SellPigsForm: React.FC<SellPigsFormProps> = ({ groupId, onSave }) => {
                                             ...formData,
                                             buyer: { ...formData.buyer, fiscalId: e.target.value }
                                         })}
-                                        placeholder="RFC"
+                                        placeholder={t("sales.field.taxIdPlaceholder")}
                                     />
                                 </Col>
                             </Row>
@@ -750,29 +752,29 @@ const SellPigsForm: React.FC<SellPigsFormProps> = ({ groupId, onSave }) => {
                         <CardBody>
                             <Row>
                                 <Col md={6} className="mb-3">
-                                    <Label className="form-label">Método de Pago <span className="text-danger">*</span></Label>
+                                    <Label className="form-label">{t("sales.field.paymentMethod")} <span className="text-danger">*</span></Label>
                                     <Input
                                         type="select"
                                         value={formData.paymentMethod}
                                         onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
                                     >
-                                        <option value="cash">Efectivo</option>
-                                        <option value="transfer">Transferencia</option>
-                                        <option value="check">Cheque</option>
-                                        <option value="credit">Crédito</option>
-                                        <option value="other">Otro</option>
+                                        <option value="cash">{t("sales.paymentMethod.cash")}</option>
+                                        <option value="transfer">{t("sales.paymentMethod.transfer")}</option>
+                                        <option value="check">{t("sales.paymentMethod.check")}</option>
+                                        <option value="credit">{t("sales.paymentMethod.credit")}</option>
+                                        <option value="other">{t("common.other")}</option>
                                     </Input>
                                 </Col>
                                 <Col md={6} className="mb-3">
-                                    <Label className="form-label">Estado de Pago</Label>
+                                    <Label className="form-label">{t("sales.field.paymentStatus")}</Label>
                                     <Input
                                         type="select"
                                         value={formData.paymentStatus}
                                         onChange={(e) => setFormData({ ...formData, paymentStatus: e.target.value })}
                                     >
-                                        <option value="pending">Pendiente</option>
-                                        <option value="partial">Parcial</option>
-                                        <option value="completed">Completado</option>
+                                        <option value="pending">{t("common.status.pending")}</option>
+                                        <option value="partial">{t("sales.paymentStatus.partial")}</option>
+                                        <option value="completed">{t("common.status.completed")}</option>
                                     </Input>
                                 </Col>
                             </Row>
@@ -781,7 +783,7 @@ const SellPigsForm: React.FC<SellPigsFormProps> = ({ groupId, onSave }) => {
 
                     <Card className="mb-3">
                         <CardHeader className="bg-light d-flex justify-content-between align-items-center">
-                            <h6 className="mb-0 fw-bold">Costos Adicionales</h6>
+                            <h6 className="mb-0 fw-bold">{t("sales.field.additionalCosts")}</h6>
                             <Button size="sm" color="primary" onClick={addAdditionalCost}>
                                 <i className="ri-add-line me-1" />
                                 Agregar
@@ -791,7 +793,7 @@ const SellPigsForm: React.FC<SellPigsFormProps> = ({ groupId, onSave }) => {
                             {additionalCosts.length === 0 ? (
                                 <div className="text-center text-muted py-3">
                                     <i className="ri-information-line fs-4 d-block mb-2" />
-                                    No hay costos adicionales
+                                    {t("sales.field.noAdditionalCosts")}
                                 </div>
                             ) : (
                                 <div className="d-flex flex-column gap-2">
@@ -799,7 +801,7 @@ const SellPigsForm: React.FC<SellPigsFormProps> = ({ groupId, onSave }) => {
                                         <div key={idx} className="d-flex gap-2 align-items-center">
                                             <Input
                                                 type="text"
-                                                placeholder="Concepto"
+                                                placeholder={t("sales.field.costConcept")}
                                                 value={cost.concept}
                                                 onChange={(e) => updateAdditionalCost(idx, 'concept', e.target.value)}
                                                 className="flex-grow-1"
@@ -830,14 +832,14 @@ const SellPigsForm: React.FC<SellPigsFormProps> = ({ groupId, onSave }) => {
 
                     <Card className="mb-3">
                         <CardHeader className="bg-light">
-                            <h6 className="mb-0 fw-bold">Notas</h6>
+                            <h6 className="mb-0 fw-bold">{t("common.field.observations")}</h6>
                         </CardHeader>
                         <CardBody>
                             <Input
                                 type="text"
                                 value={formData.notes}
                                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                placeholder="Observaciones adicionales sobre la venta..."
+                                placeholder={t("sales.field.notesPlaceholder")}
                             />
                         </CardBody>
                     </Card>
@@ -867,7 +869,7 @@ const SellPigsForm: React.FC<SellPigsFormProps> = ({ groupId, onSave }) => {
                     {previewData && (
                         <>
                             <div className="mb-4">
-                                <h5 className="fw-bold mb-1 text-dark">Preview y Confirmación</h5>
+                                <h5 className="fw-bold mb-1 text-dark">{t("sales.step.preview")}</h5>
                                 <p className="text-muted small">Revisa los detalles antes de confirmar la venta.</p>
                             </div>
 
@@ -875,31 +877,31 @@ const SellPigsForm: React.FC<SellPigsFormProps> = ({ groupId, onSave }) => {
                                 <Col lg={6} className="mb-3">
                                     <Card className="h-100">
                                         <CardHeader className="bg-light">
-                                            <h6 className="mb-0 fw-bold">Resumen de Venta</h6>
+                                            <h6 className="mb-0 fw-bold">{t("sales.summary.title")}</h6>
                                         </CardHeader>
                                         <CardBody>
                                             <Row className="g-3">
                                                 <Col xs={6}>
                                                     <div className="text-center p-3 bg-light rounded">
-                                                        <div className="text-muted small mb-1">Total Cerdos</div>
+                                                        <div className="text-muted small mb-1">{t("sales.summary.totalPigs")}</div>
                                                         <div className="fs-4 fw-bold text-primary">{previewData.summary?.totalPigs || 0}</div>
                                                     </div>
                                                 </Col>
                                                 <Col xs={6}>
                                                     <div className="text-center p-3 bg-light rounded">
-                                                        <div className="text-muted small mb-1">Peso Total</div>
+                                                        <div className="text-muted small mb-1">{t("sales.summary.totalWeight")}</div>
                                                         <div className="fs-4 fw-bold text-info">{(previewData.summary?.totalWeight || 0).toFixed(2)} kg</div>
                                                     </div>
                                                 </Col>
                                                 <Col xs={6}>
                                                     <div className="text-center p-3 bg-light rounded">
-                                                        <div className="text-muted small mb-1">Peso Promedio</div>
+                                                        <div className="text-muted small mb-1">{t("sales.summary.avgWeight")}</div>
                                                         <div className="fs-4 fw-bold text-secondary">{(previewData.summary?.averageWeight || 0).toFixed(2)} kg</div>
                                                     </div>
                                                 </Col>
                                                 <Col xs={6}>
                                                     <div className="text-center p-3 bg-light rounded">
-                                                        <div className="text-muted small mb-1">Precio Promedio</div>
+                                                        <div className="text-muted small mb-1">{t("sales.summary.avgPrice")}</div>
                                                         <div className="fs-4 fw-bold text-warning">${(previewData.summary?.averagePricePerKg || 0).toFixed(2)}/kg</div>
                                                     </div>
                                                 </Col>
@@ -1006,7 +1008,7 @@ const SellPigsForm: React.FC<SellPigsFormProps> = ({ groupId, onSave }) => {
             <ErrorModal
                 isOpen={modals.error}
                 onClose={() => toggleModal('error')}
-                message="Ha ocurrido un error al procesar la venta. Por favor, intente nuevamente."
+                message={t("common.error.generic")}
             />
 
             <Modal isOpen={modals.confirmation} toggle={() => toggleModal('confirmation')} centered>
@@ -1043,7 +1045,7 @@ const SellPigsForm: React.FC<SellPigsFormProps> = ({ groupId, onSave }) => {
                 <ModalFooter>
                     <Button color="secondary" onClick={() => toggleModal('confirmation')} disabled={isSubmitting}>
                         <i className="ri-close-line me-1" />
-                        Cancelar
+                        {t("common.button.cancel")}
                     </Button>
                     <Button color="success" onClick={handleConfirmSale} disabled={isSubmitting}>
                         {isSubmitting ? (

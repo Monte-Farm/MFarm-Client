@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Button } from 'reactstrap';
 
@@ -6,7 +7,8 @@ import systemLogo from '../../assets/images/system-logo-dark.png';
 import pigSilhouette from '../../assets/images/pig_silhouette.png';
 
 const NotFound = () => {
-    document.title = "Página no encontrada | Pig System";
+    const { t } = useTranslation();
+    document.title = `${t("notFound.pageTitle")} | ${t("systemName")}`;
 
     return (
         <div
@@ -65,7 +67,7 @@ const NotFound = () => {
             >
                 <img
                     src={systemLogo}
-                    alt="Pig System"
+                    alt="PorcySys"
                     style={{ height: '90px', marginBottom: '1.5rem' }}
                 />
 

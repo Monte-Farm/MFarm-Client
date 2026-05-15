@@ -57,7 +57,7 @@ interface SalesKpis {
 
 const SalesReport = () => {
     const { t } = useTranslation();
-    document.title = "Reporte de Ventas | Reportes";
+    document.title = `${t("reports.sales.title")} | ${t("reports.title")} | ${t("systemName")}`;
 
     const configContext = useContext(ConfigContext);
     const { isGlobal, farmId, scopeKey } = useReportScope();

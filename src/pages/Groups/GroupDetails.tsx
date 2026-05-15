@@ -67,7 +67,7 @@ const isTablet = () => {
 
 const GroupDetails = () => {
     const { t } = useTranslation();
-    document.title = t('groups.tab.information') + " | Management System";
+    document.title = `${t("groups.tab.information")} | ${t("systemName")}`;
     const { group_id } = useParams();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();

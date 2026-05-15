@@ -67,7 +67,7 @@ const UserCards = <T extends Record<string, any>>({
                                     <CardImg
                                         top
                                         src={item[imageAccessor] || defaultProfile}
-                                        alt="User image"
+                                        alt=""
                                         className="user-card-img"
                                         onError={(e) => {
                                             (e.target as HTMLImageElement).src = defaultProfile;
@@ -77,7 +77,7 @@ const UserCards = <T extends Record<string, any>>({
                                     <CardImg
                                         top
                                         src={defaultProfile}
-                                        alt="User image"
+                                        alt=""
                                         className="user-card-img"
                                         onError={(e) => {
                                             (e.target as HTMLImageElement).src = defaultProfile;
@@ -159,7 +159,7 @@ const UserCards = <T extends Record<string, any>>({
 
                                                 {col.type === ('status' as ColumnType) ? (
                                                     <Badge color={item[col.accessor] ? "success" : "danger"}>
-                                                        {item[col.accessor] ? "Activo" : "Inactivo"}
+                                                        {item[col.accessor] ? t("common.status.active") : t("common.status.inactive")}
                                                     </Badge>
 
                                                 ) : col.accessor === "role" ? (
@@ -193,7 +193,7 @@ const UserCards = <T extends Record<string, any>>({
                     ))
                 ) : (
                     <div className="w-100 text-center py-5">
-                        No se encontraron usuarios
+                        {t("users.notFound", { defaultValue: "No se encontraron usuarios" })}
                     </div>
                 )}
             </div>

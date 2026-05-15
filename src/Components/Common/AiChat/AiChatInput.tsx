@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface AiChatInputProps {
     disabled: boolean;
@@ -8,6 +9,7 @@ interface AiChatInputProps {
 }
 
 const AiChatInput: React.FC<AiChatInputProps> = ({ disabled, onSend, externalValue, onExternalConsumed }) => {
+    const { t } = useTranslation();
     const [value, setValue] = useState('');
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -40,7 +42,7 @@ const AiChatInput: React.FC<AiChatInputProps> = ({ disabled, onSend, externalVal
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
                 onKeyDown={onKeyDown}
-                placeholder="Pregúntale lo que quieras a tu granja..."
+                placeholder={t("ai.input.placeholder")}
                 rows={1}
                 disabled={disabled}
                 maxLength={2000}
@@ -50,7 +52,7 @@ const AiChatInput: React.FC<AiChatInputProps> = ({ disabled, onSend, externalVal
                 className="ai-chat-input__send"
                 onClick={submit}
                 disabled={disabled || !value.trim()}
-                aria-label="Enviar"
+                aria-label={t("common.button.send")}
             >
                 <i className="ri-arrow-up-line"></i>
             </button>

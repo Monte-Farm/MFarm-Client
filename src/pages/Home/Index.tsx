@@ -13,10 +13,9 @@ import { getDefaultDateRange, resolveDashboardRole } from "./dashboardHelpers";
 import SuperadminDashboard from "./Dashboards/SuperadminDashboard";
 
 const Home = () => {
-    document.title = "Inicio | Pig System";
-
     const userLogged = getEffectiveUser();
     const { t } = useTranslation();
+    document.title = `${t("menu.home")} | ${t("systemName")}`;
 
     const getRoleLabel = (role: string): string => t(`roles.${role}`, { defaultValue: role });
     const defaults = getDefaultDateRange();

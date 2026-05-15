@@ -66,7 +66,7 @@ interface ProfitabilityKpis {
 
 const ProfitabilityReport = () => {
     const { t } = useTranslation();
-    document.title = "Rentabilidad | Reportes";
+    document.title = `${t("reports.profitability.title")} | ${t("reports.title")} | ${t("systemName")}`;
 
     const configContext = useContext(ConfigContext);
     const { isGlobal, farmId, scopeKey } = useReportScope();

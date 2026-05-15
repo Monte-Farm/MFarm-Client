@@ -71,7 +71,7 @@ const MedicationPackageDetails: React.FC<MedicationPackageDetailsProps> = ({ med
     const medicationsColumns: Column<any>[] = [
         {
             header: t('feeding.package.form.column.image'), accessor: 'image', render: (_, row) => (
-                <img src={row.medication.image || noImageUrl} alt="Imagen del Producto" style={{ height: "70px" }} />
+                <img src={row.medication.image || noImageUrl} alt="" style={{ height: "70px" }} />
             ),
         },
         {

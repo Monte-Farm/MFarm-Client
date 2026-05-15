@@ -23,7 +23,7 @@ const isTablet = () => {
 
 const ViewFeedPreparations = () => {
     const { t } = useTranslation();
-    document.title = t('feeding.preparation.pageTitle') + ' | System Management';
+    document.title = `${t("feeding.preparation.pageTitle")} | ${t("systemName")}`;
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [tabletMode, setTabletMode] = useState(isTablet);

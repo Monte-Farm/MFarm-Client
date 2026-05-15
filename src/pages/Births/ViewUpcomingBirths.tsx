@@ -32,8 +32,8 @@ const isTablet = () => {
 };
 
 const ViewUpcomingBirths = () => {
-    document.title = 'Proximos partos | Management system';
     const { t } = useTranslation();
+    document.title = `${t("birth.breadcrumb.upcomingTitle")} | ${t("systemName")}`;
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const navigate = useNavigate();

@@ -15,6 +15,7 @@ import AlertMessage from "../Shared/AlertMesagge";
 import ObjectDetails from "../Details/ObjectDetails";
 import CustomTable from "../Tables/CustomTable";
 import ErrorModal from "../Shared/ErrorModal";
+import { useTranslation } from "react-i18next";
 import SuccessModal from "../Shared/SuccessModal";
 import MissingStockModal from "../Shared/MissingStockModal";
 
@@ -24,6 +25,7 @@ interface AsignLitterVaccinationPlanFormProps {
 }
 
 const AsignLitterVaccinationPlanForm: React.FC<AsignLitterVaccinationPlanFormProps> = ({ litterId, onSave }) => {
+    const { t } = useTranslation();
     const userLogged = getEffectiveUser();
     const configContext = useContext(ConfigContext);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
@@ -53,38 +55,38 @@ const AsignLitterVaccinationPlanForm: React.FC<AsignLitterVaccinationPlanFormPro
     };
 
     const vaccinationPlanColumns: Column<any>[] = [
-        { header: 'Codigo', accessor: 'code', type: 'text', isFilterable: true },
-        { header: 'Nombre', accessor: 'name', type: 'text', isFilterable: true },
-        { header: 'Fecha de creacion', accessor: 'creation_date', type: 'date', isFilterable: true },
+        { header: t('groups.column.code'), accessor: 'code', type: 'text', isFilterable: true },
+        { header: t('groups.column.name'), accessor: 'name', type: 'text', isFilterable: true },
+        { header: t('groups.column.creationDate'), accessor: 'creation_date', type: 'date', isFilterable: true },
         {
-            header: 'Etapa',
+            header: t('common.field.stage'),
             accessor: 'stage',
             type: 'text',
             isFilterable: true,
             render: (_, row) => {
                 let color = "secondary";
-                let text = "Desconocido";
+                let text = t("groups.area.unknown");
 
                 switch (row.stage) {
                     case "general":
                         color = "info";
-                        text = "General";
+                        text = t("groups.stage.general");
                         break;
                     case "piglet":
                         color = "info";
-                        text = "Lechón";
+                        text = t("groups.stage.piglet");
                         break;
                     case "weaning":
                         color = "warning";
-                        text = "Destete";
+                        text = t("groups.stage.weaning");
                         break;
                     case "fattening":
                         color = "primary";
-                        text = "Engorda";
+                        text = t("groups.stage.fattening");
                         break;
                     case "breeder":
                         color = "success";
-                        text = "Reproductor";
+                        text = t("groups.stage.breeder");
                         break;
                 }
 
@@ -94,13 +96,13 @@ const AsignLitterVaccinationPlanForm: React.FC<AsignLitterVaccinationPlanFormPro
     ]
 
     const litterAttributes: Attribute[] = [
-        { key: 'code', label: 'Codigo', type: 'text' },
-        { key: 'birthDate', label: 'Fecha de nacimiento', type: 'date' },
-        { key: 'currentMale', label: 'Macho', type: 'text' },
-        { key: 'currentFemale', label: 'Hembra', type: 'text' },
+        { key: 'code', label: t('litter.attr.code'), type: 'text' },
+        { key: 'birthDate', label: t('litter.attr.birthDate'), type: 'date' },
+        { key: 'currentMale', label: t('litter.column.males'), type: 'text' },
+        { key: 'currentFemale', label: t('litter.column.females'), type: 'text' },
         {
             key: 'status',
-            label: 'Estado',
+            label: t('litter.attr.status'),
             type: 'text',
             render: (value, object) => {
                 let color = 'secondary';
@@ -109,11 +111,11 @@ const AsignLitterVaccinationPlanForm: React.FC<AsignLitterVaccinationPlanFormPro
                 switch (value) {
                     case 'active':
                         color = 'warning';
-                        label = 'Lactando';
+                        label = t('litter.status.active');
                         break;
                     case 'weaned':
                         color = 'success';
-                        label = 'Destetada';
+                        label = t('litter.status.weaned');
                         break;
                 }
 
@@ -123,31 +125,31 @@ const AsignLitterVaccinationPlanForm: React.FC<AsignLitterVaccinationPlanFormPro
         },
         {
             key: 'responsible',
-            label: 'Registrado por',
+            label: t('litter.attr.registeredBy'),
             type: 'text',
             render: (value, object) => <span>{object.responsible?.name} {object.responsible?.lastname}</span>
         },
     ]
 
     const selectedVaccinesColumns: Column<any>[] = [
-        { header: "Codigo", accessor: "id", type: "text", isFilterable: true },
-        { header: "Producto", accessor: "name", type: "text", isFilterable: true },
+        { header: t("groups.column.code"), accessor: "id", type: "text", isFilterable: true },
+        { header: t("medication.vaccinePlan.form.column.product"), accessor: "name", type: "text", isFilterable: true },
         {
-            header: "Dosis",
+            header: t("medication.vaccinePlan.vaccineColumn.dose"),
             accessor: "dose",
             type: "text",
             isFilterable: true,
             render: (_, row) => <span>{row.dose} {row.unit_measurement}</span>
         },
         {
-            header: "Dosis total",
+            header: t("medication.vaccinePlan.vaccineColumn.totalDose"),
             accessor: "totalDose",
             type: "text",
             isFilterable: true,
             render: (_, row) => <span>{row.totalDose} {row.unit_measurement}</span>
         },
         {
-            header: "Via de administracion",
+            header: t("medication.vaccinePlan.vaccineColumn.route"),
             accessor: "administration_route",
             type: "text",
             isFilterable: true,
@@ -158,31 +160,31 @@ const AsignLitterVaccinationPlanForm: React.FC<AsignLitterVaccinationPlanFormPro
                 switch (value) {
                     case "oral":
                         color = "info";
-                        label = "Oral";
+                        label = t("medication.vaccinePlan.adminRouteDisplay.oral");
                         break;
                     case "intramuscular":
                         color = "primary";
-                        label = "Intramuscular";
+                        label = t("medication.vaccinePlan.adminRouteDisplay.intramuscular");
                         break;
                     case "subcutaneous":
                         color = "primary";
-                        label = "Subcutánea";
+                        label = t("medication.vaccinePlan.adminRouteDisplay.subcutaneous");
                         break;
                     case "intravenous":
                         color = "primary";
-                        label = "Intravenosa";
+                        label = t("medication.vaccinePlan.adminRouteDisplay.intravenous");
                         break;
                     case "intranasal":
                         color = "primary";
-                        label = "Intranasal";
+                        label = t("medication.vaccinePlan.adminRouteDisplay.intranasal");
                         break;
                     case "topical":
                         color = "primary";
-                        label = "Tópica";
+                        label = t("medication.vaccinePlan.adminRouteDisplay.topical");
                         break;
                     case "rectal":
                         color = "primary";
-                        label = "Rectal";
+                        label = t("medication.vaccinePlan.adminRouteDisplay.rectal");
                         break;
                 }
 
@@ -192,37 +194,37 @@ const AsignLitterVaccinationPlanForm: React.FC<AsignLitterVaccinationPlanFormPro
     ]
 
     const vaccinationPlanAttributes: Attribute[] = [
-        { label: 'Codigo', key: 'code', type: 'text' },
-        { label: 'Nombre', key: 'name', type: 'text', },
-        { label: 'Fecha de creacion', key: 'creation_date', type: 'date', },
+        { label: t('groups.column.code'), key: 'code', type: 'text' },
+        { label: t('groups.column.name'), key: 'name', type: 'text', },
+        { label: t('groups.column.creationDate'), key: 'creation_date', type: 'date', },
         {
-            label: 'Etapa',
+            label: t('common.field.stage'),
             key: 'stage',
             type: 'text',
             render: (_, row) => {
                 let color = "secondary";
-                let text = "Desconocido";
+                let text = t("groups.area.unknown");
 
                 switch (row.stage) {
                     case "general":
                         color = "info";
-                        text = "General";
+                        text = t("groups.stage.general");
                         break;
                     case "piglet":
                         color = "info";
-                        text = "Lechón";
+                        text = t("groups.stage.piglet");
                         break;
                     case "weaning":
                         color = "warning";
-                        text = "Destete";
+                        text = t("groups.stage.weaning");
                         break;
                     case "fattening":
                         color = "primary";
-                        text = "Engorda";
+                        text = t("groups.stage.fattening");
                         break;
                     case "breeder":
                         color = "success";
-                        text = "Reproductor";
+                        text = t("groups.stage.breeder");
                         break;
                 }
 
@@ -244,7 +246,7 @@ const AsignLitterVaccinationPlanForm: React.FC<AsignLitterVaccinationPlanFormPro
             setVaccinationPlans(plansWithId)
         } catch (error) {
             logger.error('Error fetching data:', error);
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al cargar los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('medication.vaccination.assign.errorGeneric') })
         } finally {
             setLoading(false)
         }
@@ -321,7 +323,7 @@ const AsignLitterVaccinationPlanForm: React.FC<AsignLitterVaccinationPlanFormPro
 
     const checkVaccinationPlanData = async () => {
         if (formik.values.planId === '') {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor, seleccione un plan de vacunacion' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('groups.form.vaccinationPlan.validationPlan') })
         } else {
             toggleArrowTab(activeStep + 1);
         }
@@ -377,7 +379,7 @@ const AsignLitterVaccinationPlanForm: React.FC<AsignLitterVaccinationPlanFormPro
                             aria-controls="step-packageSelect-tab"
                             disabled
                         >
-                            Selección de plan de vacunacion
+                            {t('medication.vaccination.assign.stepSelectPlan')}
                         </NavLink>
                     </NavItem>
 
@@ -393,7 +395,7 @@ const AsignLitterVaccinationPlanForm: React.FC<AsignLitterVaccinationPlanFormPro
                             aria-controls="step-summary-tab"
                             disabled
                         >
-                            Resumen
+                            {t('medication.vaccination.assign.stepSummary')}
                         </NavLink>
                     </NavItem>
                 </Nav>
@@ -403,7 +405,7 @@ const AsignLitterVaccinationPlanForm: React.FC<AsignLitterVaccinationPlanFormPro
                 <TabPane id="step-planSelect-tab" tabId={1}>
                     <div className="d-flex gap-2 mt-4">
                         <div className="w-50">
-                            <Label htmlFor="applicationDate" className="form-label">Fecha de aplicacion</Label>
+                            <Label htmlFor="applicationDate" className="form-label">{t('medication.vaccination.assign.fieldApplicationDate')}</Label>
                             <DatePicker
                                 id="applicationDate"
                                 className={`form-control ${formik.touched.applicationDate && formik.errors.applicationDate ? 'is-invalid' : ''}`}
@@ -419,7 +421,7 @@ const AsignLitterVaccinationPlanForm: React.FC<AsignLitterVaccinationPlanFormPro
                         </div>
 
                         <div className="w-50">
-                            <Label htmlFor="user" className="form-label">Responsable de aplicacion</Label>
+                            <Label htmlFor="user" className="form-label">{t('medication.vaccination.assign.fieldResponsible')}</Label>
                             <Input
                                 type="text"
                                 id="user"
@@ -431,7 +433,7 @@ const AsignLitterVaccinationPlanForm: React.FC<AsignLitterVaccinationPlanFormPro
                     </div>
 
                     <div className="mt-4">
-                        <Label htmlFor="observations" className="form-label">Observaciones</Label>
+                        <Label htmlFor="observations" className="form-label">{t('medication.vaccination.assign.fieldObservations')}</Label>
                         <Input
                             type="text"
                             id="observations"
@@ -440,7 +442,7 @@ const AsignLitterVaccinationPlanForm: React.FC<AsignLitterVaccinationPlanFormPro
                             onChange={formik.handleChange}
                             onBlur={formik.handleBlur}
                             invalid={formik.touched.observations && !!formik.errors.observations}
-                            placeholder="Observaciones de la aplicacion"
+                            placeholder={t('medication.vaccination.assign.placeholderObservations')}
                         />
                         {formik.touched.observations && formik.errors.observations && (
                             <FormFeedback>{formik.errors.observations}</FormFeedback>
@@ -448,7 +450,7 @@ const AsignLitterVaccinationPlanForm: React.FC<AsignLitterVaccinationPlanFormPro
                     </div>
 
                     <div className="mt-4">
-                        <Label htmlFor="observations" className="form-label">Seleccion de plan de vacunacion</Label>
+                        <Label htmlFor="observations" className="form-label">{t('medication.vaccination.assign.fieldSelectPlan')}</Label>
 
                         <SelectableCustomTable
                             columns={vaccinationPlanColumns}
@@ -464,7 +466,7 @@ const AsignLitterVaccinationPlanForm: React.FC<AsignLitterVaccinationPlanFormPro
 
                     <div className="d-flex justify-content-between mt-4">
                         <Button className="btn btn-primary ms-auto" onClick={() => checkVaccinationPlanData()}>
-                            Siguiente
+                            {t('common.button.next')}
                             <i className="ri-arrow-right-line ms-1" />
                         </Button>
                     </div>
@@ -475,7 +477,7 @@ const AsignLitterVaccinationPlanForm: React.FC<AsignLitterVaccinationPlanFormPro
                         <div className="">
                             <Card className="shadow-sm h-100">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
-                                    Información de la camada
+                                    {t('medication.vaccination.assign.cardLitterInfo')}
                                 </CardHeader>
                                 <CardBody>
                                     <ObjectDetails
@@ -489,7 +491,7 @@ const AsignLitterVaccinationPlanForm: React.FC<AsignLitterVaccinationPlanFormPro
                         <div className="w-100 align-items-stretch d-flex flex-column gap-1">
                             <Card className="shadow-sm h-100">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
-                                    Información del plan de vacunacion
+                                    {t('medication.vaccination.assign.cardPlanInfo')}
                                 </CardHeader>
                                 <CardBody>
                                     <ObjectDetails
@@ -501,7 +503,7 @@ const AsignLitterVaccinationPlanForm: React.FC<AsignLitterVaccinationPlanFormPro
 
                             <Card className="shadow-sm h-100">
                                 <CardHeader className="bg-light fw-bold fs-5 d-flex justify-content-between align-items-center">
-                                    <h5>Vacunas</h5>
+                                    <h5>{t('medication.vaccination.assign.cardVaccines')}</h5>
                                 </CardHeader>
                                 <CardBody className="p-0">
                                     <CustomTable
@@ -519,7 +521,7 @@ const AsignLitterVaccinationPlanForm: React.FC<AsignLitterVaccinationPlanFormPro
                     <div className="mt-4 d-flex">
                         <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
                             <i className="ri-arrow-left-line me-2" />
-                            Atrás
+                            {t('common.button.back')}
                         </Button>
 
                         <Button className="ms-auto btn-success" onClick={() => formik.handleSubmit()} disabled={formik.isSubmitting}>
@@ -530,7 +532,7 @@ const AsignLitterVaccinationPlanForm: React.FC<AsignLitterVaccinationPlanFormPro
                             ) : (
                                 <div>
                                     <i className="ri-check-line me-2" />
-                                    Asignar
+                                    {t('medication.vaccination.assign.btnAssign')}
                                 </div>
                             )}
 
@@ -541,8 +543,8 @@ const AsignLitterVaccinationPlanForm: React.FC<AsignLitterVaccinationPlanFormPro
             </TabContent>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} autoClose={3000} />
-            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message={"Ha ocurrido un error, intentelo mas tarde"} />
-            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={"Plan de vacunacion asignado correctamente"} />
+            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message={t('medication.vaccination.assign.errorGeneric')} />
+            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={t('medication.vaccination.assign.successGroup')} />
             <MissingStockModal isOpen={modals.missingStock} onClose={() => toggleModal('missingStock', false)} missingItems={missingItems} />
         </>
     )

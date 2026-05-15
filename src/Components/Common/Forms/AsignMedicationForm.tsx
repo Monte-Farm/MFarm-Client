@@ -59,7 +59,7 @@ const AsignMedicationForm: React.FC<AsignMedicationFormProps> = ({ pigId, onSave
     const medicationsColumns: Column<any>[] = [
         {
             header: t('feeding.package.form.column.image'), accessor: 'image', render: (_, row) => (
-                <img src={row.image || noImageUrl} alt="Imagen del Producto" style={{ height: "70px" }} />
+                <img src={row.image || noImageUrl} alt="" style={{ height: "70px" }} />
             ),
         },
         { header: t('common.field.code'), accessor: "code", type: "text", isFilterable: true },
