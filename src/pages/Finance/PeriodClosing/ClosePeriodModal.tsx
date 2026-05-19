@@ -1,18 +1,22 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Alert, Button, Form, FormFeedback, FormGroup, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from "reactstrap";
 import Select from "react-select";
 import { useDispatch, useSelector } from "react-redux";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { Link } from "react-router-dom";
-import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { PERIOD_CLOSING_URLS } from "helpers/period_closing_urls";
-import { ClosingKpis, PeriodClosingByPeriod, PrecheckItem, PrecheckResponse, PrecheckStatus } from "common/data_interfaces";
-import { closePeriod, fetchClosingPrecheck } from "slices/periodClosing/thunk";
-import { formatCurrency } from "utils/closingFormatters";
+import { APIClient } from "helpers/api_helper";
+import { ClosingKpis, PeriodClosingByPeriod, PrecheckResponse } from "common/data_interfaces";
+import { closePeriod } from "slices/periodClosing/thunk";
 import { darkenHex } from "utils/colorUtils";
+import { isTablet } from "./closingModalUtils";
+import PrecheckSection from "./PrecheckSection";
+import KpiPreviewSection from "./KpiPreviewSection";
+import ForceCloseModal from "./ForceCloseModal";
+
+const api = new APIClient();
 
 interface ClosePeriodModalProps {
     isOpen: boolean;
@@ -21,40 +25,21 @@ interface ClosePeriodModalProps {
     farmId: string;
 }
 
-const statusIcon = (status: PrecheckStatus) => {
-    switch (status) {
-        case "ok":
-            return <i className="ri-checkbox-circle-line fs-5 text-success" />;
-        case "warning":
-            return <i className="ri-error-warning-line fs-5 text-warning" />;
-        case "error":
-            return <i className="ri-close-circle-line fs-5 text-danger" />;
-    }
-};
-
-const isTablet = () => {
-  const w = document.documentElement.clientWidth;
-  return w >= 768 && w <= 1024;
-};
-
 const ClosePeriodModal = ({ isOpen, onClose, onSuccess, farmId }: ClosePeriodModalProps) => {
     const { t } = useTranslation();
     const dispatch = useDispatch<any>();
-    const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const submitting = useSelector((state: any) => state.PeriodClosing.submitting);
-    const precheck: PrecheckResponse | null = useSelector((state: any) => state.PeriodClosing.precheck);
-    const loadingPrecheck: boolean = useSelector((state: any) => state.PeriodClosing.loadingPrecheck);
-    const precheckError: string | null = useSelector((state: any) => state.PeriodClosing.precheckError);
     const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const [precheck, setPrecheck] = useState<PrecheckResponse | null>(null);
+    const [loadingPrecheck, setLoadingPrecheck] = useState(false);
+    const [precheckError, setPrecheckError] = useState<string | null>(null);
     const bg = (color: string) => isDark ? darkenHex(color) : color;
     const [tabletMode, setTabletMode] = useState(isTablet);
     const [apiError, setApiError] = useState<string | null>(null);
-
     const [preview, setPreview] = useState<ClosingKpis | null>(null);
     const [loadingPreview, setLoadingPreview] = useState(false);
     const [existingClosing, setExistingClosing] = useState<PeriodClosingByPeriod | null>(null);
-
     const [showForceModal, setShowForceModal] = useState(false);
 
     const MONTHS = t("finance.periodClosing.months", { returnObjects: true }) as string[];
@@ -67,7 +52,7 @@ const ClosePeriodModal = ({ isOpen, onClose, onSuccess, farmId }: ClosePeriodMod
     const canUserForce = userRoles.includes("Superadmin") || userRoles.includes("farm_manager");
 
     const formatLongDate = (year: number, month: number, day: number) =>
-        `${day} de ${MONTHS[month - 1]} de ${year}`;
+        t("finance.periodClosing.modal.shared.closingDateFormat", { day, month: MONTHS[month - 1], year });
 
     const getMonthRange = (year: number, month: number) => {
         const start = formatLongDate(year, month, 1);
@@ -80,11 +65,7 @@ const ClosePeriodModal = ({ isOpen, onClose, onSuccess, farmId }: ClosePeriodMod
 
     const formik = useFormik({
         enableReinitialize: true,
-        initialValues: {
-            year: defaultYear,
-            month: defaultMonth,
-            notes: "",
-        },
+        initialValues: { year: defaultYear, month: defaultMonth, notes: "" },
         validationSchema: Yup.object({
             year: Yup.number().required(t("finance.periodClosing.modal.shared.validation.yearRequired")).min(2000).max(2100),
             month: Yup.number().required(t("finance.periodClosing.modal.shared.validation.monthRequired")).min(1).max(12),
@@ -113,6 +94,8 @@ const ClosePeriodModal = ({ isOpen, onClose, onSuccess, farmId }: ClosePeriodMod
         setApiError(null);
         setPreview(null);
         setExistingClosing(null);
+        setPrecheck(null);
+        setPrecheckError(null);
         onClose();
     };
 
@@ -139,36 +122,33 @@ const ClosePeriodModal = ({ isOpen, onClose, onSuccess, farmId }: ClosePeriodMod
     }, []);
 
     useEffect(() => {
-        if (!isOpen || !configContext || !farmId) return;
+        if (!isOpen || !farmId) return;
 
         let cancelled = false;
         const load = async () => {
             setLoadingPreview(true);
+            setLoadingPrecheck(true);
             setPreview(null);
             setExistingClosing(null);
-            try {
-                const [previewRes, byPeriodRes] = await Promise.all([
-                    configContext.axiosHelper.get(
-                        `${configContext.apiUrl}/reports/finance/operations-closing/${farmId}?start_date=${selectedRange.startIso}&end_date=${selectedRange.endIso}`
-                    ),
-                    configContext.axiosHelper.get(
-                        `${configContext.apiUrl}${PERIOD_CLOSING_URLS.byPeriod(farmId)}?period_type=monthly&year=${selYear}&month=${selMonth}`
-                    ),
-                ]);
-                if (cancelled) return;
-                setPreview(previewRes.data?.data?.kpis || null);
-                setExistingClosing(byPeriodRes.data?.data || null);
-            } catch {
-                if (!cancelled) {
-                    setPreview(null);
-                    setExistingClosing(null);
-                }
-            } finally {
-                if (!cancelled) setLoadingPreview(false);
+            setPrecheck(null);
+            setPrecheckError(null);
+            const [previewRes, byPeriodRes, precheckRes] = await Promise.allSettled([
+                api.get(PERIOD_CLOSING_URLS.closingPreview(farmId), { start_date: selectedRange.startIso, end_date: selectedRange.endIso }),
+                api.get(PERIOD_CLOSING_URLS.byPeriod(farmId), { period_type: 'monthly', year: selYear, month: selMonth }),
+                api.get(PERIOD_CLOSING_URLS.precheck(farmId), { period_type: 'monthly', year: selYear, month: selMonth }),
+            ]);
+            if (cancelled) return;
+            setLoadingPreview(false);
+            setLoadingPrecheck(false);
+            setPreview(previewRes.status === 'fulfilled' ? previewRes.value.data?.data?.kpis || null : null);
+            setExistingClosing(byPeriodRes.status === 'fulfilled' ? byPeriodRes.value.data?.data || null : null);
+            if (precheckRes.status === 'fulfilled') {
+                setPrecheck(precheckRes.value.data?.data ?? precheckRes.value.data ?? null);
+            } else {
+                setPrecheckError(precheckRes.reason?.response?.data?.message || 'No se pudo cargar el checklist de verificación.');
             }
         };
         load();
-        dispatch(fetchClosingPrecheck(farmId, selYear, selMonth));
         return () => { cancelled = true; };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen, selYear, selMonth, farmId]);
@@ -178,39 +158,13 @@ const ClosePeriodModal = ({ isOpen, onClose, onSuccess, farmId }: ClosePeriodMod
     const precheckCanForce = precheck?.canForceClose === true;
 
     const canSubmit =
-        !!farmId &&
-        monthEnded &&
-        !blockedByExisting &&
-        !loadingPreview &&
-        !loadingPrecheck &&
-        !submitting &&
-        precheckOk;
+        !!farmId && monthEnded && !blockedByExisting &&
+        !loadingPreview && !loadingPrecheck && !submitting && precheckOk;
 
     const canOfferForce =
-        !!farmId &&
-        monthEnded &&
-        !blockedByExisting &&
-        !loadingPreview &&
-        !loadingPrecheck &&
-        !submitting &&
-        !precheckOk &&
-        precheckCanForce &&
-        canUserForce;
-
-    const ChecklistItemRow = ({ item }: { item: PrecheckItem }) => (
-        <div className="d-flex align-items-start gap-2 py-2 border-bottom">
-            <div>{statusIcon(item.status)}</div>
-            <div className="flex-grow-1">
-                <div className="fw-semibold">{item.label}</div>
-                <small className="text-muted">{item.detail}</small>
-            </div>
-            {item.actionUrl && item.status !== "ok" && (
-                <Link to={item.actionUrl} className="btn btn-sm btn-light">
-                    {t("finance.periodClosing.modal.shared.goResolve")}
-                </Link>
-            )}
-        </div>
-    );
+        !!farmId && monthEnded && !blockedByExisting &&
+        !loadingPreview && !loadingPrecheck && !submitting &&
+        !precheckOk && precheckCanForce && canUserForce;
 
     return (
         <>
@@ -266,7 +220,11 @@ const ClosePeriodModal = ({ isOpen, onClose, onSuccess, farmId }: ClosePeriodMod
                             </div>
                             <div className="fw-semibold fs-5 mb-1">{periodLabel}</div>
                             <div className="text-muted small">
-                                Del <strong>{selectedRange.start}</strong> al <strong>{selectedRange.end}</strong>
+                                <Trans
+                                    i18nKey="finance.periodClosing.modal.shared.periodRangeFull"
+                                    values={{ start: selectedRange.start, end: selectedRange.end }}
+                                    components={{ 1: <strong /> }}
+                                />
                             </div>
                         </div>
 
@@ -289,101 +247,21 @@ const ClosePeriodModal = ({ isOpen, onClose, onSuccess, farmId }: ClosePeriodMod
                             </Alert>
                         )}
 
-                        <div className="mb-3">
-                            <div className="d-flex align-items-center justify-content-between mb-2">
-                                <div className="text-muted small fw-semibold">
-                                    <i className="ri-checkbox-multiple-line me-1 text-muted" />{t("finance.periodClosing.modal.shared.precheck.title")}
-                                </div>
-                                {precheck && (
-                                    <div className="small">
-                                        <span className="text-success">{precheck.summary.ok} {t("finance.periodClosing.modal.shared.precheck.ok")}</span>
-                                        {precheck.summary.warning > 0 && <> · <span className="text-warning">{precheck.summary.warning} {t("finance.periodClosing.modal.shared.precheck.warnings")}</span></>}
-                                        {precheck.summary.error > 0 && <> · <span className="text-danger">{precheck.summary.error} {t("finance.periodClosing.modal.shared.precheck.errors")}</span></>}
-                                    </div>
-                                )}
-                            </div>
-                            {loadingPrecheck ? (
-                                <div className="text-center py-3 border rounded bg-light">
-                                    <Spinner size="sm" className="me-2" />
-                                    <span className="text-muted">{t("finance.periodClosing.modal.closePeriod.precheck.loading")}</span>
-                                </div>
-                            ) : precheck ? (
-                                <div className="border rounded px-3">
-                                    {precheck.items.map((item) => (
-                                        <ChecklistItemRow key={item.key} item={item} />
-                                    ))}
-                                </div>
-                            ) : precheckError ? (
-                                <Alert color="warning" className="d-flex align-items-start mb-0">
-                                    <i className="ri-error-warning-line me-2 fs-5 text-warning mt-1" />
-                                    <div>
-                                        <div className="fw-semibold mb-1">{t("finance.periodClosing.modal.closePeriod.precheck.errorTitle")}</div>
-                                        <small>{precheckError}</small>
-                                    </div>
-                                </Alert>
-                            ) : (
-                                <div className="text-center py-3 border rounded bg-light text-muted small">
-                                    {t("finance.periodClosing.modal.shared.precheck.fallback")}
-                                </div>
-                            )}
-                        </div>
+                        <PrecheckSection
+                            precheck={precheck}
+                            loadingPrecheck={loadingPrecheck}
+                            precheckError={precheckError}
+                            loadingText={t("finance.periodClosing.modal.closePeriod.precheck.loading")}
+                            errorTitle={t("finance.periodClosing.modal.closePeriod.precheck.errorTitle")}
+                        />
 
-                        <div className="mb-3">
-                            <div className="text-muted small fw-semibold mb-2">
-                                <i className="ri-eye-line me-1 text-muted" />{t("finance.periodClosing.modal.closePeriod.preview.title")}
-                            </div>
-                            {loadingPreview ? (
-                                <div className="text-center py-4 border rounded bg-light">
-                                    <Spinner size="sm" className="me-2" />
-                                    <span className="text-muted">{t("finance.periodClosing.modal.closePeriod.preview.loading")}</span>
-                                </div>
-                            ) : preview ? (
-                                <div className="row g-2">
-                                    <div className="col-md-6">
-                                        <div className="border rounded p-2" style={{ backgroundColor: bg("#E8F5E9") }}>
-                                            <div className="text-muted small">{t("finance.periodClosing.modal.shared.preview.income")}</div>
-                                            <div className="fw-bold fs-5 text-success">{formatCurrency(preview.totalIncome)}</div>
-                                        </div>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <div className="border rounded p-2" style={{ backgroundColor: bg("#FFEBEE") }}>
-                                            <div className="text-muted small">{t("finance.periodClosing.modal.shared.preview.costs")}</div>
-                                            <div className="fw-bold fs-5 text-danger">{formatCurrency(preview.totalCosts)}</div>
-                                        </div>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <div className="border rounded p-2" style={{ backgroundColor: bg("#FFF8E1") }}>
-                                            <div className="text-muted small">{t("finance.periodClosing.modal.shared.preview.operatingResult")}</div>
-                                            <div className={`fw-bold fs-5 ${preview.operatingResult >= 0 ? "text-success" : "text-danger"}`}>
-                                                {formatCurrency(preview.operatingResult)}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <div className="border rounded p-2" style={{ backgroundColor: bg("#E0F7FA") }}>
-                                            <div className="text-muted small">{t("finance.periodClosing.modal.shared.preview.operatingMargin")}</div>
-                                            <div className="fw-bold fs-5 text-info">{(preview.operatingMargin || 0).toFixed(1)}%</div>
-                                        </div>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <div className="border rounded p-2">
-                                            <div className="text-muted small">{t("finance.periodClosing.modal.shared.preview.pigsSold")}</div>
-                                            <div className="fw-bold fs-5">{preview.totalPigsSold || 0}</div>
-                                        </div>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <div className="border rounded p-2">
-                                            <div className="text-muted small">{t("finance.periodClosing.modal.shared.preview.kgSold")}</div>
-                                            <div className="fw-bold fs-5">{(preview.totalKgSold || 0).toFixed(0)} kg</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="text-center py-3 border rounded bg-light text-muted small">
-                                    {t("finance.periodClosing.modal.shared.preview.noData")}
-                                </div>
-                            )}
-                        </div>
+                        <KpiPreviewSection
+                            preview={preview}
+                            loadingPreview={loadingPreview}
+                            bg={bg}
+                            title={t("finance.periodClosing.modal.closePeriod.preview.title")}
+                            loadingText={t("finance.periodClosing.modal.closePeriod.preview.loading")}
+                        />
 
                         <FormGroup>
                             <Label for="notes">
@@ -473,112 +351,6 @@ const ClosePeriodModal = ({ isOpen, onClose, onSuccess, farmId }: ClosePeriodMod
                 submitting={submitting}
             />
         </>
-    );
-};
-
-// -------- Force modal (secondary) --------
-
-interface ForceCloseModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onForced: (reason: string) => void | Promise<void>;
-    periodLabel: string;
-    blockingLabels: string[];
-    submitting: boolean;
-}
-
-const ForceCloseModal = ({ isOpen, onClose, onForced, periodLabel, blockingLabels, submitting }: ForceCloseModalProps) => {
-    const { t } = useTranslation();
-    const [tabletMode, setTabletMode] = useState(isTablet);
-
-    useEffect(() => {
-        const onResize = () => setTabletMode(isTablet());
-        window.addEventListener('resize', onResize);
-        return () => window.removeEventListener('resize', onResize);
-    }, []);
-
-    const formik = useFormik({
-        initialValues: { reason: "" },
-        validationSchema: Yup.object({
-            reason: Yup.string()
-                .trim()
-                .required(t("finance.periodClosing.modal.shared.validation.required"))
-                .min(10, t("finance.periodClosing.modal.shared.validation.min"))
-                .max(500, t("finance.periodClosing.modal.shared.validation.max")),
-        }),
-        onSubmit: async (values) => {
-            await onForced(values.reason.trim());
-        },
-    });
-
-    const handleClose = () => {
-        if (submitting) return;
-        formik.resetForm();
-        onClose();
-    };
-
-    return (
-        <Modal isOpen={isOpen} toggle={handleClose} backdrop="static" keyboard={false} centered size="md" fullscreen={tabletMode}>
-            <ModalHeader toggle={handleClose}>
-                <i className="ri-alert-line me-2 text-warning" />
-                {t("finance.periodClosing.modal.forceClose.header")}
-            </ModalHeader>
-            <Form onSubmit={formik.handleSubmit}>
-                <ModalBody>
-                    <Alert color="warning" className="d-flex align-items-start mb-3">
-                        <i className="ri-error-warning-line me-2 fs-5 text-warning mt-1" />
-                        <div>
-                            <div className="fw-semibold mb-1">{t("finance.periodClosing.modal.forceClose.alertTitle", { val: periodLabel })}</div>
-                            <small>
-                                <Trans
-                                    i18nKey="finance.periodClosing.modal.forceClose.alertBody"
-                                    components={{ 1: <strong /> }}
-                                />
-                            </small>
-                        </div>
-                    </Alert>
-
-                    {blockingLabels.length > 0 && (
-                        <div className="mb-3">
-                            <div className="text-muted small fw-semibold mb-2">{t("finance.periodClosing.modal.forceClose.errorsTitle")}</div>
-                            <ul className="mb-0">
-                                {blockingLabels.map((label, i) => (
-                                    <li key={i} className="text-danger">{label}</li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-
-                    <FormGroup>
-                        <Label for="forceReason">{t("finance.periodClosing.modal.forceClose.field.reason")}</Label>
-                        <Input
-                            type="textarea"
-                            id="forceReason"
-                            name="reason"
-                            rows={3}
-                            maxLength={500}
-                            placeholder={t("finance.periodClosing.modal.forceClose.field.reasonPlaceholder")}
-                            value={formik.values.reason}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            invalid={!!(formik.touched.reason && formik.errors.reason)}
-                        />
-                        {formik.touched.reason && formik.errors.reason && (
-                            <FormFeedback>{formik.errors.reason as string}</FormFeedback>
-                        )}
-                        <small className="text-muted">{t("finance.periodClosing.modal.shared.validation.hint")}</small>
-                    </FormGroup>
-                </ModalBody>
-                <ModalFooter>
-                    <Button color="light" onClick={handleClose} disabled={submitting}>{t("common.button.cancel")}</Button>
-                    <Button type="submit" color="warning" disabled={submitting}>
-                        {submitting
-                            ? (<><i className="ri-loader-4-line ri-spin me-1" />{t("finance.periodClosing.modal.forceClose.button.submitting")}</>)
-                            : (<><i className="ri-alert-line me-1" />{t("finance.periodClosing.modal.forceClose.button.submit")}</>)}
-                    </Button>
-                </ModalFooter>
-            </Form>
-        </Modal>
     );
 };
 

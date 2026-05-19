@@ -3169,9 +3169,13 @@
         },
         "info": {
           "period": "Period:",
+          "periodRange": "{{start}} to {{end}}",
           "closedBy": "Closed by",
+          "closedByOn": "{{name}} on {{date}}",
           "reopenedBy": "Reopened by",
-          "forcedWith": "Forced closing with"
+          "reopenedByFull": "{{name}} on {{date}} — Reason: {{reason}}",
+          "forcedWith": "Forced closing with",
+          "forcedWithFull": "{{count}} error(s) ignored — Reason: {{reason}}"
         },
         "legacy": {
           "title": "Closing generated before snapshot extension",
@@ -3235,6 +3239,8 @@
             "hint": "Minimum 10 characters. Recorded in the audit trail."
           },
           "periodLabel": "Period to close",
+          "periodRangeFull": "From <1>{{start}}</1> to <1>{{end}}</1>",
+          "closingDateFormat": "{{month}} {{day}}, {{year}}",
           "goResolve": "Go to resolve"
         },
         "closePeriod": {

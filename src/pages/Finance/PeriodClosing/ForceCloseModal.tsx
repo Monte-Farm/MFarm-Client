@@ -1,26 +1,22 @@
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Alert, Button, Form, FormFeedback, FormGroup, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
-import { useDispatch, useSelector } from "react-redux";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { reopenPeriod } from "slices/periodClosing/thunk";
 import { isTablet } from "./closingModalUtils";
 
-interface ReopenPeriodModalProps {
+export interface ForceCloseModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSuccess: () => void;
-    closingId: string;
+    onForced: (reason: string) => void | Promise<void>;
     periodLabel: string;
+    blockingLabels: string[];
+    submitting: boolean;
 }
 
-const ReopenPeriodModal = ({ isOpen, onClose, onSuccess, closingId, periodLabel }: ReopenPeriodModalProps) => {
+const ForceCloseModal = ({ isOpen, onClose, onForced, periodLabel, blockingLabels, submitting }: ForceCloseModalProps) => {
     const { t } = useTranslation();
-    const dispatch = useDispatch<any>();
-    const submitting = useSelector((state: any) => state.PeriodClosing.submitting);
     const [tabletMode, setTabletMode] = useState(isTablet);
-    const [apiError, setApiError] = useState<string | null>(null);
 
     useEffect(() => {
         const onResize = () => setTabletMode(isTablet());
@@ -38,47 +34,57 @@ const ReopenPeriodModal = ({ isOpen, onClose, onSuccess, closingId, periodLabel 
                 .max(500, t("finance.periodClosing.modal.shared.validation.max")),
         }),
         onSubmit: async (values) => {
-            setApiError(null);
-            try {
-                await dispatch(reopenPeriod(closingId, values.reason.trim()));
-                formik.resetForm();
-                onSuccess();
-            } catch (err: any) {
-                setApiError(err?.response?.data?.message || "Error al reabrir el cierre");
-            }
+            await onForced(values.reason.trim());
         },
     });
 
     const handleClose = () => {
         if (submitting) return;
         formik.resetForm();
-        setApiError(null);
         onClose();
     };
 
     return (
-        <Modal isOpen={isOpen} toggle={handleClose} backdrop="static" keyboard={false} centered fullscreen={tabletMode}>
-            <ModalHeader toggle={handleClose}>{t("finance.periodClosing.modal.reopen.header")}</ModalHeader>
+        <Modal isOpen={isOpen} toggle={handleClose} backdrop="static" keyboard={false} centered size="md" fullscreen={tabletMode}>
+            <ModalHeader toggle={handleClose}>
+                <i className="ri-alert-line me-2 text-warning" />
+                {t("finance.periodClosing.modal.forceClose.header")}
+            </ModalHeader>
             <Form onSubmit={formik.handleSubmit}>
                 <ModalBody>
-                    <Alert color="warning">
-                        <i className="ri-alert-line me-2 text-warning" />
-                        <Trans
-                            i18nKey="finance.periodClosing.modal.reopen.alert"
-                            values={{ val: periodLabel }}
-                            components={{ 1: <strong /> }}
-                        />
+                    <Alert color="warning" className="d-flex align-items-start mb-3">
+                        <i className="ri-error-warning-line me-2 fs-5 text-warning mt-1" />
+                        <div>
+                            <div className="fw-semibold mb-1">{t("finance.periodClosing.modal.forceClose.alertTitle", { val: periodLabel })}</div>
+                            <small>
+                                <Trans
+                                    i18nKey="finance.periodClosing.modal.forceClose.alertBody"
+                                    components={{ 1: <strong /> }}
+                                />
+                            </small>
+                        </div>
                     </Alert>
 
+                    {blockingLabels.length > 0 && (
+                        <div className="mb-3">
+                            <div className="text-muted small fw-semibold mb-2">{t("finance.periodClosing.modal.forceClose.errorsTitle")}</div>
+                            <ul className="mb-0">
+                                {blockingLabels.map((label, i) => (
+                                    <li key={i} className="text-danger">{label}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
                     <FormGroup>
-                        <Label for="reason">{t("finance.periodClosing.modal.reopen.field.reason")}</Label>
+                        <Label for="forceReason">{t("finance.periodClosing.modal.forceClose.field.reason")}</Label>
                         <Input
                             type="textarea"
-                            id="reason"
+                            id="forceReason"
                             name="reason"
-                            rows={4}
+                            rows={3}
                             maxLength={500}
-                            placeholder={t("finance.periodClosing.modal.reopen.field.reasonPlaceholder")}
+                            placeholder={t("finance.periodClosing.modal.forceClose.field.reasonPlaceholder")}
                             value={formik.values.reason}
                             onChange={formik.handleChange}
                             onBlur={formik.handleBlur}
@@ -89,15 +95,13 @@ const ReopenPeriodModal = ({ isOpen, onClose, onSuccess, closingId, periodLabel 
                         )}
                         <small className="text-muted">{t("finance.periodClosing.modal.shared.validation.hint")}</small>
                     </FormGroup>
-
-                    {apiError && <Alert color="danger" className="mb-0">{apiError}</Alert>}
                 </ModalBody>
                 <ModalFooter>
                     <Button color="light" onClick={handleClose} disabled={submitting}>{t("common.button.cancel")}</Button>
                     <Button type="submit" color="warning" disabled={submitting}>
                         {submitting
-                            ? (<><i className="ri-loader-4-line ri-spin me-1" />{t("finance.periodClosing.modal.reopen.button.submitting")}</>)
-                            : t("finance.periodClosing.modal.reopen.button.submit")}
+                            ? (<><i className="ri-loader-4-line ri-spin me-1" />{t("finance.periodClosing.modal.forceClose.button.submitting")}</>)
+                            : (<><i className="ri-alert-line me-1" />{t("finance.periodClosing.modal.forceClose.button.submit")}</>)}
                     </Button>
                 </ModalFooter>
             </Form>
@@ -105,4 +109,4 @@ const ReopenPeriodModal = ({ isOpen, onClose, onSuccess, closingId, periodLabel 
     );
 };
 
-export default ReopenPeriodModal;
+export default ForceCloseModal;

@@ -13,6 +13,7 @@ import CustomTable from "Components/Common/Tables/CustomTable";
 import { Column } from "common/data/data_types";
 import { PeriodClosingListItem, PeriodClosingStatus } from "common/data_interfaces";
 import { fetchPeriodClosings } from "slices/periodClosing/thunk";
+import { resetPeriodClosing, setError } from "slices/periodClosing/reducer";
 import { formatCurrency } from "utils/closingFormatters";
 import ClosePeriodModal from "./ClosePeriodModal";
 import CloseYearModal from "./CloseYearModal";
@@ -75,6 +76,7 @@ const PeriodClosingList = () => {
 
     useEffect(() => {
         loadList();
+        return () => { dispatch(resetPeriodClosing()); };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filters.year, filters.status, filters.periodType, farmId]);
 
@@ -213,7 +215,7 @@ const PeriodClosingList = () => {
                         color="danger"
                         message={error}
                         visible={true}
-                        onClose={() => { /* slice-controlled */ }}
+                        onClose={() => dispatch(setError(null))}
                     />
                 )}
             </Container>

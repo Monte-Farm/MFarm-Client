@@ -3169,9 +3169,13 @@
         },
         "info": {
           "period": "Periodo:",
+          "periodRange": "{{start}} a {{end}}",
           "closedBy": "Cerrado por",
+          "closedByOn": "{{name}} el {{date}}",
           "reopenedBy": "Reabierto por",
-          "forcedWith": "Cierre forzado con"
+          "reopenedByFull": "{{name}} el {{date}} — Razón: {{reason}}",
+          "forcedWith": "Cierre forzado con",
+          "forcedWithFull": "{{count}} error(es) ignorado(s) — Razón: {{reason}}"
         },
         "legacy": {
           "title": "Cierre generado antes de la extensión del snapshot",
@@ -3235,6 +3239,8 @@
             "hint": "Mínimo 10 caracteres. Queda registrada en la auditoría."
           },
           "periodLabel": "Periodo a cerrar",
+          "periodRangeFull": "Del <1>{{start}}</1> al <1>{{end}}</1>",
+          "closingDateFormat": "{{day}} de {{month}} de {{year}}",
           "goResolve": "Ir a resolver"
         },
         "closePeriod": {

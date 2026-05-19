@@ -5,7 +5,6 @@ import {
     PeriodClosingAuditEvent,
     PeriodClosingPagination,
     PeriodClosingByPeriod,
-    PrecheckResponse,
 } from 'common/data_interfaces';
 
 interface PeriodClosingState {
@@ -18,9 +17,6 @@ interface PeriodClosingState {
     loadingAudit: boolean;
     byPeriod: PeriodClosingByPeriod | null;
     loadingByPeriod: boolean;
-    precheck: PrecheckResponse | null;
-    loadingPrecheck: boolean;
-    precheckError: string | null;
     submitting: boolean;
     error: string | null;
 }
@@ -35,9 +31,6 @@ const initialState: PeriodClosingState = {
     loadingAudit: false,
     byPeriod: null,
     loadingByPeriod: false,
-    precheck: null,
-    loadingPrecheck: false,
-    precheckError: null,
     submitting: false,
     error: null,
 };
@@ -71,15 +64,6 @@ const periodClosingSlice = createSlice({
         setByPeriod(state, action: PayloadAction<PeriodClosingByPeriod | null>) {
             state.byPeriod = action.payload;
         },
-        setLoadingPrecheck(state, action: PayloadAction<boolean>) {
-            state.loadingPrecheck = action.payload;
-        },
-        setPrecheck(state, action: PayloadAction<PrecheckResponse | null>) {
-            state.precheck = action.payload;
-        },
-        setPrecheckError(state, action: PayloadAction<string | null>) {
-            state.precheckError = action.payload;
-        },
         setSubmitting(state, action: PayloadAction<boolean>) {
             state.submitting = action.payload;
         },
@@ -92,7 +76,6 @@ const periodClosingSlice = createSlice({
             state.current = null;
             state.audit = [];
             state.byPeriod = null;
-            state.precheck = null;
             state.error = null;
         },
     },
@@ -107,9 +90,6 @@ export const {
     setAudit,
     setLoadingByPeriod,
     setByPeriod,
-    setLoadingPrecheck,
-    setPrecheck,
-    setPrecheckError,
     setSubmitting,
     setError,
     resetPeriodClosing,

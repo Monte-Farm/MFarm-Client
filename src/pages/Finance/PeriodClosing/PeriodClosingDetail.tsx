@@ -11,6 +11,7 @@ import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import { PeriodClosing, PeriodClosingAuditEvent, PeriodClosingStatus } from "common/data_interfaces";
 import { fetchPeriodClosingAudit, fetchPeriodClosingDetail } from "slices/periodClosing/thunk";
+import { resetPeriodClosing } from "slices/periodClosing/reducer";
 import ReopenPeriodModal from "./ReopenPeriodModal";
 import SummaryTab from "./tabs/SummaryTab";
 import InventoryProductionTab from "./tabs/InventoryProductionTab";
@@ -88,7 +89,12 @@ const PeriodClosingDetail = () => {
         ? userLogged.role.includes("Superadmin")
         : userLogged?.role === "Superadmin";
 
-    document.title = current ? `${formatPeriod(current)} | ${t("finance.periodClosing.detail.breadcrumb")}` : `${t("finance.periodClosing.detail.breadcrumb")} | ${t("systemName")}`;
+    useEffect(() => {
+        document.title = current
+            ? `${formatPeriod(current)} | ${t("finance.periodClosing.detail.breadcrumb")}`
+            : `${t("finance.periodClosing.detail.breadcrumb")} | ${t("systemName")}`;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [current]);
 
     const loadDetail = () => {
         if (!closingId) return;
@@ -98,6 +104,7 @@ const PeriodClosingDetail = () => {
 
     useEffect(() => {
         loadDetail();
+        return () => { dispatch(resetPeriodClosing()); };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [closingId]);
 
@@ -164,24 +171,24 @@ const PeriodClosingDetail = () => {
                                 <div className="text-muted mt-2">
                                     <div>
                                         <i className="ri-calendar-line me-1 text-muted" />
-                                        {t("finance.periodClosing.detail.info.period")} {current.periodStart} a {current.periodEnd}
+                                        {t("finance.periodClosing.detail.info.period")} {t("finance.periodClosing.detail.info.periodRange", { start: current.periodStart, end: current.periodEnd })}
                                     </div>
                                     {current.closedBy && (
                                         <div>
                                             <i className="ri-user-line me-1 text-muted" />
-                                            {t("finance.periodClosing.detail.info.closedBy")} {current.closedBy.name} {current.closedBy.lastname} el {formatDateTime(current.closedAt)}
+                                            {t("finance.periodClosing.detail.info.closedBy")} {t("finance.periodClosing.detail.info.closedByOn", { name: `${current.closedBy.name} ${current.closedBy.lastname}`, date: formatDateTime(current.closedAt) })}
                                         </div>
                                     )}
                                     {current.status === "reopened" && current.reopenedBy && (
                                         <div className="text-warning">
                                             <i className="ri-alert-line me-1 text-warning" />
-                                            {t("finance.periodClosing.detail.info.reopenedBy")} {current.reopenedBy.name} {current.reopenedBy.lastname} el {formatDateTime(current.reopenedAt)} — Razón: {current.reopenReason}
+                                            {t("finance.periodClosing.detail.info.reopenedBy")} {t("finance.periodClosing.detail.info.reopenedByFull", { name: `${current.reopenedBy.name} ${current.reopenedBy.lastname}`, date: formatDateTime(current.reopenedAt), reason: current.reopenReason })}
                                         </div>
                                     )}
                                     {current.forced && current.forcedReason && (
                                         <div className="text-warning">
                                             <i className="ri-alert-line me-1 text-warning" />
-                                            {t("finance.periodClosing.detail.info.forcedWith")} {current.forcedWarnings?.length || 0} error(es) ignorado(s) — Razón: {current.forcedReason}
+                                            {t("finance.periodClosing.detail.info.forcedWith")} {t("finance.periodClosing.detail.info.forcedWithFull", { count: current.forcedWarnings?.length || 0, reason: current.forcedReason })}
                                         </div>
                                     )}
                                     {current.notes && (

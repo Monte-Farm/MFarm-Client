@@ -9,9 +9,6 @@ import {
     setAudit,
     setLoadingByPeriod,
     setByPeriod,
-    setLoadingPrecheck,
-    setPrecheck,
-    setPrecheckError,
     setSubmitting,
     setError,
 } from './reducer';
@@ -115,47 +112,6 @@ export const closePeriod = (farmId: string, payload: ClosePeriodPayload) => asyn
         dispatch(setSubmitting(false));
     }
 };
-
-export const fetchClosingPrecheck = (farmId: string, year: number, month: number) =>
-    async (dispatch: any) => {
-        dispatch(setLoadingPrecheck(true));
-        dispatch(setPrecheckError(null));
-        try {
-            const res = await api.get(PERIOD_CLOSING_URLS.precheck(farmId), {
-                period_type: 'monthly',
-                year,
-                month,
-            });
-            const payload = res.data?.data ?? res.data ?? null;
-            dispatch(setPrecheck(payload));
-        } catch (err: any) {
-            const msg = err?.response?.data?.message || 'No se pudo cargar el checklist de verificación.';
-            dispatch(setPrecheckError(msg));
-            dispatch(setPrecheck(null));
-        } finally {
-            dispatch(setLoadingPrecheck(false));
-        }
-    };
-
-export const fetchClosingPrecheckAnnual = (farmId: string, year: number) =>
-    async (dispatch: any) => {
-        dispatch(setLoadingPrecheck(true));
-        dispatch(setPrecheckError(null));
-        try {
-            const res = await api.get(PERIOD_CLOSING_URLS.precheck(farmId), {
-                period_type: 'annual',
-                year,
-            });
-            const payload = res.data?.data ?? res.data ?? null;
-            dispatch(setPrecheck(payload));
-        } catch (err: any) {
-            const msg = err?.response?.data?.message || 'No se pudo cargar el checklist de verificación.';
-            dispatch(setPrecheckError(msg));
-            dispatch(setPrecheck(null));
-        } finally {
-            dispatch(setLoadingPrecheck(false));
-        }
-    };
 
 export const reopenPeriod = (closingId: string, reason: string) => async (dispatch: any) => {
     dispatch(setSubmitting(true));
