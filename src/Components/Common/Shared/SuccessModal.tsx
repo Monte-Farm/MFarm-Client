@@ -7,9 +7,11 @@ interface SuccessModalProps {
     isOpen: boolean;
     onClose: () => void;
     message: string;
+    onGeneratePdf?: () => void;
+    pdfLoading?: boolean;
 }
 
-const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, onClose, message }) => {
+const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, onClose, message, onGeneratePdf, pdfLoading }) => {
     const { t } = useTranslation();
     return (
         <Modal isOpen={isOpen} backdrop="static" keyboard={false} centered>
@@ -19,10 +21,14 @@ const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, onClose, message })
                 <h4 className="mt-3">{message}</h4>
             </ModalBody>
             <ModalFooter className="justify-content-center">
+                {onGeneratePdf && (
+                    <Button color="primary" onClick={onGeneratePdf} disabled={pdfLoading}>
+                        {pdfLoading ? <><span className="spinner-border spinner-border-sm me-2" />{t("common.button.generating", { defaultValue: "Generando..." })}</> : <><i className="ri-file-pdf-line me-2"></i>{t("common.button.generatePdf", { defaultValue: "Generar PDF" })}</>}
+                    </Button>
+                )}
                 <Button color="success" onClick={onClose}>{t("common.button.accept")}</Button>
             </ModalFooter>
         </Modal>
-
     )
 };
 

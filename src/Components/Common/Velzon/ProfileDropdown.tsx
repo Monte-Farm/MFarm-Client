@@ -10,6 +10,7 @@ import { disconnectNotificationSocket } from 'helpers/socketService';
 import { changeLayoutMode } from 'slices/layouts/thunk';
 import { LAYOUT_MODE_TYPES } from 'Components/constants/layout';
 import LanguageSelector from './LanguageDropdown';
+import ChangePasswordModal from '../Shared/ChangePasswordModal';
 
 const ProfileDropdown = () => {
     const dispatch: any = useDispatch();
@@ -29,7 +30,7 @@ const ProfileDropdown = () => {
             return !prev;
         });
     };
-    const [modals, setModals] = useState({ logout: false });
+    const [modals, setModals] = useState({ logout: false, changePassword: false });
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -125,6 +126,19 @@ const ProfileDropdown = () => {
                     </div>
 
                     <div className="border-top py-1">
+                        <DropdownItem className="p-0" toggle={false}>
+                            <div
+                                className="dropdown-item d-flex align-items-center py-2"
+                                onClick={() => toggleModal('changePassword')}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                <i className="ri-lock-password-line fs-18 me-2 text-primary"></i>
+                                <span>{t('profile.changePassword')}</span>
+                            </div>
+                        </DropdownItem>
+                    </div>
+
+                    <div className="border-top py-1">
                         <DropdownItem className='p-0'>
                             <Link to="/user-manual" className="dropdown-item d-flex align-items-center py-2">
                                 <i className="ri-book-open-line fs-18 me-2 text-primary"></i>
@@ -162,6 +176,11 @@ const ProfileDropdown = () => {
                     </div>
                 </DropdownMenu>
             </Dropdown>
+
+            <ChangePasswordModal
+                isOpen={modals.changePassword}
+                onClose={() => toggleModal('changePassword', false)}
+            />
 
             <Modal isOpen={modals.logout} toggle={() => toggleModal('logout')} size="md" keyboard={false} backdrop="static" centered>
                 <ModalHeader toggle={() => toggleModal('logout')}>{t('auth.logout')}</ModalHeader>

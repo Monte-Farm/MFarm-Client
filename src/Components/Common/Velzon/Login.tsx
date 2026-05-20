@@ -5,6 +5,8 @@ import * as Yup from "yup";
 import { useFormik } from "formik";
 import { useTranslation } from "react-i18next";
 
+const REMEMBER_KEY = "login_remember";
+
 interface LoginFormProps {
     onSubmit: (values: { username: string; password: string }) => Promise<void>;
 }
@@ -14,10 +16,16 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
     const [passwordShow, setPasswordShow] = useState<boolean>(false);
     const [showErrorAlert, setShowErrorAlert] = useState<boolean>(false);
 
+    const saved = (() => {
+        try { return JSON.parse(localStorage.getItem(REMEMBER_KEY) || "null"); } catch { return null; }
+    })();
+
+    const [rememberMe, setRememberMe] = useState<boolean>(!!saved);
+
     const validation = useFormik({
         initialValues: {
-            username: "",
-            password: "",
+            username: saved?.username ?? "",
+            password: saved?.password ?? "",
         },
         validationSchema: Yup.object({
             username: Yup.string().required(t("auth.login.validation.username")),
@@ -26,6 +34,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
         onSubmit: async (values, { setSubmitting, setErrors }) => {
             try {
                 setSubmitting(true);
+                if (rememberMe) {
+                    localStorage.setItem(REMEMBER_KEY, JSON.stringify({ username: values.username, password: values.password }));
+                } else {
+                    localStorage.removeItem(REMEMBER_KEY);
+                }
                 await onSubmit(values);
             } catch (error: any) {
                 logger.error("Error al iniciar sesión:", error);
@@ -73,7 +86,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
                         disabled={validation.isSubmitting}
                     />
                     {validation.touched.username && validation.errors.username && (
-                        <FormFeedback type="invalid">{validation.errors.username}</FormFeedback>
+                        <FormFeedback type="invalid">{validation.errors.username as string}</FormFeedback>
                     )}
                 </div>
 
@@ -99,7 +112,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
                             disabled={validation.isSubmitting}
                         />
                         {validation.touched.password && validation.errors.password && (
-                            <FormFeedback type="invalid">{validation.errors.password}</FormFeedback>
+                            <FormFeedback type="invalid">{validation.errors.password as string}</FormFeedback>
                         )}
                         <button
                             className="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted password-addon"
@@ -110,6 +123,20 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
                             <i className="ri-eye-fill align-middle"></i>
                         </button>
                     </div>
+                </div>
+
+                <div className="mb-3 form-check">
+                    <Input
+                        type="checkbox"
+                        className="form-check-input"
+                        id="remember-me"
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                        disabled={validation.isSubmitting}
+                    />
+                    <Label className="form-check-label" htmlFor="remember-me">
+                        {t("auth.login.rememberMe")}
+                    </Label>
                 </div>
 
                 <div className="mt-4">

@@ -1424,6 +1424,18 @@ html[data-bs-theme="light"],
     display: none;
 }
 
+.role-card .role-check-icon {
+    font-size: 1rem;
+    margin-right: 8px;
+    color: #d4d7dd;
+    transition: color 0.2s ease-in-out;
+    flex-shrink: 0;
+}
+
+.role-card.selected .role-check-icon {
+    color: #4c6fff;
+}
+
 // ============================================
 // Farm Name Pill (Header)
 // ============================================

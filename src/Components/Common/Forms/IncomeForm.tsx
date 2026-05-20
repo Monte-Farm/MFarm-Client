@@ -1,5 +1,5 @@
 import { logger } from 'utils/logger';
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { Button, Col, Row, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback, Nav, NavItem, NavLink, TabContent, TabPane, Card, CardBody, Spinner, Badge, CardHeader } from "reactstrap";
 import * as Yup from "yup";
 import { useFormik } from "formik";
@@ -59,6 +59,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
     const [selectedCurrency, setSelectecCurrency] = useState()
     const [mainWarehouseId, setMainWarehouseId] = useState<string>('')
     const [entryMode, setEntryMode] = useState<"purchase_order" | "direct" | null>(null)
+    const [poSearchText, setPoSearchText] = useState('')
 
     const incomeAttributes: Attribute[] = [
         { key: 'id', label: t('common.field.code', { defaultValue: 'Identificador de entrada' }) },
@@ -227,8 +228,8 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
             }),
         date: Yup.string().required(t('warehouse.incomeForm.validation.dateRequired')),
         emissionDate: Yup.string().required(t('warehouse.incomeForm.validation.dateRequired')),
-        tax: Yup.number().min(0, t('warehouse.incomeForm.validation.taxPositive')).required(t('warehouse.incomeForm.validation.taxRequired')),
-        discount: Yup.number().min(0, t('warehouse.incomeForm.validation.discountPositive')).required(t('warehouse.incomeForm.validation.discountRequired')),
+        tax: Yup.number().transform((val, orig) => orig === '' ? undefined : val).min(0, t('warehouse.incomeForm.validation.taxPositive')).required(t('warehouse.incomeForm.validation.taxRequired')),
+        discount: Yup.number().transform((val, orig) => orig === '' ? undefined : val).min(0, t('warehouse.incomeForm.validation.discountPositive')).required(t('warehouse.incomeForm.validation.discountRequired')),
         invoiceNumber: Yup.string().required(t('warehouse.incomeForm.validation.invoiceRequired')),
         fiscalRecord: Yup.string().required(t('warehouse.incomeForm.validation.fiscalRequired')),
     });
@@ -502,15 +503,26 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
     }, [mainWarehouseId])
 
     useEffect(() => {
+        const tax = Number(formik.values.tax) || 0;
+        const discount = Number(formik.values.discount) || 0;
         const subtotal = formik.values.products.reduce((sum, product) => sum + (product.quantity * (product.price ?? 0)), 0);
-        const totalAfterDiscount = subtotal - (subtotal * (formik.values.discount / 100));
-        const totalWithTax = totalAfterDiscount + (totalAfterDiscount * (formik.values.tax / 100));
+        const totalAfterDiscount = subtotal - (subtotal * (discount / 100));
+        const totalWithTax = totalAfterDiscount + (totalAfterDiscount * (tax / 100));
         formik.setFieldValue("totalPrice", parseFloat(totalWithTax.toFixed(2)));
     }, [formik.values.products, formik.values.tax, formik.values.discount]);
 
     useEffect(() => {
         formik.validateForm();
     }, [formik.values]);
+
+    const filteredPurchaseOrders = useMemo(() => {
+        if (!poSearchText.trim()) return purchaseOrders;
+        const q = poSearchText.toLowerCase();
+        return purchaseOrders.filter((po: any) =>
+            po.code?.toLowerCase().includes(q) ||
+            po.supplier?.name?.toLowerCase().includes(q)
+        );
+    }, [purchaseOrders, poSearchText]);
 
     const isApproved = initialData?.approvalStatus === 'approved';
     const isReleased = initialData?.approvalStatus === 'released';
@@ -660,13 +672,36 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                             </div>
                         ) : entryMode === "purchase_order" ? (
                             <div>
-                                <div className="d-flex justify-content-between align-items-center mb-1">
-                                    <h5 className="text-muted">{t('warehouse.incomeForm.purchaseOrders.title', { defaultValue: 'Ordenes de Compra' })}</h5>
+                                <div className="d-flex justify-content-between align-items-center mb-2">
+                                    <h5 className="text-muted mb-0">{t('warehouse.incomeForm.purchaseOrders.title', { defaultValue: 'Ordenes de Compra' })}</h5>
                                     <Button size="sm" className="btn" onClick={() => setEntryMode(null)}>
                                         <i className="ri-arrow-go-back-line me-1"></i>{t('warehouse.incomeForm.changeMode', { defaultValue: 'Cambiar modo' })}
                                     </Button>
                                 </div>
-                                <SelectableTable columns={purchaseOrdersColumns} data={purchaseOrders} onSelect={(rows: any[]) => rows?.[0] && clicPurchaseOrder(rows[0])} selectionMode="single" showSearchAndFilter={false} showPagination={false} />
+                                <div className="mb-3">
+                                    <div className="input-group">
+                                        <span className="input-group-text"><i className="ri-search-line"></i></span>
+                                        <Input
+                                            type="text"
+                                            placeholder={t('warehouse.incomeForm.purchaseOrders.search', { defaultValue: 'Buscar por código o proveedor...' })}
+                                            value={poSearchText}
+                                            onChange={(e) => setPoSearchText(e.target.value)}
+                                        />
+                                        {poSearchText && (
+                                            <Button color="secondary" outline onClick={() => setPoSearchText('')}>
+                                                <i className="ri-close-line"></i>
+                                            </Button>
+                                        )}
+                                    </div>
+                                </div>
+                                {purchaseOrders.length === 0 ? (
+                                    <div className="text-center py-5 text-muted">
+                                        <i className="ri-file-list-3-line" style={{ fontSize: '3rem' }}></i>
+                                        <p className="mt-3 mb-0">{t('warehouse.incomeForm.purchaseOrders.empty', { defaultValue: 'No hay órdenes de compra registradas' })}</p>
+                                    </div>
+                                ) : (
+                                    <SelectableTable columns={purchaseOrdersColumns} data={filteredPurchaseOrders} onSelect={(rows: any[]) => rows?.[0] && clicPurchaseOrder(rows[0])} selectionMode="single" showSearchAndFilter={false} showPagination={false} />
+                                )}
                             </div>
                         ) : null}
                     </TabPane>
@@ -810,8 +845,15 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                                     id="taxInput"
                                                     name="tax"
                                                     value={formik.values.tax}
-                                                    onChange={formik.handleChange}
-                                                    onBlur={formik.handleBlur}
+                                                    onChange={(e) => {
+                                                        const raw = e.target.value;
+                                                        formik.setFieldValue('tax', raw === '' ? '' : parseFloat(raw));
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        const val = parseFloat(e.target.value);
+                                                        formik.setFieldValue('tax', isNaN(val) ? 0 : val);
+                                                        formik.handleBlur(e);
+                                                    }}
                                                     invalid={formik.touched.tax && !!formik.errors.tax}
                                                     min={0}
                                                     step="0.01"
@@ -828,8 +870,15 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                                     id="discountInput"
                                                     name="discount"
                                                     value={formik.values.discount}
-                                                    onChange={formik.handleChange}
-                                                    onBlur={formik.handleBlur}
+                                                    onChange={(e) => {
+                                                        const raw = e.target.value;
+                                                        formik.setFieldValue('discount', raw === '' ? '' : parseFloat(raw));
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        const val = parseFloat(e.target.value);
+                                                        formik.setFieldValue('discount', isNaN(val) ? 0 : val);
+                                                        formik.handleBlur(e);
+                                                    }}
                                                     invalid={formik.touched.discount && !!formik.errors.discount}
                                                     min={0}
                                                     step="0.01"
@@ -1030,7 +1079,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} />
 
-            <SuccessModal isOpen={modals.success} onClose={onSave} message={t('warehouse.incomeForm.success', { defaultValue: 'Entrada creada con exito' })} />
+            <SuccessModal isOpen={modals.success} onClose={onSave} message={initialData ? t('warehouse.incomeForm.successUpdate', { defaultValue: 'Entrada actualizada con éxito' }) : t('warehouse.incomeForm.success', { defaultValue: 'Entrada creada con éxito' })} />
         </>
     );
 };

@@ -1,11 +1,11 @@
 import { logger } from 'utils/logger';
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback, Row, Col } from "reactstrap";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import { useTranslation } from "react-i18next";
 import FileUploader from "../Shared/FileUploader";
-import { ProductCategory, ProductData } from "common/data_interfaces";
+import { ProductData } from "common/data_interfaces";
 import { ConfigContext } from "App";
 import { PRODUCT_TYPES } from "common/enums/products.enums";
 import AlertMessage from "../Shared/AlertMesagge";
@@ -25,9 +25,23 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
     const [fileToUpload, setFileToUpload] = useState<File | null>(null)
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const configContext = useContext(ConfigContext)
-    const [selectedCategory, setSelectedCategory] = useState<ProductCategory>()
     const { globalConfig } = useGlobalConfig();
     const unitOptions = globalConfig?.unitMeasurements ?? [];
+
+    const fetchNextId = async () => {
+        try {
+            const response = await configContext?.axiosHelper.get(`${configContext.apiUrl}/product/product_next_id`);
+            if (response?.data?.data) {
+                formik.setFieldValue('id', response.data.data);
+            }
+        } catch (error) {
+            logger.error('Error fetching next product id:', error);
+        }
+    };
+
+    useEffect(() => {
+        if (!initialData) fetchNextId();
+    }, []);
 
     const validationSchema = Yup.object({
         id: Yup.string()

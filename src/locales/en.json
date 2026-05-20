@@ -94,7 +94,8 @@
     "darkMode": "Dark Mode",
     "lightMode": "Light Mode",
     "language": "Language",
-    "userManual": "User Manual"
+    "userManual": "User Manual",
+    "changePassword": "Change Password"
   },
   "auth": {
     "login": {
@@ -113,6 +114,7 @@
         "username": "Please enter your username",
         "password": "Please enter your password"
       },
+      "rememberMe": "Remember username and password",
       "submit": "Sign In",
       "submitting": "Signing in...",
       "invalidCredentials": "Incorrect username or password.",
@@ -163,6 +165,28 @@
       },
       "updateButton": "Update User Name",
       "successUpdate": "Username updated to"
+    },
+    "changePassword": {
+      "title": "Change Password",
+      "field": {
+        "currentPassword": "Current Password",
+        "currentPasswordPlaceholder": "Enter your current password",
+        "newPassword": "New Password",
+        "newPasswordPlaceholder": "Enter new password",
+        "confirmPassword": "Confirm New Password",
+        "confirmPasswordPlaceholder": "Confirm new password"
+      },
+      "validation": {
+        "currentPasswordRequired": "Current password is required",
+        "newPasswordRequired": "New password is required",
+        "newPasswordMin": "Password must be at least 8 characters",
+        "confirmPasswordRequired": "Password confirmation is required",
+        "passwordsMustMatch": "Passwords do not match"
+      },
+      "submitButton": "Update Password",
+      "success": "Password updated successfully",
+      "errorWrongCurrent": "Current password is incorrect",
+      "errorGeneric": "An error occurred while updating the password"
     },
     "forgotPassword": {
       "pageTitle": "Forgot Password | PorcySys",
@@ -6333,6 +6357,9 @@
       },
       "typeLabel": "Warehouse type",
       "stepSelectManager": "Select manager",
+      "selectManager": "Select manager",
+      "addUserBtn": "Register user",
+      "noUsers": "No users registered as subwarehouse managers",
       "stepSubwarehouseData": "Warehouse information",
       "stepSummary": "Summary",
       "infoSubwarehouse": "Warehouse information",
@@ -6868,7 +6895,9 @@
         "directDesc": "Record a product receipt without a purchase order."
       },
       "purchaseOrders": {
-        "title": "Purchase Orders"
+        "title": "Purchase Orders",
+        "search": "Search by code or supplier...",
+        "empty": "No purchase orders registered"
       },
       "changeMode": "Change mode",
       "section": {
@@ -6918,7 +6947,8 @@
       "modal": {
         "newPurchaseOrder": "New purchase order"
       },
-      "success": "Receipt recorded successfully"
+      "success": "Receipt recorded successfully",
+      "successUpdate": "Receipt updated successfully"
     },
     "subwarehouseInventory": {
       "products": "Products"

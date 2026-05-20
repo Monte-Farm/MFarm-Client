@@ -426,6 +426,13 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
         }
     };
 
+    const handleCreateSupplier = async (data: SupplierData) => {
+        if (!configContext) return;
+        await configContext.axiosHelper.create(`${configContext.apiUrl}/supplier/create_supplier`, data);
+        await fetchSuppliers();
+        toggleModal('createSupplier', false);
+    };
+
     useEffect(() => {
         fetchWarehouseId();
         fetchProducts();
@@ -541,7 +548,12 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                         </div>
 
                         <div className="">
-                            <Label className="form-label">{t('warehouse.suppliers.col.supplier', { defaultValue: 'Proveedor' })}</Label>
+                            <div className="d-flex justify-content-between align-items-center mb-1">
+                                <Label className="form-label mb-0">{t('warehouse.suppliers.col.supplier', { defaultValue: 'Proveedor' })}</Label>
+                                <Button className="farm-secondary-button btn-sm" type="button" onClick={() => toggleModal('createSupplier')}>
+                                    <i className="ri-add-line me-1"></i>{t('warehouse.purchaseOrders.button.newSupplier', { defaultValue: 'Nuevo proveedor' })}
+                                </Button>
+                            </div>
                             <div className="border rounded" style={{ maxHeight: '300px', overflow: 'auto' }}>
                                 <SelectableTable
                                     columns={supplierColumns}
@@ -715,6 +727,13 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} />
 
             <SuccessModal isOpen={modals.success} onClose={onSave} message={t('warehouse.purchaseOrders.success.created', { defaultValue: 'Orden de compra creada con exito' })} />
+
+            <Modal isOpen={modals.createSupplier} toggle={() => toggleModal('createSupplier', false)} size="xl" keyboard={false} backdrop="static" centered>
+                <ModalHeader toggle={() => toggleModal('createSupplier', false)}>{t('warehouse.suppliers.modal.create', { defaultValue: 'Nuevo Proveedor' })}</ModalHeader>
+                <ModalBody>
+                    <SupplierForm onSubmit={handleCreateSupplier} onCancel={() => toggleModal('createSupplier', false)} />
+                </ModalBody>
+            </Modal>
         </>
     )
 }

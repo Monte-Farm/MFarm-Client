@@ -94,7 +94,8 @@
     "darkMode": "Modo Escuro",
     "lightMode": "Modo Claro",
     "language": "Idioma",
-    "userManual": "Manual do Usuário"
+    "userManual": "Manual do Usuário",
+    "changePassword": "Alterar Senha"
   },
   "auth": {
     "login": {
@@ -113,6 +114,7 @@
         "username": "Por favor, informe o nome de usuário",
         "password": "Por favor, informe a senha"
       },
+      "rememberMe": "Lembrar usuário e senha",
       "submit": "Entrar",
       "submitting": "Entrando...",
       "invalidCredentials": "Nome de usuário ou senha incorretos.",
@@ -163,6 +165,28 @@
       },
       "updateButton": "Atualizar Nome de Usuário",
       "successUpdate": "Nome de usuário atualizado para"
+    },
+    "changePassword": {
+      "title": "Alterar Senha",
+      "field": {
+        "currentPassword": "Senha Atual",
+        "currentPasswordPlaceholder": "Digite sua senha atual",
+        "newPassword": "Nova Senha",
+        "newPasswordPlaceholder": "Digite a nova senha",
+        "confirmPassword": "Confirmar Nova Senha",
+        "confirmPasswordPlaceholder": "Confirme a nova senha"
+      },
+      "validation": {
+        "currentPasswordRequired": "A senha atual é obrigatória",
+        "newPasswordRequired": "A nova senha é obrigatória",
+        "newPasswordMin": "A senha deve ter pelo menos 8 caracteres",
+        "confirmPasswordRequired": "A confirmação de senha é obrigatória",
+        "passwordsMustMatch": "As senhas não coincidem"
+      },
+      "submitButton": "Atualizar Senha",
+      "success": "Senha atualizada com sucesso",
+      "errorWrongCurrent": "A senha atual está incorreta",
+      "errorGeneric": "Ocorreu um erro ao atualizar a senha"
     },
     "forgotPassword": {
       "pageTitle": "Esqueci minha senha | PorcySys",
@@ -6333,6 +6357,9 @@
       },
       "typeLabel": "Tipo de subalmoxarifado",
       "stepSelectManager": "Seleção do responsável",
+      "selectManager": "Selecionar responsável",
+      "addUserBtn": "Registrar usuário",
+      "noUsers": "Nenhum usuário registrado como responsável de subalmoxarifado",
       "stepSubwarehouseData": "Informações do subalmoxarifado",
       "stepSummary": "Resumo",
       "infoSubwarehouse": "Informações do subalmoxarifado",
@@ -6868,7 +6895,9 @@
         "directDesc": "Registre uma entrada de produtos sem necessidade de ordem de compra."
       },
       "purchaseOrders": {
-        "title": "Ordens de Compra"
+        "title": "Ordens de Compra",
+        "search": "Buscar por código ou fornecedor...",
+        "empty": "Nenhuma ordem de compra registrada"
       },
       "changeMode": "Alterar modo",
       "section": {
@@ -6918,7 +6947,8 @@
       "modal": {
         "newPurchaseOrder": "Nova ordem de compra"
       },
-      "success": "Entrada registrada com sucesso"
+      "success": "Entrada registrada com sucesso",
+      "successUpdate": "Entrada atualizada com sucesso"
     },
     "subwarehouseInventory": {
       "products": "Produtos"

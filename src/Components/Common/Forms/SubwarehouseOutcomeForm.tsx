@@ -19,6 +19,7 @@ import SuccessModal from '../Shared/SuccessModal';
 import ErrorModal from '../Shared/ErrorModal';
 import AlertMessage from '../Shared/AlertMesagge';
 import LoadingAnimation from '../Shared/LoadingAnimation';
+import PDFViewer from '../Shared/PDFViewer';
 import { OUTCOME_TYPES, getOutcomeTypeLabel } from 'common/enums/outcomes.enums';
 import ObjectDetails from '../Details/ObjectDetails';
 import { useTranslation } from 'react-i18next';
@@ -37,7 +38,10 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSa
     const bg = (color: string) => isDark ? darkenHex(color) : color;
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
-    const [modals, setModals] = useState({ createWarehouse: false, cancel: false, success: false, error: false });
+    const [modals, setModals] = useState({ createWarehouse: false, cancel: false, success: false, error: false, viewPDF: false });
+    const [createdOutcomeId, setCreatedOutcomeId] = useState<string>('');
+    const [pdfLoading, setPdfLoading] = useState(false);
+    const [fileURL, setFileURL] = useState<string>('');
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const [products, setProducts] = useState([])
     const [selectedProducts, setSelectedProducts] = useState<any[]>([])
@@ -226,7 +230,8 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSa
                     let createIncome: boolean = false;
                     if (values.outcomeType === OUTCOME_TYPES.TRANSFER) createIncome = true;
 
-                    await configContext.axiosHelper.create(`${configContext.apiUrl}/outcomes/create_outcome/${createIncome}/${values.outcomeType}`, values);
+                    const outcomeResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/outcomes/create_outcome/${createIncome}/${values.outcomeType}`, values);
+                    setCreatedOutcomeId(outcomeResponse.data.data._id);
                     await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
                         event: `Registro de salida de inventario ${values.code}`
                     });
@@ -271,6 +276,22 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSa
             setLoading(false)
         }
     }
+
+    const handleGeneratePdf = async () => {
+        if (!configContext || !createdOutcomeId) return;
+        try {
+            setPdfLoading(true);
+            const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/outcomes/${createdOutcomeId}`);
+            const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+            setFileURL(window.URL.createObjectURL(pdfBlob));
+            toggleModal('viewPDF');
+        } catch (error) {
+            logger.error('Error generating PDF:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.outcomeDetails.error.pdf', { defaultValue: 'Error al generar el PDF' }) });
+        } finally {
+            setPdfLoading(false);
+        }
+    };
 
     useEffect(() => {
         fetchData();
@@ -382,7 +403,7 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSa
                                     onChange={(date: Date[]) => {
                                         if (date[0]) formik.setFieldValue('date', date[0]);
                                     }}
-                                    options={{ dateFormat: 'd/m/Y' }}
+                                    options={{ dateFormat: 'd/m/Y', allowInput: true }}
                                 />
                                 {formik.touched.date && formik.errors.date && (
                                     <FormFeedback className="d-block">{formik.errors.date as string}</FormFeedback>
@@ -588,7 +609,14 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSa
             </Modal>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
-            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={t('warehouse.subwarehouseOutcomeForm.success', { defaultValue: 'Salida creada exitosamente' })}></SuccessModal>
+            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={t('warehouse.subwarehouseOutcomeForm.success', { defaultValue: 'Salida creada exitosamente' })} onGeneratePdf={handleGeneratePdf} pdfLoading={pdfLoading} />
+
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal('viewPDF')} backdrop="static" keyboard={false} centered fullscreen>
+                <ModalHeader toggle={() => toggleModal('viewPDF')}>{t('warehouse.outcomeDetails.pdfModal.title', { defaultValue: 'Reporte de salida' })}</ModalHeader>
+                <ModalBody>
+                    {fileURL && <PDFViewer fileUrl={fileURL} />}
+                </ModalBody>
+            </Modal>
             <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error')} message={t('warehouse.subwarehouseOutcomeForm.error', { defaultValue: 'Ha ocurrido un error creando la salida, intentelo mas tarde' })} />
         </>
     )

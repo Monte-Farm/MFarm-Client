@@ -94,7 +94,8 @@
     "darkMode": "Modo Oscuro",
     "lightMode": "Modo Claro",
     "language": "Idioma",
-    "userManual": "Manual de Usuario"
+    "userManual": "Manual de Usuario",
+    "changePassword": "Cambiar Contraseña"
   },
   "auth": {
     "login": {
@@ -113,6 +114,7 @@
         "username": "Por favor, ingrese su número de usuario",
         "password": "Por favor, ingrese su contraseña"
       },
+      "rememberMe": "Recordar usuario y contraseña",
       "submit": "Iniciar Sesión",
       "submitting": "Iniciando sesión...",
       "invalidCredentials": "Nombre de usuario o contraseña incorrectos.",
@@ -163,6 +165,28 @@
       },
       "updateButton": "Actualizar Nombre de Usuario",
       "successUpdate": "Nombre de usuario actualizado a"
+    },
+    "changePassword": {
+      "title": "Cambiar Contraseña",
+      "field": {
+        "currentPassword": "Contraseña Actual",
+        "currentPasswordPlaceholder": "Ingresa tu contraseña actual",
+        "newPassword": "Nueva Contraseña",
+        "newPasswordPlaceholder": "Ingresa la nueva contraseña",
+        "confirmPassword": "Confirmar Nueva Contraseña",
+        "confirmPasswordPlaceholder": "Confirma la nueva contraseña"
+      },
+      "validation": {
+        "currentPasswordRequired": "La contraseña actual es requerida",
+        "newPasswordRequired": "La nueva contraseña es requerida",
+        "newPasswordMin": "La contraseña debe tener al menos 8 caracteres",
+        "confirmPasswordRequired": "La confirmación de contraseña es requerida",
+        "passwordsMustMatch": "Las contraseñas no coinciden"
+      },
+      "submitButton": "Actualizar Contraseña",
+      "success": "Contraseña actualizada exitosamente",
+      "errorWrongCurrent": "La contraseña actual es incorrecta",
+      "errorGeneric": "Ocurrió un error al actualizar la contraseña"
     },
     "forgotPassword": {
       "pageTitle": "Olvidé mi contraseña | PorcySys",
@@ -6333,6 +6357,9 @@
       },
       "typeLabel": "Tipo de subalmacén",
       "stepSelectManager": "Selección de encargado",
+      "selectManager": "Seleccionar encargado",
+      "addUserBtn": "Registrar usuario",
+      "noUsers": "No hay usuarios registrados como encargados de subalmacén",
       "stepSubwarehouseData": "Información del subalmacén",
       "stepSummary": "Resumen",
       "infoSubwarehouse": "Información del subalmacén",
@@ -6868,7 +6895,9 @@
         "directDesc": "Registre una entrada de productos sin necesidad de una orden de compra."
       },
       "purchaseOrders": {
-        "title": "Órdenes de compra"
+        "title": "Órdenes de compra",
+        "search": "Buscar por código o proveedor...",
+        "empty": "No hay órdenes de compra registradas"
       },
       "changeMode": "Cambiar modo",
       "section": {
@@ -6918,7 +6947,8 @@
       "modal": {
         "newPurchaseOrder": "Nueva orden de compra"
       },
-      "success": "Entrada creada con éxito"
+      "success": "Entrada creada con éxito",
+      "successUpdate": "Entrada actualizada con éxito"
     },
     "subwarehouseInventory": {
       "products": "Productos"

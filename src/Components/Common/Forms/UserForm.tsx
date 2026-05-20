@@ -103,12 +103,12 @@ const UserForm: React.FC<UserFormProps> = ({
                 if (initialData) {
                     await configContext.axiosHelper.put(`${configContext.apiUrl}/user/update_user/${initialData.username}`, values);
                     await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
-                        event: `Registro de usuario de ${values.name} ${values.lastname}`,
+                        event: `Actualización de usuario de ${values.name} ${values.lastname}`,
                     });
                 } else {
                     await configContext.axiosHelper.create(`${configContext.apiUrl}/user/create_user`, values);
                     await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
-                        event: `Actualizacion de usuario de ${values.name} ${values.lastname}`,
+                        event: `Registro de usuario de ${values.name} ${values.lastname}`,
                     });
                 }
                 toggleModal("success");
@@ -212,6 +212,7 @@ const UserForm: React.FC<UserFormProps> = ({
                                             );
                                         }}
                                     />
+                                    <i className="ri-checkbox-circle-fill role-check-icon"></i>
                                     <span>{t(`roles.${role.value}`, { defaultValue: role.label })}</span>
                                 </label>
                             );

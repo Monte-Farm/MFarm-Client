@@ -13,6 +13,7 @@ import DatePicker from 'react-flatpickr';
 import AlertMessage from '../Shared/AlertMesagge';
 import SuccessModal from '../Shared/SuccessModal';
 import ErrorModal from '../Shared/ErrorModal';
+import PDFViewer from '../Shared/PDFViewer';
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import CustomTable from '../Tables/CustomTable';
 import SelectableTable from '../Tables/SelectableTable';
@@ -38,7 +39,10 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
     const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
     const bg = (color: string) => isDark ? darkenHex(color) : color;
     const [tabletMode, setTabletMode] = useState(isTablet);
-    const [modals, setModals] = useState({ createWarehouse: false, cancel: false, success: false, error: false });
+    const [modals, setModals] = useState({ createWarehouse: false, cancel: false, success: false, error: false, viewPDF: false });
+    const [createdOutcomeId, setCreatedOutcomeId] = useState<string>('');
+    const [pdfLoading, setPdfLoading] = useState(false);
+    const [fileURL, setFileURL] = useState<string>('');
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
@@ -255,7 +259,8 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                 setSubmitting(true);
                 let createIncome: boolean = false
                 if (values.outcomeType === OUTCOME_TYPES.TRANSFER) createIncome = true
-                await configContext.axiosHelper.create(`${configContext.apiUrl}/outcomes/create_outcome/${createIncome}/${values.outcomeType}`, values);
+                const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/outcomes/create_outcome/${createIncome}/${values.outcomeType}`, values);
+                setCreatedOutcomeId(response.data.data._id);
                 toggleModal('success')
             } catch (error) {
                 logger.error("Error al enviar el formulario:", error);
@@ -324,6 +329,22 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
             setProducts(productsWithExistences);
         } catch (error) {
             logger.error(error);
+        }
+    };
+
+    const handleGeneratePdf = async () => {
+        if (!configContext || !createdOutcomeId) return;
+        try {
+            setPdfLoading(true);
+            const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/outcomes/${createdOutcomeId}`);
+            const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+            setFileURL(window.URL.createObjectURL(pdfBlob));
+            toggleModal('viewPDF');
+        } catch (error) {
+            logger.error('Error generating PDF:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.outcomeDetails.error.pdf', { defaultValue: 'Error al generar el PDF' }) });
+        } finally {
+            setPdfLoading(false);
         }
     };
 
@@ -440,7 +461,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                                         onChange={(date: Date[]) => {
                                             if (date[0]) formik.setFieldValue('date', date[0]);
                                         }}
-                                        options={{ dateFormat: 'd/m/Y' }}
+                                        options={{ dateFormat: 'd/m/Y', allowInput: true }}
                                     />
                                     {formik.touched.date && formik.errors.date && (
                                         <FormFeedback className="d-block">{formik.errors.date as string}</FormFeedback>
@@ -656,7 +677,14 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                 </ModalBody>
             </Modal>
 
-            <SuccessModal isOpen={modals.success} onClose={onSave} message={t('warehouse.outcomeForm.success', { defaultValue: 'Salida creada con exito' })} />
+            <SuccessModal isOpen={modals.success} onClose={onSave} message={t('warehouse.outcomeForm.success', { defaultValue: 'Salida creada con exito' })} onGeneratePdf={handleGeneratePdf} pdfLoading={pdfLoading} />
+
+            <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal('viewPDF')} backdrop="static" keyboard={false} centered fullscreen>
+                <ModalHeader toggle={() => toggleModal('viewPDF')}>{t('warehouse.outcomeDetails.pdfModal.title', { defaultValue: 'Reporte de salida' })}</ModalHeader>
+                <ModalBody>
+                    {fileURL && <PDFViewer fileUrl={fileURL} />}
+                </ModalBody>
+            </Modal>
             <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={t('warehouse.outcomeForm.error', { defaultValue: 'Ha ocurrido un error al guardar los datos, intentelo mas tarde' })} />
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />

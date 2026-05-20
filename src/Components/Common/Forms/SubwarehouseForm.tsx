@@ -16,7 +16,8 @@ import { useTranslation } from 'react-i18next';
 import AlertMessage from '../Shared/AlertMesagge';
 import ObjectDetails from '../Details/ObjectDetails';
 import defaultImageProfila from '../../../assets/images/default-profile-mage.jpg'
-import { subwarehouseTypes } from 'common/subawarehouse_types';
+import { subwarehouseTypes } from 'common/subawarehouse_types'
+import UserForm from './UserForm';
 
 interface SubwarehouseFormProps {
     onSave: () => void;
@@ -39,7 +40,7 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const { t } = useTranslation();
-    const [modals, setModals] = useState({ success: false, error: false, cancel: false });
+    const [modals, setModals] = useState({ success: false, error: false, cancel: false, createUser: false });
     const [users, setUsers] = useState<any[]>([])
     const [loading, setLoading] = useState<boolean>(true)
     const [activeStep, setActiveStep] = useState<number>(1);
@@ -253,6 +254,17 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
         }
     }
 
+    const fetchUsers = async () => {
+        if (!configContext) return;
+        try {
+            const usersResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/user/find_by_role/subwarehouse_manager`);
+            const filteredUsers = usersResponse.data.data.filter((u: any) => u.assigment === null);
+            setUsers(filteredUsers.map((b: any) => ({ ...b, id: b._id })));
+        } catch (error) {
+            logger.error('Error fetching users: ', { error });
+        }
+    }
+
     const changeSelectedUser = (user: any) => {
         if (user) {
             setSelectedUser(user)
@@ -351,7 +363,20 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
 
                 <TabContent activeTab={activeStep}>
                     <TabPane id="step-managerselect-tab" tabId={1}>
-                        <SelectableTable data={users} columns={usersColumns} selectionMode="single" showPagination={true} rowsPerPage={6} onSelect={(rows) => changeSelectedUser(rows?.[0] ?? null)} />
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                            <Label className="form-label mb-0">{t('warehouse.subwarehouse.selectManager', { defaultValue: 'Seleccionar encargado' })}</Label>
+                            <Button size="sm" className="farm-secondary-button" type="button" onClick={() => toggleModal('createUser', true)}>
+                                <i className="ri-user-add-line me-1"></i>{t('warehouse.subwarehouse.addUserBtn', { defaultValue: 'Registrar usuario' })}
+                            </Button>
+                        </div>
+                        {users.length === 0 ? (
+                            <div className="text-center py-5 text-muted">
+                                <i className="ri-user-line" style={{ fontSize: '3rem' }}></i>
+                                <p className="mt-3 mb-0">{t('warehouse.subwarehouse.noUsers', { defaultValue: 'No hay usuarios registrados como encargados de subalmacén' })}</p>
+                            </div>
+                        ) : (
+                            <SelectableTable data={users} columns={usersColumns} selectionMode="single" showPagination={true} rowsPerPage={6} onSelect={(rows) => changeSelectedUser(rows?.[0] ?? null)} />
+                        )}
                         <div className="mt-4 d-flex">
                             <Button className="ms-auto" onClick={() => checkSelectedManager()}>
                                 {t("common.button.next")}
@@ -414,6 +439,7 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
                                                     formik.setFieldValue("type", type.value);
                                                 }}
                                             />
+                                            <i className="ri-checkbox-circle-fill role-check-icon"></i>
                                             <span>{type.label}</span>
                                         </label>
                                     );
@@ -488,6 +514,20 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
                         {t("warehouse.subwarehouse.cancelNo")}
                     </Button>
                 </ModalFooter>
+            </Modal>
+
+            <Modal size="lg" isOpen={modals.createUser} toggle={() => toggleModal('createUser', false)} backdrop="static" keyboard={false} centered>
+                <ModalHeader toggle={() => toggleModal('createUser', false)}>
+                    {t('warehouse.subwarehouse.addUserBtn', { defaultValue: 'Registrar usuario' })}
+                </ModalHeader>
+                <ModalBody>
+                    <UserForm
+                        defaultRole="subwarehouse_manager"
+                        currentUserRole={userLogged.role}
+                        onSave={() => { toggleModal('createUser', false); fetchUsers(); }}
+                        onCancel={() => toggleModal('createUser', false)}
+                    />
+                </ModalBody>
             </Modal>
 
             <SuccessModal isOpen={modals.success} message={t('warehouse.subwarehouse.successCreate')} onClose={() => onSave()} />
