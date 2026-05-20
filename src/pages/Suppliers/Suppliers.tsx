@@ -223,7 +223,7 @@ const Suppliers = () => {
         if (!configContext) return;
 
         try {
-            await configContext.axiosHelper.create(`${configContext.apiUrl}/supplier/create_supplier`, data);
+            await configContext.axiosHelper.create(`${configContext.apiUrl}/supplier/create_supplier`, { ...data, farmId: userLogged.farm_assigned });
             setAlertConfig({ visible: true, color: 'success', message: t('warehouse.suppliers.success.create') })
             fetchAllSupplierData();
         } catch (error) {

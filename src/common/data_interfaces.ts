@@ -52,6 +52,7 @@ export interface SupplierData {
     supplier_type: string;
     status: boolean;
     rnc: string;
+    farmId?: string;
 }
 
 interface ProductId {
@@ -95,6 +96,7 @@ export interface ProductData {
     image: string;
     type?: 'raw' | 'prepared_feed';
     recipeId?: string;
+    farmId?: string;
 }
 
 export interface SubwarehouseData {

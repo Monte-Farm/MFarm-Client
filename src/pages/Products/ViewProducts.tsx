@@ -18,6 +18,7 @@ import DonutChartCard, { DonutDataItem, DonutLegendItem } from "Components/Commo
 import { getProductCategoryLabel, getProductTypeLabel, PRODUCT_TYPES } from "common/enums/products.enums";
 import { FiInbox } from "react-icons/fi";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 
 
 const isTablet = () => {
@@ -273,8 +274,9 @@ const ViewProducts = () => {
     const handleCreateProduct = async (data: ProductData) => {
         if (!configContext) return;
 
+        const userLogged = getEffectiveUser();
         try {
-            await configContext.axiosHelper.create(`${configContext.apiUrl}/product/create_product`, data);
+            await configContext.axiosHelper.create(`${configContext.apiUrl}/product/create_product`, { ...data, farmId: userLogged.farm_assigned });
             setAlertConfig({ visible: true, color: 'success', message: t('warehouse.products.success.create') });
             fetchAllProductData();
         } catch (error) {
