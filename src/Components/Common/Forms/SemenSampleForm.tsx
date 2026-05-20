@@ -145,7 +145,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
             volume: Yup.number()
                 .min(0, t('laboratory.sample.form.validation.minZero', { defaultValue: 'El número no puede ser menor a 0' }))
                 .required(t('laboratory.sample.form.validation.diluentVolume', { defaultValue: 'Por favor, ingrese el volumen del diluyente' })),
-            unit_measurement: Yup.string().required(t('laboratory.sample.form.validation.diluentUnit', { defaultValue: 'Por favor, ingrese la unidad de medida' })),
+            unit_measurement: Yup.string().notRequired(),
         }),
         conservation_method: Yup.string().required(t('laboratory.sample.form.validation.conservationMethod', { defaultValue: 'Por favor, ingrese el método de conservación' })),
         expiration_date: Yup.date().min(new Date(new Date().setHours(0, 0, 0, 0)), t('laboratory.sample.form.validation.expirationDate', { defaultValue: 'La fecha de expiración no puede ser pasada' })).required(t('laboratory.sample.form.validation.expirationDateRequired', { defaultValue: 'Por favor, ingrese la fecha de expiración' })),
@@ -173,7 +173,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                 type: '',
                 lot: '',
                 volume: 0,
-                unit_measurement: ''
+                unit_measurement: 'ml'
             },
             conservation_method: '',
             expiration_date: null,
