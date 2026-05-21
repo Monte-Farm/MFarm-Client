@@ -32,7 +32,8 @@ export enum PRODUCT_CATEGORIES {
     EQUIPMENT_TOOLS = 'equipment_tools',
     SPARE_PARTS = 'spare_parts',
     OFFICE_SUPPLIES = 'office_supplies',
-    OTHERS = 'others'
+    OTHERS = 'others',
+    LABORATORY = 'laboratory'
 }
 
 export const getProductCategoryLabel = (category: string): string => {
@@ -59,6 +60,8 @@ export const getProductCategoryLabel = (category: string): string => {
             return 'Material de oficina';
         case PRODUCT_CATEGORIES.OTHERS:
             return 'Otros';
+        case PRODUCT_CATEGORIES.LABORATORY:
+            return 'Laboratorio';
         default:
             return 'Sin categoría';
     }
@@ -76,6 +79,7 @@ export const getProductCategoryOptions = () => {
         { value: PRODUCT_CATEGORIES.EQUIPMENT_TOOLS, label: 'Equipamiento y herramientas' },
         { value: PRODUCT_CATEGORIES.SPARE_PARTS, label: 'Refacciones y repuestos' },
         { value: PRODUCT_CATEGORIES.OFFICE_SUPPLIES, label: 'Material de oficina' },
-        { value: PRODUCT_CATEGORIES.OTHERS, label: 'Otros' }
+        { value: PRODUCT_CATEGORIES.OTHERS, label: 'Otros' },
+        { value: PRODUCT_CATEGORIES.LABORATORY, label: 'Laboratorio' }
     ];
 };

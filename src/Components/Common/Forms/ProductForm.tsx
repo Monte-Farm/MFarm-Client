@@ -187,6 +187,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                                 <option value="spare_parts">{t('warehouse.common.productCategory.spare_parts')}</option>
                                 <option value="office_supplies">{t('warehouse.common.productCategory.office_supplies')}</option>
                                 <option value="others">{t('warehouse.common.productCategory.others')}</option>
+                                <option value="laboratory">{t('warehouse.common.productCategory.laboratory')}</option>
                             </Input>
                             {formik.touched.category && formik.errors.category && (
                                 <FormFeedback>{formik.errors.category}</FormFeedback>

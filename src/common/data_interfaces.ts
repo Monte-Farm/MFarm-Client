@@ -438,12 +438,14 @@ export interface SemenSample {
     abnormal_percent: number;
     pH: number;
     temperature: number;
-    diluent: {
-        type: string;
-        lot: string;
-        volume: number;
+    lab_supplies: {
+        product_id: string;
+        product_name: string;
+        quantity: number;
         unit_measurement: string;
-    };
+        unit_price: number;
+    }[];
+    semen_product_id?: string;
     conservation_method: string;
     expiration_date: Date | null;
     post_dilution_motility?: number;

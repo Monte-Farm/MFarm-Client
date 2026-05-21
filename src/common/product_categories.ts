@@ -10,4 +10,5 @@ export const categoryLabels: Record<string, string> = {
     spare_parts: "Refacciones y repuestos",
     office_supplies: "Material de oficina",
     others: "Otros",
+    laboratory: "Laboratorio",
 };

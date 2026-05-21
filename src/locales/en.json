@@ -1142,7 +1142,8 @@
       "spare": "Spare parts",
       "office": "Office supplies",
       "other": "Other",
-      "vaccines": "Vaccines"
+      "vaccines": "Vaccines",
+      "laboratory": "Laboratory"
     },
     "package": {
       "pageTitle": "Feed formulas",
@@ -4290,6 +4291,8 @@
           "doseConfig": "Dose Configuration",
           "semenAnalysis": "Semen Analysis",
           "dilution": "Dilution and Preservation",
+          "labSupplies": "Lab Supplies",
+          "conservation": "Preservation",
           "supplier": "Supplier Details"
         },
         "field": {
@@ -4317,7 +4320,10 @@
           "semenVolume": "Semen volume",
           "unit": "Unit of measure",
           "sampleLotCode": "Sample lot code",
-          "sampleLotCodeHint": "(unique per registration)"
+          "sampleLotCodeHint": "(unique per registration)",
+          "semenProduct": "Semen product in inventory",
+          "semenProductHint": "(Produced doses will be added to this product)",
+          "semenProductNone": "No inventory record (optional)"
         },
         "conservationOptions": {
           "select": "Select a method",
@@ -4332,6 +4338,10 @@
           "extractionData": "Extraction Data",
           "semenAnalysis": "Semen Analysis",
           "dilutionConservation": "Dilution & Conservation",
+          "labSupplies": "Supplies & Preservation",
+          "noSupplies": "No supplies selected",
+          "productionCost": "Cost:",
+          "estimatedCost": "Estimated cost:",
           "generatedDoses": "Generated Doses",
           "noExtraction": "Not selected",
           "noDoses": "No doses have been generated",
@@ -4376,7 +4386,11 @@
           "conservationMethod": "Please enter the conservation method",
           "expirationDate": "Expiration date cannot be in the past",
           "expirationDateRequired": "Please enter the expiration date",
-          "alertHours": "Please enter a number"
+          "alertHours": "Please enter a number",
+          "labSuppliesRequired": "Select at least one lab supply",
+          "insufficientStock": "Insufficient stock",
+          "stockRequired": "required",
+          "stockAvailable": "available"
         },
         "alert": {
           "selectExtraction": "Please select an extraction",
@@ -4392,6 +4406,24 @@
         },
         "success": "Sample registered successfully",
         "error": "Error registering the sample. Please try again.",
+        "fetchError": {
+          "fetchWarehouse": "Error retrieving the main warehouse",
+          "fetchLabProducts": "Error retrieving lab supplies"
+        },
+        "labSupplies": {
+          "add": "Add supply",
+          "empty": "No lab supplies available in the warehouse. Register products with category \"Laboratory\" first.",
+          "none": "Press \"+ Add supply\" to add the materials used.",
+          "selectProduct": "Select...",
+          "estimatedCost": "Estimated cost:",
+          "noSemenProduct": "No \"Laboratory\" category products in the catalog. Create one first to track semen inventory.",
+          "col": {
+            "product": "Product",
+            "quantity": "Quantity",
+            "unitPrice": "Unit price",
+            "subtotal": "Subtotal"
+          }
+        },
         "modal": {
           "extractionDetails": "Extraction details"
         },
@@ -6229,7 +6261,8 @@
         "equipment_tools": "Equipment & Tools",
         "spare_parts": "Spare Parts",
         "office_supplies": "Office Supplies",
-        "others": "Others"
+        "others": "Others",
+        "laboratory": "Laboratory"
       },
       "productType": {
         "raw": "Raw material",

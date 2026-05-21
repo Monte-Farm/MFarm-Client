@@ -85,10 +85,19 @@ const SampleDetails = () => {
         { key: 'pH', label: t('laboratory.sample.detail.attr.ph'), type: 'text' },
         { key: 'temperature', label: t('laboratory.sample.detail.attr.temperature'), type: 'text' },
         {
-            key: 'diluent',
-            label: t('laboratory.sample.detail.attr.diluent'),
+            key: 'lab_supplies',
+            label: t('laboratory.sample.detail.attr.labSupplies', { defaultValue: 'Insumos de laboratorio' }),
             type: 'text',
-            render: (_, obj) => obj.diluent.type + " - " + obj.diluent.lot + " - " + obj.diluent.volume + " " + obj.diluent.unit_measurement || t('laboratory.sample.detail.attr.noDiluent')
+            render: (_, obj) => {
+                if (!obj.lab_supplies?.length) return t('laboratory.sample.detail.attr.noSupplies', { defaultValue: 'Sin insumos' });
+                return obj.lab_supplies.map((s: any) => `${s.product_name}: ${s.quantity} ${s.unit_measurement}`).join(' | ');
+            }
+        },
+        {
+            key: 'production_cost',
+            label: t('laboratory.sample.detail.attr.productionCost', { defaultValue: 'Costo de producción' }),
+            type: 'text',
+            render: (_, obj) => obj.production_cost != null ? `$${Number(obj.production_cost).toFixed(2)}` : '-'
         },
     ]
 

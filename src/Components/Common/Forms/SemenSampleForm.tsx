@@ -45,6 +45,9 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
     const [externalLotCode, setExternalLotCode] = useState<string>('');
     const [internalLotCode, setInternalLotCode] = useState<string>('');
     const prevSupplierLotRef = useRef<string>('');
+    const [mainWarehouseId, setMainWarehouseId] = useState<string>('');
+    const [labProducts, setLabProducts] = useState<any[]>([]);
+    const [semenCatalogProducts, setSemenCatalogProducts] = useState<any[]>([]);
 
     const extractionsColumns: Column<any>[] = [
         { header: t('laboratory.sample.form.column.batch', { defaultValue: 'Lote' }), accessor: 'batch', type: 'text', isFilterable: true },
@@ -139,14 +142,11 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
         temperature: Yup.number()
             .min(0, t('laboratory.sample.form.validation.minZero', { defaultValue: 'El número no puede ser menor a 0' }))
             .required(t('laboratory.sample.form.validation.requiredNumber', { defaultValue: 'Por favor, ingrese un número' })),
-        diluent: Yup.object({
-            type: Yup.string().required(t('laboratory.sample.form.validation.diluentType', { defaultValue: 'Por favor, ingrese el tipo de diluyente' })),
-            lot: Yup.string().required(t('laboratory.sample.form.validation.diluentLot', { defaultValue: 'Por favor, ingrese el lote del diluyente' })),
-            volume: Yup.number()
-                .min(0, t('laboratory.sample.form.validation.minZero', { defaultValue: 'El número no puede ser menor a 0' }))
-                .required(t('laboratory.sample.form.validation.diluentVolume', { defaultValue: 'Por favor, ingrese el volumen del diluyente' })),
-            unit_measurement: Yup.string().notRequired(),
-        }),
+        lab_supplies: origin === 'internal'
+            ? Yup.array()
+                .min(1, t('laboratory.sample.form.validation.labSuppliesRequired', { defaultValue: 'Seleccione al menos un insumo de laboratorio' }))
+                .required(t('laboratory.sample.form.validation.labSuppliesRequired', { defaultValue: 'Seleccione al menos un insumo de laboratorio' }))
+            : Yup.array().notRequired(),
         conservation_method: Yup.string().required(t('laboratory.sample.form.validation.conservationMethod', { defaultValue: 'Por favor, ingrese el método de conservación' })),
         expiration_date: Yup.date().min(new Date(new Date().setHours(0, 0, 0, 0)), t('laboratory.sample.form.validation.expirationDate', { defaultValue: 'La fecha de expiración no puede ser pasada' })).required(t('laboratory.sample.form.validation.expirationDateRequired', { defaultValue: 'Por favor, ingrese la fecha de expiración' })),
         post_dilution_motility: Yup.number()
@@ -169,12 +169,8 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
             abnormal_percent: 0,
             pH: 0,
             temperature: 0,
-            diluent: {
-                type: '',
-                lot: '',
-                volume: 0,
-                unit_measurement: 'ml'
-            },
+            lab_supplies: [],
+            semen_product_id: '',
             conservation_method: '',
             expiration_date: null,
             post_dilution_motility: undefined,
@@ -202,7 +198,6 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                     abnormal_percent: values.abnormal_percent,
                     pH: values.pH,
                     temperature: values.temperature,
-                    diluent: values.diluent,
                     conservation_method: values.conservation_method,
                     expiration_date: values.expiration_date,
                     post_dilution_motility: values.post_dilution_motility,
@@ -215,8 +210,12 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
 
                 if (origin === 'internal') {
                     payload.extraction_id = values.extraction_id;
+                    payload.lab_supplies = values.lab_supplies;
+                    if (values.semen_product_id) payload.semen_product_id = values.semen_product_id;
                 } else {
                     payload.supplier = values.supplier;
+                    payload.semen_volume = externalSemenVolume;
+                    payload.semen_unit = externalUnit;
                 }
 
                 const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/semen_sample/create`, payload);
@@ -230,7 +229,17 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                     setSuccessModalOpen(true)
                 }
             } catch (err: any) {
-                handleError(err, t('laboratory.sample.form.error', { defaultValue: 'Error al registrar la muestra. Por favor, inténtelo nuevamente.' }));
+                const missing = err?.response?.data?.missing;
+                if (missing && Array.isArray(missing) && missing.length > 0) {
+                    const details = missing.map((m: any) => {
+                        const product = formik.values.lab_supplies.find(s => s.product_id === m.id);
+                        const name = product?.product_name ?? m.id;
+                        return `${name}: ${t('laboratory.sample.form.error.stockRequired', { defaultValue: 'requerido' })} ${m.required}, ${t('laboratory.sample.form.error.stockAvailable', { defaultValue: 'disponible' })} ${m.available}`;
+                    }).join(' | ');
+                    handleError(err, `${t('laboratory.sample.form.error.insufficientStock', { defaultValue: 'Stock insuficiente' })}: ${details}`);
+                } else {
+                    handleError(err, t('laboratory.sample.form.error', { defaultValue: 'Error al registrar la muestra. Por favor, inténtelo nuevamente.' }));
+                }
             } finally {
                 setSubmitting(false);
             }
@@ -243,7 +252,6 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
         if (newOrigin === 'external') {
             formik.setFieldValue('extraction_id', '');
             formik.setFieldValue('doses', []);
-            formik.setFieldValue('diluent.unit_measurement', externalUnit);
             setSelectedExtraction(null);
         } else if (newOrigin === 'internal') {
             formik.setFieldValue('supplier', { name: '', lot: '', purchase_date: null });
@@ -261,17 +269,86 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
         }
     };
 
-    const handleExternalUnitChange = (unit: string) => {
-        setExternalUnit(unit);
-        formik.setFieldValue('diluent.unit_measurement', unit);
+    const fetchMainWarehouse = async () => {
+        if (!configContext || !userLogged.farm_assigned) return;
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/farm/get_main_warehouse/${userLogged.farm_assigned}`);
+            const warehouseId = response.data.data;
+            setMainWarehouseId(warehouseId);
+            return warehouseId;
+        } catch (error) {
+            handleError(error, t('laboratory.sample.form.fetchError.fetchWarehouse', { defaultValue: 'Error al obtener el almacén' }));
+        }
     };
+
+    const fetchLabProducts = async (warehouseId: string) => {
+        if (!configContext) return;
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/get_inventory/${warehouseId}`);
+            const allProducts: any[] = response.data.data;
+            const labOnly = allProducts
+                .filter((p: any) => p.product?.category === 'laboratory' && p.quantity > 0)
+                .map((p: any) => ({
+                    id: p.product?._id,
+                    code: p.product?.id,
+                    name: p.product?.name,
+                    category: p.product?.category,
+                    unit_measurement: p.product?.unit_measurement,
+                    quantity: p.quantity,
+                    averagePrice: p.averagePrice ?? 0,
+                }));
+            setLabProducts(labOnly);
+        } catch (error) {
+            handleError(error, t('laboratory.sample.form.fetchError.fetchLabProducts', { defaultValue: 'Error al obtener los insumos de laboratorio' }));
+        }
+    };
+
+    const fetchSemenCatalogProducts = async () => {
+        if (!configContext) return;
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/product`);
+            const all: any[] = response.data.data ?? response.data;
+            setSemenCatalogProducts(all.filter((p: any) => p.category === 'laboratory'));
+        } catch (error) {
+            handleError(error, t('laboratory.sample.form.fetchError.fetchLabProducts', { defaultValue: 'Error al obtener los productos del catálogo' }));
+        }
+    };
+
+    const addLabSupply = () => {
+        formik.setFieldValue('lab_supplies', [
+            ...formik.values.lab_supplies,
+            { product_id: '', product_name: '', quantity: 1, unit_measurement: '', unit_price: 0 }
+        ]);
+    };
+
+    const removeLabSupply = (index: number) => {
+        const updated = formik.values.lab_supplies.filter((_, i) => i !== index);
+        formik.setFieldValue('lab_supplies', updated);
+    };
+
+    const updateLabSupply = (index: number, field: string, value: any) => {
+        formik.setFieldValue(`lab_supplies[${index}].${field}`, value);
+    };
+
+    const selectLabSupplyProduct = (index: number, productId: string) => {
+        const product = labProducts.find(p => p.id === productId);
+        if (!product) return;
+        formik.setFieldValue(`lab_supplies[${index}].product_id`, product.id);
+        formik.setFieldValue(`lab_supplies[${index}].product_name`, product.name);
+        formik.setFieldValue(`lab_supplies[${index}].unit_measurement`, product.unit_measurement);
+        formik.setFieldValue(`lab_supplies[${index}].unit_price`, product.averagePrice ?? 0);
+    };
+
+    const estimatedCost = formik.values.lab_supplies.reduce(
+        (acc, s) => acc + (s.quantity || 0) * (s.unit_price || 0), 0
+    );
 
     const generateLotCode = (supplierLot: string) => {
         const uid = Date.now().toString(36).toUpperCase();
         return supplierLot ? `${supplierLot}-${uid}` : uid;
     };
 
-    const checkStep1 = () => {
+    const checkStep1 = async () => {
         if (!origin) return false;
         if (origin === 'internal') {
             if (!formik.values.extraction_id) {
@@ -286,6 +363,14 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                 return false;
             }
         }
+        // Load lab products and semen catalog when moving to step 2 if not already loaded
+        if (labProducts.length === 0) {
+            const wid = mainWarehouseId || await fetchMainWarehouse();
+            if (wid) await fetchLabProducts(wid);
+        }
+        if (semenCatalogProducts.length === 0) {
+            await fetchSemenCatalogProducts();
+        }
         toggleArrowTab(2);
         return true;
     }
@@ -298,12 +383,6 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
             abnormal_percent: true,
             pH: true,
             temperature: true,
-            diluent: {
-                type: true,
-                lot: true,
-                volume: true,
-                unit_measurement: true,
-            },
             conservation_method: true,
             expiration_date: true,
             alert_hours_before_expiration: true
@@ -339,19 +418,23 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
     useEffect(() => {
         if (preselectedExtraction) {
             fetchExtractions();
+            fetchMainWarehouse().then(wid => { if (wid) fetchLabProducts(wid); });
+            fetchSemenCatalogProducts();
         }
     }, [])
 
-    // Dose calculation effect
+    // Dose calculation effect — diluentTotal from lab supplies (internal only; external uses semen volume alone)
     useEffect(() => {
+        const diluentTotal = origin === 'internal'
+            ? formik.values.lab_supplies.reduce((acc, s) => acc + (s.quantity || 0), 0)
+            : 0;
+
         if (origin === 'internal') {
             const selected = extractions.find(e => e._id === formik.values.extraction_id);
 
-            // Reset lot code when extraction changes
             if (!selected || selected._id !== selectedExtraction?._id) {
                 setInternalLotCode('');
             }
-
             setSelectedExtraction(selected || null);
 
             if (!selected) {
@@ -359,14 +442,10 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                 return;
             }
 
-            formik.setFieldValue('diluent.unit_measurement', selected.unit_measurement);
-
-            // Generate a stable lot code for this registration session
             const currentLotCode = internalLotCode || generateLotCode(selected.batch);
             if (!internalLotCode) setInternalLotCode(currentLotCode);
 
             const semenTotal = selected.volume;
-            const diluentTotal = Number(formik.values.diluent.volume || 0);
             const totalVolume = semenTotal + diluentTotal;
 
             if (doseSize <= 0) {
@@ -376,8 +455,8 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
 
             const dosesCount = Math.floor(totalVolume / doseSize);
             const remainder = totalVolume % doseSize;
-            const semenRatio = semenTotal / totalVolume;
-            const diluentRatio = diluentTotal / totalVolume;
+            const semenRatio = totalVolume > 0 ? semenTotal / totalVolume : 1;
+            const diluentRatio = totalVolume > 0 ? diluentTotal / totalVolume : 0;
             const unit = selected.unit_measurement;
             const batchCode = currentLotCode;
 
@@ -405,14 +484,11 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
             formik.setFieldValue('total_doses', dosesArray.length);
             formik.setFieldValue('available_doses', dosesArray.length);
         } else {
-            // External origin: use externalSemenVolume
             const semenTotal = externalSemenVolume;
-            const diluentTotal = Number(formik.values.diluent.volume || 0);
             const totalVolume = semenTotal + diluentTotal;
             const supplierLot = formik.values.supplier?.lot || '';
             const unit = externalUnit;
 
-            // Reset lot code when supplier lot changes (mirrors internal internalLotCode reset)
             if (supplierLot !== prevSupplierLotRef.current) {
                 prevSupplierLotRef.current = supplierLot;
                 setExternalLotCode('');
@@ -420,7 +496,6 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                 return;
             }
 
-            // Lazily generate a unique lot code for this session (same pattern as internal)
             const currentLotCode = externalLotCode || generateLotCode(supplierLot || 'EXT');
             if (!externalLotCode) setExternalLotCode(currentLotCode);
             const batchCode = currentLotCode;
@@ -432,7 +507,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
 
             const dosesCount = Math.floor(totalVolume / doseSize);
             const remainder = totalVolume % doseSize;
-            const semenRatio = totalVolume > 0 ? semenTotal / totalVolume : 0;
+            const semenRatio = totalVolume > 0 ? semenTotal / totalVolume : 1;
             const diluentRatio = totalVolume > 0 ? diluentTotal / totalVolume : 0;
 
             const dosesArray = Array.from({ length: dosesCount }, (_, i) => ({
@@ -459,7 +534,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
             formik.setFieldValue('total_doses', dosesArray.length);
             formik.setFieldValue('available_doses', dosesArray.length);
         }
-    }, [formik.values.extraction_id, formik.values.diluent.volume, formik.values.supplier?.lot, extractions, doseSize, origin, externalSemenVolume, externalUnit, externalLotCode, internalLotCode]);
+    }, [formik.values.extraction_id, formik.values.supplier?.lot, formik.values.lab_supplies, extractions, doseSize, origin, externalSemenVolume, externalUnit, externalLotCode, internalLotCode]);
 
     return (
         <>
@@ -684,7 +759,7 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                                             type="select"
                                                             id="external_unit"
                                                             value={externalUnit}
-                                                            onChange={(e) => handleExternalUnitChange(e.target.value)}
+                                                            onChange={(e) => setExternalUnit(e.target.value)}
                                                             style={{ maxWidth: '80px' }}
                                                         >
                                                             <option value="ml">ml</option>
@@ -894,71 +969,149 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                             </div>
                         </div>
 
-                        {/* Sección 3: Dilución y Conservación */}
-                        <div className="card shadow-sm border-0 rounded-3 mb-4">
-                            <div className="card-header bg-light">
+                        {/* Sección 3: Insumos de Laboratorio — solo para origen interno */}
+                        {origin === 'internal' && <div className="card shadow-sm border-0 rounded-3 mb-4">
+                            <div className="card-header bg-light d-flex justify-content-between align-items-center">
                                 <h6 className="mb-0 text-info fw-bold">
                                     <i className="ri-flask-line me-2 text-info"></i>
-                                    {t('laboratory.sample.form.section.dilution', { defaultValue: 'Dilución y Conservación' })}
+                                    {t('laboratory.sample.form.section.labSupplies', { defaultValue: 'Insumos de Laboratorio' })}
+                                </h6>
+                                <Button size="sm" color="info" outline onClick={addLabSupply} disabled={labProducts.length === 0}>
+                                    <i className="ri-add-line me-1"></i>
+                                    {t('laboratory.sample.form.labSupplies.add', { defaultValue: 'Agregar insumo' })}
+                                </Button>
+                            </div>
+                            <div className="card-body">
+                                {labProducts.length === 0 ? (
+                                    <div className="text-center text-muted py-3">
+                                        <i className="ri-archive-line fs-3 d-block mb-2"></i>
+                                        {t('laboratory.sample.form.labSupplies.empty', { defaultValue: 'No hay insumos de laboratorio disponibles en el almacén. Registre productos con categoría "Laboratorio" primero.' })}
+                                    </div>
+                                ) : formik.values.lab_supplies.length === 0 ? (
+                                    <p className="text-center text-muted mb-0">
+                                        {t('laboratory.sample.form.labSupplies.none', { defaultValue: 'Presione "+ Agregar insumo" para añadir los materiales utilizados.' })}
+                                    </p>
+                                ) : (
+                                    <div className="table-responsive">
+                                        <table className="table table-sm align-middle mb-0">
+                                            <thead className="table-light">
+                                                <tr>
+                                                    <th>{t('laboratory.sample.form.labSupplies.col.product', { defaultValue: 'Producto' })}</th>
+                                                    <th style={{ width: '130px' }}>{t('laboratory.sample.form.labSupplies.col.quantity', { defaultValue: 'Cantidad' })}</th>
+                                                    <th style={{ width: '130px' }}>{t('laboratory.sample.form.labSupplies.col.unitPrice', { defaultValue: 'Precio unit.' })}</th>
+                                                    <th style={{ width: '110px' }}>{t('laboratory.sample.form.labSupplies.col.subtotal', { defaultValue: 'Subtotal' })}</th>
+                                                    <th style={{ width: '48px' }}></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {formik.values.lab_supplies.map((supply, index) => (
+                                                    <tr key={index}>
+                                                        <td>
+                                                            <Input
+                                                                type="select"
+                                                                bsSize="sm"
+                                                                value={supply.product_id}
+                                                                onChange={(e) => selectLabSupplyProduct(index, e.target.value)}
+                                                            >
+                                                                <option value="">{t('laboratory.sample.form.labSupplies.selectProduct', { defaultValue: 'Seleccionar...' })}</option>
+                                                                {labProducts.map(p => (
+                                                                    <option key={p.id} value={p.id}>{p.code} — {p.name} ({p.quantity} {p.unit_measurement})</option>
+                                                                ))}
+                                                            </Input>
+                                                        </td>
+                                                        <td>
+                                                            <div className="input-group input-group-sm">
+                                                                <Input
+                                                                    type="number"
+                                                                    bsSize="sm"
+                                                                    value={supply.quantity}
+                                                                    min={0}
+                                                                    onFocus={(e) => e.target.select()}
+                                                                    onChange={(e) => updateLabSupply(index, 'quantity', Number(e.target.value))}
+                                                                />
+                                                                {supply.unit_measurement && (
+                                                                    <span className="input-group-text">{supply.unit_measurement}</span>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div className="input-group input-group-sm">
+                                                                <span className="input-group-text">$</span>
+                                                                <Input
+                                                                    type="number"
+                                                                    bsSize="sm"
+                                                                    value={supply.unit_price}
+                                                                    min={0}
+                                                                    step={0.01}
+                                                                    onFocus={(e) => e.target.select()}
+                                                                    onChange={(e) => updateLabSupply(index, 'unit_price', parseFloat(e.target.value))}
+                                                                />
+                                                            </div>
+                                                        </td>
+                                                        <td className="fw-semibold text-success">
+                                                            ${((supply.quantity || 0) * (supply.unit_price || 0)).toFixed(2)}
+                                                        </td>
+                                                        <td>
+                                                            <Button size="sm" color="danger" outline onClick={() => removeLabSupply(index)}>
+                                                                <i className="ri-delete-bin-line"></i>
+                                                            </Button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                                {(formik.touched.lab_supplies as any) && (formik.errors.lab_supplies as any) && (
+                                    <div className="text-danger small mt-2">{formik.errors.lab_supplies as string}</div>
+                                )}
+                                {formik.values.lab_supplies.length > 0 && (
+                                    <div className="mt-3 p-2 bg-light rounded d-flex justify-content-between align-items-center">
+                                        <span className="text-muted fw-semibold">{t('laboratory.sample.form.labSupplies.estimatedCost', { defaultValue: 'Costo estimado:' })}</span>
+                                        <span className="fw-bold text-success fs-5">${estimatedCost.toFixed(2)}</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>}
+
+                        {/* Sección 4: Conservación */}
+                        <div className="card shadow-sm border-0 rounded-3 mb-4">
+                            <div className="card-header bg-light">
+                                <h6 className="mb-0 text-secondary fw-bold">
+                                    <i className="ri-temp-cold-line me-2 text-secondary"></i>
+                                    {t('laboratory.sample.form.section.conservation', { defaultValue: 'Conservación' })}
                                 </h6>
                             </div>
                             <div className="card-body">
                                 <div className="row g-3">
-                                    <div className="col-md-4">
-                                        <Label htmlFor="diluent_type" className="form-label">{t('laboratory.sample.form.field.diluentType', { defaultValue: 'Tipo de diluyente' })}</Label>
-                                        <Input
-                                            type="text"
-                                            id="diluent_type"
-                                            name="diluent.type"
-                                            value={formik.values.diluent.type}
-                                            onChange={formik.handleChange}
-                                            onBlur={formik.handleBlur}
-                                            invalid={formik.touched.diluent?.type && !!formik.errors.diluent?.type}
-                                            placeholder="Ej: Extender X"
-                                        />
-                                        {formik.touched.diluent?.type && formik.errors.diluent?.type && (
-                                            <FormFeedback>{formik.errors.diluent.type}</FormFeedback>
-                                        )}
-                                    </div>
-
-                                    <div className="col-md-4">
-                                        <Label htmlFor="diluent_lot" className="form-label">{t('laboratory.sample.form.field.diluentLot', { defaultValue: 'Lote de diluyente' })}</Label>
-                                        <Input
-                                            type="text"
-                                            id="diluent_lot"
-                                            name="diluent.lot"
-                                            value={formik.values.diluent.lot}
-                                            onChange={formik.handleChange}
-                                            onBlur={formik.handleBlur}
-                                            invalid={formik.touched.diluent?.lot && !!formik.errors.diluent?.lot}
-                                            placeholder="Ej: D-001"
-                                        />
-                                        {formik.touched.diluent?.lot && formik.errors.diluent?.lot && (
-                                            <FormFeedback>{formik.errors.diluent.lot}</FormFeedback>
-                                        )}
-                                    </div>
-
-                                    <div className="col-md-4">
-                                        <Label htmlFor="diluent_final_volume" className="form-label">
-                                            {t('laboratory.sample.form.field.diluentVolume', { defaultValue: 'Volumen de diluyente' })}
-                                            {' '}({origin === 'internal' ? selectedExtraction?.unit_measurement : externalUnit})
-                                        </Label>
-                                        <Input
-                                            type="number"
-                                            id="diluent_final_concentration"
-                                            name="diluent.volume"
-                                            value={formik.values.diluent.volume}
-                                            onChange={formik.handleChange}
-                                            onBlur={formik.handleBlur}
-                                            onFocus={(e) => e.target.select()}
-                                            invalid={formik.touched.diluent?.volume && !!formik.errors.diluent?.volume}
-                                            placeholder="Ej: 1.5"
-                                        />
-                                        {formik.touched.diluent?.volume && formik.errors.diluent?.volume && (
-                                            <FormFeedback>{formik.errors.diluent.volume}</FormFeedback>
-                                        )}
-                                    </div>
-
+                                    {origin === 'internal' && (
+                                        <div className="col-md-12">
+                                            <Label htmlFor="semen_product_id" className="form-label">
+                                                {t('laboratory.sample.form.field.semenProduct', { defaultValue: 'Producto de semen en inventario' })}
+                                                <small className="text-muted ms-2">{t('laboratory.sample.form.field.semenProductHint', { defaultValue: '(Las dosis producidas se sumarán a este producto)' })}</small>
+                                            </Label>
+                                            {semenCatalogProducts.length === 0 ? (
+                                                <div className="alert alert-warning py-2 mb-0">
+                                                    <i className="ri-alert-line me-2"></i>
+                                                    {t('laboratory.sample.form.labSupplies.noSemenProduct', { defaultValue: 'No hay productos de categoría "Laboratorio" en el catálogo. Cree uno primero para registrar el inventario de semen.' })}
+                                                </div>
+                                            ) : (
+                                                <Input
+                                                    type="select"
+                                                    id="semen_product_id"
+                                                    name="semen_product_id"
+                                                    value={formik.values.semen_product_id ?? ''}
+                                                    onChange={formik.handleChange}
+                                                    onBlur={formik.handleBlur}
+                                                >
+                                                    <option value="">{t('laboratory.sample.form.field.semenProductNone', { defaultValue: 'Sin registro en inventario (opcional)' })}</option>
+                                                    {semenCatalogProducts.map(p => (
+                                                        <option key={p._id ?? p.id} value={p._id ?? p.id}>{p.name} ({p.unit_measurement})</option>
+                                                    ))}
+                                                </Input>
+                                            )}
+                                        </div>
+                                    )}
                                     <div className="col-md-6">
                                         <Label htmlFor="conservation_method" className="form-label">{t('laboratory.sample.form.field.conservationMethod', { defaultValue: 'Método de conservación' })}</Label>
                                         <Input
@@ -1203,26 +1356,28 @@ const SemenSampleForm: React.FC<SemenSampleFormProps> = ({ initialData, preselec
                                         </div>
                                     </div>
 
-                                    {/* Dilución y conservación - Compacto */}
+                                    {/* Insumos y Conservación - Compacto */}
                                     <div className="col-lg-4">
                                         <div className="border rounded-2 p-3 bg-light h-100 d-flex flex-column">
                                             <h6 className="text-info fw-bold mb-3">
-                                                <i className="ri-flask-line me-2"></i>{t('laboratory.sample.form.summary.dilutionConservation', { defaultValue: 'Dilución & Conservación' })}
+                                                <i className="ri-flask-line me-2"></i>{t('laboratory.sample.form.summary.labSupplies', { defaultValue: 'Insumos & Conservación' })}
                                             </h6>
                                             <div className="flex-grow-1">
-                                                <div className="d-flex justify-content-between mb-2">
-                                                    <span className="text-muted">{t('laboratory.sample.form.summary.diluent', { defaultValue: 'Diluyente:' })}</span>
-                                                    <span className="fw-semibold">{formik.values.diluent.type}</span>
+                                                {formik.values.lab_supplies.length === 0 ? (
+                                                    <p className="text-muted small">{t('laboratory.sample.form.summary.noSupplies', { defaultValue: 'Sin insumos seleccionados' })}</p>
+                                                ) : (
+                                                    formik.values.lab_supplies.map((s, i) => (
+                                                        <div key={i} className="d-flex justify-content-between mb-1">
+                                                            <span className="text-muted small">{s.product_name || '—'}</span>
+                                                            <span className="fw-semibold small">{s.quantity} {s.unit_measurement}</span>
+                                                        </div>
+                                                    ))
+                                                )}
+                                                <div className="d-flex justify-content-between mt-2 pt-2 border-top">
+                                                    <span className="text-muted fw-semibold">{t('laboratory.sample.form.summary.estimatedCost', { defaultValue: 'Costo estimado:' })}</span>
+                                                    <span className="fw-bold text-success">${estimatedCost.toFixed(2)}</span>
                                                 </div>
-                                                <div className="d-flex justify-content-between mb-2">
-                                                    <span className="text-muted">{t('laboratory.sample.form.summary.lot', { defaultValue: 'Lote:' })}</span>
-                                                    <span>{formik.values.diluent.lot}</span>
-                                                </div>
-                                                <div className="d-flex justify-content-between mb-2">
-                                                    <span className="text-muted">{t('laboratory.sample.form.summary.diluentVolume', { defaultValue: 'Vol. Diluyente:' })}</span>
-                                                    <span className="fw-semibold">{formik.values.diluent.volume} {origin === 'internal' ? selectedExtraction?.unit_measurement : externalUnit}</span>
-                                                </div>
-                                                <div className="d-flex justify-content-between mb-2">
+                                                <div className="d-flex justify-content-between mb-2 mt-2">
                                                     <span className="text-muted">{t('laboratory.sample.form.summary.method', { defaultValue: 'Método:' })}</span>
                                                     <span>{formik.values.conservation_method}</span>
                                                 </div>

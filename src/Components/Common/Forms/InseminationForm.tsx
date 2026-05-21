@@ -746,7 +746,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                                     <div className="card-body p-0 d-flex flex-column flex-grow-1">
                                         <ul className="list-group list-group-flush flex-grow-1">
                                             <li className="list-group-item d-flex justify-content-between">
-                                                <strong>{t('insemination.form.sampleDiluent', { defaultValue: 'Diluyente:' })}</strong> <span className="text-black">{extractionData.sample.diluent.type} (Lote {extractionData.sample.diluent.lot})</span>
+                                                <strong>{t('insemination.form.sampleDiluent', { defaultValue: 'Insumos:' })}</strong> <span className="text-black">{extractionData.sample.lab_supplies?.map((s: any) => s.product_name).join(', ') || '-'}</span>
                                             </li>
                                             <li className="list-group-item d-flex justify-content-between">
                                                 <strong>{t('insemination.form.sampleConcentration', { defaultValue: 'Concentración (millones):' })}</strong> <span className="text-black">{extractionData.sample.concentration_million}</span>

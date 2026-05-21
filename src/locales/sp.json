@@ -1142,7 +1142,8 @@
       "spare": "Refacciones y repuestos",
       "office": "Material de oficina",
       "other": "Otros",
-      "vaccines": "Vacunas"
+      "vaccines": "Vacunas",
+      "laboratory": "Laboratorio"
     },
     "package": {
       "pageTitle": "Ver recetas de alimentación",
@@ -4290,6 +4291,8 @@
           "doseConfig": "Configuración de Dosis",
           "semenAnalysis": "Análisis de Semen",
           "dilution": "Dilución y Conservación",
+          "labSupplies": "Insumos de Laboratorio",
+          "conservation": "Conservación",
           "supplier": "Datos del Proveedor"
         },
         "field": {
@@ -4306,6 +4309,10 @@
           "diluentType": "Tipo de diluyente",
           "diluentLot": "Lote de diluyente",
           "diluentVolume": "Volumen de diluyente",
+          "labSuppliesSelect": "Seleccionar insumos de laboratorio",
+          "semenProduct": "Producto de semen en inventario",
+          "semenProductHint": "(Las dosis producidas se sumarán a este producto)",
+          "semenProductNone": "Sin registro en inventario (opcional)",
           "conservationMethod": "Método de conservación",
           "postDilutionMotility": "Motilidad post-dilución (%)",
           "originLabel": "Origen de la muestra",
@@ -4332,6 +4339,10 @@
           "extractionData": "Datos Extracción",
           "semenAnalysis": "Análisis Semen",
           "dilutionConservation": "Dilución & Conservación",
+          "labSupplies": "Insumos & Conservación",
+          "noSupplies": "Sin insumos seleccionados",
+          "productionCost": "Costo:",
+          "estimatedCost": "Costo estimado:",
           "generatedDoses": "Dosis Generadas",
           "noExtraction": "No seleccionada",
           "noDoses": "No se han generado dosis",
@@ -4376,7 +4387,11 @@
           "conservationMethod": "Por favor, ingrese el método de conservación",
           "expirationDate": "La fecha de expiración no puede ser pasada",
           "expirationDateRequired": "Por favor, ingrese la fecha de expiración",
-          "alertHours": "Por favor, ingrese un numero"
+          "alertHours": "Por favor, ingrese un numero",
+          "labSuppliesRequired": "Seleccione al menos un insumo de laboratorio",
+          "insufficientStock": "Stock insuficiente",
+          "stockRequired": "requerido",
+          "stockAvailable": "disponible"
         },
         "alert": {
           "selectExtraction": "Por favor, seleccione una extracción",
@@ -4392,6 +4407,24 @@
         },
         "success": "Muestra registrada con éxito",
         "error": "Error al registrar la muestra. Por favor, inténtelo nuevamente.",
+        "fetchError": {
+          "fetchWarehouse": "Error al obtener el almacén principal",
+          "fetchLabProducts": "Error al obtener los insumos de laboratorio"
+        },
+        "labSupplies": {
+          "add": "Agregar insumo",
+          "empty": "No hay insumos de laboratorio disponibles en el almacén. Registre productos con categoría \"Laboratorio\" primero.",
+          "none": "Presione \"+ Agregar insumo\" para añadir los materiales utilizados.",
+          "selectProduct": "Seleccionar...",
+          "estimatedCost": "Costo estimado:",
+          "noSemenProduct": "No hay productos de categoría \"Laboratorio\" en el catálogo. Cree uno primero para registrar el inventario de semen.",
+          "col": {
+            "product": "Producto",
+            "quantity": "Cantidad",
+            "unitPrice": "Precio unit.",
+            "subtotal": "Subtotal"
+          }
+        },
         "modal": {
           "extractionDetails": "Detalles de la extracción"
         },
@@ -6229,7 +6262,8 @@
         "equipment_tools": "Equipamiento y herramientas",
         "spare_parts": "Refacciones y repuestos",
         "office_supplies": "Material de oficina",
-        "others": "Otros"
+        "others": "Otros",
+        "laboratory": "Laboratorio"
       },
       "productType": {
         "raw": "Materia prima",
