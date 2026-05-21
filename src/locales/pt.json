@@ -310,6 +310,7 @@
       "minWeight": "Peso mínimo",
       "maxWeight": "Peso máximo",
       "stageDistribution": "Distribuição por fase",
+      "sexDistribution": "Distribuição por sexo",
       "avgWeightByStage": "Peso médio por fase",
       "inventoryOverTime": "Evolução do plantel",
       "noDiscarded": "Nenhum animal refugado",
@@ -349,7 +350,9 @@
       "observations": "Observações",
       "originBornOnFarm": "Nascido na granja",
       "name": "Nome",
-      "location": "Localização"
+      "location": "Localização",
+      "earTag": "Número do brinco",
+      "earTagPlaceholder": "Ex: A-1234"
     },
     "section": {
       "basicInfo": "Dados gerais",
@@ -566,6 +569,7 @@
       "summary": {
         "discardData": "Dados do descarte",
         "piglets": "Leitões para descartar",
+        "motherData": "Dados da mãe",
         "reason": "Razão",
         "date": "Data",
         "observations": "Observações",
@@ -2261,8 +2265,30 @@
           "pigSelection": "Seleção de suínos",
           "pigWeight": "Peso dos suínos",
           "groupIntegration": "Integração ao lote de reposição",
-          "summary": "Resumo"
-        }
+          "summary": "Resumo",
+          "earTag": "Brinco"
+        },
+        "earTagTitle": "Registro de brincos",
+        "earTagHint": "Atribua o número do brinco de cada suíno destinado à reposição reprodutiva. Este campo é opcional.",
+        "pigLabel": "Suíno",
+        "back": "Voltar",
+        "next": "Próximo",
+        "selectPigsHint": "Selecione os suínos destinados à reposição reprodutiva.",
+        "weightHint": "Atualize o peso dos suínos selecionados para reposição.",
+        "totalWeight": "Peso total do lote (kg)",
+        "avgWeightPerPig": "Peso médio por suíno:",
+        "totalPigs": "Total de suínos:",
+        "totalRecords": "Total de registros",
+        "currentWeight": "Atual",
+        "summaryTitle": "Resumo da reposição",
+        "pigDetails": "Detalhes dos suínos:",
+        "process": "Processar reposição",
+        "confirm": "Confirmar",
+        "confirmTitle": "Deseja processar a reposição deste grupo?",
+        "confirmBody": "Ao confirmar, os suínos serão movidos para a etapa Reprodutor e retirados do grupo.",
+        "confirmWarning": "Certifique-se de que todas as informações estão corretas antes de continuar.",
+        "successMsg": "Reposição processada com sucesso",
+        "withdrawReason": "Suínos de reposição"
       }
     },
     "validation": {
@@ -2690,6 +2716,7 @@
       "mother": "Mãe",
       "males": "Machos",
       "females": "Fêmeas",
+      "total": "Total leitões",
       "avgWeight": "Peso médio",
       "totalWeight": "Peso total",
       "status": "Status",
@@ -3734,9 +3761,16 @@
         "LABOR": "Mão de obra",
         "UTILITY": "Serviços",
         "MAINTENANCE": "Manutenção",
+        "REPAIR": "Reparos",
         "TRANSPORT": "Transporte",
         "LIVESTOCK_PURCHASE": "Compra de animais",
         "VETERINARY": "Veterinária",
+        "PAYROLL": "Folha de Pagamento",
+        "INSURANCE": "Seguros",
+        "TAXES_FEES": "Impostos e Taxas",
+        "ADMINISTRATIVE": "Despesas Administrativas",
+        "FUEL": "Combustível",
+        "INFRASTRUCTURE": "Infraestrutura e Obras",
         "OTHER": "Outro"
       },
       "action": {

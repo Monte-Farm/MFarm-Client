@@ -67,6 +67,7 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
         sex: Yup.string().oneOf(["male", "female"]).required(t('pigs.field.sex')),
         weight: Yup.number().typeError(t('common.field.weight')).min(0.01).required(t('common.field.weight')),
         observations: Yup.string().optional(),
+        earTag: Yup.string().when('currentStage', { is: 'breeder', then: schema => schema.required(t('pigs.field.earTag')), otherwise: schema => schema.notRequired() }),
     });
 
     const isBatchInfoComplete = () => {
@@ -100,7 +101,7 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                 origin: sharedBatchAttributes.origin, originDetail: sharedBatchAttributes.originDetail,
                 sourceFarm: sharedBatchAttributes.sourceFarm, arrivalDate: sharedBatchAttributes.arrivalDate,
                 purchasePrice: sharedBatchAttributes.origin === 'purchased' ? sharedBatchAttributes.purchasePrice : undefined,
-                status: 'alive', currentStage: '', sex: '', weight: 0, observations: '',
+                status: 'alive', currentStage: '', sex: '', weight: 0, observations: '', earTag: '',
                 historyChanges: [], feedings: [], discarded: false, medications: [],
                 medicationPackagesHistory: [], vaccinationPlansHistory: [], sicknessHistory: [],
                 reproduction: [], registered_by: userLogged._id, registration_date: new Date(), feedAdministrationHistory: [],
@@ -162,6 +163,7 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                                     <Label className="form-label fw-semibold">{t('pigs.field.origin')}</Label>
                                     <Input type="select" value={sharedBatchAttributes.origin} onChange={(e) => setSharedBatchAttributes(p => ({ ...p, origin: e.target.value as any }))}>
                                         <option value="">{t('form.pig.placeholder.selectOption')}</option>
+                                        <option value="born">{t('pigs.origin.born')}</option>
                                         <option value="purchased">{t('pigs.origin.purchased')}</option>
                                         <option value="donated">{t('pigs.origin.donated')}</option>
                                         <option value="other">{t('pigs.origin.other')}</option>
@@ -172,19 +174,17 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                     </div>
 
                     {/* Datos de origen */}
-                    {sharedBatchAttributes.origin !== '' && (
+                    {sharedBatchAttributes.origin !== '' && sharedBatchAttributes.origin !== 'born' && (
                         <div className="card mb-3 shadow-sm">
                             <div className="card-header fw-semibold" style={{ backgroundColor: bg('#e8f5e9') }}>
                                 <i className="ri-map-pin-line me-2 text-success"></i>{t('form.pig.section.originData')}
                             </div>
                             <div className="card-body">
                                 <div className="d-flex gap-3">
-                                    {sharedBatchAttributes.origin !== 'born' && (
-                                        <div className="w-50">
-                                            <Label className="form-label fw-semibold">{t('pigs.field.arrivalDate')}</Label>
-                                            <DatePicker className="form-control" value={sharedBatchAttributes.arrivalDate ?? undefined} onChange={(value: Date[]) => { if (value[0]) setSharedBatchAttributes(p => ({ ...p, arrivalDate: value[0] })); }} options={{ dateFormat: 'd/m/Y' }} />
-                                        </div>
-                                    )}
+                                    <div className="w-50">
+                                        <Label className="form-label fw-semibold">{t('pigs.field.arrivalDate')}</Label>
+                                        <DatePicker className="form-control" value={sharedBatchAttributes.arrivalDate ?? undefined} onChange={(value: Date[]) => { if (value[0]) setSharedBatchAttributes(p => ({ ...p, arrivalDate: value[0] })); }} options={{ dateFormat: 'd/m/Y' }} />
+                                    </div>
                                     {(sharedBatchAttributes.origin === 'purchased' || sharedBatchAttributes.origin === 'donated') && (
                                         <div className="w-50">
                                             <Label className="form-label fw-semibold">{t('pigs.field.originFarm')}</Label>
@@ -274,6 +274,15 @@ const BatchPigForm: React.FC<BatchPigFormProps> = ({ onSave, onCancel }) => {
                                                     {pigsErrors[index]?.weight && <FormFeedback>{pigsErrors[index]?.weight}</FormFeedback>}
                                                 </div>
                                             </div>
+                                            {pig.currentStage === 'breeder' && (
+                                                <div className="d-flex gap-2 mt-2">
+                                                    <div className="w-50">
+                                                        <Label className="form-label" style={{ fontSize: '12px' }}>{t('pigs.field.earTag')}</Label>
+                                                        <Input type="text" bsSize="sm" className={pigsErrors[index]?.earTag ? "is-invalid" : ""} value={pig.earTag ?? ''} placeholder={t('pigs.field.earTagPlaceholder')} onChange={(e) => { const newPigs = [...pigsBatch]; newPigs[index].earTag = e.target.value; setPigsBatch(newPigs); }} />
+                                                        {pigsErrors[index]?.earTag && <FormFeedback>{pigsErrors[index]?.earTag}</FormFeedback>}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </SimpleBar>

@@ -310,6 +310,7 @@
       "minWeight": "Min. weight",
       "maxWeight": "Max. weight",
       "stageDistribution": "Distribution by stage",
+      "sexDistribution": "Distribution by sex",
       "avgWeightByStage": "Avg. weight by stage",
       "inventoryOverTime": "Inventory over time",
       "noDiscarded": "No culled animals",
@@ -349,7 +350,9 @@
       "observations": "Notes",
       "originBornOnFarm": "Born on farm",
       "name": "Name",
-      "location": "Location"
+      "location": "Location",
+      "earTag": "Ear tag number",
+      "earTagPlaceholder": "e.g. A-1234"
     },
     "section": {
       "basicInfo": "Overview",
@@ -566,6 +569,7 @@
       "summary": {
         "discardData": "Discard data",
         "piglets": "Piglets to discard",
+        "motherData": "Dam information",
         "reason": "Reason",
         "date": "Date",
         "observations": "Observations",
@@ -2261,8 +2265,30 @@
           "pigSelection": "Pig selection",
           "pigWeight": "Pig weights",
           "groupIntegration": "Replacement group integration",
-          "summary": "Summary"
-        }
+          "summary": "Summary",
+          "earTag": "Ear tag"
+        },
+        "earTagTitle": "Ear tag registration",
+        "earTagHint": "Assign the ear tag number for each pig selected for reproductive replacement. This field is optional.",
+        "pigLabel": "Pig",
+        "back": "Back",
+        "next": "Next",
+        "selectPigsHint": "Select the pigs to be assigned as reproductive replacements.",
+        "weightHint": "Update the weight of the selected replacement pigs.",
+        "totalWeight": "Total group weight (kg)",
+        "avgWeightPerPig": "Average weight per pig:",
+        "totalPigs": "Total pigs:",
+        "totalRecords": "Total records",
+        "currentWeight": "Current",
+        "summaryTitle": "Replacement summary",
+        "pigDetails": "Pig details:",
+        "process": "Process replacement",
+        "confirm": "Confirm",
+        "confirmTitle": "Do you want to process the replacement for this group?",
+        "confirmBody": "Upon confirmation, the pigs will be moved to the Breeder stage and withdrawn from the group.",
+        "confirmWarning": "Make sure all information is correct before proceeding.",
+        "successMsg": "Replacement processed successfully",
+        "withdrawReason": "Replacement pigs"
       }
     },
     "validation": {
@@ -2690,6 +2716,7 @@
       "mother": "Dam",
       "males": "Males",
       "females": "Females",
+      "total": "Total piglets",
       "avgWeight": "Avg. weight",
       "totalWeight": "Total weight",
       "status": "Status",
@@ -3734,9 +3761,16 @@
         "LABOR": "Labor",
         "UTILITY": "Utilities",
         "MAINTENANCE": "Maintenance",
+        "REPAIR": "Repairs",
         "TRANSPORT": "Transport",
         "LIVESTOCK_PURCHASE": "Livestock Purchase",
         "VETERINARY": "Veterinary",
+        "PAYROLL": "Payroll & Salaries",
+        "INSURANCE": "Insurance",
+        "TAXES_FEES": "Taxes & Fees",
+        "ADMINISTRATIVE": "Administrative Expenses",
+        "FUEL": "Fuel",
+        "INFRASTRUCTURE": "Infrastructure & Works",
         "OTHER": "Other"
       },
       "action": {

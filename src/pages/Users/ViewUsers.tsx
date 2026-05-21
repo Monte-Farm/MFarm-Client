@@ -31,7 +31,7 @@ const ViewUsers = () => {
     const [selectedUsers, setSelectedUsers] = useState<UserData[]>([]);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [tabletMode, setTabletMode] = useState(isTablet);
-    const [modals, setModals] = useState({ details: false, create: false, update: false, delete: false, bulkDelete: false, bulkActivate: false });
+    const [modals, setModals] = useState({ details: false, create: false, update: false, delete: false, bulkDelete: false, bulkActivate: false, toggleStatus: false });
     const [loading, setLoading] = useState<boolean>(true)
     const navigate = useNavigate();
 
@@ -91,6 +91,14 @@ const ViewUsers = () => {
                         title={t('common.button.viewDetails')}
                     >
                         <i className="ri-eye-fill align-middle"></i>
+                    </Button>
+                    <Button
+                        className="btn-icon"
+                        color={row.status ? 'danger' : 'success'}
+                        onClick={(e) => { e.stopPropagation(); setSelecteduser(row); toggleModal('toggleStatus'); }}
+                        title={row.status ? t('users.button.deactivate') : t('users.button.activate')}
+                    >
+                        <i className={`align-middle ${row.status ? 'ri-forbid-line' : 'ri-check-line'}`}></i>
                     </Button>
                 </div>
             ),
@@ -174,6 +182,25 @@ const ViewUsers = () => {
             setAlertConfig({ visible: true, color: 'danger', message: t('users.error.deactivate') });
         } finally {
             toggleModal('bulkDelete');
+        }
+    };
+
+    const handleToggleUserStatus = async () => {
+        if (!configContext || !selectedUser) return;
+        try {
+            if (selectedUser.status === true) {
+                await configContext.axiosHelper.delete(`${configContext.apiUrl}/user/delete_users`, { data: { userIds: [selectedUser._id] } });
+                setAlertConfig({ visible: true, color: 'success', message: t('users.success.deactivated', { val: 1 }) });
+            } else {
+                await configContext.axiosHelper.put(`${configContext.apiUrl}/user/activate_users`, { userIds: [selectedUser._id] });
+                setAlertConfig({ visible: true, color: 'success', message: t('users.success.activated', { val: 1 }) });
+            }
+            handleFetchUsers();
+        } catch (error) {
+            logger.error('Error toggling user status:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: t('users.error.deactivate') });
+        } finally {
+            toggleModal('toggleStatus', false);
         }
     };
 
@@ -293,6 +320,23 @@ const ViewUsers = () => {
                     <ModalBody>
                         <UserForm initialData={selectedUser} isUsernameDisable={true} onSave={() => { toggleModal('update'); handleFetchUsers(); }} onCancel={() => toggleModal('update', false)} currentUserRole={userLogged.role} />
                     </ModalBody>
+                </Modal>
+
+                {/* Modal Toggle Status */}
+                <Modal isOpen={modals.toggleStatus} toggle={() => toggleModal("toggleStatus")} backdrop='static' keyboard={false} centered>
+                    <ModalHeader toggle={() => toggleModal("toggleStatus")}>
+                        {selectedUser?.status ? t('users.modal.bulkDeactivate.title') : t('users.modal.bulkActivate.title')}
+                    </ModalHeader>
+                    <ModalBody>
+                        {selectedUser?.status
+                            ? t('users.modal.bulkDeactivate.body', { val: 1 })
+                            : t('users.modal.bulkActivate.body', { val: 1 })
+                        }
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button color="secondary" onClick={() => toggleModal("toggleStatus", false)}>{t('common.button.cancel')}</Button>
+                        <Button color={selectedUser?.status ? 'danger' : 'success'} onClick={handleToggleUserStatus}>{t('common.button.confirm')}</Button>
+                    </ModalFooter>
                 </Modal>
 
                 {/* Modal Bulk Deactivate */}

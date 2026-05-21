@@ -116,6 +116,16 @@ const InventoryPigs = () => {
                 </Badge>
             ),
         },
+        {
+            header: t('pigs.field.sex'),
+            accessor: 'sex',
+            render: (value: string) => (
+                <Badge color={value === 'male' ? 'primary' : 'danger'}>
+                    <i className={`me-1 ${value === 'male' ? 'ri-men-fill' : 'ri-women-fill'}`} />
+                    {t(`pigs.sex.${value}Short`, { defaultValue: value })}
+                </Badge>
+            ),
+        },
         { header: t('pigs.field.currentWeight'), accessor: 'currentWeight', type: 'number' },
     ]
 
@@ -203,6 +213,17 @@ const InventoryPigs = () => {
         ? [{ id: t('menu.pigs'), data: inventoryByDay.map((d: any) => ({ x: d._id, y: d.count })) }]
         : [];
 
+    const maleCount = pigsInventory.filter(p => p.sex === 'male').length;
+    const femaleCount = pigsInventory.filter(p => p.sex === 'female').length;
+    const sexDonutData: DonutDataItem[] = [
+        { id: t('pigs.sex.maleShort'), label: t('pigs.sex.maleShort'), value: maleCount, color: "#3b82f6" },
+        { id: t('pigs.sex.femaleShort'), label: t('pigs.sex.femaleShort'), value: femaleCount, color: "#ec4899" },
+    ];
+    const sexLegendItems: DonutLegendItem[] = [
+        { label: t('pigs.sex.maleShort'), value: maleCount, percentage: `${pigsInventory.length > 0 ? ((maleCount / pigsInventory.length) * 100).toFixed(1) : 0}%` },
+        { label: t('pigs.sex.femaleShort'), value: femaleCount, percentage: `${pigsInventory.length > 0 ? ((femaleCount / pigsInventory.length) * 100).toFixed(1) : 0}%` },
+    ];
+
     return (
         <div className="page-content">
             <Container fluid>
@@ -226,10 +247,13 @@ const InventoryPigs = () => {
                 </Row>
 
                 <Row className="g-3 mb-3" style={{ minHeight: "420px" }}>
-                    <Col xs={12} lg={4} className="d-flex">
+                    <Col xs={12} lg={3} className="d-flex">
                         <DonutChartCard title={t('pigs.page.stageDistribution')} data={stageDonutData} legendItems={stageLegendItems} height={260} className="w-100" />
                     </Col>
-                    <Col xs={12} lg={4} className="d-flex">
+                    <Col xs={12} lg={3} className="d-flex">
+                        <DonutChartCard title={t('pigs.page.sexDistribution')} data={sexDonutData} legendItems={sexLegendItems} height={260} className="w-100" />
+                    </Col>
+                    <Col xs={12} lg={3} className="d-flex">
                         <BasicBarChart
                             title={t('pigs.page.avgWeightByStage')}
                             data={weightBarData}
@@ -244,7 +268,7 @@ const InventoryPigs = () => {
                             }}
                         />
                     </Col>
-                    <Col xs={12} lg={4} className="d-flex">
+                    <Col xs={12} lg={3} className="d-flex">
                         <BasicLineChartCard
                             title={t('pigs.page.inventoryOverTime')}
                             data={lineChartData}

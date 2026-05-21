@@ -275,6 +275,12 @@ const PigDetails = () => {
                                                         <dd className="col-7 text-dark py-2 border-bottom mb-0">{info.basicInfo.ageLabel}</dd>
                                                         <dt className="col-5 text-muted small fw-medium py-2 border-bottom">{t('common.field.weight')}</dt>
                                                         <dd className="col-7 text-dark py-2 border-bottom mb-0">{info.basicInfo.weight} kg</dd>
+                                                        {info.basicInfo.currentStage === 'breeder' && (
+                                                            <>
+                                                                <dt className="col-5 text-muted small fw-medium py-2 border-bottom">{t('pigs.field.earTag')}</dt>
+                                                                <dd className="col-7 text-dark py-2 border-bottom mb-0">{pigInfo?.earTag || '—'}</dd>
+                                                            </>
+                                                        )}
                                                         <dt className="col-12 text-muted small fw-medium pt-3">{t('pigs.field.observations')}</dt>
                                                         <dd className="col-12 text-dark pt-2 mb-0 small" style={{ lineHeight: 1.6 }}>{info.basicInfo.observations || '—'}</dd>
                                                     </dl>

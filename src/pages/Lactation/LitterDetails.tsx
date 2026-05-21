@@ -338,6 +338,7 @@ const LitterDetails = () => {
                     <DiscardPigletsForm
                         litterId={litter_id ?? ''}
                         piglets={litterDetails?.piglets ?? []}
+                        mother={litterDetails?.mother}
                         onSave={() => { toggleModal('discardPiglets'); fetchData(); }}
                     />
                 </ModalBody>

@@ -16,10 +16,11 @@ import { useTranslation } from "react-i18next";
 interface DiscardPigletsFormProps {
     litterId: string;
     piglets: any[];
+    mother?: { code?: string; breed?: string; birthdate?: string };
     onSave: () => void;
 }
 
-const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, piglets, onSave }) => {
+const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, piglets, mother, onSave }) => {
     const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
 
@@ -295,6 +296,31 @@ const DiscardPigletsForm: React.FC<DiscardPigletsFormProps> = ({ litterId, pigle
                             <div className="small">{t('pigs.discardPiglets.summary.confirmWarning')}</div>
                         </div>
                     </div>
+
+                    {mother && (
+                        <Card className="mb-4">
+                            <CardHeader className="d-flex align-items-center bg-light fs-5">
+                                <i className="ri-heart-line me-2 text-success"></i>
+                                <span className="text-black">{t('pigs.discardPiglets.summary.motherData')}</span>
+                            </CardHeader>
+                            <CardBody>
+                                <div className="d-flex gap-4">
+                                    <div>
+                                        <span className="text-muted d-block small">{t('litter.motherAttr.code')}</span>
+                                        <span className="fw-semibold">{mother.code ?? '-'}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-muted d-block small">{t('litter.motherAttr.breed')}</span>
+                                        <span className="fw-semibold">{mother.breed ?? '-'}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-muted d-block small">{t('litter.motherAttr.birthdate')}</span>
+                                        <span className="fw-semibold">{mother.birthdate ? new Date(mother.birthdate).toLocaleDateString() : '-'}</span>
+                                    </div>
+                                </div>
+                            </CardBody>
+                        </Card>
+                    )}
 
                     <div className="d-flex gap-3 align-items-stretch">
                         {/* Columna izquierda — Datos del descarte */}

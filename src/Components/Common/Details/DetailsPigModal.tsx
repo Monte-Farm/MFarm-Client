@@ -108,6 +108,12 @@ const PigDetailsModal: React.FC<PigDetailsModalProps> = ({ pigId, showAllDetails
                             <label className="form-label text-muted mb-1 fs-5">{t('pigs.field.currentWeight')} (kg)</label>
                             <p className="mb-0 fs-5">{renderValue(pigDetails.weight)}</p>
                         </Col>
+                        {pigDetails.currentStage === 'breeder' && (
+                            <Col md={6}>
+                                <label className="form-label text-muted mb-1 fs-5">{t('pigs.field.earTag')}</label>
+                                <p className="mb-0 fs-5">{renderValue(pigDetails.earTag)}</p>
+                            </Col>
+                        )}
                         <Col md={6}>
                             <label className="form-label text-muted mb-1 fs-5">{t('pigs.field.origin')}</label>
                             <p className="mb-0 fs-5">{t(`pigs.origin.${pigDetails.origin}`, { defaultValue: pigDetails.origin })}</p>

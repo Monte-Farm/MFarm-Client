@@ -244,6 +244,7 @@ export interface PigData {
     status: 'alive' | 'sold' | 'slaughtered' | 'dead' | 'discarded';
     currentStage: 'piglet' | 'weaning' | 'fattening' | 'breeder' | '';
     sex: 'male' | 'female' | '';
+    earTag?: string;
     weight: number | '';
     observations?: string;
     discard?: {

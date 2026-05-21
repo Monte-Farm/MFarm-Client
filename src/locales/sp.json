@@ -310,6 +310,7 @@
       "minWeight": "Peso mínimo",
       "maxWeight": "Peso máximo",
       "stageDistribution": "Distribución por etapa",
+      "sexDistribution": "Distribución por sexo",
       "avgWeightByStage": "Peso promedio por etapa",
       "inventoryOverTime": "Inventario en el tiempo",
       "noDiscarded": "No hay cerdos descartados",
@@ -349,7 +350,9 @@
       "observations": "Observaciones",
       "originBornOnFarm": "Nacido en la granja",
       "name": "Nombre",
-      "location": "Ubicación"
+      "location": "Ubicación",
+      "earTag": "Número de arete",
+      "earTagPlaceholder": "Ej: A-1234"
     },
     "section": {
       "basicInfo": "Información general",
@@ -566,6 +569,7 @@
       "summary": {
         "discardData": "Datos del descarte",
         "piglets": "Lechones a descartar",
+        "motherData": "Datos de la madre",
         "reason": "Razón",
         "date": "Fecha",
         "observations": "Observaciones",
@@ -2261,8 +2265,30 @@
           "pigSelection": "Selección de cerdos",
           "pigWeight": "Peso de cerdos",
           "groupIntegration": "Integración a grupo de reemplazo",
-          "summary": "Resumen"
-        }
+          "summary": "Resumen",
+          "earTag": "Número de arete"
+        },
+        "earTagTitle": "Registro de aretes",
+        "earTagHint": "Asigna el número de arete de cada cerdo destinado a reemplazo reproductivo. Este campo es opcional.",
+        "pigLabel": "Cerdo",
+        "back": "Atrás",
+        "next": "Siguiente",
+        "selectPigsHint": "Selecciona los cerdos que serán destinados a reemplazo reproductivo.",
+        "weightHint": "Actualiza el pesaje de los cerdos seleccionados para reemplazo.",
+        "totalWeight": "Peso total del grupo (kg)",
+        "avgWeightPerPig": "Peso promedio por cerdo:",
+        "totalPigs": "Total de cerdos:",
+        "totalRecords": "Total registros",
+        "currentWeight": "Actual",
+        "summaryTitle": "Resumen del reemplazo",
+        "pigDetails": "Detalles de cerdos:",
+        "process": "Procesar reemplazo",
+        "confirm": "Confirmar",
+        "confirmTitle": "¿Deseas procesar el reemplazo de este grupo?",
+        "confirmBody": "Al confirmar, los cerdos cambiarán de etapa a Reproductor y serán retirados del grupo.",
+        "confirmWarning": "Asegúrate de que toda la información esté correcta antes de continuar.",
+        "successMsg": "Reemplazo procesado con éxito",
+        "withdrawReason": "Cerdos de reemplazo"
       }
     },
     "validation": {
@@ -2690,6 +2716,7 @@
       "mother": "Madre",
       "males": "Machos",
       "females": "Hembras",
+      "total": "Total lechones",
       "avgWeight": "Peso promedio",
       "totalWeight": "Peso total",
       "status": "Estado",
@@ -3734,9 +3761,16 @@
         "LABOR": "Mano de obra",
         "UTILITY": "Servicios",
         "MAINTENANCE": "Mantenimiento",
+        "REPAIR": "Reparaciones",
         "TRANSPORT": "Transporte",
         "LIVESTOCK_PURCHASE": "Compra de animales",
         "VETERINARY": "Veterinaria",
+        "PAYROLL": "Nómina y salarios",
+        "INSURANCE": "Seguros",
+        "TAXES_FEES": "Impuestos y tasas",
+        "ADMINISTRATIVE": "Gastos administrativos",
+        "FUEL": "Combustible",
+        "INFRASTRUCTURE": "Infraestructura y obras",
         "OTHER": "Otro"
       },
       "action": {

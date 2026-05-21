@@ -62,6 +62,7 @@ import ViewFinishingGroups from "pages/Groups/ViewFinishingGroups";
 import ViewBoars from "pages/Replacement/ViewBoars";
 import ViewExitGroups from "pages/Groups/ViewExitGroups";
 import ViewSowsGroups from "pages/Groups/ViewSowsGroups";
+import ViewSows from "pages/Replacement/ViewSows";
 import ViewSaleGroups from "pages/Groups/ViewSaleGroups";
 import ViewSoldGroups from "pages/Groups/ViewSoldGroups";
 import ViewPigSales from "pages/Sales/ViewPigSales";
@@ -209,7 +210,7 @@ const authProtectedRoutes = [
   { path: '/lactation/litter_details/:litter_id', component: <LitterDetails /> },
 
   //Replacement
-  { path: '/replacement/view_sows', component: <ViewSowsGroups /> },
+  { path: '/replacement/view_sows', component: <ViewSows /> },
   { path: '/replacement/view_boars', component: <ViewBoars /> },
 
   //Sale

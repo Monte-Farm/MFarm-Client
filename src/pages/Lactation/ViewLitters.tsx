@@ -92,6 +92,14 @@ const ViewLitters = () => {
             bgColor: "#fce4ec"
         },
         {
+            header: t('litter.column.total'),
+            accessor: 'currentMale',
+            type: 'text',
+            isFilterable: false,
+            bgColor: "#f3e5f5",
+            render: (_, row) => <span>{row.currentMale + row.currentFemale}</span>
+        },
+        {
             header: t('litter.column.avgWeight'),
             accessor: 'averageWeight',
             type: 'text',

@@ -62,13 +62,14 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
         sex: Yup.mixed<'male' | 'female'>().oneOf(['male', 'female']).required(t('pigs.field.sex')),
         weight: Yup.number().min(1).max(300).required(t('common.field.weight')),
         observations: Yup.string().notRequired(),
+        earTag: Yup.string().when('currentStage', { is: 'breeder', then: schema => schema.required(t('pigs.field.earTag')), otherwise: schema => schema.notRequired() }),
     });
 
     const formik = useFormik<PigData>({
         initialValues: {
             _id: '', code: '', farmId: '', breed: '', birthdate: null, origin: '', originDetail: '',
             sourceFarm: '', arrivalDate: null, purchasePrice: 0, status: 'alive', currentStage: 'piglet',
-            sex: 'male', weight: 0, observations: '', historyChanges: [], feedings: [], medications: [],
+            sex: 'male', weight: 0, observations: '', earTag: '', historyChanges: [], feedings: [], medications: [],
             medicationPackagesHistory: [], vaccinationPlansHistory: [], sicknessHistory: [], reproduction: [],
             registered_by: userLogged._id, registration_date: null, feedAdministrationHistory: [],
         },
@@ -170,6 +171,15 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
                                         {formik.touched.currentStage && formik.errors.currentStage && <FormFeedback>{formik.errors.currentStage}</FormFeedback>}
                                     </div>
                                 </div>
+                                {formik.values.currentStage === 'breeder' && (
+                                    <div className="d-flex gap-3 mt-3">
+                                        <div className="w-50">
+                                            <Label htmlFor="earTag" className="form-label">{t('pigs.field.earTag')}</Label>
+                                            <Input type="text" id="earTag" name="earTag" value={formik.values.earTag ?? ''} onChange={formik.handleChange} onBlur={formik.handleBlur} invalid={formik.touched.earTag && !!formik.errors.earTag} placeholder={t('pigs.field.earTagPlaceholder')} />
+                                            {formik.touched.earTag && formik.errors.earTag && <FormFeedback>{formik.errors.earTag}</FormFeedback>}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -184,6 +194,7 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
                                         <Label htmlFor="origin" className="form-label">{t('form.pig.field.originType')}</Label>
                                         <Input type="select" id="origin" name="origin" value={formik.values.origin} onChange={formik.handleChange} onBlur={formik.handleBlur} invalid={formik.touched.origin && !!formik.errors.origin}>
                                             <option value="">{t('form.pig.placeholder.selectOption')}</option>
+                                            <option value="born">{t('pigs.origin.born')}</option>
                                             <option value="purchased">{t('pigs.origin.purchased')}</option>
                                             <option value="donated">{t('pigs.origin.donated')}</option>
                                             <option value="other">{t('pigs.origin.other')}</option>
@@ -289,6 +300,9 @@ const SinglePigForm: React.FC<SinglePigFormProps> = ({ onSave, onCancel }) => {
                                                     <div className="col-md-4"><label className="fw-semibold">{t('pigs.field.sex')}</label><div><span className={`badge px-3 py-2 ${sex === "male" ? "bg-primary" : "bg-pink"}`}><i className={`me-1 ${sex === "male" ? "ri-men-fill" : "ri-women-fill"}`} />{t(`pigs.sex.${sex}Short`, { defaultValue: sex })}</span></div></div>
                                                     <div className="col-md-4"><label className="fw-semibold">{t('form.pig.field.weightKg')}</label><div>{formik.values.weight} kg</div></div>
                                                     <div className="col-md-12"><label className="fw-semibold">{t('form.pig.section.physicalTraits')}</label><div>{formik.values.observations || t('form.pig.field.noSpecified')}</div></div>
+                                                    {stage === 'breeder' && formik.values.earTag && (
+                                                        <div className="col-md-4"><label className="fw-semibold">{t('pigs.field.earTag')}</label><div>{formik.values.earTag}</div></div>
+                                                    )}
                                                     <div className="col-md-4"><label className="fw-semibold">{t('form.pig.field.registeredBy')}</label><div>{userLogged.name} {userLogged.lastname}</div></div>
                                                     <div className="col-md-4"><label className="fw-semibold">{t('form.pig.field.registrationDate')}</label><div>{formik.values.registration_date ? (formik.values.registration_date as Date).toLocaleDateString("es") : t('form.pig.field.noSpecified')}</div></div>
                                                 </div>

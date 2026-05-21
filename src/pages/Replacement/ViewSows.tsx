@@ -2,18 +2,15 @@ import { logger } from 'utils/logger';
 import { ConfigContext } from "App"
 import { PigData } from "common/data_interfaces"
 import BreadCrumb from "Components/Common/Shared/BreadCrumb"
-import { useContext, useEffect, useState, useRef } from "react"
+import { useContext, useEffect, useState } from "react"
 import {
     Button, Card, CardBody, CardHeader, Container,
-    Modal, ModalBody, ModalHeader, Input, Popover, PopoverHeader,
-    PopoverBody, Row, Col, FormGroup, Label, Badge,
-    Spinner
+    Modal, ModalBody, ModalHeader, Spinner, Badge
 } from "reactstrap"
 import { getEffectiveUser } from "helpers/impersonation_helper"
-import Select from "react-select"
-import { FiFilter, FiX, FiSearch, FiCheckCircle, FiAlertCircle } from "react-icons/fi"
-import Slider from 'rc-slider'
+import { FiCheckCircle, FiAlertCircle } from "react-icons/fi"
 import { useNavigate } from "react-router-dom"
+import 'simplebar-react/dist/simplebar.min.css';
 import { Column } from "common/data/data_types"
 import CustomTable from "Components/Common/Tables/CustomTable"
 import PDFViewer from "Components/Common/Shared/PDFViewer"
@@ -21,6 +18,8 @@ import LoadingAnimation from "Components/Common/Shared/LoadingAnimation"
 import AlertMessage from "Components/Common/Shared/AlertMesagge"
 import { FaVenus } from "react-icons/fa"
 import KPI from "Components/Common/Graphics/Kpi"
+import BasicPieChart from "Components/Common/Graphics/BasicPieChart"
+import PigFilters, { PigFiltersState } from "Components/Common/Filters/PigFilters"
 import { useTranslation } from "react-i18next"
 
 const STAGE_COLORS: Record<string, string> = {
@@ -32,7 +31,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 const ViewSows = () => {
     const { t } = useTranslation();
-    const [modals, setModals] = useState({ selectCreationMode: false, createSingle: false, createBatch: false, update: false, viewPDF: false });
+    const [modals, setModals] = useState({ viewPDF: false });
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true)
@@ -43,25 +42,21 @@ const ViewSows = () => {
     const [fileURL, setFileURL] = useState<string>('')
     const [generatingReport, setGeneratingReport] = useState(false);
     const [searchTerm, setSearchTerm] = useState("")
-    const [filters, setFilters] = useState({
+    const [filters, setFilters] = useState<PigFiltersState>({
         status: "",
         currentStage: "",
         origin: "",
         sex: "",
         breed: "",
-        weightRange: [0, 500] as [number, number]
+        weightRange: [0, 500]
     })
     const [popoverOpen, setPopoverOpen] = useState(false)
-    const filterBtnRef = useRef(null)
     const navigate = useNavigate();
-    const [selectedPig, setSelectedPig] = useState<PigData | null>(null)
 
     const predefinedBreeds = [
         "Yorkshire", "Landrace", "Duroc", "Hampshire", "Pietrain",
         "Berkshire", "Large White", "Chester White", "Poland China", "Tamworth"
     ]
-
-    const togglePopover = () => setPopoverOpen(!popoverOpen)
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -105,51 +100,12 @@ const ViewSows = () => {
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
-                    <Button className="farm-secondary-button btn-icon" onClick={() => { setSelectedPig(row); toggleModal('update') }} disabled={row.status === 'vivo' ? false : true}>
-                        <i className="ri-pencil-fill align-middle"></i>
-                    </Button>
                     <Button className="farm-primary-button btn-icon" onClick={() => navigate(`/pigs/pig_details/${row._id}`)}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
                 </div>
             ),
         },
-    ]
-
-    const statusOptions = [
-        { value: "", label: t('replacement.filter.statusAll') },
-        { value: "alive", label: t('replacement.filter.statusAlive') },
-        { value: "sold", label: t('replacement.filter.statusSold') },
-        { value: "slaughtered", label: t('replacement.filter.statusSlaughtered') },
-        { value: "dead", label: t('replacement.filter.statusDead') },
-        { value: "discarded", label: t('replacement.filter.statusDiscarded') },
-    ]
-
-    const stageOptions = [
-        { value: "", label: t('replacement.filter.stageAll') },
-        { value: "piglet", label: t('replacement.filter.stagePiglet') },
-        { value: "weaning", label: t('replacement.filter.stageWeaning') },
-        { value: "fattening", label: t('replacement.filter.stageFattening') },
-        { value: "breeder", label: t('replacement.filter.stageBreeder') },
-    ]
-
-    const originOptions = [
-        { value: "", label: t('replacement.filter.originAll') },
-        { value: "born", label: t('replacement.filter.originBorn') },
-        { value: "purchased", label: t('replacement.filter.originPurchased') },
-        { value: "donated", label: t('replacement.filter.originDonated') },
-        { value: "other", label: t('replacement.filter.originOther') },
-    ]
-
-    const sexOptions = [
-        { value: "", label: t('replacement.filter.sexAll') },
-        { value: "male", label: t('replacement.filter.sexMale') },
-        { value: "female", label: t('replacement.filter.sexFemale') },
-    ]
-
-    const breedOptions = [
-        { value: "", label: t('replacement.filter.breedAll') },
-        ...predefinedBreeds.map(breed => ({ value: breed, label: breed }))
     ]
 
     const fetchData = async () => {
@@ -172,24 +128,22 @@ const ViewSows = () => {
         }
     }
 
-    const handlePrintReport = async () => {
+    const handleGeneratePDF = async () => {
         if (!configContext) return;
 
         setGeneratingReport(true);
         try {
-            const pigIds = filteredPigs.map(pig => pig._id);
-
-            const response = await configContext.axiosHelper.postBlob(
-                `${configContext.apiUrl}/reports/generate_multiple_pig_report/`,
-                pigIds,
-                { responseType: 'blob' }
+            const response = await configContext.axiosHelper.getBlob(
+                `${configContext.apiUrl}/reports/breeder_pigs/${userLogged.farm_assigned}?sex=female`
             );
 
-            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(pdfBlob);
+
             setFileURL(url);
             toggleModal('viewPDF');
         } catch (error) {
-            logger.error('Error generating report: ', { error });
+            logger.error('Error generating PDF: ', { error });
             setAlertConfig({ visible: true, color: 'danger', message: t('replacement.error.pdf') })
         } finally {
             setGeneratingReport(false);
@@ -247,10 +201,6 @@ const ViewSows = () => {
         setPopoverOpen(false)
     }
 
-    const activeFilterCount = Object.values(filters).filter(v =>
-        v !== "" && !(Array.isArray(v) && v[0] === 0 && v[1] === 500)
-    ).length
-
     if (loading) {
         return (
             <LoadingAnimation />
@@ -276,145 +226,56 @@ const ViewSows = () => {
                         icon={FaVenus}
                         bgColor="#fde8f2"
                         iconColor="#d63384"
-                        value={stats?.avgWeightBySex?.find((p: { _id: string }) => p._id === 'female')?.avgWeight ?? 0}
+                        value={`${stats?.avgWeightBySex?.find((p: { _id: string }) => p._id === 'female')?.avgWeight ?? 0} kg`}
+                    />
+                </div>
+
+                <div className="d-flex gap-3">
+                    <BasicPieChart title={t('replacement.chart.byBreed')}
+                        data={stats?.pigsByBreed?.map((s: { _id: any; count: any }) => ({
+                            id: s._id,
+                            value: s.count,
+                        })) ?? []}
+                    />
+
+                    <BasicPieChart title={t('replacement.chart.byOrigin')}
+                        data={stats?.pigsByOrigin?.map((s: { _id: any; count: any }) => ({
+                            id: s._id === 'born' ? t('replacement.chart.born') : s._id === 'purchased' ? t('replacement.chart.purchased') : s._id,
+                            value: s.count,
+                        })) ?? []}
                     />
                 </div>
 
                 <Card>
                     <CardHeader>
                         <div className="d-flex flex-wrap align-items-center gap-3">
-                            <div className="position-relative flex-grow-1" style={{ maxWidth: "400px" }}>
-                                <FiSearch className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" />
-                                <Input
-                                    type="text"
-                                    placeholder={t('replacement.filter.search')}
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="form-control ps-5"
-                                />
-                            </div>
+                            <PigFilters
+                                searchTerm={searchTerm}
+                                onSearchChange={setSearchTerm}
+                                filters={filters}
+                                onFilterChange={handleFilterChange}
+                                onWeightRangeChange={handleWeightRangeChange}
+                                onClearFilters={clearFilters}
+                                popoverOpen={popoverOpen}
+                                onTogglePopover={() => setPopoverOpen(!popoverOpen)}
+                                predefinedBreeds={predefinedBreeds}
+                            />
 
-                            <Button innerRef={filterBtnRef} color="light" onClick={togglePopover} className="d-flex align-items-center position-relative">
-                                <FiFilter className="me-2" />
-                                {t('replacement.filter.filters')}
-                                {activeFilterCount > 0 && (
-                                    <Badge color="primary" pill className="position-absolute top-0 start-100 translate-middle">
-                                        {activeFilterCount}
-                                    </Badge>
-                                )}
-                            </Button>
-
-                            <Popover placement="bottom-end" isOpen={popoverOpen} target={filterBtnRef} toggle={togglePopover} trigger="legacy" className="filter-popover" style={{ minWidth: "450px" }}>
-                                <PopoverHeader className="d-flex justify-content-between align-items-center popover-header">
-                                    <span className="text-black">{t('replacement.filter.filterTitle')}</span>
-                                    <Button close onClick={togglePopover} />
-                                </PopoverHeader>
-                                <PopoverBody className="popover-body">
-                                    <Row className="g-3">
-                                        <Col md={6}>
-                                            <FormGroup>
-                                                <Label>{t('replacement.filter.status')}</Label>
-                                                <Select
-                                                    options={statusOptions}
-                                                    value={statusOptions.find(opt => opt.value === filters.status)}
-                                                    onChange={(opt: any) => handleFilterChange("status", opt?.value || "")}
-                                                    className="react-select"
-                                                    classNamePrefix="select"
-                                                />
-                                            </FormGroup>
-                                        </Col>
-                                        <Col md={6}>
-                                            <FormGroup>
-                                                <Label>{t('replacement.filter.stage')}</Label>
-                                                <Select
-                                                    options={stageOptions}
-                                                    value={stageOptions.find(opt => opt.value === filters.currentStage)}
-                                                    onChange={(opt: any) => handleFilterChange("currentStage", opt?.value || "")}
-                                                    className="react-select"
-                                                    classNamePrefix="select"
-                                                />
-                                            </FormGroup>
-                                        </Col>
-                                        <Col md={6}>
-                                            <FormGroup>
-                                                <Label>{t('replacement.filter.origin')}</Label>
-                                                <Select
-                                                    options={originOptions}
-                                                    value={originOptions.find(opt => opt.value === filters.origin)}
-                                                    onChange={(opt: any) => handleFilterChange("origin", opt?.value || "")}
-                                                    className="react-select"
-                                                    classNamePrefix="select"
-                                                />
-                                            </FormGroup>
-                                        </Col>
-                                        <Col md={6}>
-                                            <FormGroup>
-                                                <Label>{t('replacement.filter.sex')}</Label>
-                                                <Select
-                                                    options={sexOptions}
-                                                    value={sexOptions.find(opt => opt.value === filters.sex)}
-                                                    onChange={(opt: any) => handleFilterChange("sex", opt?.value || "")}
-                                                    className="react-select"
-                                                    classNamePrefix="select"
-                                                />
-                                            </FormGroup>
-                                        </Col>
-                                        <Col md={6}>
-                                            <FormGroup>
-                                                <Label>{t('replacement.filter.breed')}</Label>
-                                                <Select
-                                                    options={breedOptions}
-                                                    value={breedOptions.find(opt => opt.value === filters.breed)}
-                                                    onChange={(opt: any) => handleFilterChange("breed", opt?.value || "")}
-                                                    className="react-select"
-                                                    classNamePrefix="select"
-                                                />
-                                            </FormGroup>
-                                        </Col>
-                                        <Col md={6}>
-                                            <FormGroup>
-                                                <Label>
-                                                    {t('replacement.filter.weight')}: {filters.weightRange[0]} - {filters.weightRange[1]}
-                                                </Label>
-                                                <Slider
-                                                    range
-                                                    min={0}
-                                                    max={500}
-                                                    value={filters.weightRange}
-                                                    onChange={handleWeightRangeChange}
-                                                    trackStyle={[{ backgroundColor: '#405189' }]}
-                                                    handleStyle={[
-                                                        { backgroundColor: '#405189', borderColor: '#405189' },
-                                                        { backgroundColor: '#405189', borderColor: '#405189' }
-                                                    ]}
-                                                />
-                                                <div className="d-flex justify-content-between mt-1">
-                                                    <small>0 kg</small>
-                                                    <small>500 kg</small>
-                                                </div>
-                                            </FormGroup>
-                                        </Col>
-                                    </Row>
-                                    <div className="d-flex justify-content-between mt-3">
-                                        <Button color="link" onClick={clearFilters} className="text-danger">
-                                            <FiX className="me-1" /> {t('replacement.filter.clearAll')}
-                                        </Button>
-                                        <Button color="primary" onClick={togglePopover} size="sm">
-                                            {t('replacement.filter.apply')}
-                                        </Button>
-                                    </div>
-                                </PopoverBody>
-                            </Popover>
-
-                            <Button className="h-50 farm-primary-button ms-auto" onClick={handlePrintReport} disabled={generatingReport}>
+                            <Button
+                                color="secondary"
+                                className="ms-auto btn-pdf"
+                                onClick={handleGeneratePDF}
+                                disabled={generatingReport}
+                            >
                                 {generatingReport ? (
                                     <>
-                                        <Spinner size="sm" /> {t('replacement.action.generating')}
+                                        <Spinner className="me-2" size='sm' />
+                                        {t('replacement.action.generating')}
                                     </>
                                 ) : (
                                     <>
-                                        <i className="ri-download-line me-2"></i>
-                                        {t('replacement.action.exportData')}
+                                        <i className="ri-file-pdf-line me-2"></i>
+                                        {t('replacement.action.exportPdf')}
                                     </>
                                 )}
                             </Button>

@@ -30,9 +30,16 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel }) => {
         { value: "LABOR", label: t("finance.expense.category.LABOR") },
         { value: "UTILITY", label: t("finance.expense.category.UTILITY") },
         { value: "MAINTENANCE", label: t("finance.expense.category.MAINTENANCE") },
+        { value: "REPAIR", label: t("finance.expense.category.REPAIR") },
         { value: "TRANSPORT", label: t("finance.expense.category.TRANSPORT") },
         { value: "LIVESTOCK_PURCHASE", label: t("finance.expense.category.LIVESTOCK_PURCHASE") },
         { value: "VETERINARY", label: t("finance.expense.category.VETERINARY") },
+        { value: "PAYROLL", label: t("finance.expense.category.PAYROLL") },
+        { value: "INSURANCE", label: t("finance.expense.category.INSURANCE") },
+        { value: "TAXES_FEES", label: t("finance.expense.category.TAXES_FEES") },
+        { value: "ADMINISTRATIVE", label: t("finance.expense.category.ADMINISTRATIVE") },
+        { value: "FUEL", label: t("finance.expense.category.FUEL") },
+        { value: "INFRASTRUCTURE", label: t("finance.expense.category.INFRASTRUCTURE") },
         { value: "OTHER", label: t("finance.expense.category.OTHER") },
     ];
 

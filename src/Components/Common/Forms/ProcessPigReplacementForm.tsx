@@ -3,16 +3,13 @@ import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FaInfo, FaQuestionCircle } from "react-icons/fa";
+import { FaQuestionCircle } from "react-icons/fa";
 import ErrorModal from "../Shared/ErrorModal";
 import SuccessModal from "../Shared/SuccessModal";
-import { Badge, Button, Card, CardBody, CardHeader, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from "reactstrap";
+import { Badge, Button, Card, CardBody, CardHeader, Modal, ModalBody, ModalFooter, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from "reactstrap";
 import LoadingAnimation from "../Shared/LoadingAnimation";
 import classnames from "classnames";
-import { Attribute, GroupData, PigData } from "common/data_interfaces";
-import { Column } from "common/data/data_types";
 import SimpleBar from "simplebar-react";
-import ObjectDetails from "../Details/ObjectDetails";
 import SelectableCustomTable from "../Tables/SelectableTable";
 import AlertMessage from "../Shared/AlertMesagge";
 
@@ -32,14 +29,11 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' });
     const [group, setGroup] = useState<any>();
-    const [pigsArray, setPigsArray] = useState<any[]>([]);
     const [allPigs, setAllPigs] = useState<any[]>([]);
     const [selectedPigs, setSelectedPigs] = useState<any[]>([]);
-    const [compatibleReplacementGroups, setCompatibleReplacementGroups] = useState<any[]>([]);
-    const [newReplacementGroup, setNewReplacementGroup] = useState<boolean>(false);
-    const [selectedReplacementCompatibleGroup, setSelectedReplacementCompatibleGroup] = useState<any | null>(null);
     const [useIndividualWeight, setUseIndividualWeight] = useState<boolean>(false);
     const [totalGroupWeight, setTotalGroupWeight] = useState<string>('');
+    const [earTagsMap, setEarTagsMap] = useState<Record<number, string>>({});
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -47,8 +41,7 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
 
     function toggleArrowTab(tab: number) {
         if (activeStep !== tab) {
-            var modifiedSteps = [...passedarrowSteps, tab];
-
+            const modifiedSteps = [...passedarrowSteps, tab];
             if (tab >= 1 && tab <= 4) {
                 setActiveStep(tab);
                 setPassedarrowSteps(modifiedSteps);
@@ -56,145 +49,16 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
         }
     }
 
-    const groupsColumns: Column<any>[] = [
-        { header: t('common.field.code'), accessor: 'code', type: 'text', isFilterable: true },
-        { header: t('common.field.name'), accessor: 'name', type: 'text', isFilterable: true },
-        {
-            header: t('groups.column.area'),
-            accessor: 'area',
-            type: 'text',
-            isFilterable: true,
-            render: (_, row) => {
-                let color = "secondary";
-                let text = t("groups.area.unknown");
-
-                switch (row.area) {
-                    case "replacement":
-                        color = "secondary";
-                        text = t("groups.area.replacement")
-                        break;
-                }
-
-                return <Badge color={color}>{text}</Badge>;
-            },
-        },
-        {
-            header: t("common.field.stage"),
-            accessor: 'currentStage',
-            render: (value, obj) => {
-                let color = "secondary";
-                let label = obj.stage;
-
-                switch (obj.stage) {
-                    case "breeder":
-                        color = "success";
-                        label = t("groups.stage.breeder");
-                        break;
-                }
-
-                return <Badge color={color}>{label}</Badge>;
-            },
-        },
-        { header: t('groups.column.creationDate'), accessor: 'creationDate', type: 'date', isFilterable: true },
-        { header: t('groups.column.femaleCount'), accessor: 'femaleCount', type: 'text', isFilterable: true },
-        { header: t('groups.column.maleCount'), accessor: 'maleCount', type: 'text', isFilterable: true },
-    ];
-
-    const groupAttributes: Attribute[] = [
-        { key: "code", label: t("common.field.code"), type: "text" },
-        { key: "name", label: t("common.field.name"), type: "text" },
-        {
-            key: "area",
-            label: t("groups.column.area"),
-            type: "text",
-            render: (_, row) => {
-                let color = "secondary";
-                let text = t("groups.area.unknown");
-
-                switch (row?.area) {
-                    case "fattening":
-                        color = "dark";
-                        text = t("groups.area.fattening")
-                        break;
-                    case "replacement":
-                        color = "secondary";
-                        text = t("groups.area.replacement");
-                        break;
-                }
-
-                return <Badge color={color}>{text}</Badge>;
-            },
-        },
-        {
-            key: "status",
-            label: t("common.field.status"),
-            type: "text",
-            render: (_, row) => {
-                let color = "secondary";
-                let text = t("groups.area.unknown");
-
-                switch (row?.status) {
-                    case "weaning":
-                        color = "info";
-                        text = t("groups.status.weaning")
-                        break;
-                    case "ready_to_grow":
-                        color = "primary";
-                        text = t("groups.status.ready_to_grow");
-                        break;
-                    case "grow_overdue":
-                        color = "warning";
-                        text = t("groups.status.grow_overdue");
-                        break;
-                    case "growing":
-                        color = "success";
-                        text = t("groups.status.growing");
-                        break;
-                    case "replacement":
-                        color = "secondary";
-                        text = t("groups.status.replacement");
-                        break;
-                    case "ready_for_sale":
-                        color = "success";
-                        text = t("groups.status.ready_for_sale");
-                        break;
-                    case "sale":
-                        color = "success";
-                        text = t("groups.status.sale");
-                        break;
-                    case "sold":
-                        color = "success";
-                        text = t("groups.status.sold");
-                        break;
-                }
-
-                return <Badge color={color}>{text}</Badge>;
-            },
-        },
-        { key: "creationDate", label: t("groups.column.creationDate"), type: "date" },
-        { key: "observations", label: t("common.field.observations"), type: "text" },
-    ];
-
     const fetchGroup = async () => {
         if (!configContext || !groupId) return;
         try {
             setLoading(true);
             const groupResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/group/find_by_id/${groupId}`);
             const groupDetails = groupResponse.data.data;
-
             const filteredPigs = groupDetails.pigsInGroup.filter((p: any) => p.status === 'alive');
             const pigsWithId = filteredPigs.map((b: any) => ({ ...b, id: b._id }));
             setAllPigs(pigsWithId);
-
             setGroup(groupDetails);
-
-            const replacementGroupsResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/group/find_compatible_replacement_groups/${userLogged.farm_assigned}/${groupDetails.creationDate}`);
-
-            const replacementGroupsData = replacementGroupsResponse.data.data;
-            const replacementGroupsWithId = replacementGroupsData.map((b: any) => ({ ...b, id: b._id }));
-
-            setCompatibleReplacementGroups(replacementGroupsWithId);
-            replacementGroupsData.length === 0 ? setNewReplacementGroup(true) : setNewReplacementGroup(false);
         } catch (error) {
             logger.error('Error fetching data:', { error });
             toggleModal('error');
@@ -215,9 +79,10 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
     };
 
     const buildPigUpdates = () => {
-        return selectedPigs.map(pig => ({
+        return selectedPigs.map((pig, index) => ({
             pigId: pig._id,
             newWeight: Number(pig.newWeight),
+            earTag: earTagsMap[index] || undefined,
         }));
     };
 
@@ -226,161 +91,62 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
         return total / selectedPigs.length;
     };
 
-    const processReplacementGroup = async () => {
-        if (!configContext) return;
-        try {
-            const replacementSows = selectedPigs.filter((s: any) => s.sex === 'female');
-            const sowsReplacementIds = replacementSows.map(s => s._id);
-
-            if (newReplacementGroup) {
-                const nextGroupCodeResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/group/next_group_code`);
-                const nextCode = nextGroupCodeResponse.data.data;
-
-                const avgWeight = replacementSows.length > 0 ?
-                    replacementSows.reduce((sum, s) => sum + Number(s.newWeight), 0) / replacementSows.length : 0;
-
-                const sowsReplacementGroupData: GroupData = {
-                    code: nextCode,
-                    name: nextCode,
-                    farm: userLogged.farm_assigned,
-                    area: 'replacement',
-                    creationDate: new Date(),
-                    stage: "breeder",
-                    status: 'replacement',
-                    groupMode: "linked",
-                    pigsInGroup: replacementSows.map(s => s._id),
-                    pigCount: replacementSows.length,
-                    maleCount: 0,
-                    femaleCount: replacementSows.length,
-                    avgWeight: avgWeight,
-                    responsible: userLogged?._id,
-                    observations: "",
-                    observationsHistory: [],
-                    groupHistory: [],
-                    feedAdministrationHistory: [],
-                    medications: [],
-                    medicationPackagesHistory: [],
-                    vaccinationPlansHistory: [],
-                    healthEvents: [],
-                    isActive: true,
-                };
-
-                const groupResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/group/create_group`, sowsReplacementGroupData);
-                const groupData = groupResponse.data.data;
-
-                const groupWithdrawResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/group/withdraw_tracked_pigs/${groupId}`, {
-                    responsible: userLogged._id,
-                    femaleCount: replacementSows.length,
-                    maleCount: 0,
-                    date: new Date(),
-                    withdrawReason: 'Cerdas de reemplazo',
-                    pigsSelected: sowsReplacementIds.map(id => ({ _id: id }))
-                });
-
-
-                await configContext.axiosHelper.create(`${configContext.apiUrl}/weighing/create_group_average/${groupData._id}`, {
-                    avgWeight: avgWeight,
-                    pigsCount: replacementSows.length,
-                    weighedAt: new Date(),
-                    registeredBy: userLogged._id
-                });
-
-                await configContext.axiosHelper.update(`${configContext.apiUrl}/pig/update_pigs_stage`, {
-                    pigsIds: sowsReplacementIds,
-                    newStage: 'breeder',
-                    userId: userLogged._id,
-                });
-            } else if (!newReplacementGroup && selectedReplacementCompatibleGroup) {
-                await configContext.axiosHelper.put(`${configContext.apiUrl}/group/transfer_all_pigs/${selectedReplacementCompatibleGroup._id}/${userLogged._id}`, sowsReplacementIds);
-                const groupWithdrawResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/group/withdraw_tracked_pigs/${groupId}`, {
-                    responsible: userLogged._id,
-                    femaleCount: replacementSows.length,
-                    maleCount: 0,
-                    date: new Date(),
-                    withdrawReason: 'Cerdas de reemplazo',
-                    pigsSelected: sowsReplacementIds.map(id => ({ _id: id }))
-                });
-                await configContext.axiosHelper.update(`${configContext.apiUrl}/pig/update_pigs_stage`, {
-                    pigsIds: sowsReplacementIds,
-                    newStage: 'breeder',
-                    userId: userLogged._id,
-                });
-            }
-
-            await configContext.axiosHelper.put(`${configContext.apiUrl}/group/update_replacement_flag/${groupId}`,
-                {
-                    "isReady": false,
-                    "userId": userLogged._id
-                });
-        } catch (error) {
-            logger.error('Error processing replacement group:', { error });
-            throw error;
-        }
-    };
-
-    const processReplacementBoars = async () => {
-        if (!configContext) return;
-        try {
-            const replacementBoars = selectedPigs.filter((s: any) => s.sex === 'male');
-            const boarsReplacementIds = replacementBoars.map(s => s._id);
-
-            if (replacementBoars.length !== 0) {
-                await configContext.axiosHelper.update(`${configContext.apiUrl}/pig/update_pigs_stage`, {
-                    pigsIds: boarsReplacementIds,
-                    newStage: 'breeder',
-                    userId: userLogged._id,
-                });
-            }
-        } catch (error) {
-            logger.error('Error processing replacement boars:', { error });
-            throw error;
-        }
-    };
-
     const handleProcessReplacement = async () => {
         if (!configContext || !userLogged) return;
         try {
             setIsSubmitting(true);
 
-            const weighings = buildWeighings();
-            const newWeights = buildPigUpdates();
-            const avgWeight = calculateAverage();
+            const allIds = selectedPigs.map(p => p._id);
+            const femaleCount = selectedPigs.filter(p => p.sex === 'female').length;
+            const maleCount = selectedPigs.filter(p => p.sex === 'male').length;
 
-            await processReplacementGroup();
-            await processReplacementBoars();
+            // Retirar todos los cerdos del grupo de crecimiento
+            await configContext.axiosHelper.create(`${configContext.apiUrl}/group/withdraw_tracked_pigs/${groupId}`, {
+                responsible: userLogged._id,
+                femaleCount,
+                maleCount,
+                date: new Date(),
+                withdrawReason: t('groups.form.processReplacement.withdrawReason'),
+                pigsSelected: allIds.map(id => ({ _id: id }))
+            });
 
-            await configContext.axiosHelper.create(`${configContext.apiUrl}/weighing/create_bulk`, weighings);
+            // Cambiar etapa a breeder para todos
+            await configContext.axiosHelper.update(`${configContext.apiUrl}/pig/update_pigs_stage`, {
+                pigsIds: allIds,
+                newStage: 'breeder',
+                userId: userLogged._id,
+            });
 
+            // Registrar pesajes individuales
+            await configContext.axiosHelper.create(`${configContext.apiUrl}/weighing/create_bulk`, buildWeighings());
+
+            // Registrar pesaje promedio del grupo de origen
             await configContext.axiosHelper.create(`${configContext.apiUrl}/weighing/create_group_average/${groupId}`, {
-                avgWeight,
+                avgWeight: calculateAverage(),
                 pigsCount: selectedPigs.length,
                 weighedAt: new Date(),
                 registeredBy: userLogged._id
             });
 
-            await configContext.axiosHelper.put(`${configContext.apiUrl}/pig/update_many_pig_weights`, newWeights);
+            // Actualizar pesos y aretes
+            await configContext.axiosHelper.put(`${configContext.apiUrl}/pig/update_many_pig_weights`, buildPigUpdates());
+
+            // Desactivar flag de reemplazo del grupo
+            await configContext.axiosHelper.put(`${configContext.apiUrl}/group/update_replacement_flag/${groupId}`, {
+                isReady: false,
+                userId: userLogged._id
+            });
 
             await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
                 event: `Procesamiento de reemplazo del grupo ${group.code} registrado`
             });
+
             toggleModal('success');
         } catch (err) {
+            logger.error('Error processing replacement:', { err });
             toggleModal('error');
         } finally {
             setIsSubmitting(false);
-        }
-    };
-
-    const checkSelectedReplacementGroup = () => {
-        if (newReplacementGroup) {
-            toggleArrowTab(activeStep + 1);
-            return;
-        }
-
-        if (!selectedReplacementCompatibleGroup && !newReplacementGroup) {
-            setAlertConfig({ visible: true, color: 'danger', message: 'Por favor seleccione un grupo para integrar a las cerdas de reemplazo' });
-        } else {
-            toggleArrowTab(activeStep + 1);
         }
     };
 
@@ -390,25 +156,14 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
 
     useEffect(() => {
         if (!useIndividualWeight && totalGroupWeight && selectedPigs.length > 0) {
-            const totalWeight = Number(totalGroupWeight);
-            const averageWeight = totalWeight / selectedPigs.length;
-
-            const updatedPigs = selectedPigs.map(pig => ({
-                ...pig,
-                newWeight: averageWeight
-            }));
-
-            setSelectedPigs(updatedPigs);
+            const averageWeight = Number(totalGroupWeight) / selectedPigs.length;
+            setSelectedPigs(prev => prev.map(pig => ({ ...pig, newWeight: averageWeight })));
         }
     }, [totalGroupWeight, useIndividualWeight]);
 
     const handlePigSelection = (pigs: any[]) => {
-        const pigsWithWeight = pigs.map(pig => ({
-            ...pig,
-            newWeight: ''
-        }));
+        const pigsWithWeight = pigs.map(pig => ({ ...pig, newWeight: '' }));
         setSelectedPigs(pigsWithWeight);
-        setPigsArray(pigsWithWeight);
     };
 
     if (loading) {
@@ -420,65 +175,22 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
             <div className="step-arrow-nav mb-4">
                 <Nav className="nav-pills custom-nav nav-justified">
                     <NavItem>
-                        <NavLink
-                            href='#'
-                            id="step-selection-tab"
-                            className={classnames({
-                                active: activeStep === 1,
-                                done: activeStep > 1,
-                            })}
-                            aria-selected={activeStep === 1}
-                            aria-controls="step-selection-tab"
-                            disabled
-                        >
+                        <NavLink href='#' className={classnames({ active: activeStep === 1, done: activeStep > 1 })} disabled>
                             {t("groups.form.processReplacement.step.pigSelection")}
                         </NavLink>
                     </NavItem>
-
                     <NavItem>
-                        <NavLink
-                            href='#'
-                            id="step-weight-tab"
-                            className={classnames({
-                                active: activeStep === 2,
-                                done: activeStep > 2,
-                            })}
-                            aria-selected={activeStep === 2}
-                            aria-controls="step-weight-tab"
-                            disabled
-                        >
+                        <NavLink href='#' className={classnames({ active: activeStep === 2, done: activeStep > 2 })} disabled>
                             {t("groups.form.processReplacement.step.pigWeight")}
                         </NavLink>
                     </NavItem>
-
                     <NavItem>
-                        <NavLink
-                            href='#'
-                            id="step-groupIntegration-tab"
-                            className={classnames({
-                                active: activeStep === 3,
-                                done: activeStep > 3,
-                            })}
-                            aria-selected={activeStep === 3}
-                            aria-controls="step-groupIntegration-tab"
-                            disabled
-                        >
-                            {t("groups.form.processReplacement.step.groupIntegration")}
+                        <NavLink href='#' className={classnames({ active: activeStep === 3, done: activeStep > 3 })} disabled>
+                            {t("groups.form.processReplacement.step.earTag")}
                         </NavLink>
                     </NavItem>
-
                     <NavItem>
-                        <NavLink
-                            href='#'
-                            id="step-summary-tab"
-                            className={classnames({
-                                active: activeStep === 4,
-                                done: activeStep > 4,
-                            })}
-                            aria-selected={activeStep === 4}
-                            aria-controls="step-summary-tab"
-                            disabled
-                        >
+                        <NavLink href='#' className={classnames({ active: activeStep === 4, done: activeStep > 4 })} disabled>
                             {t("groups.form.processReplacement.step.summary")}
                         </NavLink>
                     </NavItem>
@@ -486,10 +198,11 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
             </div>
 
             <TabContent activeTab={activeStep}>
+                {/* Paso 1: Selección de cerdos */}
                 <TabPane tabId={1}>
                     <div className="mb-4">
                         <h5 className="fw-bold mb-1 text-dark">{t("groups.form.processReplacement.selectPigsTitle")}</h5>
-                        <p className="text-muted small">Selecciona los cerdos que serán destinados a reemplazo reproductivo.</p>
+                        <p className="text-muted small">{t("groups.form.processReplacement.selectPigsHint")}</p>
                     </div>
 
                     <SelectableCustomTable
@@ -524,37 +237,26 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
                         <span className="text-muted small">
                             {t("groups.form.processReplacement.pigsSelected")} <strong>{selectedPigs.length}</strong> de <strong>{allPigs.length}</strong>
                         </span>
-                        <Button
-                            className="ms-auto shadow-sm px-4"
-                            color="primary"
-                            onClick={() => setActiveStep(activeStep + 1)}
-                            disabled={selectedPigs.length === 0}
-                        >
-                            Siguiente
+                        <Button className="ms-auto shadow-sm px-4" color="primary" onClick={() => toggleArrowTab(2)} disabled={selectedPigs.length === 0}>
+                            {t("groups.form.processReplacement.next")}
                             <i className="ri-arrow-right-line ms-2" />
                         </Button>
                     </div>
                 </TabPane>
 
+                {/* Paso 2: Pesaje */}
                 <TabPane tabId={2}>
                     <div className="mb-4">
                         <h5 className="fw-bold mb-1 text-dark">{t("groups.form.processReplacement.weightTitle")}</h5>
-                        <p className="text-muted small">Actualiza el pesaje de los cerdos seleccionados para reemplazo.</p>
+                        <p className="text-muted small">{t("groups.form.processReplacement.weightHint")}</p>
                     </div>
 
                     <div className="card border-2 border-primary bg-primary-subtle mb-3" role="button" onClick={() => setUseIndividualWeight(!useIndividualWeight)}>
                         <div className="card-body d-flex align-items-center gap-3">
-                            <Input
-                                className="form-check-input mt-0"
-                                type="checkbox"
-                                checked={useIndividualWeight}
-                                readOnly
-                            />
+                            <input className="form-check-input mt-0" type="checkbox" checked={useIndividualWeight} readOnly />
                             <FaQuestionCircle className="text-primary" size={20} />
                             <div>
-                                <div className="fw-semibold">
-                                    {t("groups.form.processReplacement.weightIndividual")}
-                                </div>
+                                <div className="fw-semibold">{t("groups.form.processReplacement.weightIndividual")}</div>
                                 <div className="small text-muted">
                                     {useIndividualWeight
                                         ? t("groups.form.processReplacement.weightIndividualHint")
@@ -569,31 +271,23 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
                             <div className="card-body">
                                 <div className="row">
                                     <div className="col-md-6">
-                                        <label className="form-label fw-semibold">Peso total del grupo (kg)</label>
-                                        <input
-                                            type="number"
-                                            step="0.01"
-                                            className="form-control"
-                                            value={totalGroupWeight}
-                                            onChange={(e) => setTotalGroupWeight(e.target.value)}
-                                            placeholder="0.00"
-                                        />
+                                        <label className="form-label fw-semibold">{t("groups.form.processReplacement.totalWeight")}</label>
+                                        <input type="number" step="0.01" className="form-control" value={totalGroupWeight} onChange={(e) => setTotalGroupWeight(e.target.value)} placeholder="0.00" />
                                     </div>
                                     <div className="col-md-6">
                                         <div className="mt-4">
                                             <div className="d-flex align-items-center gap-2">
                                                 <i className="ri-calculator-line text-primary"></i>
-                                                <span className="text-muted">Peso promedio por cerdo:</span>
+                                                <span className="text-muted">{t("groups.form.processReplacement.avgWeightPerPig")}</span>
                                                 <span className="fw-bold text-primary">
                                                     {totalGroupWeight && selectedPigs.length > 0
                                                         ? (Number(totalGroupWeight) / selectedPigs.length).toFixed(2)
-                                                        : '0.00'
-                                                    } kg
+                                                        : '0.00'} kg
                                                 </span>
                                             </div>
                                             <div className="d-flex align-items-center gap-2 mt-1">
                                                 <i className="ri-group-line text-info"></i>
-                                                <span className="text-muted">Total de cerdos:</span>
+                                                <span className="text-muted">{t("groups.form.processReplacement.totalPigs")}</span>
                                                 <span className="fw-bold text-info">{selectedPigs.length}</span>
                                             </div>
                                         </div>
@@ -608,9 +302,8 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
                             {selectedPigs.map((pig, index) => {
                                 const isMale = pig.sex === 'male';
                                 const accentColor = isMale ? 'primary' : 'danger';
-
                                 return (
-                                    <div key={index} className="card border-0 shadow-sm mb-3 overflow-hidden" style={{ transition: 'transform 0.2s', borderLeft: `5px solid var(--bs-${accentColor})` }}>
+                                    <div key={index} className="card border-0 shadow-sm mb-3 overflow-hidden" style={{ borderLeft: `5px solid var(--bs-${accentColor})` }}>
                                         <div className="card-body p-3">
                                             <div className="row align-items-center">
                                                 <div className="col-auto">
@@ -618,47 +311,37 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
                                                         <i className={`ri-${isMale ? 'men-line' : 'women-line'} fs-4 text-${accentColor}`}></i>
                                                     </div>
                                                 </div>
-
                                                 <div className="col">
-                                                    <h6 className="mb-0 fw-bold text-dark">Cerdo {pig.code}</h6>
+                                                    <h6 className="mb-0 fw-bold text-dark">{t("groups.form.processReplacement.pigLabel")} {pig.code}</h6>
                                                     <span className={`badge bg-${accentColor} bg-opacity-25 text-${accentColor} text-uppercase px-2`} style={{ fontSize: '0.65rem', fontWeight: '700' }}>
                                                         {isMale ? t("common.sex.maleShort") : t("common.sex.femaleShort")}
                                                     </span>
                                                 </div>
-
                                                 <div className="col-sm-5 col-12 mt-3 mt-sm-0">
-                                                    <small className="text-muted">
-                                                        Actual: {pig.weight} kg
-                                                    </small>
-
+                                                    <small className="text-muted">{t("groups.form.processReplacement.currentWeight")}: {pig.weight} kg</small>
                                                     <div className="input-group">
                                                         <span className="input-group-text bg-light border-end-0 text-muted small">
                                                             <i className="ri-scales-3-line text-black"></i>
                                                         </span>
                                                         <input
-                                                            type="number"
-                                                            step="0.01"
+                                                            type="number" step="0.01"
                                                             className="form-control border-start-0 bg-light fw-semibold text-end"
                                                             placeholder="0.00"
                                                             value={selectedPigs[index].newWeight}
                                                             onChange={(e) => {
-                                                                const value = e.target.value;
-                                                                const newArray = [...selectedPigs];
-                                                                newArray[index].newWeight = value === '' ? '' : Number(value);
-                                                                setSelectedPigs(newArray);
+                                                                const v = e.target.value;
+                                                                const arr = [...selectedPigs];
+                                                                arr[index].newWeight = v === '' ? '' : Number(v);
+                                                                setSelectedPigs(arr);
                                                             }}
                                                             onFocus={() => {
                                                                 if (selectedPigs[index].newWeight === 0) {
-                                                                    const newArray = [...selectedPigs];
-                                                                    newArray[index].newWeight = '';
-                                                                    setSelectedPigs(newArray);
+                                                                    const arr = [...selectedPigs]; arr[index].newWeight = ''; setSelectedPigs(arr);
                                                                 }
                                                             }}
                                                             onBlur={() => {
                                                                 if (selectedPigs[index].newWeight === '') {
-                                                                    const newArray = [...selectedPigs];
-                                                                    newArray[index].newWeight = 0;
-                                                                    setSelectedPigs(newArray);
+                                                                    const arr = [...selectedPigs]; arr[index].newWeight = 0; setSelectedPigs(arr);
                                                                 }
                                                             }}
                                                         />
@@ -674,191 +357,137 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
                     )}
 
                     <div className="mt-4 pt-2 border-top d-flex align-items-center justify-content-between">
-                        <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
-                            <i className="ri-arrow-left-line me-2" />
-                            Atrás
+                        <Button className="btn-danger" onClick={() => toggleArrowTab(1)}>
+                            <i className="ri-arrow-left-line me-2" />{t("groups.form.processReplacement.back")}
                         </Button>
-                        <span className="text-muted small">
-                            Total registros: <strong>{selectedPigs.length}</strong>
-                        </span>
-                        <Button className="ms-auto shadow-sm px-4" color="primary" onClick={() => setActiveStep(activeStep + 1)}>
-                            Siguiente
-                            <i className="ri-arrow-right-line ms-2" />
+                        <span className="text-muted small">{t("groups.form.processReplacement.totalRecords")}: <strong>{selectedPigs.length}</strong></span>
+                        <Button className="ms-auto shadow-sm px-4" color="primary" onClick={() => toggleArrowTab(3)}>
+                            {t("groups.form.processReplacement.next")}<i className="ri-arrow-right-line ms-2" />
                         </Button>
                     </div>
                 </TabPane>
 
+                {/* Paso 3: Aretes */}
                 <TabPane tabId={3}>
-                    <div>
-                        {compatibleReplacementGroups && compatibleReplacementGroups.length === 0 ? (
-                            <div className="alert alert-info d-flex flex-column align-items-center text-center gap-2">
-                                <FaInfo size={22} />
+                    <div className="mb-4">
+                        <h5 className="fw-bold mb-1 text-dark">{t("groups.form.processReplacement.earTagTitle")}</h5>
+                        <p className="text-muted small">{t("groups.form.processReplacement.earTagHint")}</p>
+                    </div>
 
-                                <div>
-                                    <div className="fw-semibold">
-                                        {t("groups.form.processReplacement.noCompatibleGroups")}
-                                    </div>
-                                    <div className="small">
-                                        {t("groups.form.processReplacement.newGroupWillBeCreated")}
-                                    </div>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="mb-3">
-                                <div className={`card border-2 ${newReplacementGroup ? "border-primary bg-primary-subtle" : "border-secondary-subtle"}`} role="button" onClick={() => setNewReplacementGroup(!newReplacementGroup)}>
-                                    <div className="card-body d-flex align-items-center gap-3">
-                                        <Input
-                                            className="form-check-input mt-0"
-                                            type="checkbox"
-                                            checked={newReplacementGroup}
-                                            readOnly
-                                        />
-
-                                        <FaInfo className="text-primary" size={20} />
-
-                                        <div>
-                                            <div className="fw-semibold">
-                                                {t("groups.form.processReplacement.createNewGroup")}
+                    <SimpleBar style={{ maxHeight: 450, paddingRight: 12 }}>
+                        {selectedPigs.map((pig, index) => {
+                            const isMale = pig.sex === 'male';
+                            const accentColor = isMale ? 'primary' : 'danger';
+                            return (
+                                <div key={index} className="card border-0 shadow-sm mb-3 overflow-hidden" style={{ borderLeft: `5px solid var(--bs-${accentColor})` }}>
+                                    <div className="card-body p-3">
+                                        <div className="row align-items-center">
+                                            <div className="col-auto">
+                                                <div className={`bg-${accentColor} bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center`} style={{ width: '48px', height: '48px' }}>
+                                                    <i className={`ri-${isMale ? 'men-line' : 'women-line'} fs-4 text-${accentColor}`}></i>
+                                                </div>
                                             </div>
-                                            <div className="small text-muted">
-                                                {t("groups.form.processReplacement.createNewGroupDesc")}
+                                            <div className="col">
+                                                <h6 className="mb-0 fw-bold text-dark">{t("groups.form.processReplacement.pigLabel")} {pig.code}</h6>
+                                                <span className={`badge bg-${accentColor} bg-opacity-25 text-${accentColor} text-uppercase px-2`} style={{ fontSize: '0.65rem', fontWeight: '700' }}>
+                                                    {isMale ? t("common.sex.maleShort") : t("common.sex.femaleShort")}
+                                                </span>
+                                            </div>
+                                            <div className="col-sm-5 col-12 mt-3 mt-sm-0">
+                                                <label className="form-label small text-muted mb-1">{t("pigs.field.earTag")}</label>
+                                                <input
+                                                    type="text"
+                                                    className="form-control form-control-sm"
+                                                    placeholder={t("pigs.field.earTagPlaceholder")}
+                                                    value={earTagsMap[index] ?? ''}
+                                                    onChange={(e) => setEarTagsMap(prev => ({ ...prev, [index]: e.target.value }))}
+                                                />
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                            );
+                        })}
+                    </SimpleBar>
 
-                                <SelectableCustomTable
-                                    columns={groupsColumns}
-                                    data={compatibleReplacementGroups}
-                                    selectionMode="single"
-                                    onSelect={(rows) => setSelectedReplacementCompatibleGroup(rows[0])}
-                                    disabled={newReplacementGroup}
-                                    showSearchAndFilter={false}
-                                />
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="mt-4 d-flex">
-                        <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
-                            <i className="ri-arrow-left-line me-2" />
-                            Atrás
+                    <div className="mt-4 pt-2 border-top d-flex align-items-center justify-content-between">
+                        <Button className="btn-danger" onClick={() => toggleArrowTab(2)}>
+                            <i className="ri-arrow-left-line me-2" />{t("groups.form.processReplacement.back")}
                         </Button>
-
-                        <Button className="ms-auto" onClick={() => checkSelectedReplacementGroup()}>
-                            Siguiente
-                            <i className="ri-arrow-right-line ms-2" />
+                        <Button className="ms-auto shadow-sm px-4" color="primary" onClick={() => toggleArrowTab(4)}>
+                            {t("groups.form.processReplacement.next")}<i className="ri-arrow-right-line ms-2" />
                         </Button>
                     </div>
                 </TabPane>
 
+                {/* Paso 4: Resumen */}
                 <TabPane tabId={4}>
-                    <div className="d-flex gap-3 align-items-stretch">
-
-                        <Card className="w-100 m-0">
-                            <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
-                                <span className="text-black">{t("groups.form.processReplacement.targetGroup")}</span>
-                            </CardHeader>
-                            <CardBody className="flex-fill">
-                                {newReplacementGroup && newReplacementGroup === true ? (
-                                    <div className="alert alert-info d-flex flex-column align-items-center text-center gap-2">
-                                        <FaInfo size={22} />
-
-                                        <div>
-                                            <div className="fw-semibold">
-                                                {t("groups.form.processReplacement.newGroupInfo")}
-                                            </div>
-                                            <div className="small">
-                                                {t("groups.form.processReplacement.newGroupCreationInfo")}
-                                            </div>
+                    <Card className="m-0 shadow-sm">
+                        <CardHeader className="bg-light fs-5">
+                            <span className="text-black">{t("groups.form.processReplacement.summaryTitle")}</span>
+                        </CardHeader>
+                        <CardBody className="p-3">
+                            <div className="row g-2 mb-3">
+                                <div className="col-6">
+                                    <div className="border rounded p-2 text-center">
+                                        <div className="d-flex align-items-center justify-content-center mb-1">
+                                            <i className="ri-parent-line fs-5 text-primary me-1"></i>
+                                            <span className="text-muted fw-semibold">{t("common.total")}</span>
                                         </div>
+                                        <h4 className="mb-0 text-primary fw-bold">{selectedPigs.length}</h4>
                                     </div>
-                                ) : (
-                                    <ObjectDetails attributes={groupAttributes} object={selectedReplacementCompatibleGroup} />
-                                )}
-                            </CardBody>
-                        </Card>
-
-                        <div className="d-flex flex-column w-50 gap-3">
-                            <Card className="w-100 h-100 m-0">
-                                <CardHeader className="d-flex justify-content-between align-items-center bg-light fs-5">
-                                    <span className="text-black">{t("groups.form.processReplacement.pigWeight")}</span>
-                                </CardHeader>
-                                <CardBody className='p-3'>
-                                    <div className="row g-2 mb-3">
-                                        <div className="col-6">
-                                            <div className="border rounded p-2 text-center">
-                                                <div className="d-flex align-items-center justify-content-center mb-1">
-                                                    <i className="ri-parent-line fs-5 text-primary me-1"></i>
-                                                    <span className="text-muted fw-semibold">{t("common.total")}</span>
-                                                </div>
-                                                <h4 className="mb-0 text-primary fw-bold">{selectedPigs.length}</h4>
-                                            </div>
+                                </div>
+                                <div className="col-6">
+                                    <div className="border rounded p-2 text-center">
+                                        <div className="d-flex align-items-center justify-content-center mb-1">
+                                            <i className="ri-scales-3-line fs-5 text-success me-1"></i>
+                                            <span className="text-muted fw-semibold">{t("groups.form.processReplacement.avgWeight")}</span>
                                         </div>
-                                        <div className="col-6">
-                                            <div className="border rounded p-2 text-center">
-                                                <div className="d-flex align-items-center justify-content-center mb-1">
-                                                    <i className="ri-scales-3-line fs-5 text-success me-1"></i>
-                                                    <span className="text-muted fw-semibold">{t("groups.form.processReplacement.avgWeight")}</span>
-                                                </div>
-                                                <h4 className="mb-0 text-success fw-bold">
-                                                    {selectedPigs.length > 0
-                                                        ? (selectedPigs.reduce((acc, p) => acc + Number(p.newWeight), 0) / selectedPigs.length).toFixed(2)
-                                                        : '0.00'
-                                                    } kg
-                                                </h4>
-                                            </div>
-                                        </div>
+                                        <h4 className="mb-0 text-success fw-bold">
+                                            {selectedPigs.length > 0
+                                                ? (selectedPigs.reduce((acc, p) => acc + Number(p.newWeight), 0) / selectedPigs.length).toFixed(2)
+                                                : '0.00'} kg
+                                        </h4>
                                     </div>
+                                </div>
+                            </div>
 
-                                    <div className="text-muted fw-semibold mb-2">Detalles de cerdos:</div>
-
-                                    <SimpleBar style={{ maxHeight: '300px' }}>
-                                        <table className="table table-hover table-sm">
-                                            <thead className="table-light">
-                                                <tr>
-                                                    <th className="text-center">#</th>
-                                                    <th className="text-center">{t("common.field.sex")}</th>
-                                                    <th className="text-center">{t("common.field.weight")}</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {selectedPigs.map((pig, index) => (
-                                                    <tr key={index}>
-                                                        <td className="text-center">{index + 1}</td>
-                                                        <td className="text-center">
-                                                            <Badge color={pig.sex === 'male' ? "info" : "danger"}>
-                                                                {pig.sex === 'male' ? "♂" : "♀"}
-                                                            </Badge>
-                                                        </td>
-                                                        <td className="text-center">{parseFloat(String(pig.newWeight)).toFixed(2)} kg</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </SimpleBar>
-                                </CardBody>
-                            </Card>
-                        </div>
-                    </div>
+                            <div className="text-muted fw-semibold mb-2">{t("groups.form.processReplacement.pigDetails")}</div>
+                            <SimpleBar style={{ maxHeight: '300px' }}>
+                                <table className="table table-hover table-sm">
+                                    <thead className="table-light">
+                                        <tr>
+                                            <th className="text-center">#</th>
+                                            <th className="text-center">{t("common.field.sex")}</th>
+                                            <th className="text-center">{t("common.field.weight")}</th>
+                                            <th className="text-center">{t("pigs.field.earTag")}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {selectedPigs.map((pig, index) => (
+                                            <tr key={index}>
+                                                <td className="text-center">{index + 1}</td>
+                                                <td className="text-center">
+                                                    <Badge color={pig.sex === 'male' ? "info" : "danger"}>
+                                                        {pig.sex === 'male' ? "♂" : "♀"}
+                                                    </Badge>
+                                                </td>
+                                                <td className="text-center">{parseFloat(String(pig.newWeight)).toFixed(2)} kg</td>
+                                                <td className="text-center">{earTagsMap[index] || <span className="text-muted">—</span>}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </SimpleBar>
+                        </CardBody>
+                    </Card>
 
                     <div className="mt-4 d-flex">
-                        <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
-                            <i className="ri-arrow-left-line me-2" />
-                            Atrás
+                        <Button className="btn-danger" onClick={() => toggleArrowTab(3)}>
+                            <i className="ri-arrow-left-line me-2" />{t("groups.form.processReplacement.back")}
                         </Button>
-
                         <Button className="ms-auto btn-success" disabled={isSubmitting} onClick={() => toggleModal('confirm')}>
-                            {isSubmitting ? (
-                                <div>
-                                    <Spinner size='sm' />
-                                </div>
-                            ) : (
-                                <div>
-                                    <i className="ri-check-line me-2" />
-                                    Procesar reemplazo
-                                </div>
-                            )}
+                            {isSubmitting ? <Spinner size='sm' /> : <><i className="ri-check-line me-2" />{t("groups.form.processReplacement.process")}</>}
                         </Button>
                     </div>
                 </TabPane>
@@ -870,38 +499,25 @@ const ProcessPigReplacementForm: React.FC<ProcessPigReplacementFormProps> = ({ g
                     <div className="d-flex justify-content-center mb-3">
                         <FaQuestionCircle size={56} className="text-primary opacity-75" />
                     </div>
-
                     <div className="text-center mb-2">
-                        <h4 className="fw-semibold mb-1">¿Deseas procesar el reemplazo de este grupo?</h4>
+                        <h4 className="fw-semibold mb-1">{t("groups.form.processReplacement.confirmTitle")}</h4>
                     </div>
-
                     <div className="text-center text-muted fs-5 mb-4">
-                        Al confirmar, los cerdos serán transferidos al grupo de reemplazo.
-                        <br />
+                        {t("groups.form.processReplacement.confirmBody")}
                     </div>
-
                     <div className="border rounded p-3 bg-light-subtle text-center mb-4">
-                        <strong>Asegúrate de que toda la información esté correcta antes de continuar.</strong>
+                        <strong>{t("groups.form.processReplacement.confirmWarning")}</strong>
                     </div>
                 </ModalBody>
-
                 <ModalFooter>
                     <Button color="success" onClick={() => handleProcessReplacement()}>
-                        {isSubmitting ? (
-                            <Spinner size='sm' />
-                        ) : (
-                            <>
-                                <i className="ri ri-check-line me-2" />
-                                Confirmar
-                            </>
-                        )}
+                        {isSubmitting ? <Spinner size='sm' /> : <><i className="ri ri-check-line me-2" />{t("groups.form.processReplacement.confirm")}</>}
                     </Button>
                 </ModalFooter>
             </Modal>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} autoClose={3000} />
-
-            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={"Reemplazo procesado con éxito"} />
+            <SuccessModal isOpen={modals.success} onClose={() => onSave()} message={t("groups.form.processReplacement.successMsg")} />
             <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={t("common.error.generic")} />
         </>
     );
