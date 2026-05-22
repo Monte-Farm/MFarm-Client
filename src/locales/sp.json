@@ -900,6 +900,11 @@
         "noRecords": "No hay medicamentos administrados",
         "noPackages": "No hay paquetes administrados"
       },
+      "applicationsTitle": "Aplicaciones de medicamentos",
+      "type": {
+        "package": "Paquete",
+        "individual": "Individual"
+      },
       "title": "Medicamentos administrados",
       "packagesTitle": "Paquetes de medicación administrados",
       "packageDetails": "Detalles de paquete de medicación",
@@ -4510,11 +4515,14 @@
       },
       "form": {
         "step": {
+          "warehouse": "Selección de almacén",
           "info": "Información del paquete de medicación",
           "medications": "Selección de medicación",
           "summary": "Resumen"
         },
         "field": {
+          "warehouse": "Almacén / subalmacén",
+          "warehousePlaceholder": "Seleccione un almacén",
           "name": "Nombre del paquete",
           "namePlaceholder": "Ej: Paquete preventivo destete",
           "descriptionPlaceholder": "Observaciones sobre el paquete"
@@ -4530,7 +4538,9 @@
           "noteWithDate": "Calculado con precios promedio al día de hoy ({{date}}). Este costo puede variar en el futuro."
         },
         "medicationsSelectedCard": "Medicamentos seleccionados",
+        "noProductsInWarehouse": "Este almacén no tiene productos de medicación disponibles",
         "validation": {
+          "warehouseRequired": "Seleccione un almacén",
           "codeRequired": "El código es obligatorio",
           "nameRequired": "El nombre es obligatorio",
           "stageRequired": "La etapa es obligatoria",
@@ -4727,9 +4737,22 @@
     },
     "assign": {
       "step": {
+        "mode": "Modo",
         "medications": "Selección de medicamentos",
         "package": "Selección de paquete de medicamentos",
         "summary": "Resumen"
+      },
+      "mode": {
+        "title": "¿Cómo desea administrar la medicación?",
+        "package": "Aplicar paquete",
+        "packageDesc": "Aplicar un paquete de medicación predefinido según la etapa del cerdo",
+        "individual": "Aplicar medicamentos individuales",
+        "individualDesc": "Seleccionar medicamentos sueltos con dosis y vía de administración",
+        "change": "Cambiar modo",
+        "current": {
+          "package": "Modo: Aplicación de paquete",
+          "individual": "Modo: Aplicación individual"
+        }
       },
       "field": {
         "responsible": "Responsable de aplicación",

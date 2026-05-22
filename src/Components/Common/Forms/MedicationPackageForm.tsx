@@ -33,9 +33,13 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
     const [passedarrowSteps, setPassedarrowSteps] = useState([1]);
     const [loading, setLoading] = useState<boolean>(false);
     const [products, setProducts] = useState<any[]>([])
+    const [subwarehouses, setSubwarehouses] = useState<any[]>([])
+    const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>('')
     const [medicationsSelected, setMedicationsSelected] = useState<any[]>([])
     const [medicationErrors, setMedicationErrors] = useState<Record<string, any>>({});
     const [modals, setModals] = useState({ success: false, error: false });
+
+    const MEDICATION_CATEGORIES = ['medications', 'vaccines', 'vitamins', 'minerals'];
 
     function toggleArrowTab(tab: number) {
         if (activeStep !== tab) {
@@ -304,19 +308,52 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
         try {
             setLoading(true)
 
-            const [codeResponse, productsResponse] = await Promise.all([
+            const [codeResponse, subwarehousesResponse] = await Promise.all([
                 configContext.axiosHelper.get(`${configContext.apiUrl}/medication_package/next_medication_code`),
-                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/medication_products/${userLogged.farm_assigned}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_farm_subwarehouses/${userLogged.farm_assigned}`),
             ])
 
             formik.setFieldValue('code', codeResponse.data.data)
-            setProducts(productsResponse.data.data)
+            setSubwarehouses(subwarehousesResponse.data.data || [])
         } catch (error) {
             logger.error('Error fetching information: ', { error })
             setAlertConfig({ visible: true, color: 'danger', message: t('medication.package.form.validation.loadError') })
         } finally {
             setLoading(false)
         }
+    }
+
+    const loadInventory = async (warehouseId: string) => {
+        if (!configContext || !warehouseId) return;
+        try {
+            setLoading(true)
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/get_inventory/${warehouseId}`);
+            const inventory = response.data.data || [];
+            const flattened = inventory
+                .filter((item: any) => item.product && MEDICATION_CATEGORIES.includes(item.product.category))
+                .map((item: any) => ({
+                    ...item.product,
+                    code: item.product.id,
+                    id: item.product._id,
+                    averagePrice: item.averagePrice ?? 0,
+                    quantity_in_stock: item.quantity,
+                }));
+            setProducts(flattened);
+        } catch (error) {
+            logger.error('Error loading inventory: ', { error })
+            setAlertConfig({ visible: true, color: 'danger', message: t('medication.package.form.validation.loadError') })
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleSelectWarehouse = (warehouseId: string) => {
+        if (warehouseId === selectedWarehouseId) return;
+        setSelectedWarehouseId(warehouseId);
+        setMedicationsSelected([]);
+        setMedicationErrors({});
+        setProducts([]);
+        if (warehouseId) loadInventory(warehouseId);
     }
 
     const checkMedicationData = async () => {
@@ -379,13 +416,30 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                     <NavItem>
                         <NavLink
                             href="#"
-                            id="step-medicationPackageData-tab"
+                            id="step-warehouse-tab"
                             className={classnames({
                                 active: activeStep === 1,
                                 done: activeStep > 1,
                             })}
                             onClick={() => toggleArrowTab(1)}
                             aria-selected={activeStep === 1}
+                            aria-controls="step-warehouse-tab"
+                            disabled
+                        >
+                            {t('medication.package.form.step.warehouse')}
+                        </NavLink>
+                    </NavItem>
+
+                    <NavItem>
+                        <NavLink
+                            href="#"
+                            id="step-medicationPackageData-tab"
+                            className={classnames({
+                                active: activeStep === 2,
+                                done: activeStep > 2,
+                            })}
+                            onClick={() => toggleArrowTab(2)}
+                            aria-selected={activeStep === 2}
                             aria-controls="step-medicationPackageData-tab"
                             disabled
                         >
@@ -398,11 +452,11 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                             href="#"
                             id="step-selecMedication-tab"
                             className={classnames({
-                                active: activeStep === 2,
-                                done: activeStep > 2,
+                                active: activeStep === 3,
+                                done: activeStep > 3,
                             })}
-                            onClick={() => toggleArrowTab(2)}
-                            aria-selected={activeStep === 2}
+                            onClick={() => toggleArrowTab(3)}
+                            aria-selected={activeStep === 3}
                             aria-controls="step-selecMedication-tab"
                             disabled
                         >
@@ -415,11 +469,11 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                             href="#"
                             id="step-summary-tab"
                             className={classnames({
-                                active: activeStep === 3,
-                                done: activeStep > 3,
+                                active: activeStep === 4,
+                                done: activeStep > 4,
                             })}
-                            onClick={() => toggleArrowTab(3)}
-                            aria-selected={activeStep === 3}
+                            onClick={() => toggleArrowTab(4)}
+                            aria-selected={activeStep === 4}
                             aria-controls="step-summary-tab"
                             disabled
                         >
@@ -430,7 +484,49 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
             </div>
 
             <TabContent activeTab={activeStep}>
-                <TabPane id="step-medicationPackageData-tab" tabId={1}>
+                <TabPane id="step-warehouse-tab" tabId={1}>
+                    <div className="mt-4">
+                        <Label htmlFor="warehouse" className="form-label">{t('medication.package.form.field.warehouse')}</Label>
+                        <Input
+                            type="select"
+                            id="warehouse"
+                            name="warehouse"
+                            value={selectedWarehouseId}
+                            onChange={(e) => handleSelectWarehouse(e.target.value)}
+                        >
+                            <option value="">{t('medication.package.form.field.warehousePlaceholder')}</option>
+                            {subwarehouses.map((w: any) => (
+                                <option key={w._id} value={w._id}>
+                                    {w.id ? `${w.id} - ${w.name}` : w.name}
+                                </option>
+                            ))}
+                        </Input>
+                        {selectedWarehouseId && !loading && products.length === 0 && (
+                            <div className="mt-3 d-flex align-items-center gap-2 text-warning">
+                                <i className="ri-error-warning-line" />
+                                <small>{t('medication.package.form.noProductsInWarehouse')}</small>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="d-flex justify-content-between mt-4">
+                        <Button
+                            className="btn btn-primary ms-auto"
+                            onClick={() => {
+                                if (!selectedWarehouseId) {
+                                    setAlertConfig({ visible: true, color: 'danger', message: t('medication.package.form.validation.warehouseRequired') });
+                                    return;
+                                }
+                                toggleArrowTab(activeStep + 1);
+                            }}
+                        >
+                            {t('common.button.next')}
+                            <i className="ri-arrow-right-line ms-1" />
+                        </Button>
+                    </div>
+                </TabPane>
+
+                <TabPane id="step-medicationPackageData-tab" tabId={2}>
                     <div className="d-flex gap-3">
                         <div className="mt-4 w-50">
                             <Label htmlFor="code" className="form-label">{t('common.field.code')}</Label>
@@ -537,6 +633,10 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                     </div>
 
                     <div className="d-flex justify-content-between mt-4">
+                        <Button className="btn-danger" onClick={() => toggleArrowTab(activeStep - 1)}>
+                            <i className="ri-arrow-left-line me-2" />
+                            {t('common.button.back')}
+                        </Button>
                         <Button className="btn btn-primary ms-auto" onClick={() => checkMedicationData()}>
                             {t('common.button.next')}
                             <i className="ri-arrow-right-line ms-1" />
@@ -544,7 +644,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                     </div>
                 </TabPane>
 
-                <TabPane id="step-selecMedication-tab" tabId={2}>
+                <TabPane id="step-selecMedication-tab" tabId={3}>
                     <SelectableCustomTable
                         columns={columns}
                         data={products}
@@ -603,7 +703,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                             onClick={async () => {
                                 const ok = await validateSelectedMedications();
                                 if (!ok) return;
-                                toggleArrowTab(3);
+                                toggleArrowTab(4);
                             }}
                         >
                             {t('common.button.next')}
@@ -612,7 +712,7 @@ const MedicationPackageForm: React.FC<MedicationPackageFormProps> = ({ onSave, o
                     </div>
                 </TabPane>
 
-                <TabPane id="step-summary-tab" tabId={3}>
+                <TabPane id="step-summary-tab" tabId={4}>
                     <div className="d-flex gap-3">
                         <Card className="border-primary border-opacity-25">
                             <CardHeader className="bg-primary bg-opacity-10">

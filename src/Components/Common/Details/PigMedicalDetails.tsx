@@ -11,8 +11,7 @@ import ApplicationsTimeline from "Components/Common/Graphics/ApplicationsTimelin
 import MedicationPackageDetails from "./MedicationPackageDetails";
 import PigSicknessForm from "../Forms/PigSicknessForm";
 import SicknessDetails from "./SicknessDetailsModal";
-import AsignMedicationPackageForm from "../Forms/AsignMedicationPackageForm";
-import AsignMedicationForm from "../Forms/AsignMedicationForm";
+import AsignPigMedicationForm from "../Forms/AsignPigMedicationForm";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { darkenHex } from "utils/colorUtils";
@@ -32,7 +31,7 @@ const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
     const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true)
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ asignSingle: false, medicationPackage: false, medicationPackageDetails: false, registerSickness: false, sicknessDetails: false });
+    const [modals, setModals] = useState({ asignMedication: false, medicationPackageDetails: false, registerSickness: false, sicknessDetails: false });
     const [medicationPackages, setMedicationPackages] = useState<any[]>([]);
     const [medications, setMedications] = useState<any[]>([]);
     const [sickness, setSickeness] = useState<any[]>([]);
@@ -138,116 +137,103 @@ const PigMedicalDetails: React.FC<PigMedicalDetailsProps> = ({ pigId }) => {
             )}
 
             <div className="d-flex gap-3 align-items-stretch" style={{ height: "700px" }}>
-                <div className="w-100 d-flex flex-column gap-3">
-                    <Card className="w-100 h-50 flex-grow-1 m-0">
-                        <CardHeader className="bg-light d-flex justify-content-between">
-                            <h5>{t('pigs.kpi.diseases')}</h5>
-                            <Button size="sm" onClick={() => toggleModal('registerSickness')}>{t('medical.sickness.action.register')}</Button>
-                        </CardHeader>
-                        <CardBody className={sickness.length === 0 ? 'd-flex justify-content-center align-items-center' : ''} style={{ overflowY: 'auto' }}>
-                            {sickness.length === 0 ? (
-                                <><FiAlertCircle className="text-muted" size={22} /><span className="fs-5 text-muted ms-2">{t('medical.sickness.action.noRecords')}</span></>
-                            ) : (
-                                <div className="d-flex flex-column gap-2">
-                                    {sickness.map((s, index) => (
-                                        <div key={index} className="p-3 border rounded shadow-sm bg-light d-flex flex-column position-relative">
-                                            <Button className="btn position-absolute" size="sm" style={{ top: "10px", right: "10px", borderRadius: "4px" }} onClick={() => { setSelectedSickness(s._id); toggleModal('sicknessDetails'); }}>
+                <Card className="w-50 h-100 m-0">
+                    <CardHeader className="bg-light d-flex justify-content-between">
+                        <h5>{t('pigs.kpi.diseases')}</h5>
+                        <Button size="sm" onClick={() => toggleModal('registerSickness')}>{t('medical.sickness.action.register')}</Button>
+                    </CardHeader>
+                    <CardBody className={sickness.length === 0 ? 'd-flex justify-content-center align-items-center' : ''} style={{ overflowY: 'auto' }}>
+                        {sickness.length === 0 ? (
+                            <><FiAlertCircle className="text-muted" size={22} /><span className="fs-5 text-muted ms-2">{t('medical.sickness.action.noRecords')}</span></>
+                        ) : (
+                            <div className="d-flex flex-column gap-2">
+                                {sickness.map((s, index) => (
+                                    <div key={index} className="p-3 border rounded shadow-sm bg-light d-flex flex-column position-relative">
+                                        <Button className="btn position-absolute" size="sm" style={{ top: "10px", right: "10px", borderRadius: "4px" }} onClick={() => { setSelectedSickness(s._id); toggleModal('sicknessDetails'); }}>
+                                            <FiEye size={18} />
+                                        </Button>
+                                        <strong className="fs-5 mb-2 pe-4">{s.name}</strong>
+                                        <div className="d-flex justify-content-between flex-wrap fs-6 mb-2">
+                                            <span><strong className="text-muted">{t('medical.sickness.field.status')}:</strong> {t(`medical.sickness.status.${s.status}`, { defaultValue: s.status })}</span>
+                                            {s.severity && <span><strong className="text-muted">{t('medical.sickness.field.severity')}:</strong> {t(`medical.sickness.severity.${s.severity}`, { defaultValue: s.severity })}</span>}
+                                        </div>
+                                        <div className="fs-6 d-flex justify-content-between flex-wrap">
+                                            <div><strong className="text-muted">{t('medical.sickness.field.start')}:</strong> {new Date(s.startDate).toLocaleDateString("es-MX")}</div>
+                                            <div><strong className="text-muted">{t('medical.sickness.field.end')}:</strong> {s.endDate ? new Date(s.endDate).toLocaleDateString("es-MX") : "—"}</div>
+                                        </div>
+                                        {s.symptoms?.length > 0 && <div className="mt-2 fs-6"><strong className="text-muted">{t('medical.sickness.field.symptoms')}:</strong> {s.symptoms.join(", ")}</div>}
+                                        <div className="mt-1 fs-6"><strong className="text-muted">{t('medical.sickness.field.detectedBy')}:</strong> {s.detectedBy ? `${s.detectedBy.name} ${s.detectedBy.lastname}` : t('medical.sickness.field.unknown')}</div>
+                                        {s.observations?.trim() && <div className="mt-2 fs-6"><strong className="text-muted">{t('medical.sickness.field.notes')}:</strong> {s.observations}</div>}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </CardBody>
+                </Card>
+
+                <Card className="w-50 h-100 m-0">
+                    <CardHeader className="bg-light d-flex justify-content-between">
+                        <h5>{t('medical.medication.applicationsTitle')}</h5>
+                        <Button size="sm" onClick={() => toggleModal('asignMedication')}>{t('medical.medication.action.administer')}</Button>
+                    </CardHeader>
+                    <CardBody className={(medications.length === 0 && medicationPackages.length === 0) ? 'd-flex justify-content-center align-items-center' : ''} style={{ overflowY: 'auto' }}>
+                        {medications.length === 0 && medicationPackages.length === 0 ? (
+                            <><FiAlertCircle className="text-muted" size={22} /><span className="fs-5 text-muted ms-2">{t('medical.medication.action.noRecords')}</span></>
+                        ) : (
+                            <div className="d-flex flex-column gap-2">
+                                {[
+                                    ...medicationPackages.map((p: any) => ({ ...p, _type: 'package' as const, _date: p.applicationDate })),
+                                    ...medications.map((m: any) => ({ ...m, _type: 'individual' as const, _date: m.applicationDate })),
+                                ]
+                                    .sort((a, b) => new Date(b._date).getTime() - new Date(a._date).getTime())
+                                    .map((item: any, index: number) => item._type === 'package' ? (
+                                        <div key={`p-${index}`} className="p-3 border rounded shadow-sm d-flex flex-column position-relative" style={{ backgroundColor: bg("#eef2ff") }}>
+                                            <Button className="btn position-absolute" size="sm" style={{ top: "10px", right: "10px", borderRadius: "4px" }} onClick={() => { setSelectedMedicationPackage(item.packageId); toggleModal('medicationPackageDetails') }}>
                                                 <FiEye size={18} />
                                             </Button>
-                                            <strong className="fs-5 mb-2 pe-4">{s.name}</strong>
-                                            <div className="d-flex justify-content-between flex-wrap fs-6 mb-2">
-                                                <span><strong className="text-muted">{t('medical.sickness.field.status')}:</strong> {t(`medical.sickness.status.${s.status}`, { defaultValue: s.status })}</span>
-                                                {s.severity && <span><strong className="text-muted">{t('medical.sickness.field.severity')}:</strong> {t(`medical.sickness.severity.${s.severity}`, { defaultValue: s.severity })}</span>}
+                                            <div className="d-flex align-items-center gap-2 mb-2 pe-5">
+                                                <Badge color="info">{t('medical.medication.type.package')}</Badge>
+                                                <strong className="fs-5">{item.name}</strong>
                                             </div>
-                                            <div className="fs-6 d-flex justify-content-between flex-wrap">
-                                                <div><strong className="text-muted">{t('medical.sickness.field.start')}:</strong> {new Date(s.startDate).toLocaleDateString("es-MX")}</div>
-                                                <div><strong className="text-muted">{t('medical.sickness.field.end')}:</strong> {s.endDate ? new Date(s.endDate).toLocaleDateString("es-MX") : "—"}</div>
-                                            </div>
-                                            {s.symptoms?.length > 0 && <div className="mt-2 fs-6"><strong className="text-muted">{t('medical.sickness.field.symptoms')}:</strong> {s.symptoms.join(", ")}</div>}
-                                            <div className="mt-1 fs-6"><strong className="text-muted">{t('medical.sickness.field.detectedBy')}:</strong> {s.detectedBy ? `${s.detectedBy.name} ${s.detectedBy.lastname}` : t('medical.sickness.field.unknown')}</div>
-                                            {s.observations?.trim() && <div className="mt-2 fs-6"><strong className="text-muted">{t('medical.sickness.field.notes')}:</strong> {s.observations}</div>}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </CardBody>
-                    </Card>
-
-                    <Card className="w-100 h-50 flex-grow-1 m-0">
-                        <CardHeader className="bg-light d-flex justify-content-between">
-                            <h5>{t('medical.medication.title')}</h5>
-                            <Button size="sm" onClick={() => toggleModal('asignSingle')}>{t('medical.medication.action.administer')}</Button>
-                        </CardHeader>
-                        <CardBody className={medications.length === 0 ? 'd-flex justify-content-center align-items-center' : ''} style={{ overflowY: 'auto' }}>
-                            {medications.length === 0 ? (
-                                <><FiAlertCircle className="text-muted" size={22} /><span className="fs-5 text-muted ms-2">{t('medical.medication.action.noRecords')}</span></>
-                            ) : (
-                                <div className="d-flex flex-column gap-2">
-                                    {medications.map((m, index) => (
-                                        <div key={index} className="p-3 border rounded shadow-sm bg-light d-flex flex-column">
-                                            <strong className="fs-5 mb-2">{m.medication.name}</strong>
-                                            <div className="d-flex justify-content-between flex-wrap fs-6 mb-2">
-                                                <span><strong className="text-muted">{t('medical.medication.field.dose')}:</strong> {m.dose} {m.unit_measurement}</span>
-                                                <span><strong className="text-muted">{t('medical.medication.field.route')}:</strong> {t(`medical.medication.route.${m.administration_route}`, { defaultValue: m.administration_route })}</span>
-                                            </div>
-                                            <div className="fs-6 d-flex justify-content-between">
-                                                <div><strong className="text-muted">{t('medical.medication.field.appliedBy')}:</strong> {m.appliedBy ? `${m.appliedBy.name} ${m.appliedBy.lastname}` : t('medical.medication.field.unknown')}</div>
-                                                <div><strong className="text-muted">{t('medical.medication.field.date')}:</strong> {new Date(m.applicationDate).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" })}</div>
-                                            </div>
-                                            {m.observations?.trim() && <div className="mt-2 fs-6"><strong className="text-muted">{t('medical.medication.field.notes')}:</strong> {m.observations}</div>}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </CardBody>
-                    </Card>
-                </div>
-
-                <div className="w-100 h-100 d-flex flex-column">
-                    <Card className="w-100 h-100 flex-grow-1 m-0">
-                        <CardHeader className="bg-light d-flex justify-content-between">
-                            <h5>{t('medical.medication.packagesTitle')}</h5>
-                            <Button size="sm" onClick={() => toggleModal('medicationPackage')}>{t('medical.medication.action.adminPackage')}</Button>
-                        </CardHeader>
-                        <CardBody className={medicationPackages.length === 0 ? 'd-flex justify-content-center align-items-center' : ''} style={{ overflowY: 'auto' }}>
-                            {medicationPackages.length === 0 ? (
-                                <><FiAlertCircle className="text-muted" size={22} /><span className="fs-5 text-muted ms-2">{t('medical.medication.action.noPackages')}</span></>
-                            ) : (
-                                <div className="d-flex flex-column gap-3">
-                                    {medicationPackages.map((p, index) => (
-                                        <div key={index} className="p-3 border rounded shadow-sm d-flex flex-column position-relative" style={{ backgroundColor: bg("#eef2ff") }}>
-                                            <Button className="btn position-absolute" size="sm" style={{ top: "10px", right: "10px", borderRadius: "4px" }} onClick={() => { setSelectedMedicationPackage(p.packageId); toggleModal('medicationPackageDetails') }}>
-                                                <FiEye size={18} />
-                                            </Button>
-                                            <strong className="fs-5 mb-2 pe-4">{p.name}</strong>
                                             <div className="d-flex flex-column gap-1 fs-6 mb-2">
-                                                <span><strong className="text-muted">{t('medical.medication.field.stage')}:</strong> {t(`pigs.stage.${p.stage}`, { defaultValue: p.stage })}</span>
+                                                <span><strong className="text-muted">{t('medical.medication.field.stage')}:</strong> {t(`pigs.stage.${item.stage}`, { defaultValue: item.stage })}</span>
                                             </div>
                                             <div className="fs-6 d-flex justify-content-between flex-wrap gap-2">
-                                                <div><strong className="text-muted">{t('medical.medication.field.appliedBy')}:</strong> {p.appliedBy ? `${p.appliedBy.name} ${p.appliedBy.lastname}` : t('medical.medication.field.unknown')}</div>
-                                                <div><strong className="text-muted">{t('medical.medication.field.date')}:</strong> {new Date(p.applicationDate).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" })}</div>
+                                                <div><strong className="text-muted">{t('medical.medication.field.appliedBy')}:</strong> {item.appliedBy ? `${item.appliedBy.name} ${item.appliedBy.lastname}` : t('medical.medication.field.unknown')}</div>
+                                                <div><strong className="text-muted">{t('medical.medication.field.date')}:</strong> {new Date(item.applicationDate).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" })}</div>
                                             </div>
-                                            {p.observations?.trim() && <div className="mt-2 fs-6"><strong className="text-muted">{t('medical.medication.field.notes')}:</strong> {p.observations}</div>}
+                                            {item.observations?.trim() && <div className="mt-2 fs-6"><strong className="text-muted">{t('medical.medication.field.notes')}:</strong> {item.observations}</div>}
+                                        </div>
+                                    ) : (
+                                        <div key={`m-${index}`} className="p-3 border rounded shadow-sm bg-light d-flex flex-column">
+                                            <div className="d-flex align-items-center gap-2 mb-2">
+                                                <Badge color="success">{t('medical.medication.type.individual')}</Badge>
+                                                <strong className="fs-5">{item.medication?.name}</strong>
+                                            </div>
+                                            <div className="d-flex justify-content-between flex-wrap fs-6 mb-2">
+                                                <span><strong className="text-muted">{t('medical.medication.field.dose')}:</strong> {item.dose} {item.unit_measurement}</span>
+                                                <span><strong className="text-muted">{t('medical.medication.field.route')}:</strong> {t(`medical.medication.route.${item.administration_route}`, { defaultValue: item.administration_route })}</span>
+                                            </div>
+                                            <div className="fs-6 d-flex justify-content-between">
+                                                <div><strong className="text-muted">{t('medical.medication.field.appliedBy')}:</strong> {item.appliedBy ? `${item.appliedBy.name} ${item.appliedBy.lastname}` : t('medical.medication.field.unknown')}</div>
+                                                <div><strong className="text-muted">{t('medical.medication.field.date')}:</strong> {new Date(item.applicationDate).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" })}</div>
+                                            </div>
+                                            {item.observations?.trim() && <div className="mt-2 fs-6"><strong className="text-muted">{t('medical.medication.field.notes')}:</strong> {item.observations}</div>}
                                         </div>
                                     ))}
-                                </div>
-                            )}
-                        </CardBody>
-                    </Card>
-                </div>
+                            </div>
+                        )}
+                    </CardBody>
+                </Card>
             </div>
 
             <Modal size="xl" isOpen={modals.registerSickness} toggle={() => toggleModal("registerSickness")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("registerSickness")}>{t('medical.sickness.action.register')}</ModalHeader>
                 <ModalBody><PigSicknessForm pigId={pigId ?? ""} onSave={() => { toggleModal('registerSickness'); fetchMedicalInfo(); }} /></ModalBody>
             </Modal>
-            <Modal size="xl" isOpen={modals.medicationPackage} toggle={() => toggleModal("medicationPackage")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
-                <ModalHeader toggle={() => toggleModal("medicationPackage")}>{t('medical.medication.packageAssign')}</ModalHeader>
-                <ModalBody><AsignMedicationPackageForm pigId={pigId ?? ""} onSave={() => { toggleModal('medicationPackage'); fetchMedicalInfo(); }} /></ModalBody>
-            </Modal>
-            <Modal size="xl" isOpen={modals.asignSingle} toggle={() => toggleModal("asignSingle")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
-                <ModalHeader toggle={() => toggleModal("asignSingle")}>{t('medical.medication.assign')}</ModalHeader>
-                <ModalBody><AsignMedicationForm pigId={pigId ?? ""} onSave={() => { toggleModal('asignSingle'); fetchMedicalInfo(); }} /></ModalBody>
+            <Modal size="xl" isOpen={modals.asignMedication} toggle={() => toggleModal("asignMedication")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
+                <ModalHeader toggle={() => toggleModal("asignMedication")}>{t('medical.medication.assign')}</ModalHeader>
+                <ModalBody><AsignPigMedicationForm pigId={pigId ?? ""} onSave={() => { toggleModal('asignMedication'); fetchMedicalInfo(); }} /></ModalBody>
             </Modal>
             <Modal size="xl" isOpen={modals.medicationPackageDetails} toggle={() => toggleModal("medicationPackageDetails")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("medicationPackageDetails")}>{t('medical.medication.packageDetails')}</ModalHeader>

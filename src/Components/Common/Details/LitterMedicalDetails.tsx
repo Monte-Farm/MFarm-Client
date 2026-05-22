@@ -5,14 +5,15 @@ import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import LoadingAnimation from "../Shared/LoadingAnimation";
 import AlertMessage from "../Shared/AlertMesagge";
-import { Badge, Card, CardBody, Col, Modal, ModalBody, ModalHeader, Row } from "reactstrap";
+import { Badge, Button, Card, CardBody, CardHeader, Col, Modal, ModalBody, ModalHeader, Row } from "reactstrap";
 import { RiMedicineBottleLine, RiVirusLine, RiTimerLine, RiHeartPulseLine } from "react-icons/ri";
+import { FiAlertCircle, FiEye } from "react-icons/fi";
 import MedicationPackageDetails from "./MedicationPackageDetails";
-import AsignLitterMedicationPackageForm from "../Forms/AsignLitterMedicationPackage";
-import AsignLitterMedicationForm from "../Forms/AsignLitterMedicationForm";
-import MedicationPackagesCard from "../Shared/MedicationPackagesCard";
+import AsignLitterMedicationCombinedForm from "../Forms/AsignLitterMedicationCombinedForm";
 import StatKpiCard from "../Graphics/StatKpiCard";
 import ApplicationsTimeline from "../Graphics/ApplicationsTimeline";
+import { useSelector } from "react-redux";
+import { darkenHex } from "utils/colorUtils";
 
 interface LitterMedicalDetailsProps {
     litterId: string
@@ -29,10 +30,13 @@ const LitterMedicalDetails: React.FC<LitterMedicalDetailsProps> = ({ litterId })
     const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true)
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ asignMedication: false, asignMedicationPackage: false, medicationPackageDetails: false });
+    const [modals, setModals] = useState({ asignMedication: false, medicationPackageDetails: false });
     const [medicationPackages, setMedicationPackages] = useState<any[]>([]);
+    const [medications, setMedications] = useState<any[]>([]);
     const [litter, setLitter] = useState<any>({})
     const [medicalStats, setMedicalStats] = useState<any | null>(null);
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const bg = (color: string) => isDark ? darkenHex(color) : color;
 
     const [selectedMedicationPackage, setSelectedMedicationPackage] = useState<string>("")
     const [tabletMode, setTabletMode] = useState(isTablet);
@@ -51,7 +55,8 @@ const LitterMedicalDetails: React.FC<LitterMedicalDetailsProps> = ({ litterId })
                 configContext.axiosHelper.get(`${configContext.apiUrl}/litter/medical_stats/${litterId}`),
             ]);
 
-            setMedicationPackages(medicalResponse.data.data.medicationPackagesHistory);
+            setMedicationPackages(medicalResponse.data.data.medicationPackagesHistory || []);
+            setMedications(medicalResponse.data.data.medications || []);
             setLitter(litterResponse.data.data);
             setMedicalStats(statsResponse.data.data);
         } catch (error) {
@@ -163,30 +168,65 @@ const LitterMedicalDetails: React.FC<LitterMedicalDetailsProps> = ({ litterId })
                 </>
             )}
 
-            {/* Cards existentes */}
             <div className="d-flex gap-3 align-items-stretch" style={{ height: "700px" }}>
-                <MedicationPackagesCard
-                    packages={medicationPackages}
-                    onAdd={() => toggleModal("asignMedicationPackage")}
-                    onViewDetails={(id) => {
-                        setSelectedMedicationPackage(id);
-                        toggleModal("medicationPackageDetails");
-                    }}
-                    status={litter.status}
-                />
+                <Card className="w-100 h-100 m-0">
+                    <CardHeader className="bg-light d-flex justify-content-between">
+                        <h5>{t('medical.medication.applicationsTitle')}</h5>
+                        <Button size="sm" onClick={() => toggleModal('asignMedication')} disabled={litter.status === 'weaned'}>{t('medical.medication.action.administer')}</Button>
+                    </CardHeader>
+                    <CardBody className={(medications.length === 0 && medicationPackages.length === 0) ? 'd-flex justify-content-center align-items-center' : ''} style={{ overflowY: 'auto' }}>
+                        {medications.length === 0 && medicationPackages.length === 0 ? (
+                            <><FiAlertCircle className="text-muted" size={22} /><span className="fs-5 text-muted ms-2">{t('medical.medication.action.noRecords')}</span></>
+                        ) : (
+                            <div className="d-flex flex-column gap-2">
+                                {[
+                                    ...medicationPackages.map((p: any) => ({ ...p, _type: 'package' as const, _date: p.applicationDate })),
+                                    ...medications.map((m: any) => ({ ...m, _type: 'individual' as const, _date: m.applicationDate })),
+                                ]
+                                    .sort((a, b) => new Date(b._date).getTime() - new Date(a._date).getTime())
+                                    .map((item: any, index: number) => item._type === 'package' ? (
+                                        <div key={`p-${index}`} className="p-3 border rounded shadow-sm d-flex flex-column position-relative" style={{ backgroundColor: bg("#eef2ff") }}>
+                                            <Button className="btn position-absolute" size="sm" style={{ top: "10px", right: "10px", borderRadius: "4px" }} onClick={() => { setSelectedMedicationPackage(item.packageId?._id || item.packageId); toggleModal('medicationPackageDetails') }}>
+                                                <FiEye size={18} />
+                                            </Button>
+                                            <div className="d-flex align-items-center gap-2 mb-2 pe-5">
+                                                <Badge color="info">{t('medical.medication.type.package')}</Badge>
+                                                <strong className="fs-5">{item.name}</strong>
+                                            </div>
+                                            <div className="fs-6 d-flex justify-content-between flex-wrap gap-2">
+                                                <div><strong className="text-muted">{t('medical.medication.field.appliedBy')}:</strong> {item.appliedBy ? `${item.appliedBy.name} ${item.appliedBy.lastname}` : t('medical.medication.field.unknown')}</div>
+                                                <div><strong className="text-muted">{t('medical.medication.field.date')}:</strong> {new Date(item.applicationDate).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" })}</div>
+                                            </div>
+                                            {item.observations?.trim() && <div className="mt-2 fs-6"><strong className="text-muted">{t('medical.medication.field.notes')}:</strong> {item.observations}</div>}
+                                        </div>
+                                    ) : (
+                                        <div key={`m-${index}`} className="p-3 border rounded shadow-sm bg-light d-flex flex-column">
+                                            <div className="d-flex align-items-center gap-2 mb-2">
+                                                <Badge color="success">{t('medical.medication.type.individual')}</Badge>
+                                                <strong className="fs-5">{item.medication?.name}</strong>
+                                            </div>
+                                            <div className="d-flex justify-content-between flex-wrap fs-6 mb-2">
+                                                <span><strong className="text-muted">{t('medication.card.medications.perHead')}</strong> {item.dosePerPig} {item.medication?.unit_measurement}</span>
+                                                <span><strong className="text-muted">{t('medication.card.medications.totalDose')}</strong> {item.totalDose} {item.medication?.unit_measurement}</span>
+                                                <span><strong className="text-muted">{t('medical.medication.field.route')}:</strong> {t(`medical.medication.route.${item.administrationRoute}`, { defaultValue: item.administrationRoute })}</span>
+                                            </div>
+                                            <div className="fs-6 d-flex justify-content-between flex-wrap gap-2">
+                                                <div><strong className="text-muted">{t('medical.medication.field.appliedBy')}:</strong> {item.appliedBy ? `${item.appliedBy.name} ${item.appliedBy.lastname}` : t('medical.medication.field.unknown')}</div>
+                                                <div><strong className="text-muted">{t('medical.medication.field.date')}:</strong> {new Date(item.applicationDate).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" })}</div>
+                                            </div>
+                                            {item.observations?.trim() && <div className="mt-2 fs-6"><strong className="text-muted">{t('medical.medication.field.notes')}:</strong> {item.observations}</div>}
+                                        </div>
+                                    ))}
+                            </div>
+                        )}
+                    </CardBody>
+                </Card>
             </div>
-
-            <Modal size="xl" isOpen={modals.asignMedicationPackage} toggle={() => toggleModal("asignMedicationPackage")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
-                <ModalHeader toggle={() => toggleModal("asignMedicationPackage")}>{t('medical.medication.packageAssign')}</ModalHeader>
-                <ModalBody>
-                    <AsignLitterMedicationPackageForm litterId={litterId} onSave={() => { toggleModal('asignMedicationPackage'); fetchMedicalInfo(); }} />
-                </ModalBody>
-            </Modal>
 
             <Modal size="xl" isOpen={modals.asignMedication} toggle={() => toggleModal("asignMedication")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("asignMedication")}>{t('medical.medication.assign')}</ModalHeader>
                 <ModalBody>
-                    <AsignLitterMedicationForm litterId={litterId} onSave={() => { toggleModal('asignMedication'); fetchMedicalInfo(); }} />
+                    <AsignLitterMedicationCombinedForm litterId={litterId} onSave={() => { toggleModal('asignMedication'); fetchMedicalInfo(); }} />
                 </ModalBody>
             </Modal>
 

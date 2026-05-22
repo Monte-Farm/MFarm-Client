@@ -589,7 +589,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
                     </TabPane>
 
                     <TabPane id="step-products-tab" tabId={2}>
-                        <div className="border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(60vh - 100px)', overflowY: 'hidden' }}>
+                        <div className="border border-0 d-flex flex-column flex-grow-1">
                             <SelectableCustomTable
                                 columns={productColumns}
                                 data={products}

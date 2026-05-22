@@ -900,6 +900,11 @@
         "noRecords": "Nenhum medicamento aplicado",
         "noPackages": "Nenhum protocolo aplicado"
       },
+      "applicationsTitle": "Aplicações de medicamentos",
+      "type": {
+        "package": "Protocolo",
+        "individual": "Individual"
+      },
       "title": "Medicamentos aplicados",
       "packagesTitle": "Protocolos sanitários aplicados",
       "packageDetails": "Detalhes do protocolo",
@@ -4509,11 +4514,14 @@
       },
       "form": {
         "step": {
+          "warehouse": "Seleção de almoxarifado",
           "info": "Informações do protocolo",
           "medications": "Selecionar medicamentos",
           "summary": "Revisão"
         },
         "field": {
+          "warehouse": "Almoxarifado / subalmoxarifado",
+          "warehousePlaceholder": "Selecione um almoxarifado",
           "name": "Nome do protocolo",
           "namePlaceholder": "Ex: Protocolo preventivo creche",
           "descriptionPlaceholder": "Observações sobre o protocolo"
@@ -4529,7 +4537,9 @@
           "noteWithDate": "Calculado com preços médios em {{date}}. Este custo pode variar."
         },
         "medicationsSelectedCard": "Medicamentos selecionados",
+        "noProductsInWarehouse": "Este almoxarifado não possui produtos de medicação disponíveis",
         "validation": {
+          "warehouseRequired": "Selecione um almoxarifado",
           "codeRequired": "O código é obrigatório",
           "nameRequired": "O nome é obrigatório",
           "stageRequired": "A fase é obrigatória",
@@ -4726,9 +4736,22 @@
     },
     "assign": {
       "step": {
+        "mode": "Modo",
         "medications": "Seleção de medicamentos",
         "package": "Selecionar protocolo sanitário",
         "summary": "Revisão"
+      },
+      "mode": {
+        "title": "Como deseja administrar a medicação?",
+        "package": "Aplicar protocolo",
+        "packageDesc": "Aplicar um protocolo sanitário predefinido conforme a fase do animal",
+        "individual": "Aplicar medicamentos individuais",
+        "individualDesc": "Selecionar medicamentos avulsos com dose e via de administração",
+        "change": "Trocar modo",
+        "current": {
+          "package": "Modo: Aplicação de protocolo",
+          "individual": "Modo: Aplicação individual"
+        }
       },
       "field": {
         "responsible": "Responsável pela aplicação",

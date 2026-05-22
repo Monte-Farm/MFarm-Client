@@ -900,6 +900,11 @@
         "noRecords": "No treatments recorded",
         "noPackages": "No protocols applied"
       },
+      "applicationsTitle": "Medication applications",
+      "type": {
+        "package": "Protocol",
+        "individual": "Individual"
+      },
       "title": "Treatments",
       "packagesTitle": "Treatment protocols applied",
       "packageDetails": "Protocol details",
@@ -4509,11 +4514,14 @@
       },
       "form": {
         "step": {
+          "warehouse": "Select warehouse",
           "info": "Protocol information",
           "medications": "Select medications",
           "summary": "Review"
         },
         "field": {
+          "warehouse": "Warehouse / sub-warehouse",
+          "warehousePlaceholder": "Select a warehouse",
           "name": "Protocol name",
           "namePlaceholder": "e.g. Nursery preventive protocol",
           "descriptionPlaceholder": "Notes about this protocol"
@@ -4529,7 +4537,9 @@
           "noteWithDate": "Calculated using average prices as of {{date}}. This cost may change over time."
         },
         "medicationsSelectedCard": "Selected medications",
+        "noProductsInWarehouse": "This warehouse has no medication products available",
         "validation": {
+          "warehouseRequired": "Please select a warehouse",
           "codeRequired": "Code is required",
           "nameRequired": "Name is required",
           "stageRequired": "Stage is required",
@@ -4726,9 +4736,22 @@
     },
     "assign": {
       "step": {
+        "mode": "Mode",
         "medications": "Medication selection",
         "package": "Select treatment protocol",
         "summary": "Review"
+      },
+      "mode": {
+        "title": "How would you like to administer the medication?",
+        "package": "Apply a protocol",
+        "packageDesc": "Apply a predefined treatment protocol based on the pig's stage",
+        "individual": "Apply individual medications",
+        "individualDesc": "Pick individual medications with dose and route",
+        "change": "Change mode",
+        "current": {
+          "package": "Mode: Protocol application",
+          "individual": "Mode: Individual application"
+        }
       },
       "field": {
         "responsible": "Administered by",
