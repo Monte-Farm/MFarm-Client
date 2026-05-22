@@ -16,7 +16,8 @@ import {
 const api = new APIClient();
 
 interface FetchListParams {
-    farmId: string;
+    farmId?: string;
+    isGlobal?: boolean;
     periodType?: string;
     year?: number;
     status?: string;
@@ -25,7 +26,7 @@ interface FetchListParams {
 }
 
 export const fetchPeriodClosings = (params: FetchListParams) => async (dispatch: any) => {
-    const { farmId, ...query } = params;
+    const { farmId, isGlobal, ...query } = params;
     dispatch(setLoadingList(true));
     dispatch(setError(null));
     try {
@@ -33,7 +34,8 @@ export const fetchPeriodClosings = (params: FetchListParams) => async (dispatch:
         Object.entries(query).forEach(([k, v]) => {
             if (v !== undefined && v !== null && v !== '') cleaned[k === 'periodType' ? 'period_type' : k] = v;
         });
-        const res = await api.get(PERIOD_CLOSING_URLS.list(farmId), cleaned);
+        const url = isGlobal ? PERIOD_CLOSING_URLS.listGlobal() : PERIOD_CLOSING_URLS.list(farmId || '');
+        const res = await api.get(url, cleaned);
         const data = res.data;
         dispatch(setList({
             items: data.items || [],

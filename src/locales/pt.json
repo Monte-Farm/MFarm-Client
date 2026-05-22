@@ -3191,6 +3191,7 @@
         },
         "column": {
           "period": "Período",
+          "farm": "Granja",
           "type": "Tipo",
           "status": "Status",
           "income": "Receita",
@@ -3200,6 +3201,8 @@
           "closedAt": "Data de fechamento",
           "actions": "Ações"
         },
+        "globalHint": "Selecione uma granja na barra superior para fechar um período.",
+        "cardSubheaderGlobal": "Histórico de fechamentos mensais de todas as granjas",
         "periodType": {
           "annual": "Anual",
           "monthly": "Mensal"

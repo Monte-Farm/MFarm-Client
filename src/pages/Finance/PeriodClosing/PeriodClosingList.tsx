@@ -6,6 +6,7 @@ import { Badge, Button, Card, CardBody, CardHeader, Col, Container, Row } from "
 import PeriodClosingFilters from "Components/Common/Filters/PeriodClosingFilters";
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
+import { useReportScope } from "hooks/useReportScope";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
@@ -17,6 +18,7 @@ import { resetPeriodClosing, setError } from "slices/periodClosing/reducer";
 import { formatCurrency } from "utils/closingFormatters";
 import ClosePeriodModal from "./ClosePeriodModal";
 import CloseYearModal from "./CloseYearModal";
+import ReopenPeriodModal from "./ReopenPeriodModal";
 
 const formatDate = (iso: string): string => {
     if (!iso) return "-";
@@ -32,6 +34,7 @@ const PeriodClosingList = () => {
     const navigate = useNavigate();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
+    const { isGlobal, farmId: scopeFarmId, scopeKey } = useReportScope();
 
     const { items, loadingList, error } = useSelector((state: any) => state.PeriodClosing);
 
@@ -39,9 +42,14 @@ const PeriodClosingList = () => {
     const [filtersPopoverOpen, setFiltersPopoverOpen] = useState(false);
     const [showCloseModal, setShowCloseModal] = useState(false);
     const [showCloseYearModal, setShowCloseYearModal] = useState(false);
+    const [reopenTarget, setReopenTarget] = useState<PeriodClosingListItem | null>(null);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
 
-    const farmId = userLogged?.farm_assigned;
+    const isSuperadmin = Array.isArray(userLogged?.role)
+        ? userLogged.role.includes("Superadmin")
+        : userLogged?.role === "Superadmin";
+
+    const farmId = scopeFarmId || userLogged?.farm_assigned;
 
     const MONTHS = t("finance.periodClosing.months", { returnObjects: true }) as string[];
 
@@ -64,9 +72,10 @@ const PeriodClosingList = () => {
     };
 
     const loadList = () => {
-        if (!farmId) return;
+        if (!isGlobal && !farmId) return;
         dispatch(fetchPeriodClosings({
-            farmId,
+            farmId: isGlobal ? undefined : farmId,
+            isGlobal,
             year: filters.year ? Number(filters.year) : undefined,
             status: filters.status || undefined,
             periodType: filters.periodType || undefined,
@@ -78,7 +87,7 @@ const PeriodClosingList = () => {
         loadList();
         return () => { dispatch(resetPeriodClosing()); };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [filters.year, filters.status, filters.periodType, farmId]);
+    }, [filters.year, filters.status, filters.periodType, scopeKey]);
 
     const columns: Column<PeriodClosingListItem>[] = useMemo(() => [
         {
@@ -88,6 +97,11 @@ const PeriodClosingList = () => {
                 <span className="fw-semibold">{formatPeriod(row)}</span>
             ),
         },
+        ...(isGlobal ? [{
+            header: t("finance.periodClosing.list.column.farm"),
+            accessor: "farm" as keyof PeriodClosingListItem,
+            render: (_: any, row: PeriodClosingListItem) => row.farm?.name ?? "-",
+        }] : []),
         {
             header: t("finance.periodClosing.list.column.type"),
             accessor: "periodType",
@@ -143,11 +157,21 @@ const PeriodClosingList = () => {
                     >
                         <i className="ri-eye-fill align-middle" />
                     </Button>
+                    {isSuperadmin && row.status === "closed" && (
+                        <Button
+                            color="warning"
+                            className="btn-icon"
+                            title={t("finance.periodClosing.detail.button.reopen")}
+                            onClick={() => setReopenTarget(row)}
+                        >
+                            <i className="ri-lock-unlock-line align-middle" />
+                        </Button>
+                    )}
                 </div>
             ),
         },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    ], [navigate, t]);
+    ], [navigate, t, isGlobal, isSuperadmin]);
 
     const currentYear = new Date().getFullYear();
     const yearOptions: number[] = [];
@@ -165,6 +189,12 @@ const PeriodClosingList = () => {
         loadList();
     };
 
+    const handleReopenSuccess = () => {
+        setReopenTarget(null);
+        setAlertConfig({ visible: true, color: "success", message: t("finance.periodClosing.detail.success.reopened") });
+        loadList();
+    };
+
     if (!configContext || !userLogged) return <LoadingAnimation />;
 
     return (
@@ -177,7 +207,7 @@ const PeriodClosingList = () => {
                         <div className="d-flex align-items-center gap-2 flex-wrap">
                             <div className="me-auto">
                                 <h4 className="mb-0">{t("finance.periodClosing.list.cardHeader")}</h4>
-                                <small className="text-muted">{t("finance.periodClosing.list.cardSubheader")}</small>
+                                <small className="text-muted">{t(isGlobal ? "finance.periodClosing.list.cardSubheaderGlobal" : "finance.periodClosing.list.cardSubheader")}</small>
                             </div>
                             <PeriodClosingFilters
                                 filters={filters}
@@ -187,12 +217,20 @@ const PeriodClosingList = () => {
                                 onTogglePopover={() => setFiltersPopoverOpen((p) => !p)}
                                 yearOptions={yearOptions}
                             />
-                            <Button color="info" onClick={() => setShowCloseYearModal(true)}>
-                                <i className="ri-calendar-2-line me-1" />{t("finance.periodClosing.list.button.closeYear")}
-                            </Button>
-                            <Button className="farm-primary-button" onClick={() => setShowCloseModal(true)}>
-                                <i className="ri-add-line me-1" />{t("finance.periodClosing.list.button.closeMonth")}
-                            </Button>
+                            {isGlobal ? (
+                                <small className="text-muted fst-italic">
+                                    <i className="ri-information-line me-1" />{t("finance.periodClosing.list.globalHint")}
+                                </small>
+                            ) : (
+                                <>
+                                    <Button color="info" onClick={() => setShowCloseYearModal(true)}>
+                                        <i className="ri-calendar-2-line me-1" />{t("finance.periodClosing.list.button.closeYear")}
+                                    </Button>
+                                    <Button className="farm-primary-button" onClick={() => setShowCloseModal(true)}>
+                                        <i className="ri-add-line me-1" />{t("finance.periodClosing.list.button.closeMonth")}
+                                    </Button>
+                                </>
+                            )}
                         </div>
                     </CardHeader>
                     <CardBody className={items.length === 0 && !loadingList ? "d-flex flex-column justify-content-center align-items-center text-center py-5" : ""}>
@@ -231,6 +269,13 @@ const PeriodClosingList = () => {
                 onClose={() => setShowCloseYearModal(false)}
                 onSuccess={handleCloseYearSuccess}
                 farmId={farmId ?? ""}
+            />
+            <ReopenPeriodModal
+                isOpen={!!reopenTarget}
+                onClose={() => setReopenTarget(null)}
+                onSuccess={handleReopenSuccess}
+                closingId={reopenTarget?._id ?? ""}
+                periodLabel={reopenTarget ? formatPeriod(reopenTarget) : ""}
             />
 
             <AlertMessage

@@ -1141,6 +1141,7 @@ export interface PeriodClosingListItem {
     closedBy: PeriodClosingUser | null;
     closedAt: string;
     kpis: ClosingKpis;
+    farm?: { _id: string; name: string };
 }
 
 export interface PeriodClosingByPeriod {

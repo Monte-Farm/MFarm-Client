@@ -3191,6 +3191,7 @@
         },
         "column": {
           "period": "Period",
+          "farm": "Farm",
           "type": "Type",
           "status": "Status",
           "income": "Income",
@@ -3200,6 +3201,8 @@
           "closedAt": "Closing date",
           "actions": "Actions"
         },
+        "globalHint": "Select a farm in the top bar to close a period.",
+        "cardSubheaderGlobal": "Monthly closing history across all farms",
         "periodType": {
           "annual": "Annual",
           "monthly": "Monthly"
