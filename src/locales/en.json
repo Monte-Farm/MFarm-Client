@@ -4490,6 +4490,14 @@
         "success": "Liquid genetics lot discarded successfully",
         "error": "An error occurred while discarding the lot"
       }
+    },
+    "discard": {
+      "semenProduct": "Semen product (inventory deduction)",
+      "semenProductHint": "(Optional)",
+      "semenProductNone": "No inventory deduction",
+      "warehouseLabel": "Warehouse",
+      "generalWarehouse": "General warehouse",
+      "semenProductWarning": "No product will be deducted from inventory. Select a product if you want to record consumption."
     }
   },
   "medication": {

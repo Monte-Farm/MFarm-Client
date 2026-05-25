@@ -42,6 +42,8 @@ const ViewSamples = () => {
     const [selectedSamples, setSelectedSamples] = useState<SemenSample[]>([])
     const [filteredSamples, setFilteredSamples] = useState<SemenSample[]>([]);
     const [selectedPig, setSelectedPig] = useState<any>({})
+    const [semenProducts, setSemenProducts] = useState<{ product_id: string; product_name: string; warehouse_id: string; warehouse_name: string }[]>([]);
+    const [bulkDiscardProductId, setBulkDiscardProductId] = useState<string>("");
     const navigate = useNavigate();
 
     const getLotStatusBadge = (lotStatus: string) => {
@@ -222,6 +224,45 @@ const ViewSamples = () => {
         }
     }
 
+    const fetchSemenProducts = async () => {
+        if (!configContext || !userLoggged?.farm_assigned) return;
+        try {
+            const [mainWhRes, subWhRes] = await Promise.all([
+                configContext.axiosHelper.get(`${configContext.apiUrl}/farm/get_main_warehouse/${userLoggged.farm_assigned}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_farm_subwarehouses/${userLoggged.farm_assigned}`),
+            ]);
+            const mainWarehouseId: string = mainWhRes.data.data;
+            const subwarehouses: any[] = subWhRes.data.data || [];
+            const allWarehouses = [
+                { _id: mainWarehouseId, name: t('laboratory.discard.generalWarehouse', { defaultValue: 'Almacén general' }) },
+                ...subwarehouses,
+            ];
+            const inventoryResults = await Promise.all(
+                allWarehouses.map(w =>
+                    configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/get_inventory/${w._id}`)
+                        .then(r => ({ warehouse: w, items: r.data.data || [] }))
+                        .catch(() => ({ warehouse: w, items: [] }))
+                )
+            );
+            const products: typeof semenProducts = [];
+            inventoryResults.forEach(({ warehouse, items }) => {
+                items
+                    .filter((p: any) => p.product?.category === 'laboratory' && p.quantity > 0)
+                    .forEach((p: any) => {
+                        products.push({
+                            product_id: p.product._id,
+                            product_name: p.product.name,
+                            warehouse_id: warehouse._id,
+                            warehouse_name: warehouse.name,
+                        });
+                    });
+            });
+            setSemenProducts(products);
+        } catch (error) {
+            logger.error('Error loading semen products for bulk discard:', error);
+        }
+    };
+
     const bulkDiscardValidationSchema = Yup.object({
         discard_reason: Yup.string().required(t('laboratory.sample.bulk.validation.reason')),
         discard_date: Yup.date().required(t('laboratory.sample.bulk.validation.date')),
@@ -244,12 +285,18 @@ const ViewSamples = () => {
 
             try {
                 setSubmitting(true);
-                await configContext.axiosHelper.put(`${configContext.apiUrl}/semen_sample/discard_sample_lots`, {
+                const selectedProduct = semenProducts.find(p => p.product_id === bulkDiscardProductId);
+                const bulkPayload: any = {
                     sampleIds: discardableSampleIds,
                     discard_reason: values.discard_reason,
                     discard_date: values.discard_date,
-                    discarded_by: values.discarded_by
-                });
+                    discarded_by: values.discarded_by,
+                };
+                if (selectedProduct) {
+                    bulkPayload.warehouseSource = selectedProduct.warehouse_id;
+                    bulkPayload.semen_product_id = selectedProduct.product_id;
+                }
+                await configContext.axiosHelper.put(`${configContext.apiUrl}/semen_sample/discard_sample_lots`, bulkPayload);
                 setAlertConfig({ visible: true, color: 'success', message: t('laboratory.sample.bulk.success', { count: discardableSampleIds.length }) });
                 fetchSemenSamples();
                 setSelectedSamples([]);
@@ -259,6 +306,7 @@ const ViewSamples = () => {
             } finally {
                 setSubmitting(false);
                 bulkDiscardFormik.resetForm();
+                setBulkDiscardProductId("");
                 toggleModal('bulkDiscardForm');
             }
         },
@@ -276,6 +324,7 @@ const ViewSamples = () => {
 
     useEffect(() => {
         fetchSemenSamples();
+        fetchSemenProducts();
         const onResize = () => setTabletMode(isTablet());
         window.addEventListener('resize', onResize);
         return () => window.removeEventListener('resize', onResize);
@@ -429,6 +478,32 @@ const ViewSamples = () => {
                             <small className="text-muted">
                                 {t('laboratory.sample.bulk.warning')}
                             </small>
+                        </div>
+
+                        <div className="mb-3">
+                            <Label htmlFor="bulkDiscardProduct" className="form-label">
+                                {t('laboratory.discard.semenProduct', { defaultValue: 'Producto de semen (descuento de inventario)' })}
+                                <small className="text-muted ms-2">{t('laboratory.discard.semenProductHint', { defaultValue: '(Opcional)' })}</small>
+                            </Label>
+                            <Input
+                                type="select"
+                                id="bulkDiscardProduct"
+                                value={bulkDiscardProductId}
+                                onChange={(e) => setBulkDiscardProductId(e.target.value)}
+                            >
+                                <option value="">{t('laboratory.discard.semenProductNone', { defaultValue: 'Sin descuento de inventario' })}</option>
+                                {semenProducts.map((p, i) => (
+                                    <option key={`${p.product_id}-${p.warehouse_id}-${i}`} value={p.product_id}>
+                                        {p.product_name} — {t('laboratory.discard.warehouseLabel', { defaultValue: 'Almacén' })}: {p.warehouse_name}
+                                    </option>
+                                ))}
+                            </Input>
+                            {!bulkDiscardProductId && (
+                                <div className="alert alert-warning d-flex align-items-center gap-2 mt-2 mb-0 py-2">
+                                    <i className="ri-error-warning-fill fs-5 flex-shrink-0" />
+                                    <span>{t('laboratory.discard.semenProductWarning', { defaultValue: 'No se descontará ningún producto del inventario. Seleccione un producto si desea registrar el consumo.' })}</span>
+                                </div>
+                            )}
                         </div>
 
                         <div className="mt-4">

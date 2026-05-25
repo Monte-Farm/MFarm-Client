@@ -4491,6 +4491,14 @@
         "success": "Lote de genética líquida descartado con éxito",
         "error": "Ha ocurrido un error al descartar el lote"
       }
+    },
+    "discard": {
+      "semenProduct": "Producto de semen (descuento de inventario)",
+      "semenProductHint": "(Opcional)",
+      "semenProductNone": "Sin descuento de inventario",
+      "warehouseLabel": "Almacén",
+      "generalWarehouse": "Almacén general",
+      "semenProductWarning": "No se descontará ningún producto del inventario. Seleccione un producto si desea registrar el consumo."
     }
   },
   "medication": {

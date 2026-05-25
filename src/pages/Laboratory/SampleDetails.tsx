@@ -13,7 +13,7 @@ import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
 import { FiAlertCircle } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
-import { Badge, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalFooter, ModalHeader, Row, UncontrolledTooltip, Spinner } from "reactstrap";
+import { Badge, Button, Card, CardBody, CardHeader, Col, Container, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Row, UncontrolledTooltip, Spinner } from "reactstrap";
 import SimpleBar from "simplebar-react";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
 import { useTranslation } from "react-i18next";
@@ -37,6 +37,8 @@ const SampleDetails = () => {
     const [selectedDose, setSelectedDose] = useState<any>({});
     const [pdfLoading, setPdfLoading] = useState(false);
     const [fileURL, setFileURL] = useState<string | null>(null);
+    const [semenProducts, setSemenProducts] = useState<{ product_id: string; product_name: string; warehouse_id: string; warehouse_name: string }[]>([]);
+    const [discardDoseProductId, setDiscardDoseProductId] = useState<string>("");
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -186,22 +188,69 @@ const SampleDetails = () => {
         },
     ]
 
+    const fetchSemenProducts = async () => {
+        if (!configContext || !userLoggged?.farm_assigned) return;
+        try {
+            const [mainWhRes, subWhRes] = await Promise.all([
+                configContext.axiosHelper.get(`${configContext.apiUrl}/farm/get_main_warehouse/${userLoggged.farm_assigned}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_farm_subwarehouses/${userLoggged.farm_assigned}`),
+            ]);
+            const mainWarehouseId: string = mainWhRes.data.data;
+            const subwarehouses: any[] = subWhRes.data.data || [];
+            const allWarehouses = [
+                { _id: mainWarehouseId, name: t('laboratory.discard.generalWarehouse', { defaultValue: 'Almacén general' }) },
+                ...subwarehouses,
+            ];
+            const inventoryResults = await Promise.all(
+                allWarehouses.map(w =>
+                    configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/get_inventory/${w._id}`)
+                        .then(r => ({ warehouse: w, items: r.data.data || [] }))
+                        .catch(() => ({ warehouse: w, items: [] }))
+                )
+            );
+            const products: typeof semenProducts = [];
+            inventoryResults.forEach(({ warehouse, items }) => {
+                items
+                    .filter((p: any) => p.product?.category === 'laboratory' && p.quantity > 0)
+                    .forEach((p: any) => {
+                        products.push({
+                            product_id: p.product._id,
+                            product_name: p.product.name,
+                            warehouse_id: warehouse._id,
+                            warehouse_name: warehouse.name,
+                        });
+                    });
+            });
+            setSemenProducts(products);
+        } catch (error) {
+            logger.error('Error loading semen products for dose discard:', error);
+        }
+    };
+
     const discardDose = async () => {
         if (!configContext) return;
         try {
-            const discardResponse = await configContext.axiosHelper.update(`${configContext.apiUrl}/semen_sample/discard_dose`, {
+            const selectedProduct = semenProducts.find(p => p.product_id === discardDoseProductId);
+            const payload: any = {
                 sampleId: sampleDetails._id,
-                doseId: selectedDose._id
-            })
+                doseId: selectedDose._id,
+            };
+            if (selectedProduct) {
+                payload.warehouseSource = selectedProduct.warehouse_id;
+                payload.semen_product_id = selectedProduct.product_id;
+            }
+            const discardResponse = await configContext.axiosHelper.update(`${configContext.apiUrl}/semen_sample/discard_dose`, payload)
 
             if (discardResponse.status === HttpStatusCode.Ok) {
-                toggleModal('discardDose')
+                toggleModal('discardDose');
+                setDiscardDoseProductId("");
                 setAlertConfig({ visible: true, color: 'success', message: t('laboratory.sample.detail.success.discardDose', { code: selectedDose.code }) })
                 fetchData();
             }
         } catch (error) {
             logger.error(`Error discarding the dose: ${selectedDose.code}:`, error)
-            toggleModal('discardDose')
+            toggleModal('discardDose');
+            setDiscardDoseProductId("");
             setAlertConfig({ visible: true, color: 'danger', message: t('laboratory.sample.detail.error.discardDose', { code: selectedDose.code }) })
         }
     }
@@ -270,6 +319,7 @@ const SampleDetails = () => {
 
     useEffect(() => {
         fetchData();
+        fetchSemenProducts();
     }, [])
 
 
@@ -393,8 +443,8 @@ const SampleDetails = () => {
                 </ModalBody>
             </Modal>
 
-            <Modal size="md" isOpen={modals.discardDose} toggle={() => toggleModal("discardDose")} centered>
-                <ModalHeader toggle={() => toggleModal("discardDose")}>{t('laboratory.sample.detail.modal.discardDose')}</ModalHeader>
+            <Modal size="md" isOpen={modals.discardDose} toggle={() => { toggleModal("discardDose"); setDiscardDoseProductId(""); }} centered>
+                <ModalHeader toggle={() => { toggleModal("discardDose"); setDiscardDoseProductId(""); }}>{t('laboratory.sample.detail.modal.discardDose')}</ModalHeader>
                 <ModalBody>
                     <div className="d-flex flex-column align-items-center text-center gap-3">
                         <FiAlertCircle size={50} color="#dc3545" />
@@ -407,10 +457,35 @@ const SampleDetails = () => {
                             </p>
                         </div>
                     </div>
+                    <div className="mt-3 text-start">
+                        <Label htmlFor="discardDoseProduct" className="form-label">
+                            {t('laboratory.discard.semenProduct', { defaultValue: 'Producto de semen (descuento de inventario)' })}
+                            <small className="text-muted ms-2">{t('laboratory.discard.semenProductHint', { defaultValue: '(Opcional)' })}</small>
+                        </Label>
+                        <Input
+                            type="select"
+                            id="discardDoseProduct"
+                            value={discardDoseProductId}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDiscardDoseProductId(e.target.value)}
+                        >
+                            <option value="">{t('laboratory.discard.semenProductNone', { defaultValue: 'Sin descuento de inventario' })}</option>
+                            {semenProducts.map((p, i) => (
+                                <option key={`${p.product_id}-${p.warehouse_id}-${i}`} value={p.product_id}>
+                                    {p.product_name} — {t('laboratory.discard.warehouseLabel', { defaultValue: 'Almacén' })}: {p.warehouse_name}
+                                </option>
+                            ))}
+                        </Input>
+                        {!discardDoseProductId && (
+                            <div className="alert alert-warning d-flex align-items-center gap-2 mt-2 mb-0 py-2">
+                                <i className="ri-error-warning-fill fs-5 flex-shrink-0" />
+                                <span>{t('laboratory.discard.semenProductWarning', { defaultValue: 'No se descontará ningún producto del inventario. Seleccione un producto si desea registrar el consumo.' })}</span>
+                            </div>
+                        )}
+                    </div>
                 </ModalBody>
                 <ModalFooter>
                     <div className="d-flex gap-2 mt-3">
-                        <Button color="secondary" onClick={() => toggleModal("discardDose")}>
+                        <Button color="secondary" onClick={() => { toggleModal("discardDose"); setDiscardDoseProductId(""); }}>
                             {t('common.button.cancel')}
                         </Button>
                         <Button color="danger" onClick={() => discardDose()}>
