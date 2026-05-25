@@ -478,11 +478,14 @@ export interface InseminationData {
     estimated_farrowing_date?: Date;
     notes?: string;
     attachments?: string[];
+    warehouseSource?: string;
     doses: {
         order: number;
         time: Date;
-        dose: string
+        dose: string;
         notes?: string;
+        semen_product_id?: string;
+        total_volume?: number;
     }[];
     heats: {
         date: Date | null;

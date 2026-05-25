@@ -35,6 +35,8 @@ const AsignLitterMedicationCombinedForm: React.FC<Props> = ({ litterId, onSave }
     const [modals, setModals] = useState({ success: false, error: false, missingStock: false, subwarehouseError: false });
     const [missingItems, setMissingItems] = useState<any[]>([]);
     const [isSubmittingIndividual, setIsSubmittingIndividual] = useState<boolean>(false);
+    const [subwarehouses, setSubwarehouses] = useState<any[]>([]);
+    const [warehouseSource, setWarehouseSource] = useState<string>("");
 
     const [mode, setMode] = useState<Mode>(null);
     const [litterDetails, setLitterDetails] = useState<any>();
@@ -59,6 +61,7 @@ const AsignLitterMedicationCombinedForm: React.FC<Props> = ({ litterId, onSave }
         setMedicationErrors({});
         setSelectedMedicationPackage(undefined);
         setMedicationsPackagesItems(undefined);
+        setWarehouseSource("");
         formik.setFieldValue('packageId', '');
         formik.setFieldValue('name', '');
         formik.setFieldValue('medications', []);
@@ -73,15 +76,17 @@ const AsignLitterMedicationCombinedForm: React.FC<Props> = ({ litterId, onSave }
             const litterResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/litter/find_by_id/${litterId}`);
             setLitterDetails(litterResponse.data.data);
 
-            const [medicationsResponse, packagesResponse] = await Promise.all([
+            const [medicationsResponse, packagesResponse, subwarehousesResponse] = await Promise.all([
                 configContext.axiosHelper.get(`${configContext.apiUrl}/product/find_medication_products`),
                 configContext.axiosHelper.get(`${configContext.apiUrl}/medication_package/find_by_stage/${userLogged.farm_assigned}/piglet`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_farm_subwarehouses/${userLogged.farm_assigned}`),
             ]);
 
             const medsWithId = medicationsResponse.data.data.map((b: any) => ({ ...b, code: b.id, id: b._id }));
             const pkgsWithId = packagesResponse.data.data.map((b: any) => ({ ...b, id: b._id }));
             setMedicationsItems(medsWithId);
             setMedicationsPackages(pkgsWithId);
+            setSubwarehouses(subwarehousesResponse.data.data || []);
         } catch (error) {
             logger.error('Error fetching data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('medication.assign.error.load') });
@@ -114,6 +119,10 @@ const AsignLitterMedicationCombinedForm: React.FC<Props> = ({ litterId, onSave }
 
     const validateSelectedMedications = async () => {
         const errors: Record<string, any> = {};
+        if (!warehouseSource) {
+            setAlertConfig({ visible: true, color: 'danger', message: t('medication.assign.field.warehouseSourceRequired') });
+            return false;
+        }
         if (medicationsSelected.length === 0) {
             setAlertConfig({ visible: true, color: 'danger', message: t('medication.assign.validation.selectAtLeastOne') });
             return false;
@@ -152,7 +161,7 @@ const AsignLitterMedicationCombinedForm: React.FC<Props> = ({ litterId, onSave }
         onSubmit: async (values) => {
             if (!configContext) return;
             try {
-                await configContext.axiosHelper.create(`${configContext.apiUrl}/medication_package/asign_litter_medication_package/${userLogged.farm_assigned}/${litterId}`, values);
+                await configContext.axiosHelper.create(`${configContext.apiUrl}/medication_package/asign_litter_medication_package/${userLogged.farm_assigned}/${litterId}`, { ...values, warehouseSource });
 
                 const litterEvent: LitterEvent = {
                     type: "GROUP_TREATMENT",
@@ -173,6 +182,10 @@ const AsignLitterMedicationCombinedForm: React.FC<Props> = ({ litterId, onSave }
     });
 
     const checkPackageSelected = () => {
+        if (!warehouseSource) {
+            setAlertConfig({ visible: true, color: 'danger', message: t('medication.assign.field.warehouseSourceRequired') });
+            return;
+        }
         if (!formik.values.packageId) {
             setAlertConfig({ visible: true, color: 'danger', message: t('medication.assign.validation.selectPackage') });
             return;
@@ -184,8 +197,8 @@ const AsignLitterMedicationCombinedForm: React.FC<Props> = ({ litterId, onSave }
         if (!configContext || !userLogged) return;
         try {
             setIsSubmittingIndividual(true);
-            const payload = medicationsSelected.map(m => ({ ...m, applicationDate }));
-            await configContext.axiosHelper.create(`${configContext.apiUrl}/medication_package/asign_litter_medications/${userLogged.farm_assigned}/${litterId}`, payload);
+            const medications = medicationsSelected.map(m => ({ ...m, applicationDate }));
+            await configContext.axiosHelper.create(`${configContext.apiUrl}/medication_package/asign_litter_medications/${userLogged.farm_assigned}/${litterId}`, { medications, warehouseSource });
 
             const litterEvent: LitterEvent = {
                 type: "GROUP_TREATMENT",
@@ -389,6 +402,21 @@ const AsignLitterMedicationCombinedForm: React.FC<Props> = ({ litterId, onSave }
                             {mode === 'package' ? t('medication.assign.mode.current.package') : t('medication.assign.mode.current.individual')}
                         </h5>
                         <Button size="sm" onClick={resetMode}><i className="ri-arrow-go-back-line me-1" />{t('medication.assign.mode.change')}</Button>
+                    </div>
+
+                    <div className="mb-3">
+                        <Label className="form-label">{t('medication.assign.field.warehouseSource')}</Label>
+                        <Input
+                            type="select"
+                            value={warehouseSource}
+                            onChange={(e) => setWarehouseSource(e.target.value)}
+                        >
+                            <option value="">{t('medication.assign.field.warehouseSourcePlaceholder')}</option>
+                            <option value="general">{t('medication.assign.field.warehouseGeneral')}</option>
+                            {subwarehouses.map((w: any) => (
+                                <option key={w._id} value={w._id}>{w.name}</option>
+                            ))}
+                        </Input>
                     </div>
 
                     <div className="d-flex gap-3">

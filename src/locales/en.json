@@ -2582,7 +2582,14 @@
       "loadingInfo": "Loading information...",
       "sowDetailsTitle": "Sow details",
       "success": "Insemination registered successfully",
-      "validationDate": "Please enter the insemination date"
+      "validationDate": "Please enter the insemination date",
+      "semenProduct": "Semen product (inventory deduction)",
+      "semenProductHint": "(Optional — select to deduct from warehouse stock)",
+      "semenProductNone": "No inventory deduction",
+      "warehouseLabel": "Warehouse",
+      "generalWarehouse": "General warehouse",
+      "errorLoadSemenProducts": "Error loading semen products",
+      "semenProductWarning": "No product will be deducted from inventory. Select a product if you want to record consumption."
     },
     "filter": {
       "search": "Search...",
@@ -3126,6 +3133,15 @@
     "error": {
       "load": "Failed to load data, please try again",
       "pdf": "Error generating report, please try again."
+    },
+    "earTag": {
+      "modalTitle": "Assign ear tag number",
+      "assign": "Assign ear tag",
+      "assignTooltip": "This animal has no ear tag assigned",
+      "pig": "Animal",
+      "required": "Ear tag number is required",
+      "success": "Ear tag successfully assigned",
+      "error": "An error occurred while assigning the ear tag, please try again"
     },
     "form": {
       "step1": "Select pigs",
@@ -4762,7 +4778,11 @@
         "observations": "Notes",
         "observationsPlaceholder": "Notes about this application",
         "selectMedications": "Medication selection",
-        "selectPackage": "Treatment protocol"
+        "selectPackage": "Treatment protocol",
+        "warehouseSource": "Deduction source",
+        "warehouseSourcePlaceholder": "Select medication source",
+        "warehouseGeneral": "General warehouse",
+        "warehouseSourceRequired": "Select the medication source"
       },
       "column": {
         "dosePerHead": "Dose per head",

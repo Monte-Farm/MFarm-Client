@@ -2582,7 +2582,14 @@
       "loadingInfo": "Cargando información...",
       "sowDetailsTitle": "Detalles de la cerda",
       "success": "Inseminación registrada con éxito",
-      "validationDate": "Por favor ingrese la fecha de la inseminación"
+      "validationDate": "Por favor ingrese la fecha de la inseminación",
+      "semenProduct": "Producto de semen (descuento de inventario)",
+      "semenProductHint": "(Opcional — seleccione para descontar del almacén)",
+      "semenProductNone": "Sin descuento de inventario",
+      "warehouseLabel": "Almacén",
+      "generalWarehouse": "Almacén general",
+      "errorLoadSemenProducts": "Error al cargar los productos de semen",
+      "semenProductWarning": "No se descontará ningún producto del inventario. Seleccione un producto si desea registrar el consumo."
     },
     "filter": {
       "search": "Buscar...",
@@ -3126,6 +3133,15 @@
     "error": {
       "load": "Ha ocurrido un error al obtener los datos, intentelo mas tarde",
       "pdf": "Ha ocurrido un error al generar el reporte, inténtelo más tarde."
+    },
+    "earTag": {
+      "modalTitle": "Asignar número de arete",
+      "assign": "Asignar arete",
+      "assignTooltip": "Este cerdo no tiene arete asignado",
+      "pig": "Cerdo",
+      "required": "El número de arete es obligatorio",
+      "success": "Número de arete asignado correctamente",
+      "error": "Ha ocurrido un error al asignar el arete, inténtelo más tarde"
     },
     "form": {
       "step1": "Selección de cerdos",
@@ -4763,7 +4779,11 @@
         "observations": "Observaciones",
         "observationsPlaceholder": "Observaciones de la aplicación",
         "selectMedications": "Selección de medicamentos",
-        "selectPackage": "Selección de paquete de medicación"
+        "selectPackage": "Selección de paquete de medicación",
+        "warehouseSource": "Origen de descuento",
+        "warehouseSourcePlaceholder": "Seleccione el origen del medicamento",
+        "warehouseGeneral": "Almacén general",
+        "warehouseSourceRequired": "Seleccione el origen del medicamento"
       },
       "column": {
         "dosePerHead": "Dosis por cerdo",

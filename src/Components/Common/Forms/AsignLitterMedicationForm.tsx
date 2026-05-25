@@ -40,6 +40,8 @@ const AsignLitterMedicationForm: React.FC<AsignLitterMedicationFormProps> = ({ l
     const [medicationErrors, setMedicationErrors] = useState<Record<string, any>>({});
     const [applicationDate, setApplicationDate] = useState<Date>(new Date())
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const [subwarehouses, setSubwarehouses] = useState<any[]>([]);
+    const [warehouseSource, setWarehouseSource] = useState<string>("");
 
     function toggleArrowTab(tab: number) {
         if (activeStep !== tab) {
@@ -256,9 +258,13 @@ const AsignLitterMedicationForm: React.FC<AsignLitterMedicationFormProps> = ({ l
             const litterData = litterResponse.data.data;
             setLitterDetails(litterData)
 
-            const medicationsResponse = await configContext.axiosHelper.get(`${configContext.apiUrl}/product/find_medication_products`)
+            const [medicationsResponse, subwarehousesResponse] = await Promise.all([
+                configContext.axiosHelper.get(`${configContext.apiUrl}/product/find_medication_products`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_farm_subwarehouses/${userLogged.farm_assigned}`),
+            ]);
             const medicationsWithId = medicationsResponse.data.data.map((b: any) => ({ ...b, code: b.id, id: b._id }));
-            setMedicationsItems(medicationsWithId)
+            setMedicationsItems(medicationsWithId);
+            setSubwarehouses(subwarehousesResponse.data.data || []);
         } catch (error) {
             logger.error('Error fetching data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('medication.assign.error.load') })
@@ -273,7 +279,7 @@ const AsignLitterMedicationForm: React.FC<AsignLitterMedicationFormProps> = ({ l
             setIsSubmitting(true);
             const medicationsData = medicationsSelected.map(prev => ({ ...prev, applicationDate: applicationDate }))
 
-            const medicationResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/medication_package/asign_litter_medications/${userLogged.farm_assigned}/${litterId}`, medicationsData)
+            const medicationResponse = await configContext.axiosHelper.create(`${configContext.apiUrl}/medication_package/asign_litter_medications/${userLogged.farm_assigned}/${litterId}`, { medications: medicationsData, warehouseSource })
 
             const litterEvent: LitterEvent = {
                 type: "GROUP_TREATMENT",
@@ -315,6 +321,11 @@ const AsignLitterMedicationForm: React.FC<AsignLitterMedicationFormProps> = ({ l
 
     const validateSelectedMedications = async () => {
         const errors: Record<string, any> = {};
+
+        if (!warehouseSource) {
+            setAlertConfig({ visible: true, color: 'danger', message: t('medication.assign.field.warehouseSourceRequired') })
+            return false;
+        }
 
         if (medicationsSelected.length === 0) {
             setAlertConfig({ visible: true, color: 'danger', message: t('medication.assign.validation.selectAtLeastOne') })
@@ -395,6 +406,22 @@ const AsignLitterMedicationForm: React.FC<AsignLitterMedicationFormProps> = ({ l
 
             <TabContent activeTab={activeStep}>
                 <TabPane id="step-medicationSelect-tab" tabId={1}>
+                    <div className="mb-3">
+                        <Label htmlFor="warehouseSource" className="form-label">{t('medication.assign.field.warehouseSource')}</Label>
+                        <Input
+                            type="select"
+                            id="warehouseSource"
+                            value={warehouseSource}
+                            onChange={(e) => setWarehouseSource(e.target.value)}
+                        >
+                            <option value="">{t('medication.assign.field.warehouseSourcePlaceholder')}</option>
+                            <option value="general">{t('medication.assign.field.warehouseGeneral')}</option>
+                            {subwarehouses.map((w: any) => (
+                                <option key={w._id} value={w._id}>{w.name}</option>
+                            ))}
+                        </Input>
+                    </div>
+
                     <div className="d-flex gap-3">
                         <div className="w-50">
                             <Label htmlFor="user" className="form-label">{t('medication.assign.field.responsible')}</Label>

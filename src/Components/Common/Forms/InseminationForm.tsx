@@ -50,6 +50,8 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
     const [alertDosesIncomplete, setAlertDosesIncomplete] = useState(false);
     const [pigDetailsmodalOpen, setPigDetailsModalOpen] = useState(false);
     const [idSelectedPig, setIdSelectedPig] = useState<string>("");
+    const [semenProducts, setSemenProducts] = useState<{ product_id: string; product_name: string; warehouse_id: string; warehouse_name: string; unit_measurement: string }[]>([]);
+    const [selectedSemenProductId, setSelectedSemenProductId] = useState<string>("");
 
     const sowsColumns: Column<any>[] = [
         {
@@ -181,6 +183,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
             notes: '',
             doses: [],
             heats: [],
+            warehouseSource: '',
         },
         enableReinitialize: true,
         validationSchema: inseminationValidationSchema,
@@ -235,14 +238,23 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
             return;
         }
 
+        const selectedProduct = semenProducts.find(p => p.product_id === selectedSemenProductId);
+
         const formattedDoses = selectedDoses.map((dose, index) => ({
             dose: dose._id,
             order: index + 1,
             time: dose.time,
             notes: dose.notes,
+            ...(selectedProduct ? {
+                semen_product_id: selectedProduct.product_id,
+                total_volume: dose.total_volume,
+            } : {}),
         }));
 
         formik.setFieldValue('doses', formattedDoses);
+        if (selectedProduct) {
+            formik.setFieldValue('warehouseSource', selectedProduct.warehouse_id);
+        }
 
         toggleArrowTab(activeStep + 1);
     };
@@ -276,6 +288,46 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
         }
     }
 
+    const fetchSemenProducts = async () => {
+        if (!configContext || !userLogged) return;
+        try {
+            const [mainWhRes, subWhRes] = await Promise.all([
+                configContext.axiosHelper.get(`${configContext.apiUrl}/farm/get_main_warehouse/${userLogged.farm_assigned}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_farm_subwarehouses/${userLogged.farm_assigned}`),
+            ]);
+            const mainWarehouseId: string = mainWhRes.data.data;
+            const subwarehouses: any[] = subWhRes.data.data || [];
+            const allWarehouses = [
+                { _id: mainWarehouseId, name: t('insemination.form.generalWarehouse', { defaultValue: 'Almacén general' }) },
+                ...subwarehouses,
+            ];
+            const inventoryResults = await Promise.all(
+                allWarehouses.map(w =>
+                    configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/get_inventory/${w._id}`)
+                        .then(r => ({ warehouse: w, items: r.data.data || [] }))
+                        .catch(() => ({ warehouse: w, items: [] }))
+                )
+            );
+            const products: typeof semenProducts = [];
+            inventoryResults.forEach(({ warehouse, items }) => {
+                items
+                    .filter((p: any) => p.product?.category === 'laboratory' && p.quantity > 0)
+                    .forEach((p: any) => {
+                        products.push({
+                            product_id: p.product._id,
+                            product_name: p.product.name,
+                            warehouse_id: warehouse._id,
+                            warehouse_name: warehouse.name,
+                            unit_measurement: p.product.unit_measurement,
+                        });
+                    });
+            });
+            setSemenProducts(products);
+        } catch (error) {
+            handleError(error, t('insemination.form.errorLoadSemenProducts', { defaultValue: 'Error al cargar los productos de semen' }));
+        }
+    };
+
     const fetchExtractionDetails = async (extractionId: string, sampleId: string) => {
         if (!configContext || !userLogged) return;
 
@@ -299,6 +351,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
     useEffect(() => {
         fetchSows();
         fetchDoses();
+        fetchSemenProducts();
         formik.setFieldValue('date', new Date())
         const onResize = () => setTabletMode(isTablet());
         window.addEventListener('resize', onResize);
@@ -437,6 +490,31 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                         </div>
 
                         <div className="mt-4 border-top border-3 pt-3">
+                            <div className="mb-3">
+                                <Label htmlFor="semenProductSelect" className="form-label">
+                                    {t('insemination.form.semenProduct', { defaultValue: 'Producto de semen (descuento de inventario)' })}
+                                    <small className="text-muted ms-2">{t('insemination.form.semenProductHint', { defaultValue: '(Opcional — seleccione para descontar del almacén)' })}</small>
+                                </Label>
+                                <Input
+                                    type="select"
+                                    id="semenProductSelect"
+                                    value={selectedSemenProductId}
+                                    onChange={(e) => setSelectedSemenProductId(e.target.value)}
+                                >
+                                    <option value="">{t('insemination.form.semenProductNone', { defaultValue: 'Sin descuento de inventario' })}</option>
+                                    {semenProducts.map((p, i) => (
+                                        <option key={`${p.product_id}-${p.warehouse_id}-${i}`} value={p.product_id}>
+                                            {p.product_name} — {t('insemination.form.warehouseLabel', { defaultValue: 'Almacén' })}: {p.warehouse_name}
+                                        </option>
+                                    ))}
+                                </Input>
+                                {!selectedSemenProductId && (
+                                    <div className="alert alert-warning d-flex align-items-center gap-2 mt-2 mb-0 py-2">
+                                        <i className="ri-error-warning-fill fs-5 flex-shrink-0" />
+                                        <span>{t('insemination.form.semenProductWarning', { defaultValue: 'No se descontará ningún producto del inventario. Seleccione un producto si desea registrar el consumo.' })}</span>
+                                    </div>
+                                )}
+                            </div>
                             <Label className="form-label">{t('insemination.form.doses', { defaultValue: 'Dosis de semen' })}</Label>
                             <SelectableTable
                                 data={doses}

@@ -21,6 +21,7 @@ import KPI from "Components/Common/Graphics/Kpi"
 import BasicPieChart from "Components/Common/Graphics/BasicPieChart"
 import PigFilters, { PigFiltersState } from "Components/Common/Filters/PigFilters"
 import { useTranslation } from "react-i18next"
+import AssignEarTagForm from "Components/Common/Forms/AssignEarTagForm"
 
 const STAGE_COLORS: Record<string, string> = {
     piglet: 'info', weaning: 'warning', fattening: 'primary', breeder: 'success',
@@ -31,7 +32,8 @@ const STATUS_COLORS: Record<string, string> = {
 
 const ViewSows = () => {
     const { t } = useTranslation();
-    const [modals, setModals] = useState({ viewPDF: false });
+    const [modals, setModals] = useState({ viewPDF: false, assignEarTag: false });
+    const [selectedPig, setSelectedPig] = useState<PigData | null>(null)
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true)
@@ -100,6 +102,16 @@ const ViewSows = () => {
             accessor: "action",
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
+                    {!row.earTag && row.status === 'alive' && (
+                        <Button
+                            className="btn-icon"
+                            color="warning"
+                            title={t('replacement.earTag.assignTooltip')}
+                            onClick={() => { setSelectedPig(row); toggleModal('assignEarTag'); }}
+                        >
+                            <i className="ri-price-tag-3-line align-middle"></i>
+                        </Button>
+                    )}
                     <Button className="farm-primary-button btn-icon" onClick={() => navigate(`/pigs/pig_details/${row._id}`)}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
@@ -296,6 +308,19 @@ const ViewSows = () => {
                     </CardBody>
                 </Card>
             </Container>
+
+            <Modal size="md" isOpen={modals.assignEarTag} toggle={() => toggleModal("assignEarTag")} centered>
+                <ModalHeader toggle={() => toggleModal("assignEarTag")}>{t('replacement.earTag.modalTitle')}</ModalHeader>
+                <ModalBody>
+                    {selectedPig && (
+                        <AssignEarTagForm
+                            pig={selectedPig}
+                            onSave={() => { toggleModal('assignEarTag', false); fetchData(); }}
+                            onCancel={() => toggleModal('assignEarTag', false)}
+                        />
+                    )}
+                </ModalBody>
+            </Modal>
 
             <Modal size="xl" isOpen={modals.viewPDF} toggle={() => toggleModal("viewPDF")} backdrop='static' keyboard={false} centered fullscreen={true}>
                 <ModalHeader toggle={() => toggleModal("viewPDF")}>{t('replacement.modal.sowReport')}</ModalHeader>

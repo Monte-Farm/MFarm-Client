@@ -2582,7 +2582,14 @@
       "loadingInfo": "Carregando informações...",
       "sowDetailsTitle": "Detalhes da porca",
       "success": "Inseminação registrada com sucesso",
-      "validationDate": "Por favor, insira a data da inseminação"
+      "validationDate": "Por favor, insira a data da inseminação",
+      "semenProduct": "Produto de sêmen (baixa de estoque)",
+      "semenProductHint": "(Opcional — selecione para dar baixa no almoxarifado)",
+      "semenProductNone": "Sem baixa de estoque",
+      "warehouseLabel": "Almoxarifado",
+      "generalWarehouse": "Almoxarifado geral",
+      "errorLoadSemenProducts": "Erro ao carregar os produtos de sêmen",
+      "semenProductWarning": "Nenhum produto será baixado do estoque. Selecione um produto se quiser registrar o consumo."
     },
     "filter": {
       "search": "Pesquisar...",
@@ -3126,6 +3133,15 @@
     "error": {
       "load": "Erro ao carregar os dados, tente novamente",
       "pdf": "Erro ao gerar o relatório, tente novamente."
+    },
+    "earTag": {
+      "modalTitle": "Atribuir número do brinco",
+      "assign": "Atribuir brinco",
+      "assignTooltip": "Este animal não possui brinco atribuído",
+      "pig": "Animal",
+      "required": "O número do brinco é obrigatório",
+      "success": "Brinco atribuído com sucesso",
+      "error": "Ocorreu um erro ao atribuir o brinco, tente novamente"
     },
     "form": {
       "step1": "Seleção de suínos",
@@ -4762,7 +4778,11 @@
         "observations": "Observações",
         "observationsPlaceholder": "Observações sobre a aplicação",
         "selectMedications": "Seleção de medicamentos",
-        "selectPackage": "Protocolo sanitário"
+        "selectPackage": "Protocolo sanitário",
+        "warehouseSource": "Origem do desconto",
+        "warehouseSourcePlaceholder": "Selecione a origem do medicamento",
+        "warehouseGeneral": "Almoxarifado geral",
+        "warehouseSourceRequired": "Selecione a origem do medicamento"
       },
       "column": {
         "dosePerHead": "Dose por animal",

@@ -39,6 +39,8 @@ const AsignPigMedicationForm: React.FC<AsignPigMedicationFormProps> = ({ pigId, 
     const [modals, setModals] = useState({ success: false, error: false, missingStock: false, subwarehouseError: false });
     const [missingItems, setMissingItems] = useState<any[]>([]);
     const [isSubmittingIndividual, setIsSubmittingIndividual] = useState<boolean>(false);
+    const [subwarehouses, setSubwarehouses] = useState<any[]>([]);
+    const [warehouseSource, setWarehouseSource] = useState<string>("");
 
     const [mode, setMode] = useState<Mode>(null);
     const [pigDetails, setPigDetails] = useState<PigData>();
@@ -71,6 +73,7 @@ const AsignPigMedicationForm: React.FC<AsignPigMedicationFormProps> = ({ pigId, 
         setMedicationErrors({});
         setSelectedMedicationPackage(undefined);
         setMedicationsPackagesItems(undefined);
+        setWarehouseSource("");
         formik.setFieldValue('packageId', '');
         formik.setFieldValue('name', '');
         formik.setFieldValue('stage', '');
@@ -88,15 +91,17 @@ const AsignPigMedicationForm: React.FC<AsignPigMedicationFormProps> = ({ pigId, 
             const pigData = pigResponse.data.data;
             setPigDetails(pigData);
 
-            const [medicationsResponse, packagesResponse] = await Promise.all([
+            const [medicationsResponse, packagesResponse, subwarehousesResponse] = await Promise.all([
                 configContext.axiosHelper.get(`${configContext.apiUrl}/product/find_medication_products`),
                 configContext.axiosHelper.get(`${configContext.apiUrl}/medication_package/find_by_stage/${userLogged.farm_assigned}/${pigData.currentStage}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_farm_subwarehouses/${userLogged.farm_assigned}`),
             ]);
 
             const medsWithId = medicationsResponse.data.data.map((b: any) => ({ ...b, code: b.id, id: b._id }));
             const pkgsWithId = packagesResponse.data.data.map((b: any) => ({ ...b, id: b._id }));
             setMedicationsItems(medsWithId);
             setMedicationsPackages(pkgsWithId);
+            setSubwarehouses(subwarehousesResponse.data.data || []);
         } catch (error) {
             logger.error('Error fetching data:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('medication.assign.error.load') });
@@ -130,6 +135,10 @@ const AsignPigMedicationForm: React.FC<AsignPigMedicationFormProps> = ({ pigId, 
 
     const validateSelectedMedications = async () => {
         const errors: Record<string, any> = {};
+        if (!warehouseSource) {
+            setAlertConfig({ visible: true, color: 'danger', message: t('medication.assign.field.warehouseSourceRequired') });
+            return false;
+        }
         if (medicationsSelected.length === 0) {
             setAlertConfig({ visible: true, color: 'danger', message: t('medication.assign.validation.selectAtLeastOne') });
             return false;
@@ -176,7 +185,7 @@ const AsignPigMedicationForm: React.FC<AsignPigMedicationFormProps> = ({ pigId, 
             try {
                 const response = await configContext.axiosHelper.create(
                     `${configContext.apiUrl}/medication_package/asign_medication_package/${userLogged.farm_assigned}/${pigId}`,
-                    values
+                    { ...values, warehouseSource }
                 );
                 await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
                     event: `Paquete de medicación asignado al cerdo ${pigDetails?.code}`,
@@ -199,6 +208,10 @@ const AsignPigMedicationForm: React.FC<AsignPigMedicationFormProps> = ({ pigId, 
     });
 
     const checkPackageSelected = () => {
+        if (!warehouseSource) {
+            setAlertConfig({ visible: true, color: 'danger', message: t('medication.assign.field.warehouseSourceRequired') });
+            return;
+        }
         if (!formik.values.packageId) {
             setAlertConfig({ visible: true, color: 'danger', message: t('medication.assign.validation.selectPackage') });
             return;
@@ -211,10 +224,10 @@ const AsignPigMedicationForm: React.FC<AsignPigMedicationFormProps> = ({ pigId, 
         if (!configContext || !userLogged) return;
         try {
             setIsSubmittingIndividual(true);
-            const payload = medicationsSelected.map(m => ({ ...m, applicationDate, appliedBy: userLogged._id }));
+            const medications = medicationsSelected.map(m => ({ ...m, applicationDate, appliedBy: userLogged._id }));
             await configContext.axiosHelper.create(
                 `${configContext.apiUrl}/medication_package/asign_medication/${userLogged.farm_assigned}/${pigId}`,
-                payload
+                { medications, warehouseSource }
             );
             await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
                 event: `Medicación individual asignada al cerdo ${pigDetails?.code}`,
@@ -489,6 +502,21 @@ const AsignPigMedicationForm: React.FC<AsignPigMedicationFormProps> = ({ pigId, 
                             <i className="ri-arrow-go-back-line me-1" />
                             {t('medication.assign.mode.change')}
                         </Button>
+                    </div>
+
+                    <div className="mb-3">
+                        <Label className="form-label">{t('medication.assign.field.warehouseSource')}</Label>
+                        <Input
+                            type="select"
+                            value={warehouseSource}
+                            onChange={(e) => setWarehouseSource(e.target.value)}
+                        >
+                            <option value="">{t('medication.assign.field.warehouseSourcePlaceholder')}</option>
+                            <option value="general">{t('medication.assign.field.warehouseGeneral')}</option>
+                            {subwarehouses.map((w: any) => (
+                                <option key={w._id} value={w._id}>{w.name}</option>
+                            ))}
+                        </Input>
                     </div>
 
                     <div className="d-flex gap-3">
