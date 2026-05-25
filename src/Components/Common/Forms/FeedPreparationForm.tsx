@@ -71,6 +71,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
     const [targetBatchInput, setTargetBatchInput] = useState<string>('');
 
     const [recipeSaveMode, setRecipeSaveMode] = useState<RecipeSaveMode>('none');
+    const [customName, setCustomName] = useState<string>('');
     const [newRecipeCode, setNewRecipeCode] = useState<string>('');
     const [newRecipeName, setNewRecipeName] = useState<string>('');
     const [newRecipeStage, setNewRecipeStage] = useState<string>('general');
@@ -235,15 +236,17 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
                     quantity: roundN(r.quantity, 4),
                     percentage: roundN(r.percentage, 4),
                 })),
-                // Receta origen (opcional)
                 recipeId: formik.values.recipeId || null,
-                // Modo de guardado de receta
                 recipeSaveMode,
+                ...(recipeSaveMode === 'none' && !formik.values.recipeId && customName.trim() && {
+                    customName: customName.trim(),
+                }),
                 ...(recipeSaveMode === 'new' && {
                     newRecipe: {
                         code: newRecipeCode.trim(),
                         name: newRecipeName.trim(),
                         stage: newRecipeStage,
+                        farm: userLogged.farm_assigned,
                     },
                 }),
             };
@@ -287,13 +290,19 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
         if (!configContext || !userLogged) return;
         try {
             setLoading(true);
-            const [recipesResponse, subwarehousesResponse, productsResponse] = await Promise.all([
+            const [recipesResponse, mainWhResponse, subwarehousesResponse, productsResponse] = await Promise.all([
                 configContext.axiosHelper.get(`${configContext.apiUrl}/${FEEDING_PACKAGE_URLS.findByFarm(userLogged.farm_assigned)}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/farm/get_main_warehouse/${userLogged.farm_assigned}`),
                 configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_farm_subwarehouses/${userLogged.farm_assigned}`),
                 configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/feeding_products/${userLogged.farm_assigned}`),
             ]);
             setRecipes((recipesResponse.data.data || []).filter((r: any) => r.is_active));
-            setSubwarehouses(subwarehousesResponse.data.data || []);
+
+            const mainWarehouseId: string = mainWhResponse.data.data;
+            const allSubwarehouses: any[] = subwarehousesResponse.data.data || [];
+            const feedSubwarehouses = allSubwarehouses.filter((s: any) => s.type === 'feed');
+            const generalOption = { _id: mainWarehouseId, code: '', name: t('feeding.preparation.form.field.generalWarehouse', { defaultValue: 'Almacén general' }) };
+            setSubwarehouses([generalOption, ...feedSubwarehouses]);
 
             const allProducts = productsResponse.data.data || [];
             const rawIngredients = allProducts.filter((p: any) => {
@@ -533,7 +542,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
                     >
                         <option value="">{t('feeding.preparation.form.field.subwarehouseSelect')}</option>
                         {subwarehouses.map(s => (
-                            <option key={s._id} value={s._id}>{s.code} — {s.name}</option>
+                            <option key={s._id} value={s._id}>{s.code ? `${s.code} — ${s.name}` : s.name}</option>
                         ))}
                     </Input>
                     {formik.touched.subwarehouseId && formik.errors.subwarehouseId && (<FormFeedback>{formik.errors.subwarehouseId}</FormFeedback>)}
@@ -805,9 +814,21 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
                                 onChange={() => setRecipeSaveMode('none')}
                                 className="mt-1"
                             />
-                            <div>
+                            <div className="flex-grow-1">
                                 <div className="fw-semibold">{t('feeding.preparation.form.saveOptions.none.title')}</div>
-                                <small className="text-muted">{t('feeding.preparation.form.saveOptions.none.desc')}</small>
+                                <small className="text-muted d-block mb-2">{t('feeding.preparation.form.saveOptions.none.desc')}</small>
+                                {recipeSaveMode === 'none' && !selectedRecipe && (
+                                    <div className="mt-2">
+                                        <Label className="form-label small mb-1">{t('feeding.preparation.form.saveOptions.none.customNameLabel')}</Label>
+                                        <Input
+                                            type="text"
+                                            bsSize="sm"
+                                            value={customName}
+                                            onChange={e => setCustomName(e.target.value)}
+                                            placeholder={t('feeding.preparation.form.saveOptions.none.customNamePlaceholder')}
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </label>
 

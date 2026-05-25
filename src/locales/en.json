@@ -1258,6 +1258,7 @@
       "dateRangeModal": "Select date range",
       "reportModal": "Feed Batches Report",
       "noRecords": "No feed batches recorded yet",
+      "noName": "Unnamed mix",
       "column": {
         "code": "Code",
         "recipe": "Formula",
@@ -1276,8 +1277,9 @@
           "recipeNone": "No formula — custom mix",
           "targetBatch": "Batch size (kg)",
           "targetBatchHint": "Enter the total kg and each ingredient's amount will be calculated automatically.",
-          "subwarehouse": "Source store *",
-          "subwarehouseSelect": "Select a store",
+          "subwarehouse": "Source warehouse *",
+          "subwarehouseSelect": "Select a warehouse",
+          "generalWarehouse": "General warehouse",
           "producedAmount": "Actual quantity produced (kg) *",
           "producedHint": "What actually came out of the mixer (may be less than the mix due to shrinkage).",
           "date": "Preparation date *",
@@ -1322,7 +1324,9 @@
           "confirm": "Confirm and record",
           "none": {
             "title": "Just record the batch",
-            "desc": "No formula is created or modified."
+            "desc": "No formula is created or modified.",
+            "customNameLabel": "Mix name (optional)",
+            "customNamePlaceholder": "E.g. Growth mix May"
           },
           "new": {
             "title": "Save as a new formula",
@@ -1374,8 +1378,11 @@
       },
       "form": {
         "field": {
-          "preparedFeed": "Prepared feed *",
-          "preparedFeedSelect": "Select a prepared feed",
+          "warehouse": "Source warehouse *",
+          "warehouseSelect": "Select a warehouse",
+          "generalWarehouse": "General warehouse",
+          "preparedFeed": "Feed to administer *",
+          "preparedFeedSelect": "Select a feed",
           "quantity": "Quantity to administer *",
           "date": "Date *",
           "responsible": "Administered by",
@@ -1384,7 +1391,7 @@
           "stockAvailable": "Available stock"
         },
         "warning": {
-          "noPreparedFeed": "No prepared feed available. Create a feed batch first.",
+          "noPreparedFeed": "No feed available in this warehouse.",
           "exceedsStock": "Quantity exceeds available stock ({{val}} kg)."
         },
         "bulkInfo": "The same quantity will be applied to <1>{{count}}</1> selected {{target}}",

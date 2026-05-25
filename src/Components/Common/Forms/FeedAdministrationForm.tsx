@@ -3,9 +3,9 @@ import { ConfigContext } from "App";
 import { useFormik } from "formik";
 import { Trans, useTranslation } from "react-i18next";
 import { getEffectiveUser } from "helpers/impersonation_helper";
-import { FEED_ADMINISTRATION_URLS, PREPARED_FEED_URLS } from "helpers/feeding_urls";
+import { FEED_ADMINISTRATION_URLS } from "helpers/feeding_urls";
 import { useContext, useEffect, useMemo, useState } from "react";
-import { Badge, Button, FormFeedback, Input, Label, Spinner } from "reactstrap";
+import { Button, FormFeedback, Input, Label, Spinner } from "reactstrap";
 import * as Yup from "yup";
 import DatePicker from "react-flatpickr";
 import AlertMessage from "../Shared/AlertMesagge";
@@ -13,6 +13,8 @@ import SuccessModal from "../Shared/SuccessModal";
 import ErrorModal from "../Shared/ErrorModal";
 import LoadingAnimation from "../Shared/LoadingAnimation";
 import { HttpStatusCode } from "axios";
+
+const FEED_PRODUCT_CATEGORIES = ['nutrition', 'prepared_feed'];
 
 type TargetType = 'group' | 'litter' | 'pig';
 type Stage = 'piglet' | 'sow' | 'nursery' | 'grower' | 'finisher' | 'general';
@@ -41,7 +43,10 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
     const configContext = useContext(ConfigContext);
 
     const [loading, setLoading] = useState<boolean>(true);
-    const [preparedProducts, setPreparedProducts] = useState<any[]>([]);
+    const [warehouses, setWarehouses] = useState<any[]>([]);
+    const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>('');
+    const [feedProducts, setFeedProducts] = useState<any[]>([]);
+    const [loadingProducts, setLoadingProducts] = useState<boolean>(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' });
     const [modals, setModals] = useState({ success: false, error: false });
 
@@ -73,6 +78,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
 
             const basePayload = {
                 farmId: userLogged.farm_assigned,
+                warehouseId: selectedWarehouseId,
                 preparedProductId: values.preparedProductId,
                 quantity: values.quantity,
                 date: values.date,
@@ -123,33 +129,78 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
         }
     });
 
-    const fetchPreparedProducts = async () => {
+    const fetchWarehouses = async () => {
         if (!configContext || !userLogged) return;
         try {
             setLoading(true);
-            const stage: Stage = targetType === 'litter' ? 'piglet' : (targetStage || 'general');
-            const response = await configContext.axiosHelper.get(
-                `${configContext.apiUrl}/${PREPARED_FEED_URLS.byStage(userLogged.farm_assigned, stage)}`
-            );
-            setPreparedProducts(response.data.data || []);
+            const [mainWhRes, subWhRes] = await Promise.all([
+                configContext.axiosHelper.get(`${configContext.apiUrl}/farm/get_main_warehouse/${userLogged.farm_assigned}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_farm_subwarehouses/${userLogged.farm_assigned}`),
+            ]);
+            const mainWarehouseId: string = mainWhRes.data.data;
+            const allSubs: any[] = subWhRes.data.data || [];
+            const feedSubs = allSubs.filter((s: any) => s.type === 'feed');
+            const generalOption = {
+                _id: mainWarehouseId,
+                code: '',
+                name: t('feeding.administration.form.field.generalWarehouse', { defaultValue: 'Almacén general' }),
+            };
+            setWarehouses([generalOption, ...feedSubs]);
         } catch (error) {
-            logger.error('Error fetching prepared products:', error);
+            logger.error('Error fetching warehouses:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('common.status.noData') });
         } finally {
             setLoading(false);
         }
     };
 
+    const fetchInventory = async (warehouseId: string) => {
+        if (!configContext || !warehouseId) return;
+        try {
+            setLoadingProducts(true);
+            formik.setFieldValue('preparedProductId', '');
+            setFeedProducts([]);
+            const response = await configContext.axiosHelper.get(
+                `${configContext.apiUrl}/warehouse/get_inventory/${warehouseId}`
+            );
+            const inventory: any[] = response.data.data || [];
+            const filtered = inventory
+                .filter((item: any) => item.product && FEED_PRODUCT_CATEGORIES.includes(item.product.category) && item.quantity > 0)
+                .map((item: any) => ({
+                    _id: item.product._id || item.product.id,
+                    name: item.product.name,
+                    category: item.product.category,
+                    unit_measurement: item.product.unit_measurement || 'kg',
+                    stock: item.quantity,
+                }));
+            setFeedProducts(filtered);
+        } catch (error) {
+            logger.error('Error fetching inventory:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: t('common.status.noData') });
+        } finally {
+            setLoadingProducts(false);
+        }
+    };
+
+    const handleWarehouseChange = (warehouseId: string) => {
+        setSelectedWarehouseId(warehouseId);
+        if (warehouseId) fetchInventory(warehouseId);
+        else {
+            setFeedProducts([]);
+            formik.setFieldValue('preparedProductId', '');
+        }
+    };
+
     const selectedProduct = useMemo(
-        () => preparedProducts.find(p => (p._id || p.id) === formik.values.preparedProductId),
-        [preparedProducts, formik.values.preparedProductId]
+        () => feedProducts.find(p => p._id === formik.values.preparedProductId),
+        [feedProducts, formik.values.preparedProductId]
     );
 
-    const stockAvailable = selectedProduct?.totalStock ?? selectedProduct?.quantity ?? 0;
-    const exceedsStock = formik.values.quantity > stockAvailable;
+    const stockAvailable = selectedProduct?.stock ?? 0;
+    const exceedsStock = formik.values.quantity > 0 && stockAvailable > 0 && formik.values.quantity > stockAvailable;
 
     useEffect(() => {
-        fetchPreparedProducts();
+        fetchWarehouses();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -164,32 +215,59 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
                 </div>
             )}
 
+            {/* Selector de almacén */}
+            <div className="mb-3">
+                <Label className="form-label">{t('feeding.administration.form.field.warehouse')}</Label>
+                <Input
+                    type="select"
+                    value={selectedWarehouseId}
+                    onChange={e => handleWarehouseChange(e.target.value)}
+                >
+                    <option value="">{t('feeding.administration.form.field.warehouseSelect')}</option>
+                    {warehouses.map(w => (
+                        <option key={w._id} value={w._id}>
+                            {w.code ? `${w.code} — ${w.name}` : w.name}
+                        </option>
+                    ))}
+                </Input>
+            </div>
+
+            {/* Producto + cantidad */}
             <div className="d-flex gap-3">
                 <div className="w-50">
                     <Label className="form-label">{t('feeding.administration.form.field.preparedFeed')}</Label>
-                    <Input
-                        type="select"
-                        name="preparedProductId"
-                        value={formik.values.preparedProductId}
-                        onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
-                        invalid={formik.touched.preparedProductId && !!formik.errors.preparedProductId}
-                    >
-                        <option value="">{t('feeding.administration.form.field.preparedFeedSelect')}</option>
-                        {preparedProducts.map(p => (
-                            <option key={p._id || p.id} value={p._id || p.id}>
-                                {p.name} — Stock: {(p.totalStock ?? p.quantity ?? 0).toFixed(2)} {p.unit_measurement || 'kg'}
-                            </option>
-                        ))}
-                    </Input>
-                    {formik.touched.preparedProductId && formik.errors.preparedProductId && (
-                        <FormFeedback>{formik.errors.preparedProductId}</FormFeedback>
-                    )}
-                    {preparedProducts.length === 0 && (
-                        <div className="text-warning small mt-1">
-                            <i className="ri-alert-line me-1" />
-                            {t('feeding.administration.form.warning.noPreparedFeed')}
+                    {loadingProducts ? (
+                        <div className="d-flex align-items-center gap-2 mt-1">
+                            <Spinner size="sm" /><small className="text-muted">{t('common.status.loading')}</small>
                         </div>
+                    ) : (
+                        <>
+                            <Input
+                                type="select"
+                                name="preparedProductId"
+                                value={formik.values.preparedProductId}
+                                onChange={formik.handleChange}
+                                onBlur={formik.handleBlur}
+                                invalid={formik.touched.preparedProductId && !!formik.errors.preparedProductId}
+                                disabled={!selectedWarehouseId}
+                            >
+                                <option value="">{t('feeding.administration.form.field.preparedFeedSelect')}</option>
+                                {feedProducts.map(p => (
+                                    <option key={p._id} value={p._id}>
+                                        {p.name} — Stock: {(p.stock ?? 0).toFixed(2)} {p.unit_measurement}
+                                    </option>
+                                ))}
+                            </Input>
+                            {formik.touched.preparedProductId && formik.errors.preparedProductId && (
+                                <FormFeedback>{formik.errors.preparedProductId}</FormFeedback>
+                            )}
+                            {selectedWarehouseId && !loadingProducts && feedProducts.length === 0 && (
+                                <div className="text-warning small mt-1">
+                                    <i className="ri-alert-line me-1" />
+                                    {t('feeding.administration.form.warning.noPreparedFeed')}
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
 
@@ -205,6 +283,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
                             onChange={formik.handleChange}
                             onBlur={formik.handleBlur}
                             invalid={(formik.touched.quantity && !!formik.errors.quantity) || exceedsStock}
+                            disabled={!formik.values.preparedProductId}
                         />
                         <span className="input-group-text">kg</span>
                     </div>
@@ -264,7 +343,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
                 <Button
                     color="success"
                     onClick={() => formik.handleSubmit()}
-                    disabled={formik.isSubmitting || preparedProducts.length === 0 || (exceedsStock && !isBulk)}
+                    disabled={formik.isSubmitting || !selectedWarehouseId || feedProducts.length === 0 || (exceedsStock && !isBulk)}
                 >
                     {formik.isSubmitting ? <Spinner size="sm" /> : (
                         <><i className="ri-check-line me-2" />{t('feeding.administration.form.action.register')}</>

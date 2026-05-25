@@ -27,7 +27,9 @@ const FeedPreparationDetails: React.FC<FeedPreparationDetailsProps> = ({ prepara
         { key: 'preparationDate', label: t('feeding.preparation.detail.prepDate'), type: 'date' },
         {
             key: 'recipe', label: t('feeding.preparation.detail.recipe'),
-            render: (_, row) => <span>{row.recipe?.code} — {row.recipe?.name}</span>
+            render: (_, row) => row.recipe
+                ? <span>{row.recipe.code} — {row.recipe.name}</span>
+                : <span className="text-muted fst-italic">{row.customName || t('feeding.preparation.noName')}</span>
         },
         {
             key: 'preparedProduct', label: t('feeding.preparation.detail.generatedProduct'),

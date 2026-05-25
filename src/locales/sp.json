@@ -1258,6 +1258,7 @@
       "dateRangeModal": "Seleccionar rango de fechas",
       "reportModal": "Reporte de Preparaciones de Alimento",
       "noRecords": "Aún no hay preparaciones registradas",
+      "noName": "Mezcla sin nombre",
       "column": {
         "code": "Código",
         "recipe": "Receta",
@@ -1276,8 +1277,9 @@
           "recipeNone": "Sin receta — mezcla personalizada",
           "targetBatch": "Cantidad a preparar (kg)",
           "targetBatchHint": "Ingresa los kg totales y se calcularán las cantidades de cada ingrediente.",
-          "subwarehouse": "Subalmacén origen *",
-          "subwarehouseSelect": "Seleccione un subalmacén",
+          "subwarehouse": "Almacén origen *",
+          "subwarehouseSelect": "Seleccione un almacén",
+          "generalWarehouse": "Almacén general",
           "producedAmount": "Cantidad real producida (kg) *",
           "producedHint": "Lo que realmente salió del mezclador (puede ser menor a la mezcla por merma).",
           "date": "Fecha de preparación *",
@@ -1322,7 +1324,9 @@
           "confirm": "Confirmar y registrar",
           "none": {
             "title": "Solo registrar la preparación",
-            "desc": "No se crea ni modifica ninguna receta."
+            "desc": "No se crea ni modifica ninguna receta.",
+            "customNameLabel": "Nombre de la mezcla (opcional)",
+            "customNamePlaceholder": "Ej. Mezcla crecimiento mayo"
           },
           "new": {
             "title": "Guardar como nueva receta",
@@ -1374,8 +1378,11 @@
       },
       "form": {
         "field": {
-          "preparedFeed": "Alimento preparado *",
-          "preparedFeedSelect": "Seleccione un alimento preparado",
+          "warehouse": "Almacén origen *",
+          "warehouseSelect": "Seleccione un almacén",
+          "generalWarehouse": "Almacén general",
+          "preparedFeed": "Alimento a administrar *",
+          "preparedFeedSelect": "Seleccione un alimento",
           "quantity": "Cantidad a administrar *",
           "date": "Fecha *",
           "responsible": "Responsable",
@@ -1384,7 +1391,7 @@
           "stockAvailable": "Stock disponible"
         },
         "warning": {
-          "noPreparedFeed": "No hay alimentos preparados disponibles. Realice una preparación primero.",
+          "noPreparedFeed": "No hay alimentos disponibles en este almacén.",
           "exceedsStock": "La cantidad supera el stock disponible ({{val}} kg)."
         },
         "bulkInfo": "Se aplicará la misma cantidad a <1>{{count}}</1> {{target}} seleccionados",

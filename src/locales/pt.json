@@ -1258,6 +1258,7 @@
       "dateRangeModal": "Selecionar período",
       "reportModal": "Relatório de Arraçoamentos",
       "noRecords": "Nenhum arraçoamento registrado",
+      "noName": "Mistura sem nome",
       "column": {
         "code": "Código",
         "recipe": "Dieta",
@@ -1278,6 +1279,7 @@
           "targetBatchHint": "Informe o total em kg e as quantidades de cada ingrediente serão calculadas automaticamente.",
           "subwarehouse": "Almoxarifado de origem *",
           "subwarehouseSelect": "Selecione um almoxarifado",
+          "generalWarehouse": "Almoxarifado geral",
           "producedAmount": "Quantidade real produzida (kg) *",
           "producedHint": "O que realmente saiu do misturador (pode ser menor que a mistura por perda).",
           "date": "Data do arraçoamento *",
@@ -1322,7 +1324,9 @@
           "confirm": "Confirmar e registrar",
           "none": {
             "title": "Apenas registrar o arraçoamento",
-            "desc": "Nenhuma dieta é criada nem alterada."
+            "desc": "Nenhuma dieta é criada nem alterada.",
+            "customNameLabel": "Nome da mistura (opcional)",
+            "customNamePlaceholder": "Ex. Mistura crescimento maio"
           },
           "new": {
             "title": "Salvar como nova dieta",
@@ -1374,8 +1378,11 @@
       },
       "form": {
         "field": {
-          "preparedFeed": "Ração preparada *",
-          "preparedFeedSelect": "Selecione uma ração preparada",
+          "warehouse": "Almoxarifado de origem *",
+          "warehouseSelect": "Selecione um almoxarifado",
+          "generalWarehouse": "Almoxarifado geral",
+          "preparedFeed": "Alimento a fornecer *",
+          "preparedFeedSelect": "Selecione um alimento",
           "quantity": "Quantidade a fornecer *",
           "date": "Data *",
           "responsible": "Responsável",
@@ -1384,7 +1391,7 @@
           "stockAvailable": "Estoque disponível"
         },
         "warning": {
-          "noPreparedFeed": "Nenhuma ração preparada disponível. Realize um arraçoamento primeiro.",
+          "noPreparedFeed": "Nenhum alimento disponível neste almoxarifado.",
           "exceedsStock": "A quantidade supera o estoque disponível ({{val}} kg)."
         },
         "bulkInfo": "A mesma quantidade será aplicada a <1>{{count}}</1> {{target}} selecionados",

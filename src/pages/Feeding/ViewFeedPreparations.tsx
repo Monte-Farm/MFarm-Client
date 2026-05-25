@@ -43,7 +43,9 @@ const ViewFeedPreparations = () => {
         { header: t('feeding.preparation.column.code'), accessor: 'code', type: 'text', isFilterable: true },
         {
             header: t('feeding.preparation.column.recipe'), accessor: 'recipe.name', isFilterable: true,
-            render: (_, row) => <span>{row.recipe?.code} — {row.recipe?.name}</span>
+            render: (_, row) => row.recipe
+                ? <span>{row.recipe.code} — {row.recipe.name}</span>
+                : <span className="text-muted fst-italic">{row.customName || t('feeding.preparation.noName')}</span>
         },
         { header: t('feeding.preparation.column.date'), accessor: 'preparationDate', type: 'date', isFilterable: true },
         {
