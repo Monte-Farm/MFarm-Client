@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { appendLangParam } from 'helpers/reports_url_helper';
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useState, useEffect, useContext } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom"
@@ -171,7 +172,7 @@ const ProductDetails = () => {
         if (!configContext || !warehouseId || !productId) return;
         try {
             setPdfLoading(true);
-            const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/product_inventory/${warehouseId}/${productId}`);
+            const response = await configContext.axiosHelper.getBlob(appendLangParam(`${configContext.apiUrl}/reports/product_inventory/${warehouseId}/${productId}`));
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
             const url = window.URL.createObjectURL(pdfBlob);
             setFileURL(url);

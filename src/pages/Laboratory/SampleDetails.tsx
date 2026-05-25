@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { appendLangParam } from 'helpers/reports_url_helper';
 import { ConfigContext } from "App";
 import { HttpStatusCode } from "axios";
 import { Column } from "common/data/data_types";
@@ -260,7 +261,7 @@ const SampleDetails = () => {
 
         try {
             setPdfLoading(true);
-            const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/semen_samples/${sample_id}`);
+            const response = await configContext.axiosHelper.getBlob(appendLangParam(`${configContext.apiUrl}/reports/semen_samples/${sample_id}`));
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
             const url = window.URL.createObjectURL(pdfBlob);
             setFileURL(url);

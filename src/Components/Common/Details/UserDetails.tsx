@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { appendLangParam } from 'helpers/reports_url_helper';
 import { ConfigContext } from "App";
 import { Attribute, UserData } from "common/data_interfaces";
 import { getEffectiveUser } from "helpers/impersonation_helper";
@@ -119,7 +120,7 @@ const UserDetailsModal: React.FC<UserDetailsProps> = ({ userId }) => {
         if (!configContext) return;
         try {
             setPdfLoading(true);
-            const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/users/${userId}?orientation=portrait&format=A4`);
+            const response = await configContext.axiosHelper.getBlob(appendLangParam(`${configContext.apiUrl}/reports/users/${userId}?orientation=portrait&format=A4`));
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
             setFileURL(window.URL.createObjectURL(pdfBlob));
             toggleModal('viewPDF');

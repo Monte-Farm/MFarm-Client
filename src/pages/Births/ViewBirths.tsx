@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { appendLangParam } from 'helpers/reports_url_helper';
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
@@ -159,7 +160,7 @@ const ViewBirths = () => {
             toggleModal('dateRange', false);
 
             const response = await configContext.axiosHelper.getBlob(
-                `${configContext.apiUrl}/reports/farrowed-births?start_date=${startDate}&end_date=${endDate}&farm_id=${userLogged.farm_assigned}`
+                appendLangParam(`${configContext.apiUrl}/reports/farrowed-births?start_date=${startDate}&end_date=${endDate}&farm_id=${userLogged.farm_assigned}`)
             );
 
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });

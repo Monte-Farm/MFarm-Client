@@ -1,4 +1,5 @@
 import { ConfigContext } from "App";
+import { appendLangParam } from 'helpers/reports_url_helper';
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
 import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, Spinner } from "reactstrap";
@@ -127,7 +128,7 @@ const ViewPigSales = () => {
             setPdfLoading(true);
             toggleModal('dateRange', false);
             const response = await configContext.axiosHelper.getBlob(
-                `${configContext.apiUrl}/reports/pig_sales/range?start_date=${startDate}&end_date=${endDate}&farm_id=${userLogged.farm_assigned}`
+                appendLangParam(`${configContext.apiUrl}/reports/pig_sales/range?start_date=${startDate}&end_date=${endDate}&farm_id=${userLogged.farm_assigned}`)
             );
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
             setFileURL(window.URL.createObjectURL(pdfBlob));

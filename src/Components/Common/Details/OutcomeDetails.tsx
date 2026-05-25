@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { appendLangParam } from 'helpers/reports_url_helper';
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import { getEffectiveUser } from "helpers/impersonation_helper";
@@ -164,7 +165,7 @@ const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
             setPdfLoading(true);
 
             // Usar axiosHelper.getBlob para mantener consistencia
-            const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/outcomes/${outcomeId}`);
+            const response = await configContext.axiosHelper.getBlob(appendLangParam(`${configContext.apiUrl}/reports/outcomes/${outcomeId}`));
 
             // Crear blob con tipo MIME explícito para PDF
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });

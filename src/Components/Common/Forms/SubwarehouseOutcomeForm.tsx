@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { appendLangParam } from 'helpers/reports_url_helper';
 import { useContext, useEffect, useState } from 'react';
 import { Alert, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from 'reactstrap';
 import * as Yup from 'yup'
@@ -281,7 +282,7 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSa
         if (!configContext || !createdOutcomeId) return;
         try {
             setPdfLoading(true);
-            const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/outcomes/${createdOutcomeId}`);
+            const response = await configContext.axiosHelper.getBlob(appendLangParam(`${configContext.apiUrl}/reports/outcomes/${createdOutcomeId}`));
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
             setFileURL(window.URL.createObjectURL(pdfBlob));
             toggleModal('viewPDF');

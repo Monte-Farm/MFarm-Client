@@ -1,4 +1,5 @@
 import { ConfigContext } from "App";
+import { appendLangParam } from 'helpers/reports_url_helper';
 import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
@@ -121,7 +122,7 @@ const SupplierStatementReport = () => {
     const handleGeneratePdf = async (pdfStart: string, pdfEnd: string): Promise<string> => {
         if (!configContext || !selectedSupplierId) throw new Error("No config");
         const response = await configContext.axiosHelper.getBlob(
-            `${configContext.apiUrl}/reports/finance/supplier-statement/pdf/${selectedSupplierId}?start_date=${pdfStart}&end_date=${pdfEnd}&orientation=portrait&format=A4`
+            appendLangParam(`${configContext.apiUrl}/reports/finance/supplier-statement/pdf/${selectedSupplierId}?start_date=${pdfStart}&end_date=${pdfEnd}&orientation=portrait&format=A4`)
         );
         const pdfBlob = new Blob([response.data], { type: "application/pdf" });
         return window.URL.createObjectURL(pdfBlob);

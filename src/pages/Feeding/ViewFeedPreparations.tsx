@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { appendLangParam } from 'helpers/reports_url_helper';
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import FeedPreparationDetails from "Components/Common/Details/FeedPreparationDetails";
@@ -92,7 +93,7 @@ const ViewFeedPreparations = () => {
             setPdfLoading(true);
             toggleModal('dateRange', false);
             const response = await configContext.axiosHelper.getBlob(
-                `${configContext.apiUrl}/reports/feed_preparations/range?start_date=${startDate}&end_date=${endDate}&farm_id=${userLogged.farm_assigned}`
+                appendLangParam(`${configContext.apiUrl}/reports/feed_preparations/range?start_date=${startDate}&end_date=${endDate}&farm_id=${userLogged.farm_assigned}`)
             );
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
             setFileURL(window.URL.createObjectURL(pdfBlob));

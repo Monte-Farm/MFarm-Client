@@ -1,4 +1,5 @@
 import { ConfigContext } from "App";
+import { appendLangParam } from 'helpers/reports_url_helper';
 import { Column } from "common/data/data_types";
 import GroupsView from "Components/Common/Views/GroupsView";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
@@ -27,7 +28,7 @@ const ViewGrowingGroups = () => {
             setPdfLoading(true);
             setDateRangeModalOpen(false);
             const response = await configContext.axiosHelper.getBlob(
-                `${configContext.apiUrl}/reports/groups/growing/range?start_date=${startDate}&end_date=${endDate}&farm_id=${userLogged.farm_assigned}`
+                appendLangParam(`${configContext.apiUrl}/reports/groups/growing/range?start_date=${startDate}&end_date=${endDate}&farm_id=${userLogged.farm_assigned}`)
             );
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
             setFileURL(window.URL.createObjectURL(pdfBlob));

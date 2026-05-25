@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { appendLangParam } from 'helpers/reports_url_helper';
 import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { getEffectiveUser } from "helpers/impersonation_helper";
@@ -341,7 +342,7 @@ const ViewInseminations = () => {
             toggleModal('dateRange', false);
 
             const response = await configContext.axiosHelper.getBlob(
-                `${configContext.apiUrl}/reports/inseminations/range?start_date=${startDate}&end_date=${endDate}&farm_id=${userLoggged.farm_assigned}`
+                appendLangParam(`${configContext.apiUrl}/reports/inseminations/range?start_date=${startDate}&end_date=${endDate}&farm_id=${userLoggged.farm_assigned}`)
             );
 
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });

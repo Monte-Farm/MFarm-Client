@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { appendLangParam } from 'helpers/reports_url_helper';
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb"
@@ -184,7 +185,7 @@ const ViewPregnancies = () => {
 
         try {
             setPdfLoading(true);
-            const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/active_pregnancies/${userLoggged.farm_assigned}`);
+            const response = await configContext.axiosHelper.getBlob(appendLangParam(`${configContext.apiUrl}/reports/active_pregnancies/${userLoggged.farm_assigned}`));
 
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
             const url = window.URL.createObjectURL(pdfBlob);

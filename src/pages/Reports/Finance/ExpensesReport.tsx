@@ -1,4 +1,5 @@
 import { ConfigContext } from "App";
+import { appendLangParam } from 'helpers/reports_url_helper';
 import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardBody, CardHeader, Col, Row } from "reactstrap";
@@ -103,7 +104,7 @@ const ExpensesReport = () => {
     const handleGeneratePdf = async (pdfStart: string, pdfEnd: string): Promise<string> => {
         if (!configContext) throw new Error("No config");
         const response = await configContext.axiosHelper.getBlob(
-            `${configContext.apiUrl}/finances/manual_expenses_report/pdf/${farmId}/${pdfStart}/${pdfEnd}?orientation=landscape&format=A4`
+            appendLangParam(`${configContext.apiUrl}/finances/manual_expenses_report/pdf/${farmId}/${pdfStart}/${pdfEnd}?orientation=landscape&format=A4`)
         );
         const pdfBlob = new Blob([response.data], { type: "application/pdf" });
         return window.URL.createObjectURL(pdfBlob);

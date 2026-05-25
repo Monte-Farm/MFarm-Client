@@ -123,9 +123,15 @@ const GroupTraceabilityReport = () => {
 
     const handleGeneratePdf = async (): Promise<string> => {
         if (!configContext || !selectedGroupId) throw new Error("No config");
-        const response = await configContext.axiosHelper.getBlob(
-            `${configContext.apiUrl}/reports/traceability/group/pdf/${selectedGroupId}?orientation=portrait&format=A4`
-        );
+        const url = buildReportUrl({
+            apiUrl: configContext.apiUrl,
+            basePath: "reports/traceability/group",
+            isGlobal: false,
+            farmId: selectedGroupId,
+            variant: "pdf",
+            query: { orientation: "portrait", format: "A4" },
+        });
+        const response = await configContext.axiosHelper.getBlob(url);
         const pdfBlob = new Blob([response.data], { type: "application/pdf" });
         return window.URL.createObjectURL(pdfBlob);
     };

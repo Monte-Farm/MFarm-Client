@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { appendLangParam } from 'helpers/reports_url_helper';
 import { ConfigContext } from "App";
 import { Attribute, PurchaseOrderData } from "common/data_interfaces";
 import { SUPPLIER_TYPES } from "common/enums/suppliers.enums";
@@ -185,7 +186,7 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({ purchaseId 
         try {
             setPdfLoading(true);
 
-            const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/purchase_orders/${purchaseId}`);
+            const response = await configContext.axiosHelper.getBlob(appendLangParam(`${configContext.apiUrl}/reports/purchase_orders/${purchaseId}`));
 
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
             const url = window.URL.createObjectURL(pdfBlob);

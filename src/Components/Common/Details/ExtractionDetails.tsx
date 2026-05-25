@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { appendLangParam } from 'helpers/reports_url_helper';
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useState } from "react";
@@ -100,7 +101,7 @@ const ExtractionDetails: React.FC<ExtractionDetailsProps> = ({ extractionId }) =
         if (!configContext) return;
         try {
             setPdfLoading(true);
-            const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/extractions/${extractionId}`);
+            const response = await configContext.axiosHelper.getBlob(appendLangParam(`${configContext.apiUrl}/reports/extractions/${extractionId}`));
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
             setFileURL(window.URL.createObjectURL(pdfBlob));
             toggleModal('viewPDF');

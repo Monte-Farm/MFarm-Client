@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { appendLangParam } from 'helpers/reports_url_helper';
 import { ConfigContext } from "App"
 import { PigData } from "common/data_interfaces"
 import BreadCrumb from "Components/Common/Shared/BreadCrumb"
@@ -146,7 +147,7 @@ const ViewSows = () => {
         setGeneratingReport(true);
         try {
             const response = await configContext.axiosHelper.getBlob(
-                `${configContext.apiUrl}/reports/breeder_pigs/${userLogged.farm_assigned}?sex=female`
+                appendLangParam(`${configContext.apiUrl}/reports/breeder_pigs/${userLogged.farm_assigned}?sex=female`)
             );
 
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });

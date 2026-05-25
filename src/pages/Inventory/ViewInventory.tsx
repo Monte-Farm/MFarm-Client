@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { appendLangParam } from 'helpers/reports_url_helper';
 import { useContext, useEffect, useState } from "react";
 import { Button, Container, Alert, Card, CardHeader, CardBody, Modal, ModalBody, ModalHeader, Badge, Spinner } from "reactstrap";
 import { useTranslation } from "react-i18next";
@@ -150,7 +151,7 @@ const ViewInventory = () => {
 
     try {
       setPdfLoading(true);
-      const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/warehouse_inventory/${mainWarehouseId}`);
+      const response = await configContext.axiosHelper.getBlob(appendLangParam(`${configContext.apiUrl}/reports/warehouse_inventory/${mainWarehouseId}`));
 
       const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(pdfBlob);

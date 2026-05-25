@@ -9,6 +9,23 @@ export interface BuildReportUrlParams {
     query?: Record<string, string | number | undefined>;
 }
 
+const LANG_MAP: Record<string, string> = { sp: 'es', en: 'en', pt: 'pt' };
+
+const getApiLang = (): string => {
+    const appLang = localStorage.getItem('I18N_LANGUAGE') ?? 'sp';
+    return LANG_MAP[appLang] ?? 'es';
+};
+
+/**
+ * Appends the current app language as a `lang` query param to any PDF URL.
+ * Handles both URLs that already have query params (uses `&`) and those that don't (uses `?`).
+ */
+export const appendLangParam = (url: string): string => {
+    const lang = getApiLang();
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}lang=${lang}`;
+};
+
 const buildQuery = (query?: Record<string, string | number | undefined>): string => {
     if (!query) return '';
     const parts = Object.entries(query)
@@ -42,7 +59,8 @@ export const buildReportUrl = ({
 }: BuildReportUrlParams): string => {
     const cleanBase = basePath.replace(/^\/+|\/+$/g, '');
     const variantSeg = variant === 'json' ? '' : `/${variant}`;
-    const qs = buildQuery(query);
+    const queryWithLang = variant === 'pdf' ? { lang: getApiLang(), ...query } : query;
+    const qs = buildQuery(queryWithLang);
 
     if (!isGlobal) {
         return `${apiUrl}/${cleanBase}${variantSeg}/${farmId}${qs}`;

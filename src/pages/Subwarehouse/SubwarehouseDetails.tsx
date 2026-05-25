@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { appendLangParam } from 'helpers/reports_url_helper';
 import { useTranslation } from "react-i18next";
 import { ConfigContext } from "App";
 import { Attribute, SubwarehouseData } from "common/data_interfaces";
@@ -454,7 +455,7 @@ const SubwarehouseDetails = () => {
 
         try {
             setPdfLoading(true);
-            const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/warehouse_inventory/${id_subwarehouse}`);
+            const response = await configContext.axiosHelper.getBlob(appendLangParam(`${configContext.apiUrl}/reports/warehouse_inventory/${id_subwarehouse}`));
 
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
             const url = window.URL.createObjectURL(pdfBlob);

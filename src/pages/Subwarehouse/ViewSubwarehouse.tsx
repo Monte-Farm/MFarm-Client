@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { appendLangParam } from 'helpers/reports_url_helper';
 import { ConfigContext } from "App";
 import { SubwarehouseData } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
@@ -122,7 +123,7 @@ const ViewSubwarehouse = () => {
         try {
             setPdfLoading(true);
             const response = await configContext.axiosHelper.getBlob(
-                `${configContext.apiUrl}/reports/subwarehouses/all?farm_id=${userLogged.farm_assigned}`
+                appendLangParam(`${configContext.apiUrl}/reports/subwarehouses/all?farm_id=${userLogged.farm_assigned}`)
             );
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
             setFileURL(window.URL.createObjectURL(pdfBlob));

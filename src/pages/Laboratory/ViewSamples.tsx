@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { appendLangParam } from 'helpers/reports_url_helper';
 import { ConfigContext } from "App";
 import { SemenSample } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
@@ -196,7 +197,7 @@ const ViewSamples = () => {
         try {
             setPdfLoading(true);
             const response = await configContext.axiosHelper.getBlob(
-                `${configContext.apiUrl}/reports/semen_samples/all?farm_id=${userLoggged.farm_assigned}`
+                appendLangParam(`${configContext.apiUrl}/reports/semen_samples/all?farm_id=${userLoggged.farm_assigned}`)
             );
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
             setFileURL(window.URL.createObjectURL(pdfBlob));

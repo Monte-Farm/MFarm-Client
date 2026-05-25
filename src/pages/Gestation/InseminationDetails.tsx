@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { appendLangParam } from 'helpers/reports_url_helper';
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import { ConfigContext } from "App";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
@@ -144,7 +145,7 @@ const InseminationDetails = () => {
 
         try {
             setPdfLoading(true);
-            const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/inseminations/${insemination_id}`);
+            const response = await configContext.axiosHelper.getBlob(appendLangParam(`${configContext.apiUrl}/reports/inseminations/${insemination_id}`));
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
             const url = window.URL.createObjectURL(pdfBlob);
             setFileURL(url);

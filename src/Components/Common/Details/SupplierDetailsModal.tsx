@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { appendLangParam } from 'helpers/reports_url_helper';
 import { ConfigContext } from "App";
 import { SupplierData } from "common/data_interfaces";
 import SupplierForm from "Components/Common/Forms/SupplierForm";
@@ -126,7 +127,7 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ supplierId 
 
         try {
             setPdfLoading(true);
-            const response = await configContext.axiosHelper.getBlob(`${configContext.apiUrl}/reports/suppliers/${supplierId}`);
+            const response = await configContext.axiosHelper.getBlob(appendLangParam(`${configContext.apiUrl}/reports/suppliers/${supplierId}`));
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
             const url = window.URL.createObjectURL(pdfBlob);
             setFileURL(url);
