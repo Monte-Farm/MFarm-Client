@@ -13,6 +13,7 @@ import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import IncomeDetails from "Components/Common/Details/IncomeDetailsModal";
 import IncomeForm from "Components/Common/Forms/IncomeForm";
 import ConfirmModal from "Components/Common/Shared/ConfirmModal";
+import MissingStockModal from "Components/Common/Shared/MissingStockModal";
 import { getApprovalErrorMessage } from "helpers/income_error_helper";
 import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
 import DonutChartCard, { DonutDataItem, DonutLegendItem } from "Components/Common/Graphics/DonutChartCard";
@@ -43,8 +44,9 @@ const SubwarehouseIncomes = () => {
     const [loading, setLoading] = useState<boolean>(true)
     const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ details: false, editIncome: false });
-    const [confirmModal, setConfirmModal] = useState<{ open: boolean; action: 'approve' | 'release' | null; income: any }>({ open: false, action: null, income: null });
+    const [confirmModal, setConfirmModal] = useState<{ open: boolean; action: 'approve' | 'release' | 'cancel' | null; income: any }>({ open: false, action: null, income: null });
     const [confirmLoading, setConfirmLoading] = useState(false);
+    const [missingStockModal, setMissingStockModal] = useState<{ open: boolean; items: Array<{ product: string; required: number; available: number }> }>({ open: false, items: [] });
     const [selectedIncome, setSelectedIncome] = useState<any>({});
     const [incomeStatistics, setIncomeStatistics] = useState({
         totalValue: 0,
@@ -96,6 +98,9 @@ const SubwarehouseIncomes = () => {
             accessor: 'approvalStatus',
             type: 'text',
             render: (_, row) => {
+                if (row.cancelled) {
+                    return <Badge color="danger">{t('finance.income.status.cancelled')}</Badge>;
+                }
                 const status = row.approvalStatus ?? 'pending';
                 return <Badge color={approvalStatusColor[status] || 'secondary'}>{t(`finance.income.approvalStatus.${status}`, { defaultValue: status })}</Badge>;
             },
@@ -106,20 +111,23 @@ const SubwarehouseIncomes = () => {
             render: (value: any, row: any) => {
                 const status = row.approvalStatus ?? 'pending';
                 const canManage = canApproveOrRelease(userLogged?.role ?? []);
+                const isCancelled = row.cancelled === true;
                 return (
                     <div className="d-flex gap-1">
                         <Button className="farm-primary-button btn-icon" onClick={() => { setSelectedIncome(row); toggleModal('details') }}>
                             <i className="ri-eye-fill align-middle" />
                         </Button>
-                        <Button
-                            className="btn-icon btn-soft-warning"
-                            onClick={() => { setSelectedIncome(row); toggleModal('editIncome') }}
-                            disabled={status === 'approved'}
-                            title={t('common.button.edit')}
-                        >
-                            <i className="ri-pencil-fill align-middle" />
-                        </Button>
-                        {canManage && status !== 'approved' && (
+                        {!isCancelled && (
+                            <Button
+                                className="btn-icon btn-soft-warning"
+                                onClick={() => { setSelectedIncome(row); toggleModal('editIncome') }}
+                                disabled={status === 'approved'}
+                                title={t('common.button.edit')}
+                            >
+                                <i className="ri-pencil-fill align-middle" />
+                            </Button>
+                        )}
+                        {canManage && !isCancelled && status !== 'approved' && (
                             <Button
                                 className="btn-icon btn-soft-success"
                                 onClick={() => handleApproveIncome(row)}
@@ -128,13 +136,22 @@ const SubwarehouseIncomes = () => {
                                 <i className="ri-check-double-line align-middle" />
                             </Button>
                         )}
-                        {canManage && status === 'approved' && (
+                        {canManage && !isCancelled && status === 'approved' && (
                             <Button
                                 className="btn-icon btn-soft-info"
                                 onClick={() => handleReleaseIncome(row)}
                                 title={t('finance.income.action.release')}
                             >
                                 <i className="ri-lock-unlock-line align-middle" />
+                            </Button>
+                        )}
+                        {!isCancelled && status === 'pending' && (
+                            <Button
+                                className="btn-icon btn-soft-danger"
+                                onClick={() => setConfirmModal({ open: true, action: 'cancel', income: row })}
+                                title={t('finance.income.action.cancel')}
+                            >
+                                <i className="ri-close-circle-line align-middle" />
                             </Button>
                         )}
                     </div>
@@ -163,24 +180,42 @@ const SubwarehouseIncomes = () => {
         if (!configContext || !confirmModal.income || !confirmModal.action) return;
         try {
             setConfirmLoading(true);
-            const endpoint = confirmModal.action === 'approve'
-                ? `${configContext.apiUrl}/incomes/approve/${confirmModal.income._id}`
-                : `${configContext.apiUrl}/incomes/release/${confirmModal.income._id}`;
-            await configContext.axiosHelper.update(endpoint, {});
-            setAlertConfig({
-                visible: true,
-                color: 'success',
-                message: confirmModal.action === 'approve'
-                    ? t('finance.income.success.approved')
-                    : t('finance.income.success.released'),
-            });
-            fetchAllData();
-        } catch (error) {
-            setAlertConfig({
-                visible: true,
-                color: 'danger',
-                message: getApprovalErrorMessage(error, confirmModal.action, t),
-            });
+            if (confirmModal.action === 'cancel') {
+                await configContext.axiosHelper.update(`${configContext.apiUrl}/incomes/cancel/${confirmModal.income._id}`, {});
+                setAlertConfig({ visible: true, color: 'success', message: t('finance.income.success.cancelled') });
+                fetchAllData();
+            } else {
+                const endpoint = confirmModal.action === 'approve'
+                    ? `${configContext.apiUrl}/incomes/approve/${confirmModal.income._id}`
+                    : `${configContext.apiUrl}/incomes/release/${confirmModal.income._id}`;
+                await configContext.axiosHelper.update(endpoint, {});
+                setAlertConfig({
+                    visible: true,
+                    color: 'success',
+                    message: confirmModal.action === 'approve'
+                        ? t('finance.income.success.approved')
+                        : t('finance.income.success.released'),
+                });
+                fetchAllData();
+            }
+        } catch (error: any) {
+            if (confirmModal.action === 'cancel' && error?.response?.data?.missing) {
+                const missing = error.response.data.missing as Array<{ id: string; required: number; available: number }>;
+                const items = missing.map((item) => ({
+                    product: (confirmModal.income.products ?? []).find((p: any) => p.id?._id === item.id)?.id?.name ?? item.id,
+                    required: item.required,
+                    available: item.available,
+                }));
+                setMissingStockModal({ open: true, items });
+            } else {
+                setAlertConfig({
+                    visible: true,
+                    color: 'danger',
+                    message: confirmModal.action === 'cancel'
+                        ? t('finance.income.error.cancel')
+                        : getApprovalErrorMessage(error, confirmModal.action as 'approve' | 'release', t),
+                });
+            }
         } finally {
             setConfirmLoading(false);
             setConfirmModal({ open: false, action: null, income: null });
@@ -355,8 +390,8 @@ const SubwarehouseIncomes = () => {
 
                 <Card>
                     <CardHeader>
-                        <div className="d-flex gap-2">
-                            <h4 className="me-auto">{t('warehouse.subwarehouseDetails.tab.incomes')}</h4>
+                        <div className="d-flex gap-2 align-items-center flex-wrap">
+                            <h4 className="me-auto mb-0">{t('warehouse.subwarehouseDetails.tab.incomes')}</h4>
                         </div>
                     </CardHeader>
                     <CardBody className={subwarehouseIncomes.length === 0 ? "d-flex flex-column justify-content-center align-items-center text-center" : "d-flex flex-column flex-grow-1"}>
@@ -389,14 +424,32 @@ const SubwarehouseIncomes = () => {
 
             <ConfirmModal
                 isOpen={confirmModal.open}
-                title={confirmModal.action === 'approve' ? t('finance.income.confirm.approveTitle') : t('finance.income.confirm.releaseTitle')}
-                message={confirmModal.action === 'approve' ? t('finance.income.confirm.approveMessage') : t('finance.income.confirm.releaseMessage')}
-                confirmLabel={confirmModal.action === 'approve' ? t('finance.income.action.approve') : t('finance.income.action.release')}
+                title={
+                    confirmModal.action === 'approve' ? t('finance.income.confirm.approveTitle') :
+                    confirmModal.action === 'cancel' ? t('finance.income.confirm.cancelTitle') :
+                    t('finance.income.confirm.releaseTitle')
+                }
+                message={
+                    confirmModal.action === 'approve' ? t('finance.income.confirm.approveMessage') :
+                    confirmModal.action === 'cancel' ? t('finance.income.confirm.cancelMessage') :
+                    t('finance.income.confirm.releaseMessage')
+                }
+                confirmLabel={
+                    confirmModal.action === 'approve' ? t('finance.income.action.approve') :
+                    confirmModal.action === 'cancel' ? t('finance.income.action.cancel') :
+                    t('finance.income.action.release')
+                }
                 cancelLabel={t('common.button.cancel')}
-                confirmColor={confirmModal.action === 'approve' ? 'success' : 'info'}
+                confirmColor={confirmModal.action === 'approve' ? 'success' : confirmModal.action === 'cancel' ? 'danger' : 'info'}
                 loading={confirmLoading}
                 onConfirm={handleConfirmAction}
                 onCancel={() => setConfirmModal({ open: false, action: null, income: null })}
+            />
+
+            <MissingStockModal
+                isOpen={missingStockModal.open}
+                onClose={() => setMissingStockModal({ open: false, items: [] })}
+                missingItems={missingStockModal.items}
             />
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />

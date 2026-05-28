@@ -23,6 +23,7 @@ import BasicPieChart from "Components/Common/Graphics/BasicPieChart";
 import DiagnosisForm from "Components/Common/Forms/DiagnoseForm";
 import HeatForm from "Components/Common/Forms/HeatForm";
 import InseminationForm from "Components/Common/Forms/InseminationForm";
+import InseminationEditForm from "Components/Common/Forms/InseminationEditForm";
 import SelectableCustomTable from "Components/Common/Tables/SelectableTable";
 import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
@@ -49,7 +50,7 @@ const ViewInseminations = () => {
     const [tabletMode, setTabletMode] = useState(isTablet);
     const [loading, setLoading] = useState<boolean>(false);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ create: false, update: false, viewPDF: false, diagnosis: false, heat: false, pigDetails: false, dateRange: false, bulkHeat: false, bulkDiagnosis: false });
+    const [modals, setModals] = useState({ create: false, update: false, edit: false, viewPDF: false, diagnosis: false, heat: false, pigDetails: false, dateRange: false, bulkHeat: false, bulkDiagnosis: false });
     const [inseminations, setInseminations] = useState<any[]>([])
     const [possiblesPregnancies, setPossiblesPregnancies] = useState<any[]>([])
     const [possiblesPregnanciesCount, setPossiblesPregnanciesCount] = useState<number>(0)
@@ -165,6 +166,17 @@ const ViewInseminations = () => {
                     <UncontrolledTooltip target={`view-button-${row._id}`} >
                         {t('insemination.action.viewDetails')}
                     </UncontrolledTooltip>
+
+                    {row.status === 'active' && !row.diagnosis_date && (
+                        <>
+                            <Button id={`edit-button-${row._id}`} className="btn-icon btn-soft-warning" onClick={(e) => { e.stopPropagation(); setSelectedInsemination(row); toggleModal('edit'); }}>
+                                <i className="ri-edit-line align-middle"></i>
+                            </Button>
+                            <UncontrolledTooltip target={`edit-button-${row._id}`}>
+                                {t('insemination.action.edit')}
+                            </UncontrolledTooltip>
+                        </>
+                    )}
                 </div>
             ),
         },
@@ -568,6 +580,13 @@ const ViewInseminations = () => {
                 <ModalHeader toggle={() => toggleModal("heat")}>{t('insemination.modal.heat')}</ModalHeader>
                 <ModalBody>
                     {selectedInsemination && <HeatForm insemination={selectedInsemination} onSave={() => { toggleModal('heat'); fetchInseminations(); fetchInseminationsStats(); }} onCancel={() => toggleModal('heat')} />}
+                </ModalBody>
+            </Modal>
+
+            <Modal size="lg" isOpen={modals.edit} toggle={() => toggleModal("edit")} backdrop="static" keyboard={false} centered fullscreen={tabletMode}>
+                <ModalHeader toggle={() => toggleModal("edit")}>{t('insemination.edit.title')}</ModalHeader>
+                <ModalBody>
+                    {modals.edit && <InseminationEditForm inseminationData={selectedInsemination} onSave={() => { toggleModal('edit'); loadData(); }} onCancel={() => toggleModal('edit')} />}
                 </ModalBody>
             </Modal>
 

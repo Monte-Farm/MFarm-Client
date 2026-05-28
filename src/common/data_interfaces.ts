@@ -40,6 +40,7 @@ export interface IncomeData {
     fiscalRecord: string;
     currency: string;
     approvalStatus: 'pending' | 'approved' | 'released';
+    cancelled?: boolean;
 }
 
 export interface SupplierData {
@@ -83,6 +84,7 @@ export interface OutcomeData {
     litterId?: string;
     description: string;
     status: boolean;
+    cancelled?: boolean;
 }
 
 export interface ProductData {

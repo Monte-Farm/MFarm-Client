@@ -15,6 +15,7 @@ import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
 import DiagnosisForm from "Components/Common/Forms/DiagnoseForm";
 import HeatForm from "Components/Common/Forms/HeatForm";
+import InseminationEditForm from "Components/Common/Forms/InseminationEditForm";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
 import { useTranslation } from "react-i18next";
 
@@ -44,7 +45,7 @@ const InseminationDetails = () => {
     const [inseminationDetails, setInseminationDetails] = useState<any>({});
     const [sowDetails, setSowDetails] = useState<any>({})
     const [dosesDetails, setDosesDetails] = useState<any[]>([])
-    const [modals, setModals] = useState({ heat: false, diagnosis: false, abortionDetails: false, viewPDF: false })
+    const [modals, setModals] = useState({ heat: false, diagnosis: false, abortionDetails: false, viewPDF: false, edit: false })
     const [abortionDetails, setAbortionDetails] = useState<any>({})
     const [pdfLoading, setPdfLoading] = useState(false);
     const [fileURL, setFileURL] = useState<string | null>(null);
@@ -182,23 +183,31 @@ const InseminationDetails = () => {
                         {t('insemination.detail.button.back')}
                     </Button>
 
-                    <Button
-                        color="primary"
-                        onClick={handlePrintInsemination}
-                        disabled={pdfLoading}
-                    >
-                        {pdfLoading ? (
-                            <>
-                                <Spinner className="me-2" size='sm' />
-                                {t('insemination.action.generating')}
-                            </>
-                        ) : (
-                            <>
-                                <i className="ri-file-pdf-line me-2"></i>
-                                {t('insemination.detail.button.pdf')}
-                            </>
+                    <div className="d-flex gap-2">
+                        {inseminationDetails.status === 'active' && !inseminationDetails.diagnosis_date && (
+                            <Button color="warning" onClick={() => toggleModal('edit')}>
+                                <i className="ri-pencil-line me-2" />
+                                {t('insemination.action.edit')}
+                            </Button>
                         )}
-                    </Button>
+                        <Button
+                            color="primary"
+                            onClick={handlePrintInsemination}
+                            disabled={pdfLoading}
+                        >
+                            {pdfLoading ? (
+                                <>
+                                    <Spinner className="me-2" size='sm' />
+                                    {t('insemination.action.generating')}
+                                </>
+                            ) : (
+                                <>
+                                    <i className="ri-file-pdf-line me-2"></i>
+                                    {t('insemination.detail.button.pdf')}
+                                </>
+                            )}
+                        </Button>
+                    </div>
                 </div>
 
                 <div style={{ height: 'calc(100vh - 200px)', minHeight: '600px' }}>
@@ -432,6 +441,19 @@ const InseminationDetails = () => {
                 <ModalHeader toggle={() => toggleModal("abortionDetails")}>{t('insemination.detail.modal.abortionDetails')}</ModalHeader>
                 <ModalBody className="mt-3">
                     <ObjectDetails attributes={abortionAttributes} object={abortionDetails} />
+                </ModalBody>
+            </Modal>
+
+            <Modal size="lg" isOpen={modals.edit} toggle={() => toggleModal("edit")} backdrop="static" keyboard={false} centered fullscreen={tabletMode}>
+                <ModalHeader toggle={() => toggleModal("edit")}>{t('insemination.edit.title')}</ModalHeader>
+                <ModalBody>
+                    {inseminationDetails._id && (
+                        <InseminationEditForm
+                            inseminationData={inseminationDetails}
+                            onSave={() => { toggleModal('edit'); fetchData(); }}
+                            onCancel={() => toggleModal('edit')}
+                        />
+                    )}
                 </ModalBody>
             </Modal>
         </div>

@@ -4,7 +4,7 @@ import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Badge, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalHeader, Row } from "reactstrap";
+import { Badge, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalHeader, Row, Spinner } from "reactstrap";
 import LoadingGif from '../../assets/images/loading-gif.gif'
 import { Column } from "common/data/data_types";
 import CustomTable from "Components/Common/Tables/CustomTable";
@@ -16,6 +16,8 @@ import StatKpiCard from "Components/Common/Graphics/StatKpiCard";
 import DonutChartCard, { DonutDataItem, DonutLegendItem } from "Components/Common/Graphics/DonutChartCard";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import { OUTCOME_TYPES, getOutcomeTypeLabel } from "common/enums/outcomes.enums";
+import ConfirmModal from "Components/Common/Shared/ConfirmModal";
+import MissingStockModal from "Components/Common/Shared/MissingStockModal";
 
 
 const isTablet = () => {
@@ -31,6 +33,9 @@ const SubwarehouseOutcomes = () => {
     const userLogged = getEffectiveUser();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [subwarehouseOutcomes, setSubwarehouseOutcomes] = useState([])
+    const [actionLoading, setActionLoading] = useState(false);
+    const [confirmCancelModal, setConfirmCancelModal] = useState<{ open: boolean; outcome: any | null }>({ open: false, outcome: null });
+    const [missingStockModal, setMissingStockModal] = useState<{ open: boolean; items: Array<{ product: string; required: number; available: number }> }>({ open: false, items: [] });
     const [loading, setLoading] = useState<boolean>(true)
     const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ create: false, details: false });
@@ -98,6 +103,14 @@ const SubwarehouseOutcomes = () => {
         },
         { header: t('warehouse.subwarehouseDetails.col.value'), accessor: 'totalPrice', isFilterable: true, type: 'currency' },
         {
+            header: t('common.field.status', { defaultValue: 'Estado' }),
+            accessor: 'cancelled',
+            type: 'text',
+            render: (_, row) => row.cancelled
+                ? <Badge color="danger">{t('finance.outcome.status.cancelled')}</Badge>
+                : null,
+        },
+        {
             header: t('common.field.actions'),
             accessor: 'actions',
             render: (value: any, row: any) => (
@@ -105,6 +118,15 @@ const SubwarehouseOutcomes = () => {
                     <Button className="btn-icon farm-primary-button" onClick={() => { setSelectedOutcome(row); toggleModal('details') }}>
                         <i className="ri-eye-fill align-middle" />
                     </Button>
+                    {!row.cancelled && (
+                        <Button
+                            className="btn-icon btn-soft-danger"
+                            onClick={() => setConfirmCancelModal({ open: true, outcome: row })}
+                            title={t('finance.outcome.action.cancel')}
+                        >
+                            <i className="ri-close-circle-line align-middle" />
+                        </Button>
+                    )}
                 </div>
             )
         }
@@ -202,6 +224,34 @@ const SubwarehouseOutcomes = () => {
         }
     };
 
+    const handleCancelOutcome = async () => {
+        if (!configContext || !confirmCancelModal.outcome) return;
+        try {
+            setActionLoading(true);
+            const outcomeId = confirmCancelModal.outcome._id;
+            await configContext.axiosHelper.update(`${configContext.apiUrl}/outcomes/cancel_outcome/${outcomeId}`, {});
+            setAlertConfig({ visible: true, color: 'success', message: t('finance.outcome.success.cancelled') });
+            setConfirmCancelModal({ open: false, outcome: null });
+            await fetchData();
+        } catch (error: any) {
+            if (error?.response?.data?.missing) {
+                const missing = error.response.data.missing as Array<{ id: string; required: number; available: number }>;
+                const products: any[] = confirmCancelModal.outcome?.products ?? [];
+                const items = missing.map((item: any) => ({
+                    product: products.find((p: any) => p.id?._id === item.id)?.id?.name ?? item.id,
+                    required: item.required,
+                    available: item.available,
+                }));
+                setMissingStockModal({ open: true, items });
+            } else {
+                setAlertConfig({ visible: true, color: 'danger', message: t('finance.outcome.error.cancel') });
+            }
+            setConfirmCancelModal({ open: false, outcome: null });
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
     const fetchData = async () => {
         await Promise.all([
             handleFetchWarehouseOutcomes(),
@@ -294,11 +344,11 @@ const SubwarehouseOutcomes = () => {
 
                 <Card>
                     <CardHeader>
-                        <div className="d-flex">
-                            <h4>{t('warehouse.subwarehouseDetails.tab.outcomes')}</h4>
+                        <div className="d-flex gap-2 align-items-center flex-wrap">
+                            <h4 className="me-auto mb-0">{t('warehouse.subwarehouseDetails.tab.outcomes')}</h4>
                             <Button className="ms-auto farm-primary-button" onClick={() => toggleModal('create')}>
                                 <i className="ri-add-line me-2" />
-                                Nueva Salida
+                                {t('finance.outcome.action.new')}
                             </Button>
                         </div>
                     </CardHeader>
@@ -309,7 +359,12 @@ const SubwarehouseOutcomes = () => {
                                 <span className="fs-5 text-muted">{t('warehouse.subwarehouseDetails.empty.outcomes')}</span>
                             </>
                         ) : (
-                            <CustomTable columns={outcomesColumns} data={subwarehouseOutcomes} showSearchAndFilter={true} showPagination={false} />
+                            <CustomTable
+                                columns={outcomesColumns}
+                                data={subwarehouseOutcomes}
+                                showSearchAndFilter={true}
+                                showPagination={false}
+                            />
                         )}
                     </CardBody>
                 </Card>
@@ -326,9 +381,27 @@ const SubwarehouseOutcomes = () => {
             <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("details")}>{t('warehouse.subwarehouseDetails.modal.outcomeDetails')}</ModalHeader>
                 <ModalBody>
-                    <OutcomeDetails outcomeId={selectedOutcome._id} />
+                    <OutcomeDetails outcomeId={selectedOutcome._id} onCancelled={fetchData} />
                 </ModalBody>
             </Modal>
+
+            <ConfirmModal
+                isOpen={confirmCancelModal.open}
+                title={t('finance.outcome.confirm.cancelTitle')}
+                message={confirmCancelModal.outcome?.outcomeType === 'transfer' ? t('finance.outcome.confirm.cancelTransferMessage') : t('finance.outcome.confirm.cancelMessage')}
+                confirmLabel={t('finance.outcome.action.cancel')}
+                cancelLabel={t('common.button.cancel')}
+                confirmColor="danger"
+                loading={actionLoading}
+                onConfirm={handleCancelOutcome}
+                onCancel={() => setConfirmCancelModal({ open: false, outcome: null })}
+            />
+
+            <MissingStockModal
+                isOpen={missingStockModal.open}
+                onClose={() => setMissingStockModal({ open: false, items: [] })}
+                missingItems={missingStockModal.items}
+            />
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </div>

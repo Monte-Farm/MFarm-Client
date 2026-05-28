@@ -2401,7 +2401,23 @@
       "generating": "Generando...",
       "confirmRegister": "Confirmar Registro",
       "confirmDiagnosis": "Confirmar Diagnóstico",
-      "generatePdf": "Generar PDF"
+      "generatePdf": "Generar PDF",
+      "edit": "Editar"
+    },
+    "edit": {
+      "title": "Editar inseminación",
+      "success": "Inseminación actualizada correctamente.",
+      "error": "No se pudo actualizar la inseminación. Intenta de nuevo.",
+      "field": {
+        "date": "Fecha de inseminación",
+        "responsible": "Responsable",
+        "notes": "Notas",
+        "notesPlaceholder": "Observaciones adicionales..."
+      },
+      "validation": {
+        "date": "La fecha de inseminación es obligatoria.",
+        "responsible": "El responsable es obligatorio."
+      }
     },
     "modal": {
       "create": "Nueva inseminación",
@@ -3901,7 +3917,11 @@
         "new": "Nueva entrada",
         "generatePdf": "Generar PDF",
         "approve": "Aprobar",
-        "release": "Liberar"
+        "release": "Liberar",
+        "cancel": "Cancelar entrada"
+      },
+      "filter": {
+        "showCancelled": "Canceladas"
       },
       "empty": "No hay entradas registradas",
       "modal": {
@@ -3921,7 +3941,8 @@
         "notApproved": "Esta entrada no está aprobada, no puede liberarse.",
         "insufficientStock": "No se puede editar esta entrada porque parte del inventario ya salió del almacén. Ajusta el inventario manualmente antes de continuar.",
         "update": "No se pudo actualizar la entrada. Intenta de nuevo.",
-        "create": "No se pudo registrar la entrada. Intenta de nuevo."
+        "create": "No se pudo registrar la entrada. Intenta de nuevo.",
+        "cancel": "No se pudo cancelar la entrada. Verifica que esté en estado pendiente e inténtalo de nuevo."
       },
       "approvalStatus": {
         "pending": "Pendiente",
@@ -3930,8 +3951,13 @@
       },
       "success": {
         "approved": "Entrada aprobada correctamente.",
-        "released": "Entrada liberada correctamente."
+        "released": "Entrada liberada correctamente.",
+        "cancelled": "Entrada cancelada correctamente."
       },
+      "status": {
+        "cancelled": "Cancelada"
+      },
+      "cancelledNote": "Esta entrada fue cancelada. El impacto en el inventario ha sido revertido.",
       "form": {
         "approvedWarning": "Esta entrada está aprobada y no puede modificarse. Libérala primero para editarla.",
         "releasedWarning": "Esta entrada fue liberada para corrección. Al guardar volverá a estado Pendiente y requerirá nueva aprobación.",
@@ -3943,7 +3969,9 @@
         "approveTitle": "Aprobar entrada",
         "approveMessage": "¿Estás seguro de que deseas aprobar esta entrada? Una vez aprobada quedará congelada y no podrá editarse ni eliminarse.",
         "releaseTitle": "Liberar entrada",
-        "releaseMessage": "¿Estás seguro de que deseas liberar esta entrada? Podrá editarse nuevamente y volverá a estado Pendiente al guardar."
+        "releaseMessage": "¿Estás seguro de que deseas liberar esta entrada? Podrá editarse nuevamente y volverá a estado Pendiente al guardar.",
+        "cancelTitle": "Cancelar entrada",
+        "cancelMessage": "¿Estás seguro de que deseas cancelar esta entrada? Esta acción revertirá el impacto en el inventario del almacén y no puede deshacerse."
       }
     },
     "outcome": {
@@ -3980,8 +4008,16 @@
       },
       "action": {
         "new": "Nueva salida",
-        "generatePdf": "Generar PDF"
+        "generatePdf": "Generar PDF",
+        "cancel": "Cancelar salida"
       },
+      "filter": {
+        "showCancelled": "Canceladas"
+      },
+      "status": {
+        "cancelled": "Cancelada"
+      },
+      "cancelledNote": "Esta salida fue cancelada. El impacto en el inventario ha sido revertido.",
       "empty": "No hay salidas registradas",
       "modal": {
         "create": "Nueva salida de inventario",
@@ -3989,9 +4025,18 @@
         "dateRange": "Seleccionar rango de fechas",
         "pdfReport": "Reporte de salidas"
       },
+      "confirm": {
+        "cancelTitle": "Cancelar salida",
+        "cancelMessage": "¿Estás seguro de que deseas cancelar esta salida? Esta acción revertirá el impacto en el inventario del almacén y no puede deshacerse.",
+        "cancelTransferMessage": "¿Estás seguro de que deseas cancelar esta transferencia? También se cancelará el ingreso correspondiente en el almacén destino. Esta acción no puede deshacerse."
+      },
+      "success": {
+        "cancelled": "Salida cancelada correctamente."
+      },
       "error": {
         "generatePdf": "Error al generar el PDF",
-        "fetchData": "Error al cargar las salidas"
+        "fetchData": "Error al cargar las salidas",
+        "cancel": "No se pudo cancelar la salida. Intenta de nuevo."
       }
     },
     "sale": {

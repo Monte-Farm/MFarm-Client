@@ -18,6 +18,8 @@ import { OUTCOME_TYPES } from "common/enums/outcomes.enums";
 import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
 import { useTranslation } from "react-i18next";
+import ConfirmModal from "Components/Common/Shared/ConfirmModal";
+import MissingStockModal from "Components/Common/Shared/MissingStockModal";
 
 const outcomeTypeColor: Record<string, string> = {
     transfer: "info",
@@ -53,6 +55,9 @@ const ViewOutcomes = () => {
 
     const [outcomes, setOutcomes] = useState([])
     const [loading, setLoading] = useState<boolean>(false)
+    const [actionLoading, setActionLoading] = useState(false);
+    const [confirmCancelModal, setConfirmCancelModal] = useState<{ open: boolean; outcome: any | null }>({ open: false, outcome: null });
+    const [missingStockModal, setMissingStockModal] = useState<{ open: boolean; items: Array<{ product: string; required: number; available: number }> }>({ open: false, items: [] });
     const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ createOutcome: false, details: false, dateRange: false, viewPDF: false });
     const [pdfLoading, setPdfLoading] = useState(false);
@@ -99,12 +104,29 @@ const ViewOutcomes = () => {
         },
         { header: t('finance.outcome.column.value'), accessor: 'totalPrice', isFilterable: true, type: 'currency' },
         {
+            header: t('common.field.status', { defaultValue: 'Estado' }),
+            accessor: 'cancelled',
+            type: 'text',
+            render: (_, row) => row.cancelled
+                ? <Badge color="danger">{t('finance.outcome.status.cancelled')}</Badge>
+                : null,
+        },
+        {
             header: t('common.field.actions'), accessor: 'actions',
             render: (value: any, row: any) => (
                 <div className="d-flex gap-1">
                     <Button className="btn-icon farm-primary-button" onClick={() => { setSelectedOutcome(row); toggleModal('details') }}>
                         <i className="ri-eye-fill align-middle" />
                     </Button>
+                    {!row.cancelled && (
+                        <Button
+                            className="btn-icon btn-soft-danger"
+                            onClick={() => setConfirmCancelModal({ open: true, outcome: row })}
+                            title={t('finance.outcome.action.cancel')}
+                        >
+                            <i className="ri-close-circle-line align-middle" />
+                        </Button>
+                    )}
                 </div>
             )
         }
@@ -224,6 +246,34 @@ const ViewOutcomes = () => {
         return () => window.removeEventListener('resize', onResize);
     }, []);
 
+    const handleCancelOutcome = async () => {
+        if (!configContext || !confirmCancelModal.outcome) return;
+        try {
+            setActionLoading(true);
+            const outcomeId = confirmCancelModal.outcome._id;
+            await configContext.axiosHelper.update(`${configContext.apiUrl}/outcomes/cancel_outcome/${outcomeId}`, {});
+            setAlertConfig({ visible: true, color: 'success', message: t('finance.outcome.success.cancelled') });
+            setConfirmCancelModal({ open: false, outcome: null });
+            await fetchWarehouseData();
+        } catch (error: any) {
+            if (error?.response?.data?.missing) {
+                const missing = error.response.data.missing as Array<{ id: string; required: number; available: number }>;
+                const products: any[] = confirmCancelModal.outcome?.products ?? [];
+                const items = missing.map((item: any) => ({
+                    product: products.find((p: any) => p.id?._id === item.id)?.id?.name ?? item.id,
+                    required: item.required,
+                    available: item.available,
+                }));
+                setMissingStockModal({ open: true, items });
+            } else {
+                setAlertConfig({ visible: true, color: 'danger', message: t('finance.outcome.error.cancel') });
+            }
+            setConfirmCancelModal({ open: false, outcome: null });
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
     const fetchWarehouseData = async () => {
         if (!mainWarehouseId || !configContext) return;
 
@@ -311,7 +361,7 @@ const ViewOutcomes = () => {
 
                 <Card>
                     <CardHeader>
-                        <div className="d-flex gap-2 align-items-center">
+                        <div className="d-flex gap-2 align-items-center flex-wrap">
                             <h4 className="me-auto mb-0">{t('finance.outcome.cardTitle')}</h4>
                             <Button color="primary" onClick={() => toggleModal('dateRange')} disabled={pdfLoading}>
                                 {pdfLoading ? (
@@ -333,7 +383,12 @@ const ViewOutcomes = () => {
                                 <span className="fs-5 text-muted">{t('finance.outcome.empty')}</span>
                             </>
                         ) : (
-                            <CustomTable columns={columns} data={outcomes} showSearchAndFilter={true} showPagination={false} />
+                            <CustomTable
+                                columns={columns}
+                                data={outcomes}
+                                showSearchAndFilter={true}
+                                showPagination={false}
+                            />
                         )}
                     </CardBody>
                 </Card>
@@ -349,7 +404,7 @@ const ViewOutcomes = () => {
             <Modal size="xl" isOpen={modals.details} toggle={() => toggleModal("details")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("details")}>{t('finance.outcome.modal.details')}</ModalHeader>
                 <ModalBody>
-                    <OutcomeDetails outcomeId={selectedOutcome._id} />
+                    <OutcomeDetails outcomeId={selectedOutcome._id} onCancelled={fetchWarehouseData} />
                 </ModalBody>
             </Modal>
 
@@ -369,6 +424,24 @@ const ViewOutcomes = () => {
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>
             </Modal>
+
+            <ConfirmModal
+                isOpen={confirmCancelModal.open}
+                title={t('finance.outcome.confirm.cancelTitle')}
+                message={confirmCancelModal.outcome?.outcomeType === 'transfer' ? t('finance.outcome.confirm.cancelTransferMessage') : t('finance.outcome.confirm.cancelMessage')}
+                confirmLabel={t('finance.outcome.action.cancel')}
+                cancelLabel={t('common.button.cancel')}
+                confirmColor="danger"
+                loading={actionLoading}
+                onConfirm={handleCancelOutcome}
+                onCancel={() => setConfirmCancelModal({ open: false, outcome: null })}
+            />
+
+            <MissingStockModal
+                isOpen={missingStockModal.open}
+                onClose={() => setMissingStockModal({ open: false, items: [] })}
+                missingItems={missingStockModal.items}
+            />
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </div>

@@ -2401,7 +2401,23 @@
       "generating": "Generating...",
       "confirmRegister": "Confirm",
       "confirmDiagnosis": "Confirm diagnosis",
-      "generatePdf": "Generate PDF"
+      "generatePdf": "Generate PDF",
+      "edit": "Edit"
+    },
+    "edit": {
+      "title": "Edit service record",
+      "success": "Service updated successfully.",
+      "error": "Could not update the service record. Please try again.",
+      "field": {
+        "date": "Service date",
+        "responsible": "Responsible",
+        "notes": "Notes",
+        "notesPlaceholder": "Additional observations..."
+      },
+      "validation": {
+        "date": "Service date is required.",
+        "responsible": "Responsible is required."
+      }
     },
     "modal": {
       "create": "New insemination",
@@ -3901,7 +3917,11 @@
         "new": "New receipt",
         "generatePdf": "Generate PDF",
         "approve": "Approve",
-        "release": "Release"
+        "release": "Release",
+        "cancel": "Cancel receipt"
+      },
+      "filter": {
+        "showCancelled": "Cancelled"
       },
       "empty": "No receipts recorded",
       "modal": {
@@ -3921,7 +3941,8 @@
         "notApproved": "This receipt is not approved, it cannot be released.",
         "insufficientStock": "This receipt cannot be edited because part of the stock already left the warehouse. Adjust inventory manually before continuing.",
         "update": "Could not update the receipt. Please try again.",
-        "create": "Could not register the receipt. Please try again."
+        "create": "Could not register the receipt. Please try again.",
+        "cancel": "Could not cancel the receipt. Make sure it is in pending status and try again."
       },
       "approvalStatus": {
         "pending": "Pending",
@@ -3930,8 +3951,13 @@
       },
       "success": {
         "approved": "Receipt approved successfully.",
-        "released": "Receipt released successfully."
+        "released": "Receipt released successfully.",
+        "cancelled": "Receipt cancelled successfully."
       },
+      "status": {
+        "cancelled": "Cancelled"
+      },
+      "cancelledNote": "This receipt has been cancelled. Its impact on warehouse inventory has been reversed.",
       "form": {
         "approvedWarning": "This receipt is approved and cannot be edited. Release it first to make changes.",
         "releasedWarning": "This receipt was released for correction. Saving will reset it to Pending status and require a new approval.",
@@ -3943,7 +3969,9 @@
         "approveTitle": "Approve receipt",
         "approveMessage": "Are you sure you want to approve this receipt? Once approved, it will be locked and cannot be edited or deleted.",
         "releaseTitle": "Release receipt",
-        "releaseMessage": "Are you sure you want to release this receipt? It will become editable again and will return to Pending status when saved."
+        "releaseMessage": "Are you sure you want to release this receipt? It will become editable again and will return to Pending status when saved.",
+        "cancelTitle": "Cancel receipt",
+        "cancelMessage": "Are you sure you want to cancel this receipt? This action will reverse the impact on warehouse inventory and cannot be undone."
       }
     },
     "outcome": {
@@ -3980,8 +4008,16 @@
       },
       "action": {
         "new": "New issue",
-        "generatePdf": "Generate PDF"
+        "generatePdf": "Generate PDF",
+        "cancel": "Cancel issue"
       },
+      "filter": {
+        "showCancelled": "Cancelled"
+      },
+      "status": {
+        "cancelled": "Cancelled"
+      },
+      "cancelledNote": "This issue has been cancelled. Its impact on warehouse inventory has been reversed.",
       "empty": "No issues recorded",
       "modal": {
         "create": "New inventory issue",
@@ -3989,9 +4025,18 @@
         "dateRange": "Select date range",
         "pdfReport": "Issues report"
       },
+      "confirm": {
+        "cancelTitle": "Cancel issue",
+        "cancelMessage": "Are you sure you want to cancel this issue? This action will reverse the impact on warehouse inventory and cannot be undone.",
+        "cancelTransferMessage": "Are you sure you want to cancel this transfer? The corresponding receipt in the destination warehouse will also be cancelled. This action cannot be undone."
+      },
+      "success": {
+        "cancelled": "Issue cancelled successfully."
+      },
       "error": {
         "generatePdf": "Error generating the PDF",
-        "fetchData": "Error loading issues"
+        "fetchData": "Error loading issues",
+        "cancel": "Could not cancel the issue. Please try again."
       }
     },
     "sale": {

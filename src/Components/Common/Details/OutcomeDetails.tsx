@@ -10,20 +10,26 @@ import ObjectDetails from "./ObjectDetails";
 import CustomTable from "../Tables/CustomTable";
 import PDFViewer from "../Shared/PDFViewer";
 import AlertMessage from "../Shared/AlertMesagge";
+import ConfirmModal from "../Shared/ConfirmModal";
+import MissingStockModal from "../Shared/MissingStockModal";
 import { useNavigate } from "react-router-dom";
 import { Attribute } from "common/data_interfaces";
 import { useTranslation } from "react-i18next";
 
 interface OutcomeDetailsProps {
     outcomeId: string;
+    onCancelled?: () => void;
 }
 
-const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
+const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId, onCancelled }) => {
     const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState(true);
     const [pdfLoading, setPdfLoading] = useState(false);
+    const [actionLoading, setActionLoading] = useState(false);
+    const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
+    const [missingStockModal, setMissingStockModal] = useState<{ open: boolean; items: Array<{ product: string; required: number; available: number }> }>({ open: false, items: [] });
     const [modals, setModals] = useState({ viewPDF: false });
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' })
     const [fileURL, setFileURL] = useState<string>('')
@@ -140,6 +146,32 @@ const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
 
 
 
+    const handleConfirmCancel = async () => {
+        if (!configContext) return;
+        try {
+            setActionLoading(true);
+            await configContext.axiosHelper.update(`${configContext.apiUrl}/outcomes/cancel_outcome/${outcomeId}`, {});
+            setAlertConfig({ visible: true, color: 'success', message: t('finance.outcome.success.cancelled') });
+            await fetchData();
+            onCancelled?.();
+        } catch (error: any) {
+            if (error?.response?.data?.missing) {
+                const missing = error.response.data.missing as Array<{ id: string; required: number; available: number }>;
+                const items = missing.map((item) => ({
+                    product: products.find((p: any) => p.id?._id === item.id)?.id?.name ?? item.id,
+                    required: item.required,
+                    available: item.available,
+                }));
+                setMissingStockModal({ open: true, items });
+            } else {
+                setAlertConfig({ visible: true, color: 'danger', message: t('finance.outcome.error.cancel') });
+            }
+        } finally {
+            setActionLoading(false);
+            setConfirmCancelOpen(false);
+        }
+    };
+
     const fetchData = async () => {
         if (!configContext || !userLogged) return;
 
@@ -191,9 +223,23 @@ const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
         )
     }
 
+    const isCancelled = outcomeDetails?.cancelled === true;
+    const isTransfer = outcomeDetails?.outcomeType === 'transfer';
+
     return (
         <>
-            <div className="d-flex gap-2 mb-4">
+            {isCancelled && (
+                <div className="d-flex align-items-center gap-3 mb-4 px-4 py-3 rounded-3 text-white" style={{ background: '#b91c1c' }}>
+                    <i className="ri-close-circle-fill fs-3" />
+                    <div>
+                        <div className="fw-bold fs-5">{t('finance.outcome.status.cancelled')}</div>
+                        <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>
+                            {t('finance.outcome.cancelledNote', { defaultValue: 'Esta salida ha sido cancelada y no puede modificarse.' })}
+                        </div>
+                    </div>
+                </div>
+            )}
+            <div className="d-flex gap-2 mb-4 flex-wrap align-items-center">
                 <Button
                     color="primary"
                     className="btn-pdf"
@@ -212,6 +258,12 @@ const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
                         </>
                     )}
                 </Button>
+                {!isCancelled && (
+                    <Button color="danger" onClick={() => setConfirmCancelOpen(true)} disabled={actionLoading}>
+                        {actionLoading ? <Spinner size="sm" className="me-2" /> : <i className="ri-close-circle-line me-2" />}
+                        {t('finance.outcome.action.cancel')}
+                    </Button>
+                )}
             </div>
             <div className="d-flex flex-column gap-3">
                 {/* Primera fila: Información general y detalles financieros */}
@@ -243,6 +295,24 @@ const OutcomeDetails: React.FC<OutcomeDetailsProps> = ({ outcomeId }) => {
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>
             </Modal>
+
+            <ConfirmModal
+                isOpen={confirmCancelOpen}
+                title={t('finance.outcome.confirm.cancelTitle')}
+                message={isTransfer ? t('finance.outcome.confirm.cancelTransferMessage') : t('finance.outcome.confirm.cancelMessage')}
+                confirmLabel={t('finance.outcome.action.cancel')}
+                cancelLabel={t('common.button.cancel')}
+                confirmColor="danger"
+                loading={actionLoading}
+                onConfirm={handleConfirmCancel}
+                onCancel={() => setConfirmCancelOpen(false)}
+            />
+
+            <MissingStockModal
+                isOpen={missingStockModal.open}
+                onClose={() => setMissingStockModal({ open: false, items: [] })}
+                missingItems={missingStockModal.items}
+            />
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </>
