@@ -31,11 +31,12 @@ const UserDetailsModal: React.FC<UserDetailsProps> = ({ userId }) => {
     const { t } = useTranslation();
     const [userDetails, setUserDetails] = useState<UserData | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [modals, setModals] = useState({ details: false, create: false, update: false, deactivate: false, activate: false, success: false, error: false, viewPDF: false });
+    const [modals, setModals] = useState({ details: false, create: false, update: false, deactivate: false, activate: false, success: false, error: false, viewPDF: false, resendCredentials: false });
     const [tabletMode, setTabletMode] = useState(isTablet);
     const [pdfLoading, setPdfLoading] = useState(false);
     const [fileURL, setFileURL] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState('');
+    const [resendingCredentials, setResendingCredentials] = useState(false);
 
     const roleColorsMap: Record<string, string> = {
         Superadmin: "danger",
@@ -116,6 +117,22 @@ const UserDetailsModal: React.FC<UserDetailsProps> = ({ userId }) => {
         }
     };
 
+    const handleResendCredentials = async () => {
+        if (!configContext || !userDetails) return;
+        setResendingCredentials(true);
+        try {
+            await configContext.axiosHelper.create(`${configContext.apiUrl}/user/resend_credentials/${userDetails.username}`, {});
+            setSuccessMessage(t('users.success.resendCredentials'));
+            toggleModal('success');
+        } catch (error) {
+            logger.error('Error resending credentials:', error);
+            toggleModal('error');
+        } finally {
+            setResendingCredentials(false);
+            toggleModal('resendCredentials', false);
+        }
+    };
+
     const handleGenerateReport = async () => {
         if (!configContext) return;
         try {
@@ -174,6 +191,13 @@ const UserDetailsModal: React.FC<UserDetailsProps> = ({ userId }) => {
                     <i className="ri-pencil-line me-3" />
                     {t('users.details.button.edit')}
                 </Button>
+
+                {userDetails?.email && (
+                    <Button color="info" onClick={() => toggleModal("resendCredentials")} title={t('users.button.resendCredentials')}>
+                        <i className="ri-mail-send-line me-2" />
+                        {t('users.button.resendCredentials')}
+                    </Button>
+                )}
             </div>
 
             <Row>
@@ -218,6 +242,27 @@ const UserDetailsModal: React.FC<UserDetailsProps> = ({ userId }) => {
                     </Card>
                 </Col>
             </Row>
+
+            <Modal isOpen={modals.resendCredentials} toggle={() => toggleModal('resendCredentials')} size="md" keyboard={false} backdrop="static" centered>
+                <ModalHeader toggle={() => toggleModal('resendCredentials', false)}>
+                    {t('users.modal.resendCredentials.title')}
+                </ModalHeader>
+                <ModalBody>
+                    <p>{t('users.modal.resendCredentials.body', { name: `${userDetails?.name} ${userDetails?.lastname}`, email: userDetails?.email })}</p>
+                    <small className="text-warning">
+                        <i className="ri-error-warning-line me-1"></i>
+                        {t('users.modal.resendCredentials.warning')}
+                    </small>
+                </ModalBody>
+                <ModalFooter>
+                    <Button color="secondary" onClick={() => toggleModal('resendCredentials', false)} disabled={resendingCredentials}>
+                        {t('common.button.cancel')}
+                    </Button>
+                    <Button color="info" onClick={handleResendCredentials} disabled={resendingCredentials}>
+                        {resendingCredentials ? t('common.status.loading') : t('users.button.resendCredentials')}
+                    </Button>
+                </ModalFooter>
+            </Modal>
 
             <Modal isOpen={modals.update} toggle={() => toggleModal('update')} size="xl" keyboard={false} backdrop='static' centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal('update')}>{t('users.modal.update')}</ModalHeader>

@@ -42,6 +42,7 @@ export interface AiMessage {
 interface AiState {
     isOpen: boolean;
     activeConversationId: string | null;
+    activeRequestId: string | null;
     messages: AiMessage[];
     sending: boolean;
     loadingHistory: boolean;
@@ -51,6 +52,7 @@ interface AiState {
 const initialState: AiState = {
     isOpen: false,
     activeConversationId: null,
+    activeRequestId: null,
     messages: [],
     sending: false,
     loadingHistory: false,
@@ -100,6 +102,9 @@ const aiSlice = createSlice({
                 state.messages.push({ role: 'assistant', text: '', report: action.payload });
             }
         },
+        setActiveRequestId(state, action: PayloadAction<string | null>) {
+            state.activeRequestId = action.payload;
+        },
         setSending(state, action: PayloadAction<boolean>) {
             state.sending = action.payload;
         },
@@ -121,6 +126,7 @@ export const {
     setOpen,
     toggleOpen,
     setActiveConversationId,
+    setActiveRequestId,
     setMessages,
     appendMessage,
     appendDeltaToLastAssistant,

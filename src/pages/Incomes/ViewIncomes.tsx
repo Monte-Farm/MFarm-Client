@@ -56,7 +56,7 @@ const ViewIncomes = () => {
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [incomes, setIncomes] = useState([])
+    const [incomes, setIncomes] = useState<any[]>([])
     const [loading, setLoading] = useState<boolean>(true)
     const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ createIncome: false, editIncome: false, details: false, dateRange: false, viewPDF: false });
@@ -260,7 +260,9 @@ const ViewIncomes = () => {
         try {
             setLoading(true)
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/incomes/find_warehouse_incomes/${mainWarehouseId}`);
-            const incomesData = response.data.data;
+            const incomesData = [...response.data.data].sort(
+                (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+            );
             setIncomes(incomesData);
         } catch (error) {
             logger.error('Error fetching data: ', { error })

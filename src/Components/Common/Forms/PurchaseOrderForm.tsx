@@ -428,7 +428,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
 
     const handleCreateSupplier = async (data: SupplierData) => {
         if (!configContext) return;
-        await configContext.axiosHelper.create(`${configContext.apiUrl}/supplier/create_supplier`, data);
+        await configContext.axiosHelper.create(`${configContext.apiUrl}/supplier/create_supplier`, { ...data, farmId: userLogged.farm_assigned });
         await fetchSuppliers();
         toggleModal('createSupplier', false);
     };

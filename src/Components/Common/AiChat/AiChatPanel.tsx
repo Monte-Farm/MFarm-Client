@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { createSelector } from 'reselect';
 import { AiMessage, setError } from 'slices/ai/reducer';
-import { sendMessage, startNewConversation } from 'slices/ai/thunk';
+import { cancelStream, sendMessage, startNewConversation } from 'slices/ai/thunk';
 import AiChatHeader from './AiChatHeader';
 import AiChatMessages from './AiChatMessages';
 import AiChatInput from './AiChatInput';
@@ -16,11 +16,13 @@ const selectAi = createSelector(
     (ai: {
         messages: AiMessage[];
         sending: boolean;
+        activeRequestId: string | null;
         loadingHistory: boolean;
         error: string | null;
     }) => ({
         messages: ai.messages,
         sending: ai.sending,
+        isStreaming: ai.activeRequestId !== null,
         loadingHistory: ai.loadingHistory,
         error: ai.error,
     })
@@ -28,7 +30,7 @@ const selectAi = createSelector(
 
 const AiChatPanel: React.FC<AiChatPanelProps> = ({ onClose }) => {
     const dispatch = useDispatch<any>();
-    const { messages, sending, loadingHistory, error } = useSelector(selectAi);
+    const { messages, sending, isStreaming, loadingHistory, error } = useSelector(selectAi);
     const [pendingText, setPendingText] = useState<string>('');
 
     const handleSend = (text: string) => {
@@ -37,6 +39,10 @@ const AiChatPanel: React.FC<AiChatPanelProps> = ({ onClose }) => {
 
     const handleNew = () => {
         dispatch(startNewConversation());
+    };
+
+    const handleCancel = () => {
+        dispatch(cancelStream());
     };
 
     const handlePickSuggestion = (text: string) => {
@@ -69,7 +75,9 @@ const AiChatPanel: React.FC<AiChatPanelProps> = ({ onClose }) => {
             </div>
             <AiChatInput
                 disabled={sending || loadingHistory}
+                isStreaming={isStreaming}
                 onSend={handleSend}
+                onCancel={handleCancel}
                 externalValue={pendingText}
                 onExternalConsumed={() => setPendingText('')}
             />

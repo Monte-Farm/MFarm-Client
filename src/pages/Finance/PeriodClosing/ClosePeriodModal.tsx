@@ -49,7 +49,7 @@ const ClosePeriodModal = ({ isOpen, onClose, onSuccess, farmId }: ClosePeriodMod
     const defaultYear = today.getMonth() === 0 ? today.getFullYear() - 1 : today.getFullYear();
 
     const userRoles: string[] = Array.isArray(userLogged?.role) ? userLogged.role : (userLogged?.role ? [userLogged.role] : []);
-    const canUserForce = userRoles.includes("Superadmin") || userRoles.includes("farm_manager");
+    const canUserForce = userRoles.includes("Superadmin") || userRoles.includes("farm_manager") || userRoles.includes("finance_manager");
 
     const formatLongDate = (year: number, month: number, day: number) =>
         t("finance.periodClosing.modal.shared.closingDateFormat", { day, month: MONTHS[month - 1], year });

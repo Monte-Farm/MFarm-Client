@@ -57,6 +57,7 @@ const InseminationDetails = () => {
     // Attribute arrays defined inside component to allow t() usage
     const sowAttributes: Attribute[] = [
         { key: "code", label: t('insemination.detail.sow.code'), type: "text" },
+        { key: "earTag", label: t('insemination.detail.sow.earTag'), type: "text" },
         { key: "birthdate", label: t('insemination.detail.sow.birthdate'), type: "date" },
         { key: "breed", label: t('insemination.detail.sow.breed'), type: "text" },
         { key: "origin", label: t('insemination.detail.sow.origin'), type: "text" },

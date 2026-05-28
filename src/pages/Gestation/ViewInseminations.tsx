@@ -77,7 +77,7 @@ const ViewInseminations = () => {
                         toggleModal('pigDetails')
                     }}
                 >
-                    {row.sow?.code} ↗
+                    {row.sow?.earTag || row.sow?.code} ↗
                 </Button>
             )
         },
@@ -108,6 +108,16 @@ const ViewInseminations = () => {
                     </span>
                 );
             },
+        },
+        {
+            header: t('insemination.column.createdAt'),
+            accessor: "createdAt",
+            type: "date",
+            isFilterable: false,
+            render: (_, row) =>
+                row.createdAt
+                    ? new Date(row.createdAt).toLocaleDateString("es-MX")
+                    : "—",
         },
         {
             header: t('insemination.column.responsible'),
@@ -169,7 +179,7 @@ const ViewInseminations = () => {
 
                     {row.status === 'active' && !row.diagnosis_date && (
                         <>
-                            <Button id={`edit-button-${row._id}`} className="btn-icon btn-soft-warning" onClick={(e) => { e.stopPropagation(); setSelectedInsemination(row); toggleModal('edit'); }}>
+                            <Button id={`edit-button-${row._id}`} className="btn-icon btn-warning" onClick={(e) => { e.stopPropagation(); setSelectedInsemination(row); toggleModal('edit'); }}>
                                 <i className="ri-edit-line align-middle"></i>
                             </Button>
                             <UncontrolledTooltip target={`edit-button-${row._id}`}>

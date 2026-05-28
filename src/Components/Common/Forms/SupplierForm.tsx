@@ -36,9 +36,9 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ initialData, onSubmit, onCa
         }
       }),
     name: Yup.string().required(t('warehouse.supplierForm.validation.nameRequired')),
-    address: Yup.string().required(t('warehouse.supplierForm.validation.addressRequired')),
-    phone_number: Yup.string().required(t('warehouse.supplierForm.validation.phoneRequired')),
-    email: Yup.string().email(t('warehouse.supplierForm.validation.emailInvalid')).required(t('warehouse.supplierForm.validation.emailRequired')),
+    address: Yup.string(),
+    phone_number: Yup.string(),
+    email: Yup.string().email(t('warehouse.supplierForm.validation.emailInvalid')),
     supplier_type: Yup.string().required(t('warehouse.supplierForm.validation.typeRequired')),
     rnc: Yup.string(),
   });

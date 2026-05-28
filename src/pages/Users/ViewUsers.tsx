@@ -31,7 +31,8 @@ const ViewUsers = () => {
     const [selectedUsers, setSelectedUsers] = useState<UserData[]>([]);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [tabletMode, setTabletMode] = useState(isTablet);
-    const [modals, setModals] = useState({ details: false, create: false, update: false, delete: false, bulkDelete: false, bulkActivate: false, toggleStatus: false });
+    const [modals, setModals] = useState({ details: false, create: false, update: false, delete: false, bulkDelete: false, bulkActivate: false, toggleStatus: false, resendCredentials: false });
+    const [resendingCredentials, setResendingCredentials] = useState(false);
     const [loading, setLoading] = useState<boolean>(true)
     const navigate = useNavigate();
 
@@ -100,6 +101,16 @@ const ViewUsers = () => {
                     >
                         <i className={`align-middle ${row.status ? 'ri-forbid-line' : 'ri-check-line'}`}></i>
                     </Button>
+                    {row.email && (
+                        <Button
+                            className="btn-icon"
+                            color="info"
+                            onClick={(e) => { e.stopPropagation(); setSelecteduser(row); toggleModal('resendCredentials'); }}
+                            title={t('users.button.resendCredentials')}
+                        >
+                            <i className="ri-mail-send-line align-middle"></i>
+                        </Button>
+                    )}
                 </div>
             ),
         },
@@ -221,6 +232,21 @@ const ViewUsers = () => {
             setAlertConfig({ visible: true, color: 'danger', message: t('users.error.activate') });
         } finally {
             toggleModal('bulkActivate');
+        }
+    };
+
+    const handleResendCredentials = async () => {
+        if (!configContext || !selectedUser) return;
+        setResendingCredentials(true);
+        try {
+            await configContext.axiosHelper.create(`${configContext.apiUrl}/user/resend_credentials/${selectedUser.username}`, {});
+            setAlertConfig({ visible: true, color: 'success', message: t('users.success.resendCredentials') });
+        } catch (error) {
+            logger.error('Error resending credentials:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: t('users.error.resendCredentials') });
+        } finally {
+            setResendingCredentials(false);
+            toggleModal('resendCredentials', false);
         }
     };
 
@@ -372,6 +398,28 @@ const ViewUsers = () => {
                         <Button className="farm-primary-button" onClick={handleBulkActivate}>{t('common.button.confirm')}</Button>
                     </ModalFooter>
                 </Modal>
+                {/* Modal Resend Credentials */}
+                <Modal isOpen={modals.resendCredentials} toggle={() => toggleModal("resendCredentials")} backdrop='static' keyboard={false} centered>
+                    <ModalHeader toggle={() => toggleModal("resendCredentials", false)}>
+                        {t('users.modal.resendCredentials.title')}
+                    </ModalHeader>
+                    <ModalBody>
+                        <p>{t('users.modal.resendCredentials.body', { name: `${selectedUser?.name} ${selectedUser?.lastname}`, email: selectedUser?.email })}</p>
+                        <small className="text-warning">
+                            <i className="ri-error-warning-line me-1"></i>
+                            {t('users.modal.resendCredentials.warning')}
+                        </small>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button color="secondary" onClick={() => toggleModal("resendCredentials", false)} disabled={resendingCredentials}>
+                            {t('common.button.cancel')}
+                        </Button>
+                        <Button color="info" onClick={handleResendCredentials} disabled={resendingCredentials}>
+                            {resendingCredentials ? t('common.status.loading') : t('users.button.resendCredentials')}
+                        </Button>
+                    </ModalFooter>
+                </Modal>
+
             </Container>
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />

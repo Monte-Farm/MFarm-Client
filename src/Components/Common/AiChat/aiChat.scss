@@ -543,6 +543,31 @@ $ai-z: 1050;
 
         &:disabled { opacity: 0.38; cursor: not-allowed; box-shadow: none; }
     }
+
+    &__cancel {
+        flex-shrink: 0;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        border: none;
+        background: #e84545;
+        color: #fff;
+        font-size: 19px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+        box-shadow: 0 2px 8px rgba(232,69,69,0.38);
+
+        &:hover {
+            background: darken(#e84545, 8%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(232,69,69,0.48);
+        }
+
+        &:active { transform: scale(0.93); }
+    }
 }
 
 

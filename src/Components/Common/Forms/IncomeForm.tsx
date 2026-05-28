@@ -12,6 +12,7 @@ import { Column } from "common/data/data_types";
 import AlertMessage from "../Shared/AlertMesagge";
 import { getUpdateErrorResult } from "helpers/income_error_helper";
 import PurchaseOrderForm from "./PurchaseOrderForm";
+import SupplierForm from "./SupplierForm";
 import SuccessModal from "../Shared/SuccessModal";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import CustomTable from "../Tables/CustomTable";
@@ -38,6 +39,11 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
     const { t } = useTranslation();
     const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
     const bg = (color: string) => isDark ? darkenHex(color) : color;
+    const globalConfig = useSelector((state: any) => state.Configurations?.globalConfig);
+    const currency: string = globalConfig?.currency || 'USD';
+    const locale: string = globalConfig?.locale || 'es-MX';
+    const formatCurrency = (value: number) =>
+        new Intl.NumberFormat(locale, { style: 'currency', currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value || 0);
     const configContext = useContext(ConfigContext)
     const userLogged = getEffectiveUser();
     const [tabletMode, setTabletMode] = useState(isTablet);
@@ -139,53 +145,15 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
             header: t('common.field.unitPrice', { defaultValue: 'Precio Unitario' }),
             accessor: 'price',
             type: "currency",
-            bgColor: '#e6f0ff'
+            bgColor: '#e6f0ff',
+            render: (_, row) => formatCurrency(row.price || 0),
         },
         {
             header: t('common.field.totalPrice', { defaultValue: 'Precio Total' }),
             accessor: 'totalPrice',
             type: 'currency',
-            render: (_, row) => {
-                const totalPrice = (row.quantity || 0) * (row.price || 0);
-                return new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                }).format(totalPrice);
-            },
+            render: (_, row) => formatCurrency(row.totalPrice ?? (row.quantity || 0) * (row.price || 0)),
             bgColor: '#e6ffe6'
-        },
-        {
-            header: t('warehouse.products.attr.category', { defaultValue: 'Categoria' }),
-            accessor: 'category',
-            isFilterable: true,
-            type: 'text',
-            render: (value: string) => {
-                let color = "secondary";
-
-                switch (value) {
-                    case "nutrition":
-                        color = "info";
-                        break;
-                    case "medications":
-                        color = "warning";
-                        break;
-                    case "vaccines":
-                        color = "primary";
-                        break;
-                    case "vitamins":
-                    case "minerals":
-                    case "supplies":
-                    case "hygiene_cleaning":
-                    case "equipment_tools":
-                    case "spare_parts":
-                    case "office_supplies":
-                    case "others":
-                        color = "success";
-                        break;
-                }
-
-                return <Badge color={color}>{t(`warehouse.common.productCategory.${value}`, { defaultValue: value })}</Badge>;
-            },
         },
     ];
 
@@ -265,6 +233,18 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
         } catch (error) {
             logger.error('Error obtaining suppliers:', error);
         }
+    };
+
+    const handleCreateSupplier = async (data: SupplierData) => {
+        if (!configContext) return;
+        const response = await configContext.axiosHelper.create(`${configContext.apiUrl}/supplier/create_supplier`, { ...data, farmId: userLogged.farm_assigned });
+        await fetchSuppliers();
+        const created = response.data.data;
+        if (created?._id) {
+            setSelectedSupplier(created);
+            formik.setFieldValue('origin.id', created._id);
+        }
+        toggleModal('createSupplier', false);
     };
 
     const fetchCatalogProducts = async () => {
@@ -754,7 +734,12 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                         </Col>
                                         {entryMode === "direct" && (
                                             <Col lg={6}>
-                                                <Label htmlFor="supplierSelect" className="form-label">{t('warehouse.suppliers.col.supplier', { defaultValue: 'Proveedor' })}</Label>
+                                                <div className="d-flex justify-content-between align-items-center mb-1">
+                                                    <Label htmlFor="supplierSelect" className="form-label mb-0">{t('warehouse.suppliers.col.supplier', { defaultValue: 'Proveedor' })}</Label>
+                                                    <Button className="farm-secondary-button btn-sm" type="button" onClick={() => toggleModal('createSupplier')}>
+                                                        <i className="ri-add-line me-1"></i>{t('warehouse.purchaseOrders.button.newSupplier', { defaultValue: 'Nuevo proveedor' })}
+                                                    </Button>
+                                                </div>
                                                 <Input
                                                     type="select"
                                                     id="supplierSelect"
@@ -1032,6 +1017,14 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                         <CustomTable columns={productColumns} data={selectedProducts} showSearchAndFilter={false} showPagination={false} />
                                     </CardBody>
                                 </Card>
+                                <div className="d-flex justify-content-end mt-0">
+                                    <div className="d-flex align-items-center gap-3 px-4 py-2 rounded-bottom-3" style={{ backgroundColor: bg('#e6ffe6') }}>
+                                        <span className="fs-5 text-muted">{t('warehouse.incomeForm.summary.productsTotal', { defaultValue: 'Total productos:' })}</span>
+                                        <span className="fs-5 fw-bold text-success">
+                                            {formatCurrency(selectedProducts.reduce((sum, p: any) => sum + (p.totalPrice ?? (p.quantity || 0) * (p.price || 0)), 0))}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -1068,6 +1061,13 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                     <Button className="btn-cancel" onClick={onCancel}>{t('warehouse.productForm.cancelModal.confirm', { defaultValue: 'Sí, cancelar' })}</Button>
                     <Button color="success" onClick={() => setCancelModalOpen(false)}>{t('warehouse.productForm.cancelModal.deny', { defaultValue: 'No, continuar' })}</Button>
                 </ModalFooter>
+            </Modal>
+
+            <Modal size="lg" isOpen={modals.createSupplier} toggle={() => toggleModal("createSupplier")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
+                <ModalHeader toggle={() => toggleModal("createSupplier")}>{t('warehouse.purchaseOrders.button.newSupplier', { defaultValue: 'Nuevo proveedor' })}</ModalHeader>
+                <ModalBody>
+                    <SupplierForm onSubmit={handleCreateSupplier} onCancel={() => toggleModal('createSupplier', false)} />
+                </ModalBody>
             </Modal>
 
             <Modal size="xl" isOpen={modals.createPurchaseOrder} toggle={() => toggleModal("createPurchaseOrder")} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>

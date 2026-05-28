@@ -1,10 +1,12 @@
 import { APIClient } from 'helpers/api_helper';
 import config from 'config';
+import { getEffectiveUser } from 'helpers/impersonation_helper';
 import {
     appendDeltaToLastAssistant,
     appendMessage,
     resetConversation,
     setActiveConversationId,
+    setActiveRequestId,
     setChartOnLastAssistant,
     setError,
     setLoadingHistory,
@@ -105,7 +107,13 @@ export const sendMessage = (message: string) => async (dispatch: any, getState: 
     let streamConversationId: string | null = activeConversationId;
 
     try {
-        const body: { message: string; conversationId?: string } = { message: trimmed };
+        const effectiveUser = getEffectiveUser();
+        const farmId: string | null = effectiveUser?.farm_assigned ?? null;
+
+        const body: { message: string; conversationId?: string; farmId?: string | null } = {
+            message: trimmed,
+            farmId,
+        };
         if (activeConversationId) body.conversationId = activeConversationId;
 
         const res = await fetch(`${config.api.API_URL}/ai/chat/stream`, {
@@ -135,6 +143,9 @@ export const sendMessage = (message: string) => async (dispatch: any, getState: 
         const handleEvent = (evt: any) => {
             switch (evt?.type) {
                 case 'start':
+                    if (evt.requestId) {
+                        dispatch(setActiveRequestId(evt.requestId));
+                    }
                     if (evt.conversationId) {
                         streamConversationId = evt.conversationId;
                         if (evt.conversationId !== activeConversationId) {
@@ -142,6 +153,10 @@ export const sendMessage = (message: string) => async (dispatch: any, getState: 
                             persistConversationId(evt.conversationId);
                         }
                     }
+                    break;
+                case 'cancelled':
+                    dispatch(setActiveRequestId(null));
+                    dispatch(setSending(false));
                     break;
                 case 'text_delta':
                     if (typeof evt.text === 'string' && evt.text) {
@@ -186,6 +201,7 @@ export const sendMessage = (message: string) => async (dispatch: any, getState: 
                     }
                     break;
                 case 'error':
+                    dispatch(setActiveRequestId(null));
                     dispatch(setError(evt.message || errorMessageFromStatus()));
                     break;
                 default:
@@ -224,6 +240,24 @@ export const sendMessage = (message: string) => async (dispatch: any, getState: 
         const backendMessage = err?.response?.data?.statusMessage ?? err?.message;
         dispatch(setError(errorMessageFromStatus(status, backendMessage)));
     } finally {
+        dispatch(setActiveRequestId(null));
+        dispatch(setSending(false));
+    }
+};
+
+export const cancelStream = () => async (dispatch: any, getState: any) => {
+    const { activeRequestId } = getState().Ai;
+    if (!activeRequestId) return;
+    const token = getAuthToken();
+    try {
+        await fetch(`${config.api.API_URL}/ai/chat/stream/${activeRequestId}`, {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${token ?? ''}` },
+        });
+        // The `cancelled` SSE event will arrive and clean up state.
+    } catch {
+        // If the request fails (e.g. network error), clean up manually.
+        dispatch(setActiveRequestId(null));
         dispatch(setSending(false));
     }
 };

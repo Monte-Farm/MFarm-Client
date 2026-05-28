@@ -71,6 +71,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                 </Button>
             )
         },
+        { header: t('insemination.form.columnEarTag', { defaultValue: 'Arete' }), accessor: 'earTag', type: 'text', isFilterable: true },
         { header: t('insemination.form.columnBreed', { defaultValue: 'Raza' }), accessor: 'breed', type: 'text', isFilterable: true },
         { header: t('insemination.form.columnWeight', { defaultValue: 'Peso actual' }), accessor: 'weight', type: 'number', isFilterable: true },
         {
@@ -663,6 +664,12 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                                                         <span className="text-black"><strong>{t('insemination.form.summaryCode_label', { defaultValue: 'Código:' })}</strong></span>
                                                         <span className="text-black">{selectedSow.code}</span>
                                                     </li>
+                                                    {selectedSow.earTag && (
+                                                        <li className="list-group-item d-flex justify-content-between">
+                                                            <span className="text-black"><strong>{t('insemination.form.summaryEarTag_label', { defaultValue: 'Arete:' })}</strong></span>
+                                                            <span className="text-black">{selectedSow.earTag}</span>
+                                                        </li>
+                                                    )}
                                                     <li className="list-group-item d-flex justify-content-between">
                                                         <span className="text-black"><strong>{t('insemination.form.summaryBreed_label', { defaultValue: 'Raza:' })}</strong></span>
                                                         <span className="text-black">{selectedSow.breed}</span>

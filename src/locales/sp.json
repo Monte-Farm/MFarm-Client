@@ -2356,7 +2356,8 @@
       "status": "Estado",
       "result": "Resultado",
       "actions": "Acciones",
-      "noResponsible": "Sin responsable"
+      "noResponsible": "Sin responsable",
+      "createdAt": "Fecha de registro"
     },
     "status": {
       "active": "Activa",
@@ -2516,6 +2517,7 @@
       },
       "sow": {
         "code": "Código",
+        "earTag": "Arete",
         "birthdate": "Fecha de nacimiento",
         "breed": "Raza",
         "origin": "Origen",
@@ -5124,7 +5126,8 @@
       "register": "Registrar Usuario",
       "deactivate": "Desactivar",
       "activate": "Activar",
-      "editTitle": "Editar usuario"
+      "editTitle": "Editar usuario",
+      "resendCredentials": "Reenviar credenciales"
     },
     "selection": {
       "singular": "usuario seleccionado",
@@ -5146,16 +5149,23 @@
         "title": "Activar Usuarios",
         "body": "¿Desea activar {{val}} usuarios seleccionados?",
         "warning": "Esta acción activará los usuarios y podrán acceder al sistema."
+      },
+      "resendCredentials": {
+        "title": "Reenviar credenciales",
+        "body": "¿Reenviar credenciales a {{name}}? Se generará una nueva contraseña y se enviará a {{email}}.",
+        "warning": "La contraseña actual del usuario cambiará."
       }
     },
     "success": {
       "deactivated": "{{val}} usuarios desactivados con éxito",
-      "activated": "{{val}} usuarios activados con éxito"
+      "activated": "{{val}} usuarios activados con éxito",
+      "resendCredentials": "Credenciales reenviadas correctamente."
     },
     "error": {
       "fetch": "Ha ocurrido un error al obtener a los usuarios",
       "deactivate": "Ha ocurrido un error al desactivar los usuarios, intentelo más tarde",
-      "activate": "Ha ocurrido un error al activar los usuarios, intentelo más tarde"
+      "activate": "Ha ocurrido un error al activar los usuarios, intentelo más tarde",
+      "resendCredentials": "No se pudieron reenviar las credenciales. Intenta de nuevo."
     },
     "form": {
       "field": {
@@ -5570,7 +5580,8 @@
         "stock": "Existencias",
         "quantity": "Cantidad",
         "avgPrice": "Precio Promedio",
-        "unitPrice": "Precio Unitario"
+        "unitPrice": "Precio Unitario",
+        "totalPrice": "Precio Total"
       },
       "noProducts": "No hay productos disponibles."
     },
@@ -7116,7 +7127,8 @@
       "summary": {
         "purchaseOrder": "Orden de compra",
         "income": "Entrada",
-        "products": "Productos"
+        "products": "Productos",
+        "productsTotal": "Total productos:"
       },
       "modal": {
         "newPurchaseOrder": "Nueva orden de compra"
@@ -8027,7 +8039,8 @@
       "open": "Abrir asistente IA",
       "closeAssistant": "Cerrar asistente IA",
       "thinkingClose": "Asistente pensando — cerrar",
-      "respondingClose": "Asistente respondiendo — cerrar"
+      "respondingClose": "Asistente respondiendo — cerrar",
+      "cancel": "Detener respuesta"
     },
     "panel": {
       "title": "Asistente PorcySys",

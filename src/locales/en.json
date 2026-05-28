@@ -2356,7 +2356,8 @@
       "status": "Status",
       "result": "Result",
       "actions": "Actions",
-      "noResponsible": "No technician assigned"
+      "noResponsible": "No technician assigned",
+      "createdAt": "Recorded on"
     },
     "status": {
       "active": "Active",
@@ -2516,6 +2517,7 @@
       },
       "sow": {
         "code": "Code",
+        "earTag": "Ear tag",
         "birthdate": "Date of birth",
         "breed": "Breed",
         "origin": "Origin",
@@ -5123,7 +5125,8 @@
       "register": "Register User",
       "deactivate": "Deactivate",
       "activate": "Activate",
-      "editTitle": "Edit user"
+      "editTitle": "Edit user",
+      "resendCredentials": "Resend credentials"
     },
     "selection": {
       "singular": "user selected",
@@ -5145,16 +5148,23 @@
         "title": "Activate Users",
         "body": "Activate {{val}} selected users?",
         "warning": "This action will activate the users and they will be able to access the system."
+      },
+      "resendCredentials": {
+        "title": "Resend credentials",
+        "body": "Resend credentials to {{name}}? A new password will be generated and sent to {{email}}.",
+        "warning": "The user's current password will change."
       }
     },
     "success": {
       "deactivated": "{{val}} users deactivated successfully",
-      "activated": "{{val}} users activated successfully"
+      "activated": "{{val}} users activated successfully",
+      "resendCredentials": "Credentials resent successfully."
     },
     "error": {
       "fetch": "An error occurred while fetching users",
       "deactivate": "An error occurred while deactivating users, please try again later",
-      "activate": "An error occurred while activating users, please try again later"
+      "activate": "An error occurred while activating users, please try again later",
+      "resendCredentials": "Could not resend credentials. Please try again."
     },
     "form": {
       "field": {
@@ -5569,7 +5579,8 @@
         "stock": "Stock",
         "quantity": "Quantity",
         "avgPrice": "Average Price",
-        "unitPrice": "Unit Price"
+        "unitPrice": "Unit Price",
+        "totalPrice": "Total Price"
       },
       "noProducts": "No products available."
     },
@@ -7115,7 +7126,8 @@
       "summary": {
         "purchaseOrder": "Purchase order",
         "income": "Receipt",
-        "products": "Products"
+        "products": "Products",
+        "productsTotal": "Products total:"
       },
       "modal": {
         "newPurchaseOrder": "New purchase order"
@@ -8016,7 +8028,8 @@
       "open": "Open AI assistant",
       "closeAssistant": "Close AI assistant",
       "thinkingClose": "Assistant thinking — close",
-      "respondingClose": "Assistant responding — close"
+      "respondingClose": "Assistant responding — close",
+      "cancel": "Stop response"
     },
     "panel": {
       "title": "PorcySys Assistant",
