@@ -214,7 +214,8 @@
       "gestation": "Gestación",
       "lactation": "Lactancia",
       "sale": "En Venta",
-      "sold": "Vendido"
+      "sold": "Vendido",
+      "exit": "Salida"
     },
     "sex": {
       "male": "♂ Macho",
@@ -1790,7 +1791,11 @@
       "fattening": "Engorda",
       "finishing": "Ceba",
       "breeder": "Reproductor",
-      "general": "General"
+      "general": "General",
+      "lactation": "Lactancia",
+      "gestation": "Gestación",
+      "exit": "Salida",
+      "sale": "Venta"
     },
     "view": {
       "title": "Ver Grupos",
@@ -2302,6 +2307,36 @@
         "confirmWarning": "Asegúrate de que toda la información esté correcta antes de continuar.",
         "successMsg": "Reemplazo procesado con éxito",
         "withdrawReason": "Cerdos de reemplazo"
+      },
+      "linked": {
+        "step1": "Datos del grupo",
+        "step2": "Especificaciones de cerdos",
+        "step3": "Resumen",
+        "pigSpecsTitle": "Especificaciones de los cerdos a generar",
+        "pigSpecsSubtitle": "Todos los animales del lote compartirán estos datos base. Se pueden ajustar individualmente después.",
+        "birthdateLabel": "Fecha de nacimiento",
+        "breedLabel": "Raza",
+        "breedPlaceholder": "Ej: Landrace, Duroc",
+        "weightLabel": "Peso promedio (kg)",
+        "originLabel": "Origen",
+        "pigStageLabel": "Etapa del cerdo",
+        "pigObservationsLabel": "Observaciones (cerdos)",
+        "totalPigsLabel": "Total a generar",
+        "statusLabel": "Estado del grupo",
+        "selectStatus": "Estado (opcional)",
+        "selectOrigin": "Seleccione origen",
+        "selectPigStage": "Seleccione etapa",
+        "pigSpecsCard": "Especificaciones de cerdos",
+        "success": "Grupo creado con {{total}} cerdos ({{males}} machos, {{females}} hembras)",
+        "validation": {
+          "pigCountMin": "La suma de machos y hembras debe ser mayor a 0",
+          "birthdateRequired": "La fecha de nacimiento es obligatoria",
+          "breedRequired": "La raza es obligatoria",
+          "weightRequired": "El peso es obligatorio",
+          "weightMin": "El peso debe ser mayor a 0",
+          "originRequired": "El origen es obligatorio",
+          "pigStageRequired": "La etapa del cerdo es obligatoria"
+        }
       }
     },
     "validation": {
@@ -7022,10 +7057,12 @@
         "codeRequired": "Por favor, ingrese el ID",
         "codeExists": "Este identificador ya existe, por favor ingrese otro",
         "dateRequired": "Por favor, ingrese la fecha",
-        "typeRequired": "Por favor, seleccione el tipo de salida"
+        "typeRequired": "Por favor, seleccione el tipo de salida",
+        "descriptionRequired": "Por favor, ingrese la descripción de la salida"
       },
       "button": {
-        "next": "Siguiente"
+        "next": "Siguiente",
+        "newSubwarehouse": "Nuevo subalmacén"
       },
       "summary": {
         "outcomeInfo": "Información de salida",
@@ -7034,6 +7071,7 @@
       "modal": {
         "newSubwarehouse": "Nuevo subalmacén"
       },
+      "loadError": "Ha ocurrido un error al obtener los datos, inténtelo más tarde",
       "success": "Salida creada con éxito",
       "error": "Ha ocurrido un error al guardar los datos, inténtelo más tarde"
     },

@@ -66,6 +66,8 @@ const ViewWeanedGroups = () => {
                 columns={columns}
                 statsEndpoint="group_alive_stats"
                 transferStage="weaning"
+                showCreate={true}
+                createDefaults={{ stage: 'weaning', status: 'weaning', area: 'weaning', pigCurrentStage: 'weaning' }}
                 headerActions={pdfButton}
             />
 

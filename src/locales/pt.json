@@ -214,7 +214,8 @@
       "gestation": "Gestação",
       "lactation": "Lactação",
       "sale": "À venda",
-      "sold": "Vendido"
+      "sold": "Vendido",
+      "exit": "Descarte/Saída"
     },
     "sex": {
       "male": "♂ Macho",
@@ -1790,7 +1791,11 @@
       "fattening": "Terminação",
       "finishing": "Terminação",
       "breeder": "Reprodutor",
-      "general": "Geral"
+      "general": "Geral",
+      "lactation": "Lactação",
+      "gestation": "Gestação",
+      "exit": "Descarte/Saída",
+      "sale": "Abate"
     },
     "view": {
       "title": "Ver Lotes",
@@ -2302,6 +2307,36 @@
         "confirmWarning": "Certifique-se de que todas as informações estão corretas antes de continuar.",
         "successMsg": "Reposição processada com sucesso",
         "withdrawReason": "Suínos de reposição"
+      },
+      "linked": {
+        "step1": "Dados do grupo",
+        "step2": "Especificações dos suínos",
+        "step3": "Resumo",
+        "pigSpecsTitle": "Especificações dos suínos a gerar",
+        "pigSpecsSubtitle": "Todos os animais do lote compartilharão estes dados base. Ajustes individuais podem ser feitos depois.",
+        "birthdateLabel": "Data de nascimento",
+        "breedLabel": "Raça",
+        "breedPlaceholder": "Ex: Landrace, Duroc",
+        "weightLabel": "Peso médio (kg)",
+        "originLabel": "Origem",
+        "pigStageLabel": "Fase do suíno",
+        "pigObservationsLabel": "Observações (suínos)",
+        "totalPigsLabel": "Total a gerar",
+        "statusLabel": "Status do grupo",
+        "selectStatus": "Status (opcional)",
+        "selectOrigin": "Selecione a origem",
+        "selectPigStage": "Selecione a fase",
+        "pigSpecsCard": "Especificações dos suínos",
+        "success": "Grupo criado com {{total}} suínos ({{males}} machos, {{females}} fêmeas)",
+        "validation": {
+          "pigCountMin": "A soma de machos e fêmeas deve ser maior que 0",
+          "birthdateRequired": "A data de nascimento é obrigatória",
+          "breedRequired": "A raça é obrigatória",
+          "weightRequired": "O peso é obrigatório",
+          "weightMin": "O peso deve ser maior que 0",
+          "originRequired": "A origem é obrigatória",
+          "pigStageRequired": "A fase do suíno é obrigatória"
+        }
       }
     },
     "validation": {
@@ -7021,10 +7056,12 @@
         "codeRequired": "Por favor, informe o ID",
         "codeExists": "Este ID já existe, por favor informe outro",
         "dateRequired": "Por favor, informe a data",
-        "typeRequired": "Por favor, selecione o tipo de saída"
+        "typeRequired": "Por favor, selecione o tipo de saída",
+        "descriptionRequired": "Por favor, informe a descrição da movimentação"
       },
       "button": {
-        "next": "Próximo"
+        "next": "Próximo",
+        "newSubwarehouse": "Novo sub-almoxarifado"
       },
       "summary": {
         "outcomeInfo": "Informações da saída",
@@ -7033,6 +7070,7 @@
       "modal": {
         "newSubwarehouse": "Novo sub-almoxarifado"
       },
+      "loadError": "Ocorreu um erro ao carregar os dados, tente novamente",
       "success": "Saída registrada com sucesso",
       "error": "Ocorreu um erro ao salvar os dados, tente novamente"
     },

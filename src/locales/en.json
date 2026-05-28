@@ -214,7 +214,8 @@
       "gestation": "Gestation",
       "lactation": "Lactation",
       "sale": "For Sale",
-      "sold": "Sold"
+      "sold": "Sold",
+      "exit": "Cull/Exit"
     },
     "sex": {
       "male": "♂ Male",
@@ -1790,7 +1791,11 @@
       "fattening": "Finisher",
       "finishing": "Finishing",
       "breeder": "Breeder",
-      "general": "General"
+      "general": "General",
+      "lactation": "Lactation",
+      "gestation": "Gestation",
+      "exit": "Cull/Exit",
+      "sale": "Market"
     },
     "view": {
       "title": "View Groups",
@@ -2302,6 +2307,36 @@
         "confirmWarning": "Make sure all information is correct before proceeding.",
         "successMsg": "Replacement processed successfully",
         "withdrawReason": "Replacement pigs"
+      },
+      "linked": {
+        "step1": "Group information",
+        "step2": "Pig specifications",
+        "step3": "Summary",
+        "pigSpecsTitle": "Pig generation specs",
+        "pigSpecsSubtitle": "All animals in the batch will share these base records. Individual adjustments can be made later.",
+        "birthdateLabel": "Date of birth",
+        "breedLabel": "Breed",
+        "breedPlaceholder": "e.g. Landrace, Duroc",
+        "weightLabel": "Average weight (kg)",
+        "originLabel": "Origin",
+        "pigStageLabel": "Pig stage",
+        "pigObservationsLabel": "Observations (pigs)",
+        "totalPigsLabel": "Total to generate",
+        "statusLabel": "Group status",
+        "selectStatus": "Status (optional)",
+        "selectOrigin": "Select origin",
+        "selectPigStage": "Select stage",
+        "pigSpecsCard": "Pig specifications",
+        "success": "Group created with {{total}} pigs ({{males}} males, {{females}} females)",
+        "validation": {
+          "pigCountMin": "Total of males and females must be greater than 0",
+          "birthdateRequired": "Date of birth is required",
+          "breedRequired": "Breed is required",
+          "weightRequired": "Weight is required",
+          "weightMin": "Weight must be greater than 0",
+          "originRequired": "Origin is required",
+          "pigStageRequired": "Pig stage is required"
+        }
       }
     },
     "validation": {
@@ -7021,10 +7056,12 @@
         "codeRequired": "Please enter the ID",
         "codeExists": "This ID already exists, please enter another one",
         "dateRequired": "Please enter the date",
-        "typeRequired": "Please select the issue type"
+        "typeRequired": "Please select the issue type",
+        "descriptionRequired": "Please enter a description for the stock movement"
       },
       "button": {
-        "next": "Next"
+        "next": "Next",
+        "newSubwarehouse": "New sub-warehouse"
       },
       "summary": {
         "outcomeInfo": "Issue information",
@@ -7033,6 +7070,7 @@
       "modal": {
         "newSubwarehouse": "New sub-warehouse"
       },
+      "loadError": "An error occurred while loading the data, please try again",
       "success": "Issue recorded successfully",
       "error": "An error occurred while saving the data, please try again"
     },

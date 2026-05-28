@@ -68,6 +68,8 @@ const ViewGrowingGroups = () => {
                 columns={columns}
                 statsEndpoint="group_alive_stats"
                 transferStage="weaning"
+                showCreate={true}
+                createDefaults={{ stage: 'fattening', status: 'growing', area: 'fattening', pigCurrentStage: 'fattening' }}
                 headerActions={pdfButton}
             />
 

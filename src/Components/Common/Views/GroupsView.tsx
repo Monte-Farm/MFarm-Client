@@ -1,6 +1,6 @@
 import { Column } from "common/data/data_types";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
-import GroupForm from "Components/Common/Forms/GroupForm";
+import CreateGroupLinkedForm, { CreateGroupLinkedDefaults } from "Components/Common/Forms/CreateGroupLinkedForm";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import SelectableCustomTable from "Components/Common/Tables/SelectableTable";
@@ -29,6 +29,8 @@ interface GroupsViewProps {
     statsEndpoint?: 'group_alive_stats' | 'weaning_stats';
     transferStage?: string;
     headerActions?: React.ReactNode;
+    showCreate?: boolean;
+    createDefaults?: CreateGroupLinkedDefaults;
 }
 
 const isTablet = () => {
@@ -43,7 +45,9 @@ const GroupsView: React.FC<GroupsViewProps> = ({
     columns,
     statsEndpoint = 'group_alive_stats',
     transferStage,
-    headerActions
+    headerActions,
+    showCreate = false,
+    createDefaults,
 }) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
@@ -167,7 +171,15 @@ const GroupsView: React.FC<GroupsViewProps> = ({
                                 </div>
                             )}
                         </div>
-                        {headerActions && <div className="ms-auto">{headerActions}</div>}
+                        <div className="ms-auto d-flex gap-2">
+                            {showCreate && (
+                                <Button onClick={() => toggleModal('create')}>
+                                    <i className="ri-add-line me-2" />
+                                    {t('groups.action.newGroup')}
+                                </Button>
+                            )}
+                            {headerActions}
+                        </div>
                     </CardHeader>
 
                     <CardBody style={{ display: "flex", flexDirection: "column", height: "100%" }}>
@@ -199,7 +211,7 @@ const GroupsView: React.FC<GroupsViewProps> = ({
             <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} centered backdrop={'static'} keyboard={false} fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("create")}>{t('groups.modal.createGroup')}</ModalHeader>
                 <ModalBody>
-                    <GroupForm onSave={() => { fetchData(); toggleModal('create') }} onCancel={() => { }} />
+                    <CreateGroupLinkedForm onSave={() => { fetchData(); toggleModal('create'); }} onCancel={() => toggleModal('create', false)} defaults={createDefaults} />
                 </ModalBody>
             </Modal>
 

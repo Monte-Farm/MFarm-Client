@@ -3,7 +3,7 @@ import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import { GroupData } from "common/data_interfaces";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
-import GroupForm from "Components/Common/Forms/GroupForm";
+import CreateGroupLinkedForm from "Components/Common/Forms/CreateGroupLinkedForm";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import CustomTable from "Components/Common/Tables/CustomTable";
 import { getEffectiveUser } from "helpers/impersonation_helper";
@@ -177,7 +177,7 @@ const ViewGroups = () => {
             <Modal size="xl" isOpen={modals.create} toggle={() => toggleModal("create")} centered backdrop={'static'} keyboard={false} fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal("create")}>{t('groups.modal.createGroup')}</ModalHeader>
                 <ModalBody>
-                    <GroupForm onSave={() => { fetchData(); toggleModal('create') }} onCancel={() => { }} />
+                    <CreateGroupLinkedForm onSave={() => { fetchData(); toggleModal('create'); }} onCancel={() => toggleModal('create', false)} />
                 </ModalBody>
             </Modal>
 
