@@ -2926,6 +2926,56 @@
       "confirmWarning": "Asegúrate de que toda la información esté correcta antes de continuar.",
       "confirmButton": "Confirmar",
       "selectGroupAlert": "Por favor seleccione un grupo para integrar a la camada"
+    },
+    "standalone": {
+      "step1": "Datos de la camada",
+      "step2": "Detalles adicionales",
+      "step3": "Resumen",
+      "step1Title": "Información de la camada",
+      "step2Title": "Datos adicionales",
+      "step2Subtitle": "Todos estos campos son opcionales",
+      "motherLabel": "Cerda madre (opcional)",
+      "motherPlaceholder": "Seleccionar cerda madre",
+      "fatherLabel": "Verraco padre (opcional)",
+      "fatherPlaceholder": "Sin padre registrado",
+      "birthDateLabel": "Fecha de nacimiento",
+      "pigletsTitle": "Conteo de lechones",
+      "currentMaleLabel": "Machos",
+      "currentFemaleLabel": "Hembras",
+      "totalCurrent": "Total",
+      "hasBajasLabel": "Hubo bajas desde el nacimiento",
+      "hasBajasHint": "Activa esto si algún lechón murió antes de este registro y quieres llevar trazabilidad de cuántos nacieron",
+      "atBirthTitle": "Lechones al nacer",
+      "atBirthHint": "Ingresa los totales originales al momento del nacimiento (deben ser mayores o iguales a los actuales)",
+      "initialMaleLabel": "Machos al nacer",
+      "initialFemaleLabel": "Hembras al nacer",
+      "totalAtBirth": "Total al nacer",
+      "avgWeightLabel": "Peso promedio (kg)",
+      "statusLabel": "Estado inicial",
+      "observationsLabel": "Observaciones",
+      "observationsPlaceholder": "Notas adicionales sobre la camada...",
+      "litterDataCard": "Datos de la camada",
+      "additionalDataCard": "Datos adicionales",
+      "saving": "Guardando...",
+      "confirm": "Registrar camada",
+      "success": "Camada {{code}} registrada exitosamente",
+      "action": {
+        "register": "Registrar camada"
+      },
+      "modal": {
+        "title": "Registrar camada sin parto"
+      },
+      "validation": {
+        "motherRequired": "Selecciona la cerda madre",
+        "birthDateRequired": "La fecha de nacimiento es obligatoria",
+        "pigCountMin": "Debe haber al menos 1 lechón",
+        "initialGteCurrent": "Los lechones al nacer no pueden ser menores a los actuales",
+        "fillAllData": "Por favor completa todos los campos requeridos"
+      },
+      "error": {
+        "load": "Error al cargar los datos, inténtalo más tarde",
+        "save": "Error al registrar la camada, inténtalo más tarde"
+      }
     }
   },
   "birth": {

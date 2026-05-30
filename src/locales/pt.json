@@ -2926,6 +2926,56 @@
       "confirmWarning": "Certifique-se de que todas as informações estão corretas antes de continuar.",
       "confirmButton": "Confirmar",
       "selectGroupAlert": "Por favor, selecione um grupo para integrar a leitegada"
+    },
+    "standalone": {
+      "step1": "Dados da leitegada",
+      "step2": "Detalhes adicionais",
+      "step3": "Resumo",
+      "step1Title": "Informações da leitegada",
+      "step2Title": "Dados adicionais",
+      "step2Subtitle": "Todos os campos desta etapa são opcionais",
+      "motherLabel": "Porca mãe (opcional)",
+      "motherPlaceholder": "Selecionar porca mãe",
+      "fatherLabel": "Varrão pai (opcional)",
+      "fatherPlaceholder": "Sem pai registrado",
+      "birthDateLabel": "Data de nascimento",
+      "pigletsTitle": "Contagem de leitões",
+      "currentMaleLabel": "Machos",
+      "currentFemaleLabel": "Fêmeas",
+      "totalCurrent": "Total",
+      "hasBajasLabel": "Houve perdas desde o nascimento",
+      "hasBajasHint": "Ative se algum leitão morreu antes deste registro e você quer registrar a mortalidade desde o nascimento",
+      "atBirthTitle": "Leitões ao nascer",
+      "atBirthHint": "Informe os totais originais no nascimento (devem ser maiores ou iguais aos atuais)",
+      "initialMaleLabel": "Machos ao nascer",
+      "initialFemaleLabel": "Fêmeas ao nascer",
+      "totalAtBirth": "Total ao nascer",
+      "avgWeightLabel": "Peso médio (kg)",
+      "statusLabel": "Status inicial",
+      "observationsLabel": "Observações",
+      "observationsPlaceholder": "Anotações adicionais sobre a leitegada...",
+      "litterDataCard": "Dados da leitegada",
+      "additionalDataCard": "Dados adicionais",
+      "saving": "Salvando...",
+      "confirm": "Registrar leitegada",
+      "success": "Leitegada {{code}} registrada com sucesso",
+      "action": {
+        "register": "Registrar leitegada"
+      },
+      "modal": {
+        "title": "Registrar leitegada sem parto"
+      },
+      "validation": {
+        "motherRequired": "Selecione a porca mãe",
+        "birthDateRequired": "A data de nascimento é obrigatória",
+        "pigCountMin": "É necessário ao menos 1 leitão",
+        "initialGteCurrent": "Os leitões ao nascer não podem ser menos que os atuais",
+        "fillAllData": "Por favor, preencha todos os campos obrigatórios"
+      },
+      "error": {
+        "load": "Erro ao carregar os dados, tente novamente mais tarde",
+        "save": "Erro ao registrar a leitegada, tente novamente mais tarde"
+      }
     }
   },
   "birth": {

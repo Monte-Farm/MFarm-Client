@@ -233,6 +233,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
             }),
         date: Yup.date().required(t('warehouse.outcomeForm.validation.dateRequired')),
         outcomeType: Yup.string().required(t('warehouse.outcomeForm.validation.typeRequired')),
+        description: Yup.string().required(t('warehouse.outcomeForm.validation.descriptionRequired')),
     })
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
@@ -444,7 +445,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                                     <Input
                                         type="text"
                                         id="idInput"
-                                        name="id"
+                                        name="code"
                                         value={formik.values.code}
                                         onChange={formik.handleChange}
                                         onBlur={formik.handleBlur}
@@ -509,18 +510,22 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
                             {formik.values.outcomeType === OUTCOME_TYPES.TRANSFER && (
                                 <div>
                                     <div className="mt-3">
-                                        <Label className="form-label">{t('warehouse.outcomeForm.attr.subwarehouse', { defaultValue: 'Subalmacén' })}</Label>
-                                        <div className="mt-2 border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(40vh - 100px)', overflowY: 'hidden' }}>
-                                            <SelectableTable
-                                                data={subwarehouses}
-                                                columns={subwarehouseColumns}
-                                                selectionMode="single"
-                                                showPagination={true}
-                                                onSelect={handleSubwarehouseSelect}
-                                                rowsPerPage={6}
-                                                showSearchAndFilter={false}
-                                            />
+                                        <div className="d-flex align-items-center justify-content-between mb-1">
+                                            <Label className="form-label mb-0">{t('warehouse.outcomeForm.attr.subwarehouse', { defaultValue: 'Subalmacén' })}</Label>
+                                            <Button size="sm" className="farm-secondary-button" onClick={() => toggleModal('createWarehouse')}>
+                                                <i className="ri-add-line me-1"></i>
+                                                {t('warehouse.outcomeForm.button.newSubwarehouse', { defaultValue: 'Nuevo subalmacén' })}
+                                            </Button>
                                         </div>
+                                        <SelectableTable
+                                            data={subwarehouses}
+                                            columns={subwarehouseColumns}
+                                            selectionMode="single"
+                                            showPagination={true}
+                                            onSelect={handleSubwarehouseSelect}
+                                            rowsPerPage={5}
+                                            showSearchAndFilter={false}
+                                        />
                                     </div>
                                 </div>
                             )}
@@ -672,9 +677,7 @@ const OutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSave, onCancel
             <Modal size='lg' isOpen={modals.createWarehouse} toggle={() => toggleModal('createWarehouse', false)} backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={() => toggleModal('createWarehouse')}>{t('warehouse.outcomeForm.modal.newSubwarehouse', { defaultValue: 'Nuevo Subalmacén' })}</ModalHeader>
                 <ModalBody>
-                    <SubwarehouseForm onCancel={() => toggleModal('createWarehouse', false)} onSave={function (): void {
-                        throw new Error('Function not implemented.');
-                    }} />
+                    <SubwarehouseForm onCancel={() => toggleModal('createWarehouse', false)} onSave={() => { toggleModal('createWarehouse', false); handleFetchsubwarehouses(); }} />
                 </ModalBody>
             </Modal>
 

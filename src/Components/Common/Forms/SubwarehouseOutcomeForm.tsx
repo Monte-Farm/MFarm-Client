@@ -178,8 +178,8 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSa
 
     const validationSchema = Yup.object({
         code: Yup.string()
-            .required('Por favor, ingrese el ID')
-            .test('unique_id', 'Este identificador ya existe, por favor ingrese otro', async (value) => {
+            .required(t('warehouse.outcomeForm.validation.codeRequired'))
+            .test('unique_id', t('warehouse.outcomeForm.validation.codeExists'), async (value) => {
                 if (!value) return false
                 try {
                     const result = await configContext?.axiosHelper.get(`${configContext.apiUrl}/outcomes/outcome_id_exists/${value}`)
@@ -189,9 +189,9 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSa
                     return false
                 }
             }),
-        date: Yup.date().required('Por favor, ingrese la fecha'),
-        outcomeType: Yup.string().required('Por favor, seleccione el tipo de salida'),
-        description: Yup.string().required('Por favor, ingrese la descripción de la salida')
+        date: Yup.date().required(t('warehouse.outcomeForm.validation.dateRequired')),
+        outcomeType: Yup.string().required(t('warehouse.outcomeForm.validation.typeRequired')),
+        description: Yup.string().required(t('warehouse.outcomeForm.validation.descriptionRequired'))
     })
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
@@ -272,7 +272,7 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSa
             setSubwarehouses(subwarehousesWithId);
         } catch (error) {
             logger.error('Error fetching data: ', { error });
-            setAlertConfig({ visible: true, color: 'danger', message: 'Ha ocurrido un error al obtener los datos, intentelo mas tarde' })
+            setAlertConfig({ visible: true, color: 'danger', message: t('warehouse.outcomeForm.loadError') })
         } finally {
             setLoading(false)
         }
@@ -454,17 +454,15 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSa
                             <div>
                                 <div className="mt-3">
                                     <Label className="form-label">{t('warehouse.orderDetails.attr.destWarehouse', { defaultValue: 'Subalmacén de destino' })}</Label>
-                                    <div className="mt-2 border border-0 d-flex flex-column flex-grow-1" style={{ maxHeight: 'calc(40vh - 100px)', overflowY: 'hidden' }}>
-                                        <SelectableTable
-                                            data={subwarehouses}
-                                            columns={subwarehouseColumns}
-                                            selectionMode="single"
-                                            showPagination={true}
-                                            onSelect={handleSubwarehouseSelect}
-                                            rowsPerPage={6}
-                                            showSearchAndFilter={false}
-                                        />
-                                    </div>
+                                    <SelectableTable
+                                        data={subwarehouses}
+                                        columns={subwarehouseColumns}
+                                        selectionMode="single"
+                                        showPagination={true}
+                                        onSelect={handleSubwarehouseSelect}
+                                        rowsPerPage={5}
+                                        showSearchAndFilter={false}
+                                    />
                                 </div>
                             </div>
                         )}

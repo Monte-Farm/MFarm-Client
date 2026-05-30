@@ -16,6 +16,7 @@ import BulkFeedAdministrationModal from "Components/Common/Forms/BulkFeedAdminis
 import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
+import CreateLitterStandaloneForm from "Components/Common/Forms/CreateLitterStandaloneForm";
 import { useTranslation } from "react-i18next";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -38,6 +39,7 @@ const ViewLitters = () => {
     const [pdfLoading, setPdfLoading] = useState(false);
     const [fileURL, setFileURL] = useState<string | null>(null);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
+    const [createModalOpen, setCreateModalOpen] = useState(false);
 
     const handleSelectionChange = (selected: any[]) => {
         setSelectedLitters(selected);
@@ -64,7 +66,7 @@ const ViewLitters = () => {
             accessor: 'mother',
             type: 'text',
             isFilterable: true,
-            render: (_, row) => (
+            render: (_, row) => row.mother ? (
                 <Button
                     className="text-underline"
                     color="link"
@@ -75,7 +77,7 @@ const ViewLitters = () => {
                 >
                     {row.mother.code} ↗
                 </Button>
-            )
+            ) : <span className="text-muted">—</span>
         },
         {
             header: t('litter.column.males'),
@@ -228,13 +230,19 @@ const ViewLitters = () => {
                                 </div>
                             )}
                         </div>
-                        <Button color="primary" className="ms-auto" onClick={() => setDateRangeModalOpen(true)} disabled={pdfLoading}>
+                        <div className="d-flex gap-2 ms-auto">
+                        <Button color="success" onClick={() => setCreateModalOpen(true)}>
+                            <i className="ri-add-line me-1" />
+                            {t('litter.standalone.action.register')}
+                        </Button>
+                        <Button color="primary" onClick={() => setDateRangeModalOpen(true)} disabled={pdfLoading}>
                             {pdfLoading ? (
                                 <><Spinner className="me-2" size="sm" />{t('litter.action.generating')}</>
                             ) : (
                                 <><i className="ri-file-pdf-line me-2" />{t('litter.action.exportPdf')}</>
                             )}
                         </Button>
+                        </div>
                     </CardHeader>
 
                     <CardBody style={{ display: "flex", flexDirection: "column", height: "100%" }}>
@@ -297,6 +305,16 @@ const ViewLitters = () => {
                 <ModalHeader toggle={() => setPdfModalOpen(false)}>{t('litter.modal.report')}</ModalHeader>
                 <ModalBody>
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
+                </ModalBody>
+            </Modal>
+
+            <Modal size="xl" isOpen={createModalOpen} toggle={() => setCreateModalOpen(false)} centered backdrop="static" keyboard={false}>
+                <ModalHeader toggle={() => setCreateModalOpen(false)}>{t('litter.standalone.modal.title')}</ModalHeader>
+                <ModalBody>
+                    <CreateLitterStandaloneForm
+                        onSave={() => { fetchLitter(); setCreateModalOpen(false); }}
+                        onCancel={() => setCreateModalOpen(false)}
+                    />
                 </ModalBody>
             </Modal>
 

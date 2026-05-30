@@ -2926,6 +2926,56 @@
       "confirmWarning": "Make sure all information is correct before continuing.",
       "confirmButton": "Confirm",
       "selectGroupAlert": "Please select a group to integrate the litter into"
+    },
+    "standalone": {
+      "step1": "Litter data",
+      "step2": "Additional details",
+      "step3": "Summary",
+      "step1Title": "Litter information",
+      "step2Title": "Additional data",
+      "step2Subtitle": "All fields in this step are optional",
+      "motherLabel": "Dam (optional)",
+      "motherPlaceholder": "Select dam",
+      "fatherLabel": "Sire (optional)",
+      "fatherPlaceholder": "No sire on record",
+      "birthDateLabel": "Birth date",
+      "pigletsTitle": "Piglet count",
+      "currentMaleLabel": "Males",
+      "currentFemaleLabel": "Females",
+      "totalCurrent": "Total",
+      "hasBajasLabel": "There have been losses since birth",
+      "hasBajasHint": "Enable this if any piglets died before this record and you want to track birth-to-date mortality",
+      "atBirthTitle": "Piglets at birth",
+      "atBirthHint": "Enter the original totals at the time of birth (must be greater than or equal to current counts)",
+      "initialMaleLabel": "Males born",
+      "initialFemaleLabel": "Females born",
+      "totalAtBirth": "Total at birth",
+      "avgWeightLabel": "Avg. weight (kg)",
+      "statusLabel": "Initial status",
+      "observationsLabel": "Notes",
+      "observationsPlaceholder": "Additional notes about the litter...",
+      "litterDataCard": "Litter data",
+      "additionalDataCard": "Additional data",
+      "saving": "Saving...",
+      "confirm": "Register litter",
+      "success": "Litter {{code}} registered successfully",
+      "action": {
+        "register": "Register litter"
+      },
+      "modal": {
+        "title": "Register litter without farrowing record"
+      },
+      "validation": {
+        "motherRequired": "Select the dam",
+        "birthDateRequired": "Birth date is required",
+        "pigCountMin": "At least 1 piglet is required",
+        "initialGteCurrent": "Piglets at birth cannot be fewer than current piglets",
+        "fillAllData": "Please complete all required fields"
+      },
+      "error": {
+        "load": "Failed to load data, please try again later",
+        "save": "Failed to register the litter, please try again later"
+      }
     }
   },
   "birth": {
