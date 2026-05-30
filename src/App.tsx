@@ -49,7 +49,19 @@ function App() {
       setUserLogged(getEffectiveUser());
     };
     window.addEventListener('impersonation-change', handleImpersonationChange);
-    return () => window.removeEventListener('impersonation-change', handleImpersonationChange);
+
+    const handleNumericFocus = (e: FocusEvent) => {
+      const target = e.target as HTMLInputElement;
+      if (target.tagName === 'INPUT' && target.type === 'number') {
+        target.select();
+      }
+    };
+    document.addEventListener('focus', handleNumericFocus, true);
+
+    return () => {
+      window.removeEventListener('impersonation-change', handleImpersonationChange);
+      document.removeEventListener('focus', handleNumericFocus, true);
+    };
   }, [])
 
 
