@@ -1412,7 +1412,8 @@
       },
       "target": {
         "groups": "grupos",
-        "litters": "camadas"
+        "litters": "camadas",
+        "pigs": "cerdos"
       }
     },
     "consumption": {
@@ -3283,6 +3284,18 @@
         "confirm": "Confirmar"
       },
       "modal": "Procesar reemplazo"
+    },
+    "bulk": {
+      "assignMedication": "Asignar medicación",
+      "administerFeed": "Administrar alimento",
+      "selected": {
+        "singular": "cerdo seleccionado",
+        "plural": "cerdos seleccionados"
+      },
+      "tooltip": {
+        "noAliveMedication": "No hay cerdos vivos seleccionados para asignar medicación",
+        "noAliveFeed": "No hay cerdos vivos seleccionados para administrar alimento"
+      }
     }
   },
   "finance": {
@@ -5027,6 +5040,22 @@
       "validation": {
         "selectPackage": "Debe seleccionar un paquete de medicación",
         "dateRequired": "La fecha de aplicación es obligatoria"
+      },
+      "pig": {
+        "title": "Asignar Medicación a {{count}} Cerdos",
+        "info": "Esta acción asignará el paquete de medicación seleccionado a todos los cerdos vivos seleccionados.",
+        "noPackagesTitle": "No hay paquetes de medicación disponibles",
+        "noPackagesBody": "No se encontraron paquetes de medicación para la etapa reproductora. Por favor, cree un paquete antes de continuar.",
+        "selectedPackage": "Paquete seleccionado:",
+        "success": "El paquete de medicación ha sido asignado exitosamente a los cerdos seleccionados.",
+        "error": "Ha ocurrido un error al asignar el paquete de medicación. Por favor, inténtelo más tarde.",
+        "description": "Seleccione el paquete de medicación a asignar a los cerdos vivos seleccionados.",
+        "selectPackage": "Paquete de medicación",
+        "subwarehouseBody": "Asegúrese de tener un subalmacén médico asignado antes de continuar.",
+        "confirm": "Asignar",
+        "validation": {
+          "selectPackage": "Por favor, seleccione un paquete de medicación"
+        }
       }
     },
     "card": {
@@ -7709,55 +7738,153 @@
       "reports": "Reportes"
     },
     "sections": {
-      "initialSetup": { "title": "Configuración Inicial" },
-      "roles": { "title": "Roles y Permisos" },
-      "navigation": { "title": "Navegación del Sistema" },
-      "configGlobal": { "title": "Configuración Global" },
-      "configFarm": { "title": "Configuración de Granja" },
-      "pigRegister": { "title": "Registrar Cerdos" },
-      "pigDiscard": { "title": "Descarte de Cerdo" },
-      "groupCreate": { "title": "Crear Grupo" },
-      "groupOperations": { "title": "Operaciones de Grupo" },
-      "vaccinationPlans": { "title": "Planes de Vacunación" },
-      "medicationAssign": { "title": "Asignar Medicación" },
-      "feedPreparation": { "title": "Preparación de Alimento" },
-      "overview": { "title": "Visión General" },
-      "home": { "title": "Inicio / Dashboard" },
-      "farms": { "title": "Granjas" },
-      "warehouseInventory": { "title": "Inventario de Almacén" },
-      "warehouseSuppliers": { "title": "Proveedores" },
-      "warehouseProducts": { "title": "Catálogo de Productos" },
-      "warehouseIncomes": { "title": "Ingresos de Almacén" },
-      "warehouseOutcomes": { "title": "Salidas de Almacén" },
-      "purchaseOrders": { "title": "Órdenes de Compra" },
-      "subwarehouse": { "title": "Subalmacén" },
-      "orders": { "title": "Órdenes de Transferencia" },
-      "sales": { "title": "Ventas de Cerdos" },
-      "expenses": { "title": "Gastos" },
-      "periodClosing": { "title": "Cierre de Períodos" },
-      "pigsView": { "title": "Inventario de Cerdos" },
-      "pigsDiscarded": { "title": "Cerdos Descartados" },
-      "groups": { "title": "Grupos" },
-      "replacementSows": { "title": "Cerdas de Reemplazo" },
-      "replacementBoars": { "title": "Verracos de Reemplazo" },
-      "labExtractions": { "title": "Extracciones de Laboratorio" },
-      "labSamples": { "title": "Muestras de Semen" },
-      "gestationInseminations": { "title": "Inseminaciones" },
-      "gestationPregnancies": { "title": "Preñeces" },
-      "births": { "title": "Partos y Nacimientos" },
-      "lactation": { "title": "Lactancia" },
-      "weaning": { "title": "Grupos de Destete" },
-      "growing": { "title": "Grupos de Crecimiento y Ceba" },
-      "medication": { "title": "Paquetes de Medicación" },
-      "feeding": { "title": "Paquetes de Alimentación" },
-      "reportsProduction": { "title": "Reportes de Producción" },
-      "reportsInventory": { "title": "Reportes de Inventario" },
-      "reportsFinance": { "title": "Reportes Financieros" },
-      "reportsSales": { "title": "Reportes de Ventas" },
-      "reportsTraceability": { "title": "Trazabilidad" },
-      "reportsAudit": { "title": "Reportes de Auditoría" },
-      "users": { "title": "Gestión de Usuarios" },
-      "configurations": { "title": "Configuraciones" }
+      "initialSetup": {
+        "title": "Configuración Inicial"
+      },
+      "roles": {
+        "title": "Roles y Permisos"
+      },
+      "navigation": {
+        "title": "Navegación del Sistema"
+      },
+      "configGlobal": {
+        "title": "Configuración Global"
+      },
+      "configFarm": {
+        "title": "Configuración de Granja"
+      },
+      "pigRegister": {
+        "title": "Registrar Cerdos"
+      },
+      "pigDiscard": {
+        "title": "Descarte de Cerdo"
+      },
+      "groupCreate": {
+        "title": "Crear Grupo"
+      },
+      "groupOperations": {
+        "title": "Operaciones de Grupo"
+      },
+      "vaccinationPlans": {
+        "title": "Planes de Vacunación"
+      },
+      "medicationAssign": {
+        "title": "Asignar Medicación"
+      },
+      "feedPreparation": {
+        "title": "Preparación de Alimento"
+      },
+      "overview": {
+        "title": "Visión General"
+      },
+      "home": {
+        "title": "Inicio / Dashboard"
+      },
+      "farms": {
+        "title": "Granjas"
+      },
+      "warehouseInventory": {
+        "title": "Inventario de Almacén"
+      },
+      "warehouseSuppliers": {
+        "title": "Proveedores"
+      },
+      "warehouseProducts": {
+        "title": "Catálogo de Productos"
+      },
+      "warehouseIncomes": {
+        "title": "Ingresos de Almacén"
+      },
+      "warehouseOutcomes": {
+        "title": "Salidas de Almacén"
+      },
+      "purchaseOrders": {
+        "title": "Órdenes de Compra"
+      },
+      "subwarehouse": {
+        "title": "Subalmacén"
+      },
+      "orders": {
+        "title": "Órdenes de Transferencia"
+      },
+      "sales": {
+        "title": "Ventas de Cerdos"
+      },
+      "expenses": {
+        "title": "Gastos"
+      },
+      "periodClosing": {
+        "title": "Cierre de Períodos"
+      },
+      "pigsView": {
+        "title": "Inventario de Cerdos"
+      },
+      "pigsDiscarded": {
+        "title": "Cerdos Descartados"
+      },
+      "groups": {
+        "title": "Grupos"
+      },
+      "replacementSows": {
+        "title": "Cerdas de Reemplazo"
+      },
+      "replacementBoars": {
+        "title": "Verracos de Reemplazo"
+      },
+      "labExtractions": {
+        "title": "Extracciones de Laboratorio"
+      },
+      "labSamples": {
+        "title": "Muestras de Semen"
+      },
+      "gestationInseminations": {
+        "title": "Inseminaciones"
+      },
+      "gestationPregnancies": {
+        "title": "Preñeces"
+      },
+      "births": {
+        "title": "Partos y Nacimientos"
+      },
+      "lactation": {
+        "title": "Lactancia"
+      },
+      "weaning": {
+        "title": "Grupos de Destete"
+      },
+      "growing": {
+        "title": "Grupos de Crecimiento y Ceba"
+      },
+      "medication": {
+        "title": "Paquetes de Medicación"
+      },
+      "feeding": {
+        "title": "Paquetes de Alimentación"
+      },
+      "reportsProduction": {
+        "title": "Reportes de Producción"
+      },
+      "reportsInventory": {
+        "title": "Reportes de Inventario"
+      },
+      "reportsFinance": {
+        "title": "Reportes Financieros"
+      },
+      "reportsSales": {
+        "title": "Reportes de Ventas"
+      },
+      "reportsTraceability": {
+        "title": "Trazabilidad"
+      },
+      "reportsAudit": {
+        "title": "Reportes de Auditoría"
+      },
+      "users": {
+        "title": "Gestión de Usuarios"
+      },
+      "configurations": {
+        "title": "Configuraciones"
+      }
     }
   },
   "systemName": "PorcySys",

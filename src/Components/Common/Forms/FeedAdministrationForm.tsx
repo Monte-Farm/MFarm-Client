@@ -96,7 +96,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
                     } else if (targetType === 'litter') {
                         url = `${configContext.apiUrl}/${FEED_ADMINISTRATION_URLS.bulkLitters}`;
                     } else {
-                        throw new Error('Bulk no soportado para cerdos individuales');
+                        url = `${configContext.apiUrl}/${FEED_ADMINISTRATION_URLS.bulkPigs}`;
                     }
                     payload = { ...basePayload, targets: bulkTargets };
                 } else {
@@ -113,7 +113,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
                 const response = await configContext.axiosHelper.create(url, payload);
                 if (response.status === HttpStatusCode.Created || response.status === HttpStatusCode.Ok) {
                     const targetLabel = isBulk
-                        ? `${bulkTargets.length} ${targetType === 'group' ? t('feeding.administration.target.groups') : t('feeding.administration.target.litters')}`
+                        ? `${bulkTargets.length} ${targetType === 'group' ? t('feeding.administration.target.groups') : targetType === 'litter' ? t('feeding.administration.target.litters') : t('feeding.administration.target.pigs')}`
                         : `1 ${targetType}`;
                     await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
                         event: `Administración de alimento registrada (${targetLabel})`,
@@ -211,7 +211,11 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
             {isBulk && (
                 <div className="alert alert-info py-2 mb-3 small">
                     <i className="ri-information-line me-1" />
-                    <Trans i18nKey="feeding.administration.form.bulkInfo" values={{ count: bulkTargets.length, target: targetType === 'group' ? t('feeding.administration.target.groups') : t('feeding.administration.target.litters') }} components={{ 1: <strong /> }} />
+                    <Trans
+                        i18nKey="feeding.administration.form.bulkInfo"
+                        values={{ count: bulkTargets.length, target: targetType === 'group' ? t('feeding.administration.target.groups') : targetType === 'litter' ? t('feeding.administration.target.litters') : t('feeding.administration.target.pigs') }}
+                        components={{ 1: <strong /> }}
+                    />
                 </div>
             )}
 
@@ -355,7 +359,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
                 isOpen={modals.success}
                 onClose={onSave}
                 message={isBulk
-                    ? t('feeding.administration.form.success.bulk', { count: bulkTargets.length, target: targetType === 'group' ? t('feeding.administration.target.groups') : t('feeding.administration.target.litters') })
+                    ? t('feeding.administration.form.success.bulk', { count: bulkTargets.length, target: targetType === 'group' ? t('feeding.administration.target.groups') : targetType === 'litter' ? t('feeding.administration.target.litters') : t('feeding.administration.target.pigs') })
                     : t('feeding.administration.form.success.single')}
             />
             <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={t('feeding.administration.form.error')} />

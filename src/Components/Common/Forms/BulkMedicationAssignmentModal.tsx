@@ -4,7 +4,7 @@ import { Column } from "common/data/data_types";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Badge, Button, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from "reactstrap";
+import { Badge, Button, Card, CardBody, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from "reactstrap";
 import DatePicker from "react-flatpickr";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -12,6 +12,9 @@ import SelectableCustomTable from "../Tables/SelectableTable";
 import MissingStockModal from "../Shared/MissingStockModal";
 import SuccessModal from "../Shared/SuccessModal";
 import ErrorModal from "../Shared/ErrorModal";
+import noImageUrl from '../../../assets/images/no-image.png';
+
+type Mode = 'package' | 'individual' | null;
 
 interface BulkMedicationAssignmentModalProps {
     isOpen: boolean;
@@ -21,49 +24,69 @@ interface BulkMedicationAssignmentModalProps {
 }
 
 const isTablet = () => {
-  const w = document.documentElement.clientWidth;
-  return w >= 768 && w <= 1024;
+    const w = document.documentElement.clientWidth;
+    return w >= 768 && w <= 1024;
 };
 
 const BulkMedicationAssignmentModal: React.FC<BulkMedicationAssignmentModalProps> = ({
-    isOpen,
-    onClose,
-    selectedLitters,
-    onSuccess
+    isOpen, onClose, selectedLitters, onSuccess,
 }) => {
     const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
     const [tabletMode, setTabletMode] = useState(isTablet);
     const [modals, setModals] = useState({ success: false, error: false, missingStock: false, subwarehouseError: false });
+    const [missingItems, setMissingItems] = useState([]);
+    const [subwarehouses, setSubwarehouses] = useState<any[]>([]);
+    const [warehouseSource, setWarehouseSource] = useState<string>('');
+
+    // Package mode state
     const [medicationPackages, setMedicationPackages] = useState<any[]>([]);
     const [selectedMedicationPackage, setSelectedMedicationPackage] = useState<any>(null);
-    const [missingItems, setMissingItems] = useState([]);
 
-    const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
-        setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
+    // Individual mode state
+    const [mode, setMode] = useState<Mode>(null);
+    const [medicationsItems, setMedicationsItems] = useState<any[]>([]);
+    const [medicationsSelected, setMedicationsSelected] = useState<any[]>([]);
+    const [medicationErrors, setMedicationErrors] = useState<Record<string, any>>({});
+    const [applicationDate, setApplicationDate] = useState<Date>(new Date());
+    const [isSubmittingIndividual, setIsSubmittingIndividual] = useState(false);
+
+    const toggleModal = (m: keyof typeof modals, state?: boolean) => setModals(prev => ({ ...prev, [m]: state ?? !prev[m] }));
+
+    const resetMode = () => {
+        setMode(null);
+        setMedicationsSelected([]);
+        setMedicationErrors({});
+        setSelectedMedicationPackage(null);
+        bulkMedicationFormik.setFieldValue('packageId', '');
+        bulkMedicationFormik.setFieldValue('name', '');
     };
 
+    const fullReset = () => {
+        setMode(null);
+        setMedicationsSelected([]);
+        setMedicationErrors({});
+        setSelectedMedicationPackage(null);
+        setWarehouseSource('');
+        bulkMedicationFormik.resetForm();
+    };
+
+    // ── Package mode ────────────────────────────────────────────────────────────
     const medicationPackagesColumns: Column<any>[] = [
         { header: t('common.field.code'), accessor: 'code', type: 'text', isFilterable: true },
         { header: t('common.field.name'), accessor: 'name', type: 'text', isFilterable: true },
         { header: t('medication.package.column.createdAt'), accessor: 'creation_date', type: 'date', isFilterable: true },
         {
-            header: t('common.field.stage'),
-            accessor: 'stage',
-            type: 'text',
-            isFilterable: true,
+            header: t('common.field.stage'), accessor: 'stage', type: 'text', isFilterable: true,
             render: (_, row) => {
                 let color = "secondary";
-
                 switch (row.stage) {
-                    case "general": color = "info"; break;
-                    case "piglet": color = "info"; break;
+                    case "general": case "piglet": color = "info"; break;
                     case "weaning": color = "warning"; break;
                     case "fattening": color = "primary"; break;
                     case "breeder": color = "success"; break;
                 }
-
                 return <Badge color={color}>{t(`feeding.stage.${row.stage}`, { defaultValue: t('medical.medication.field.unknown') })}</Badge>;
             },
         },
@@ -76,8 +99,7 @@ const BulkMedicationAssignmentModal: React.FC<BulkMedicationAssignmentModalProps
 
     const bulkMedicationFormik = useFormik({
         initialValues: {
-            packageId: '',
-            name: '',
+            packageId: '', name: '',
             applicationDate: null as Date | null,
             observations: '',
             appliedBy: userLogged?._id || '',
@@ -86,45 +108,21 @@ const BulkMedicationAssignmentModal: React.FC<BulkMedicationAssignmentModalProps
         validationSchema: bulkMedicationValidationSchema,
         onSubmit: async (values, { setSubmitting }) => {
             if (!configContext) return;
-
-            const activeLitterIds = selectedLitters
-                .filter(litter => litter.status === 'active')
-                .map(litter => litter._id);
-
+            const activeLitterIds = selectedLitters.filter(l => l.status === 'active').map(l => l._id);
             try {
                 setSubmitting(true);
-
                 await configContext.axiosHelper.create(
                     `${configContext.apiUrl}/medication_package/asign_bulk_litter_medication_package/${userLogged.farm_assigned}`,
-                    {
-                        litterIds: activeLitterIds,
-                        packageId: values.packageId,
-                        name: values.name,
-                        applicationDate: values.applicationDate,
-                        observations: values.observations,
-                        appliedBy: values.appliedBy
-                    }
+                    { litterIds: activeLitterIds, packageId: values.packageId, name: values.name, applicationDate: values.applicationDate, observations: values.observations, appliedBy: values.appliedBy, warehouseSource }
                 );
-
                 await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
-                    event: `Paquete de medicación ${values.name} asignado a ${activeLitterIds.length} camadas`
+                    event: `Paquete de medicación ${values.name} asignado a ${activeLitterIds.length} camadas`,
                 });
-
                 toggleModal('success', true);
             } catch (error: any) {
                 logger.error('Error bulk assigning medication package:', error);
-
-                if (error.response?.status === 400 && error.response?.data?.missing) {
-                    setMissingItems(error.response.data.missing);
-                    toggleModal('missingStock', true);
-                    return;
-                }
-
-                if (error.response?.status === 400 && !error.response?.data?.missing) {
-                    toggleModal('subwarehouseError', true);
-                    return;
-                }
-
+                if (error.response?.status === 400 && error.response?.data?.missing) { setMissingItems(error.response.data.missing); toggleModal('missingStock', true); return; }
+                if (error.response?.status === 400 && !error.response?.data?.missing) { toggleModal('subwarehouseError', true); return; }
                 toggleModal('error', true);
             } finally {
                 setSubmitting(false);
@@ -145,39 +143,134 @@ const BulkMedicationAssignmentModal: React.FC<BulkMedicationAssignmentModalProps
         }
     };
 
-    const handleSuccessClose = () => {
-        toggleModal('success', false);
-        onClose();
-        onSuccess();
-        bulkMedicationFormik.resetForm();
-        setSelectedMedicationPackage(null);
+    // ── Individual mode ─────────────────────────────────────────────────────────
+    const medicationValidation = useMemo(() => Yup.object({
+        medication: Yup.string().required(),
+        dosePerPig: Yup.number().moreThan(0, t('form.validation.positive')).required(t('form.validation.required')),
+        administrationRoute: Yup.string().required(t('form.validation.required')).notOneOf([""], t('form.validation.required')),
+    }), [t]);
+
+    const medicationsColumns: Column<any>[] = [
+        { header: t('feeding.package.form.column.image'), accessor: 'image', render: (_, row) => <img src={row.image || noImageUrl} alt="" style={{ height: "60px" }} /> },
+        { header: t('common.field.code'), accessor: "code", type: "text", isFilterable: true },
+        { header: t('feeding.package.form.column.product'), accessor: "name", type: "text", isFilterable: true },
+        {
+            header: t('feeding.package.form.column.category'), accessor: 'category',
+            render: (value: string) => {
+                let color = "secondary";
+                if (value === 'medications') color = "info";
+                if (value === 'vaccines') color = "primary";
+                return <Badge color={color}>{t(`feeding.productCategory.${value}`, { defaultValue: value })}</Badge>;
+            },
+        },
+        {
+            header: t('medication.card.medications.perHead'), accessor: "dosePerPig",
+            render: (_, row, isSelected) => {
+                const sel = medicationsSelected.find(m => m.medication === row._id);
+                return (
+                    <div className="input-group">
+                        <Input type="number" disabled={!isSelected}
+                            value={sel?.dosePerPig === 0 ? "" : (sel?.dosePerPig ?? "")}
+                            invalid={medicationErrors[row._id]?.dosePerPig}
+                            onChange={(e) => {
+                                const val = e.target.value === "" ? 0 : Number(e.target.value);
+                                setMedicationsSelected(prev => prev.map(m => m.medication === row._id ? { ...m, dosePerPig: val } : m));
+                            }}
+                            onClick={(e) => e.stopPropagation()} />
+                        <span className="input-group-text">{row.unit_measurement}</span>
+                    </div>
+                );
+            },
+        },
+        {
+            header: t('medical.medication.field.route'), accessor: "administrationRoute",
+            render: (_, row, isSelected) => {
+                const sel = medicationsSelected.find(m => m.medication === row._id);
+                return (
+                    <Input type="select" disabled={!isSelected}
+                        value={sel?.administrationRoute ?? ""}
+                        invalid={medicationErrors[row._id]?.administrationRoute}
+                        onChange={(e) => { const v = e.target.value; setMedicationsSelected(prev => prev.map(m => m.medication === row._id ? { ...m, administrationRoute: v } : m)); }}
+                        onClick={(e) => e.stopPropagation()}>
+                        <option value="">{t('form.pig.placeholder.selectOption')}</option>
+                        <option value="oral">{t('medical.medication.route.oral')}</option>
+                        <option value="intramuscular">{t('medical.medication.route.intramuscular')}</option>
+                        <option value="subcutaneous">{t('medical.medication.route.subcutaneous')}</option>
+                        <option value="intravenous">{t('medical.medication.route.intravenous')}</option>
+                        <option value="intranasal">{t('medical.medication.route.intranasal')}</option>
+                        <option value="topical">{t('medical.medication.route.topical')}</option>
+                        <option value="rectal">{t('medical.medication.route.rectal')}</option>
+                    </Input>
+                );
+            },
+        },
+    ];
+
+    const validateSelectedMedications = async () => {
+        if (!warehouseSource) { return false; }
+        if (medicationsSelected.length === 0) { return false; }
+        const errors: Record<string, any> = {};
+        for (const med of medicationsSelected) {
+            try { await medicationValidation.validate(med, { abortEarly: false }); }
+            catch (err: any) {
+                const medErrors: any = {};
+                err.inner.forEach((e: any) => { medErrors[e.path] = true; });
+                errors[med.medication] = medErrors;
+            }
+        }
+        setMedicationErrors(errors);
+        return Object.keys(errors).length === 0;
     };
 
-    const handleClose = () => {
-        onClose();
-        bulkMedicationFormik.resetForm();
-        setSelectedMedicationPackage(null);
-    };
-
-    const fetchMedicationPackages = async () => {
+    const submitIndividual = async () => {
         if (!configContext || !userLogged) return;
-
+        const valid = await validateSelectedMedications();
+        if (!valid) return;
+        const activeLitterIds = selectedLitters.filter(l => l.status === 'active').map(l => l._id);
         try {
-            const medicationResponse = await configContext.axiosHelper.get(
-                `${configContext.apiUrl}/medication_package/find_by_stage/${userLogged.farm_assigned}/piglet`
+            setIsSubmittingIndividual(true);
+            const medications = medicationsSelected.map(m => ({ ...m, applicationDate, appliedBy: userLogged._id }));
+            await configContext.axiosHelper.create(
+                `${configContext.apiUrl}/medication_package/asign_bulk_litter_medications/${userLogged.farm_assigned}`,
+                { litterIds: activeLitterIds, medications, warehouseSource }
             );
-            const packagesWithId = medicationResponse.data.data.map((p: any) => ({ ...p, id: p._id }));
-            setMedicationPackages(packagesWithId);
+            await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
+                event: `Medicación individual asignada a ${activeLitterIds.length} camadas`,
+            });
+            toggleModal('success', true);
+        } catch (error: any) {
+            logger.error('Error bulk assigning individual medications to litters:', error);
+            if (error.response?.status === 400 && error.response?.data?.missing) { setMissingItems(error.response.data.missing); toggleModal('missingStock', true); return; }
+            if (error.response?.status === 400 && !error.response?.data?.missing) { toggleModal('subwarehouseError', true); return; }
+            toggleModal('error', true);
+        } finally {
+            setIsSubmittingIndividual(false);
+        }
+    };
+
+    // ── Fetch ───────────────────────────────────────────────────────────────────
+    const fetchData = async () => {
+        if (!configContext || !userLogged) return;
+        try {
+            const [pkgRes, medsRes, subwhRes] = await Promise.all([
+                configContext.axiosHelper.get(`${configContext.apiUrl}/medication_package/find_by_stage/${userLogged.farm_assigned}/piglet`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/product/find_medication_products`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_farm_subwarehouses/${userLogged.farm_assigned}`),
+            ]);
+            setMedicationPackages(pkgRes.data.data.map((p: any) => ({ ...p, id: p._id })));
+            setMedicationsItems(medsRes.data.data.map((b: any) => ({ ...b, code: b.id, id: b._id })));
+            setSubwarehouses(subwhRes.data.data || []);
         } catch (error) {
-            logger.error('Error fetching medication packages:', error);
+            logger.error('Error fetching medication data:', error);
         }
     };
 
     useEffect(() => {
         if (isOpen) {
-            fetchMedicationPackages();
+            fetchData();
             bulkMedicationFormik.setFieldValue('applicationDate', new Date());
-            setSelectedMedicationPackage(null);
+            setApplicationDate(new Date());
+            fullReset();
         }
     }, [isOpen]);
 
@@ -187,143 +280,199 @@ const BulkMedicationAssignmentModal: React.FC<BulkMedicationAssignmentModalProps
         return () => window.removeEventListener('resize', onResize);
     }, []);
 
+    // ── Handlers ────────────────────────────────────────────────────────────────
+    const handleSuccessClose = () => {
+        toggleModal('success', false);
+        onClose();
+        onSuccess();
+        fullReset();
+    };
+
+    const handleClose = () => {
+        onClose();
+        fullReset();
+    };
+
     const activeLittersCount = selectedLitters.filter(l => l.status === 'active').length;
+
+    // ── Shared form fields ───────────────────────────────────────────────────────
+    const sharedFields = (
+        <>
+            <div className="mb-3">
+                <Label className="form-label">{t('medication.assign.field.warehouseSource')}</Label>
+                <Input type="select" value={warehouseSource} onChange={(e) => setWarehouseSource(e.target.value)}>
+                    <option value="">{t('medication.assign.field.warehouseSourcePlaceholder')}</option>
+                    <option value="general">{t('medication.assign.field.warehouseGeneral')}</option>
+                    {subwarehouses.map((w: any) => <option key={w._id} value={w._id}>{w.name}</option>)}
+                </Input>
+            </div>
+            <div className="d-flex gap-2">
+                <div className="w-50">
+                    <Label className="form-label">{t('medication.assign.field.date')}</Label>
+                    {mode === 'package' ? (
+                        <DatePicker
+                            className={`form-control ${bulkMedicationFormik.touched.applicationDate && bulkMedicationFormik.errors.applicationDate ? 'is-invalid' : ''}`}
+                            value={bulkMedicationFormik.values.applicationDate ?? undefined}
+                            onChange={(d: Date[]) => { if (d[0]) bulkMedicationFormik.setFieldValue('applicationDate', d[0]); }}
+                            options={{ dateFormat: 'd/m/Y' }}
+                        />
+                    ) : (
+                        <DatePicker className="form-control" value={applicationDate}
+                            onChange={(d: Date[]) => { if (d[0]) setApplicationDate(d[0]); }}
+                            options={{ dateFormat: 'd/m/Y' }} />
+                    )}
+                    {mode === 'package' && bulkMedicationFormik.touched.applicationDate && bulkMedicationFormik.errors.applicationDate && (
+                        <FormFeedback className="d-block">{bulkMedicationFormik.errors.applicationDate as string}</FormFeedback>
+                    )}
+                </div>
+                <div className="w-50">
+                    <Label className="form-label">{t('medication.assign.field.responsible')}</Label>
+                    <Input type="text" value={`${userLogged?.name} ${userLogged?.lastname}`} disabled />
+                </div>
+            </div>
+        </>
+    );
 
     return (
         <>
-            <Modal isOpen={isOpen} toggle={handleClose} size="lg" backdrop='static' keyboard={false} centered fullscreen={tabletMode}>
+            <Modal isOpen={isOpen} toggle={handleClose} size="lg" backdrop="static" keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={handleClose}>
                     {t('medication.bulk.litter.title', { count: activeLittersCount })}
                 </ModalHeader>
                 <ModalBody>
-                    <form onSubmit={bulkMedicationFormik.handleSubmit}>
-                        <div className="mb-3">
-                            <small className="text-muted">
-                                {t('medication.bulk.litter.description')}
-                            </small>
-                        </div>
-
-                        <div className="mb-4">
-                            <Label className="form-label fw-semibold">{t('medication.bulk.litter.selectPackage')}</Label>
-                            {medicationPackages.length > 0 ? (
-                                <>
-                                    <SelectableCustomTable
-                                        columns={medicationPackagesColumns}
-                                        data={medicationPackages}
-                                        showPagination={false}
-                                        onSelect={handleMedicationPackageSelection}
-                                        selectionOnlyOnCheckbox={false}
-                                    />
-                                    {bulkMedicationFormik.touched.packageId && bulkMedicationFormik.errors.packageId && (
-                                        <div className="text-danger mt-2">{bulkMedicationFormik.errors.packageId}</div>
-                                    )}
-                                </>
-                            ) : (
-                                <div className="alert alert-warning d-flex align-items-center" role="alert">
-                                    <i className="ri-error-warning-line fs-4 me-2 text-warning"></i>
-                                    <div>
-                                        <strong>{t('medication.bulk.litter.noPackagesTitle')}</strong>
-                                        <p className="mb-0 mt-1">{t('medication.bulk.litter.noPackagesBody')}</p>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {selectedMedicationPackage && (
-                            <div className="alert alert-info">
-                                <strong>{t('medication.bulk.litter.selectedPackage')}</strong> {selectedMedicationPackage.name} ({selectedMedicationPackage.code})
+                    {/* ── Mode selector ── */}
+                    {mode === null && (
+                        <div className="d-flex flex-column align-items-center gap-4 py-3">
+                            <h5 className="text-muted">{t('medication.assign.mode.title')}</h5>
+                            <div className="d-flex gap-4 w-100">
+                                <Card className="w-50 text-center border shadow-sm" style={{ cursor: 'pointer' }} onClick={() => setMode('package')}>
+                                    <CardBody className="py-4">
+                                        <i className="ri-file-list-3-line text-primary" style={{ fontSize: '2.5rem' }} />
+                                        <h5 className="mt-3">{t('medication.assign.mode.package')}</h5>
+                                        <p className="text-muted mb-0 small">{t('medication.assign.mode.packageDesc')}</p>
+                                    </CardBody>
+                                </Card>
+                                <Card className="w-50 text-center border shadow-sm" style={{ cursor: 'pointer' }} onClick={() => setMode('individual')}>
+                                    <CardBody className="py-4">
+                                        <i className="ri-medicine-bottle-line text-success" style={{ fontSize: '2.5rem' }} />
+                                        <h5 className="mt-3">{t('medication.assign.mode.individual')}</h5>
+                                        <p className="text-muted mb-0 small">{t('medication.assign.mode.individualDesc')}</p>
+                                    </CardBody>
+                                </Card>
                             </div>
-                        )}
+                        </div>
+                    )}
 
-                        <div className="d-flex gap-2 mt-4">
-                            <div className="w-50">
-                                <Label htmlFor="applicationDate" className="form-label">{t('medication.assign.field.date')}</Label>
-                                <DatePicker
-                                    id="applicationDate"
-                                    className={`form-control ${bulkMedicationFormik.touched.applicationDate && bulkMedicationFormik.errors.applicationDate ? 'is-invalid' : ''}`}
-                                    value={bulkMedicationFormik.values.applicationDate ?? undefined}
-                                    onChange={(date: Date[]) => { if (date[0]) bulkMedicationFormik.setFieldValue('applicationDate', date[0]); }}
-                                    options={{ dateFormat: 'd/m/Y' }}
-                                />
-                                {bulkMedicationFormik.touched.applicationDate && bulkMedicationFormik.errors.applicationDate && (
-                                    <FormFeedback className="d-block">{bulkMedicationFormik.errors.applicationDate as string}</FormFeedback>
+                    {/* ── Package mode ── */}
+                    {mode === 'package' && (
+                        <form onSubmit={bulkMedicationFormik.handleSubmit}>
+                            <div className="d-flex justify-content-between align-items-center mb-3">
+                                <h6 className="text-muted mb-0">{t('medication.assign.mode.current.package')}</h6>
+                                <Button size="sm" onClick={resetMode}><i className="ri-arrow-go-back-line me-1" />{t('medication.assign.mode.change')}</Button>
+                            </div>
+
+                            {sharedFields}
+
+                            <div className="mt-4">
+                                <Label className="form-label fw-semibold">{t('medication.assign.field.selectPackage')}</Label>
+                                {medicationPackages.length > 0 ? (
+                                    <>
+                                        <SelectableCustomTable columns={medicationPackagesColumns} data={medicationPackages} showPagination={false} onSelect={handleMedicationPackageSelection} selectionOnlyOnCheckbox={false} />
+                                        {bulkMedicationFormik.touched.packageId && bulkMedicationFormik.errors.packageId && (
+                                            <div className="text-danger mt-2">{bulkMedicationFormik.errors.packageId}</div>
+                                        )}
+                                    </>
+                                ) : (
+                                    <div className="alert alert-warning d-flex align-items-center">
+                                        <i className="ri-error-warning-line fs-4 me-2 text-warning" />
+                                        <div>
+                                            <strong>{t('medication.bulk.litter.noPackagesTitle')}</strong>
+                                            <p className="mb-0 mt-1">{t('medication.bulk.litter.noPackagesBody')}</p>
+                                        </div>
+                                    </div>
                                 )}
                             </div>
 
-                            <div className="w-50">
-                                <Label htmlFor="appliedBy" className="form-label">{t('medication.assign.field.responsible')}</Label>
-                                <Input
-                                    type="text"
-                                    id="appliedBy"
-                                    name="appliedBy"
-                                    value={`${userLogged?.name} ${userLogged?.lastname}`}
-                                    disabled
+                            {selectedMedicationPackage && (
+                                <div className="alert alert-info mt-3">
+                                    <strong>{t('medication.bulk.litter.selectedPackage')}</strong> {selectedMedicationPackage.name} ({selectedMedicationPackage.code})
+                                </div>
+                            )}
+
+                            <div className="mt-3">
+                                <Label className="form-label">{t('pigs.field.observations')}</Label>
+                                <Input type="textarea" name="observations" rows={2}
+                                    value={bulkMedicationFormik.values.observations}
+                                    onChange={bulkMedicationFormik.handleChange}
+                                    placeholder={t('medication.assign.field.observationsPlaceholder')} />
+                            </div>
+                        </form>
+                    )}
+
+                    {/* ── Individual mode ── */}
+                    {mode === 'individual' && (
+                        <div>
+                            <div className="d-flex justify-content-between align-items-center mb-3">
+                                <h6 className="text-muted mb-0">{t('medication.assign.mode.current.individual')}</h6>
+                                <Button size="sm" onClick={resetMode}><i className="ri-arrow-go-back-line me-1" />{t('medication.assign.mode.change')}</Button>
+                            </div>
+
+                            {sharedFields}
+
+                            <div className="mt-4">
+                                <Label className="form-label fw-semibold">{t('medication.assign.field.selectMedications')}</Label>
+                                <SelectableCustomTable
+                                    columns={medicationsColumns}
+                                    data={medicationsItems}
+                                    showPagination
+                                    rowsPerPage={5}
+                                    onSelect={(rows) => {
+                                        setMedicationsSelected(prev => rows.map(r => {
+                                            const existing = prev.find(p => p.medication === r._id);
+                                            if (existing) return existing;
+                                            return { medication: r._id, dosePerPig: 0, administrationRoute: "", observations: "", unit_measurement: r.unit_measurement };
+                                        }));
+                                    }}
                                 />
                             </div>
                         </div>
-
-                        <div className="mt-4">
-                            <Label htmlFor="observations" className="form-label">{t('pigs.field.observations')}</Label>
-                            <Input
-                                type="textarea"
-                                id="observations"
-                                name="observations"
-                                rows={3}
-                                value={bulkMedicationFormik.values.observations}
-                                onChange={bulkMedicationFormik.handleChange}
-                                onBlur={bulkMedicationFormik.handleBlur}
-                                placeholder={t('medication.assign.field.observationsPlaceholder')}
-                            />
-                        </div>
-                    </form>
+                    )}
                 </ModalBody>
+
                 <ModalFooter>
                     <Button className="farm-secondary-button" onClick={handleClose}>{t('common.button.cancel')}</Button>
-                    <Button
-                        className="farm-primary-button"
-                        onClick={() => bulkMedicationFormik.handleSubmit()}
-                        disabled={bulkMedicationFormik.isSubmitting || !selectedMedicationPackage || medicationPackages.length === 0}
-                    >
-                        {bulkMedicationFormik.isSubmitting ? <Spinner size="sm" /> : t('medication.bulk.litter.confirm')}
-                    </Button>
+                    {mode === 'package' && (
+                        <Button className="farm-primary-button"
+                            onClick={() => bulkMedicationFormik.handleSubmit()}
+                            disabled={bulkMedicationFormik.isSubmitting || !selectedMedicationPackage || medicationPackages.length === 0 || !warehouseSource}>
+                            {bulkMedicationFormik.isSubmitting ? <Spinner size="sm" /> : t('medication.bulk.litter.confirm')}
+                        </Button>
+                    )}
+                    {mode === 'individual' && (
+                        <Button className="farm-primary-button"
+                            onClick={submitIndividual}
+                            disabled={isSubmittingIndividual || medicationsSelected.length === 0 || !warehouseSource}>
+                            {isSubmittingIndividual ? <Spinner size="sm" /> : t('medication.bulk.litter.confirm')}
+                        </Button>
+                    )}
                 </ModalFooter>
             </Modal>
 
-            <SuccessModal
-                isOpen={modals.success}
-                onClose={handleSuccessClose}
-                message={t('medication.bulk.litter.success')}
-            />
-
-            <ErrorModal
-                isOpen={modals.error}
-                onClose={() => toggleModal('error', false)}
-                message={t('medication.assign.error.submit')}
-            />
-
-            <MissingStockModal
-                isOpen={modals.missingStock}
-                onClose={() => toggleModal('missingStock', false)}
-                missingItems={missingItems}
-            />
-
+            <SuccessModal isOpen={modals.success} onClose={handleSuccessClose}
+                message={mode === 'package' ? t('medication.bulk.litter.success') : t('medication.assign.success.medications')} />
+            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={t('medication.assign.error.submit')} />
+            <MissingStockModal isOpen={modals.missingStock} onClose={() => toggleModal('missingStock', false)} missingItems={missingItems} />
             <Modal isOpen={modals.subwarehouseError} toggle={() => toggleModal('subwarehouseError', false)} centered>
-                <ModalHeader toggle={() => toggleModal('subwarehouseError', false)}>
-                    {t('medication.assign.error.subwarehouseTitle')}
-                </ModalHeader>
+                <ModalHeader toggle={() => toggleModal('subwarehouseError', false)}>{t('medication.assign.error.subwarehouseTitle')}</ModalHeader>
                 <ModalBody>
                     <div className="text-center">
-                        <i className="ri-error-warning-line" style={{ fontSize: '48px', color: '#f06548' }}></i>
+                        <i className="ri-error-warning-line" style={{ fontSize: '48px', color: '#f06548' }} />
                         <h5 className="mt-3">{t('medication.assign.error.subwarehouseHeading')}</h5>
-                        <p className="text-muted">
-                            {t('medication.bulk.litter.subwarehouseBody')}
-                        </p>
+                        <p className="text-muted">{t('medication.bulk.litter.subwarehouseBody')}</p>
                     </div>
                 </ModalBody>
                 <ModalFooter>
-                    <Button color="secondary" onClick={() => toggleModal('subwarehouseError', false)}>
-                        {t('common.button.close')}
-                    </Button>
+                    <Button color="secondary" onClick={() => toggleModal('subwarehouseError', false)}>{t('common.button.close')}</Button>
                 </ModalFooter>
             </Modal>
         </>

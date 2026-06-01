@@ -3,6 +3,7 @@ import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { useContext, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Badge, Button, Card, CardBody, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from "reactstrap";
 import DatePicker from "react-flatpickr";
 import { useFormik } from "formik";
@@ -11,15 +12,14 @@ import SelectableCustomTable from "../Tables/SelectableTable";
 import MissingStockModal from "../Shared/MissingStockModal";
 import SuccessModal from "../Shared/SuccessModal";
 import ErrorModal from "../Shared/ErrorModal";
-import { useTranslation } from "react-i18next";
 import noImageUrl from '../../../assets/images/no-image.png';
 
 type Mode = 'package' | 'individual' | null;
 
-interface BulkGroupMedicationAssignmentModalProps {
+interface BulkPigMedicationAssignmentModalProps {
     isOpen: boolean;
     onClose: () => void;
-    selectedGroups: any[];
+    selectedPigs: any[];
     onSuccess: () => void;
 }
 
@@ -28,8 +28,8 @@ const isTablet = () => {
     return w >= 768 && w <= 1024;
 };
 
-const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignmentModalProps> = ({
-    isOpen, onClose, selectedGroups, onSuccess,
+const BulkPigMedicationAssignmentModal: React.FC<BulkPigMedicationAssignmentModalProps> = ({
+    isOpen, onClose, selectedPigs, onSuccess,
 }) => {
     const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
@@ -59,8 +59,8 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
         setMedicationsSelected([]);
         setMedicationErrors({});
         setSelectedMedicationPackage(null);
-        bulkMedicationFormik.setFieldValue('packageId', '');
-        bulkMedicationFormik.setFieldValue('name', '');
+        formik.setFieldValue('packageId', '');
+        formik.setFieldValue('name', '');
     };
 
     const fullReset = () => {
@@ -69,7 +69,7 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
         setMedicationErrors({});
         setSelectedMedicationPackage(null);
         setWarehouseSource('');
-        bulkMedicationFormik.resetForm();
+        formik.resetForm();
     };
 
     // ── Package mode ────────────────────────────────────────────────────────────
@@ -87,18 +87,17 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
                     case "fattening": color = "primary"; break;
                     case "breeder": color = "success"; break;
                 }
-                const text = t(`feeding.stage.${row.stage}`, { defaultValue: t('medical.medication.field.unknown') });
-                return <Badge color={color}>{text}</Badge>;
+                return <Badge color={color}>{t(`feeding.stage.${row.stage}`, { defaultValue: t('medical.medication.field.unknown') })}</Badge>;
             },
         },
     ];
 
-    const bulkMedicationValidationSchema = Yup.object({
-        packageId: Yup.string().required(t('medication.assign.bulkGroup.validation.packageRequired')),
-        applicationDate: Yup.date().required(t('medication.assign.bulkGroup.validation.dateRequired')),
-    });
+    const validationSchema = useMemo(() => Yup.object({
+        packageId: Yup.string().required(t('medication.bulk.pig.validation.selectPackage')),
+        applicationDate: Yup.date().required(t('form.validation.required')),
+    }), [t]);
 
-    const bulkMedicationFormik = useFormik({
+    const formik = useFormik({
         initialValues: {
             packageId: '', name: '',
             applicationDate: null as Date | null,
@@ -106,22 +105,22 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
             appliedBy: userLogged?._id || '',
         },
         enableReinitialize: true,
-        validationSchema: bulkMedicationValidationSchema,
+        validationSchema,
         onSubmit: async (values, { setSubmitting }) => {
             if (!configContext) return;
-            const groupIds = selectedGroups.map(g => g._id);
+            const alivePigIds = selectedPigs.filter(p => p.status === 'alive').map(p => p._id);
             try {
                 setSubmitting(true);
                 await configContext.axiosHelper.create(
-                    `${configContext.apiUrl}/medication_package/asign_bulk_group_medication_package/${userLogged.farm_assigned}`,
-                    { groupIds, packageId: values.packageId, name: values.name, applicationDate: values.applicationDate, observations: values.observations, appliedBy: values.appliedBy, warehouseSource }
+                    `${configContext.apiUrl}/medication_package/asign_bulk_pig_medication_package/${userLogged.farm_assigned}`,
+                    { pigIds: alivePigIds, packageId: values.packageId, name: values.name, applicationDate: values.applicationDate, observations: values.observations, appliedBy: values.appliedBy, warehouseSource }
                 );
                 await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
-                    event: `Paquete de medicación ${values.name} asignado a ${groupIds.length} grupos`,
+                    event: `Paquete de medicación ${values.name} asignado a ${alivePigIds.length} cerdos`,
                 });
                 toggleModal('success', true);
             } catch (error: any) {
-                logger.error('Error bulk assigning medication package to groups:', error);
+                logger.error('Error bulk assigning medication package to pigs:', error);
                 if (error.response?.status === 400 && error.response?.data?.missing) { setMissingItems(error.response.data.missing); toggleModal('missingStock', true); return; }
                 if (error.response?.status === 400 && !error.response?.data?.missing) { toggleModal('subwarehouseError', true); return; }
                 toggleModal('error', true);
@@ -135,12 +134,12 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
         if (selected.length > 0) {
             const pkg = selected[0];
             setSelectedMedicationPackage(pkg);
-            bulkMedicationFormik.setFieldValue('packageId', pkg._id);
-            bulkMedicationFormik.setFieldValue('name', pkg.name);
+            formik.setFieldValue('packageId', pkg._id);
+            formik.setFieldValue('name', pkg.name);
         } else {
             setSelectedMedicationPackage(null);
-            bulkMedicationFormik.setFieldValue('packageId', '');
-            bulkMedicationFormik.setFieldValue('name', '');
+            formik.setFieldValue('packageId', '');
+            formik.setFieldValue('name', '');
         }
     };
 
@@ -226,20 +225,20 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
         if (!configContext || !userLogged) return;
         const valid = await validateSelectedMedications();
         if (!valid) return;
-        const groupIds = selectedGroups.map(g => g._id);
+        const alivePigIds = selectedPigs.filter(p => p.status === 'alive').map(p => p._id);
         try {
             setIsSubmittingIndividual(true);
             const medications = medicationsSelected.map(m => ({ ...m, applicationDate, appliedBy: userLogged._id }));
             await configContext.axiosHelper.create(
-                `${configContext.apiUrl}/medication_package/asign_bulk_group_medications/${userLogged.farm_assigned}`,
-                { groupIds, medications, warehouseSource }
+                `${configContext.apiUrl}/medication_package/asign_bulk_pig_medications/${userLogged.farm_assigned}`,
+                { pigIds: alivePigIds, medications, warehouseSource }
             );
             await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
-                event: `Medicación individual asignada a ${groupIds.length} grupos`,
+                event: `Medicación individual asignada a ${alivePigIds.length} cerdos`,
             });
             toggleModal('success', true);
         } catch (error: any) {
-            logger.error('Error bulk assigning individual medications to groups:', error);
+            logger.error('Error bulk assigning individual medications to pigs:', error);
             if (error.response?.status === 400 && error.response?.data?.missing) { setMissingItems(error.response.data.missing); toggleModal('missingStock', true); return; }
             if (error.response?.status === 400 && !error.response?.data?.missing) { toggleModal('subwarehouseError', true); return; }
             toggleModal('error', true);
@@ -252,13 +251,8 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
     const fetchData = async () => {
         if (!configContext || !userLogged) return;
         try {
-            const stages = selectedGroups.map(g => g.stage);
-            const mostCommonStage = stages.sort((a, b) =>
-                stages.filter(v => v === a).length - stages.filter(v => v === b).length
-            ).pop() || 'general';
-
             const [pkgRes, medsRes, subwhRes] = await Promise.all([
-                configContext.axiosHelper.get(`${configContext.apiUrl}/medication_package/find_by_stage/${userLogged.farm_assigned}/${mostCommonStage}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/medication_package/find_by_stage/${userLogged.farm_assigned}/breeder`),
                 configContext.axiosHelper.get(`${configContext.apiUrl}/product/find_medication_products`),
                 configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_farm_subwarehouses/${userLogged.farm_assigned}`),
             ]);
@@ -266,14 +260,14 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
             setMedicationsItems(medsRes.data.data.map((b: any) => ({ ...b, code: b.id, id: b._id })));
             setSubwarehouses(subwhRes.data.data || []);
         } catch (error) {
-            logger.error('Error fetching medication data:', error);
+            logger.error('Error fetching medication data for pigs:', error);
         }
     };
 
     useEffect(() => {
         if (isOpen) {
             fetchData();
-            bulkMedicationFormik.setFieldValue('applicationDate', new Date());
+            formik.setFieldValue('applicationDate', new Date());
             setApplicationDate(new Date());
             fullReset();
         }
@@ -298,6 +292,8 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
         fullReset();
     };
 
+    const alivePigsCount = selectedPigs.filter(p => p.status === 'alive').length;
+
     // ── Shared form fields ───────────────────────────────────────────────────────
     const sharedFields = (
         <>
@@ -314,9 +310,9 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
                     <Label className="form-label">{t('medication.assign.field.date')}</Label>
                     {mode === 'package' ? (
                         <DatePicker
-                            className={`form-control ${bulkMedicationFormik.touched.applicationDate && bulkMedicationFormik.errors.applicationDate ? 'is-invalid' : ''}`}
-                            value={bulkMedicationFormik.values.applicationDate ?? undefined}
-                            onChange={(d: Date[]) => { if (d[0]) bulkMedicationFormik.setFieldValue('applicationDate', d[0]); }}
+                            className={`form-control ${formik.touched.applicationDate && formik.errors.applicationDate ? 'is-invalid' : ''}`}
+                            value={formik.values.applicationDate ?? undefined}
+                            onChange={(d: Date[]) => { if (d[0]) formik.setFieldValue('applicationDate', d[0]); }}
                             options={{ dateFormat: 'd/m/Y' }}
                         />
                     ) : (
@@ -324,8 +320,8 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
                             onChange={(d: Date[]) => { if (d[0]) setApplicationDate(d[0]); }}
                             options={{ dateFormat: 'd/m/Y' }} />
                     )}
-                    {mode === 'package' && bulkMedicationFormik.touched.applicationDate && bulkMedicationFormik.errors.applicationDate && (
-                        <FormFeedback className="d-block">{bulkMedicationFormik.errors.applicationDate as string}</FormFeedback>
+                    {mode === 'package' && formik.touched.applicationDate && formik.errors.applicationDate && (
+                        <FormFeedback className="d-block">{formik.errors.applicationDate as string}</FormFeedback>
                     )}
                 </div>
                 <div className="w-50">
@@ -340,7 +336,7 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
         <>
             <Modal isOpen={isOpen} toggle={handleClose} size="lg" backdrop="static" keyboard={false} centered fullscreen={tabletMode}>
                 <ModalHeader toggle={handleClose}>
-                    {t('medication.assign.bulkGroup.header', { count: selectedGroups.length })}
+                    {t('medication.bulk.pig.title', { count: alivePigsCount })}
                 </ModalHeader>
                 <ModalBody>
                     {/* ── Mode selector ── */}
@@ -368,7 +364,7 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
 
                     {/* ── Package mode ── */}
                     {mode === 'package' && (
-                        <form onSubmit={bulkMedicationFormik.handleSubmit}>
+                        <form onSubmit={formik.handleSubmit}>
                             <div className="d-flex justify-content-between align-items-center mb-3">
                                 <h6 className="text-muted mb-0">{t('medication.assign.mode.current.package')}</h6>
                                 <Button size="sm" onClick={resetMode}><i className="ri-arrow-go-back-line me-1" />{t('medication.assign.mode.change')}</Button>
@@ -377,20 +373,20 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
                             {sharedFields}
 
                             <div className="mt-4">
-                                <Label className="form-label fw-semibold">{t('medication.assign.bulkGroup.selectPackage')}</Label>
+                                <Label className="form-label fw-semibold">{t('medication.bulk.pig.selectPackage')}</Label>
                                 {medicationPackages.length > 0 ? (
                                     <>
                                         <SelectableCustomTable columns={medicationPackagesColumns} data={medicationPackages} showPagination={false} onSelect={handleMedicationPackageSelection} selectionOnlyOnCheckbox={false} />
-                                        {bulkMedicationFormik.touched.packageId && bulkMedicationFormik.errors.packageId && (
-                                            <div className="text-danger mt-2">{bulkMedicationFormik.errors.packageId}</div>
+                                        {formik.touched.packageId && formik.errors.packageId && (
+                                            <div className="text-danger mt-2">{formik.errors.packageId}</div>
                                         )}
                                     </>
                                 ) : (
                                     <div className="alert alert-warning d-flex align-items-center">
                                         <i className="ri-error-warning-line fs-4 me-2 text-warning" />
                                         <div>
-                                            <strong>{t('medication.assign.bulkGroup.noPackages')}</strong>
-                                            <p className="mb-0 mt-1">{t('medication.assign.bulkGroup.noPackagesDesc')}</p>
+                                            <strong>{t('medication.bulk.pig.noPackagesTitle')}</strong>
+                                            <p className="mb-0 mt-1">{t('medication.bulk.pig.noPackagesBody')}</p>
                                         </div>
                                     </div>
                                 )}
@@ -398,16 +394,16 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
 
                             {selectedMedicationPackage && (
                                 <div className="alert alert-info mt-3">
-                                    <strong>{t('medication.assign.bulkGroup.selectedPackage')}</strong> {selectedMedicationPackage.name} ({selectedMedicationPackage.code})
+                                    <strong>{t('medication.bulk.pig.selectedPackage')}</strong> {selectedMedicationPackage.name} ({selectedMedicationPackage.code})
                                 </div>
                             )}
 
                             <div className="mt-3">
-                                <Label className="form-label">{t('medication.assign.field.observations')}</Label>
+                                <Label className="form-label">{t('pigs.field.observations')}</Label>
                                 <Input type="textarea" name="observations" rows={2}
-                                    value={bulkMedicationFormik.values.observations}
-                                    onChange={bulkMedicationFormik.handleChange}
-                                    placeholder={t('medication.assign.bulkGroup.obsPlaceholder')} />
+                                    value={formik.values.observations}
+                                    onChange={formik.handleChange}
+                                    placeholder={t('medication.assign.field.observationsPlaceholder')} />
                             </div>
                         </form>
                     )}
@@ -446,32 +442,32 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
                     <Button className="farm-secondary-button" onClick={handleClose}>{t('common.button.cancel')}</Button>
                     {mode === 'package' && (
                         <Button className="farm-primary-button"
-                            onClick={() => bulkMedicationFormik.handleSubmit()}
-                            disabled={bulkMedicationFormik.isSubmitting || !selectedMedicationPackage || medicationPackages.length === 0 || !warehouseSource}>
-                            {bulkMedicationFormik.isSubmitting ? <Spinner size="sm" /> : t('medication.assign.bulkGroup.submit')}
+                            onClick={() => formik.handleSubmit()}
+                            disabled={formik.isSubmitting || !selectedMedicationPackage || medicationPackages.length === 0 || !warehouseSource}>
+                            {formik.isSubmitting ? <Spinner size="sm" /> : t('medication.bulk.pig.confirm')}
                         </Button>
                     )}
                     {mode === 'individual' && (
                         <Button className="farm-primary-button"
                             onClick={submitIndividual}
                             disabled={isSubmittingIndividual || medicationsSelected.length === 0 || !warehouseSource}>
-                            {isSubmittingIndividual ? <Spinner size="sm" /> : t('medication.assign.bulkGroup.submit')}
+                            {isSubmittingIndividual ? <Spinner size="sm" /> : t('medication.bulk.pig.confirm')}
                         </Button>
                     )}
                 </ModalFooter>
             </Modal>
 
             <SuccessModal isOpen={modals.success} onClose={handleSuccessClose}
-                message={mode === 'package' ? t('medication.assign.bulkGroup.success') : t('medication.assign.success.medications')} />
-            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={t('medication.assign.bulkGroup.error')} />
+                message={mode === 'package' ? t('medication.bulk.pig.success') : t('medication.assign.success.medications')} />
+            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={t('medication.assign.error.submit')} />
             <MissingStockModal isOpen={modals.missingStock} onClose={() => toggleModal('missingStock', false)} missingItems={missingItems} />
             <Modal isOpen={modals.subwarehouseError} toggle={() => toggleModal('subwarehouseError', false)} centered>
-                <ModalHeader toggle={() => toggleModal('subwarehouseError', false)}>{t('medication.assign.bulkGroup.subwarehouseError.title')}</ModalHeader>
+                <ModalHeader toggle={() => toggleModal('subwarehouseError', false)}>{t('medication.assign.error.subwarehouseTitle')}</ModalHeader>
                 <ModalBody>
                     <div className="text-center">
                         <i className="ri-error-warning-line" style={{ fontSize: '48px', color: '#f06548' }} />
-                        <h5 className="mt-3">{t('medication.assign.bulkGroup.subwarehouseError.subtitle')}</h5>
-                        <p className="text-muted">{t('medication.assign.bulkGroup.subwarehouseError.description')}</p>
+                        <h5 className="mt-3">{t('medication.assign.error.subwarehouseHeading')}</h5>
+                        <p className="text-muted">{t('medication.bulk.pig.subwarehouseBody')}</p>
                     </div>
                 </ModalBody>
                 <ModalFooter>
@@ -482,4 +478,4 @@ const BulkGroupMedicationAssignmentModal: React.FC<BulkGroupMedicationAssignment
     );
 };
 
-export default BulkGroupMedicationAssignmentModal;
+export default BulkPigMedicationAssignmentModal;

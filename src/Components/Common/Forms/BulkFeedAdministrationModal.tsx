@@ -6,7 +6,7 @@ import FeedAdministrationForm from "./FeedAdministrationForm";
 interface BulkFeedAdministrationModalProps {
     isOpen: boolean;
     onClose: () => void;
-    targetType: 'group' | 'litter';
+    targetType: 'group' | 'litter' | 'pig';
     selectedTargets: any[];   // groups o litters seleccionados
     onSuccess: () => void;
 }
@@ -32,7 +32,11 @@ const BulkFeedAdministrationModal: React.FC<BulkFeedAdministrationModalProps> = 
         window.addEventListener('resize', onResize);
         return () => window.removeEventListener('resize', onResize);
     }, []);
-    const targetLabel = targetType === 'group' ? t('feeding.administration.target.groups') : t('feeding.administration.target.litters');
+    const targetLabel = targetType === 'group'
+        ? t('feeding.administration.target.groups')
+        : targetType === 'litter'
+        ? t('feeding.administration.target.litters')
+        : t('feeding.administration.target.pigs');
 
     return (
         <Modal size="lg" isOpen={isOpen} toggle={onClose} backdrop="static" keyboard={false} centered fullscreen={tabletMode}>

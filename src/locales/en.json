@@ -1412,7 +1412,8 @@
       },
       "target": {
         "groups": "groups",
-        "litters": "litters"
+        "litters": "litters",
+        "pigs": "pigs"
       }
     },
     "consumption": {
@@ -3283,6 +3284,18 @@
         "confirm": "Confirm"
       },
       "modal": "Process replacement"
+    },
+    "bulk": {
+      "assignMedication": "Assign medication",
+      "administerFeed": "Administer feed",
+      "selected": {
+        "singular": "pig selected",
+        "plural": "pigs selected"
+      },
+      "tooltip": {
+        "noAliveMedication": "No live pigs selected to assign medication",
+        "noAliveFeed": "No live pigs selected to administer feed"
+      }
     }
   },
   "finance": {
@@ -5026,6 +5039,22 @@
       "validation": {
         "selectPackage": "Please select a treatment protocol",
         "dateRequired": "Application date is required"
+      },
+      "pig": {
+        "title": "Apply treatment to {{count}} pigs",
+        "info": "This will apply the selected treatment protocol to all live pigs.",
+        "noPackagesTitle": "No treatment protocols available",
+        "noPackagesBody": "No treatment protocols found for the breeder stage. Please create a protocol before continuing.",
+        "selectedPackage": "Selected protocol:",
+        "success": "Treatment protocol successfully applied to the selected pigs.",
+        "error": "An error occurred while applying the treatment protocol. Please try again.",
+        "description": "Select the medication package to assign to the selected live pigs.",
+        "selectPackage": "Medication package",
+        "subwarehouseBody": "Make sure you have a medical subwarehouse assigned before proceeding.",
+        "confirm": "Assign",
+        "validation": {
+          "selectPackage": "Please select a medication package"
+        }
       }
     },
     "card": {
@@ -7698,55 +7727,153 @@
       "reports": "Reports"
     },
     "sections": {
-      "initialSetup": { "title": "Initial Setup" },
-      "roles": { "title": "Roles & Permissions" },
-      "navigation": { "title": "System Navigation" },
-      "configGlobal": { "title": "Global Configuration" },
-      "configFarm": { "title": "Farm Configuration" },
-      "pigRegister": { "title": "Register Pigs" },
-      "pigDiscard": { "title": "Cull a Pig" },
-      "groupCreate": { "title": "Create a Group" },
-      "groupOperations": { "title": "Group Operations" },
-      "vaccinationPlans": { "title": "Vaccination Plans" },
-      "medicationAssign": { "title": "Apply Medication" },
-      "feedPreparation": { "title": "Feed Preparation" },
-      "overview": { "title": "Overview" },
-      "home": { "title": "Home / Dashboard" },
-      "farms": { "title": "Farms" },
-      "warehouseInventory": { "title": "Warehouse Inventory" },
-      "warehouseSuppliers": { "title": "Suppliers" },
-      "warehouseProducts": { "title": "Product Catalog" },
-      "warehouseIncomes": { "title": "Warehouse Inflows" },
-      "warehouseOutcomes": { "title": "Warehouse Outflows" },
-      "purchaseOrders": { "title": "Purchase Orders" },
-      "subwarehouse": { "title": "Sub-Warehouse" },
-      "orders": { "title": "Transfer Orders" },
-      "sales": { "title": "Pig Sales" },
-      "expenses": { "title": "Expenses" },
-      "periodClosing": { "title": "Period Closing" },
-      "pigsView": { "title": "Pig Inventory" },
-      "pigsDiscarded": { "title": "Culled Pigs" },
-      "groups": { "title": "Groups" },
-      "replacementSows": { "title": "Replacement Gilts" },
-      "replacementBoars": { "title": "Replacement Boars" },
-      "labExtractions": { "title": "Semen Collections" },
-      "labSamples": { "title": "Semen Doses" },
-      "gestationInseminations": { "title": "Inseminations" },
-      "gestationPregnancies": { "title": "Pregnancies" },
-      "births": { "title": "Farrowings" },
-      "lactation": { "title": "Lactation" },
-      "weaning": { "title": "Nursery Groups" },
-      "growing": { "title": "Grow-Finish Groups" },
-      "medication": { "title": "Medication Packages" },
-      "feeding": { "title": "Feed Packages" },
-      "reportsProduction": { "title": "Production Reports" },
-      "reportsInventory": { "title": "Inventory Reports" },
-      "reportsFinance": { "title": "Financial Reports" },
-      "reportsSales": { "title": "Sales Reports" },
-      "reportsTraceability": { "title": "Traceability" },
-      "reportsAudit": { "title": "Audit Reports" },
-      "users": { "title": "User Management" },
-      "configurations": { "title": "Configurations" }
+      "initialSetup": {
+        "title": "Initial Setup"
+      },
+      "roles": {
+        "title": "Roles & Permissions"
+      },
+      "navigation": {
+        "title": "System Navigation"
+      },
+      "configGlobal": {
+        "title": "Global Configuration"
+      },
+      "configFarm": {
+        "title": "Farm Configuration"
+      },
+      "pigRegister": {
+        "title": "Register Pigs"
+      },
+      "pigDiscard": {
+        "title": "Cull a Pig"
+      },
+      "groupCreate": {
+        "title": "Create a Group"
+      },
+      "groupOperations": {
+        "title": "Group Operations"
+      },
+      "vaccinationPlans": {
+        "title": "Vaccination Plans"
+      },
+      "medicationAssign": {
+        "title": "Apply Medication"
+      },
+      "feedPreparation": {
+        "title": "Feed Preparation"
+      },
+      "overview": {
+        "title": "Overview"
+      },
+      "home": {
+        "title": "Home / Dashboard"
+      },
+      "farms": {
+        "title": "Farms"
+      },
+      "warehouseInventory": {
+        "title": "Warehouse Inventory"
+      },
+      "warehouseSuppliers": {
+        "title": "Suppliers"
+      },
+      "warehouseProducts": {
+        "title": "Product Catalog"
+      },
+      "warehouseIncomes": {
+        "title": "Warehouse Inflows"
+      },
+      "warehouseOutcomes": {
+        "title": "Warehouse Outflows"
+      },
+      "purchaseOrders": {
+        "title": "Purchase Orders"
+      },
+      "subwarehouse": {
+        "title": "Sub-Warehouse"
+      },
+      "orders": {
+        "title": "Transfer Orders"
+      },
+      "sales": {
+        "title": "Pig Sales"
+      },
+      "expenses": {
+        "title": "Expenses"
+      },
+      "periodClosing": {
+        "title": "Period Closing"
+      },
+      "pigsView": {
+        "title": "Pig Inventory"
+      },
+      "pigsDiscarded": {
+        "title": "Culled Pigs"
+      },
+      "groups": {
+        "title": "Groups"
+      },
+      "replacementSows": {
+        "title": "Replacement Gilts"
+      },
+      "replacementBoars": {
+        "title": "Replacement Boars"
+      },
+      "labExtractions": {
+        "title": "Semen Collections"
+      },
+      "labSamples": {
+        "title": "Semen Doses"
+      },
+      "gestationInseminations": {
+        "title": "Inseminations"
+      },
+      "gestationPregnancies": {
+        "title": "Pregnancies"
+      },
+      "births": {
+        "title": "Farrowings"
+      },
+      "lactation": {
+        "title": "Lactation"
+      },
+      "weaning": {
+        "title": "Nursery Groups"
+      },
+      "growing": {
+        "title": "Grow-Finish Groups"
+      },
+      "medication": {
+        "title": "Medication Packages"
+      },
+      "feeding": {
+        "title": "Feed Packages"
+      },
+      "reportsProduction": {
+        "title": "Production Reports"
+      },
+      "reportsInventory": {
+        "title": "Inventory Reports"
+      },
+      "reportsFinance": {
+        "title": "Financial Reports"
+      },
+      "reportsSales": {
+        "title": "Sales Reports"
+      },
+      "reportsTraceability": {
+        "title": "Traceability"
+      },
+      "reportsAudit": {
+        "title": "Audit Reports"
+      },
+      "users": {
+        "title": "User Management"
+      },
+      "configurations": {
+        "title": "Configurations"
+      }
     }
   },
   "systemName": "PorcySys",

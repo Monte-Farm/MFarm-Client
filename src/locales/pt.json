@@ -1412,7 +1412,8 @@
       },
       "target": {
         "groups": "lotes",
-        "litters": "leitegadas"
+        "litters": "leitegadas",
+        "pigs": "suínos"
       }
     },
     "consumption": {
@@ -3283,6 +3284,18 @@
         "confirm": "Confirmar"
       },
       "modal": "Processar reposição"
+    },
+    "bulk": {
+      "assignMedication": "Atribuir medicação",
+      "administerFeed": "Administrar ração",
+      "selected": {
+        "singular": "suíno selecionado",
+        "plural": "suínos selecionados"
+      },
+      "tooltip": {
+        "noAliveMedication": "Nenhum suíno vivo selecionado para atribuir medicação",
+        "noAliveFeed": "Nenhum suíno vivo selecionado para administrar ração"
+      }
     }
   },
   "finance": {
@@ -5026,6 +5039,22 @@
       "validation": {
         "selectPackage": "Selecione um protocolo sanitário",
         "dateRequired": "A data de aplicação é obrigatória"
+      },
+      "pig": {
+        "title": "Aplicar medicação a {{count}} suínos",
+        "info": "Esta ação aplicará o protocolo sanitário selecionado a todos os suínos vivos selecionados.",
+        "noPackagesTitle": "Nenhum protocolo sanitário disponível",
+        "noPackagesBody": "Nenhum protocolo encontrado para a fase reprodutora. Cadastre um protocolo antes de continuar.",
+        "selectedPackage": "Protocolo selecionado:",
+        "success": "Protocolo sanitário aplicado com sucesso aos suínos selecionados.",
+        "error": "Ocorreu um erro ao aplicar o protocolo sanitário. Tente novamente.",
+        "description": "Selecione o pacote de medicação a atribuir aos suínos vivos selecionados.",
+        "selectPackage": "Pacote de medicação",
+        "subwarehouseBody": "Certifique-se de ter um subalmoxarifado médico atribuído antes de continuar.",
+        "confirm": "Atribuir",
+        "validation": {
+          "selectPackage": "Por favor, selecione um pacote de medicação"
+        }
       }
     },
     "card": {
@@ -7698,55 +7727,153 @@
       "reports": "Relatórios"
     },
     "sections": {
-      "initialSetup": { "title": "Configuração Inicial" },
-      "roles": { "title": "Perfis e Permissões" },
-      "navigation": { "title": "Navegação do Sistema" },
-      "configGlobal": { "title": "Configuração Global" },
-      "configFarm": { "title": "Configuração da Granja" },
-      "pigRegister": { "title": "Cadastrar Suínos" },
-      "pigDiscard": { "title": "Descartar Suíno" },
-      "groupCreate": { "title": "Criar Lote" },
-      "groupOperations": { "title": "Operações de Lote" },
-      "vaccinationPlans": { "title": "Planos de Vacinação" },
-      "medicationAssign": { "title": "Aplicar Medicação" },
-      "feedPreparation": { "title": "Preparo de Ração" },
-      "overview": { "title": "Visão Geral" },
-      "home": { "title": "Início / Painel" },
-      "farms": { "title": "Granjas" },
-      "warehouseInventory": { "title": "Estoque do Armazém" },
-      "warehouseSuppliers": { "title": "Fornecedores" },
-      "warehouseProducts": { "title": "Catálogo de Produtos" },
-      "warehouseIncomes": { "title": "Entradas no Armazém" },
-      "warehouseOutcomes": { "title": "Saídas do Armazém" },
-      "purchaseOrders": { "title": "Pedidos de Compra" },
-      "subwarehouse": { "title": "Subarmazém" },
-      "orders": { "title": "Pedidos de Transferência" },
-      "sales": { "title": "Venda de Suínos" },
-      "expenses": { "title": "Despesas" },
-      "periodClosing": { "title": "Fechamento de Período" },
-      "pigsView": { "title": "Inventário de Suínos" },
-      "pigsDiscarded": { "title": "Suínos Descartados" },
-      "groups": { "title": "Lotes" },
-      "replacementSows": { "title": "Marrãs de Reposição" },
-      "replacementBoars": { "title": "Varrões de Reposição" },
-      "labExtractions": { "title": "Coletas de Sêmen" },
-      "labSamples": { "title": "Doses de Sêmen" },
-      "gestationInseminations": { "title": "Inseminações" },
-      "gestationPregnancies": { "title": "Gestações" },
-      "births": { "title": "Parições" },
-      "lactation": { "title": "Lactação" },
-      "weaning": { "title": "Lotes de Creche" },
-      "growing": { "title": "Lotes de Crescimento e Terminação" },
-      "medication": { "title": "Pacotes de Medicação" },
-      "feeding": { "title": "Pacotes de Alimentação" },
-      "reportsProduction": { "title": "Relatórios de Produção" },
-      "reportsInventory": { "title": "Relatórios de Estoque" },
-      "reportsFinance": { "title": "Relatórios Financeiros" },
-      "reportsSales": { "title": "Relatórios de Vendas" },
-      "reportsTraceability": { "title": "Rastreabilidade" },
-      "reportsAudit": { "title": "Relatórios de Auditoria" },
-      "users": { "title": "Gestão de Usuários" },
-      "configurations": { "title": "Configurações" }
+      "initialSetup": {
+        "title": "Configuração Inicial"
+      },
+      "roles": {
+        "title": "Perfis e Permissões"
+      },
+      "navigation": {
+        "title": "Navegação do Sistema"
+      },
+      "configGlobal": {
+        "title": "Configuração Global"
+      },
+      "configFarm": {
+        "title": "Configuração da Granja"
+      },
+      "pigRegister": {
+        "title": "Cadastrar Suínos"
+      },
+      "pigDiscard": {
+        "title": "Descartar Suíno"
+      },
+      "groupCreate": {
+        "title": "Criar Lote"
+      },
+      "groupOperations": {
+        "title": "Operações de Lote"
+      },
+      "vaccinationPlans": {
+        "title": "Planos de Vacinação"
+      },
+      "medicationAssign": {
+        "title": "Aplicar Medicação"
+      },
+      "feedPreparation": {
+        "title": "Preparo de Ração"
+      },
+      "overview": {
+        "title": "Visão Geral"
+      },
+      "home": {
+        "title": "Início / Painel"
+      },
+      "farms": {
+        "title": "Granjas"
+      },
+      "warehouseInventory": {
+        "title": "Estoque do Armazém"
+      },
+      "warehouseSuppliers": {
+        "title": "Fornecedores"
+      },
+      "warehouseProducts": {
+        "title": "Catálogo de Produtos"
+      },
+      "warehouseIncomes": {
+        "title": "Entradas no Armazém"
+      },
+      "warehouseOutcomes": {
+        "title": "Saídas do Armazém"
+      },
+      "purchaseOrders": {
+        "title": "Pedidos de Compra"
+      },
+      "subwarehouse": {
+        "title": "Subarmazém"
+      },
+      "orders": {
+        "title": "Pedidos de Transferência"
+      },
+      "sales": {
+        "title": "Venda de Suínos"
+      },
+      "expenses": {
+        "title": "Despesas"
+      },
+      "periodClosing": {
+        "title": "Fechamento de Período"
+      },
+      "pigsView": {
+        "title": "Inventário de Suínos"
+      },
+      "pigsDiscarded": {
+        "title": "Suínos Descartados"
+      },
+      "groups": {
+        "title": "Lotes"
+      },
+      "replacementSows": {
+        "title": "Marrãs de Reposição"
+      },
+      "replacementBoars": {
+        "title": "Varrões de Reposição"
+      },
+      "labExtractions": {
+        "title": "Coletas de Sêmen"
+      },
+      "labSamples": {
+        "title": "Doses de Sêmen"
+      },
+      "gestationInseminations": {
+        "title": "Inseminações"
+      },
+      "gestationPregnancies": {
+        "title": "Gestações"
+      },
+      "births": {
+        "title": "Parições"
+      },
+      "lactation": {
+        "title": "Lactação"
+      },
+      "weaning": {
+        "title": "Lotes de Creche"
+      },
+      "growing": {
+        "title": "Lotes de Crescimento e Terminação"
+      },
+      "medication": {
+        "title": "Pacotes de Medicação"
+      },
+      "feeding": {
+        "title": "Pacotes de Alimentação"
+      },
+      "reportsProduction": {
+        "title": "Relatórios de Produção"
+      },
+      "reportsInventory": {
+        "title": "Relatórios de Estoque"
+      },
+      "reportsFinance": {
+        "title": "Relatórios Financeiros"
+      },
+      "reportsSales": {
+        "title": "Relatórios de Vendas"
+      },
+      "reportsTraceability": {
+        "title": "Rastreabilidade"
+      },
+      "reportsAudit": {
+        "title": "Relatórios de Auditoria"
+      },
+      "users": {
+        "title": "Gestão de Usuários"
+      },
+      "configurations": {
+        "title": "Configurações"
+      }
     }
   },
   "systemName": "PorcySys",

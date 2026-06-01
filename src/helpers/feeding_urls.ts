@@ -42,6 +42,7 @@ export const FEED_ADMINISTRATION_URLS = {
     createForPig: (pigId: string) => `feed_administration/pig/${pigId}`,
     bulkGroups: 'feed_administration/bulk/groups',
     bulkLitters: 'feed_administration/bulk/litters',
+    bulkPigs: 'feed_administration/bulk/pigs',
 };
 
 // ───────── Lecturas de feeding en pig/group/litter ─────────

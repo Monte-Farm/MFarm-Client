@@ -13,7 +13,9 @@ import { FiCheckCircle, FiAlertCircle } from "react-icons/fi"
 import { useNavigate } from "react-router-dom"
 import 'simplebar-react/dist/simplebar.min.css';
 import { Column } from "common/data/data_types"
-import CustomTable from "Components/Common/Tables/CustomTable"
+import SelectableCustomTable from "Components/Common/Tables/SelectableTable"
+import BulkPigMedicationAssignmentModal from "Components/Common/Forms/BulkPigMedicationAssignmentModal"
+import BulkFeedAdministrationModal from "Components/Common/Forms/BulkFeedAdministrationModal"
 import PDFViewer from "Components/Common/Shared/PDFViewer"
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation"
 import AlertMessage from "Components/Common/Shared/AlertMesagge"
@@ -33,7 +35,9 @@ const STATUS_COLORS: Record<string, string> = {
 
 const ViewSows = () => {
     const { t } = useTranslation();
-    const [modals, setModals] = useState({ viewPDF: false, assignEarTag: false });
+    const [modals, setModals] = useState({ viewPDF: false, assignEarTag: false, bulkMedication: false, bulkFeeding: false });
+    const [selectedPigs, setSelectedPigs] = useState<any[]>([]);
+    const hasAlivePigs = selectedPigs.some(pig => pig.status === 'alive');
     const [selectedPig, setSelectedPig] = useState<PigData | null>(null)
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
@@ -274,6 +278,35 @@ const ViewSows = () => {
                                 predefinedBreeds={predefinedBreeds}
                             />
 
+                            {selectedPigs.length > 0 && (
+                                <div className="d-flex align-items-center gap-2">
+                                    <span className="text-muted">
+                                        {selectedPigs.length} {selectedPigs.length === 1 ? t('replacement.bulk.selected.singular') : t('replacement.bulk.selected.plural')}
+                                    </span>
+                                    <div className="btn-group" role="group">
+                                        <Button
+                                            className="farm-primary-button btn-sm"
+                                            disabled={!hasAlivePigs}
+                                            title={!hasAlivePigs ? t('replacement.bulk.tooltip.noAliveMedication') : undefined}
+                                            onClick={() => toggleModal('bulkMedication')}
+                                        >
+                                            <i className="ri-medicine-bottle-line me-1"></i>
+                                            {t('replacement.bulk.assignMedication')}
+                                        </Button>
+                                        <Button
+                                            color="info"
+                                            className="btn-sm"
+                                            disabled={!hasAlivePigs}
+                                            title={!hasAlivePigs ? t('replacement.bulk.tooltip.noAliveFeed') : undefined}
+                                            onClick={() => toggleModal('bulkFeeding')}
+                                        >
+                                            <i className="ri-restaurant-line me-1"></i>
+                                            {t('replacement.bulk.administerFeed')}
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+
                             <Button
                                 color="secondary"
                                 className="ms-auto btn-pdf"
@@ -304,7 +337,16 @@ const ViewSows = () => {
                                 </span>
                             </>
                         ) : (
-                            <CustomTable columns={pigColumns} data={filteredPigs} showSearchAndFilter={false} rowsPerPage={7} showPagination={true} />
+                            <SelectableCustomTable
+                                columns={pigColumns}
+                                data={filteredPigs}
+                                showSearchAndFilter={false}
+                                rowsPerPage={7}
+                                showPagination={true}
+                                selectionMode="multiple"
+                                selectionOnlyOnCheckbox={true}
+                                onSelect={setSelectedPigs}
+                            />
                         )}
                     </CardBody>
                 </Card>
@@ -329,6 +371,21 @@ const ViewSows = () => {
                     {fileURL && <PDFViewer fileUrl={fileURL} />}
                 </ModalBody>
             </Modal>
+
+            <BulkPigMedicationAssignmentModal
+                isOpen={modals.bulkMedication}
+                onClose={() => toggleModal('bulkMedication', false)}
+                selectedPigs={selectedPigs}
+                onSuccess={() => { setSelectedPigs([]); fetchData(); }}
+            />
+
+            <BulkFeedAdministrationModal
+                isOpen={modals.bulkFeeding}
+                onClose={() => toggleModal('bulkFeeding', false)}
+                targetType="pig"
+                selectedTargets={selectedPigs}
+                onSuccess={() => { setSelectedPigs([]); fetchData(); }}
+            />
 
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </div>
