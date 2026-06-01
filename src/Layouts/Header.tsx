@@ -16,6 +16,7 @@ import NotificationDropdown from 'Components/Common/Notifications/NotificationDr
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toggleOpen } from 'slices/ai/reducer';
+import { isDemoMode } from 'config';
 
 const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
     const dispatch: any = useDispatch();
@@ -163,6 +164,23 @@ const Header = ({ onChangeLayoutMode, layoutModeType, headerClass }: any) => {
                                 </span>
                             </button>
 
+
+                            {isDemoMode && (
+                                <div
+                                    className="d-flex align-items-center ms-3 px-3 py-1 rounded-pill"
+                                    style={{
+                                        backgroundColor: '#FFC107',
+                                        color: '#2F4F4F',
+                                        fontWeight: 600,
+                                        fontSize: '0.75rem',
+                                        letterSpacing: '1px',
+                                        textTransform: 'uppercase',
+                                    }}
+                                >
+                                    <i className="ri-flashlight-line me-1"></i>
+                                    DEMO
+                                </div>
+                            )}
 
                             {impersonation ? (
                                 <div className="d-none d-md-flex align-items-center ms-3 gap-2">

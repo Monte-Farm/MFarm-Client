@@ -120,6 +120,12 @@
       "invalidCredentials": "Incorrect username or password.",
       "serviceUnavailable": "Service unavailable. Please try again later."
     },
+    "demo": {
+      "welcome": "Demo Mode",
+      "subtitle": "Select a role to explore the platform",
+      "loading": "Entering demo...",
+      "error": "Failed to start demo. Please try again."
+    },
     "logout": "Sign out",
     "logoutConfirm": "Are you sure you want to sign out?",
     "register": {
@@ -1659,7 +1665,8 @@
     "subwarehouse_manager": "Store keeper",
     "general_worker": "Farm hand",
     "reproduction_technician": "AI technician",
-    "veterinarian": "Veterinarian"
+    "veterinarian": "Veterinarian",
+    "finance_manager": "Finance manager"
   },
   "menu": {
     "home": "Dashboard",

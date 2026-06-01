@@ -4,6 +4,7 @@ import { Card, Col, Container, Row } from "reactstrap";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
 import loginImage from "../../assets/images/portada.png";
 import LoginForm from "../../Components/Common/Velzon/Login";
+import DemoRoleSelector from "../../Components/Common/Velzon/DemoRoleSelector";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { getLoggedinUser, setAuthorization } from "helpers/api_helper";
 import { useNavigate } from "react-router-dom";
@@ -16,10 +17,11 @@ import { useDispatch } from "react-redux";
 import { connectNotificationSocket } from "helpers/socketService";
 import { fetchGlobalConfig } from "slices/configurations/thunk";
 import { useTranslation } from "react-i18next";
+import { isDemoMode } from "config";
 
 const CoverSignIn = () => {
     const { t } = useTranslation();
-    document.title = t('auth.login.pageTitle');
+    document.title = isDemoMode ? t('auth.demo.welcome') + ' | PorcySys' : t('auth.login.pageTitle');
     const dispatch: any = useDispatch();
     const history = useNavigate();
     const configContext = useContext(ConfigContext);
@@ -100,20 +102,30 @@ const CoverSignIn = () => {
                                                             alt="Logo"
                                                         />
                                                     </div>
-                                                    <h4 className="text-center" style={{ color: '#2F4F4F' }}>{t('auth.login.welcome')}</h4>
-                                                    <p className="text-muted text-center fs-5">{t('auth.login.subtitle')}</p>
+                                                    <h4 className="text-center" style={{ color: '#2F4F4F' }}>
+                                                        {isDemoMode ? t('auth.demo.welcome') : t('auth.login.welcome')}
+                                                    </h4>
+                                                    <p className="text-muted text-center fs-5">
+                                                        {isDemoMode ? t('auth.demo.subtitle') : t('auth.login.subtitle')}
+                                                    </p>
 
                                                     <div className="mt-4">
-                                                        <LoginForm onSubmit={handleLogin} />
+                                                        {isDemoMode ? (
+                                                            <DemoRoleSelector />
+                                                        ) : (
+                                                            <LoginForm onSubmit={handleLogin} />
+                                                        )}
                                                     </div>
                                                 </div>
 
-                                                <AlertMessage
-                                                    color="danger"
-                                                    message={t('auth.login.disabledUser')}
-                                                    visible={showDisabledAlert}
-                                                    onClose={() => setShowDisabledAlert(false)}
-                                                />
+                                                {!isDemoMode && (
+                                                    <AlertMessage
+                                                        color="danger"
+                                                        message={t('auth.login.disabledUser')}
+                                                        visible={showDisabledAlert}
+                                                        onClose={() => setShowDisabledAlert(false)}
+                                                    />
+                                                )}
                                             </Col>
                                         </Row>
                                     </Card>

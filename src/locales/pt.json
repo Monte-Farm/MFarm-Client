@@ -120,6 +120,12 @@
       "invalidCredentials": "Nome de usuário ou senha incorretos.",
       "serviceUnavailable": "Serviço indisponível. Tente novamente mais tarde."
     },
+    "demo": {
+      "welcome": "Modo Demo",
+      "subtitle": "Selecione um perfil para explorar a plataforma",
+      "loading": "Entrando no demo...",
+      "error": "Erro ao iniciar o demo. Tente novamente."
+    },
     "logout": "Sair",
     "logoutConfirm": "Tem certeza de que deseja sair do sistema?",
     "register": {
@@ -1659,7 +1665,8 @@
     "subwarehouse_manager": "Almoxarife",
     "general_worker": "Auxiliar de produção",
     "reproduction_technician": "Inseminador",
-    "veterinarian": "Médico-veterinário"
+    "veterinarian": "Médico-veterinário",
+    "finance_manager": "Gerente financeiro"
   },
   "menu": {
     "home": "Início",

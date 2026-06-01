@@ -120,6 +120,12 @@
       "invalidCredentials": "Nombre de usuario o contraseña incorrectos.",
       "serviceUnavailable": "El servicio no está disponible. Inténtelo de nuevo más tarde."
     },
+    "demo": {
+      "welcome": "Modo Demo",
+      "subtitle": "Selecciona un rol para explorar la plataforma",
+      "loading": "Entrando al demo...",
+      "error": "Error al iniciar el demo. Intente nuevamente."
+    },
     "logout": "Cerrar Sesión",
     "logoutConfirm": "¿Estás seguro de que desea cerrar sesión?",
     "register": {
@@ -1659,7 +1665,8 @@
     "subwarehouse_manager": "Encargado de subalmacén",
     "general_worker": "Trabajador general",
     "reproduction_technician": "Técnico de reproducción",
-    "veterinarian": "Veterinario"
+    "veterinarian": "Veterinario",
+    "finance_manager": "Gerente financiero"
   },
   "menu": {
     "home": "Inicio",
