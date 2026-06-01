@@ -1,0 +1,2117 @@
+{
+  "labels": {
+    "prerequisites": "Requisitos previos",
+    "stepsTitle": "Pasos",
+    "fieldsTitle": "Descripción de campos",
+    "fieldName": "Campo",
+    "fieldType": "Tipo",
+    "fieldRequired": "Obligatorio",
+    "fieldDesc": "Descripción",
+    "tipsLabel": "Consejos:",
+    "clickToZoom": "Haz clic en la imagen para ampliarla",
+    "module": "Módulo"
+  },
+  "roles": {
+    "superadmin": "Superadmin",
+    "farmManager": "Gerente de granja",
+    "financeManager": "Gerente de finanzas",
+    "warehouseManager": "Enc. de almacén",
+    "subwarehouseManager": "Enc. de subalmacén",
+    "reproTech": "Téc. reproducción",
+    "veterinarian": "Veterinario",
+    "generalWorker": "Trabajador general"
+  },
+  "roleMatrix": {
+    "home": "Inicio / Dashboard",
+    "farms": "Granjas",
+    "users": "Gestión de usuarios",
+    "configGlobal": "Configuración global",
+    "configFarm": "Configuración de granja",
+    "warehouse": "Almacén",
+    "productCatalog": "Catálogo de productos",
+    "subwarehouse": "Subalmacenes",
+    "orders": "Órdenes de transferencia",
+    "sales": "Ventas",
+    "expenses": "Gastos",
+    "periodClosing": "Cierre de períodos",
+    "pigs": "Inventario de cerdos",
+    "replacement": "Reemplazo",
+    "reproduction": "Reproducción / Laboratorio",
+    "births": "Partos y lactancia",
+    "lactation": "Lactancia",
+    "groups": "Grupos",
+    "health": "Salud (medicación/vacunas)",
+    "feeding": "Alimentación",
+    "reports": "Reportes"
+  },
+  "sections": {
+    "overview": {
+      "description": "PorcySys es un sistema integral de gestión porcina que acompaña todos los procesos de la granja: inventario de animales, reproducción, salud, alimentación, almacén y finanzas.",
+      "paragraphs": [
+        "El sistema está organizado por módulos accesibles desde el menú lateral. Cada usuario solo ve los módulos que le corresponden según su rol.",
+        "Los datos fluyen entre módulos de forma automática: un parto genera una camada en lactancia, una inseminación registra el estado reproductivo de la cerda, un ingreso de almacén actualiza el inventario. No es necesario duplicar registros.",
+        "Este manual cubre todas las funcionalidades disponibles. Si no ves un módulo en tu menú, consulta con tu administrador sobre los permisos de tu rol."
+      ],
+      "tips": [
+        "Usa el buscador del sidebar para encontrar rápidamente cualquier sección del manual.",
+        "Haz clic en cualquier imagen para ampliarla.",
+        "El sistema funciona mejor en pantallas de 1280px o más de ancho."
+      ]
+    },
+    "initialSetup": {
+      "description": "Cuando el sistema está vacío, el Superadmin debe completar una configuración inicial antes de que los gerentes de granja puedan trabajar.",
+      "steps": [
+        {
+          "title": "Paso 1: Iniciar sesión como Superadmin",
+          "desc": "Accede al sistema con las credenciales de Superadmin proporcionadas por el equipo de soporte. Llegarás al dashboard principal."
+        },
+        {
+          "title": "Paso 2: Configurar parámetros globales",
+          "desc": "Ve a Configuración Global (accesible desde el ícono de engranaje en la cabecera o en el menú). Configura: nombre de la empresa, logo, moneda, decimales, zona horaria y formato de fecha. Guarda los cambios.",
+          "screenshot": "/manual-screenshots/admin/config-global.png"
+        },
+        {
+          "title": "Paso 3: Registrar usuarios Gerentes de Granja",
+          "desc": "Ve a Configuración → Usuarios y haz clic en '+ Registrar Usuario'. Crea uno o varios usuarios con el rol Gerente de Granja. El sistema envía las credenciales por correo automáticamente.",
+          "screenshot": "/manual-screenshots/admin/users-form.png"
+        },
+        {
+          "title": "Paso 4: Crear las granjas",
+          "desc": "Ve a Granjas y haz clic en '+ Nueva Granja'. Completa los datos de cada granja y asigna el gerente correspondiente (debe estar registrado en el paso anterior).",
+          "screenshot": "/manual-screenshots/admin/farms-form.png"
+        },
+        {
+          "title": "Paso 5: El gerente configura su granja",
+          "desc": "El Gerente de Granja inicia sesión y va a Configuración de Granja. Ajusta los umbrales productivos (días de gestación, lactancia, destete, engorda) según los parámetros reales de su operación. Si no los modifica, se aplican los valores predeterminados del sistema."
+        },
+        {
+          "title": "Paso 6: Registrar productos, proveedores y usuarios adicionales",
+          "desc": "Antes de comenzar a operar, el gerente debe registrar el catálogo de productos del almacén, los proveedores y los demás usuarios (veterinarios, técnicos, encargados de almacén). A partir de aquí el sistema está listo para recibir datos productivos."
+        }
+      ],
+      "tips": [
+        "El orden importa: primero usuarios, luego granjas. Un gerente sin usuario no puede ser asignado a una granja.",
+        "Puedes crear múltiples granjas con el mismo Superadmin, cada una con su propio gerente."
+      ],
+      "warning": "No omitas la Configuración de Granja. Los umbrales controlan las alertas automáticas del sistema (alertas de parto próximo, destete listo, cambio de etapa). Con los valores erróneos las alertas no tendrán sentido."
+    },
+    "roles": {
+      "description": "PorcySys tiene 8 roles de usuario. Cada rol determina qué módulos aparecen en el menú y qué acciones puede realizar el usuario."
+    },
+    "navigation": {
+      "description": "El sistema usa un menú lateral fijo (sidebar) para navegar entre módulos.",
+      "paragraphs": [
+        "El sidebar está organizado por secciones: Inicio, Administración, Operación, Salud y Nutrición, Reportes. Cada sección agrupa los módulos relacionados. Solo aparecen los módulos a los que tu rol tiene acceso.",
+        "En la cabecera superior encontrarás: el selector de idioma (ES / EN / PT), el ícono de notificaciones, el acceso al Asistente IA y el menú de perfil (foto de usuario). Desde el menú de perfil puedes acceder a este manual, ver tu perfil y cerrar sesión.",
+        "El Dashboard (Inicio) es la pantalla principal. Muestra KPIs y resúmenes adaptados a tu rol. Puedes cambiar el período de análisis usando el selector de fechas en la parte superior."
+      ],
+      "tips": [
+        "En pantallas pequeñas el sidebar se colapsa. Usa el ícono de hamburguesa (☰) para abrirlo.",
+        "El ícono de libro abierto en el menú de perfil lleva directamente a este manual."
+      ]
+    },
+    "users": {
+      "description": "El módulo de Usuarios permite al Superadmin crear y gestionar todas las cuentas del sistema. Cada usuario tiene uno o varios roles y puede estar asignado a una granja.",
+      "paragraphs": [
+        "Las acciones disponibles en la tabla de usuarios son: registrar nuevo usuario, editar datos, activar/desactivar cuenta y reenviar credenciales de acceso al correo.",
+        "Un usuario desactivado no puede iniciar sesión, pero sus registros históricos se conservan íntegros. Si necesitas eliminar permanentemente un usuario, contacta al equipo de soporte."
+      ],
+      "steps": [
+        {
+          "title": "Paso 1: Abrir el formulario",
+          "desc": "Ve a Configuración → Usuarios. Haz clic en '+ Registrar Usuario'.",
+          "screenshot": "/manual-screenshots/admin/users-view.png"
+        },
+        {
+          "title": "Paso 2: Foto de perfil (opcional)",
+          "desc": "Puedes subir una foto de perfil haciendo clic en el área de imagen. Formatos aceptados: JPG, PNG, WEBP. Tamaño máximo: 2MB."
+        },
+        {
+          "title": "Paso 3: Datos personales",
+          "desc": "Ingresa nombre, apellido y correo electrónico. El correo debe ser válido y único en el sistema — se usará para enviar las credenciales de acceso.",
+          "screenshot": "/manual-screenshots/admin/users-form.png"
+        },
+        {
+          "title": "Paso 4: Asignar roles",
+          "desc": "Selecciona uno o varios roles haciendo clic en las etiquetas de roles disponibles. Los roles disponibles dependen del rol del administrador que crea el usuario. Puedes asignar múltiples roles al mismo usuario."
+        },
+        {
+          "title": "Paso 5: Asignar granja (si aplica)",
+          "desc": "Si el rol requiere estar vinculado a una granja (Gerente de Granja, Veterinario, etc.), selecciona la granja en el selector. El campo aparece solo cuando es relevante para el rol seleccionado."
+        },
+        {
+          "title": "Paso 6: Guardar",
+          "desc": "Haz clic en Guardar. El sistema genera automáticamente una contraseña temporal y envía las credenciales al correo del usuario."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Foto de perfil",
+          "type": "Imagen",
+          "required": false,
+          "desc": "Foto del usuario. JPG/PNG/WEBP, máx. 2MB."
+        },
+        {
+          "name": "Nombre",
+          "type": "Texto",
+          "required": true,
+          "desc": "Nombre del usuario."
+        },
+        {
+          "name": "Apellido",
+          "type": "Texto",
+          "required": true,
+          "desc": "Apellido del usuario."
+        },
+        {
+          "name": "Correo electrónico",
+          "type": "Email",
+          "required": true,
+          "desc": "Correo único en el sistema. Se usa para las credenciales de acceso."
+        },
+        {
+          "name": "Roles",
+          "type": "Selección múltiple",
+          "required": true,
+          "desc": "Uno o más roles que determinan los módulos accesibles."
+        },
+        {
+          "name": "Granja asignada",
+          "type": "Selección",
+          "required": false,
+          "desc": "Granja a la que pertenece el usuario. Requerido para roles de granja."
+        },
+        {
+          "name": "Estado",
+          "type": "Interruptor",
+          "required": false,
+          "desc": "Activo/Inactivo. Por defecto Activo al crear."
+        }
+      ],
+      "tips": [
+        "Asigna solo los roles necesarios a cada usuario (principio de mínimo privilegio).",
+        "Si el usuario no recibe el correo con sus credenciales, usa el botón 'Reenviar credenciales' en la tabla.",
+        "Puedes editar los datos del usuario en cualquier momento haciendo clic en el ícono de edición."
+      ]
+    },
+    "farms": {
+      "description": "El módulo de Granjas (accesible solo para el Superadmin) permite registrar y administrar las granjas del sistema. Cada granja tiene su propio inventario, ciclos productivos y configuración.",
+      "prerequisites": [
+        "Debe existir al menos un usuario con el rol Gerente de Granja antes de crear una granja."
+      ],
+      "steps": [
+        {
+          "title": "Paso 1: Abrir el formulario",
+          "desc": "Ve a Granjas. Haz clic en '+ Nueva Granja'.",
+          "screenshot": "/manual-screenshots/admin/farms-view.png"
+        },
+        {
+          "title": "Paso 2: Logo de la granja (opcional)",
+          "desc": "Sube un logotipo o imagen representativa de la granja."
+        },
+        {
+          "title": "Paso 3: Datos de la granja",
+          "desc": "Completa nombre, código (se genera automáticamente pero puede editarse), ubicación y estado.",
+          "screenshot": "/manual-screenshots/admin/farms-form.png"
+        },
+        {
+          "title": "Paso 4: Asignar gerente",
+          "desc": "Selecciona el usuario Gerente de Granja que administrará esta granja. Si aún no existe, puedes crearlo directamente desde este formulario usando el botón '+ Nuevo usuario'."
+        },
+        {
+          "title": "Paso 5: Guardar",
+          "desc": "Haz clic en Guardar. La granja queda activa y el gerente puede iniciar sesión para configurar sus parámetros."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Logo",
+          "type": "Imagen",
+          "required": false,
+          "desc": "Imagen representativa de la granja."
+        },
+        {
+          "name": "Nombre",
+          "type": "Texto",
+          "required": true,
+          "desc": "Nombre completo de la granja."
+        },
+        {
+          "name": "Código",
+          "type": "Texto",
+          "required": true,
+          "desc": "Identificador corto. Se genera automáticamente, puede editarse."
+        },
+        {
+          "name": "Ubicación",
+          "type": "Texto",
+          "required": false,
+          "desc": "Dirección o descripción de la ubicación."
+        },
+        {
+          "name": "Estado",
+          "type": "Interruptor",
+          "required": false,
+          "desc": "Activo/Inactivo."
+        },
+        {
+          "name": "Gerente",
+          "type": "Selección",
+          "required": true,
+          "desc": "Usuario con rol Gerente de Granja que administra la granja."
+        }
+      ],
+      "tips": [
+        "Solo el Superadmin puede crear, editar o desactivar granjas.",
+        "Para entrar a operar dentro de una granja como Superadmin, usa el botón 'Entrar a granja' (impersonación) en la tabla de granjas."
+      ]
+    },
+    "configGlobal": {
+      "description": "La Configuración Global (solo Superadmin) define los parámetros del sistema que aplican a todas las granjas: moneda, unidades de medida, formato de fecha y datos de la empresa.",
+      "fields": [
+        {
+          "name": "Nombre de empresa",
+          "type": "Texto",
+          "required": true,
+          "desc": "Nombre que aparece en reportes y documentos generados por el sistema."
+        },
+        {
+          "name": "Logo",
+          "type": "Imagen",
+          "required": false,
+          "desc": "Logotipo corporativo. PNG/JPEG/WEBP, máx. 2MB. Aparece en reportes PDF."
+        },
+        {
+          "name": "Moneda",
+          "type": "Selección",
+          "required": true,
+          "desc": "Moneda predeterminada para todos los cálculos financieros (ej. MXN, USD, DOP)."
+        },
+        {
+          "name": "Decimales",
+          "type": "Número (0–6)",
+          "required": true,
+          "desc": "Cantidad de decimales en los valores monetarios mostrados."
+        },
+        {
+          "name": "Zona horaria",
+          "type": "Selección",
+          "required": true,
+          "desc": "Zona horaria para fechas y horas del sistema."
+        },
+        {
+          "name": "Formato de fecha",
+          "type": "Selección",
+          "required": true,
+          "desc": "Formato de visualización de fechas: DD/MM/AAAA, MM/DD/AAAA, etc."
+        },
+        {
+          "name": "Unidades de medida",
+          "type": "Lista dinámica",
+          "required": false,
+          "desc": "Unidades disponibles para productos del almacén (kg, g, l, ml, pz, etc.). Puedes agregar o eliminar unidades."
+        }
+      ],
+      "tips": [
+        "Configura la moneda antes de registrar cualquier transacción financiera. Cambiarla después puede generar inconsistencias en reportes históricos.",
+        "Las unidades de medida se comparten entre todas las granjas del sistema."
+      ],
+      "warning": "Los cambios en la Configuración Global afectan a todas las granjas. Modifica con cuidado."
+    },
+    "configFarm": {
+      "description": "La Configuración de Granja (solo Gerente de Granja) define los umbrales productivos que controlan las alertas automáticas y los cálculos de etapas de cada granja.",
+      "fields": [
+        {
+          "name": "Días cercano al parto (gestación)",
+          "type": "Número",
+          "required": true,
+          "desc": "Días de gestación a partir de los cuales se genera alerta de 'próximo al parto'. Predeterminado: 107."
+        },
+        {
+          "name": "Días parto pendiente",
+          "type": "Número",
+          "required": true,
+          "desc": "Días de gestación donde el parto es inminente. Predeterminado: 112."
+        },
+        {
+          "name": "Días parto vencido",
+          "type": "Número",
+          "required": true,
+          "desc": "Días de gestación donde el parto está vencido y requiere atención. Predeterminado: 117."
+        },
+        {
+          "name": "Días listo para destete",
+          "type": "Número",
+          "required": true,
+          "desc": "Días de lactancia a partir de los cuales la camada está lista para destetarse. Predeterminado: 21."
+        },
+        {
+          "name": "Días destete vencido",
+          "type": "Número",
+          "required": true,
+          "desc": "Días de lactancia donde el destete es urgente. Predeterminado: 28."
+        },
+        {
+          "name": "Días listo para engorda",
+          "type": "Número",
+          "required": true,
+          "desc": "Días en destete a partir de los cuales el grupo puede pasar a crecimiento. Predeterminado: 42."
+        },
+        {
+          "name": "Días engorda vencida",
+          "type": "Número",
+          "required": true,
+          "desc": "Días en destete donde el cambio de etapa es urgente. Predeterminado: 56."
+        },
+        {
+          "name": "Días listo para venta",
+          "type": "Número",
+          "required": true,
+          "desc": "Días en engorda donde el grupo está listo para vender. Predeterminado: 84."
+        },
+        {
+          "name": "Días venta vencida",
+          "type": "Número",
+          "required": true,
+          "desc": "Días en engorda donde la venta es urgente. Predeterminado: 112."
+        },
+        {
+          "name": "Edad mínima reemplazo",
+          "type": "Días",
+          "required": true,
+          "desc": "Edad mínima en días para promover una cerda/verraco a reemplazo. Predeterminado: 140."
+        },
+        {
+          "name": "Edad máxima reemplazo",
+          "type": "Días",
+          "required": true,
+          "desc": "Edad máxima en días para el proceso de reemplazo. Predeterminado: 170."
+        },
+        {
+          "name": "Aviso anticipado de parto (días)",
+          "type": "Número",
+          "required": true,
+          "desc": "Con cuántos días de anticipación se notifica sobre un parto próximo."
+        },
+        {
+          "name": "Aviso anticipado de cambio de etapa (días)",
+          "type": "Número",
+          "required": true,
+          "desc": "Con cuántos días de anticipación se notifica sobre un cambio de etapa próximo."
+        }
+      ],
+      "tips": [
+        "Usa el botón 'Restaurar valores predeterminados' si quieres volver a la configuración original del sistema.",
+        "Configura estos parámetros antes de comenzar a registrar datos para que las alertas funcionen correctamente desde el inicio."
+      ],
+      "warning": "Los umbrales deben estar en orden creciente (ej. díasCercanoAlParto < díasPartoPendiente < díasPartoVencido). El sistema valida esto al guardar."
+    },
+    "warehouseProducts": {
+      "description": "El catálogo de productos define todos los ítems que pueden gestionarse en el almacén: alimentos, medicamentos, vacunas, insumos y materias primas.",
+      "steps": [
+        {
+          "title": "Paso 1: Abrir el formulario",
+          "desc": "Ve a Almacén → Catálogo de Productos. Haz clic en '+ Agregar Producto'.",
+          "screenshot": "/manual-screenshots/warehouse/products-view.png"
+        },
+        {
+          "title": "Paso 2: Imagen del producto (opcional)",
+          "desc": "Puedes cargar una imagen del producto haciendo clic en el área de imagen."
+        },
+        {
+          "title": "Paso 3: Datos del producto",
+          "desc": "Ingresa nombre, categoría, unidad de medida y descripción.",
+          "screenshot": "/manual-screenshots/warehouse/products-form.png"
+        },
+        {
+          "title": "Paso 4: Tipo de producto",
+          "desc": "Selecciona si es 'Materia prima' o 'Alimento preparado'. Los alimentos preparados aparecen en los módulos de preparación de alimento y alimentación de grupos."
+        },
+        {
+          "title": "Paso 5: Guardar",
+          "desc": "Haz clic en Guardar. El producto queda disponible en el almacén para registrar ingresos y salidas."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Imagen",
+          "type": "Imagen",
+          "required": false,
+          "desc": "Foto del producto para identificación visual."
+        },
+        {
+          "name": "Nombre",
+          "type": "Texto",
+          "required": true,
+          "desc": "Nombre completo del producto tal como aparece en los registros."
+        },
+        {
+          "name": "Categoría",
+          "type": "Selección",
+          "required": true,
+          "desc": "Nutrición, Medicamento, Vacuna o Insumo. Determina en qué módulos aparece el producto."
+        },
+        {
+          "name": "Unidad de medida",
+          "type": "Selección",
+          "required": true,
+          "desc": "Unidad en la que se mide el producto (kg, litros, piezas, etc.)."
+        },
+        {
+          "name": "Descripción",
+          "type": "Texto largo",
+          "required": false,
+          "desc": "Información adicional del producto (concentración, presentación, etc.)."
+        },
+        {
+          "name": "Tipo",
+          "type": "Selección",
+          "required": true,
+          "desc": "Materia prima o Alimento preparado."
+        }
+      ],
+      "tips": [
+        "La categoría es importante: los productos de categoría 'Medicamento' y 'Vacuna' aparecen en los formularios de medicación; los de 'Nutrición' aparecen en alimentación.",
+        "Puedes editar o desactivar productos desde la tabla. Los productos desactivados no aparecen en los formularios."
+      ]
+    },
+    "warehouseSuppliers": {
+      "description": "El catálogo de proveedores almacena la información de los proveedores con los que opera la granja. Son requeridos al crear órdenes de compra e ingresos.",
+      "steps": [
+        {
+          "title": "Paso 1: Abrir el formulario",
+          "desc": "Ve a Almacén → Proveedores. Haz clic en '+ Agregar Proveedor'.",
+          "screenshot": "/manual-screenshots/warehouse/suppliers-view.png"
+        },
+        {
+          "title": "Paso 2: Datos del proveedor",
+          "desc": "Ingresa nombre, tipo de proveedor y datos de contacto.",
+          "screenshot": "/manual-screenshots/warehouse/suppliers-form.png"
+        },
+        {
+          "title": "Paso 3: Datos fiscales (opcional)",
+          "desc": "Ingresa el RNC/RFC del proveedor si necesitas trazabilidad fiscal en las compras."
+        },
+        {
+          "title": "Paso 4: Guardar",
+          "desc": "El proveedor queda disponible para usarse en órdenes de compra e ingresos."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Nombre",
+          "type": "Texto",
+          "required": true,
+          "desc": "Nombre o razón social del proveedor."
+        },
+        {
+          "name": "Tipo de proveedor",
+          "type": "Selección",
+          "required": true,
+          "desc": "Clasificación del proveedor (alimentos, medicamentos, insumos, servicios, etc.)."
+        },
+        {
+          "name": "Teléfono",
+          "type": "Texto",
+          "required": false,
+          "desc": "Número de contacto del proveedor."
+        },
+        {
+          "name": "Correo",
+          "type": "Email",
+          "required": false,
+          "desc": "Correo electrónico de contacto."
+        },
+        {
+          "name": "Dirección",
+          "type": "Texto",
+          "required": false,
+          "desc": "Dirección física del proveedor."
+        },
+        {
+          "name": "RNC / RFC",
+          "type": "Texto",
+          "required": false,
+          "desc": "Identificación fiscal del proveedor."
+        }
+      ],
+      "tips": [
+        "Completa los datos de contacto aunque sean opcionales — facilitan la gestión de compras y reclamos.",
+        "Puedes editar o desactivar un proveedor desde su fila en la tabla."
+      ]
+    },
+    "purchaseOrders": {
+      "description": "Las órdenes de compra (OC) permiten gestionar el proceso de adquisición de productos antes de recibirlos físicamente. Una vez recibida la mercancía, la OC se convierte en un ingreso de inventario.",
+      "prerequisites": [
+        "Al menos un proveedor activo registrado.",
+        "Al menos un producto registrado en el catálogo."
+      ],
+      "steps": [
+        {
+          "title": "Paso 1: Abrir el formulario",
+          "desc": "Ve a Almacén → Órdenes de Compra. Haz clic en '+ Nueva Orden de Compra'.",
+          "screenshot": "/manual-screenshots/warehouse/purchase-orders-view.png"
+        },
+        {
+          "title": "Paso 2: Seleccionar proveedor",
+          "desc": "Elige el proveedor al que se realizará la compra de la lista de proveedores activos.",
+          "screenshot": "/manual-screenshots/warehouse/purchase-orders-form-step1.png"
+        },
+        {
+          "title": "Paso 3: Agregar productos",
+          "desc": "Selecciona los productos y las cantidades que deseas ordenar. Puedes agregar múltiples líneas de productos. Indica el precio unitario estimado.",
+          "screenshot": "/manual-screenshots/warehouse/purchase-orders-form-step2.png"
+        },
+        {
+          "title": "Paso 4: Revisar y confirmar",
+          "desc": "Revisa el resumen de la orden (proveedor, productos, cantidades, total estimado) y confirma. La OC queda en estado Pendiente."
+        },
+        {
+          "title": "Paso 5: Registrar la recepción",
+          "desc": "Cuando llegue la mercancía, ve al módulo de Ingresos y crea un ingreso de tipo 'Con orden de compra', seleccionando la OC correspondiente. El sistema transfiere los datos automáticamente."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Proveedor",
+          "type": "Selección",
+          "required": true,
+          "desc": "Proveedor al que se solicita la compra."
+        },
+        {
+          "name": "Productos",
+          "type": "Tabla dinámica",
+          "required": true,
+          "desc": "Lista de productos con cantidad y precio unitario estimado."
+        },
+        {
+          "name": "Fecha",
+          "type": "Fecha",
+          "required": true,
+          "desc": "Fecha de emisión de la orden."
+        }
+      ],
+      "tips": [
+        "Usa las OC para mantener un registro ordenado de todas las adquisiciones y facilitar la conciliación con proveedores.",
+        "El estado de la OC cambia automáticamente a 'Recibida' cuando se registra el ingreso correspondiente."
+      ]
+    },
+    "warehouseIncomes": {
+      "description": "Los ingresos registran la entrada de productos al almacén principal. Cada ingreso incrementa el stock disponible. Puede ser directo o vinculado a una orden de compra.",
+      "prerequisites": [
+        "Productos registrados en el catálogo de almacén.",
+        "Proveedor activo (para ingresos directos o desde OC)."
+      ],
+      "steps": [
+        {
+          "title": "Paso 1: Abrir el formulario",
+          "desc": "Ve a Almacén → Ingresos. Haz clic en '+ Nueva Entrada'.",
+          "screenshot": "/manual-screenshots/warehouse/incomes-view.png"
+        },
+        {
+          "title": "Paso 2: Seleccionar modo de ingreso",
+          "desc": "'Con orden de compra': vincula el ingreso a una OC existente y aprobada. 'Entrada directa': registra la compra sin OC previa.",
+          "screenshot": "/manual-screenshots/warehouse/incomes-form-step1.png"
+        },
+        {
+          "title": "Paso 3: Datos generales",
+          "desc": "Ingresa proveedor, fecha de recepción, número de factura y, opcionalmente, datos fiscales (emisión, folio fiscal)."
+        },
+        {
+          "title": "Paso 4: Agregar productos",
+          "desc": "Selecciona los productos recibidos con su cantidad y precio unitario real. El sistema calcula el total automáticamente."
+        },
+        {
+          "title": "Paso 5: Guardar",
+          "desc": "Al confirmar, el stock de cada producto se incrementa automáticamente."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Modo",
+          "type": "Selección",
+          "required": true,
+          "desc": "Con orden de compra o Entrada directa."
+        },
+        {
+          "name": "Orden de compra",
+          "type": "Selección",
+          "required": false,
+          "desc": "OC vinculada. Solo visible en modo 'Con orden de compra'."
+        },
+        {
+          "name": "Proveedor",
+          "type": "Selección",
+          "required": true,
+          "desc": "Proveedor del que provienen los productos."
+        },
+        {
+          "name": "Fecha",
+          "type": "Fecha",
+          "required": true,
+          "desc": "Fecha de recepción de la mercancía."
+        },
+        {
+          "name": "Número de factura",
+          "type": "Texto",
+          "required": false,
+          "desc": "Número de factura del proveedor para trazabilidad."
+        },
+        {
+          "name": "Productos",
+          "type": "Tabla dinámica",
+          "required": true,
+          "desc": "Lista de productos con cantidad y precio unitario real."
+        }
+      ],
+      "tips": [
+        "Si el ingreso viene de una OC, los productos y cantidades se cargan automáticamente — solo debes confirmar o ajustar.",
+        "El campo número de factura es importante para conciliación financiera con el módulo de compras."
+      ],
+      "warning": "Un ingreso registrado actualiza el inventario de inmediato. Si lo necesitas cancelar, ve a la tabla de Ingresos y usa la opción de cancelación."
+    },
+    "warehouseOutcomes": {
+      "description": "Las salidas registran la salida de productos del almacén principal por cualquier motivo: consumo, transferencia a subalmacén, ajuste o descarte.",
+      "prerequisites": [
+        "Productos con stock disponible en el inventario principal."
+      ],
+      "steps": [
+        {
+          "title": "Paso 1: Abrir el formulario",
+          "desc": "Ve a Almacén → Salidas. Haz clic en '+ Nueva Salida'.",
+          "screenshot": "/manual-screenshots/warehouse/outcomes-view.png"
+        },
+        {
+          "title": "Paso 2: Datos de la salida",
+          "desc": "El código se genera automáticamente. Selecciona el motivo de la salida: consumo, transferencia, ajuste, descarte u otro.",
+          "screenshot": "/manual-screenshots/warehouse/outcomes-form-step1.png"
+        },
+        {
+          "title": "Paso 3: Agregar productos",
+          "desc": "Selecciona los productos a retirar y sus cantidades. El sistema verifica que haya stock suficiente de cada producto."
+        },
+        {
+          "title": "Paso 4: Guardar",
+          "desc": "Al confirmar, el stock de cada producto se reduce automáticamente."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Código",
+          "type": "Texto (auto)",
+          "required": true,
+          "desc": "Generado automáticamente por el sistema."
+        },
+        {
+          "name": "Motivo",
+          "type": "Selección",
+          "required": true,
+          "desc": "Razón de la salida: consumo, transferencia, ajuste, descarte, otro."
+        },
+        {
+          "name": "Descripción",
+          "type": "Texto",
+          "required": false,
+          "desc": "Observaciones sobre la salida."
+        },
+        {
+          "name": "Fecha",
+          "type": "Fecha",
+          "required": true,
+          "desc": "Fecha de la salida."
+        },
+        {
+          "name": "Productos",
+          "type": "Tabla dinámica",
+          "required": true,
+          "desc": "Lista de productos con cantidades a retirar."
+        }
+      ],
+      "tips": [
+        "Si la salida es hacia un subalmacén, usa el módulo de Órdenes de Transferencia en lugar de una salida directa — así el inventario del subalmacén se actualiza correctamente.",
+        "Las salidas pueden cancelarse desde la tabla si el stock actual lo permite."
+      ]
+    },
+    "warehouseInventory": {
+      "description": "El módulo de Inventario muestra el stock actual de todos los productos del almacén principal en tiempo real.",
+      "paragraphs": [
+        "Cada fila muestra: producto, categoría, stock actual, unidad de medida, precio promedio y última actualización. Las filas en rojo o naranja indican productos cerca o por debajo del mínimo configurado.",
+        "Desde aquí puedes: ver el historial de movimientos de un producto (haz clic en la fila), exportar el estado actual del inventario a PDF, y acceder al detalle de cada producto.",
+        "El inventario se actualiza automáticamente con cada ingreso, salida, orden de transferencia completada o aplicación de medicación/alimentación que use productos del almacén."
+      ],
+      "tips": [
+        "Usa los filtros de categoría y búsqueda por nombre para encontrar productos rápidamente.",
+        "El botón Exportar PDF genera un reporte del estado actual del inventario con fecha y hora."
+      ]
+    },
+    "subwarehouse": {
+      "description": "Los subalmacenes son bodegas secundarias dentro de la granja (por ejemplo, bodega de maternidad, bodega de engorda). Cada uno tiene su propio inventario independiente.",
+      "steps": [
+        {
+          "title": "Paso 1: Abrir el formulario",
+          "desc": "Ve a Almacén → Subalmacenes. Haz clic en '+ Nuevo Subalmacén'.",
+          "screenshot": "/manual-screenshots/warehouse/subwarehouse-view.png"
+        },
+        {
+          "title": "Paso 2: Datos del subalmacén",
+          "desc": "Ingresa código, nombre y tipo del subalmacén.",
+          "screenshot": "/manual-screenshots/warehouse/subwarehouse-form.png"
+        },
+        {
+          "title": "Paso 3: Responsable",
+          "desc": "Asigna el usuario Encargado de Subalmacén que gestionará este subalmacén."
+        },
+        {
+          "title": "Paso 4: Ubicación",
+          "desc": "Indica la ubicación física dentro de la granja."
+        },
+        {
+          "title": "Paso 5: Guardar",
+          "desc": "El subalmacén queda activo y listo para recibir productos mediante órdenes de transferencia."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Código",
+          "type": "Texto",
+          "required": true,
+          "desc": "Identificador corto del subalmacén."
+        },
+        {
+          "name": "Nombre",
+          "type": "Texto",
+          "required": true,
+          "desc": "Nombre descriptivo (ej. 'Bodega Maternidad')."
+        },
+        {
+          "name": "Tipo",
+          "type": "Selección",
+          "required": true,
+          "desc": "Categoría del subalmacén según su función."
+        },
+        {
+          "name": "Responsable",
+          "type": "Selección (usuario)",
+          "required": true,
+          "desc": "Usuario encargado de gestionar este subalmacén."
+        },
+        {
+          "name": "Ubicación",
+          "type": "Texto",
+          "required": false,
+          "desc": "Descripción de la ubicación física."
+        }
+      ],
+      "tips": [
+        "El encargado del subalmacén solo ve su propio inventario, ingresos y salidas desde el menú.",
+        "Los productos llegan al subalmacén solo mediante órdenes de transferencia desde el almacén principal."
+      ]
+    },
+    "orders": {
+      "description": "Las órdenes de transferencia gestionan el movimiento de productos desde el almacén principal hacia un subalmacén. El gerente de almacén crea la orden y el encargado del subalmacén la recibe.",
+      "prerequisites": [
+        "Subalmacén activo creado.",
+        "Productos con stock disponible en el almacén principal."
+      ],
+      "steps": [
+        {
+          "title": "Paso 1: Crear la orden (Gerente de Almacén)",
+          "desc": "Ve a Almacén → Órdenes. Haz clic en '+ Nueva Orden'. Selecciona el almacén origen y el subalmacén destino.",
+          "screenshot": "/manual-screenshots/warehouse/orders-view.png"
+        },
+        {
+          "title": "Paso 2: Agregar productos",
+          "desc": "Selecciona los productos y cantidades a transferir. El sistema verifica disponibilidad de stock."
+        },
+        {
+          "title": "Paso 3: Confirmar la orden",
+          "desc": "La orden queda en estado 'Pendiente'. Los productos aún no salen del almacén principal."
+        },
+        {
+          "title": "Paso 4: Completar la orden (Encargado de Subalmacén)",
+          "desc": "El encargado del subalmacén ve la orden en su módulo de Órdenes Recibidas y hace clic en 'Completar Orden'. En ese momento los productos se transfieren al inventario del subalmacén."
+        }
+      ],
+      "tips": [
+        "Las órdenes completadas son inmutables. Si hubo un error en la cantidad, registra una salida desde el subalmacén para ajustar.",
+        "El gerente de almacén puede ver el estado de todas las órdenes pendientes y completadas."
+      ]
+    },
+    "sales": {
+      "description": "El módulo de Ventas registra la comercialización de cerdos: ventas individuales o por grupo, con datos del comprador, peso, precio y método de pago.",
+      "prerequisites": [
+        "Cerdos o grupos en estado listo para venta."
+      ],
+      "steps": [
+        {
+          "title": "Paso 1: Abrir el formulario",
+          "desc": "Ve a Finanzas → Ventas. Haz clic en '+ Nueva Venta'.",
+          "screenshot": "/manual-screenshots/sales/pig-sales-view.png"
+        },
+        {
+          "title": "Paso 2: Seleccionar modo de venta",
+          "desc": "Elige 'Por grupo' (vende el lote completo) o 'Individual' (selecciona animales específicos de la tabla).",
+          "screenshot": "/manual-screenshots/sales/sales-form-step1.png"
+        },
+        {
+          "title": "Paso 3: Seleccionar animales",
+          "desc": "Si elegiste 'Individual', selecciona los cerdos a vender de la tabla. Si elegiste 'Por grupo', selecciona el grupo."
+        },
+        {
+          "title": "Paso 4: Datos de la venta",
+          "desc": "Ingresa precio por kg, peso de venta por animal (o total), datos del comprador (nombre, tipo, contacto) y método de pago."
+        },
+        {
+          "title": "Paso 5: Confirmar",
+          "desc": "Revisa el resumen (total de cerdos, peso total, valor total) y confirma. Los animales salen del inventario automáticamente."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Modo de selección",
+          "type": "Selección",
+          "required": true,
+          "desc": "Por grupo o Individual."
+        },
+        {
+          "name": "Precio por kg",
+          "type": "Número",
+          "required": true,
+          "desc": "Precio de venta por kilogramo."
+        },
+        {
+          "name": "Peso de venta",
+          "type": "Número",
+          "required": true,
+          "desc": "Peso en kg al momento de la venta (puede diferir del peso registrado)."
+        },
+        {
+          "name": "Nombre del comprador",
+          "type": "Texto",
+          "required": true,
+          "desc": "Nombre de la persona o empresa compradora."
+        },
+        {
+          "name": "Tipo de comprador",
+          "type": "Selección",
+          "required": true,
+          "desc": "Individual, Empresa o Matadero."
+        },
+        {
+          "name": "Contacto",
+          "type": "Texto",
+          "required": false,
+          "desc": "Teléfono o correo del comprador."
+        },
+        {
+          "name": "RFC / ID fiscal",
+          "type": "Texto",
+          "required": false,
+          "desc": "Identificación fiscal del comprador."
+        },
+        {
+          "name": "Método de pago",
+          "type": "Selección",
+          "required": true,
+          "desc": "Efectivo, transferencia, cheque o crédito."
+        },
+        {
+          "name": "Estado de pago",
+          "type": "Selección",
+          "required": false,
+          "desc": "Pagado o parcial."
+        },
+        {
+          "name": "Costos adicionales",
+          "type": "Tabla dinámica",
+          "required": false,
+          "desc": "Costos adicionales (flete, comisiones, etc.) que se agregan al total."
+        }
+      ],
+      "tips": [
+        "Los reportes de ventas te permiten analizar el desempeño comercial por período, comprador o tipo de animal.",
+        "Si el pago es parcial, el sistema registra el monto pendiente visible en el reporte de ventas."
+      ]
+    },
+    "expenses": {
+      "description": "El módulo de Gastos registra los costos operativos que no corresponden a compras de productos: mano de obra, servicios, mantenimiento, etc.",
+      "steps": [
+        {
+          "title": "Paso 1: Abrir el formulario",
+          "desc": "Ve a Finanzas → Gastos. Haz clic en '+ Nuevo Gasto'.",
+          "screenshot": "/manual-screenshots/finance/expenses-view.png"
+        },
+        {
+          "title": "Paso 2: Datos del gasto",
+          "desc": "Selecciona la categoría, ingresa una descripción clara, el monto y la fecha.",
+          "screenshot": "/manual-screenshots/finance/expenses-form.png"
+        },
+        {
+          "title": "Paso 3: Guardar",
+          "desc": "El gasto se registra y aparece automáticamente en los reportes financieros del período."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Fecha",
+          "type": "Fecha",
+          "required": true,
+          "desc": "Fecha en que ocurrió el gasto."
+        },
+        {
+          "name": "Categoría",
+          "type": "Selección",
+          "required": true,
+          "desc": "Mano de obra, servicios, mantenimiento, reparación, transporte, compra de ganado, veterinaria, nómina, seguros, impuestos, administrativo, combustible, infraestructura u otro."
+        },
+        {
+          "name": "Descripción",
+          "type": "Texto",
+          "required": true,
+          "desc": "Descripción clara del concepto del gasto."
+        },
+        {
+          "name": "Monto",
+          "type": "Número",
+          "required": true,
+          "desc": "Importe del gasto en la moneda configurada."
+        }
+      ],
+      "tips": [
+        "Registra los gastos en el período correcto para que los reportes financieros sean precisos.",
+        "La categoría es clave para el análisis de costos por rubro en los reportes financieros."
+      ]
+    },
+    "periodClosing": {
+      "description": "El cierre de períodos consolida la información financiera y productiva de un mes o trimestre. Una vez cerrado, los datos de ese período quedan bloqueados para edición.",
+      "paragraphs": [
+        "El proceso de cierre genera un resumen de ingresos, costos de producción, gastos operativos y resultados netos. Este resumen queda disponible en los reportes financieros como período cerrado.",
+        "Existen dos tipos de cierre: cierre mensual (consolida un mes) y cierre anual (consolida todos los meses del año). El cierre anual solo puede hacerse después de cerrar todos los meses del año.",
+        "Si necesitas corregir datos después de un cierre, puedes reabrir el período (acción restringida) desde el detalle del período. La reapertura desbloquea el período para edición pero anula el cierre previo."
+      ],
+      "tips": [
+        "Verifica que todos los ingresos, gastos, ventas y movimientos del período estén registrados antes de cerrar.",
+        "El sistema muestra un resumen de datos pendientes (egresos sin categorizar, etc.) antes de confirmar el cierre."
+      ],
+      "warning": "Un período cerrado no puede modificarse normalmente. Cierra solo cuando estés seguro de que todos los datos del mes están correctos y completos."
+    },
+    "pigsView": {
+      "description": "El inventario de cerdos muestra todos los animales activos de la granja con sus datos clave.",
+      "paragraphs": [
+        "Puedes filtrar por etapa productiva (lechón, destete, engorda, reproductor), sexo, raza y estado. La búsqueda por texto busca en código, arete y raza.",
+        "Al hacer clic en un cerdo se abre su perfil completo con 4 pestañas: Datos generales (historial de pesos, datos de registro), Médico (medicaciones y vacunas aplicadas), Alimentación (consumos registrados) y Reproducción (historial reproductivo, solo para reproductores).",
+        "Las acciones disponibles en la tabla son: ver detalles, editar datos del cerdo, registrar peso, asignar arete y descartar animal."
+      ],
+      "tips": [
+        "Usa el botón de exportación en la fila para generar un reporte PDF individual del cerdo.",
+        "Los cerdos en rojo en la tabla indican que tienen algún evento sanitario activo."
+      ]
+    },
+    "pigRegister": {
+      "description": "Puedes registrar cerdos de forma individual (SinglePigForm) o en lote (BatchPigForm). Ambas opciones están disponibles desde el botón '+ Registrar' en el inventario de cerdos.",
+      "steps": [
+        {
+          "title": "Registro individual — Paso 1: Datos del cerdo",
+          "desc": "Ve a Cerdos → Inventario. Haz clic en '+ Registrar' y elige 'Individual'. Ingresa los datos principales: código (auto-generado, editable), fecha de nacimiento, raza, origen (nacido en granja / comprado / donado / otro), sexo, peso inicial y etapa productiva.",
+          "screenshot": "/manual-screenshots/pigs/register-individual.png"
+        },
+        {
+          "title": "Registro individual — Paso 2: Datos adicionales",
+          "desc": "Si el origen es 'Comprado', aparecen campos de granja de origen, fecha de llegada y precio de compra. Si la etapa es 'Reproductor', aparece el campo de arete (obligatorio para reproductores)."
+        },
+        {
+          "title": "Registro individual — Paso 3: Resumen y guardar",
+          "desc": "Revisa el resumen de datos y confirma. El cerdo queda registrado en el inventario."
+        },
+        {
+          "title": "Registro por lote — Paso 1: Datos generales del lote",
+          "desc": "Elige 'Por lote'. Ingresa cantidad de cerdos, origen, fecha de llegada y precio por cerdo.",
+          "screenshot": "/manual-screenshots/pigs/register-batch-step1.png"
+        },
+        {
+          "title": "Registro por lote — Paso 2: Datos por cerdo",
+          "desc": "El sistema genera una fila por cada cerdo. Completa fecha de nacimiento, raza, etapa, sexo y peso individual."
+        },
+        {
+          "title": "Registro por lote — Paso 3: Guardar",
+          "desc": "Confirma. Todos los cerdos quedan registrados con códigos consecutivos."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Código",
+          "type": "Texto (auto)",
+          "required": true,
+          "desc": "Generado automáticamente en secuencia. Puede editarse."
+        },
+        {
+          "name": "Fecha de nacimiento",
+          "type": "Fecha",
+          "required": true,
+          "desc": "Fecha de nacimiento del animal."
+        },
+        {
+          "name": "Raza",
+          "type": "Texto",
+          "required": false,
+          "desc": "Raza del animal (Landrace, Yorkshire, Duroc, etc.)."
+        },
+        {
+          "name": "Origen",
+          "type": "Selección",
+          "required": true,
+          "desc": "Nacido en granja, comprado, donado u otro."
+        },
+        {
+          "name": "Sexo",
+          "type": "Selección",
+          "required": true,
+          "desc": "Macho o hembra."
+        },
+        {
+          "name": "Peso inicial",
+          "type": "Número (kg)",
+          "required": true,
+          "desc": "Peso del animal al momento del registro."
+        },
+        {
+          "name": "Etapa productiva",
+          "type": "Selección",
+          "required": true,
+          "desc": "Lechón, destete, engorda o reproductor."
+        },
+        {
+          "name": "Arete",
+          "type": "Texto",
+          "required": false,
+          "desc": "Número de arete. Obligatorio para reproductores."
+        },
+        {
+          "name": "Granja de origen",
+          "type": "Texto",
+          "required": false,
+          "desc": "Solo para animales comprados/donados."
+        },
+        {
+          "name": "Fecha de llegada",
+          "type": "Fecha",
+          "required": false,
+          "desc": "Solo para animales externos."
+        },
+        {
+          "name": "Precio de compra",
+          "type": "Número",
+          "required": false,
+          "desc": "Precio pagado por el animal."
+        },
+        {
+          "name": "Observaciones",
+          "type": "Texto largo",
+          "required": false,
+          "desc": "Notas adicionales sobre el animal."
+        }
+      ],
+      "tips": [
+        "Para registrar muchos animales con características similares (mismo origen, misma fecha de llegada), usa el registro por lote.",
+        "El código de cerdo se genera automáticamente y es único. Puedes cambiarlo si tu granja usa un sistema de numeración propio."
+      ]
+    },
+    "pigDiscard": {
+      "description": "El descarte registra la salida de un cerdo del inventario activo por muerte, venta individual o baja productiva.",
+      "steps": [
+        {
+          "title": "Paso 1: Iniciar el descarte",
+          "desc": "Desde el inventario de cerdos, haz clic en el botón de descarte del cerdo (ícono de salida). También puedes acceder desde el perfil del animal."
+        },
+        {
+          "title": "Paso 2: Motivo y destino",
+          "desc": "Selecciona el motivo (muerte, venta, descarte productivo, traslado) y destino. Agrega observaciones si es necesario."
+        },
+        {
+          "title": "Paso 3: Confirmar",
+          "desc": "El cerdo sale del inventario activo y pasa al módulo de Cerdos Descartados. Su historial se conserva para auditoría."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Motivo",
+          "type": "Selección",
+          "required": true,
+          "desc": "Razón del descarte: muerte, venta individual, baja productiva, traslado u otro."
+        },
+        {
+          "name": "Destino",
+          "type": "Texto",
+          "required": false,
+          "desc": "A dónde va el animal (si aplica)."
+        },
+        {
+          "name": "Fecha",
+          "type": "Fecha",
+          "required": true,
+          "desc": "Fecha del descarte."
+        },
+        {
+          "name": "Observaciones",
+          "type": "Texto largo",
+          "required": false,
+          "desc": "Detalles adicionales del descarte."
+        }
+      ],
+      "tips": [
+        "El descarte no elimina el animal del sistema, solo lo mueve a la lista de descartados. Su historial completo queda accesible."
+      ],
+      "warning": "Esta acción no puede deshacerse fácilmente. Asegúrate de seleccionar el animal correcto antes de confirmar."
+    },
+    "pigsDiscarded": {
+      "description": "El módulo de Cerdos Descartados muestra todos los animales que han salido del inventario activo.",
+      "paragraphs": [
+        "Puedes ver la causa del descarte, la fecha y el usuario responsable del registro. Esta información es útil para análisis de mortalidad y auditorías sanitarias.",
+        "Los animales descartados no pueden ser reactivados. Si fue un error, contacta al administrador del sistema."
+      ],
+      "tips": [
+        "Filtra por causa de descarte o rango de fechas para analizar patrones de mortalidad.",
+        "Exporta el listado a PDF para incluirlo en reportes sanitarios."
+      ]
+    },
+    "groups": {
+      "description": "Los grupos agrupan cerdos por lote según su etapa productiva. El sistema ofrece vistas especializadas por tipo: Destete, Crecimiento, Finalización, Salida, Cerdas, Venta.",
+      "paragraphs": [
+        "Cada grupo tiene indicadores propios: peso promedio, número de animales, mortalidad del período, conversión alimenticia y estado. Los grupos con alertas aparecen con un ícono de advertencia.",
+        "Desde la tabla de grupos puedes acceder al detalle completo de cada grupo, donde se registran todas las operaciones: pesajes, medicaciones, alimentación, movimientos y eventos de salud.",
+        "Un grupo puede estar en estado: Activo, Cambio de etapa pendiente, En proceso de venta, Vendido o Finalizado."
+      ],
+      "tips": [
+        "Usa los filtros de etapa para ver solo los grupos relevantes para tu trabajo.",
+        "El botón de detalle (🔍) en cada fila lleva al perfil completo del grupo."
+      ]
+    },
+    "groupCreate": {
+      "description": "Un grupo puede crearse de dos formas: 'Modo conteo' (solo se registra número de machos y hembras, sin vincular individuos) o 'Modo vinculado' (cada cerdo del grupo está identificado individualmente).",
+      "steps": [
+        {
+          "title": "Paso 1: Abrir el formulario",
+          "desc": "Ve a Cerdos → Grupos. Haz clic en '+ Crear Grupo'.",
+          "screenshot": "/manual-screenshots/pigs/groups-view.png"
+        },
+        {
+          "title": "Paso 2: Datos del grupo",
+          "desc": "Ingresa código (auto-generado), nombre, área (gestación, maternidad, destete, engorda, etc.), etapa y observaciones.",
+          "screenshot": "/manual-screenshots/pigs/groups-form-step1.png"
+        },
+        {
+          "title": "Paso 3: Seleccionar modo y cerdos",
+          "desc": "Elige 'Conteo' e ingresa número de machos y hembras, o 'Vinculado' y selecciona los cerdos individuales de la tabla."
+        },
+        {
+          "title": "Paso 4: Resumen y guardar",
+          "desc": "Revisa el resumen y confirma. El grupo queda activo."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Código",
+          "type": "Texto (auto)",
+          "required": true,
+          "desc": "Identificador del grupo. Auto-generado, editable."
+        },
+        {
+          "name": "Nombre",
+          "type": "Texto",
+          "required": true,
+          "desc": "Nombre descriptivo del grupo (ej. 'Lote Destete Semana 22')."
+        },
+        {
+          "name": "Área",
+          "type": "Selección",
+          "required": true,
+          "desc": "Área física de la granja donde está el grupo."
+        },
+        {
+          "name": "Etapa",
+          "type": "Selección",
+          "required": true,
+          "desc": "Etapa productiva: lechón, destete, engorda, reproductor."
+        },
+        {
+          "name": "Modo",
+          "type": "Selección",
+          "required": true,
+          "desc": "Conteo (solo números) o Vinculado (cerdos individuales identificados)."
+        },
+        {
+          "name": "Machos / Hembras",
+          "type": "Número",
+          "required": true,
+          "desc": "Cantidad de machos y hembras del grupo."
+        },
+        {
+          "name": "Observaciones",
+          "type": "Texto largo",
+          "required": false,
+          "desc": "Notas adicionales sobre el grupo."
+        }
+      ],
+      "tips": [
+        "Usa el modo 'Vinculado' cuando quieras rastrear individualmente cada cerdo del grupo (útil para reproductores y animales de alto valor).",
+        "El modo 'Conteo' es más rápido para lotes grandes de engorda donde no se requiere seguimiento individual."
+      ]
+    },
+    "groupOperations": {
+      "description": "Desde el detalle de un grupo puedes realizar las operaciones principales: pesar el grupo, transferir animales, insertar animales, retirar animales, cambiar etapa productiva y registrar muertes.",
+      "steps": [
+        {
+          "title": "Pesar el grupo",
+          "desc": "Haz clic en '+ Registrar Pesaje'. Ingresa el peso total o promedio del grupo y la fecha. El sistema calcula la ganancia de peso respecto al pesaje anterior."
+        },
+        {
+          "title": "Transferir animales a otro grupo",
+          "desc": "Haz clic en 'Transferir'. Selecciona los animales a mover (modo vinculado) o ingresa la cantidad (modo conteo) y elige el grupo destino."
+        },
+        {
+          "title": "Insertar animales al grupo",
+          "desc": "Haz clic en 'Insertar'. Agrega animales al grupo desde el inventario (vinculado) o aumenta el conteo (conteo)."
+        },
+        {
+          "title": "Retirar animales del grupo",
+          "desc": "Haz clic en 'Retirar'. Selecciona animales o cantidad a retirar e indica el motivo (traslado, venta, descarte)."
+        },
+        {
+          "title": "Cambiar etapa productiva",
+          "desc": "Cuando el grupo esté listo para avanzar de etapa (el sistema lo indica con un badge), haz clic en 'Cambiar Etapa' y confirma la nueva etapa. Los parámetros del sistema cambian automáticamente."
+        },
+        {
+          "title": "Registrar muerte en el grupo",
+          "desc": "Haz clic en 'Registrar Muerte'. En grupos vinculados, selecciona el animal muerto. En grupos de conteo, ingresa la cantidad y la causa."
+        }
+      ],
+      "tips": [
+        "Registra pesajes regularmente (al menos semanales en engorda) para que los indicadores de conversión alimenticia sean precisos.",
+        "El cambio de etapa genera automáticamente nuevas alertas según los parámetros configurados."
+      ]
+    },
+    "replacementSows": {
+      "description": "Las cerdas de reemplazo son hembras en desarrollo destinadas a entrar al ciclo reproductivo. Este módulo muestra su progreso hasta que son promovidas como reproductoras.",
+      "paragraphs": [
+        "Una cerda llega a este módulo cuando es procesada desde un grupo de crecimiento mediante la función 'Procesar reemplazo'. A partir de ese momento, se monitorea su desarrollo hasta que alcanza el peso y la edad adecuados para el primer servicio.",
+        "Desde este módulo puedes: registrar pesajes individuales, asignar medicación/vacunas y marcar la cerda como lista para su primera inseminación."
+      ],
+      "tips": [
+        "El sistema genera una alerta cuando una cerda de reemplazo alcanza la edad mínima configurada para el primer servicio.",
+        "Registra pesajes periódicos para verificar que la cerda está ganando peso según lo esperado antes de su primer servicio."
+      ]
+    },
+    "replacementBoars": {
+      "description": "Los verracos de reemplazo son machos en desarrollo destinados a convertirse en donantes de semen. Este módulo gestiona su desarrollo hasta que están listos para el programa de inseminación artificial.",
+      "paragraphs": [
+        "Al igual que las cerdas, los verracos llegan a este módulo desde grupos de crecimiento mediante 'Procesar reemplazo'. Se monitorea su desarrollo y se registran pesajes.",
+        "Una vez que el verraco está habilitado para el programa de IA, puede registrarse su primera extracción en el módulo de Laboratorio → Extracciones."
+      ],
+      "tips": [
+        "Habilita al verraco para el programa de IA desde su perfil una vez que alcance la edad y el peso mínimos.",
+        "El historial de calidad de extracciones ayuda a evaluar el desempeño reproductivo de cada verraco."
+      ]
+    },
+    "labExtractions": {
+      "description": "El módulo de Extracciones registra los eventos de recolección de semen de los verracos. Solo las extracciones aprobadas pueden usarse para generar muestras de semen.",
+      "prerequisites": [
+        "Al menos un verraco activo registrado en el sistema."
+      ],
+      "steps": [
+        {
+          "title": "Paso 1: Abrir el formulario",
+          "desc": "Ve a Reproducción → Laboratorio → Extracciones. Haz clic en '+ Nueva Extracción'.",
+          "screenshot": "/manual-screenshots/reproduction/extractions-view.png"
+        },
+        {
+          "title": "Paso 2: Seleccionar verraco",
+          "desc": "Elige el verraco donante de la lista de reproductores activos habilitados para IA.",
+          "screenshot": "/manual-screenshots/reproduction/extractions-form.png"
+        },
+        {
+          "title": "Paso 3: Datos de la extracción",
+          "desc": "Ingresa volumen obtenido (ml), unidad de medida, apariencia del semen, ubicación de la extracción, fecha y notas adicionales."
+        },
+        {
+          "title": "Paso 4: Guardar",
+          "desc": "La extracción queda registrada. Desde su fila en la tabla puedes registrar una muestra (dosis) a partir de esta extracción."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Verraco",
+          "type": "Selección",
+          "required": true,
+          "desc": "Verraco donante del semen."
+        },
+        {
+          "name": "Fecha",
+          "type": "Fecha",
+          "required": true,
+          "desc": "Fecha de la extracción."
+        },
+        {
+          "name": "Volumen (ml)",
+          "type": "Número",
+          "required": true,
+          "desc": "Volumen total de semen obtenido en mililitros."
+        },
+        {
+          "name": "Apariencia",
+          "type": "Selección",
+          "required": false,
+          "desc": "Aspecto visual del semen (normal, lechoso, acuoso, etc.)."
+        },
+        {
+          "name": "Ubicación",
+          "type": "Texto",
+          "required": false,
+          "desc": "Lugar físico donde se realizó la extracción."
+        },
+        {
+          "name": "Técnico",
+          "type": "Selección (usuario)",
+          "required": false,
+          "desc": "Usuario responsable de la extracción."
+        },
+        {
+          "name": "Notas",
+          "type": "Texto largo",
+          "required": false,
+          "desc": "Observaciones adicionales."
+        }
+      ],
+      "tips": [
+        "Registra todas las extracciones aunque la calidad no sea óptima — el historial ayuda a evaluar el desempeño del verraco.",
+        "Una extracción por sí sola no se usa en inseminaciones. Primero debes crear una muestra (dosis) a partir de ella."
+      ]
+    },
+    "labSamples": {
+      "description": "Las muestras de semen (dosis) se crean a partir de extracciones y son las unidades que se usan en las inseminaciones. Pueden ser de origen interno (del laboratorio propio) o externo (semen comprado).",
+      "prerequisites": [
+        "Para origen interno: extracción registrada y pendiente de procesar.",
+        "Para origen externo: no requiere extracción previa."
+      ],
+      "steps": [
+        {
+          "title": "Paso 1: Abrir el formulario",
+          "desc": "Ve a Reproducción → Laboratorio → Muestras. Haz clic en '+ Registrar Muestra'. También puedes acceder desde el detalle de una extracción.",
+          "screenshot": "/manual-screenshots/reproduction/samples-view.png"
+        },
+        {
+          "title": "Paso 2: Seleccionar origen",
+          "desc": "Elige 'Interno' (procesado del semen del laboratorio propio) o 'Externo' (dosis comprada a proveedor externo).",
+          "screenshot": "/manual-screenshots/reproduction/samples-form-step1.png"
+        },
+        {
+          "title": "Paso 3: Seleccionar extracción (si es interno)",
+          "desc": "Elige la extracción base de la lista de extracciones pendientes de procesar."
+        },
+        {
+          "title": "Paso 4: Parámetros de calidad",
+          "desc": "Ingresa concentración (millones/ml), motilidad (%), vitalidad (%), porcentaje de anormales, pH y temperatura de conservación.",
+          "screenshot": "/manual-screenshots/operation/lab-samples-form-step3.png"
+        },
+        {
+          "title": "Paso 5: Datos de conservación y lote",
+          "desc": "Indica método de conservación (refrigeración o congelación), fecha de vencimiento y número de dosis producidas."
+        },
+        {
+          "title": "Paso 6: Guardar",
+          "desc": "Las dosis quedan disponibles para usarse en inseminaciones."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Origen",
+          "type": "Selección",
+          "required": true,
+          "desc": "Interno (laboratorio propio) o externo (comprado)."
+        },
+        {
+          "name": "Extracción",
+          "type": "Selección",
+          "required": false,
+          "desc": "Solo para origen interno. Extracción base de la muestra."
+        },
+        {
+          "name": "Concentración",
+          "type": "Número",
+          "required": true,
+          "desc": "Concentración espermática en millones por ml."
+        },
+        {
+          "name": "Motilidad (%)",
+          "type": "Número",
+          "required": true,
+          "desc": "Porcentaje de espermatozoides móviles."
+        },
+        {
+          "name": "Vitalidad (%)",
+          "type": "Número",
+          "required": false,
+          "desc": "Porcentaje de espermatozoides vivos."
+        },
+        {
+          "name": "Anormales (%)",
+          "type": "Número",
+          "required": false,
+          "desc": "Porcentaje de morfología anormal."
+        },
+        {
+          "name": "pH",
+          "type": "Número",
+          "required": false,
+          "desc": "pH de la muestra."
+        },
+        {
+          "name": "Temperatura de conservación",
+          "type": "Número (°C)",
+          "required": false,
+          "desc": "Temperatura de almacenamiento."
+        },
+        {
+          "name": "Método de conservación",
+          "type": "Selección",
+          "required": true,
+          "desc": "Refrigeración o congelación."
+        },
+        {
+          "name": "Fecha de vencimiento",
+          "type": "Fecha",
+          "required": true,
+          "desc": "Fecha límite de uso de la muestra."
+        },
+        {
+          "name": "Número de dosis",
+          "type": "Número",
+          "required": true,
+          "desc": "Cantidad de dosis producidas del lote."
+        }
+      ],
+      "tips": [
+        "Solo las muestras no vencidas aparecen disponibles al registrar inseminaciones.",
+        "Si la calidad de la muestra no es apta (baja motilidad, alta anormalidad), márcala como descartada para que no aparezca en el listado de dosis disponibles."
+      ]
+    },
+    "gestationInseminations": {
+      "description": "El módulo de Inseminaciones registra cada servicio realizado a las cerdas reproductoras, incluyendo las dosis utilizadas y el seguimiento del estado reproductivo.",
+      "prerequisites": [
+        "Al menos una cerda reproductora activa que no esté actualmente inseminada o gestante.",
+        "Al menos una dosis de semen disponible (muestra no vencida con dosis restantes)."
+      ],
+      "steps": [
+        {
+          "title": "Paso 1: Abrir el formulario",
+          "desc": "Ve a Reproducción → Gestación → Inseminaciones. Haz clic en '+ Registrar Inseminación'.",
+          "screenshot": "/manual-screenshots/reproduction/inseminations-view.png"
+        },
+        {
+          "title": "Paso 2: Seleccionar la cerda",
+          "desc": "De la tabla de cerdas disponibles (hembras reproductoras no inseminadas actualmente), selecciona la cerda a inseminar.",
+          "screenshot": "/manual-screenshots/reproduction/insemination-form-step1.png"
+        },
+        {
+          "title": "Paso 3: Datos de la inseminación",
+          "desc": "Ingresa la fecha del servicio, técnico responsable y observaciones.",
+          "screenshot": "/manual-screenshots/reproduction/insemination-form-step2.png"
+        },
+        {
+          "title": "Paso 4: Agregar dosis",
+          "desc": "Selecciona las dosis de semen a utilizar de la lista de muestras disponibles. Puedes agregar múltiples dosis (ej. si se hacen 2 servicios). Arrastra para reordenar.",
+          "screenshot": "/manual-screenshots/reproduction/insemination-form-step3.png"
+        },
+        {
+          "title": "Paso 5: Descuento de inventario (opcional)",
+          "desc": "Si tienes semen registrado en el almacén como producto de inventario, puedes seleccionar el producto para que se descuente automáticamente."
+        },
+        {
+          "title": "Paso 6: Guardar",
+          "desc": "La inseminación queda registrada. El estado de la cerda cambia a 'Inseminada'. A partir de este momento puedes registrar: detección de celo, diagnóstico de preñez o parto.",
+          "screenshot": "/manual-screenshots/operation/inseminations-form-step4.png"
+        }
+      ],
+      "fields": [
+        {
+          "name": "Cerda",
+          "type": "Selección de tabla",
+          "required": true,
+          "desc": "Cerda reproductora que recibirá el servicio."
+        },
+        {
+          "name": "Fecha",
+          "type": "Fecha",
+          "required": true,
+          "desc": "Fecha del servicio de inseminación."
+        },
+        {
+          "name": "Técnico",
+          "type": "Texto / Selección",
+          "required": false,
+          "desc": "Nombre del técnico responsable."
+        },
+        {
+          "name": "Notas",
+          "type": "Texto largo",
+          "required": false,
+          "desc": "Observaciones del servicio."
+        },
+        {
+          "name": "Dosis",
+          "type": "Lista dinámica",
+          "required": true,
+          "desc": "Una o más dosis de semen a utilizar, con hora del servicio y notas por dosis."
+        },
+        {
+          "name": "Producto de almacén",
+          "type": "Selección",
+          "required": false,
+          "desc": "Producto de semen en inventario para descuento automático."
+        }
+      ],
+      "tips": [
+        "El estado de la cerda después de la inseminación es 'Inseminada'. Cambia a 'Gestante' cuando registras un diagnóstico positivo.",
+        "Configura los días de confirmación de preñez en la configuración de la granja para que el sistema genere alertas automáticas de diagnóstico."
+      ],
+      "warning": "No puedes inseminar una cerda que ya tiene una gestación activa o un servicio reciente sin diagnóstico. Primero registra el resultado del servicio anterior."
+    },
+    "gestationPregnancies": {
+      "description": "El módulo de Preñeces muestra todas las cerdas confirmadas como gestantes, con su fecha de servicio, fecha estimada de parto y estado de la gestación.",
+      "paragraphs": [
+        "Una cerda entra a este módulo cuando su inseminación tiene un diagnóstico positivo de preñez. El sistema calcula automáticamente la fecha estimada de parto sumando los días de gestación configurados.",
+        "Los estados posibles de una gestación son: Gestante, Próxima al parto, Parto pendiente, Parto vencido y Parida. Los estados cambian automáticamente según los umbrales configurados."
+      ],
+      "steps": [
+        {
+          "title": "Registrar diagnóstico de preñez",
+          "desc": "Desde la tabla de inseminaciones, haz clic en la inseminación y selecciona '+ Registrar Diagnóstico'. Indica el resultado: preñada, vacía, dudosa, reabsorción o aborto. Adjunta documentos si los tienes."
+        },
+        {
+          "title": "Registrar aborto",
+          "desc": "Desde el detalle de la preñez, si ocurre un aborto, haz clic en 'Registrar Aborto'. Ingresa causa probable, fecha y observaciones. El sistema libera a la cerda para un nuevo servicio."
+        },
+        {
+          "title": "Registrar parto",
+          "desc": "Cuando la cerda esté lista para parir, ve a Partos → Próximos Partos o directamente desde el detalle de la preñez. Haz clic en '+ Registrar Parto'."
+        }
+      ],
+      "tips": [
+        "Registra el diagnóstico de preñez en los primeros 21-28 días después del servicio para tener datos precisos.",
+        "Las cerdas en estado 'Parto vencido' aparecen con alerta roja — requieren atención inmediata."
+      ]
+    },
+    "births": {
+      "description": "El módulo de Partos registra cada nacimiento en la granja. Al registrar un parto se crea automáticamente una camada en el módulo de Lactancia.",
+      "prerequisites": [
+        "Una cerda con gestación activa en estado próximo al parto o parto pendiente."
+      ],
+      "steps": [
+        {
+          "title": "Paso 1: Abrir el formulario",
+          "desc": "Ve a Reproducción → Partos → Próximos Partos. Haz clic en '+ Registrar Parto' en la fila de la cerda correspondiente.",
+          "screenshot": "/manual-screenshots/reproduction/births-view.png"
+        },
+        {
+          "title": "Paso 2: Seleccionar inseminación",
+          "desc": "Confirma la inseminación de la que proviene el parto (normalmente está preseleccionada).",
+          "screenshot": "/manual-screenshots/operation/births-form-step1.png"
+        },
+        {
+          "title": "Paso 3: Datos del parto",
+          "desc": "Ingresa fecha de parto, tipo (normal, cesárea, abortivo, distocia, inducido), si fue asistido, y observaciones."
+        },
+        {
+          "title": "Paso 4: Datos de la camada",
+          "desc": "Registra: lechones nacidos vivos (machos y hembras), mortinatos y momias. Puedes ingresar peso total de la camada o pesos individuales por lechón."
+        },
+        {
+          "title": "Paso 5: Confirmar",
+          "desc": "Al guardar se crea automáticamente la camada en el módulo de Lactancia para su seguimiento."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Inseminación",
+          "type": "Selección",
+          "required": true,
+          "desc": "Inseminación de la que proviene el parto."
+        },
+        {
+          "name": "Fecha de parto",
+          "type": "Fecha",
+          "required": true,
+          "desc": "Fecha y hora en que ocurrió el parto."
+        },
+        {
+          "name": "Tipo de parto",
+          "type": "Selección",
+          "required": true,
+          "desc": "Normal, cesárea, abortivo, distocia o inducido."
+        },
+        {
+          "name": "Asistido",
+          "type": "Sí/No",
+          "required": true,
+          "desc": "Si el parto requirió asistencia veterinaria."
+        },
+        {
+          "name": "Nacidos vivos (machos)",
+          "type": "Número",
+          "required": true,
+          "desc": "Lechones machos nacidos vivos."
+        },
+        {
+          "name": "Nacidos vivos (hembras)",
+          "type": "Número",
+          "required": true,
+          "desc": "Lechones hembras nacidos vivos."
+        },
+        {
+          "name": "Mortinatos",
+          "type": "Número",
+          "required": true,
+          "desc": "Lechones nacidos muertos."
+        },
+        {
+          "name": "Momias",
+          "type": "Número",
+          "required": true,
+          "desc": "Fetos momificados."
+        },
+        {
+          "name": "Peso de la camada",
+          "type": "Número (kg)",
+          "required": false,
+          "desc": "Peso total de los lechones vivos. Puede ingresarse como total o individualmente."
+        },
+        {
+          "name": "Observaciones",
+          "type": "Texto largo",
+          "required": false,
+          "desc": "Notas sobre el parto."
+        }
+      ],
+      "tips": [
+        "Registra el parto dentro de las primeras horas después de ocurrido para mantener datos precisos en el sistema.",
+        "Si la cerda paró fuera de lo esperado (camada independiente), usa la función 'Camada Independiente' en el módulo de Lactancia."
+      ]
+    },
+    "lactation": {
+      "description": "El módulo de Lactancia gestiona las camadas desde el nacimiento hasta el destete. Permite registrar pesos, bajas y adopciones de lechones.",
+      "paragraphs": [
+        "Una camada se crea automáticamente al registrar un parto. Desde el detalle de la camada puedes: registrar pesos de los lechones, registrar muertes durante la lactancia (DiscardPigletsForm), asignar medicación o vacunas, y eventualmente registrar el destete.",
+        "Las adopciones (mover lechones de una camada a otra) también se gestionan desde el detalle de la camada cuando hay desequilibrio entre camadas."
+      ],
+      "tips": [
+        "Registra el peso de los lechones al nacimiento y al destete para calcular la ganancia de peso en la lactancia.",
+        "El sistema genera una alerta cuando una camada llega a los días de destete configurados."
+      ]
+    },
+    "weaning": {
+      "description": "El destete mueve los lechones de una camada hacia un grupo de destete. Puede hacerse en forma individual o masiva.",
+      "prerequisites": [
+        "Camada activa en el módulo de Lactancia.",
+        "Haber alcanzado los días mínimos de lactancia configurados (o tener autorización para destetar antes)."
+      ],
+      "steps": [
+        {
+          "title": "Paso 1: Abrir el formulario",
+          "desc": "Desde el detalle de la camada, haz clic en '+ Destetar'. O ve a Grupos → Destete y usa el botón de destete masivo (BulkWeanLittersModal).",
+          "screenshot": "/manual-screenshots/pigs/weaned-groups-view.png"
+        },
+        {
+          "title": "Paso 2: Registrar pesos de destete",
+          "desc": "Ingresa el peso total de la camada al destete (o peso individual por lechón si deseas precisión)."
+        },
+        {
+          "title": "Paso 3: Seleccionar grupo destino",
+          "desc": "Elige un grupo de destete existente compatible o crea uno nuevo. El sistema sugiere grupos compatibles según la fecha de nacimiento."
+        },
+        {
+          "title": "Paso 4: Confirmar",
+          "desc": "Los lechones pasan al inventario general de cerdos y quedan asignados al grupo de destete seleccionado."
+        }
+      ],
+      "tips": [
+        "El destete masivo (múltiples camadas a la vez) es útil cuando varias camadas están listas el mismo día.",
+        "La cerda queda libre para un nuevo ciclo reproductivo (nueva inseminación) después del destete."
+      ]
+    },
+    "growing": {
+      "description": "Los grupos de crecimiento y ceba gestionan los cerdos en las etapas intermedias y finales del proceso de engorda.",
+      "paragraphs": [
+        "Un grupo pasa a Crecimiento cuando se hace el cambio de etapa desde Destete. Desde el detalle del grupo puedes registrar: pesajes periódicos, medicaciones, alimentación, eventos de salud y el proceso de venta o transferencia a la etapa de Finalización.",
+        "El sistema calcula automáticamente la ganancia de peso diaria, conversión alimenticia acumulada y días en la etapa actual. Cuando el grupo alcanza el umbral de días para venta, aparece la alerta correspondiente."
+      ],
+      "tips": [
+        "Registra pesajes al menos cada 2 semanas para que el índice de conversión alimenticia sea preciso.",
+        "Para vender el grupo, usa la acción 'Procesar Venta' desde el detalle del grupo o el botón de venta en la tabla."
+      ]
+    },
+    "medication": {
+      "description": "Los paquetes de medicación agrupan uno o más medicamentos en un protocolo de tratamiento estándar que puede aplicarse rápidamente a cerdos, grupos o camadas.",
+      "prerequisites": [
+        "Productos de categoría 'Medicamento' registrados en el catálogo de almacén."
+      ],
+      "steps": [
+        {
+          "title": "Paso 1: Abrir el formulario",
+          "desc": "Ve a Salud y Nutrición → Medicación → Paquetes de Medicación. Haz clic en '+ Nuevo Paquete'.",
+          "screenshot": "/manual-screenshots/health/medication-packages-view.png"
+        },
+        {
+          "title": "Paso 2: Datos del paquete",
+          "desc": "Ingresa código, nombre descriptivo, etapa productiva a la que aplica y fecha de creación.",
+          "screenshot": "/manual-screenshots/health/medication-packages-form.png"
+        },
+        {
+          "title": "Paso 3: Agregar medicamentos",
+          "desc": "Selecciona los medicamentos del catálogo y define la dosis y la frecuencia de aplicación por cada uno."
+        },
+        {
+          "title": "Paso 4: Guardar",
+          "desc": "El paquete queda listo para asignarse a cerdos, grupos o camadas."
+        },
+        {
+          "title": "Asignar a cerdo individual",
+          "desc": "Desde el perfil del cerdo (pestaña Médico), haz clic en '+ Asignar Medicación'. Elige entre 'Paquete' o 'Medicamento individual'. Confirma las dosis."
+        },
+        {
+          "title": "Asignar a grupo",
+          "desc": "Desde el detalle del grupo (pestaña Salud), haz clic en '+ Aplicar Medicación'. Elige paquete o medicamento individual, indica la cantidad total o por animal."
+        },
+        {
+          "title": "Asignar a camada",
+          "desc": "Desde el detalle de la camada, haz clic en '+ Asignar Medicación'. Mismo proceso que para grupos."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Código",
+          "type": "Texto",
+          "required": true,
+          "desc": "Identificador del paquete."
+        },
+        {
+          "name": "Nombre",
+          "type": "Texto",
+          "required": true,
+          "desc": "Nombre descriptivo del protocolo."
+        },
+        {
+          "name": "Etapa",
+          "type": "Selección",
+          "required": true,
+          "desc": "Etapa productiva a la que aplica: lechón, destete, engorda, reproductor."
+        },
+        {
+          "name": "Descripción",
+          "type": "Texto largo",
+          "required": false,
+          "desc": "Notas sobre el protocolo."
+        },
+        {
+          "name": "Medicamentos",
+          "type": "Lista dinámica",
+          "required": true,
+          "desc": "Medicamentos del catálogo con dosis y frecuencia."
+        }
+      ],
+      "tips": [
+        "Crea paquetes estándar para los tratamientos más comunes (ej. 'Protocolo entrada lechones', 'Tratamiento diarrea') para agilizar el registro.",
+        "Al aplicar medicación, el sistema descuenta automáticamente del inventario si el producto está disponible."
+      ]
+    },
+    "vaccinationPlans": {
+      "description": "Los planes de vacunación definen calendarios sanitarios que pueden asignarse a cerdos, grupos o camadas según su etapa productiva.",
+      "prerequisites": [
+        "Productos de categoría 'Vacuna' registrados en el catálogo de almacén."
+      ],
+      "steps": [
+        {
+          "title": "Paso 1: Abrir el formulario",
+          "desc": "Ve a Salud y Nutrición → Medicación → Planes de Vacunación. Haz clic en '+ Nuevo Plan'.",
+          "screenshot": "/manual-screenshots/health/vaccination-plans-view.png"
+        },
+        {
+          "title": "Paso 2: Datos del plan",
+          "desc": "Ingresa código, nombre, etapa productiva, descripción, edad objetivo (días) y frecuencia de aplicación.",
+          "screenshot": "/manual-screenshots/health/vaccination-plans-form.png"
+        },
+        {
+          "title": "Paso 3: Agregar vacunas",
+          "desc": "Selecciona las vacunas del catálogo con su dosis y vía de administración."
+        },
+        {
+          "title": "Paso 4: Guardar y asignar",
+          "desc": "El plan queda disponible para asignarse desde el perfil de cualquier cerdo, grupo o camada."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Código",
+          "type": "Texto",
+          "required": true,
+          "desc": "Identificador del plan."
+        },
+        {
+          "name": "Nombre",
+          "type": "Texto",
+          "required": true,
+          "desc": "Nombre del plan de vacunación."
+        },
+        {
+          "name": "Etapa",
+          "type": "Selección",
+          "required": true,
+          "desc": "Etapa productiva objetivo."
+        },
+        {
+          "name": "Edad objetivo (días)",
+          "type": "Número",
+          "required": false,
+          "desc": "Edad en días a la que se aplica el plan."
+        },
+        {
+          "name": "Frecuencia",
+          "type": "Selección",
+          "required": false,
+          "desc": "Única, semanal, quincenal, mensual."
+        },
+        {
+          "name": "Vacunas",
+          "type": "Lista dinámica",
+          "required": true,
+          "desc": "Vacunas del catálogo con dosis y vía de administración."
+        }
+      ],
+      "tips": [
+        "Crea planes separados por etapa: 'Vacunación entrada destete', 'Vacunación reproductores', etc.",
+        "Al asignar un plan, el sistema registra las aplicaciones y descuenta las vacunas del inventario."
+      ]
+    },
+    "medicationAssign": {
+      "description": "La medicación y vacunación puede asignarse a tres tipos de entidades: cerdos individuales, grupos o camadas. En todos los casos el proceso es similar.",
+      "steps": [
+        {
+          "title": "Asignación a cerdo individual",
+          "desc": "Abre el perfil del cerdo (pestaña 'Médico'). Haz clic en '+ Asignar'. Elige entre paquete de medicación, plan de vacunación o medicamento/vacuna individual. Confirma dosis y fecha."
+        },
+        {
+          "title": "Asignación a grupo",
+          "desc": "Abre el detalle del grupo (pestaña 'Salud'). Haz clic en '+ Aplicar'. Elige el tipo de medicación, dosis por animal o total, y fecha."
+        },
+        {
+          "title": "Asignación a camada",
+          "desc": "Abre el detalle de la camada (pestaña 'Salud'). Mismo proceso que para grupos.",
+          "screenshot": "/manual-screenshots/health/medication-form-step2.png"
+        },
+        {
+          "title": "Asignación masiva a múltiples grupos",
+          "desc": "Desde la tabla de grupos, selecciona varios grupos con el checkbox y usa el botón 'Aplicar medicación masiva' para asignar a todos a la vez."
+        }
+      ],
+      "tips": [
+        "Al aplicar medicación/vacuna, el sistema descuenta automáticamente el producto del inventario del almacén o subalmacén.",
+        "Revisa el inventario antes de aplicar tratamientos masivos para asegurarte de tener suficiente stock."
+      ]
+    },
+    "feeding": {
+      "description": "Los paquetes de alimentación (recetas) definen las proporciones de ingredientes para preparar alimento. Son la base del proceso de preparación y administración de alimento.",
+      "prerequisites": [
+        "Productos de categoría 'Nutrición' registrados en el catálogo de almacén."
+      ],
+      "steps": [
+        {
+          "title": "Paso 1: Abrir el formulario",
+          "desc": "Ve a Salud y Nutrición → Alimentación → Paquetes de Alimentación. Haz clic en '+ Nuevo Paquete'.",
+          "screenshot": "/manual-screenshots/health/feeding-packages-view.png"
+        },
+        {
+          "title": "Paso 2: Datos del paquete",
+          "desc": "Ingresa código, nombre, etapa productiva, rendimiento esperado (kg de alimento preparado) y descripción.",
+          "screenshot": "/manual-screenshots/health/feeding-packages-form.png"
+        },
+        {
+          "title": "Paso 3: Definir ingredientes",
+          "desc": "Selecciona los productos del catálogo y define el porcentaje de cada ingrediente en la mezcla. Los porcentajes deben sumar 100%."
+        },
+        {
+          "title": "Paso 4: Guardar",
+          "desc": "El paquete queda disponible para preparaciones de alimento."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Código",
+          "type": "Texto",
+          "required": true,
+          "desc": "Identificador del paquete."
+        },
+        {
+          "name": "Nombre",
+          "type": "Texto",
+          "required": true,
+          "desc": "Nombre de la dieta/receta."
+        },
+        {
+          "name": "Etapa",
+          "type": "Selección",
+          "required": true,
+          "desc": "Etapa productiva para la que está diseñada la dieta."
+        },
+        {
+          "name": "Rendimiento esperado (kg)",
+          "type": "Número",
+          "required": true,
+          "desc": "Kilogramos de alimento que produce una preparación estándar."
+        },
+        {
+          "name": "Descripción",
+          "type": "Texto largo",
+          "required": false,
+          "desc": "Notas sobre la dieta."
+        },
+        {
+          "name": "Ingredientes",
+          "type": "Lista dinámica",
+          "required": true,
+          "desc": "Productos del catálogo con su porcentaje en la mezcla. Total debe ser 100%."
+        }
+      ],
+      "tips": [
+        "Crea paquetes distintos para cada etapa: 'Lechón iniciador', 'Destete fase 1', 'Engorda crecimiento', etc.",
+        "El rendimiento esperado ayuda al sistema a calcular las cantidades exactas de ingredientes en cada preparación."
+      ]
+    },
+    "feedPreparation": {
+      "description": "Las preparaciones de alimento registran la producción real de alimento a partir de una receta y los ingredientes del almacén.",
+      "prerequisites": [
+        "Paquete de alimentación (receta) registrado.",
+        "Ingredientes de la receta con stock disponible en el almacén o subalmacén.",
+        "Subalmacén configurado donde se almacenará el alimento preparado."
+      ],
+      "steps": [
+        {
+          "title": "Paso 1: Abrir el formulario",
+          "desc": "Ve a Salud y Nutrición → Alimentación → Preparaciones. Haz clic en '+ Nueva Preparación'."
+        },
+        {
+          "title": "Paso 2: Seleccionar receta y subalmacén",
+          "desc": "Elige el paquete de alimentación (receta) a preparar y el subalmacén donde se almacenará el alimento. El sistema carga los ingredientes automáticamente.",
+          "screenshot": "/manual-screenshots/health/feed-preparations-form.png"
+        },
+        {
+          "title": "Paso 3: Rendimiento real y cantidades",
+          "desc": "Ingresa el rendimiento real obtenido (kg producidos) y la fecha. El sistema ajusta las cantidades de ingredientes proporcionalmente."
+        },
+        {
+          "title": "Paso 4: Confirmar",
+          "desc": "Se descuentan los ingredientes del inventario principal y el alimento preparado queda disponible en el subalmacén para administración."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Receta",
+          "type": "Selección",
+          "required": true,
+          "desc": "Paquete de alimentación a preparar."
+        },
+        {
+          "name": "Subalmacén",
+          "type": "Selección",
+          "required": true,
+          "desc": "Subalmacén donde se almacenará el alimento preparado."
+        },
+        {
+          "name": "Rendimiento real (kg)",
+          "type": "Número",
+          "required": true,
+          "desc": "Kilogramos de alimento realmente producidos."
+        },
+        {
+          "name": "Fecha",
+          "type": "Fecha",
+          "required": true,
+          "desc": "Fecha de la preparación."
+        },
+        {
+          "name": "Notas",
+          "type": "Texto largo",
+          "required": false,
+          "desc": "Observaciones sobre la preparación."
+        }
+      ],
+      "tips": [
+        "El alimento preparado se administra a grupos, camadas o cerdos individuales desde la función 'Administrar Alimento' en el detalle de cada entidad.",
+        "Cada administración de alimento descuenta automáticamente del inventario del subalmacén."
+      ]
+    },
+    "reportsProduction": {
+      "description": "Los reportes de producción consolidan los indicadores productivos de la granja en un período determinado.",
+      "paragraphs": [
+        "Incluye 5 reportes: (1) Inseminaciones y Partos — tasas de concepción, parto y prolificidad; (2) Grupos — desempeño de cada grupo por etapa; (3) Mortalidad — análisis de bajas por causa y etapa; (4) Alimento y Peso — consumo vs ganancia de peso; (5) Desempeño Reproductivo — eficiencia del programa reproductivo.",
+        "Todos los reportes tienen filtros de período (fechas desde-hasta) y permiten exportar a PDF. Los gráficos de línea y barra muestran tendencias en el tiempo."
+      ],
+      "tips": [
+        "Selecciona períodos mensuales para comparar el desempeño mes a mes.",
+        "El reporte de Desempeño Reproductivo muestra el intervalo destete-cubrición y el número de partos por cerda al año — indicadores clave de la eficiencia reproductiva."
+      ]
+    },
+    "reportsInventory": {
+      "description": "Los reportes de inventario muestran el historial de movimientos del almacén, consumos por período, alertas de stock y valorización.",
+      "paragraphs": [
+        "Incluye 4 reportes: (1) Movimientos de Inventario — entradas y salidas por producto y período; (2) Consumo de Alimento — alimento consumido por grupo y período; (3) Análisis de Inventario — productos con stock bajo mínimo; (4) Valorización de Inventario — valor monetario del inventario actual.",
+        "Puedes exportar todos los reportes a PDF. Los reportes de movimientos también permiten filtrar por tipo de movimiento (ingreso, salida, transferencia)."
+      ],
+      "tips": [
+        "Usa el reporte de Valorización regularmente para conocer el capital inmóvil en inventario.",
+        "El reporte de Alertas muestra los productos que requieren reabastecimiento inmediato."
+      ]
+    },
+    "reportsFinance": {
+      "description": "Los reportes financieros consolidan ingresos, costos, gastos y resultados netos de la operación.",
+      "paragraphs": [
+        "Incluye 7 reportes: Compras y Precios, Análisis de Costos, Rentabilidad por lote, Estado de Resultados, Flujo de Caja, Estado de Cuenta por Proveedor y Gastos Operativos.",
+        "Estos reportes requieren que los períodos estén cerrados para mostrar datos consolidados definitivos. Los períodos abiertos muestran datos parciales.",
+        "El Estado de Resultados compara ingresos (ventas) contra costos directos (insumos, alimentación) y gastos operativos para calcular el margen neto del período."
+      ],
+      "tips": [
+        "Cierra los períodos mensualmente para que los reportes financieros muestren datos definitivos.",
+        "El reporte de Rentabilidad por lote es especialmente útil para comparar el costo por kg producido entre diferentes grupos."
+      ]
+    },
+    "reportsSales": {
+      "description": "Los reportes de ventas muestran el historial de comercialización de animales con análisis de volumen, precios y clientes.",
+      "paragraphs": [
+        "Incluye 2 reportes: (1) Reporte de Ventas — histórico de todas las ventas con filtros por período, cliente y tipo; (2) Análisis de Clientes — compradores recurrentes, volúmenes y precios promedio.",
+        "Puedes comparar el desempeño de ventas entre períodos y analizar la tendencia de precios por kg."
+      ],
+      "tips": [
+        "Filtra por tipo de comprador (matadero, empresa, individual) para analizar tu mix de clientes."
+      ]
+    },
+    "reportsTraceability": {
+      "description": "El módulo de Trazabilidad permite rastrear el historial completo de un animal o grupo desde su ingreso hasta su salida.",
+      "paragraphs": [
+        "Ingresa el código de un cerdo o grupo para ver todos los eventos registrados: nacimiento o ingreso, movimientos entre grupos, pesajes, medicaciones, vacunas, alimentación, eventos de salud y salida (venta/descarte).",
+        "Es útil para auditorías sanitarias, certificaciones y para investigar cualquier incidencia que requiera reconstruir el historial de un animal."
+      ],
+      "tips": [
+        "El reporte de trazabilidad puede exportarse a PDF con toda la cadena de eventos.",
+        "Usa trazabilidad de grupo para investigar brotes de enfermedades y rastrear el origen."
+      ]
+    },
+    "reportsAudit": {
+      "description": "El reporte de auditoría registra todas las acciones realizadas en el sistema: creaciones, ediciones y eliminaciones, con el usuario responsable y fecha/hora exacta.",
+      "paragraphs": [
+        "Los registros de auditoría son inmutables. Filtros disponibles: rango de fechas, usuario, módulo y tipo de acción (crear, editar, eliminar).",
+        "Este reporte está disponible para Superadmin y Gerentes de Granja. Permite detectar inconsistencias, errores de registro y verificar el cumplimiento de procesos."
+      ],
+      "tips": [
+        "Si encuentras datos incorrectos en el sistema, usa el reporte de auditoría para identificar quién y cuándo hizo el cambio.",
+        "Los registros se conservan indefinidamente y no pueden eliminarse."
+      ]
+    }
+  }
+}

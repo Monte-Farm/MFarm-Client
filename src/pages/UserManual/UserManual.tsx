@@ -1,15 +1,57 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Container, Row, Col } from "reactstrap";
+import i18n from "i18n";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { MANUAL_CATEGORIES } from "./userManualSections";
 import UserManualSidebar from "./UserManualSidebar";
 import UserManualContent from "./UserManualContent";
+import { getEffectiveUser } from "helpers/impersonation_helper";
 import "./userManual.scss";
+
+// Lazy-load the manual content bundles so they don't inflate the main bundle
+const loadManualNs = async () => {
+  const lang = i18n.language || "sp";
+  if (i18n.hasResourceBundle(lang, "manual")) return;
+
+  try {
+    let bundle: Record<string, unknown>;
+    if (lang === "en") {
+      bundle = (await import("../../locales/manual-en.json")).default;
+    } else if (lang === "pt") {
+      bundle = (await import("../../locales/manual-pt.json")).default;
+    } else {
+      bundle = (await import("../../locales/manual-sp.json")).default;
+    }
+    i18n.addResourceBundle(lang, "manual", bundle, true, true);
+  } catch {
+    // Fallback: try Spanish if the selected language bundle is missing
+    if (lang !== "sp" && !i18n.hasResourceBundle("sp", "manual")) {
+      const bundle = (await import("../../locales/manual-sp.json")).default;
+      i18n.addResourceBundle("sp", "manual", bundle, true, true);
+    }
+  }
+};
 
 const UserManual = () => {
   const { t } = useTranslation();
+  const [manualReady, setManualReady] = useState(false);
+
+  const userRoles: string[] = getEffectiveUser()?.role ?? [];
+  const visibleCategories = MANUAL_CATEGORIES.map((cat) => ({
+    ...cat,
+    sections: cat.sections.filter(
+      (s) => !s.roles || s.roles.some((r) => userRoles.includes(r))
+    ),
+  }));
+
   document.title = `${t("manual.title")} | ${t("systemName")}`;
+
+  // Load the manual namespace on mount (and when language changes)
+  useEffect(() => {
+    setManualReady(false);
+    loadManualNs().then(() => setManualReady(true));
+  }, [i18n.language]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const initialId = window.location.hash.replace("#", "") || "overview";
   const [activeSectionId, setActiveSectionId] = useState(initialId);
@@ -32,7 +74,9 @@ const UserManual = () => {
   }, []);
 
   useEffect(() => {
-    const allSectionIds = MANUAL_CATEGORIES.flatMap((c) =>
+    if (!manualReady) return;
+
+    const allSectionIds = visibleCategories.flatMap((c) =>
       c.sections.map((s) => s.id)
     );
 
@@ -56,7 +100,7 @@ const UserManual = () => {
     });
 
     return () => observerRef.current?.disconnect();
-  }, []);
+  }, [manualReady]);
 
   useEffect(() => {
     if (initialId && initialId !== "overview") {
@@ -72,13 +116,13 @@ const UserManual = () => {
           <Row>
             <Col lg={3} className="d-none d-lg-block">
               <UserManualSidebar
-                categories={MANUAL_CATEGORIES}
+                categories={visibleCategories}
                 activeSectionId={activeSectionId}
                 onSelectSection={handleSelectSection}
               />
             </Col>
             <Col lg={9}>
-              <UserManualContent categories={MANUAL_CATEGORIES} />
+              <UserManualContent categories={visibleCategories} />
             </Col>
           </Row>
         </Container>

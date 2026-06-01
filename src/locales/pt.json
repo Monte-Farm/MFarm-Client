@@ -7688,390 +7688,65 @@
     "noResults": "Nenhuma seção encontrada",
     "howToRegister": "Como registrar?",
     "categories": {
-      "intro": "Introdução",
+      "start": "Primeiros Passos",
       "admin": "Administração",
+      "warehouse": "Armazém",
+      "finance": "Finanças",
       "pigs": "Suínos",
-      "operation": "Operação",
+      "operation": "Operações",
       "health": "Saúde e Nutrição",
-      "reports": "Relatórios",
-      "config": "Configurações"
+      "reports": "Relatórios"
     },
     "sections": {
-      "overview": {
-        "title": "Visão Geral",
-        "paragraphs": [
-          "O PorcySys é um sistema integrado de gestão suinícola desenvolvido para acompanhar todos os processos da granja: desde o controle de estoques e a reprodução até a saúde dos animais, a nutrição e os relatórios financeiros.",
-          "O acesso aos módulos do sistema depende do perfil atribuído ao seu usuário. Este manual cobre todas as funcionalidades disponíveis — consulte seu administrador caso alguma seção não apareça no seu menu."
-        ],
-        "tips": [
-          "Use a busca no menu lateral para localizar rapidamente qualquer seção do manual.",
-          "Clique em qualquer imagem para ampliar."
-        ]
-      },
-      "home": {
-        "title": "Início / Painel",
-        "paragraphs": [
-          "O Painel é a tela principal do sistema. Exibe indicadores-chave de desempenho (KPIs) adaptados ao seu perfil, como inventário atual de suínos, movimentações recentes, alertas de estoque e resumos de atividade.",
-          "O conteúdo do Painel varia por perfil: o Superadmin visualiza dados globais de todas as granjas, enquanto o Gerente de Granja vê informações específicas da sua unidade. Ajuste o período de análise usando o seletor de datas no topo da tela."
-        ],
-        "tips": [
-          "Altere o período com o seletor de datas para visualizar resumos históricos.",
-          "KPIs em vermelho indicam alertas que requerem atenção imediata."
-        ]
-      },
-      "farms": {
-        "title": "Granjas",
-        "paragraphs": [
-          "O módulo de Granjas permite cadastrar e gerenciar as unidades produtivas do sistema. Aqui você pode criar novas granjas, visualizar seus detalhes, editar informações e gerenciar configurações.",
-          "Cada granja possui seus próprios parâmetros zootécnicos (pesos-alvo, dias de fase, etc.), configurados no módulo de Configurações."
-        ],
-        "tips": [
-          "Somente o Superadmin pode criar ou excluir granjas."
-        ]
-      },
-      "warehouseInventory": {
-        "title": "Estoque do Armazém",
-        "paragraphs": [
-          "O módulo de Estoque exibe o saldo atual de todos os produtos do armazém principal. Você pode consultar quantidades disponíveis, visualizar o histórico de movimentações e receber alertas quando um produto fica abaixo do estoque mínimo configurado.",
-          "As movimentações de estoque são geradas automaticamente ao registrar entradas (compras) ou saídas (consumos, pedidos). Filtre por produto, categoria ou período a partir desta tela."
-        ],
-        "tips": [
-          "Linhas destacadas em vermelho indicam produtos abaixo do estoque mínimo configurado.",
-          "Use o botão Exportar para gerar um relatório Excel do estoque atual."
-        ],
-        "formParagraphs": [
-          "Para registrar uma nova entrada clique em '+ Nova Entrada'. O sistema pedirá que você escolha entre 'Com pedido de compra' (vincula a entrada a um PC existente) ou 'Entrada direta' (sem PC prévio).",
-          "Preencha os dados gerais: fornecedor, data e dados de faturamento opcionais. Em seguida, selecione os produtos e as quantidades recebidas. Ao salvar, o saldo de cada produto é atualizado automaticamente."
-        ]
-      },
-      "warehouseSuppliers": {
-        "title": "Fornecedores",
-        "paragraphs": [
-          "O cadastro de Fornecedores armazena as informações de todos os fornecedores com os quais a granja opera. Aqui você pode criar, editar e inativar fornecedores.",
-          "Os fornecedores estão vinculados aos pedidos de compra. Ao registrar uma compra, selecione o fornecedor correspondente para manter a rastreabilidade das aquisições."
-        ],
-        "formParagraphs": [
-          "Para adicionar um novo fornecedor clique em '+ Adicionar Fornecedor'. Preencha a identificação (código e nome), tipo de fornecedor, dados de contato (telefone, e-mail, endereço) e informações fiscais opcionais.",
-          "O código é gerado automaticamente mas pode ser editado. Os campos de contato são opcionais, mas recomendados para facilitar a gestão de compras."
-        ]
-      },
-      "warehouseProducts": {
-        "title": "Catálogo de Produtos",
-        "paragraphs": [
-          "O catálogo de Produtos define todos os itens que podem ser gerenciados no armazém: matérias-primas, medicamentos, rações, insumos, etc.",
-          "Cada produto possui nome, unidade de medida, categoria, preço de referência e estoque mínimo. Esses parâmetros são utilizados nos relatórios e alertas de estoque."
-        ],
-        "tips": [
-          "Configure corretamente o estoque mínimo de cada produto para receber alertas antecipados e evitar falta de insumos."
-        ],
-        "formParagraphs": [
-          "Para cadastrar um novo produto clique em '+ Adicionar Produto'. Você pode carregar uma imagem opcional do produto. Em seguida, preencha o nome, categoria (Nutrição, Medicamento, Vacina, Insumo) e unidade de medida.",
-          "A descrição é opcional, mas ajuda a equipe a identificar o produto corretamente. Após salvar, o produto fica disponível para registrar entradas e saídas."
-        ]
-      },
-      "warehouseIncomes": {
-        "title": "Entradas de Armazém",
-        "paragraphs": [
-          "O módulo de Entradas registra todas as entradas de produtos no armazém, seja por compra direta ou outras fontes. Cada entrada aumenta o saldo disponível do produto correspondente.",
-          "Ao registrar uma entrada, informe o fornecedor, produto, quantidade, preço unitário e data. O sistema calcula automaticamente o valor total e atualiza o estoque."
-        ],
-        "formParagraphs": [
-          "Para registrar uma nova entrada clique em '+ Nova Entrada'. Escolha o modo: 'Com pedido de compra' (se já existe um PC aprovado) ou 'Entrada direta' (sem PC).",
-          "Informe o fornecedor, data, número da nota fiscal e dados fiscais opcionais. Na etapa seguinte, selecione os produtos e as quantidades recebidas com o preço unitário."
-        ]
-      },
-      "warehouseOutcomes": {
-        "title": "Saídas de Armazém",
-        "paragraphs": [
-          "O módulo de Saídas registra as saídas de produtos do armazém principal. Podem originar-se de consumo direto, transferências para subarmazéns ou ajustes de estoque.",
-          "Cada saída reduz o saldo do produto correspondente. O sistema mantém um histórico completo de todas as saídas para fins de auditoria e controle."
-        ],
-        "formParagraphs": [
-          "Para registrar uma nova saída clique em '+ Nova Saída'. O sistema atribui um código automático e usa a data atual. Selecione o motivo da saída (consumo, transferência, ajuste, etc.) e adicione uma descrição opcional.",
-          "Na etapa seguinte selecione os produtos e as quantidades a retirar do estoque. O sistema verifica se há saldo suficiente antes de confirmar a saída."
-        ]
-      },
-      "purchaseOrders": {
-        "title": "Pedidos de Compra",
-        "paragraphs": [
-          "Os Pedidos de Compra permitem gerenciar o processo de aquisição de produtos. Você pode criar solicitações de compra, acompanhar o status e registrar o recebimento dos produtos.",
-          "Um pedido de compra passa pelos status: Pendente → Em andamento → Recebido. Ao marcar como recebido, o sistema gera automaticamente a entrada correspondente no estoque."
-        ],
-        "tips": [
-          "Use pedidos de compra para manter um registro organizado de todas as aquisições e facilitar a conciliação com fornecedores."
-        ],
-        "formParagraphs": [
-          "Para criar um novo pedido clique em '+ Novo Pedido de Compra'. Primeiro selecione o fornecedor da lista. Em seguida, escolha os produtos que deseja solicitar com suas quantidades e preços estimados.",
-          "Revise o total do pedido no resumo antes de confirmar. Após a criação, o pedido fica no status 'Pendente' até que o recebimento dos produtos seja registrado."
-        ]
-      },
-      "subwarehouse": {
-        "title": "Subarmazém",
-        "paragraphs": [
-          "Os Subarmazéns são almoxarifados secundários da granja (por exemplo, um depósito de medicamentos na maternidade). Cada subarmazém tem seu próprio estoque independente.",
-          "Os produtos chegam ao subarmazém por meio de pedidos de transferência emitidos pelo armazém principal. O responsável pelo subarmazém pode registrar saídas dos produtos sob sua custódia."
-        ]
-      },
-      "orders": {
-        "title": "Pedidos de Transferência",
-        "paragraphs": [
-          "O módulo de Pedidos gerencia as transferências de produtos do armazém principal para os subarmazéns. O gerente de armazém cria o pedido; o responsável pelo subarmazém o recebe e confirma.",
-          "Após a conclusão, os produtos são automaticamente transferidos do estoque principal para o inventário do subarmazém de destino."
-        ]
-      },
-      "sales": {
-        "title": "Venda de Suínos",
-        "paragraphs": [
-          "O módulo de Vendas registra a comercialização de suínos. Você pode registrar vendas individuais ou por lote, informando o comprador, preço por quilograma e peso dos animais.",
-          "Cada venda gera uma saída no inventário de suínos. O sistema calcula automaticamente o valor total da venda com base no peso e no preço acordado."
-        ],
-        "tips": [
-          "Os relatórios de vendas permitem analisar o desempenho comercial por período, comprador ou tipo de animal."
-        ],
-        "formParagraphs": [
-          "Para registrar uma nova venda clique em '+ Nova Venda'. Primeiro informe o preço por quilograma. Em seguida, escolha se a venda é 'Por lote' (lote completo) ou 'Individual' (animais específicos).",
-          "Selecione o lote ou os animais a vender. Na etapa seguinte preencha os dados do comprador e a data da venda. O sistema calcula automaticamente o valor total com base no peso e no preço."
-        ]
-      },
-      "expenses": {
-        "title": "Despesas",
-        "paragraphs": [
-          "O módulo de Despesas permite registrar todos os custos operacionais da granja que não correspondem a compras de produtos: mão de obra, serviços, manutenção, etc.",
-          "As despesas são categorizadas e incluídas nos relatórios financeiros para calcular a rentabilidade real da operação."
-        ],
-        "formParagraphs": [
-          "Para registrar uma nova despesa clique em '+ Nova Despesa'. Selecione a data, a categoria da despesa (mão de obra, serviços, manutenção, etc.) e escreva uma descrição clara.",
-          "Informe o valor na moeda configurada para a granja. Após salvar, a despesa fica registrada e é incluída automaticamente nos relatórios financeiros do período."
-        ]
-      },
-      "periodClosing": {
-        "title": "Fechamento de Período",
-        "paragraphs": [
-          "O Fechamento de Período consolida as informações financeiras e produtivas de um determinado período (mês, trimestre). Uma vez encerrado o período, seus dados ficam bloqueados para edição.",
-          "O fechamento gera um resumo de receitas, custos de produção, despesas operacionais e resultado líquido, acessível pelos relatórios financeiros."
-        ],
-        "tips": [
-          "Certifique-se de ter registrado todas as receitas e despesas do período antes de encerrá-lo."
-        ]
-      },
-      "pigsView": {
-        "title": "Inventário de Suínos",
-        "paragraphs": [
-          "O módulo de Suínos exibe o inventário completo do plantel. Você pode visualizar todos os animais ativos e filtrar por fase produtiva, sexo, raça e outros critérios.",
-          "Ao clicar em um suíno, você acessa seu histórico completo: movimentações, eventos reprodutivos, tratamentos veterinários e registros de pesagem."
-        ],
-        "tips": [
-          "Use os filtros para localizar rapidamente animais específicos.",
-          "O botão Detalhes em cada linha leva ao perfil completo do animal."
-        ]
-      },
-      "pigsDiscarded": {
-        "title": "Suínos Descartados",
-        "paragraphs": [
-          "O módulo de Suínos Descartados exibe os animais removidos do inventário ativo por morte, venda ou descarte produtivo.",
-          "Você pode consultar o motivo do descarte, a data e o responsável pelo registro para fins de auditoria e análise de mortalidade."
-        ]
-      },
-      "groups": {
-        "title": "Lotes",
-        "paragraphs": [
-          "Os Lotes agrupam suínos por fase produtiva (Creche, Crescimento, Terminação, etc.). Cada lote possui seus próprios indicadores de desempenho: peso médio, conversão alimentar, mortalidade.",
-          "O sistema oferece visualizações especializadas por tipo de lote para facilitar o acompanhamento em cada fase do processo produtivo."
-        ],
-        "tips": [
-          "Os lotes permitem gerenciar coletivamente grupos de animais, otimizando o registro de pesagens, alimentação e tratamentos."
-        ]
-      },
-      "replacementSows": {
-        "title": "Marrãs de Reposição",
-        "paragraphs": [
-          "As Marrãs de Reposição são fêmeas em desenvolvimento destinadas a entrar no plantel reprodutivo da granja. Aqui você pode acompanhar seu desenvolvimento, registrar pesagens e promovê-las à categoria de reprodutoras.",
-          "O módulo acompanha o desenvolvimento de cada marrã de reposição até que esteja apta para o primeiro serviço."
-        ]
-      },
-      "replacementBoars": {
-        "title": "Varrões de Reposição",
-        "paragraphs": [
-          "Os Varrões de Reposição são machos em desenvolvimento destinados a se tornarem doadores de sêmen. Aqui você pode acompanhar seu desenvolvimento e habilitá-los para o programa de inseminação artificial.",
-          "O módulo mantém o histórico de desempenho de cada varrão, incluindo os resultados de qualidade das coletas realizadas no laboratório."
-        ]
-      },
-      "labExtractions": {
-        "title": "Coletas de Sêmen",
-        "paragraphs": [
-          "O módulo de Coletas registra os eventos de coleta de sêmen dos varrões. Cada coleta inclui o varrão, volume obtido, concentração e resultado da avaliação de qualidade.",
-          "Apenas as coletas aprovadas ficam disponíveis para uso nos planos de inseminação."
-        ],
-        "tips": [
-          "Mantenha os registros de coleta atualizados para garantir disponibilidade de sêmen de qualidade para o programa reprodutivo."
-        ],
-        "formParagraphs": [
-          "Para registrar uma nova coleta clique em '+ Nova Coleta'. Primeiro selecione o varrão doador na lista de reprodutores ativos.",
-          "Na etapa seguinte informe os dados da coleta: volume obtido (ml), concentração, resultado da avaliação de qualidade (Aprovado/Reprovado), data e o técnico responsável pelo procedimento."
-        ]
-      },
-      "labSamples": {
-        "title": "Amostras de Laboratório",
-        "paragraphs": [
-          "O módulo de Amostras permite registrar as análises laboratoriais realizadas nos animais: hemogramas, PCR, sorologias, etc.",
-          "Cada amostra é vinculada ao animal correspondente e o resultado fica disponível no seu histórico clínico."
-        ],
-        "formParagraphs": [
-          "Para registrar uma nova amostra clique em '+ Adicionar Amostra'. Primeiro selecione a coleta base (lote de sêmen) a partir da qual a amostra foi preparada.",
-          "Em seguida, preencha os dados da amostra: número de doses, data de validade, método de conservação (refrigeração ou congelamento) e a localização física dentro do laboratório."
-        ]
-      },
-      "gestationInseminations": {
-        "title": "Inseminações",
-        "paragraphs": [
-          "O módulo de Inseminações registra cada cobertura realizada nas matrizes reprodutoras. São informados a matriz, o varrão doador, a dose utilizada, a data e o técnico responsável.",
-          "O sistema acompanha cada inseminação em seu ciclo: Realizada → Confirmada (prenhe) → Parida. Inseminações não confirmadas geram alertas para verificação."
-        ],
-        "tips": [
-          "Configure o prazo de confirmação de prenhez nas configurações da granja para que o sistema gere alertas automáticos."
-        ],
-        "formParagraphs": [
-          "Para registrar uma inseminação clique em '+ Registrar Inseminação'. Selecione a matriz que receberá o serviço na lista de fêmeas disponíveis.",
-          "Na etapa seguinte selecione o lote de sêmen a utilizar e indique a dose. Em seguida, preencha os dados da inseminação: data, técnico responsável e observações. O sistema atualiza automaticamente o status da matriz."
-        ]
-      },
-      "gestationPregnancies": {
-        "title": "Gestações",
-        "paragraphs": [
-          "O módulo de Gestações exibe todas as matrizes confirmadas como prenhas, com data de cobertura, data prevista de parto e status da gestação.",
-          "Você pode registrar diagnósticos de prenhez, repetições de serviço ou perdas gestacionais a partir desta tela."
-        ]
-      },
-      "births": {
-        "title": "Partos e Nascimentos",
-        "paragraphs": [
-          "O módulo de Partos registra cada parto ocorrido na granja: a matriz, data do parto, número de leitões nascidos vivos, natimortos e mumificados.",
-          "Ao registrar um parto, uma leitegada é automaticamente criada no módulo de Lactação para acompanhamento do período de amamentação."
-        ],
-        "tips": [
-          "Registre os partos o quanto antes para que o sistema atualize corretamente o inventário e os indicadores reprodutivos."
-        ],
-        "formParagraphs": [
-          "Para registrar um parto acesse 'Próximos Partos' e clique em '+ Registrar Parto'. Selecione a inseminação correspondente à matriz que vai parir.",
-          "Preencha os dados do parto: data, número de leitões nascidos vivos, natimortos e mumificados. Na etapa da leitegada você pode registrar o peso total e a distribuição por sexo. Ao confirmar, a leitegada é criada automaticamente no módulo de Lactação."
-        ]
-      },
-      "lactation": {
-        "title": "Lactação",
-        "paragraphs": [
-          "O módulo de Lactação gerencia as leitegadas do nascimento ao desmame. Você pode registrar o peso dos leitões, mortalidade pré-desmame e ajustes de leitegada (adoções).",
-          "Ao registrar o desmame de uma leitegada, os leitões são automaticamente adicionados ao inventário de suínos e ficam disponíveis para alocação em um lote de creche."
-        ]
-      },
-      "weaning": {
-        "title": "Lotes de Creche",
-        "paragraphs": [
-          "Os Lotes de Creche agrupam leitões recém-desmamados. Aqui você pode registrar pesagens coletivas, aplicar planos de alimentação e medicação, e acompanhar a mortalidade do lote.",
-          "Quando o lote atinge o peso ou a idade-alvo, pode ser transferido para a fase de Crescimento."
-        ]
-      },
-      "growing": {
-        "title": "Lotes de Crescimento e Terminação",
-        "paragraphs": [
-          "Os Lotes de Crescimento e Terminação gerenciam os suínos nas fases intermediárias e finais do processo de engorda. O sistema acompanha o ganho de peso, a conversão alimentar e os custos acumulados.",
-          "Ao concluir a fase, os suínos podem ser transferidos para Terminação ou encaminhados diretamente para venda."
-        ],
-        "tips": [
-          "Registre pesagens periódicas para manter os indicadores de conversão alimentar atualizados e comparar o desempenho entre lotes."
-        ]
-      },
-      "medication": {
-        "title": "Medicação",
-        "paragraphs": [
-          "O módulo de Medicação permite criar e gerenciar planos de tratamento e programas de vacinação para os animais da granja.",
-          "Os planos de medicação podem ser aplicados a lotes ou a animais individuais. O sistema registra as doses aplicadas e desconta os medicamentos do estoque automaticamente."
-        ],
-        "tips": [
-          "Use os programas de vacinação para organizar o calendário sanitário do plantel e receber lembretes das datas de aplicação."
-        ],
-        "formParagraphs": [
-          "Para criar um novo pacote de medicação clique em '+ Novo Pacote de Medicação'. Informe o código, o nome do pacote e selecione a fase produtiva alvo (leitão, crescimento, reprodutor, etc.).",
-          "A data e o responsável são atribuídos automaticamente. Adicione uma descrição opcional. Na etapa seguinte, selecione os medicamentos ou vacunas do catálogo e defina as doses e a frequência de aplicação."
-        ]
-      },
-      "feeding": {
-        "title": "Alimentação",
-        "paragraphs": [
-          "O módulo de Alimentação gerencia os programas de dietas e o consumo de ração por lote de animais. Você pode definir rações por fase produtiva e registrar o consumo real diário.",
-          "O sistema calcula automaticamente a conversão alimentar e emite alertas quando o consumo se desvia significativamente da ração planejada."
-        ],
-        "tips": [
-          "Registre o consumo de ração regularmente para que os relatórios de conversão alimentar sejam precisos.",
-          "Os programas de alimentação vinculam o consumo ao estoque, descontando a ração automaticamente."
-        ]
-      },
-      "reportsProduction": {
-        "title": "Relatórios de Produção",
-        "paragraphs": [
-          "Os Relatórios de Produção consolidam os indicadores de desempenho da granja: inseminações, partos, mortalidade, ganho de peso e eficiência reprodutiva.",
-          "Filtre os relatórios por período, granja e tipo de indicador. Os gráficos ajudam a identificar tendências e comparar o desempenho entre períodos."
-        ]
-      },
-      "reportsInventory": {
-        "title": "Relatórios de Estoque",
-        "paragraphs": [
-          "Os Relatórios de Estoque exibem o histórico completo de movimentações do armazém, consumos por período, alertas de estoque e valorização do inventário.",
-          "Exporte os relatórios em PDF ou Excel para uso externo ou arquivamento."
-        ]
-      },
-      "reportsFinance": {
-        "title": "Relatórios Financeiros",
-        "paragraphs": [
-          "Os Relatórios Financeiros consolidam receitas, custos de produção, despesas operacionais e resultado líquido por período.",
-          "Inclui análise de rentabilidade por lote, demonstrativo de fluxo de caixa e comparativo de custos x receitas."
-        ]
-      },
-      "reportsSales": {
-        "title": "Relatórios de Vendas",
-        "paragraphs": [
-          "Os Relatórios de Vendas exibem o histórico de comercialização de suínos: volumes vendidos, preços médios, compradores e desempenho por período.",
-          "Compare o desempenho de vendas entre períodos e analise a tendência de preços."
-        ]
-      },
-      "reportsTraceability": {
-        "title": "Rastreabilidade",
-        "paragraphs": [
-          "O módulo de Rastreabilidade permite rastrear o histórico completo de um animal ou lote: desde a entrada na granja até a saída, passando por todos os eventos registrados.",
-          "Útil para auditorias sanitárias, certificações e investigação de ocorrências que exijam reconstrução do histórico de um animal."
-        ]
-      },
-      "reportsAudit": {
-        "title": "Relatórios de Auditoria",
-        "paragraphs": [
-          "Os Relatórios de Auditoria registram todas as ações realizadas no sistema: criações, edições e exclusões, com o usuário responsável e o horário exato.",
-          "Esses registros são imutáveis e servem para verificar a conformidade dos processos e detectar inconsistências nos dados."
-        ]
-      },
-      "users": {
-        "title": "Gestão de Usuários",
-        "paragraphs": [
-          "O módulo de Usuários permite criar, editar, ativar e inativar os usuários do sistema. Cada usuário tem um ou mais perfis atribuídos que determinam quais módulos pode acessar.",
-          "Os perfis disponíveis são: Superadmin, Gerente de Granja, Gerente de Armazém, Gerente de Subarmazém, Técnico de Reprodução, Veterinário e Operador."
-        ],
-        "tips": [
-          "Atribua somente os perfis necessários a cada usuário seguindo o princípio do menor privilégio.",
-          "Usuários inativos não conseguem fazer login, mas seus registros históricos são preservados."
-        ],
-        "formParagraphs": [
-          "Para registrar um novo usuário clique em '+ Registrar Usuário'. Opcionalmente, carregue uma foto de perfil. Preencha o nome, sobrenome e e-mail do usuário.",
-          "Selecione um ou mais perfis clicando nas etiquetas de perfis disponíveis. O sistema gerará automaticamente as credenciais de acesso e as enviará para o e-mail do usuário."
-        ]
-      },
-      "configurations": {
-        "title": "Configurações",
-        "paragraphs": [
-          "O módulo de Configurações permite ajustar os parâmetros globais do sistema e os parâmetros específicos de cada granja: dias de gestação, pesos-alvo por fase, limites de alertas e outros valores de referência.",
-          "Alterações nas configurações afetam os cálculos automáticos do sistema, por isso devem ser realizadas com cuidado e conhecimento do impacto."
-        ],
-        "tips": [
-          "Configure os parâmetros zootécnicos da sua granja antes de iniciar os registros para garantir que os cálculos sejam corretos desde o início."
-        ]
-      }
+      "initialSetup": { "title": "Configuração Inicial" },
+      "roles": { "title": "Perfis e Permissões" },
+      "navigation": { "title": "Navegação do Sistema" },
+      "configGlobal": { "title": "Configuração Global" },
+      "configFarm": { "title": "Configuração da Granja" },
+      "pigRegister": { "title": "Cadastrar Suínos" },
+      "pigDiscard": { "title": "Descartar Suíno" },
+      "groupCreate": { "title": "Criar Lote" },
+      "groupOperations": { "title": "Operações de Lote" },
+      "vaccinationPlans": { "title": "Planos de Vacinação" },
+      "medicationAssign": { "title": "Aplicar Medicação" },
+      "feedPreparation": { "title": "Preparo de Ração" },
+      "overview": { "title": "Visão Geral" },
+      "home": { "title": "Início / Painel" },
+      "farms": { "title": "Granjas" },
+      "warehouseInventory": { "title": "Estoque do Armazém" },
+      "warehouseSuppliers": { "title": "Fornecedores" },
+      "warehouseProducts": { "title": "Catálogo de Produtos" },
+      "warehouseIncomes": { "title": "Entradas no Armazém" },
+      "warehouseOutcomes": { "title": "Saídas do Armazém" },
+      "purchaseOrders": { "title": "Pedidos de Compra" },
+      "subwarehouse": { "title": "Subarmazém" },
+      "orders": { "title": "Pedidos de Transferência" },
+      "sales": { "title": "Venda de Suínos" },
+      "expenses": { "title": "Despesas" },
+      "periodClosing": { "title": "Fechamento de Período" },
+      "pigsView": { "title": "Inventário de Suínos" },
+      "pigsDiscarded": { "title": "Suínos Descartados" },
+      "groups": { "title": "Lotes" },
+      "replacementSows": { "title": "Marrãs de Reposição" },
+      "replacementBoars": { "title": "Varrões de Reposição" },
+      "labExtractions": { "title": "Coletas de Sêmen" },
+      "labSamples": { "title": "Doses de Sêmen" },
+      "gestationInseminations": { "title": "Inseminações" },
+      "gestationPregnancies": { "title": "Gestações" },
+      "births": { "title": "Parições" },
+      "lactation": { "title": "Lactação" },
+      "weaning": { "title": "Lotes de Creche" },
+      "growing": { "title": "Lotes de Crescimento e Terminação" },
+      "medication": { "title": "Pacotes de Medicação" },
+      "feeding": { "title": "Pacotes de Alimentação" },
+      "reportsProduction": { "title": "Relatórios de Produção" },
+      "reportsInventory": { "title": "Relatórios de Estoque" },
+      "reportsFinance": { "title": "Relatórios Financeiros" },
+      "reportsSales": { "title": "Relatórios de Vendas" },
+      "reportsTraceability": { "title": "Rastreabilidade" },
+      "reportsAudit": { "title": "Relatórios de Auditoria" },
+      "users": { "title": "Gestão de Usuários" },
+      "configurations": { "title": "Configurações" }
     }
   },
   "systemName": "PorcySys",

@@ -165,3 +165,76 @@
     }
   }
 }
+
+// ── Numbered steps ────────────────────────────────────────────────────────────
+.manual-steps-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.manual-step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 20px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.manual-step-number {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--vz-primary);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.manual-step-body {
+  flex: 1;
+
+  .manual-step-title {
+    font-size: 0.9375rem;
+  }
+
+  .manual-screenshot-wrapper img {
+    max-width: 90%;
+  }
+}
+
+// ── Prerequisites callout ─────────────────────────────────────────────────────
+.manual-prerequisites {
+  border-left: 4px solid var(--vz-warning);
+  border-radius: 6px;
+}
+
+// ── Warning callout ───────────────────────────────────────────────────────────
+.manual-warning {
+  border-left: 4px solid var(--vz-danger);
+  border-radius: 6px;
+}
+
+// ── Field table ───────────────────────────────────────────────────────────────
+.manual-field-table {
+  .table {
+    font-size: 0.875rem;
+  }
+}
+
+// ── Role matrix ───────────────────────────────────────────────────────────────
+.manual-role-matrix {
+  font-size: 0.8rem;
+
+  thead th {
+    white-space: nowrap;
+  }
+}

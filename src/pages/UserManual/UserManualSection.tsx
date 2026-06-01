@@ -2,17 +2,40 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Modal, ModalBody } from "reactstrap";
 import { ManualSection, idToCamelKey } from "./userManualSections";
+import ManualBlockRenderer from "./ManualBlockRenderer";
 
 interface Props {
   section: ManualSection;
 }
 
 const UserManualSection = ({ section }: Props) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(["translation", "manual"]);
   const [lightboxView, setLightboxView] = useState(false);
   const [lightboxForm, setLightboxForm] = useState(false);
 
   const camelKey = idToCamelKey(section.id);
+  const sectionLabel = t(section.labelKey);
+
+  // ── New rich-content path ────────────────────────────────────────────────
+  if (section.contentBlocks) {
+    return (
+      <div id={section.id} className="manual-section mb-5">
+        <h4 className="manual-section-title border-bottom pb-2 mb-3">
+          {sectionLabel}
+        </h4>
+        {section.contentBlocks.map((block, i) => (
+          <ManualBlockRenderer
+            key={i}
+            block={block}
+            sectionKey={camelKey}
+            sectionLabel={sectionLabel}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  // ── Legacy path (backward compatibility) ──────────────────────────────────
   const paragraphs = t(`manual.sections.${camelKey}.paragraphs`, {
     returnObjects: true,
     defaultValue: [],
@@ -29,20 +52,19 @@ const UserManualSection = ({ section }: Props) => {
   return (
     <div id={section.id} className="manual-section mb-5">
       <h4 className="manual-section-title border-bottom pb-2 mb-3">
-        {t(section.labelKey)}
+        {sectionLabel}
       </h4>
 
       {paragraphs.map((p, i) => (
-        <p key={i} className="text-muted">
-          {p}
-        </p>
+        <p key={i} className="text-muted">{p}</p>
       ))}
 
       {section.screenshotPath && (
         <div className="manual-screenshot-wrapper my-3">
           <img
             src={section.screenshotPath}
-            alt={t(section.labelKey)}
+            alt={sectionLabel}
+            loading="lazy"
             className="img-fluid rounded shadow-sm border"
             style={{ cursor: "zoom-in" }}
             onClick={() => setLightboxView(true)}
@@ -72,17 +94,14 @@ const UserManualSection = ({ section }: Props) => {
             <i className="ri-edit-box-line me-2 text-primary"></i>
             {t("manual.howToRegister")}
           </h5>
-
           {formParagraphs.map((p, i) => (
-            <p key={i} className="text-muted">
-              {p}
-            </p>
+            <p key={i} className="text-muted">{p}</p>
           ))}
-
           <div className="manual-screenshot-wrapper my-3">
             <img
               src={section.screenshotFormPath}
-              alt={`${t(section.labelKey)} - ${t("manual.howToRegister")}`}
+              alt={`${sectionLabel} - ${t("manual.howToRegister")}`}
+              loading="lazy"
               className="img-fluid rounded shadow-sm border"
               style={{ cursor: "zoom-in" }}
               onClick={() => setLightboxForm(true)}
@@ -100,7 +119,7 @@ const UserManualSection = ({ section }: Props) => {
           <ModalBody className="p-1">
             <img
               src={section.screenshotPath}
-              alt={t(section.labelKey)}
+              alt={sectionLabel}
               className="img-fluid w-100"
               style={{ cursor: "zoom-out" }}
               onClick={() => setLightboxView(false)}
@@ -114,7 +133,7 @@ const UserManualSection = ({ section }: Props) => {
           <ModalBody className="p-1">
             <img
               src={section.screenshotFormPath}
-              alt={`${t(section.labelKey)} - ${t("manual.howToRegister")}`}
+              alt={`${sectionLabel} - ${t("manual.howToRegister")}`}
               className="img-fluid w-100"
               style={{ cursor: "zoom-out" }}
               onClick={() => setLightboxForm(false)}

@@ -1,0 +1,1831 @@
+{
+  "labels": {
+    "prerequisites": "Pré-requisitos",
+    "stepsTitle": "Passo a passo",
+    "fieldsTitle": "Descrição dos campos",
+    "fieldName": "Campo",
+    "fieldType": "Tipo",
+    "fieldRequired": "Obrigatório",
+    "fieldDesc": "Descrição",
+    "tipsLabel": "Dicas:",
+    "clickToZoom": "Clique na imagem para ampliar",
+    "module": "Módulo"
+  },
+  "roles": {
+    "superadmin": "Superadmin",
+    "farmManager": "Gerente de Granja",
+    "financeManager": "Gerente Financeiro",
+    "warehouseManager": "Resp. de Almoxarifado",
+    "subwarehouseManager": "Resp. de Sub-almoxarifado",
+    "reproTech": "Técnico de Reprodução",
+    "veterinarian": "Veterinário",
+    "generalWorker": "Auxiliar de Produção"
+  },
+  "roleMatrix": {
+    "home": "Início / Painel",
+    "farms": "Granjas",
+    "users": "Gestão de Usuários",
+    "configGlobal": "Configuração Global",
+    "configFarm": "Configuração da Granja",
+    "warehouse": "Almoxarifado",
+    "productCatalog": "Catálogo de Produtos",
+    "subwarehouse": "Sub-almoxarifados",
+    "orders": "Pedidos de Transferência",
+    "sales": "Vendas",
+    "expenses": "Despesas",
+    "periodClosing": "Fechamento de Período",
+    "pigs": "Inventário de Suínos",
+    "replacement": "Reposição",
+    "reproduction": "Reprodução / Laboratório",
+    "births": "Parições e Lactação",
+    "lactation": "Lactação",
+    "groups": "Lotes",
+    "health": "Saúde (medicação / vacinas)",
+    "feeding": "Alimentação",
+    "reports": "Relatórios"
+  },
+  "sections": {
+    "overview": {
+      "description": "O PorcySys é um sistema integrado de gestão suinícola que acompanha todos os processos da granja: inventário de animais, reprodução, saúde, nutrição, almoxarifado e finanças.",
+      "paragraphs": [
+        "O sistema é organizado em módulos acessíveis pelo menu lateral. Cada usuário visualiza apenas os módulos correspondentes ao seu perfil.",
+        "Os dados fluem automaticamente entre módulos: uma parição cria uma leitegada na Lactação, uma inseminação atualiza o status reprodutivo da porca, uma entrada no almoxarifado atualiza o estoque. Não há duplicação de registros.",
+        "Este manual cobre todas as funcionalidades disponíveis. Se algum módulo não aparecer no seu menu, consulte seu administrador sobre as permissões do seu perfil."
+      ],
+      "tips": [
+        "Use o campo de pesquisa na barra lateral para localizar rapidamente qualquer seção do manual.",
+        "Clique em qualquer imagem para ampliar.",
+        "O sistema funciona melhor em telas com 1280 px de largura ou mais."
+      ]
+    },
+    "initialSetup": {
+      "description": "Quando o sistema está vazio, o Superadmin deve concluir uma configuração inicial antes que os gerentes de granja possam trabalhar.",
+      "steps": [
+        {
+          "title": "Passo 1: Fazer login como Superadmin",
+          "desc": "Acesse o sistema com as credenciais de Superadmin fornecidas pelo suporte. Você chegará ao painel principal."
+        },
+        {
+          "title": "Passo 2: Configurar parâmetros globais",
+          "desc": "Acesse Configuração Global (ícone de engrenagem no cabeçalho ou no menu). Configure: nome da empresa, logotipo, moeda, casas decimais, fuso horário e formato de data. Salve as alterações.",
+          "screenshot": "/manual-screenshots/admin/config-global.png"
+        },
+        {
+          "title": "Passo 3: Cadastrar usuários Gerentes de Granja",
+          "desc": "Acesse Configurações → Usuários e clique em '+ Cadastrar Usuário'. Crie um ou mais usuários com o perfil Gerente de Granja. O sistema envia as credenciais por e-mail automaticamente.",
+          "screenshot": "/manual-screenshots/admin/users-form.png"
+        },
+        {
+          "title": "Passo 4: Criar as granjas",
+          "desc": "Acesse Granjas e clique em '+ Nova Granja'. Preencha os dados de cada granja e atribua o gerente correspondente (deve estar cadastrado no passo anterior).",
+          "screenshot": "/manual-screenshots/admin/farms-form.png"
+        },
+        {
+          "title": "Passo 5: O gerente configura a sua granja",
+          "desc": "O Gerente de Granja faz login e acessa Configuração da Granja. Ajusta os parâmetros produtivos (dias de gestação, lactação, creche, terminação) conforme a realidade da sua operação. Caso não sejam alterados, os valores padrão do sistema serão aplicados."
+        },
+        {
+          "title": "Passo 6: Cadastrar produtos, fornecedores e usuários adicionais",
+          "desc": "Antes de iniciar a operação, o gerente deve cadastrar o catálogo de produtos do almoxarifado, os fornecedores e os demais usuários (veterinários, técnicos, responsáveis pelo almoxarifado). A partir daí o sistema está pronto para receber dados produtivos."
+        }
+      ],
+      "tips": [
+        "A ordem importa: primeiro usuários, depois granjas. Um gerente sem conta de usuário não pode ser atribuído a uma granja.",
+        "É possível criar várias granjas com o mesmo Superadmin, cada uma com seu próprio gerente."
+      ],
+      "warning": "Não pule a Configuração da Granja. Os parâmetros controlam os alertas automáticos do sistema (parto próximo, leitegada pronta para desmame, mudança de fase). Com valores incorretos, os alertas perderão o sentido."
+    },
+    "roles": {
+      "description": "O PorcySys possui 8 perfis de usuário. Cada perfil determina quais módulos aparecem no menu e quais ações o usuário pode realizar."
+    },
+    "navigation": {
+      "description": "O sistema utiliza um menu lateral fixo (sidebar) para navegação entre os módulos.",
+      "paragraphs": [
+        "O menu lateral está organizado em seções: Início, Administração, Operações, Saúde e Nutrição, Relatórios. Cada seção agrupa módulos relacionados. Apenas os módulos acessíveis ao seu perfil são exibidos.",
+        "No cabeçalho superior você encontrará: o seletor de idioma (ES / EN / PT), o ícone de notificações, o acesso ao Assistente IA e o menu de perfil (foto do usuário). Pelo menu de perfil você acessa este manual, visualiza seu perfil e encerra a sessão.",
+        "O Painel (Início) é a tela principal. Exibe KPIs e resumos adaptados ao seu perfil. Altere o período de análise com o seletor de datas no topo."
+      ],
+      "tips": [
+        "Em telas menores o menu lateral se recolhe. Use o ícone de hambúrguer (☰) para abri-lo.",
+        "O ícone de livro aberto no menu de perfil leva diretamente a este manual."
+      ]
+    },
+    "users": {
+      "description": "O módulo de Usuários permite ao Superadmin criar e gerenciar todas as contas do sistema. Cada usuário possui um ou mais perfis e pode ser atribuído a uma granja.",
+      "paragraphs": [
+        "Ações disponíveis na tabela de usuários: cadastrar novo usuário, editar dados, ativar/inativar conta e reenviar credenciais de acesso por e-mail.",
+        "Um usuário inativado não consegue fazer login, mas seus registros históricos são preservados. Para excluir permanentemente um usuário, entre em contato com o suporte."
+      ],
+      "steps": [
+        {
+          "title": "Passo 1: Abrir o formulário",
+          "desc": "Acesse Configurações → Usuários. Clique em '+ Cadastrar Usuário'.",
+          "screenshot": "/manual-screenshots/admin/users-view.png"
+        },
+        {
+          "title": "Passo 2: Foto de perfil (opcional)",
+          "desc": "Faça upload de uma foto de perfil clicando na área de imagem. Formatos aceitos: JPG, PNG, WEBP. Tamanho máximo: 2 MB."
+        },
+        {
+          "title": "Passo 3: Dados pessoais",
+          "desc": "Informe nome, sobrenome e endereço de e-mail. O e-mail deve ser válido e único no sistema — é utilizado para enviar as credenciais de acesso.",
+          "screenshot": "/manual-screenshots/admin/users-form.png"
+        },
+        {
+          "title": "Passo 4: Atribuir perfis",
+          "desc": "Selecione um ou mais perfis clicando nas etiquetas de perfis disponíveis. Os perfis disponíveis dependem do perfil do administrador que está criando o usuário. Múltiplos perfis podem ser atribuídos ao mesmo usuário."
+        },
+        {
+          "title": "Passo 5: Atribuir granja (se aplicável)",
+          "desc": "Se o perfil exige vinculação a uma granja (Gerente de Granja, Veterinário, etc.), selecione a granja no seletor. O campo aparece apenas quando é relevante para o perfil selecionado."
+        },
+        {
+          "title": "Passo 6: Salvar",
+          "desc": "Clique em Salvar. O sistema gera automaticamente uma senha temporária e envia as credenciais ao e-mail do usuário."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Foto de perfil",
+          "type": "Imagem",
+          "required": false,
+          "desc": "Foto do usuário. JPG/PNG/WEBP, máx. 2 MB."
+        },
+        {
+          "name": "Nome",
+          "type": "Texto",
+          "required": true,
+          "desc": "Nome do usuário."
+        },
+        {
+          "name": "Sobrenome",
+          "type": "Texto",
+          "required": true,
+          "desc": "Sobrenome do usuário."
+        },
+        {
+          "name": "E-mail",
+          "type": "E-mail",
+          "required": true,
+          "desc": "E-mail único no sistema. Usado para as credenciais de acesso."
+        },
+        {
+          "name": "Perfis",
+          "type": "Seleção múltipla",
+          "required": true,
+          "desc": "Um ou mais perfis que determinam os módulos acessíveis."
+        },
+        {
+          "name": "Granja atribuída",
+          "type": "Seleção",
+          "required": false,
+          "desc": "Granja à qual o usuário pertence. Exigido para perfis de granja."
+        },
+        {
+          "name": "Status",
+          "type": "Interruptor",
+          "required": false,
+          "desc": "Ativo / Inativo. Padrão Ativo ao criar."
+        }
+      ],
+      "tips": [
+        "Atribua apenas os perfis necessários a cada usuário (princípio do menor privilégio).",
+        "Se o usuário não receber o e-mail com as credenciais, use o botão 'Reenviar credenciais' na tabela.",
+        "Os dados do usuário podem ser editados a qualquer momento pelo ícone de edição."
+      ]
+    },
+    "farms": {
+      "description": "O módulo de Granjas (exclusivo do Superadmin) permite cadastrar e gerenciar as unidades produtivas do sistema. Cada granja possui seu próprio inventário, ciclos produtivos e configuração.",
+      "prerequisites": [
+        "Deve existir ao menos um usuário com o perfil Gerente de Granja antes de criar uma granja."
+      ],
+      "steps": [
+        {
+          "title": "Passo 1: Abrir o formulário",
+          "desc": "Acesse Granjas. Clique em '+ Nova Granja'.",
+          "screenshot": "/manual-screenshots/admin/farms-view.png"
+        },
+        {
+          "title": "Passo 2: Logotipo da granja (opcional)",
+          "desc": "Faça upload de um logotipo ou imagem representativa da granja."
+        },
+        {
+          "title": "Passo 3: Dados da granja",
+          "desc": "Preencha nome, código (gerado automaticamente, editável), localização e status.",
+          "screenshot": "/manual-screenshots/admin/farms-form.png"
+        },
+        {
+          "title": "Passo 4: Atribuir gerente",
+          "desc": "Selecione o usuário Gerente de Granja que administrará esta granja. Se ainda não existir, é possível criá-lo diretamente por este formulário usando o botão '+ Novo usuário'."
+        },
+        {
+          "title": "Passo 5: Salvar",
+          "desc": "Clique em Salvar. A granja fica ativa e o gerente pode fazer login para configurar os parâmetros."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Logotipo",
+          "type": "Imagem",
+          "required": false,
+          "desc": "Imagem representativa da granja."
+        },
+        {
+          "name": "Nome",
+          "type": "Texto",
+          "required": true,
+          "desc": "Nome completo da granja."
+        },
+        {
+          "name": "Código",
+          "type": "Texto",
+          "required": true,
+          "desc": "Identificador curto. Gerado automaticamente, editável."
+        },
+        {
+          "name": "Localização",
+          "type": "Texto",
+          "required": false,
+          "desc": "Endereço ou descrição da localização."
+        },
+        {
+          "name": "Status",
+          "type": "Interruptor",
+          "required": false,
+          "desc": "Ativo / Inativo."
+        },
+        {
+          "name": "Gerente",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Usuário com perfil Gerente de Granja que administra a unidade."
+        }
+      ],
+      "tips": [
+        "Somente o Superadmin pode criar, editar ou inativar granjas.",
+        "Uma granja pode ter apenas um gerente atribuído. Para trocar, edite a granja."
+      ]
+    },
+    "configGlobal": {
+      "description": "A Configuração Global permite ao Superadmin definir parâmetros aplicáveis a todo o sistema, independentemente da granja.",
+      "steps": [
+        {
+          "title": "Passo 1: Acessar a Configuração Global",
+          "desc": "Clique no ícone de engrenagem no cabeçalho superior ou localize-o na seção Administração do menu lateral.",
+          "screenshot": "/manual-screenshots/admin/config-global.png"
+        },
+        {
+          "title": "Passo 2: Informações da empresa",
+          "desc": "Informe o nome da empresa e faça upload do logotipo do sistema. Estes dados aparecem nos relatórios PDF e no cabeçalho do aplicativo."
+        },
+        {
+          "title": "Passo 3: Moeda e formato numérico",
+          "desc": "Selecione a moeda base, o número de casas decimais e o formato de data utilizado em todo o sistema."
+        },
+        {
+          "title": "Passo 4: Salvar",
+          "desc": "Clique em Salvar. As alterações são aplicadas imediatamente em todo o sistema."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Nome da empresa",
+          "type": "Texto",
+          "required": true,
+          "desc": "Nome exibido nos relatórios e no cabeçalho do aplicativo."
+        },
+        {
+          "name": "Logotipo",
+          "type": "Imagem",
+          "required": false,
+          "desc": "Logotipo da empresa nos relatórios PDF."
+        },
+        {
+          "name": "Moeda",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Moeda base para todos os valores financeiros."
+        },
+        {
+          "name": "Casas decimais",
+          "type": "Número",
+          "required": true,
+          "desc": "Número de casas decimais para valores monetários."
+        },
+        {
+          "name": "Formato de data",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Formato de exibição de datas em todo o sistema."
+        }
+      ],
+      "tips": [
+        "A moeda não pode ser alterada após o início dos registros produtivos — planeje com antecedência.",
+        "O logotipo aparece em todos os relatórios PDF gerados pelo sistema."
+      ]
+    },
+    "configFarm": {
+      "description": "A Configuração da Granja permite ao Gerente de Granja ajustar os parâmetros zootécnicos e limiares produtivos específicos da sua unidade.",
+      "steps": [
+        {
+          "title": "Passo 1: Acessar Configuração da Granja",
+          "desc": "Faça login como Gerente de Granja. No menu lateral, acesse Configurações → Configuração da Granja.",
+          "screenshot": "/manual-screenshots/admin/config-farm.png"
+        },
+        {
+          "title": "Passo 2: Parâmetros de gestação",
+          "desc": "Defina a duração média da gestação (dias), os dias antes da parição para iniciar os alertas e o número máximo de dias até acionar o alerta de parição vencida."
+        },
+        {
+          "title": "Passo 3: Parâmetros de lactação e desmame",
+          "desc": "Defina a duração alvo de lactação (dias) e a idade mínima ao desmame. O sistema usa esses valores para gerar alertas de leitegada pronta para desmame."
+        },
+        {
+          "title": "Passo 4: Parâmetros de crescimento e terminação",
+          "desc": "Defina os dias e pesos alvo para as fases de creche, crescimento e terminação. Esses valores alimentam os alertas de mudança de fase."
+        },
+        {
+          "title": "Passo 5: Salvar",
+          "desc": "Clique em Salvar. Todos os alertas automáticos e cálculos são atualizados imediatamente."
+        }
+      ],
+      "tips": [
+        "Configure esses parâmetros antes de inserir qualquer dado produtivo.",
+        "Consulte os registros históricos da granja ou um zootecnista antes de alterar os padrões de gestação/lactação."
+      ],
+      "warning": "Alterar a duração da gestação após o cadastro de inseminações deslocará as datas previstas de parição. Revise os alertas de parto próximo após salvar."
+    },
+    "warehouseProducts": {
+      "description": "O Catálogo de Produtos define todos os itens gerenciáveis no almoxarifado: ingredientes para ração, medicamentos, vacinas, insumos, etc.",
+      "steps": [
+        {
+          "title": "Passo 1: Abrir o formulário",
+          "desc": "Acesse Almoxarifado → Produtos. Clique em '+ Adicionar Produto'.",
+          "screenshot": "/manual-screenshots/warehouse/products-view.png"
+        },
+        {
+          "title": "Passo 2: Imagem do produto (opcional)",
+          "desc": "Faça upload de uma imagem opcional para facilitar a identificação pelos colaboradores."
+        },
+        {
+          "title": "Passo 3: Dados do produto",
+          "desc": "Informe o nome, selecione a categoria (Nutrição, Medicamento, Vacina, Insumo), unidade de medida, preço de referência e estoque mínimo.",
+          "screenshot": "/manual-screenshots/warehouse/products-form.png"
+        },
+        {
+          "title": "Passo 4: Salvar",
+          "desc": "Clique em Salvar. O produto está disponível para entradas, saídas e pedidos de compra."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Imagem",
+          "type": "Imagem",
+          "required": false,
+          "desc": "Foto opcional do produto."
+        },
+        {
+          "name": "Nome",
+          "type": "Texto",
+          "required": true,
+          "desc": "Nome do produto."
+        },
+        {
+          "name": "Categoria",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Nutrição / Medicamento / Vacina / Insumo."
+        },
+        {
+          "name": "Unidade de medida",
+          "type": "Seleção",
+          "required": true,
+          "desc": "kg, L, unidade, dose, etc."
+        },
+        {
+          "name": "Preço de referência",
+          "type": "Número",
+          "required": false,
+          "desc": "Preço unitário usado nos relatórios financeiros."
+        },
+        {
+          "name": "Estoque mínimo",
+          "type": "Número",
+          "required": false,
+          "desc": "Nível de estoque que aciona o alerta de estoque baixo."
+        },
+        {
+          "name": "Descrição",
+          "type": "Texto",
+          "required": false,
+          "desc": "Informações complementares sobre o produto."
+        }
+      ],
+      "tips": [
+        "Configure o estoque mínimo dos produtos críticos para receber alertas antes de ficar sem estoque.",
+        "O preço de referência é utilizado na valorização do inventário nos relatórios financeiros."
+      ]
+    },
+    "warehouseSuppliers": {
+      "description": "O cadastro de Fornecedores armazena informações de todos os fornecedores com os quais a granja opera. Fornecedores são obrigatórios para criar pedidos de compra e registrar entradas.",
+      "steps": [
+        {
+          "title": "Passo 1: Abrir o formulário",
+          "desc": "Acesse Almoxarifado → Fornecedores. Clique em '+ Adicionar Fornecedor'.",
+          "screenshot": "/manual-screenshots/warehouse/suppliers-view.png"
+        },
+        {
+          "title": "Passo 2: Identificação",
+          "desc": "Informe o código do fornecedor (gerado automaticamente, editável), razão social e tipo de fornecedor (cooperativa, distribuidora de medicamentos, fabricante de equipamentos, etc.).",
+          "screenshot": "/manual-screenshots/warehouse/suppliers-form.png"
+        },
+        {
+          "title": "Passo 3: Dados de contato",
+          "desc": "Informe telefone, e-mail e endereço. Esses campos são opcionais, mas recomendados para facilitar a gestão de compras."
+        },
+        {
+          "title": "Passo 4: Dados fiscais (opcional)",
+          "desc": "Informe CNPJ / CPF e demais dados fiscais necessários para emissão de notas fiscais."
+        },
+        {
+          "title": "Passo 5: Salvar",
+          "desc": "Clique em Salvar. O fornecedor está disponível para vincular a pedidos de compra e entradas."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Código",
+          "type": "Texto",
+          "required": true,
+          "desc": "Identificador curto. Gerado automaticamente, editável."
+        },
+        {
+          "name": "Razão social / Nome",
+          "type": "Texto",
+          "required": true,
+          "desc": "Nome completo ou razão social do fornecedor."
+        },
+        {
+          "name": "Tipo de fornecedor",
+          "type": "Seleção",
+          "required": false,
+          "desc": "Categoria do fornecedor (ração, farmácia, equipamentos, etc.)."
+        },
+        {
+          "name": "Telefone",
+          "type": "Texto",
+          "required": false,
+          "desc": "Número de telefone para contato."
+        },
+        {
+          "name": "E-mail",
+          "type": "E-mail",
+          "required": false,
+          "desc": "E-mail de contato."
+        },
+        {
+          "name": "Endereço",
+          "type": "Texto",
+          "required": false,
+          "desc": "Endereço físico."
+        },
+        {
+          "name": "CNPJ / CPF",
+          "type": "Texto",
+          "required": false,
+          "desc": "Número de identificação fiscal."
+        }
+      ],
+      "tips": [
+        "Preencha os dados de contato para agilizar a gestão de compras.",
+        "Fornecedores inativos ficam ocultos nos seletores de pedidos de compra, mas o histórico é preservado."
+      ]
+    },
+    "purchaseOrders": {
+      "description": "Os Pedidos de Compra permitem gerenciar o processo de aquisição: criar solicitações, acompanhar o status e receber produtos no estoque.",
+      "prerequisites": [
+        "Ao menos um fornecedor deve estar cadastrado.",
+        "Ao menos um produto deve existir no catálogo."
+      ],
+      "steps": [
+        {
+          "title": "Passo 1: Abrir o formulário",
+          "desc": "Acesse Almoxarifado → Pedidos de Compra. Clique em '+ Novo Pedido de Compra'.",
+          "screenshot": "/manual-screenshots/warehouse/purchase-orders-view.png"
+        },
+        {
+          "title": "Passo 2: Selecionar fornecedor",
+          "desc": "Escolha o fornecedor no seletor. Se não estiver listado, cadastre-o no módulo de Fornecedores primeiro.",
+          "screenshot": "/manual-screenshots/warehouse/purchase-orders-form-step1.png"
+        },
+        {
+          "title": "Passo 3: Adicionar produtos",
+          "desc": "Pesquise cada produto e informe a quantidade solicitada e o preço unitário estimado. Adicione quantos produtos forem necessários.",
+          "screenshot": "/manual-screenshots/warehouse/purchase-orders-form-step2.png"
+        },
+        {
+          "title": "Passo 4: Revisar e confirmar",
+          "desc": "Revise o resumo do pedido (total de produtos, custo estimado total). Clique em Confirmar para criar o pedido de compra."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Fornecedor",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Fornecedor deste pedido."
+        },
+        {
+          "name": "Produto",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Produto do catálogo do almoxarifado."
+        },
+        {
+          "name": "Quantidade",
+          "type": "Número",
+          "required": true,
+          "desc": "Quantidade solicitada."
+        },
+        {
+          "name": "Preço unitário",
+          "type": "Número",
+          "required": false,
+          "desc": "Preço unitário estimado."
+        },
+        {
+          "name": "Observações",
+          "type": "Texto",
+          "required": false,
+          "desc": "Notas adicionais sobre o pedido."
+        }
+      ],
+      "tips": [
+        "Um pedido de compra inicia com status Pendente. Quando os produtos chegarem, registre a entrada no módulo de Entradas para atualizar o estoque.",
+        "É possível incluir múltiplos produtos em um único pedido de compra."
+      ]
+    },
+    "warehouseIncomes": {
+      "description": "As Entradas de Almoxarifado registram todos os produtos recebidos, seja vinculados a um pedido de compra ou inseridos diretamente.",
+      "prerequisites": [
+        "Ao menos um produto deve existir no catálogo.",
+        "Ao menos um fornecedor deve estar cadastrado."
+      ],
+      "steps": [
+        {
+          "title": "Passo 1: Abrir o formulário",
+          "desc": "Acesse Almoxarifado → Entradas. Clique em '+ Nova Entrada'.",
+          "screenshot": "/manual-screenshots/warehouse/incomes-view.png"
+        },
+        {
+          "title": "Passo 2: Selecionar o modo",
+          "desc": "Escolha 'Com pedido de compra' (vincula a uma OC existente) ou 'Entrada direta' (sem OC prévia).",
+          "screenshot": "/manual-screenshots/warehouse/incomes-form-step1.png"
+        },
+        {
+          "title": "Passo 3: Dados gerais",
+          "desc": "Selecione o fornecedor, informe a data de recebimento e, opcionalmente, o número da nota fiscal e dados fiscais."
+        },
+        {
+          "title": "Passo 4: Produtos recebidos",
+          "desc": "Para cada produto, informe a quantidade recebida e o preço unitário real. Adicione quantos produtos forem necessários."
+        },
+        {
+          "title": "Passo 5: Revisar e salvar",
+          "desc": "Revise o resumo da entrada. Clique em Salvar. O estoque de cada produto é atualizado automaticamente."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Modo",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Com pedido de compra ou entrada direta."
+        },
+        {
+          "name": "Fornecedor",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Fornecedor que está entregando os produtos."
+        },
+        {
+          "name": "Data",
+          "type": "Data",
+          "required": true,
+          "desc": "Data de recebimento dos produtos."
+        },
+        {
+          "name": "Número da NF",
+          "type": "Texto",
+          "required": false,
+          "desc": "Número da nota fiscal do fornecedor."
+        },
+        {
+          "name": "Produto",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Produto sendo recebido."
+        },
+        {
+          "name": "Quantidade",
+          "type": "Número",
+          "required": true,
+          "desc": "Quantidade efetivamente recebida."
+        },
+        {
+          "name": "Preço unitário",
+          "type": "Número",
+          "required": false,
+          "desc": "Preço unitário real pago."
+        }
+      ],
+      "tips": [
+        "Se a quantidade recebida divergir da OC, informe a quantidade real — o sistema registra a divergência.",
+        "Cada entrada gera uma movimentação automática no módulo de Inventário."
+      ]
+    },
+    "warehouseOutcomes": {
+      "description": "As Saídas de Almoxarifado registram todos os produtos que saem do almoxarifado principal: consumo direto, baixas ou ajustes manuais.",
+      "prerequisites": [
+        "Deve haver estoque suficiente de cada produto a ser retirado."
+      ],
+      "steps": [
+        {
+          "title": "Passo 1: Abrir o formulário",
+          "desc": "Acesse Almoxarifado → Saídas. Clique em '+ Nova Saída'.",
+          "screenshot": "/manual-screenshots/warehouse/outcomes-view.png"
+        },
+        {
+          "title": "Passo 2: Motivo e descrição",
+          "desc": "O sistema atribui um código automático e usa a data atual. Selecione o motivo da saída (consumo, transferência, ajuste, perda) e adicione uma descrição opcional.",
+          "screenshot": "/manual-screenshots/warehouse/outcomes-form-step1.png"
+        },
+        {
+          "title": "Passo 3: Produtos",
+          "desc": "Selecione cada produto e a quantidade a retirar. O sistema verifica a disponibilidade de estoque antes de confirmar."
+        },
+        {
+          "title": "Passo 4: Confirmar",
+          "desc": "Revise o resumo e clique em Salvar. O estoque é reduzido imediatamente."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Motivo",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Motivo da saída (consumo, ajuste, transferência, perda)."
+        },
+        {
+          "name": "Descrição",
+          "type": "Texto",
+          "required": false,
+          "desc": "Detalhes adicionais sobre a saída."
+        },
+        {
+          "name": "Produto",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Produto a ser retirado do estoque."
+        },
+        {
+          "name": "Quantidade",
+          "type": "Número",
+          "required": true,
+          "desc": "Quantidade a remover do inventário."
+        }
+      ],
+      "tips": [
+        "As saídas reduzem o estoque automaticamente. Certifique-se de que o motivo está correto antes de salvar.",
+        "O consumo rotineiro pelos módulos de saúde e alimentação é descontado automaticamente. Saídas manuais são para ajustes e correções."
+      ]
+    },
+    "warehouseInventory": {
+      "description": "O módulo de Inventário exibe o saldo atual de cada produto no almoxarifado principal, o histórico de movimentações e os alertas de estoque mínimo.",
+      "paragraphs": [
+        "Os saldos de estoque são atualizados automaticamente a cada entrada, saída ou pedido de transferência processado. Não é necessário ajustar o inventário manualmente.",
+        "Filtre por produto, categoria ou período para encontrar movimentações específicas. Use o botão Exportar para gerar um relatório Excel do estoque atual."
+      ],
+      "tips": [
+        "Linhas destacadas em vermelho indicam produtos abaixo do estoque mínimo configurado.",
+        "Clique em um produto para ver seu histórico completo de movimentações."
+      ]
+    },
+    "subwarehouse": {
+      "description": "Sub-almoxarifados são locais de armazenamento secundários da granja (ex.: sala de medicamentos na maternidade). Cada sub-almoxarifado tem seu próprio estoque independente.",
+      "steps": [
+        {
+          "title": "Passo 1: Abrir o formulário",
+          "desc": "Acesse Almoxarifado → Sub-almoxarifados. Clique em '+ Novo Sub-almoxarifado'.",
+          "screenshot": "/manual-screenshots/warehouse/subwarehouse-view.png"
+        },
+        {
+          "title": "Passo 2: Identificação",
+          "desc": "Informe o código (gerado automaticamente, editável), o nome e o tipo do sub-almoxarifado.",
+          "screenshot": "/manual-screenshots/warehouse/subwarehouse-form.png"
+        },
+        {
+          "title": "Passo 3: Atribuir responsável",
+          "desc": "Selecione o usuário que gerencia este sub-almoxarifado. Ele poderá registrar saídas a partir deste local."
+        },
+        {
+          "title": "Passo 4: Localização",
+          "desc": "Informe a localização física dentro da granja (opcional, mas recomendado)."
+        },
+        {
+          "title": "Passo 5: Salvar",
+          "desc": "Clique em Salvar. O sub-almoxarifado está pronto para receber pedidos de transferência do almoxarifado principal."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Código",
+          "type": "Texto",
+          "required": true,
+          "desc": "Identificador curto."
+        },
+        {
+          "name": "Nome",
+          "type": "Texto",
+          "required": true,
+          "desc": "Nome descritivo."
+        },
+        {
+          "name": "Tipo",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Tipo de sub-almoxarifado (medicamentos, ração, insumos, etc.)."
+        },
+        {
+          "name": "Responsável",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Usuário responsável pelo gerenciamento."
+        },
+        {
+          "name": "Localização",
+          "type": "Texto",
+          "required": false,
+          "desc": "Localização física dentro da granja."
+        }
+      ],
+      "tips": [
+        "Produtos chegam ao sub-almoxarifado somente via pedidos de transferência do almoxarifado principal.",
+        "O responsável pelo sub-almoxarifado pode registrar saídas de produtos sob sua custódia."
+      ]
+    },
+    "orders": {
+      "description": "Os Pedidos de Transferência gerenciam a movimentação de produtos do almoxarifado principal para os sub-almoxarifados. O gerente de almoxarifado cria o pedido; o responsável pelo sub-almoxarifado o recebe e conclui.",
+      "steps": [
+        {
+          "title": "Passo 1: Criar o pedido de transferência",
+          "desc": "Acesse Almoxarifado → Pedidos de Transferência. Clique em '+ Novo Pedido'. Selecione o sub-almoxarifado de destino e adicione os produtos com as quantidades."
+        },
+        {
+          "title": "Passo 2: Confirmar o pedido",
+          "desc": "Revise o pedido e clique em Confirmar. O status passa para Pendente."
+        },
+        {
+          "title": "Passo 3: Sub-almoxarifado conclui o pedido",
+          "desc": "O responsável pelo sub-almoxarifado abre o pedido pendente e clica em Concluir. Informa as quantidades efetivamente recebidas. O estoque é transferido do almoxarifado principal para o sub-almoxarifado."
+        }
+      ],
+      "tips": [
+        "Enquanto o sub-almoxarifado não confirmar o recebimento, o estoque permanece no almoxarifado principal.",
+        "Um pedido de transferência só pode ser concluído pelo usuário responsável pelo sub-almoxarifado de destino."
+      ]
+    },
+    "sales": {
+      "description": "O módulo de Vendas registra a comercialização de suínos — animais individuais ou lotes inteiros.",
+      "prerequisites": [
+        "Suínos ou lotes devem existir no inventário."
+      ],
+      "steps": [
+        {
+          "title": "Passo 1: Abrir o formulário",
+          "desc": "Acesse Vendas. Clique em '+ Nova Venda'.",
+          "screenshot": "/manual-screenshots/sales/pig-sales-view.png"
+        },
+        {
+          "title": "Passo 2: Modo de venda",
+          "desc": "Escolha 'Por lote' (vende um lote inteiro) ou 'Individual' (seleciona animais específicos).",
+          "screenshot": "/manual-screenshots/sales/sales-form-step1.png"
+        },
+        {
+          "title": "Passo 3: Selecionar animais",
+          "desc": "Selecione o lote ou os suínos a vender. Informe o peso de abate por animal (ou peso total do lote)."
+        },
+        {
+          "title": "Passo 4: Comprador e preço",
+          "desc": "Informe o preço por kg, nome do comprador, tipo de comprador (pessoa física / empresa / frigorífico), dados de contato e forma de pagamento."
+        },
+        {
+          "title": "Passo 5: Revisar e confirmar",
+          "desc": "Revise peso total, total de animais e valor da venda. Clique em Confirmar. Os animais são removidos do inventário."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Modo de venda",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Por lote ou individual."
+        },
+        {
+          "name": "Preço por kg",
+          "type": "Número",
+          "required": true,
+          "desc": "Valor pago por quilograma de peso vivo."
+        },
+        {
+          "name": "Peso de abate",
+          "type": "Número",
+          "required": true,
+          "desc": "Peso vivo no momento da venda."
+        },
+        {
+          "name": "Nome do comprador",
+          "type": "Texto",
+          "required": true,
+          "desc": "Nome do comprador."
+        },
+        {
+          "name": "Tipo de comprador",
+          "type": "Seleção",
+          "required": false,
+          "desc": "Pessoa física, empresa ou frigorífico."
+        },
+        {
+          "name": "Forma de pagamento",
+          "type": "Seleção",
+          "required": false,
+          "desc": "Dinheiro, transferência, cheque ou crédito."
+        },
+        {
+          "name": "Custos adicionais",
+          "type": "Número",
+          "required": false,
+          "desc": "Transporte, logística ou outros custos deduzidos da receita."
+        }
+      ],
+      "tips": [
+        "O sistema calcula automaticamente o valor total da venda: peso × preço por kg.",
+        "Os relatórios de vendas detalham a receita por período, comprador e tipo de animal."
+      ]
+    },
+    "expenses": {
+      "description": "O módulo de Despesas registra todos os custos operacionais que não correspondem a compras de produtos: mão de obra, serviços, manutenção, energia, etc.",
+      "steps": [
+        {
+          "title": "Passo 1: Abrir o formulário",
+          "desc": "Acesse Financeiro → Despesas. Clique em '+ Nova Despesa'.",
+          "screenshot": "/manual-screenshots/finance/expenses-view.png"
+        },
+        {
+          "title": "Passo 2: Dados da despesa",
+          "desc": "Selecione a data, a categoria e escreva uma descrição clara. Informe o valor na moeda configurada para a granja.",
+          "screenshot": "/manual-screenshots/finance/expenses-form.png"
+        },
+        {
+          "title": "Passo 3: Salvar",
+          "desc": "Clique em Salvar. A despesa é registrada e incluída automaticamente nos relatórios financeiros do período."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Data",
+          "type": "Data",
+          "required": true,
+          "desc": "Data em que a despesa foi incorrida."
+        },
+        {
+          "name": "Categoria",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Mão de obra, serviços, manutenção, energia, outras."
+        },
+        {
+          "name": "Descrição",
+          "type": "Texto",
+          "required": true,
+          "desc": "Descrição clara da despesa."
+        },
+        {
+          "name": "Valor",
+          "type": "Número",
+          "required": true,
+          "desc": "Custo na moeda base da granja."
+        }
+      ],
+      "tips": [
+        "Use descrições claras para que os relatórios financeiros sejam legíveis por auditores.",
+        "As despesas alimentam diretamente a análise de lucratividade do período."
+      ]
+    },
+    "periodClosing": {
+      "description": "O Fechamento de Período consolida os dados financeiros e produtivos de um mês. Após o fechamento, os dados do período são bloqueados para edição.",
+      "steps": [
+        {
+          "title": "Passo 1: Verificar se todos os lançamentos estão completos",
+          "desc": "Antes de fechar, certifique-se de que todas as vendas, despesas e movimentações do almoxarifado do período foram registradas."
+        },
+        {
+          "title": "Passo 2: Acessar Fechamento de Período",
+          "desc": "Acesse Financeiro → Fechamento de Período. Selecione o período a fechar.",
+          "screenshot": "/manual-screenshots/finance/period-closing.png"
+        },
+        {
+          "title": "Passo 3: Revisar o resumo",
+          "desc": "O sistema exibe um resumo: receita, custos de produção, despesas operacionais e resultado líquido. Verifique se os totais fazem sentido."
+        },
+        {
+          "title": "Passo 4: Confirmar o fechamento",
+          "desc": "Clique em Fechar Período. O período fica bloqueado. Os relatórios financeiros desse período tornam-se definitivos."
+        }
+      ],
+      "tips": [
+        "Períodos fechados podem ser reabertos pelo Superadmin caso correções sejam necessárias.",
+        "O fechamento não afeta os dados produtivos — apenas os valores financeiros são bloqueados."
+      ],
+      "warning": "Após o fechamento, todos os valores do período ficam bloqueados. Certifique-se de que todos os registros estão completos antes de fechar."
+    },
+    "pigsView": {
+      "description": "O Inventário de Suínos exibe todos os animais ativos da granja. Filtre por fase produtiva, sexo, raça, brinco/identificação ou data de entrada.",
+      "paragraphs": [
+        "Clique em qualquer suíno para acessar seu perfil completo: informações gerais, histórico sanitário, registros de alimentação e eventos reprodutivos.",
+        "O inventário é atualizado automaticamente ao cadastrar, transferir, vender ou descartar animais. Não são necessários ajustes manuais."
+      ],
+      "tips": [
+        "Use os filtros para localizar rapidamente animais específicos.",
+        "O botão Detalhes em cada linha abre o perfil completo do animal."
+      ]
+    },
+    "pigRegister": {
+      "description": "Cadastre novos suínos individualmente (um animal por vez) ou em lote (vários animais de uma vez).",
+      "steps": [
+        {
+          "title": "Passo 1: Escolher o modo de cadastro",
+          "desc": "Acesse Suínos → Inventário. Clique em '+ Cadastrar'. Selecione 'Individual' para um único suíno ou 'Lote' para múltiplos animais.",
+          "screenshot": "/manual-screenshots/pigs/register-mode.png"
+        },
+        {
+          "title": "Passo 2: Individual — Dados do suíno",
+          "desc": "Informe código/brinco, data de nascimento, raça, origem (nascido na granja ou comprado), sexo, peso atual e fase produtiva.",
+          "screenshot": "/manual-screenshots/pigs/register-individual.png"
+        },
+        {
+          "title": "Passo 3: Individual — Revisar e salvar",
+          "desc": "Revise o resumo do suíno. Clique em Salvar. O animal aparece imediatamente no inventário."
+        },
+        {
+          "title": "Passo 2b: Lote — Dados gerais do lote",
+          "desc": "Para cadastro em lote: informe o código do lote, data de entrada, raça, origem, sexo e fase produtiva que se aplicam a todos os animais do lote.",
+          "screenshot": "/manual-screenshots/pigs/register-batch-step1.png"
+        },
+        {
+          "title": "Passo 3b: Lote — Dados individuais",
+          "desc": "Para cada animal do lote, informe o brinco individual e o peso. O sistema pré-preenche os campos compartilhados."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Código / Brinco",
+          "type": "Texto",
+          "required": true,
+          "desc": "Identificador único do suíno."
+        },
+        {
+          "name": "Data de nascimento",
+          "type": "Data",
+          "required": true,
+          "desc": "Data de nascimento do animal."
+        },
+        {
+          "name": "Raça",
+          "type": "Seleção",
+          "required": false,
+          "desc": "Raça ou linhagem genética."
+        },
+        {
+          "name": "Origem",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Nascido na granja ou comprado."
+        },
+        {
+          "name": "Sexo",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Macho / Fêmea."
+        },
+        {
+          "name": "Peso (kg)",
+          "type": "Número",
+          "required": false,
+          "desc": "Peso vivo atual."
+        },
+        {
+          "name": "Fase",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Fase produtiva atual (creche, crescimento, terminação, reposição, reprodutor)."
+        }
+      ],
+      "tips": [
+        "Para grandes quantidades, o cadastro em lote é significativamente mais rápido que o individual.",
+        "Os brincos devem ser únicos dentro da granja."
+      ]
+    },
+    "pigDiscard": {
+      "description": "O formulário de Descarte remove um animal do inventário ativo e registra o motivo (morte, abate, venda ou descarte produtivo).",
+      "steps": [
+        {
+          "title": "Passo 1: Selecionar o animal",
+          "desc": "Na listagem do inventário ou na página de detalhes do suíno, clique em Descartar."
+        },
+        {
+          "title": "Passo 2: Motivo e dados do descarte",
+          "desc": "Selecione o motivo do descarte (morte, abate, venda, descarte produtivo), informe a data, o peso ao descarte e observações relevantes."
+        },
+        {
+          "title": "Passo 3: Revisar e confirmar",
+          "desc": "Revise os dados. Clique em Confirmar. O animal é movido para o módulo de Suínos Descartados e não aparece mais no inventário ativo."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Motivo do descarte",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Morte, abate, venda ou descarte produtivo."
+        },
+        {
+          "name": "Data",
+          "type": "Data",
+          "required": true,
+          "desc": "Data do descarte."
+        },
+        {
+          "name": "Peso ao descarte (kg)",
+          "type": "Número",
+          "required": false,
+          "desc": "Peso vivo registrado no momento do descarte."
+        },
+        {
+          "name": "Observações",
+          "type": "Texto",
+          "required": false,
+          "desc": "Anotações adicionais."
+        }
+      ],
+      "tips": [
+        "Suínos descartados nunca são excluídos permanentemente — ficam visíveis no módulo de Suínos Descartados.",
+        "Os dados de mortalidade alimentam diretamente os relatórios de produção."
+      ]
+    },
+    "pigsDiscarded": {
+      "description": "A tela de Suínos Descartados exibe todos os animais removidos do inventário ativo, com data do descarte, motivo, peso e usuário responsável.",
+      "tips": [
+        "Use esta tela para auditorias de mortalidade e análise de perdas produtivas.",
+        "Filtre por motivo do descarte e período."
+      ]
+    },
+    "groups": {
+      "description": "Os Lotes agrupam suínos por fase produtiva. Cada lote tem seus próprios indicadores de desempenho: peso médio, conversão alimentar (CA), taxa de mortalidade.",
+      "paragraphs": [
+        "O sistema oferece visualizações especializadas por tipo de lote para facilitar o acompanhamento em cada fase produtiva.",
+        "Operações disponíveis em um lote: pesar, inserir animais, retirar animais, transferir para outra fase ou baia, descartar suínos do lote e aplicar eventos sanitários/alimentação."
+      ],
+      "tips": [
+        "Os lotes permitem o gerenciamento coletivo — uma ação (pesar, medicar, alimentar) se aplica a todos os animais do lote.",
+        "Um suíno só pode pertencer a um lote ativo por vez."
+      ]
+    },
+    "groupCreate": {
+      "description": "Crie um lote manualmente (selecionando suínos existentes) ou no modo vinculado (o sistema gera os registros dos animais automaticamente).",
+      "steps": [
+        {
+          "title": "Passo 1: Abrir o formulário",
+          "desc": "Acesse Lotes. Clique em '+ Novo Lote'.",
+          "screenshot": "/manual-screenshots/pigs/groups-view.png"
+        },
+        {
+          "title": "Passo 2: Dados do lote",
+          "desc": "Informe o código, nome, fase produtiva e data de entrada do lote.",
+          "screenshot": "/manual-screenshots/pigs/groups-form-step1.png"
+        },
+        {
+          "title": "Passo 3: Adicionar suínos",
+          "desc": "Modo padrão: pesquise e selecione os suínos existentes a incluir no lote. Modo vinculado: informe a quantidade, proporção sexual e peso médio — o sistema cria os registros automaticamente."
+        },
+        {
+          "title": "Passo 4: Revisar e salvar",
+          "desc": "Revise o resumo do lote (total de animais, peso médio). Clique em Salvar."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Código",
+          "type": "Texto",
+          "required": true,
+          "desc": "Identificador único do lote."
+        },
+        {
+          "name": "Nome",
+          "type": "Texto",
+          "required": false,
+          "desc": "Nome descritivo do lote."
+        },
+        {
+          "name": "Fase",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Fase produtiva (creche, crescimento, terminação, etc.)."
+        },
+        {
+          "name": "Data de entrada",
+          "type": "Data",
+          "required": true,
+          "desc": "Data em que os animais entraram no lote."
+        },
+        {
+          "name": "Suínos",
+          "type": "Seleção múltipla",
+          "required": true,
+          "desc": "Animais a incluir (modo padrão) ou contagem + peso (modo vinculado)."
+        }
+      ],
+      "tips": [
+        "Use o modo vinculado para leitões vindos do desmame — é muito mais rápido do que selecionar brincos individuais.",
+        "Lotes de creche são criados automaticamente quando uma leitegada é desmamada."
+      ]
+    },
+    "groupOperations": {
+      "description": "Operações disponíveis em um lote: pesar, inserir suínos, retirar suínos, transferir para outra fase/baia, descartar suínos do lote e mudar de fase.",
+      "paragraphs": [
+        "Pesagem coletiva: registra uma pesagem para todos os animais do lote. Atualiza peso médio e cálculos de CA.",
+        "Inserir: adiciona um ou mais suínos a um lote existente (ex.: após compra ou transferência entre baias).",
+        "Retirar: remove suínos específicos do lote sem descartá-los (ex.: para tratamento individual ou separação).",
+        "Transferir: move o lote inteiro (ou subconjunto) para outra fase ou baia.",
+        "Mudar de fase: avança o lote para a próxima fase produtiva (creche → crescimento → terminação → reposição).",
+        "Descartar no lote: registra o descarte de um ou mais animais dentro do lote sem afetar os demais."
+      ],
+      "tips": [
+        "Todas as operações de lote são registradas com data, usuário e valores antes/depois.",
+        "Descartes em lote atualizam automaticamente o KPI de mortalidade no painel do lote."
+      ]
+    },
+    "replacementSows": {
+      "description": "As marrãs de reposição são fêmeas em desenvolvimento destinadas a integrar o plantel de matrizes. Acompanhe o crescimento, registre pesagens e promova-as quando estiverem prontas para o primeiro serviço.",
+      "steps": [
+        {
+          "title": "Passo 1: Visualizar marrãs de reposição",
+          "desc": "Acesse Reprodução → Reposição → Marrãs. A lista exibe todos os animais em desenvolvimento.",
+          "screenshot": "/manual-screenshots/reproduction/replacement-sows.png"
+        },
+        {
+          "title": "Passo 2: Promover ao plantel reprodutivo",
+          "desc": "Quando a marrã estiver pronta para o primeiro serviço, clique em Promover. Informe a data de promoção e observações. O animal ingressa no plantel de porcas disponíveis para inseminação."
+        }
+      ],
+      "tips": [
+        "Marrãs aparecem em Reposição após serem cadastradas com a fase produtiva 'Reposição'.",
+        "Monitore o peso e a idade antes de promover — a promoção prematura prejudica o desempenho reprodutivo."
+      ]
+    },
+    "replacementBoars": {
+      "description": "Os varrões de reposição são machos em desenvolvimento destinados a se tornarem doadores de sêmen. Acompanhe o crescimento e habilite-os para o programa de IA quando estiverem prontos.",
+      "steps": [
+        {
+          "title": "Passo 1: Visualizar varrões de reposição",
+          "desc": "Acesse Reprodução → Reposição → Varrões. A lista exibe todos os varrões em desenvolvimento.",
+          "screenshot": "/manual-screenshots/reproduction/replacement-boars.png"
+        },
+        {
+          "title": "Passo 2: Habilitar para o programa de IA",
+          "desc": "Quando o varrão passar pela avaliação de qualidade, clique em Habilitar para Coleta de Sêmen. O varrão fica disponível no módulo de Coletas."
+        }
+      ],
+      "tips": [
+        "Um varrão deve estar habilitado antes que suas coletas possam ser registradas.",
+        "Realize uma coleta inicial para avaliar a qualidade antes de incorporá-lo ao programa."
+      ]
+    },
+    "labExtractions": {
+      "description": "O módulo de Coletas registra cada coleta de sêmen realizada em um varrão, incluindo volume, motilidade, concentração e avaliação geral de qualidade.",
+      "prerequisites": [
+        "Ao menos um varrão deve estar habilitado para coleta de sêmen."
+      ],
+      "steps": [
+        {
+          "title": "Passo 1: Abrir o formulário",
+          "desc": "Acesse Laboratório → Coletas de Sêmen. Clique em '+ Nova Coleta'.",
+          "screenshot": "/manual-screenshots/reproduction/extractions-view.png"
+        },
+        {
+          "title": "Passo 2: Selecionar varrão e data",
+          "desc": "Selecione o varrão doador na lista de reprodutores habilitados. Informe a data da coleta e o técnico responsável.",
+          "screenshot": "/manual-screenshots/reproduction/extractions-form.png"
+        },
+        {
+          "title": "Passo 3: Dados de qualidade",
+          "desc": "Informe o volume coletado (mL), concentração, motilidade progressiva (%) e classificação geral (Aprovado / Reprovado). Adicione observações se necessário."
+        },
+        {
+          "title": "Passo 4: Salvar",
+          "desc": "Clique em Salvar. Coletas aprovadas ficam disponíveis para preparação de doses no módulo de Doses de Sêmen."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Varrão",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Varrão doador (deve estar habilitado)."
+        },
+        {
+          "name": "Data da coleta",
+          "type": "Data",
+          "required": true,
+          "desc": "Data de realização da coleta."
+        },
+        {
+          "name": "Técnico",
+          "type": "Seleção",
+          "required": false,
+          "desc": "Técnico responsável pela coleta."
+        },
+        {
+          "name": "Volume (mL)",
+          "type": "Número",
+          "required": true,
+          "desc": "Volume total do ejaculado em mililitros."
+        },
+        {
+          "name": "Concentração",
+          "type": "Número",
+          "required": false,
+          "desc": "Concentração espermática (milhões/mL)."
+        },
+        {
+          "name": "Motilidade (%)",
+          "type": "Número",
+          "required": false,
+          "desc": "Percentual de motilidade progressiva."
+        },
+        {
+          "name": "Qualidade",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Aprovado ou Reprovado."
+        },
+        {
+          "name": "Observações",
+          "type": "Texto",
+          "required": false,
+          "desc": "Anotações de qualidade adicionais."
+        }
+      ],
+      "tips": [
+        "Apenas coletas Aprovadas podem ser usadas para preparar doses de sêmen.",
+        "Registre as coletas prontamente para manter o inventário do programa de IA atualizado."
+      ]
+    },
+    "labSamples": {
+      "description": "O módulo de Doses de Sêmen registra a preparação de doses inseminantes a partir de uma coleta base, incluindo número de doses, método de conservação e data de validade.",
+      "prerequisites": [
+        "Uma coleta de sêmen aprovada deve existir."
+      ],
+      "steps": [
+        {
+          "title": "Passo 1: Abrir o formulário",
+          "desc": "Acesse Laboratório → Doses de Sêmen. Clique em '+ Novo Lote de Doses'.",
+          "screenshot": "/manual-screenshots/reproduction/samples-view.png"
+        },
+        {
+          "title": "Passo 2: Selecionar coleta base",
+          "desc": "Selecione a coleta aprovada a partir da qual as doses serão preparadas.",
+          "screenshot": "/manual-screenshots/reproduction/samples-form-step1.png"
+        },
+        {
+          "title": "Passo 3: Dados das doses",
+          "desc": "Informe o número de doses preparadas, a data de validade, o método de conservação (refrigeração ou congelamento) e a localização no laboratório."
+        },
+        {
+          "title": "Passo 4: Salvar",
+          "desc": "Clique em Salvar. As doses ficam disponíveis para seleção ao registrar inseminações.",
+          "screenshot": "/manual-screenshots/operation/lab-samples-form-step3.png"
+        }
+      ],
+      "fields": [
+        {
+          "name": "Coleta base",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Coleta aprovada utilizada para preparar as doses."
+        },
+        {
+          "name": "Número de doses",
+          "type": "Número",
+          "required": true,
+          "desc": "Total de doses preparadas desta coleta."
+        },
+        {
+          "name": "Data de validade",
+          "type": "Data",
+          "required": true,
+          "desc": "Data de vencimento das doses."
+        },
+        {
+          "name": "Método de conservação",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Refrigerado (curto prazo) ou congelado (longo prazo)."
+        },
+        {
+          "name": "Localização no laboratório",
+          "type": "Texto",
+          "required": false,
+          "desc": "Localização física no laboratório (botijão, prateleira, etc.)."
+        }
+      ],
+      "tips": [
+        "Controle as datas de validade — doses vencidas não podem ser usadas em inseminações.",
+        "Doses refrigeradas duram tipicamente 3–5 dias; doses congeladas podem durar anos."
+      ]
+    },
+    "gestationInseminations": {
+      "description": "O módulo de Inseminações registra cada cobertura artificial realizada em uma porca, vinculando a fêmea, a dose de sêmen, a data e o técnico responsável.",
+      "prerequisites": [
+        "Ao menos uma porca com status disponível (não gestante e não em lactação) deve existir.",
+        "Ao menos um lote de doses de sêmen disponível deve existir."
+      ],
+      "steps": [
+        {
+          "title": "Passo 1: Abrir o formulário",
+          "desc": "Acesse Reprodução → Inseminações. Clique em '+ Registrar Inseminação'.",
+          "screenshot": "/manual-screenshots/reproduction/inseminations-view.png"
+        },
+        {
+          "title": "Passo 2: Selecionar porca",
+          "desc": "Selecione a porca na lista de fêmeas disponíveis (não gestantes, não em lactação).",
+          "screenshot": "/manual-screenshots/reproduction/insemination-form-step1.png"
+        },
+        {
+          "title": "Passo 3: Dados da inseminação",
+          "desc": "Informe a data da inseminação e o técnico responsável.",
+          "screenshot": "/manual-screenshots/reproduction/insemination-form-step2.png"
+        },
+        {
+          "title": "Passo 4: Doses de sêmen",
+          "desc": "Selecione o(s) lote(s) de doses a utilizar. Arraste para reordenar se múltiplas doses forem usadas. Informe a quantidade de doses.",
+          "screenshot": "/manual-screenshots/reproduction/insemination-form-step3.png"
+        },
+        {
+          "title": "Passo 5: Revisar e salvar",
+          "desc": "Revise o resumo. Clique em Salvar. O status da porca é atualizado para 'Inseminada'. O estoque de doses é decrementado automaticamente.",
+          "screenshot": "/manual-screenshots/operation/inseminations-form-step4.png"
+        }
+      ],
+      "fields": [
+        {
+          "name": "Porca",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Fêmea a ser inseminada (deve estar disponível)."
+        },
+        {
+          "name": "Data",
+          "type": "Data",
+          "required": true,
+          "desc": "Data da inseminação."
+        },
+        {
+          "name": "Técnico",
+          "type": "Seleção",
+          "required": false,
+          "desc": "Técnico responsável pelo serviço."
+        },
+        {
+          "name": "Dose de sêmen",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Lote de doses a utilizar (varrão + almoxarifado exibidos)."
+        },
+        {
+          "name": "Quantidade de doses",
+          "type": "Número",
+          "required": true,
+          "desc": "Número de doses utilizadas."
+        },
+        {
+          "name": "Observações",
+          "type": "Texto",
+          "required": false,
+          "desc": "Anotações sobre o serviço."
+        }
+      ],
+      "tips": [
+        "O status da porca é atualizado automaticamente: Disponível → Inseminada → Gestante → Parida.",
+        "O estoque de doses é consumido automaticamente ao salvar a inseminação."
+      ]
+    },
+    "gestationPregnancies": {
+      "description": "O módulo de Gestações exibe todas as porcas confirmadas como gestantes, com data da cobertura, data prevista de parição, dias de gestação e status atual.",
+      "paragraphs": [
+        "A gestação é confirmada ao registrar um diagnóstico de gestação (ultrassom ou retorno ao cio). Possíveis resultados: gestante, vazia (falha), duvidosa, reabsorção, aborto.",
+        "O sistema gera alertas automaticamente quando uma porca se aproxima da data prevista de parição, com base na duração de gestação configurada para a granja."
+      ],
+      "steps": [
+        {
+          "title": "Passo 1: Registrar diagnóstico de gestação",
+          "desc": "No perfil da porca ou na lista de Gestações, clique em Diagnosticar. Selecione o resultado (gestante, vazia, etc.), informe a data do diagnóstico e adicione notas ou anexos."
+        },
+        {
+          "title": "Passo 2: Acompanhar as parições próximas",
+          "desc": "A lista de Gestações destaca as porcas próximas à parição. Use isso para preparar as baias de maternidade com antecedência.",
+          "screenshot": "/manual-screenshots/reproduction/pregnancies-view.png"
+        }
+      ],
+      "tips": [
+        "Porcas vazias (inseminação falhou) devem ser reinseminadas prontamente para manter a eficiência reprodutiva.",
+        "Use o widget 'Próximas Parições' no painel para planejar a semana de maternidade."
+      ]
+    },
+    "births": {
+      "description": "O módulo de Parições registra cada parto ocorrido na granja: leitões nascidos vivos, natimortos, mumificados, pesos ao nascer e tipo de parto.",
+      "prerequisites": [
+        "A porca deve ter uma gestação confirmada no sistema."
+      ],
+      "steps": [
+        {
+          "title": "Passo 1: Abrir o formulário",
+          "desc": "Acesse Reprodução → Parições, ou clique em '+ Registrar Parição' na seção de Parições Próximas.",
+          "screenshot": "/manual-screenshots/reproduction/births-view.png"
+        },
+        {
+          "title": "Passo 2: Selecionar inseminação",
+          "desc": "Selecione a inseminação (e portanto a porca) à qual este parto corresponde.",
+          "screenshot": "/manual-screenshots/operation/births-form-step1.png"
+        },
+        {
+          "title": "Passo 3: Dados da parição",
+          "desc": "Informe a data do parto, o tipo de parição (normal, cesariana, induzido, distócico, abortivo) e os atendentes."
+        },
+        {
+          "title": "Passo 4: Dados da leitegada",
+          "desc": "Informe o número de leitões nascidos vivos, natimortos, mumificados, peso total da leitegada e distribuição por sexo. O sistema cria a leitegada automaticamente no módulo de Lactação."
+        },
+        {
+          "title": "Passo 5: Revisar e salvar",
+          "desc": "Revise o resumo da parição. Clique em Salvar. O status da porca é atualizado e a leitegada aparece na Lactação."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Inseminação",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Registro de inseminação vinculado."
+        },
+        {
+          "name": "Data do parto",
+          "type": "Data",
+          "required": true,
+          "desc": "Data de ocorrência da parição."
+        },
+        {
+          "name": "Tipo de parição",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Normal, cesariana, induzido, distócico ou abortivo."
+        },
+        {
+          "name": "Nascidos vivos",
+          "type": "Número",
+          "required": true,
+          "desc": "Número de leitões nascidos vivos."
+        },
+        {
+          "name": "Natimortos",
+          "type": "Número",
+          "required": false,
+          "desc": "Número de leitões nascidos mortos."
+        },
+        {
+          "name": "Mumificados",
+          "type": "Número",
+          "required": false,
+          "desc": "Número de fetos mumificados."
+        },
+        {
+          "name": "Peso total da leitegada (kg)",
+          "type": "Número",
+          "required": false,
+          "desc": "Peso total dos leitões nascidos vivos ao parto."
+        }
+      ],
+      "tips": [
+        "Registre as parições o quanto antes — a leitegada só aparece na Lactação após o parto ser salvo.",
+        "Dados de natimortos e mumificados alimentam diretamente os KPIs reprodutivos."
+      ]
+    },
+    "lactation": {
+      "description": "O módulo de Lactação gerencia as leitegadas do nascimento ao desmame. Registre pesagens de leitões, mortalidade pré-desmame, adoções e medicação.",
+      "paragraphs": [
+        "As leitegadas são criadas automaticamente ao registrar uma parição. A porca e sua leitegada são acompanhadas juntas durante toda a lactação.",
+        "Ao registrar o desmame, os leitões são automaticamente movidos para o Inventário de Suínos e ficam disponíveis para alocação em um lote de creche."
+      ],
+      "steps": [
+        {
+          "title": "Passo 1: Visualizar leitegadas ativas",
+          "desc": "Acesse Reprodução → Lactação. A lista exibe todas as leitegadas ativas com a porca, número de leitões, dias de lactação e peso atual.",
+          "screenshot": "/manual-screenshots/reproduction/lactation-view.png"
+        },
+        {
+          "title": "Passo 2: Registrar eventos da leitegada",
+          "desc": "Na página de detalhes de uma leitegada, é possível: registrar uma pesagem coletiva, descartar leitões mortos (mortalidade pré-desmame), fazer adoções entre leitegadas ou aplicar medicação."
+        },
+        {
+          "title": "Passo 3: Desmamar a leitegada",
+          "desc": "Quando pronto para desmamar, clique em Desmamar Leitegada. Informe a data do desmame e o peso total dos leitões. Selecione um lote de creche de destino ou deixe em branco para criar um novo lote automaticamente."
+        }
+      ],
+      "tips": [
+        "Registre a mortalidade pré-desmame prontamente para manter a contagem de leitões precisa.",
+        "O painel alerta quando as leitegadas atingem a duração alvo de lactação configurada."
+      ]
+    },
+    "weaning": {
+      "description": "Os lotes de creche agrupam leitões recém-desmamados. Registre pesagens coletivas, alimentação e eventos sanitários para toda a baia.",
+      "paragraphs": [
+        "Os lotes de creche são criados automaticamente ao desmamar uma leitegada (ou manualmente usando o modo vinculado de criação de lotes).",
+        "Quando o lote atinge o peso ou a idade alvo, transfira para a fase de crescimento."
+      ],
+      "tips": [
+        "Pese os leitões semanalmente para acompanhar o GMD (ganho médio diário) e a CA com precisão.",
+        "A meta de CA na creche é tipicamente 1,5–1,8 kg de ração por kg de ganho."
+      ]
+    },
+    "growing": {
+      "description": "Os lotes de crescimento e terminação gerenciam suínos do fim da creche até o peso de abate. Acompanhe GMD, CA e custo por kg de ganho.",
+      "paragraphs": [
+        "Lotes de crescimento/terminação recebem animais da creche via operações de mudança de fase ou transferência.",
+        "Quando os animais atingem o peso de abate, podem ser encaminhados diretamente para o módulo de Vendas."
+      ],
+      "tips": [
+        "Registre pesagens periódicas para manter os cálculos de CA e GMD atualizados.",
+        "O peso alvo de terminação varia conforme o contrato com o frigorífico — confirme antes de configurar o gatilho de mudança de fase."
+      ]
+    },
+    "medication": {
+      "description": "Os Pacotes de Medicação definem protocolos de tratamento pré-configurados que podem ser aplicados a suínos individuais, lotes ou leitegadas.",
+      "prerequisites": [
+        "Produtos de medicação ou vacinas devem existir no catálogo do almoxarifado.",
+        "O sub-almoxarifado onde os medicamentos são armazenados deve existir (se usar estoque de sub-almoxarifado)."
+      ],
+      "steps": [
+        {
+          "title": "Passo 1: Criar um pacote de medicação",
+          "desc": "Acesse Saúde → Pacotes de Medicação. Clique em '+ Novo Pacote'. Informe o código, o nome e a fase produtiva alvo.",
+          "screenshot": "/manual-screenshots/health/medication-packages-view.png"
+        },
+        {
+          "title": "Passo 2: Adicionar medicamentos",
+          "desc": "Selecione cada medicamento/vacina do catálogo de produtos. Informe a dose, unidade, frequência e duração."
+        },
+        {
+          "title": "Passo 3: Salvar o pacote",
+          "desc": "Clique em Salvar. O pacote está pronto para ser aplicado aos animais."
+        },
+        {
+          "title": "Passo 4: Aplicar o pacote",
+          "desc": "No perfil do suíno, em um lote ou em uma leitegada, clique em Aplicar Medicação. Selecione o pacote e confirme. O estoque é descontado automaticamente do sub-almoxarifado configurado."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Código",
+          "type": "Texto",
+          "required": true,
+          "desc": "Identificador do pacote."
+        },
+        {
+          "name": "Nome",
+          "type": "Texto",
+          "required": true,
+          "desc": "Nome descritivo."
+        },
+        {
+          "name": "Fase alvo",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Fase produtiva à qual o protocolo se aplica."
+        },
+        {
+          "name": "Medicamento",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Produto do catálogo do almoxarifado."
+        },
+        {
+          "name": "Dose",
+          "type": "Número",
+          "required": true,
+          "desc": "Quantidade por aplicação."
+        },
+        {
+          "name": "Unidade",
+          "type": "Seleção",
+          "required": true,
+          "desc": "mL, mg, comprimido, dose, etc."
+        },
+        {
+          "name": "Frequência",
+          "type": "Texto",
+          "required": false,
+          "desc": "Com que frequência o medicamento é administrado (ex.: 1x ao dia por 3 dias)."
+        }
+      ],
+      "tips": [
+        "Pacotes permitem aplicar protocolos de múltiplos medicamentos com um único clique — muito mais rápido do que inserir cada medicamento individualmente.",
+        "O estoque de medicamentos é descontado automaticamente ao aplicar o pacote."
+      ]
+    },
+    "vaccinationPlans": {
+      "description": "Os Planos de Vacinação agendam eventos recorrentes de vacinação por fase produtiva — o sistema acompanha datas de aplicação e conclusão.",
+      "steps": [
+        {
+          "title": "Passo 1: Criar um plano de vacinação",
+          "desc": "Acesse Saúde → Planos de Vacinação. Clique em '+ Novo Plano'. Informe o código, o nome e a fase alvo.",
+          "screenshot": "/manual-screenshots/health/vaccination-plans-view.png"
+        },
+        {
+          "title": "Passo 2: Definir vacinas e cronograma",
+          "desc": "Selecione cada vacina, a idade alvo (em dias) e a frequência de aplicação."
+        },
+        {
+          "title": "Passo 3: Atribuir a suínos / lotes",
+          "desc": "No perfil do suíno ou no lote, clique em Aplicar Plano de Vacinação e selecione o plano. O sistema agenda as próximas aplicações."
+        }
+      ],
+      "tips": [
+        "Alertas de plano de vacinação aparecem no painel quando as datas de aplicação se aproximam.",
+        "Mantenha os registros de vacinação em dia para certificações sanitárias e auditorias de rastreabilidade."
+      ]
+    },
+    "medicationAssign": {
+      "description": "Aplique um pacote de medicação ou um medicamento específico diretamente a um suíno, lote ou leitegada.",
+      "steps": [
+        {
+          "title": "Passo 1: Navegar até o animal ou lote",
+          "desc": "Abra a página de detalhes do suíno, do lote ou da leitegada."
+        },
+        {
+          "title": "Passo 2: Clicar em Aplicar Medicação",
+          "desc": "Clique no botão Aplicar Medicação. Selecione o pacote de medicação ou escolha um produto específico."
+        },
+        {
+          "title": "Passo 3: Confirmar",
+          "desc": "Confirme a aplicação. O sistema registra o evento, desconta o produto do estoque do sub-almoxarifado e registra o usuário responsável e a data.",
+          "screenshot": "/manual-screenshots/health/medication-form-step2.png"
+        }
+      ],
+      "tips": [
+        "Eventos de medicação ficam visíveis no histórico sanitário do animal na página de perfil.",
+        "Se o estoque for insuficiente, o sistema avisará antes de salvar."
+      ]
+    },
+    "feeding": {
+      "description": "Os Pacotes de Alimentação definem fórmulas de dieta especificando ingredientes, percentuais e CA esperada para cada fase produtiva.",
+      "steps": [
+        {
+          "title": "Passo 1: Criar um pacote de alimentação",
+          "desc": "Acesse Nutrição → Pacotes de Alimentação. Clique em '+ Novo Pacote'. Informe código, nome e fase alvo.",
+          "screenshot": "/manual-screenshots/health/feeding-packages-view.png"
+        },
+        {
+          "title": "Passo 2: Definir ingredientes",
+          "desc": "Adicione cada ingrediente do catálogo do almoxarifado. Informe o percentual de composição e a CA esperada."
+        },
+        {
+          "title": "Passo 3: Salvar",
+          "desc": "Clique em Salvar. O pacote está pronto para uso no preparo de ração."
+        }
+      ],
+      "tips": [
+        "Os percentuais dos ingredientes devem totalizar 100%.",
+        "Pacotes de alimentação vinculam o consumo ao estoque do almoxarifado — os ingredientes são descontados ao administrar a ração."
+      ]
+    },
+    "feedPreparation": {
+      "description": "O Preparo de Ração registra um lote físico de ração produzido com base em uma fórmula de Pacote de Alimentação.",
+      "prerequisites": [
+        "Um pacote de alimentação deve existir.",
+        "O sub-almoxarifado onde a ração será armazenada deve existir.",
+        "Deve haver estoque suficiente dos ingredientes."
+      ],
+      "steps": [
+        {
+          "title": "Passo 1: Abrir o formulário",
+          "desc": "Acesse Nutrição → Preparo de Ração. Clique em '+ Novo Preparo'."
+        },
+        {
+          "title": "Passo 2: Selecionar pacote e sub-almoxarifado",
+          "desc": "Selecione a fórmula de pacote a utilizar e o sub-almoxarifado onde o lote será armazenado."
+        },
+        {
+          "title": "Passo 3: Informar rendimento real e ingredientes",
+          "desc": "Informe o rendimento real do lote (kg) e, para cada ingrediente, a quantidade efetivamente utilizada (pode diferir da fórmula em caso de ajustes)."
+        },
+        {
+          "title": "Passo 4: Salvar",
+          "desc": "Clique em Salvar. O estoque dos ingredientes é descontado do almoxarifado principal. O estoque de ração é adicionado ao sub-almoxarifado de destino."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Pacote de alimentação",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Fórmula a utilizar neste lote."
+        },
+        {
+          "name": "Sub-almoxarifado",
+          "type": "Seleção",
+          "required": true,
+          "desc": "Onde a ração produzida será armazenada."
+        },
+        {
+          "name": "Rendimento real (kg)",
+          "type": "Número",
+          "required": true,
+          "desc": "Tamanho real do lote produzido."
+        },
+        {
+          "name": "Quantidades dos ingredientes",
+          "type": "Número",
+          "required": true,
+          "desc": "Quantidade efetiva de cada ingrediente utilizado."
+        }
+      ],
+      "tips": [
+        "As quantidades reais dos ingredientes são usadas para o desconto do almoxarifado — não os percentuais da fórmula.",
+        "Prepare a ração antes de agendar a administração para garantir disponibilidade de estoque."
+      ]
+    },
+    "reportsProduction": {
+      "description": "Os Relatórios de Produção consolidam os indicadores de desempenho da granja: taxa de parição, tamanho de leitegada, mortalidade pré-desmame, GMD e eficiência reprodutiva.",
+      "paragraphs": [
+        "Filtre por período, granja e tipo de indicador. Os gráficos ajudam a identificar tendências e comparar o desempenho entre períodos.",
+        "Relatórios de produção disponíveis: Resumo de inseminações, Taxa de parição, Desempenho de leitegada, Mortalidade por fase, Ganho de peso por lote."
+      ],
+      "tips": [
+        "Exporte os relatórios em PDF para compartilhar com a gerência ou consultores externos.",
+        "Compare períodos consecutivos para identificar tendências sazonais."
+      ]
+    },
+    "reportsInventory": {
+      "description": "Os Relatórios de Estoque exibem o histórico completo de movimentações do almoxarifado, consumo por período, alertas de estoque mínimo e valorização do inventário.",
+      "paragraphs": [
+        "Relatórios disponíveis: Valorização do inventário (saldo atual × preço de referência), Histórico de movimentações (todas as entradas e saídas de um período), Consumo por produto/categoria, Resumo de alertas de estoque mínimo."
+      ],
+      "tips": [
+        "A valorização do inventário é baseada nos preços de referência do catálogo de produtos — mantenha-os atualizados.",
+        "Exporte para Excel para integração com sistemas de contabilidade externos."
+      ]
+    },
+    "reportsFinance": {
+      "description": "Os Relatórios Financeiros consolidam receita, custos de produção, despesas operacionais e resultado líquido por período.",
+      "paragraphs": [
+        "Relatórios disponíveis: DRE simplificada (receita vs custos), Lucratividade por lote/grupo, Fluxo de caixa resumido, Custo por kg produzido.",
+        "Todos os relatórios financeiros respeitam o bloqueio de fechamento de período — períodos fechados exibem valores definitivos."
+      ],
+      "tips": [
+        "Use o relatório de custo por kg para comparar a eficiência da sua operação com referências do setor.",
+        "Os valores de receita vêm das Vendas; os custos vêm das movimentações do almoxarifado e das despesas."
+      ]
+    },
+    "reportsSales": {
+      "description": "Os Relatórios de Vendas exibem o histórico de comercialização de suínos: volumes, preços médios, compradores e desempenho por período.",
+      "tips": [
+        "Filtre por comprador para analisar seus principais relacionamentos comerciais.",
+        "A tendência de preço médio por kg ajuda a negociar contratos com frigoríficos."
+      ]
+    },
+    "reportsTraceability": {
+      "description": "A Rastreabilidade permite reconstruir o histórico completo de um suíno ou lote: da entrada à saída, passando por todos os eventos registrados.",
+      "tips": [
+        "Use a rastreabilidade para auditorias sanitárias, investigação de doenças e exigências de certificação.",
+        "Todos os eventos (pesagem, medicação, vacinação, transferência, inseminação, parição) são incluídos no histórico de rastreabilidade."
+      ]
+    },
+    "reportsAudit": {
+      "description": "Os Relatórios de Auditoria registram todas as ações realizadas no sistema: criações, edições e exclusões, com o usuário responsável e o horário exato.",
+      "tips": [
+        "Os registros de auditoria são imutáveis — não podem ser alterados por nenhum usuário.",
+        "Use os relatórios de auditoria para investigar inconsistências de dados ou verificar a conformidade dos processos."
+      ]
+    }
+  }
+}

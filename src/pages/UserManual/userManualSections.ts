@@ -1,8 +1,48 @@
+// ─── Content block types ────────────────────────────────────────────────────
+// Each block type knows how to look up its content in the i18n JSON under
+// manual.sections.{sectionCamelKey}.{impliedKey}.
+// Sections that define contentBlocks[] use the new rich rendering path;
+// sections that only define screenshotPath/screenshotFormPath use the legacy path.
+
+export type ManualContentBlock =
+  | { type: "description" }       // manual.sections.{key}.description  (string)
+  | { type: "paragraphs" }        // manual.sections.{key}.paragraphs   (string[])
+  | { type: "prerequisites" }     // manual.sections.{key}.prerequisites (string[])
+  | { type: "steps" }             // manual.sections.{key}.steps        (ManualStepItem[])
+  | { type: "fieldTable" }        // manual.sections.{key}.fields       (ManualFieldItem[])
+  | { type: "tips" }              // manual.sections.{key}.tips         (string[])
+  | { type: "warning" }           // manual.sections.{key}.warning      (string)
+  | { type: "screenshot"; path: string; captionKey?: string }
+  | { type: "roleTable" }         // static role-permissions matrix
+
+// ─── Interfaces used in JSON content ────────────────────────────────────────
+// These describe the shape of arrays stored in the locale files.
+// They are used only as casting helpers in the rendering components.
+
+export interface ManualStepItem {
+  title: string;
+  desc: string;
+  screenshot?: string;
+}
+
+export interface ManualFieldItem {
+  name: string;
+  type: string;
+  required: boolean;
+  desc: string;
+}
+
+// ─── Section / Category model ─────────────────────────────────────────────
 export interface ManualSection {
   id: string;
   labelKey: string;
+  // Optional role restriction — if set, section only renders for users with one of these roles
+  roles?: string[];
+  // Legacy fields — kept for backward compatibility during migration
   screenshotPath?: string;
   screenshotFormPath?: string;
+  // New rich-content system — if present, replaces legacy rendering
+  contentBlocks?: ManualContentBlock[];
 }
 
 export interface ManualCategory {
@@ -12,95 +52,246 @@ export interface ManualCategory {
   sections: ManualSection[];
 }
 
+// ─── Category / Section registry ─────────────────────────────────────────
+
 export const MANUAL_CATEGORIES: ManualCategory[] = [
+  // ── Primeros Pasos ───────────────────────────────────────────────────────
   {
-    id: "intro",
-    labelKey: "manual.categories.intro",
-    icon: "ri-information-line",
+    id: "start",
+    labelKey: "manual.categories.start",
+    icon: "ri-rocket-line",
     sections: [
-      { id: "overview", labelKey: "manual.sections.overview.title" },
       {
-        id: "home",
-        labelKey: "manual.sections.home.title",
-        screenshotPath: "/manual-screenshots/home-dashboard.png",
+        id: "overview",
+        labelKey: "manual.sections.overview.title",
+        contentBlocks: [
+          { type: "description" },
+          { type: "paragraphs" },
+          { type: "tips" },
+        ],
+      },
+      {
+        id: "initial-setup",
+        labelKey: "manual.sections.initialSetup.title",
+        roles: ["Superadmin"],
+        contentBlocks: [
+          { type: "description" },
+          { type: "steps" },
+          { type: "tips" },
+          { type: "warning" },
+        ],
+      },
+      {
+        id: "roles",
+        labelKey: "manual.sections.roles.title",
+        contentBlocks: [
+          { type: "description" },
+          { type: "roleTable" },
+          { type: "tips" },
+        ],
+      },
+      {
+        id: "navigation",
+        labelKey: "manual.sections.navigation.title",
+        contentBlocks: [
+          { type: "description" },
+          { type: "paragraphs" },
+          { type: "tips" },
+        ],
       },
     ],
   },
+
+  // ── Administración ────────────────────────────────────────────────────────
   {
     id: "admin",
     labelKey: "manual.categories.admin",
     icon: "ri-community-line",
     sections: [
       {
-        id: "farms",
-        labelKey: "manual.sections.farms.title",
-        screenshotPath: "/manual-screenshots/farms-view.png",
+        id: "users",
+        labelKey: "manual.sections.users.title",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/admin/users-view.png" },
+          { type: "paragraphs" },
+          { type: "steps" },
+          { type: "fieldTable" },
+          { type: "tips" },
+        ],
       },
       {
-        id: "warehouse-inventory",
-        labelKey: "manual.sections.warehouseInventory.title",
-        screenshotPath: "/manual-screenshots/warehouse-inventory.png",
-        screenshotFormPath: "/manual-screenshots/warehouse-inventory-form.png",
+        id: "farms",
+        labelKey: "manual.sections.farms.title",
+        roles: ["Superadmin"],
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/admin/farms-view.png" },
+          { type: "prerequisites" },
+          { type: "steps" },
+          { type: "fieldTable" },
+          { type: "tips" },
+        ],
+      },
+      {
+        id: "config-global",
+        labelKey: "manual.sections.configGlobal.title",
+        roles: ["Superadmin"],
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/admin/config-global.png" },
+          { type: "fieldTable" },
+          { type: "tips" },
+          { type: "warning" },
+        ],
+      },
+      {
+        id: "config-farm",
+        labelKey: "manual.sections.configFarm.title",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/admin/config-farm.png" },
+          { type: "fieldTable" },
+          { type: "tips" },
+          { type: "warning" },
+        ],
+      },
+    ],
+  },
+
+  // ── Almacén ───────────────────────────────────────────────────────────────
+  {
+    id: "warehouse",
+    labelKey: "manual.categories.warehouse",
+    icon: "ri-store-2-line",
+    sections: [
+      {
+        id: "warehouse-products",
+        labelKey: "manual.sections.warehouseProducts.title",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/warehouse/products-view.png" },
+          { type: "steps" },
+          { type: "fieldTable" },
+          { type: "tips" },
+        ],
       },
       {
         id: "warehouse-suppliers",
         labelKey: "manual.sections.warehouseSuppliers.title",
-        screenshotPath: "/manual-screenshots/warehouse-suppliers.png",
-        screenshotFormPath: "/manual-screenshots/warehouse-suppliers-form.png",
-      },
-      {
-        id: "warehouse-products",
-        labelKey: "manual.sections.warehouseProducts.title",
-        screenshotPath: "/manual-screenshots/warehouse-products.png",
-        screenshotFormPath: "/manual-screenshots/warehouse-products-form.png",
-      },
-      {
-        id: "warehouse-incomes",
-        labelKey: "manual.sections.warehouseIncomes.title",
-        screenshotPath: "/manual-screenshots/warehouse-incomes.png",
-        screenshotFormPath: "/manual-screenshots/warehouse-inventory-form.png",
-      },
-      {
-        id: "warehouse-outcomes",
-        labelKey: "manual.sections.warehouseOutcomes.title",
-        screenshotPath: "/manual-screenshots/warehouse-outcomes.png",
-        screenshotFormPath: "/manual-screenshots/warehouse-outcomes-form.png",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/warehouse/suppliers-view.png" },
+          { type: "steps" },
+          { type: "fieldTable" },
+          { type: "tips" },
+        ],
       },
       {
         id: "purchase-orders",
         labelKey: "manual.sections.purchaseOrders.title",
-        screenshotPath: "/manual-screenshots/purchase-orders.png",
-        screenshotFormPath: "/manual-screenshots/purchase-orders-form.png",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/warehouse/purchase-orders-view.png" },
+          { type: "prerequisites" },
+          { type: "steps" },
+          { type: "fieldTable" },
+          { type: "tips" },
+        ],
+      },
+      {
+        id: "warehouse-incomes",
+        labelKey: "manual.sections.warehouseIncomes.title",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/warehouse/incomes-view.png" },
+          { type: "prerequisites" },
+          { type: "steps" },
+          { type: "fieldTable" },
+          { type: "tips" },
+          { type: "warning" },
+        ],
+      },
+      {
+        id: "warehouse-outcomes",
+        labelKey: "manual.sections.warehouseOutcomes.title",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/warehouse/outcomes-view.png" },
+          { type: "prerequisites" },
+          { type: "steps" },
+          { type: "fieldTable" },
+          { type: "tips" },
+        ],
+      },
+      {
+        id: "warehouse-inventory",
+        labelKey: "manual.sections.warehouseInventory.title",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/warehouse/inventory-view.png" },
+          { type: "paragraphs" },
+          { type: "tips" },
+        ],
       },
       {
         id: "subwarehouse",
         labelKey: "manual.sections.subwarehouse.title",
-        screenshotPath: "/manual-screenshots/subwarehouse-view.png",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/warehouse/subwarehouse-view.png" },
+          { type: "steps" },
+          { type: "fieldTable" },
+          { type: "tips" },
+        ],
       },
-      {
-        id: "orders",
-        labelKey: "manual.sections.orders.title",
-        screenshotPath: "/manual-screenshots/orders-view.png",
-      },
+    ],
+  },
+
+  // ── Finanzas ──────────────────────────────────────────────────────────────
+  {
+    id: "finance",
+    labelKey: "manual.categories.finance",
+    icon: "ri-money-dollar-circle-line",
+    sections: [
       {
         id: "sales",
         labelKey: "manual.sections.sales.title",
-        screenshotPath: "/manual-screenshots/sales-view.png",
-        screenshotFormPath: "/manual-screenshots/sales-form.png",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/sales/pig-sales-view.png" },
+          { type: "prerequisites" },
+          { type: "steps" },
+          { type: "fieldTable" },
+          { type: "tips" },
+        ],
       },
       {
         id: "expenses",
         labelKey: "manual.sections.expenses.title",
-        screenshotPath: "/manual-screenshots/expenses-view.png",
-        screenshotFormPath: "/manual-screenshots/expenses-form.png",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/finance/expenses-view.png" },
+          { type: "steps" },
+          { type: "fieldTable" },
+          { type: "tips" },
+        ],
       },
       {
         id: "period-closing",
         labelKey: "manual.sections.periodClosing.title",
-        screenshotPath: "/manual-screenshots/period-closing.png",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/finance/period-closing.png" },
+          { type: "paragraphs" },
+          { type: "tips" },
+          { type: "warning" },
+        ],
       },
     ],
   },
+
+  // ── Cerdos ────────────────────────────────────────────────────────────────
   {
     id: "pigs",
     labelKey: "manual.categories.pigs",
@@ -109,20 +300,77 @@ export const MANUAL_CATEGORIES: ManualCategory[] = [
       {
         id: "pigs-view",
         labelKey: "manual.sections.pigsView.title",
-        screenshotPath: "/manual-screenshots/pigs-inventory.png",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/pigs/pigs-view.png" },
+          { type: "paragraphs" },
+          { type: "tips" },
+        ],
+      },
+      {
+        id: "pig-register",
+        labelKey: "manual.sections.pigRegister.title",
+        contentBlocks: [
+          { type: "description" },
+          { type: "steps" },
+          { type: "fieldTable" },
+          { type: "tips" },
+        ],
+      },
+      {
+        id: "pig-discard",
+        labelKey: "manual.sections.pigDiscard.title",
+        contentBlocks: [
+          { type: "description" },
+          { type: "steps" },
+          { type: "fieldTable" },
+          { type: "tips" },
+          { type: "warning" },
+        ],
       },
       {
         id: "pigs-discarded",
         labelKey: "manual.sections.pigsDiscarded.title",
-        screenshotPath: "/manual-screenshots/pigs-discarded.png",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/pigs/discarded-view.png" },
+          { type: "paragraphs" },
+          { type: "tips" },
+        ],
       },
       {
         id: "groups",
         labelKey: "manual.sections.groups.title",
-        screenshotPath: "/manual-screenshots/weaning-groups.png",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/pigs/groups-view.png" },
+          { type: "paragraphs" },
+          { type: "tips" },
+        ],
+      },
+      {
+        id: "group-create",
+        labelKey: "manual.sections.groupCreate.title",
+        contentBlocks: [
+          { type: "description" },
+          { type: "steps" },
+          { type: "fieldTable" },
+          { type: "tips" },
+        ],
+      },
+      {
+        id: "group-operations",
+        labelKey: "manual.sections.groupOperations.title",
+        contentBlocks: [
+          { type: "description" },
+          { type: "steps" },
+          { type: "tips" },
+        ],
       },
     ],
   },
+
+  // ── Operación (ciclo reproductivo) ────────────────────────────────────────
   {
     id: "operation",
     labelKey: "manual.categories.operation",
@@ -131,59 +379,118 @@ export const MANUAL_CATEGORIES: ManualCategory[] = [
       {
         id: "replacement-sows",
         labelKey: "manual.sections.replacementSows.title",
-        screenshotPath: "/manual-screenshots/replacement-sows.png",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/reproduction/replacement-sows.png" },
+          { type: "paragraphs" },
+          { type: "tips" },
+        ],
       },
       {
         id: "replacement-boars",
         labelKey: "manual.sections.replacementBoars.title",
-        screenshotPath: "/manual-screenshots/replacement-boars.png",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/reproduction/replacement-boars.png" },
+          { type: "paragraphs" },
+          { type: "tips" },
+        ],
       },
       {
         id: "lab-extractions",
         labelKey: "manual.sections.labExtractions.title",
-        screenshotPath: "/manual-screenshots/lab-extractions.png",
-        screenshotFormPath: "/manual-screenshots/lab-extractions-form.png",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/reproduction/extractions-view.png" },
+          { type: "prerequisites" },
+          { type: "steps" },
+          { type: "fieldTable" },
+          { type: "tips" },
+        ],
       },
       {
         id: "lab-samples",
         labelKey: "manual.sections.labSamples.title",
-        screenshotPath: "/manual-screenshots/lab-samples.png",
-        screenshotFormPath: "/manual-screenshots/lab-samples-form.png",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/reproduction/samples-view.png" },
+          { type: "prerequisites" },
+          { type: "steps" },
+          { type: "fieldTable" },
+          { type: "tips" },
+        ],
       },
       {
         id: "gestation-inseminations",
         labelKey: "manual.sections.gestationInseminations.title",
-        screenshotPath: "/manual-screenshots/gestation-inseminations.png",
-        screenshotFormPath: "/manual-screenshots/gestation-inseminations-form.png",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/reproduction/inseminations-view.png" },
+          { type: "prerequisites" },
+          { type: "steps" },
+          { type: "fieldTable" },
+          { type: "tips" },
+          { type: "warning" },
+        ],
       },
       {
         id: "gestation-pregnancies",
         labelKey: "manual.sections.gestationPregnancies.title",
-        screenshotPath: "/manual-screenshots/gestation-pregnancies.png",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/reproduction/pregnancies-view.png" },
+          { type: "paragraphs" },
+          { type: "steps" },
+          { type: "tips" },
+        ],
       },
       {
         id: "births",
         labelKey: "manual.sections.births.title",
-        screenshotPath: "/manual-screenshots/births-view.png",
-        screenshotFormPath: "/manual-screenshots/births-form.png",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/reproduction/births-view.png" },
+          { type: "prerequisites" },
+          { type: "steps" },
+          { type: "fieldTable" },
+          { type: "tips" },
+        ],
       },
       {
         id: "lactation",
         labelKey: "manual.sections.lactation.title",
-        screenshotPath: "/manual-screenshots/lactation-litters.png",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/reproduction/lactation-view.png" },
+          { type: "paragraphs" },
+          { type: "tips" },
+        ],
       },
       {
         id: "weaning",
         labelKey: "manual.sections.weaning.title",
-        screenshotPath: "/manual-screenshots/weaning-groups.png",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/pigs/weaned-groups-view.png" },
+          { type: "prerequisites" },
+          { type: "steps" },
+          { type: "tips" },
+        ],
       },
       {
         id: "growing",
         labelKey: "manual.sections.growing.title",
-        screenshotPath: "/manual-screenshots/growing-groups.png",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/pigs/growing-groups-view.png" },
+          { type: "paragraphs" },
+          { type: "tips" },
+        ],
       },
     ],
   },
+
+  // ── Salud y Nutrición ─────────────────────────────────────────────────────
   {
     id: "health",
     labelKey: "manual.categories.health",
@@ -192,16 +499,63 @@ export const MANUAL_CATEGORIES: ManualCategory[] = [
       {
         id: "medication",
         labelKey: "manual.sections.medication.title",
-        screenshotPath: "/manual-screenshots/medication-packages.png",
-        screenshotFormPath: "/manual-screenshots/medication-form.png",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/health/medication-packages-view.png" },
+          { type: "prerequisites" },
+          { type: "steps" },
+          { type: "fieldTable" },
+          { type: "tips" },
+        ],
+      },
+      {
+        id: "vaccination-plans",
+        labelKey: "manual.sections.vaccinationPlans.title",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/health/vaccination-plans-view.png" },
+          { type: "prerequisites" },
+          { type: "steps" },
+          { type: "fieldTable" },
+          { type: "tips" },
+        ],
+      },
+      {
+        id: "medication-assign",
+        labelKey: "manual.sections.medicationAssign.title",
+        contentBlocks: [
+          { type: "description" },
+          { type: "steps" },
+          { type: "tips" },
+        ],
       },
       {
         id: "feeding",
         labelKey: "manual.sections.feeding.title",
-        screenshotPath: "/manual-screenshots/feeding-packages.png",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/health/feeding-packages-view.png" },
+          { type: "prerequisites" },
+          { type: "steps" },
+          { type: "fieldTable" },
+          { type: "tips" },
+        ],
+      },
+      {
+        id: "feed-preparation",
+        labelKey: "manual.sections.feedPreparation.title",
+        contentBlocks: [
+          { type: "description" },
+          { type: "prerequisites" },
+          { type: "steps" },
+          { type: "fieldTable" },
+          { type: "tips" },
+        ],
       },
     ],
   },
+
+  // ── Reportes ──────────────────────────────────────────────────────────────
   {
     id: "reports",
     labelKey: "manual.categories.reports",
@@ -210,55 +564,68 @@ export const MANUAL_CATEGORIES: ManualCategory[] = [
       {
         id: "reports-production",
         labelKey: "manual.sections.reportsProduction.title",
-        screenshotPath: "/manual-screenshots/reports-production.png",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/reports/report-inseminations-births.png" },
+          { type: "paragraphs" },
+          { type: "tips" },
+        ],
       },
       {
         id: "reports-inventory",
         labelKey: "manual.sections.reportsInventory.title",
-        screenshotPath: "/manual-screenshots/reports-inventory.png",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/reports/report-inventory-movements.png" },
+          { type: "paragraphs" },
+          { type: "tips" },
+        ],
       },
       {
         id: "reports-finance",
         labelKey: "manual.sections.reportsFinance.title",
-        screenshotPath: "/manual-screenshots/reports-finance.png",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/reports/report-finance-purchases.png" },
+          { type: "paragraphs" },
+          { type: "tips" },
+        ],
       },
       {
         id: "reports-sales",
         labelKey: "manual.sections.reportsSales.title",
-        screenshotPath: "/manual-screenshots/reports-sales.png",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/reports/report-sales-overview.png" },
+          { type: "paragraphs" },
+          { type: "tips" },
+        ],
       },
       {
         id: "reports-traceability",
         labelKey: "manual.sections.reportsTraceability.title",
-        screenshotPath: "/manual-screenshots/reports-traceability.png",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/reports/report-traceability.png" },
+          { type: "paragraphs" },
+          { type: "tips" },
+        ],
       },
       {
         id: "reports-audit",
         labelKey: "manual.sections.reportsAudit.title",
-        screenshotPath: "/manual-screenshots/reports-audit.png",
-      },
-    ],
-  },
-  {
-    id: "config",
-    labelKey: "manual.categories.config",
-    icon: "mdi mdi-cog-outline",
-    sections: [
-      {
-        id: "users",
-        labelKey: "manual.sections.users.title",
-        screenshotPath: "/manual-screenshots/users-view.png",
-        screenshotFormPath: "/manual-screenshots/users-form.png",
-      },
-      {
-        id: "configurations",
-        labelKey: "manual.sections.configurations.title",
-        screenshotPath: "/manual-screenshots/configurations.png",
+        contentBlocks: [
+          { type: "description" },
+          { type: "screenshot", path: "/manual-screenshots/reports/report-audit.png" },
+          { type: "paragraphs" },
+          { type: "tips" },
+        ],
       },
     ],
   },
 ];
 
+// ─── Utility ────────────────────────────────────────────────────────────────
 export function idToCamelKey(id: string): string {
   return id.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
 }

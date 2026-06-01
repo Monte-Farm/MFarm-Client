@@ -63,7 +63,11 @@ const UserManualSidebar = ({ categories, activeSectionId, onSelectSection }: Pro
           </div>
         </div>
 
-        <div className="accordion accordion-flush" id="manualAccordion">
+        <div
+          className="accordion accordion-flush"
+          id="manualAccordion"
+          style={{ maxHeight: "calc(100vh - 180px)", overflowY: "auto" }}
+        >
           {filteredCategories.map((category) => {
             const isOpen = openCategory === category.id || !!searchTerm;
             return (

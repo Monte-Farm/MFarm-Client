@@ -1,0 +1,1831 @@
+{
+  "labels": {
+    "prerequisites": "Prerequisites",
+    "stepsTitle": "Steps",
+    "fieldsTitle": "Field descriptions",
+    "fieldName": "Field",
+    "fieldType": "Type",
+    "fieldRequired": "Required",
+    "fieldDesc": "Description",
+    "tipsLabel": "Tips:",
+    "clickToZoom": "Click the image to zoom in",
+    "module": "Module"
+  },
+  "roles": {
+    "superadmin": "Superadmin",
+    "farmManager": "Farm Manager",
+    "financeManager": "Finance Manager",
+    "warehouseManager": "Warehouse Manager",
+    "subwarehouseManager": "Sub-Warehouse Manager",
+    "reproTech": "Reproduction Technician",
+    "veterinarian": "Veterinarian",
+    "generalWorker": "General Worker"
+  },
+  "roleMatrix": {
+    "home": "Home / Dashboard",
+    "farms": "Farms",
+    "users": "User Management",
+    "configGlobal": "Global Configuration",
+    "configFarm": "Farm Configuration",
+    "warehouse": "Warehouse",
+    "productCatalog": "Product Catalog",
+    "subwarehouse": "Sub-Warehouses",
+    "orders": "Transfer Orders",
+    "sales": "Sales",
+    "expenses": "Expenses",
+    "periodClosing": "Period Closing",
+    "pigs": "Pig Inventory",
+    "replacement": "Replacement Animals",
+    "reproduction": "Reproduction / Lab",
+    "births": "Farrowing & Lactation",
+    "lactation": "Lactation",
+    "groups": "Groups",
+    "health": "Health (medication / vaccines)",
+    "feeding": "Feeding",
+    "reports": "Reports"
+  },
+  "sections": {
+    "overview": {
+      "description": "PorcySys is a comprehensive swine farm management system that covers every aspect of your operation: pig inventory, reproduction, health, nutrition, warehouse, and financials.",
+      "paragraphs": [
+        "The system is organized into modules accessible from the side menu. Each user only sees the modules permitted by their role.",
+        "Data flows automatically between modules: a farrowing creates a litter in Lactation, an insemination updates the sow's reproductive status, a warehouse receipt updates inventory. There is no need to duplicate records.",
+        "This manual covers all available features. If a module does not appear in your menu, ask your administrator about your role permissions."
+      ],
+      "tips": [
+        "Use the sidebar search to quickly find any section of the manual.",
+        "Click any image to zoom in.",
+        "The system works best on screens 1280 px wide or larger."
+      ]
+    },
+    "initialSetup": {
+      "description": "When the system is blank, the Superadmin must complete an initial setup before farm managers can begin working.",
+      "steps": [
+        {
+          "title": "Step 1: Log in as Superadmin",
+          "desc": "Access the system with the Superadmin credentials provided by the support team. You will land on the main dashboard."
+        },
+        {
+          "title": "Step 2: Configure global settings",
+          "desc": "Go to Global Configuration (gear icon in the header or in the menu). Set the company name, logo, currency, decimal places, time zone, and date format. Save your changes.",
+          "screenshot": "/manual-screenshots/admin/config-global.png"
+        },
+        {
+          "title": "Step 3: Register Farm Manager users",
+          "desc": "Go to Settings → Users and click '+ Register User'. Create one or more users with the Farm Manager role. The system will automatically send their login credentials by email.",
+          "screenshot": "/manual-screenshots/admin/users-form.png"
+        },
+        {
+          "title": "Step 4: Create farms",
+          "desc": "Go to Farms and click '+ New Farm'. Fill in each farm's details and assign the corresponding manager (must already be registered in the previous step).",
+          "screenshot": "/manual-screenshots/admin/farms-form.png"
+        },
+        {
+          "title": "Step 5: Farm Manager configures their farm",
+          "desc": "The Farm Manager logs in and goes to Farm Configuration. Adjust the production thresholds (gestation days, lactation, nursery, grow-finish) to match their real-world operation. If left unchanged, system defaults apply."
+        },
+        {
+          "title": "Step 6: Register products, suppliers, and additional users",
+          "desc": "Before production begins, the manager should register the warehouse product catalog, suppliers, and all other users (veterinarians, technicians, warehouse staff). The system is then ready to receive production data."
+        }
+      ],
+      "tips": [
+        "Order matters: create users first, then farms. A manager without a user account cannot be assigned to a farm.",
+        "You can create multiple farms under the same Superadmin, each with its own manager."
+      ],
+      "warning": "Do not skip Farm Configuration. The thresholds drive the system's automatic alerts (upcoming farrowing, weaning-ready, stage change). Wrong values mean meaningless alerts."
+    },
+    "roles": {
+      "description": "PorcySys has 8 user roles. Each role determines which modules appear in the menu and what actions the user can perform."
+    },
+    "navigation": {
+      "description": "The system uses a fixed side menu (sidebar) to navigate between modules.",
+      "paragraphs": [
+        "The sidebar is organized into sections: Home, Administration, Operations, Health & Nutrition, Reports. Each section groups related modules. Only modules your role can access are shown.",
+        "In the top header you will find: the language selector (ES / EN / PT), the notifications icon, access to the AI Assistant, and the profile menu (user photo). From the profile menu you can access this manual, view your profile, and sign out.",
+        "The Dashboard (Home) is the main screen. It shows KPIs and summaries tailored to your role. Change the analysis period using the date selector at the top."
+      ],
+      "tips": [
+        "On small screens the sidebar collapses. Use the hamburger icon (☰) to open it.",
+        "The open-book icon in the profile menu goes directly to this manual."
+      ]
+    },
+    "users": {
+      "description": "The Users module lets the Superadmin create and manage all system accounts. Each user has one or more roles and may be assigned to a farm.",
+      "paragraphs": [
+        "Available actions in the users table: register a new user, edit details, activate/deactivate an account, and resend login credentials by email.",
+        "A deactivated user cannot log in, but their historical records are fully preserved. To permanently delete a user, contact the support team."
+      ],
+      "steps": [
+        {
+          "title": "Step 1: Open the form",
+          "desc": "Go to Settings → Users. Click '+ Register User'.",
+          "screenshot": "/manual-screenshots/admin/users-view.png"
+        },
+        {
+          "title": "Step 2: Profile photo (optional)",
+          "desc": "Upload a profile photo by clicking the image area. Accepted formats: JPG, PNG, WEBP. Maximum size: 2 MB."
+        },
+        {
+          "title": "Step 3: Personal details",
+          "desc": "Enter first name, last name, and email address. The email must be valid and unique in the system — it is used to send login credentials.",
+          "screenshot": "/manual-screenshots/admin/users-form.png"
+        },
+        {
+          "title": "Step 4: Assign roles",
+          "desc": "Select one or more roles by clicking the role tags. Available roles depend on the creating administrator's own role. Multiple roles can be assigned to the same user."
+        },
+        {
+          "title": "Step 5: Assign farm (if applicable)",
+          "desc": "If the role requires a farm assignment (Farm Manager, Veterinarian, etc.), select the farm from the dropdown. This field only appears when relevant to the selected role."
+        },
+        {
+          "title": "Step 6: Save",
+          "desc": "Click Save. The system automatically generates a temporary password and sends the credentials to the user's email."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Profile photo",
+          "type": "Image",
+          "required": false,
+          "desc": "User photo. JPG/PNG/WEBP, max 2 MB."
+        },
+        {
+          "name": "First name",
+          "type": "Text",
+          "required": true,
+          "desc": "User's first name."
+        },
+        {
+          "name": "Last name",
+          "type": "Text",
+          "required": true,
+          "desc": "User's last name."
+        },
+        {
+          "name": "Email address",
+          "type": "Email",
+          "required": true,
+          "desc": "Unique email in the system. Used for login credentials."
+        },
+        {
+          "name": "Roles",
+          "type": "Multi-select",
+          "required": true,
+          "desc": "One or more roles that determine accessible modules."
+        },
+        {
+          "name": "Assigned farm",
+          "type": "Select",
+          "required": false,
+          "desc": "Farm the user belongs to. Required for farm-level roles."
+        },
+        {
+          "name": "Status",
+          "type": "Toggle",
+          "required": false,
+          "desc": "Active / Inactive. Defaults to Active on creation."
+        }
+      ],
+      "tips": [
+        "Assign only the necessary roles to each user (principle of least privilege).",
+        "If the user does not receive the credentials email, use the 'Resend credentials' button in the table.",
+        "You can edit user details at any time by clicking the edit icon."
+      ]
+    },
+    "farms": {
+      "description": "The Farms module (Superadmin only) lets you register and manage the farms in the system. Each farm has its own inventory, production cycles, and configuration.",
+      "prerequisites": [
+        "At least one user with the Farm Manager role must exist before creating a farm."
+      ],
+      "steps": [
+        {
+          "title": "Step 1: Open the form",
+          "desc": "Go to Farms. Click '+ New Farm'.",
+          "screenshot": "/manual-screenshots/admin/farms-view.png"
+        },
+        {
+          "title": "Step 2: Farm logo (optional)",
+          "desc": "Upload a representative logo or image for the farm."
+        },
+        {
+          "title": "Step 3: Farm details",
+          "desc": "Fill in the name, code (auto-generated but editable), location, and status.",
+          "screenshot": "/manual-screenshots/admin/farms-form.png"
+        },
+        {
+          "title": "Step 4: Assign a manager",
+          "desc": "Select the Farm Manager user who will administer this farm. If the user does not exist yet, you can create one directly from this form using the '+ New user' button."
+        },
+        {
+          "title": "Step 5: Save",
+          "desc": "Click Save. The farm becomes active and the manager can log in to configure its parameters."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Logo",
+          "type": "Image",
+          "required": false,
+          "desc": "Representative image for the farm."
+        },
+        {
+          "name": "Name",
+          "type": "Text",
+          "required": true,
+          "desc": "Full farm name."
+        },
+        {
+          "name": "Code",
+          "type": "Text",
+          "required": true,
+          "desc": "Short identifier. Auto-generated, editable."
+        },
+        {
+          "name": "Location",
+          "type": "Text",
+          "required": false,
+          "desc": "Address or location description."
+        },
+        {
+          "name": "Status",
+          "type": "Toggle",
+          "required": false,
+          "desc": "Active / Inactive."
+        },
+        {
+          "name": "Manager",
+          "type": "Select",
+          "required": true,
+          "desc": "User with Farm Manager role who administers the farm."
+        }
+      ],
+      "tips": [
+        "Only the Superadmin can create, edit, or deactivate farms.",
+        "A farm can only have one assigned manager. To change managers, edit the farm."
+      ]
+    },
+    "configGlobal": {
+      "description": "Global Configuration lets the Superadmin set system-wide parameters that apply across all farms.",
+      "steps": [
+        {
+          "title": "Step 1: Access Global Configuration",
+          "desc": "Click the gear icon in the top header, or find it in the Administration section of the sidebar.",
+          "screenshot": "/manual-screenshots/admin/config-global.png"
+        },
+        {
+          "title": "Step 2: Configure company information",
+          "desc": "Enter the company name and upload the system logo. This appears in PDF reports and the application header."
+        },
+        {
+          "title": "Step 3: Set currency and number format",
+          "desc": "Select the base currency, number of decimal places for amounts, and the date format used throughout the system."
+        },
+        {
+          "title": "Step 4: Save",
+          "desc": "Click Save. Changes take effect immediately across the entire system."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Company name",
+          "type": "Text",
+          "required": true,
+          "desc": "Name displayed in reports and the application header."
+        },
+        {
+          "name": "Logo",
+          "type": "Image",
+          "required": false,
+          "desc": "Company logo shown in PDF reports."
+        },
+        {
+          "name": "Currency",
+          "type": "Select",
+          "required": true,
+          "desc": "Base currency for all financial values."
+        },
+        {
+          "name": "Decimal places",
+          "type": "Number",
+          "required": true,
+          "desc": "Number of decimal places for monetary amounts."
+        },
+        {
+          "name": "Date format",
+          "type": "Select",
+          "required": true,
+          "desc": "Date display format used throughout the system."
+        }
+      ],
+      "tips": [
+        "Currency cannot be changed once production data has been entered — plan ahead.",
+        "The logo appears on every generated PDF report."
+      ]
+    },
+    "configFarm": {
+      "description": "Farm Configuration lets the Farm Manager adjust the production thresholds and zootechnical parameters specific to their farm.",
+      "steps": [
+        {
+          "title": "Step 1: Access Farm Configuration",
+          "desc": "Log in as Farm Manager. In the sidebar, go to Settings → Farm Configuration.",
+          "screenshot": "/manual-screenshots/admin/config-farm.png"
+        },
+        {
+          "title": "Step 2: Gestation parameters",
+          "desc": "Set the average gestation length (days), days before farrowing to start issuing alerts, and the maximum gestation days before triggering an overdue farrowing warning."
+        },
+        {
+          "title": "Step 3: Lactation and weaning parameters",
+          "desc": "Set target lactation length (days) and the minimum age at weaning. The system uses these values to generate weaning-ready alerts."
+        },
+        {
+          "title": "Step 4: Grow-finish parameters",
+          "desc": "Set target days and weights for nursery, grower, and finisher stages. These values populate stage-change alerts."
+        },
+        {
+          "title": "Step 5: Save",
+          "desc": "Click Save. All automatic alerts and calculations update immediately."
+        }
+      ],
+      "tips": [
+        "Configure these parameters before entering any production data.",
+        "Consult your farm's historical records or a veterinarian before changing gestation/lactation defaults."
+      ],
+      "warning": "Changing gestation length after insemination records exist will shift expected farrowing dates. Review any upcoming farrowing alerts after saving."
+    },
+    "warehouseProducts": {
+      "description": "The Product Catalog defines all items that can be tracked in the warehouse: feed ingredients, medicines, vaccines, supplies, etc.",
+      "steps": [
+        {
+          "title": "Step 1: Open the form",
+          "desc": "Go to Warehouse → Products. Click '+ Add Product'.",
+          "screenshot": "/manual-screenshots/warehouse/products-view.png"
+        },
+        {
+          "title": "Step 2: Product image (optional)",
+          "desc": "Upload an optional product image to help staff identify it quickly."
+        },
+        {
+          "title": "Step 3: Product details",
+          "desc": "Enter the product name, select its category (Feed, Medicine, Vaccine, Supply), unit of measure, reference price, and minimum stock level.",
+          "screenshot": "/manual-screenshots/warehouse/products-form.png"
+        },
+        {
+          "title": "Step 4: Save",
+          "desc": "Click Save. The product is now available for receipts, issues, and purchase orders."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Image",
+          "type": "Image",
+          "required": false,
+          "desc": "Optional product photo."
+        },
+        {
+          "name": "Name",
+          "type": "Text",
+          "required": true,
+          "desc": "Product name."
+        },
+        {
+          "name": "Category",
+          "type": "Select",
+          "required": true,
+          "desc": "Feed / Medicine / Vaccine / Supply."
+        },
+        {
+          "name": "Unit of measure",
+          "type": "Select",
+          "required": true,
+          "desc": "kg, L, unit, dose, etc."
+        },
+        {
+          "name": "Reference price",
+          "type": "Number",
+          "required": false,
+          "desc": "Unit price used in financial reports."
+        },
+        {
+          "name": "Minimum stock",
+          "type": "Number",
+          "required": false,
+          "desc": "Stock level that triggers a low-stock alert."
+        },
+        {
+          "name": "Description",
+          "type": "Text",
+          "required": false,
+          "desc": "Additional details about the product."
+        }
+      ],
+      "tips": [
+        "Set the minimum stock level for critical products to receive low-stock alerts before running out.",
+        "The reference price is used for inventory valuation in financial reports."
+      ]
+    },
+    "warehouseSuppliers": {
+      "description": "The Suppliers register stores information about all vendors the farm works with. Suppliers are required to create purchase orders and record receipts.",
+      "steps": [
+        {
+          "title": "Step 1: Open the form",
+          "desc": "Go to Warehouse → Suppliers. Click '+ Add Supplier'.",
+          "screenshot": "/manual-screenshots/warehouse/suppliers-view.png"
+        },
+        {
+          "title": "Step 2: Identification",
+          "desc": "Enter the supplier code (auto-generated, editable), supplier name, and supplier type (feed company, pharmacy, equipment supplier, etc.).",
+          "screenshot": "/manual-screenshots/warehouse/suppliers-form.png"
+        },
+        {
+          "title": "Step 3: Contact information",
+          "desc": "Enter phone number, email address, and physical address. These fields are optional but recommended for easy purchase management."
+        },
+        {
+          "title": "Step 4: Tax information (optional)",
+          "desc": "Enter tax ID (RNC/NIF) and any additional tax information if required for invoicing."
+        },
+        {
+          "title": "Step 5: Save",
+          "desc": "Click Save. The supplier is now available to link to purchase orders and receipts."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Code",
+          "type": "Text",
+          "required": true,
+          "desc": "Short identifier. Auto-generated, editable."
+        },
+        {
+          "name": "Name",
+          "type": "Text",
+          "required": true,
+          "desc": "Supplier's full name or company name."
+        },
+        {
+          "name": "Supplier type",
+          "type": "Select",
+          "required": false,
+          "desc": "Category of supplier (feed, pharma, equipment, etc.)."
+        },
+        {
+          "name": "Phone",
+          "type": "Text",
+          "required": false,
+          "desc": "Contact phone number."
+        },
+        {
+          "name": "Email",
+          "type": "Email",
+          "required": false,
+          "desc": "Contact email address."
+        },
+        {
+          "name": "Address",
+          "type": "Text",
+          "required": false,
+          "desc": "Physical address."
+        },
+        {
+          "name": "Tax ID",
+          "type": "Text",
+          "required": false,
+          "desc": "Tax identification number."
+        }
+      ],
+      "tips": [
+        "Fill in contact details to streamline purchase management.",
+        "Inactive suppliers are hidden from purchase order dropdowns but their history is preserved."
+      ]
+    },
+    "purchaseOrders": {
+      "description": "Purchase Orders let you manage the procurement process: create requests, track status, and receive products into inventory.",
+      "prerequisites": [
+        "At least one supplier must exist.",
+        "At least one product must exist in the catalog."
+      ],
+      "steps": [
+        {
+          "title": "Step 1: Open the form",
+          "desc": "Go to Warehouse → Purchase Orders. Click '+ New Purchase Order'.",
+          "screenshot": "/manual-screenshots/warehouse/purchase-orders-view.png"
+        },
+        {
+          "title": "Step 2: Select supplier",
+          "desc": "Choose the supplier from the dropdown. If the supplier is not listed, go to the Suppliers module to register them first.",
+          "screenshot": "/manual-screenshots/warehouse/purchase-orders-form-step1.png"
+        },
+        {
+          "title": "Step 3: Add products",
+          "desc": "Search for each product and enter the requested quantity and estimated unit price. Add as many products as needed.",
+          "screenshot": "/manual-screenshots/warehouse/purchase-orders-form-step2.png"
+        },
+        {
+          "title": "Step 4: Review and confirm",
+          "desc": "Review the order summary (total products, estimated total cost). Click Confirm to create the purchase order."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Supplier",
+          "type": "Select",
+          "required": true,
+          "desc": "Supplier for this order."
+        },
+        {
+          "name": "Product",
+          "type": "Select",
+          "required": true,
+          "desc": "Product from the warehouse catalog."
+        },
+        {
+          "name": "Quantity",
+          "type": "Number",
+          "required": true,
+          "desc": "Quantity requested."
+        },
+        {
+          "name": "Unit price",
+          "type": "Number",
+          "required": false,
+          "desc": "Estimated unit price."
+        },
+        {
+          "name": "Notes",
+          "type": "Text",
+          "required": false,
+          "desc": "Additional order notes."
+        }
+      ],
+      "tips": [
+        "A purchase order starts with status Pending. When products arrive, use the Warehouse Receipts module to record the receipt and update inventory.",
+        "You can add multiple products in a single purchase order."
+      ]
+    },
+    "warehouseIncomes": {
+      "description": "Warehouse Receipts record all incoming products, whether linked to a purchase order or entered directly.",
+      "prerequisites": [
+        "At least one product must exist in the catalog.",
+        "At least one supplier must exist."
+      ],
+      "steps": [
+        {
+          "title": "Step 1: Open the form",
+          "desc": "Go to Warehouse → Receipts. Click '+ New Receipt'.",
+          "screenshot": "/manual-screenshots/warehouse/incomes-view.png"
+        },
+        {
+          "title": "Step 2: Select receipt mode",
+          "desc": "Choose 'With purchase order' (links to an existing PO) or 'Direct receipt' (no prior PO).",
+          "screenshot": "/manual-screenshots/warehouse/incomes-form-step1.png"
+        },
+        {
+          "title": "Step 3: General information",
+          "desc": "Select the supplier, enter the receipt date, and optionally add invoice number and tax details."
+        },
+        {
+          "title": "Step 4: Products received",
+          "desc": "For each product, enter the quantity received and the actual unit price. Add multiple products if needed."
+        },
+        {
+          "title": "Step 5: Review and save",
+          "desc": "Review the receipt summary. Click Save. Inventory is updated automatically for each product."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Mode",
+          "type": "Select",
+          "required": true,
+          "desc": "With purchase order or direct receipt."
+        },
+        {
+          "name": "Supplier",
+          "type": "Select",
+          "required": true,
+          "desc": "Supplier delivering the goods."
+        },
+        {
+          "name": "Date",
+          "type": "Date",
+          "required": true,
+          "desc": "Date products were received."
+        },
+        {
+          "name": "Invoice number",
+          "type": "Text",
+          "required": false,
+          "desc": "Supplier invoice number."
+        },
+        {
+          "name": "Product",
+          "type": "Select",
+          "required": true,
+          "desc": "Product being received."
+        },
+        {
+          "name": "Quantity",
+          "type": "Number",
+          "required": true,
+          "desc": "Quantity actually received."
+        },
+        {
+          "name": "Unit price",
+          "type": "Number",
+          "required": false,
+          "desc": "Actual unit price paid."
+        }
+      ],
+      "tips": [
+        "If the received quantity differs from the PO, enter the actual quantity — the system will flag the discrepancy.",
+        "Every receipt generates an automatic inventory movement in the Inventory module."
+      ]
+    },
+    "warehouseOutcomes": {
+      "description": "Warehouse Issues record all outgoing products from the main warehouse: direct consumption, write-offs, or manual adjustments.",
+      "prerequisites": [
+        "Sufficient stock must be available for each product being issued."
+      ],
+      "steps": [
+        {
+          "title": "Step 1: Open the form",
+          "desc": "Go to Warehouse → Issues. Click '+ New Issue'.",
+          "screenshot": "/manual-screenshots/warehouse/outcomes-view.png"
+        },
+        {
+          "title": "Step 2: Reason and description",
+          "desc": "The system assigns an auto-generated code and uses the current date. Select the reason for the issue (consumption, transfer, adjustment, loss) and add an optional description.",
+          "screenshot": "/manual-screenshots/warehouse/outcomes-form-step1.png"
+        },
+        {
+          "title": "Step 3: Products",
+          "desc": "Select each product and the quantity to issue. The system verifies available stock before confirming."
+        },
+        {
+          "title": "Step 4: Confirm",
+          "desc": "Review the summary and click Save. Stock levels are reduced immediately."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Reason",
+          "type": "Select",
+          "required": true,
+          "desc": "Reason for the issue (consumption, adjustment, transfer, loss)."
+        },
+        {
+          "name": "Description",
+          "type": "Text",
+          "required": false,
+          "desc": "Additional details about the issue."
+        },
+        {
+          "name": "Product",
+          "type": "Select",
+          "required": true,
+          "desc": "Product to issue from stock."
+        },
+        {
+          "name": "Quantity",
+          "type": "Number",
+          "required": true,
+          "desc": "Quantity to remove from inventory."
+        }
+      ],
+      "tips": [
+        "Issues automatically reduce stock. Make sure the reason is correct before saving — issues cannot be edited after saving.",
+        "For routine product consumption by health or feeding modules, stock is discounted automatically. Manual issues are for adjustments and corrections."
+      ]
+    },
+    "warehouseInventory": {
+      "description": "The Inventory module shows the current stock balance for every product in the main warehouse, along with movement history and low-stock alerts.",
+      "paragraphs": [
+        "Stock levels update automatically whenever a receipt, issue, or transfer order is processed. You do not need to update inventory manually.",
+        "Filter by product, category, or date range to find specific movements. Use the export button to generate an Excel report of current stock."
+      ],
+      "tips": [
+        "Rows highlighted in red indicate products below their configured minimum stock level.",
+        "Click a product row to see its full movement history."
+      ]
+    },
+    "subwarehouse": {
+      "description": "Sub-Warehouses are secondary storage locations within the farm (e.g., a medication room in the farrowing barn). Each sub-warehouse has its own independent stock.",
+      "steps": [
+        {
+          "title": "Step 1: Open the form",
+          "desc": "Go to Warehouse → Sub-Warehouses. Click '+ New Sub-Warehouse'.",
+          "screenshot": "/manual-screenshots/warehouse/subwarehouse-view.png"
+        },
+        {
+          "title": "Step 2: Identification",
+          "desc": "Enter the code (auto-generated, editable), name, and type of sub-warehouse.",
+          "screenshot": "/manual-screenshots/warehouse/subwarehouse-form.png"
+        },
+        {
+          "title": "Step 3: Assign a responsible user",
+          "desc": "Select the user who manages this sub-warehouse. They will be able to record issues from it."
+        },
+        {
+          "title": "Step 4: Location",
+          "desc": "Enter the physical location within the farm (optional but recommended)."
+        },
+        {
+          "title": "Step 5: Save",
+          "desc": "Click Save. The sub-warehouse is ready to receive transfer orders from the main warehouse."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Code",
+          "type": "Text",
+          "required": true,
+          "desc": "Short identifier."
+        },
+        {
+          "name": "Name",
+          "type": "Text",
+          "required": true,
+          "desc": "Descriptive name."
+        },
+        {
+          "name": "Type",
+          "type": "Select",
+          "required": true,
+          "desc": "Sub-warehouse type (medication, feed, supplies, etc.)."
+        },
+        {
+          "name": "Responsible",
+          "type": "Select",
+          "required": true,
+          "desc": "User responsible for managing this sub-warehouse."
+        },
+        {
+          "name": "Location",
+          "type": "Text",
+          "required": false,
+          "desc": "Physical location within the farm."
+        }
+      ],
+      "tips": [
+        "Products reach a sub-warehouse only via transfer orders from the main warehouse.",
+        "Sub-warehouse managers can record outgoing issues from their own location."
+      ]
+    },
+    "orders": {
+      "description": "Transfer Orders manage the movement of products from the main warehouse to sub-warehouses. The warehouse manager creates the order; the sub-warehouse manager receives and confirms it.",
+      "steps": [
+        {
+          "title": "Step 1: Create the transfer order",
+          "desc": "Go to Warehouse → Transfer Orders. Click '+ New Order'. Select the destination sub-warehouse and add the products with their quantities."
+        },
+        {
+          "title": "Step 2: Confirm the order",
+          "desc": "Review the order and click Confirm. Status changes to Pending."
+        },
+        {
+          "title": "Step 3: Sub-warehouse completes the order",
+          "desc": "The sub-warehouse manager opens the pending order and clicks Complete. They enter the quantities actually received. Stock transfers from the main warehouse to the sub-warehouse."
+        }
+      ],
+      "tips": [
+        "Until the sub-warehouse confirms receipt, stock remains in the main warehouse.",
+        "A transfer order can only be completed by the user assigned as responsible for the destination sub-warehouse."
+      ]
+    },
+    "sales": {
+      "description": "The Sales module records the commercial sale of pigs — either individual animals or entire groups.",
+      "prerequisites": [
+        "Pigs or groups must exist in inventory."
+      ],
+      "steps": [
+        {
+          "title": "Step 1: Open the form",
+          "desc": "Go to Sales. Click '+ New Sale'.",
+          "screenshot": "/manual-screenshots/sales/pig-sales-view.png"
+        },
+        {
+          "title": "Step 2: Sale mode",
+          "desc": "Choose 'By group' (sells an entire group) or 'Individual' (select specific pigs).",
+          "screenshot": "/manual-screenshots/sales/sales-form-step1.png"
+        },
+        {
+          "title": "Step 3: Select pigs",
+          "desc": "Select the group or individual pigs to be sold. Enter the sale weight per pig (or total weight for the group)."
+        },
+        {
+          "title": "Step 4: Buyer and pricing",
+          "desc": "Enter price per kg, buyer name, buyer type (individual/company/slaughterhouse), contact information, and payment method."
+        },
+        {
+          "title": "Step 5: Review and confirm",
+          "desc": "Review total weight, total pigs, and sale value. Click Confirm. Pigs are removed from inventory."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Sale mode",
+          "type": "Select",
+          "required": true,
+          "desc": "By group or individual pigs."
+        },
+        {
+          "name": "Price per kg",
+          "type": "Number",
+          "required": true,
+          "desc": "Price paid per kilogram of live weight."
+        },
+        {
+          "name": "Sale weight",
+          "type": "Number",
+          "required": true,
+          "desc": "Live weight at time of sale."
+        },
+        {
+          "name": "Buyer name",
+          "type": "Text",
+          "required": true,
+          "desc": "Name of the buyer."
+        },
+        {
+          "name": "Buyer type",
+          "type": "Select",
+          "required": false,
+          "desc": "Individual, company, or slaughterhouse."
+        },
+        {
+          "name": "Payment method",
+          "type": "Select",
+          "required": false,
+          "desc": "Cash, bank transfer, check, or credit."
+        },
+        {
+          "name": "Additional costs",
+          "type": "Number",
+          "required": false,
+          "desc": "Transport, logistics, or other costs deducted from revenue."
+        }
+      ],
+      "tips": [
+        "The system automatically calculates total sale value from weight × price per kg.",
+        "Sales reports break down revenue by period, buyer, and animal type."
+      ]
+    },
+    "expenses": {
+      "description": "The Expenses module records all operational costs that are not product purchases: labor, services, maintenance, utilities, etc.",
+      "steps": [
+        {
+          "title": "Step 1: Open the form",
+          "desc": "Go to Finance → Expenses. Click '+ New Expense'.",
+          "screenshot": "/manual-screenshots/finance/expenses-view.png"
+        },
+        {
+          "title": "Step 2: Expense details",
+          "desc": "Select the date, category, and write a clear description. Enter the amount in the farm's configured currency.",
+          "screenshot": "/manual-screenshots/finance/expenses-form.png"
+        },
+        {
+          "title": "Step 3: Save",
+          "desc": "Click Save. The expense is recorded and automatically included in the financial reports for the period."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Date",
+          "type": "Date",
+          "required": true,
+          "desc": "Date the expense was incurred."
+        },
+        {
+          "name": "Category",
+          "type": "Select",
+          "required": true,
+          "desc": "Labor, services, maintenance, utilities, other."
+        },
+        {
+          "name": "Description",
+          "type": "Text",
+          "required": true,
+          "desc": "Clear description of what the expense was for."
+        },
+        {
+          "name": "Amount",
+          "type": "Number",
+          "required": true,
+          "desc": "Cost in the farm's base currency."
+        }
+      ],
+      "tips": [
+        "Use clear descriptions so financial reports are interpretable by auditors.",
+        "Expenses feed directly into the period's profitability analysis."
+      ]
+    },
+    "periodClosing": {
+      "description": "Period Closing consolidates the financial and production data for a given month. Once closed, data for that period is locked from editing.",
+      "steps": [
+        {
+          "title": "Step 1: Verify all entries are complete",
+          "desc": "Before closing, ensure all sales, expenses, and warehouse movements for the period have been entered."
+        },
+        {
+          "title": "Step 2: Open Period Closing",
+          "desc": "Go to Finance → Period Closing. Select the period to close.",
+          "screenshot": "/manual-screenshots/finance/period-closing.png"
+        },
+        {
+          "title": "Step 3: Review the summary",
+          "desc": "The system shows a summary: revenue, production costs, operating expenses, and net income. Verify the totals make sense."
+        },
+        {
+          "title": "Step 4: Confirm closure",
+          "desc": "Click Close Period. The period is locked. Financial reports for that period become final."
+        }
+      ],
+      "tips": [
+        "Closed periods can be re-opened by a Superadmin if corrections are needed.",
+        "Closing a period does not affect production data — only financial figures are locked."
+      ],
+      "warning": "Once a period is closed, all figures for that period are locked. Make sure all records are complete before closing."
+    },
+    "pigsView": {
+      "description": "The Pig Inventory shows all active pigs on the farm. Filter by production stage, sex, breed, ear tag, or entry date.",
+      "paragraphs": [
+        "Click on any pig to access its complete profile: general info, medical history, feeding records, and reproductive events.",
+        "The inventory updates automatically when pigs are registered, transferred, sold, or culled. No manual adjustments are needed."
+      ],
+      "tips": [
+        "Use filters to quickly locate specific animals.",
+        "The Details button on each row opens the pig's full profile."
+      ]
+    },
+    "pigRegister": {
+      "description": "Register new pigs individually (one animal at a time) or in a batch (multiple animals at once).",
+      "steps": [
+        {
+          "title": "Step 1: Choose registration mode",
+          "desc": "Go to Pigs → Inventory. Click '+ Register'. Select 'Individual' for a single pig or 'Batch' for multiple animals.",
+          "screenshot": "/manual-screenshots/pigs/register-mode.png"
+        },
+        {
+          "title": "Step 2: Individual — Pig details",
+          "desc": "Enter code/ear tag, date of birth, breed, origin (born on-farm or purchased), sex, current weight, and production stage.",
+          "screenshot": "/manual-screenshots/pigs/register-individual.png"
+        },
+        {
+          "title": "Step 3: Individual — Review and save",
+          "desc": "Review the pig's summary. Click Save. The pig appears immediately in the inventory."
+        },
+        {
+          "title": "Step 2b: Batch — General batch data",
+          "desc": "For batch registration: enter the batch code, entry date, breed, origin, sex, and production stage that apply to all animals in the batch.",
+          "screenshot": "/manual-screenshots/pigs/register-batch-step1.png"
+        },
+        {
+          "title": "Step 3b: Batch — Individual animal data",
+          "desc": "For each pig in the batch, enter the individual ear tag and weight. The system pre-fills shared fields."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Code / Ear tag",
+          "type": "Text",
+          "required": true,
+          "desc": "Unique identifier for the pig."
+        },
+        {
+          "name": "Date of birth",
+          "type": "Date",
+          "required": true,
+          "desc": "Pig's date of birth."
+        },
+        {
+          "name": "Breed",
+          "type": "Select",
+          "required": false,
+          "desc": "Breed or genetic line."
+        },
+        {
+          "name": "Origin",
+          "type": "Select",
+          "required": true,
+          "desc": "Born on-farm or purchased."
+        },
+        {
+          "name": "Sex",
+          "type": "Select",
+          "required": true,
+          "desc": "Male / Female."
+        },
+        {
+          "name": "Weight",
+          "type": "Number",
+          "required": false,
+          "desc": "Current live weight (kg)."
+        },
+        {
+          "name": "Stage",
+          "type": "Select",
+          "required": true,
+          "desc": "Current production stage (nursery, grower, finisher, replacement, breeder)."
+        }
+      ],
+      "tips": [
+        "For large batches, batch registration is significantly faster than individual entry.",
+        "Ear tags must be unique within the farm."
+      ]
+    },
+    "pigDiscard": {
+      "description": "The Cull Pig form removes an animal from the active inventory and records the reason (death, slaughter, sale, or productive cull).",
+      "steps": [
+        {
+          "title": "Step 1: Select the pig",
+          "desc": "From the pig inventory or the pig's detail page, click Discard / Cull."
+        },
+        {
+          "title": "Step 2: Cull reason and details",
+          "desc": "Select the cull reason (death, slaughter, sale, cull), enter the date, weight at cull, and any relevant notes."
+        },
+        {
+          "title": "Step 3: Review and confirm",
+          "desc": "Review the details. Click Confirm. The pig moves to the Culled Pigs module and is no longer shown in active inventory."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Cull reason",
+          "type": "Select",
+          "required": true,
+          "desc": "Death, slaughter, sale, or productive cull."
+        },
+        {
+          "name": "Date",
+          "type": "Date",
+          "required": true,
+          "desc": "Date of cull."
+        },
+        {
+          "name": "Weight at cull",
+          "type": "Number",
+          "required": false,
+          "desc": "Live weight recorded at time of cull."
+        },
+        {
+          "name": "Notes",
+          "type": "Text",
+          "required": false,
+          "desc": "Additional observations."
+        }
+      ],
+      "tips": [
+        "Culled pigs are never permanently deleted — they are visible in the Culled Pigs module.",
+        "Mortality data from culls feeds directly into production reports."
+      ]
+    },
+    "pigsDiscarded": {
+      "description": "The Culled Pigs view shows all animals removed from the active inventory along with the cull date, reason, weight, and responsible user.",
+      "tips": [
+        "Use this view for mortality audits and production loss analysis.",
+        "You can filter by cull reason and date range."
+      ]
+    },
+    "groups": {
+      "description": "Groups (pens / batches) aggregate pigs by production stage. Each group tracks its own performance indicators: average weight, FCR, mortality rate.",
+      "paragraphs": [
+        "The system provides specialized views per group type to streamline monitoring at each stage.",
+        "Operations available on a group: weigh, insert pigs, withdraw pigs, transfer to another stage, cull pigs in group, and apply health/feeding events."
+      ],
+      "tips": [
+        "Groups allow collective management — one action (weigh, feed, medicate) applies to all animals in the group.",
+        "A pig can only belong to one active group at a time."
+      ]
+    },
+    "groupCreate": {
+      "description": "Create a group manually (select existing pigs) or in linked mode (system auto-generates the pig records).",
+      "steps": [
+        {
+          "title": "Step 1: Open the form",
+          "desc": "Go to Groups. Click '+ New Group'.",
+          "screenshot": "/manual-screenshots/pigs/groups-view.png"
+        },
+        {
+          "title": "Step 2: Group data",
+          "desc": "Enter group code, name, production stage, and entry date.",
+          "screenshot": "/manual-screenshots/pigs/groups-form-step1.png"
+        },
+        {
+          "title": "Step 3: Add pigs",
+          "desc": "Standard mode: search and select existing pigs to add to the group. Linked mode: enter count, sex ratio, and average weight — the system auto-creates the pig records."
+        },
+        {
+          "title": "Step 4: Review and save",
+          "desc": "Review group summary (total animals, average weight). Click Save."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Code",
+          "type": "Text",
+          "required": true,
+          "desc": "Unique group identifier."
+        },
+        {
+          "name": "Name",
+          "type": "Text",
+          "required": false,
+          "desc": "Descriptive name for the group."
+        },
+        {
+          "name": "Stage",
+          "type": "Select",
+          "required": true,
+          "desc": "Production stage (nursery, grower, finisher, etc.)."
+        },
+        {
+          "name": "Entry date",
+          "type": "Date",
+          "required": true,
+          "desc": "Date pigs entered the group."
+        },
+        {
+          "name": "Pigs",
+          "type": "Multi-select",
+          "required": true,
+          "desc": "Animals to include (standard mode) or count+weight (linked mode)."
+        }
+      ],
+      "tips": [
+        "Use linked mode for pigs coming from weaning — it is much faster than selecting individual ear tags.",
+        "Groups from weaning are created automatically when a litter is weaned."
+      ]
+    },
+    "groupOperations": {
+      "description": "Available operations on a group: weigh, insert pigs, withdraw pigs, transfer to another stage/group, cull pigs within the group, and change stage.",
+      "paragraphs": [
+        "Weigh: records a collective weigh-in for all pigs in the group. Updates average weight and FCR calculations.",
+        "Insert: adds one or more pigs to an existing group (e.g., after purchase or transfer from another farm).",
+        "Withdraw: removes specific pigs from the group without culling them (e.g., for individual treatment or separation).",
+        "Transfer: moves the entire group (or a subset) to a different stage or pen.",
+        "Change stage: advances the group to the next production stage (nursery → grower → finisher → replacement).",
+        "Cull in group: records a cull event for one or more pigs within the group without affecting the others."
+      ],
+      "tips": [
+        "All group operations are logged with date, user, and before/after values.",
+        "Bulk culls in a group update the mortality KPI on the group dashboard automatically."
+      ]
+    },
+    "replacementSows": {
+      "description": "Replacement gilts are females being developed for entry into the breeding herd. Track their growth, record weights, and promote them to breeder status when ready.",
+      "steps": [
+        {
+          "title": "Step 1: View replacement gilts",
+          "desc": "Go to Reproduction → Replacement → Gilts. The list shows all animals in replacement development.",
+          "screenshot": "/manual-screenshots/reproduction/replacement-sows.png"
+        },
+        {
+          "title": "Step 2: Promote to breeder",
+          "desc": "When a gilt is ready for first service, click the Promote button. Enter the promotion date and any notes. The animal moves to the sow pool and becomes available for insemination."
+        }
+      ],
+      "tips": [
+        "Gilts appear in Replacement after being registered with the 'Replacement' production stage.",
+        "Monitor weight and age before promoting — premature promotion affects reproductive performance."
+      ]
+    },
+    "replacementBoars": {
+      "description": "Replacement boars are males in development intended to become semen donors. Track their growth and enable them for the AI program when ready.",
+      "steps": [
+        {
+          "title": "Step 1: View replacement boars",
+          "desc": "Go to Reproduction → Replacement → Boars. The list shows all boars in replacement development.",
+          "screenshot": "/manual-screenshots/reproduction/replacement-boars.png"
+        },
+        {
+          "title": "Step 2: Enable for AI program",
+          "desc": "When a boar passes quality evaluation, click Enable for Semen Collection. The boar becomes available in the Semen Collections module."
+        }
+      ],
+      "tips": [
+        "A boar must be enabled before his semen collections can be recorded.",
+        "Run a first collection to evaluate quality before deciding on full program participation."
+      ]
+    },
+    "labExtractions": {
+      "description": "Semen Collections records every collection from a boar, including volume, motility, concentration, and overall quality evaluation.",
+      "prerequisites": [
+        "At least one boar must be enabled for semen collection."
+      ],
+      "steps": [
+        {
+          "title": "Step 1: Open the form",
+          "desc": "Go to Lab → Semen Collections. Click '+ New Collection'.",
+          "screenshot": "/manual-screenshots/reproduction/extractions-view.png"
+        },
+        {
+          "title": "Step 2: Select boar and date",
+          "desc": "Select the donor boar from the active semen boar list. Enter the collection date and the responsible technician.",
+          "screenshot": "/manual-screenshots/reproduction/extractions-form.png"
+        },
+        {
+          "title": "Step 3: Quality data",
+          "desc": "Enter volume collected (mL), concentration, motility (%), and overall quality rating (Approved / Rejected). Add observations as needed."
+        },
+        {
+          "title": "Step 4: Save",
+          "desc": "Click Save. Approved collections become available for dose preparation in the Semen Doses module."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Boar",
+          "type": "Select",
+          "required": true,
+          "desc": "Donor boar (must be enabled)."
+        },
+        {
+          "name": "Collection date",
+          "type": "Date",
+          "required": true,
+          "desc": "Date of the collection."
+        },
+        {
+          "name": "Technician",
+          "type": "Select",
+          "required": false,
+          "desc": "Responsible technician."
+        },
+        {
+          "name": "Volume (mL)",
+          "type": "Number",
+          "required": true,
+          "desc": "Total ejaculate volume in millilitres."
+        },
+        {
+          "name": "Concentration",
+          "type": "Number",
+          "required": false,
+          "desc": "Sperm concentration (million/mL)."
+        },
+        {
+          "name": "Motility (%)",
+          "type": "Number",
+          "required": false,
+          "desc": "Progressive motility percentage."
+        },
+        {
+          "name": "Quality",
+          "type": "Select",
+          "required": true,
+          "desc": "Approved or Rejected."
+        },
+        {
+          "name": "Observations",
+          "type": "Text",
+          "required": false,
+          "desc": "Additional quality notes."
+        }
+      ],
+      "tips": [
+        "Only Approved collections can be used to prepare semen doses.",
+        "Record collections promptly to maintain accurate AI program inventory."
+      ]
+    },
+    "labSamples": {
+      "description": "Semen Doses records the preparation of insemination doses from a base semen collection, including dose count, storage method, and expiry date.",
+      "prerequisites": [
+        "An approved semen collection must exist."
+      ],
+      "steps": [
+        {
+          "title": "Step 1: Open the form",
+          "desc": "Go to Lab → Semen Doses. Click '+ New Dose Batch'.",
+          "screenshot": "/manual-screenshots/reproduction/samples-view.png"
+        },
+        {
+          "title": "Step 2: Select base collection",
+          "desc": "Select the approved semen collection from which the doses will be prepared.",
+          "screenshot": "/manual-screenshots/reproduction/samples-form-step1.png"
+        },
+        {
+          "title": "Step 3: Dose data",
+          "desc": "Enter number of doses prepared, expiry date, storage method (refrigerated or frozen), and storage location within the lab."
+        },
+        {
+          "title": "Step 4: Save",
+          "desc": "Click Save. The doses are available for selection when recording inseminations.",
+          "screenshot": "/manual-screenshots/operation/lab-samples-form-step3.png"
+        }
+      ],
+      "fields": [
+        {
+          "name": "Base collection",
+          "type": "Select",
+          "required": true,
+          "desc": "Approved semen collection used to prepare doses."
+        },
+        {
+          "name": "Number of doses",
+          "type": "Number",
+          "required": true,
+          "desc": "Total doses prepared from this collection."
+        },
+        {
+          "name": "Expiry date",
+          "type": "Date",
+          "required": true,
+          "desc": "Date doses expire."
+        },
+        {
+          "name": "Storage method",
+          "type": "Select",
+          "required": true,
+          "desc": "Refrigerated (short-term) or frozen (long-term)."
+        },
+        {
+          "name": "Storage location",
+          "type": "Text",
+          "required": false,
+          "desc": "Physical location in the lab (tank, shelf, etc.)."
+        }
+      ],
+      "tips": [
+        "Track expiry dates — expired doses cannot be used for inseminations.",
+        "Refrigerated doses typically last 3–5 days; frozen doses can last years."
+      ]
+    },
+    "gestationInseminations": {
+      "description": "The Inseminations module records each AI service performed on a sow, linking the female, the semen dose, the date, and the responsible technician.",
+      "prerequisites": [
+        "At least one sow in available (non-pregnant, non-lactating) status must exist.",
+        "At least one semen dose batch must be available."
+      ],
+      "steps": [
+        {
+          "title": "Step 1: Open the form",
+          "desc": "Go to Reproduction → Inseminations. Click '+ Record Insemination'.",
+          "screenshot": "/manual-screenshots/reproduction/inseminations-view.png"
+        },
+        {
+          "title": "Step 2: Select sow",
+          "desc": "Select the sow from the list of available females (non-pregnant, not in lactation).",
+          "screenshot": "/manual-screenshots/reproduction/insemination-form-step1.png"
+        },
+        {
+          "title": "Step 3: Insemination info",
+          "desc": "Enter the insemination date and the responsible technician.",
+          "screenshot": "/manual-screenshots/reproduction/insemination-form-step2.png"
+        },
+        {
+          "title": "Step 4: Semen doses",
+          "desc": "Select the semen dose batch(es) to use. Drag and drop to re-order if multiple doses are used. Enter the dose count.",
+          "screenshot": "/manual-screenshots/reproduction/insemination-form-step3.png"
+        },
+        {
+          "title": "Step 5: Review and save",
+          "desc": "Review the insemination summary. Click Save. The sow's status updates to 'Inseminated'. Dose inventory is decremented automatically.",
+          "screenshot": "/manual-screenshots/operation/inseminations-form-step4.png"
+        }
+      ],
+      "fields": [
+        {
+          "name": "Sow",
+          "type": "Select",
+          "required": true,
+          "desc": "Female to be inseminated (must be available)."
+        },
+        {
+          "name": "Date",
+          "type": "Date",
+          "required": true,
+          "desc": "Date of the insemination."
+        },
+        {
+          "name": "Technician",
+          "type": "Select",
+          "required": false,
+          "desc": "Responsible technician."
+        },
+        {
+          "name": "Semen dose",
+          "type": "Select",
+          "required": true,
+          "desc": "Dose batch to use (boar name + warehouse shown)."
+        },
+        {
+          "name": "Dose count",
+          "type": "Number",
+          "required": true,
+          "desc": "Number of doses used."
+        },
+        {
+          "name": "Observations",
+          "type": "Text",
+          "required": false,
+          "desc": "Service notes."
+        }
+      ],
+      "tips": [
+        "Sow status updates automatically: Available → Inseminated → Pregnant → Farrowed.",
+        "Dose inventory is consumed automatically when an insemination is saved."
+      ]
+    },
+    "gestationPregnancies": {
+      "description": "The Pregnancies module shows all sows confirmed as pregnant, with expected farrowing date, days in gestation, and current status.",
+      "paragraphs": [
+        "Pregnancy is confirmed by recording a pregnancy check (ultrasound or return check). Possible outcomes: pregnant, open (failed), questionable, resorption, abortion.",
+        "The system automatically generates alerts when a sow is nearing her expected farrowing date based on the farm's configured gestation length."
+      ],
+      "steps": [
+        {
+          "title": "Step 1: Record pregnancy diagnosis",
+          "desc": "From the sow's profile or the Pregnancies list, click Diagnose. Select the result (pregnant, open, etc.), enter the diagnosis date, and add any notes or attachments."
+        },
+        {
+          "title": "Step 2: Monitor approaching farrowings",
+          "desc": "The Pregnancies list highlights sows close to farrowing. Use this to prepare farrowing stalls in advance.",
+          "screenshot": "/manual-screenshots/reproduction/pregnancies-view.png"
+        }
+      ],
+      "tips": [
+        "Open sows (failed insemination) should be re-inseminated promptly to maintain breeding efficiency.",
+        "Use the 'Upcoming Farrowings' widget on the dashboard to plan your farrowing week."
+      ]
+    },
+    "births": {
+      "description": "The Farrowing module records each farrowing event: live-born piglets, stillborns, mummies, birth weights, and farrowing type.",
+      "prerequisites": [
+        "The sow must have a confirmed pregnancy in the system."
+      ],
+      "steps": [
+        {
+          "title": "Step 1: Open the form",
+          "desc": "Go to Reproduction → Farrowings, or click '+ Record Farrowing' from the Upcoming Farrowings section.",
+          "screenshot": "/manual-screenshots/reproduction/births-view.png"
+        },
+        {
+          "title": "Step 2: Select insemination",
+          "desc": "Select the insemination (and by extension the sow) this farrowing corresponds to.",
+          "screenshot": "/manual-screenshots/operation/births-form-step1.png"
+        },
+        {
+          "title": "Step 3: Farrowing data",
+          "desc": "Enter farrowing date, farrowing type (normal, C-section, induced, dystocic, abortive), and attending staff."
+        },
+        {
+          "title": "Step 4: Litter data",
+          "desc": "Enter live-born count, stillborns, mummies, total litter weight, and sex breakdown. The system creates the litter automatically in the Lactation module."
+        },
+        {
+          "title": "Step 5: Review and save",
+          "desc": "Review the farrowing summary. Click Save. The sow's status updates and the litter appears in Lactation."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Insemination",
+          "type": "Select",
+          "required": true,
+          "desc": "Linked insemination record."
+        },
+        {
+          "name": "Farrowing date",
+          "type": "Date",
+          "required": true,
+          "desc": "Date of farrowing."
+        },
+        {
+          "name": "Farrowing type",
+          "type": "Select",
+          "required": true,
+          "desc": "Normal, C-section, induced, dystocic, or abortive."
+        },
+        {
+          "name": "Live-born",
+          "type": "Number",
+          "required": true,
+          "desc": "Number of live piglets born."
+        },
+        {
+          "name": "Stillborns",
+          "type": "Number",
+          "required": false,
+          "desc": "Number of stillborn piglets."
+        },
+        {
+          "name": "Mummies",
+          "type": "Number",
+          "required": false,
+          "desc": "Number of mummified fetuses."
+        },
+        {
+          "name": "Total litter weight (kg)",
+          "type": "Number",
+          "required": false,
+          "desc": "Total live-born weight at birth."
+        }
+      ],
+      "tips": [
+        "Register farrowings promptly — the litter appears in Lactation only after the farrowing is saved.",
+        "Stillborn and mummy counts feed directly into reproductive KPIs."
+      ]
+    },
+    "lactation": {
+      "description": "The Lactation module manages litters from birth to weaning. Record piglet weights, pre-weaning mortality, fostering, and medication.",
+      "paragraphs": [
+        "Litters are created automatically when a farrowing is recorded. The sow and her litter are tracked together throughout lactation.",
+        "When a litter is weaned, the piglets automatically move to Pig Inventory and are available for group allocation into a nursery pen."
+      ],
+      "steps": [
+        {
+          "title": "Step 1: View active litters",
+          "desc": "Go to Reproduction → Lactation. The list shows all active litters with their sow, piglet count, days in lactation, and current weight.",
+          "screenshot": "/manual-screenshots/reproduction/lactation-view.png"
+        },
+        {
+          "title": "Step 2: Record piglet events",
+          "desc": "From a litter's detail page, you can: record a group weigh-in, discard dead piglets (pre-weaning mortality), foster piglets between litters, or apply medication."
+        },
+        {
+          "title": "Step 3: Wean the litter",
+          "desc": "When ready to wean, click Wean Litter. Enter weaning date and total piglet weight. Select a destination group (nursery) or leave blank to create a new group automatically."
+        }
+      ],
+      "tips": [
+        "Record pre-weaning mortality promptly to keep piglet counts accurate.",
+        "The dashboard alerts you when litters have reached the target lactation length."
+      ]
+    },
+    "weaning": {
+      "description": "Nursery groups hold newly weaned piglets. Record collective weighing, feeding, and health events for the entire pen.",
+      "paragraphs": [
+        "Nursery groups are created automatically when a litter is weaned (or manually when using linked group creation).",
+        "When the group reaches target weight or age, transfer them to the grower stage."
+      ],
+      "tips": [
+        "Weigh nursery pigs weekly to track ADG and FCR accurately.",
+        "Nursery FCR target is typically 1.5–1.8 kg feed per kg gain."
+      ]
+    },
+    "growing": {
+      "description": "Grower and Finisher groups manage pigs from nursery exit through market weight. Track ADG, FCR, and cost per kg gained.",
+      "paragraphs": [
+        "Grower/finisher groups receive pigs from the nursery stage via stage-change or transfer operations.",
+        "When animals reach market weight, they can be transferred directly to the Sales module."
+      ],
+      "tips": [
+        "Record periodic weighings to keep FCR and ADG calculations up to date.",
+        "Finisher target weight varies by market contract — confirm with your buyer before setting the stage-change trigger."
+      ]
+    },
+    "medication": {
+      "description": "Medication Packages define pre-configured treatment protocols that can be applied to individual pigs, groups, or litters.",
+      "prerequisites": [
+        "Medication or vaccine products must exist in the warehouse catalog.",
+        "The sub-warehouse where medicines are stored must exist (if using sub-warehouse stock)."
+      ],
+      "steps": [
+        {
+          "title": "Step 1: Create a medication package",
+          "desc": "Go to Health → Medication Packages. Click '+ New Package'. Enter the code, name, and target production stage.",
+          "screenshot": "/manual-screenshots/health/medication-packages-view.png"
+        },
+        {
+          "title": "Step 2: Add medicines",
+          "desc": "Select each medicine/vaccine from the product catalog. Enter dose, unit, frequency, and duration."
+        },
+        {
+          "title": "Step 3: Save the package",
+          "desc": "Click Save. The package is now ready to be applied to animals."
+        },
+        {
+          "title": "Step 4: Apply the package",
+          "desc": "From a pig's profile, a group, or a litter, click Apply Medication. Select the package and confirm. Stock is deducted automatically from the configured sub-warehouse."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Code",
+          "type": "Text",
+          "required": true,
+          "desc": "Package identifier."
+        },
+        {
+          "name": "Name",
+          "type": "Text",
+          "required": true,
+          "desc": "Descriptive name."
+        },
+        {
+          "name": "Target stage",
+          "type": "Select",
+          "required": true,
+          "desc": "Production stage the protocol applies to."
+        },
+        {
+          "name": "Medicine",
+          "type": "Select",
+          "required": true,
+          "desc": "Product from the warehouse catalog."
+        },
+        {
+          "name": "Dose",
+          "type": "Number",
+          "required": true,
+          "desc": "Amount per application."
+        },
+        {
+          "name": "Unit",
+          "type": "Select",
+          "required": true,
+          "desc": "mL, mg, tablet, dose, etc."
+        },
+        {
+          "name": "Frequency",
+          "type": "Text",
+          "required": false,
+          "desc": "How often the medicine is given (e.g., once daily for 3 days)."
+        }
+      ],
+      "tips": [
+        "Packages allow one-click application of multi-drug protocols — much faster than entering each medicine individually.",
+        "Medication stock is automatically deducted when a package is applied."
+      ]
+    },
+    "vaccinationPlans": {
+      "description": "Vaccination Plans schedule recurring vaccine events for specific production stages — the system tracks due dates and completion.",
+      "steps": [
+        {
+          "title": "Step 1: Create a vaccination plan",
+          "desc": "Go to Health → Vaccination Plans. Click '+ New Plan'. Enter code, name, and target stage.",
+          "screenshot": "/manual-screenshots/health/vaccination-plans-view.png"
+        },
+        {
+          "title": "Step 2: Define vaccines and schedule",
+          "desc": "Select each vaccine product, target age (in days), and application frequency."
+        },
+        {
+          "title": "Step 3: Assign to pigs / groups",
+          "desc": "From a pig's profile or a group, click Apply Vaccination Plan and select the plan. The system schedules the upcoming vaccinations."
+        }
+      ],
+      "tips": [
+        "Vaccination plan alerts appear on the dashboard when application dates arrive.",
+        "Keep vaccination records up to date for health certifications and traceability audits."
+      ]
+    },
+    "medicationAssign": {
+      "description": "Apply a medication package or individual medicine directly to a pig, group, or litter.",
+      "steps": [
+        {
+          "title": "Step 1: Navigate to the animal or group",
+          "desc": "Open the pig's detail page, the group detail, or the litter detail."
+        },
+        {
+          "title": "Step 2: Click Apply Medication",
+          "desc": "Click the Apply Medication button. Select the medication package or choose a specific product."
+        },
+        {
+          "title": "Step 3: Confirm",
+          "desc": "Confirm the application. The system records the event, deducts the product from sub-warehouse stock, and logs the responsible user and date.",
+          "screenshot": "/manual-screenshots/health/medication-form-step2.png"
+        }
+      ],
+      "tips": [
+        "Medication events are visible in the animal's health history on its profile page.",
+        "If stock is insufficient, the system will warn you before saving."
+      ]
+    },
+    "feeding": {
+      "description": "Feed Packages define ration formulas specifying ingredients, percentages, and expected FCR for each production stage.",
+      "steps": [
+        {
+          "title": "Step 1: Create a feed package",
+          "desc": "Go to Nutrition → Feed Packages. Click '+ New Package'. Enter code, name, and target stage.",
+          "screenshot": "/manual-screenshots/health/feeding-packages-view.png"
+        },
+        {
+          "title": "Step 2: Define ingredients",
+          "desc": "Add each feed ingredient from the warehouse catalog. Enter the percentage composition and expected FCR."
+        },
+        {
+          "title": "Step 3: Save",
+          "desc": "Click Save. The package is ready for use in feed preparations."
+        }
+      ],
+      "tips": [
+        "Ingredient percentages must total 100%.",
+        "Feed packages link consumption to warehouse stock — ingredients are deducted when feed is administered."
+      ]
+    },
+    "feedPreparation": {
+      "description": "Feed Preparation records a physical batch of feed manufactured using a Feed Package formula.",
+      "prerequisites": [
+        "A feed package must exist.",
+        "The sub-warehouse where feed is produced/stored must exist.",
+        "Sufficient ingredient stock must be available."
+      ],
+      "steps": [
+        {
+          "title": "Step 1: Open the form",
+          "desc": "Go to Nutrition → Feed Preparation. Click '+ New Preparation'."
+        },
+        {
+          "title": "Step 2: Select package and sub-warehouse",
+          "desc": "Select the feed package formula to use and the sub-warehouse where the batch will be stored."
+        },
+        {
+          "title": "Step 3: Enter actual yield and ingredients",
+          "desc": "Enter the actual batch yield (kg), and for each ingredient enter the actual quantity used (may differ from the formula if adjustments were made)."
+        },
+        {
+          "title": "Step 4: Save",
+          "desc": "Click Save. Ingredient stock is deducted from the main warehouse. Feed stock is added to the destination sub-warehouse."
+        }
+      ],
+      "fields": [
+        {
+          "name": "Feed package",
+          "type": "Select",
+          "required": true,
+          "desc": "Formula to use for this batch."
+        },
+        {
+          "name": "Sub-warehouse",
+          "type": "Select",
+          "required": true,
+          "desc": "Where the finished feed will be stored."
+        },
+        {
+          "name": "Actual yield (kg)",
+          "type": "Number",
+          "required": true,
+          "desc": "Actual batch size produced."
+        },
+        {
+          "name": "Ingredient quantities",
+          "type": "Number",
+          "required": true,
+          "desc": "Actual amount of each ingredient used."
+        }
+      ],
+      "tips": [
+        "Actual ingredient quantities are used for warehouse deductions — not the formula percentages.",
+        "Prepare feed before scheduling administration to ensure stock availability."
+      ]
+    },
+    "reportsProduction": {
+      "description": "Production Reports consolidate the farm's performance indicators: farrowing rate, litter size, pre-weaning mortality, ADG, and reproductive efficiency.",
+      "paragraphs": [
+        "Filter by period, farm, and indicator type. Charts help identify trends and compare performance across periods.",
+        "Available production reports: Inseminations summary, Farrowing rate, Litter performance, Mortality by stage, Weight gain by group."
+      ],
+      "tips": [
+        "Export reports to PDF for sharing with management or external advisors.",
+        "Compare back-to-back periods to identify seasonal trends."
+      ]
+    },
+    "reportsInventory": {
+      "description": "Inventory Reports show the complete warehouse movement history, period consumption, low-stock alerts, and inventory valuation.",
+      "paragraphs": [
+        "Available reports: Inventory valuation (current stock × reference price), Movement history (all receipts and issues in a period), Consumption by product/category, Low-stock alert summary."
+      ],
+      "tips": [
+        "Inventory valuation is based on reference prices set in the product catalog — keep these up to date.",
+        "Export to Excel for integration with external accounting systems."
+      ]
+    },
+    "reportsFinance": {
+      "description": "Financial Reports consolidate revenue, production costs, operating expenses, and net income per period.",
+      "paragraphs": [
+        "Available reports: Income statement (revenue vs costs), Profitability by batch/group, Cash flow summary, Cost per kg produced.",
+        "All financial reports respect the period-closing lock — closed periods show finalized figures."
+      ],
+      "tips": [
+        "Use the cost-per-kg report to benchmark your operation against industry averages.",
+        "Revenue figures come from Sales; costs come from warehouse movements and expenses."
+      ]
+    },
+    "reportsSales": {
+      "description": "Sales Reports show the history of pig sales: volumes, average prices, buyers, and period-over-period performance.",
+      "tips": [
+        "Filter by buyer to analyze your most important commercial relationships.",
+        "Average price per kg trends help negotiate contracts with slaughterhouses."
+      ]
+    },
+    "reportsTraceability": {
+      "description": "Traceability lets you reconstruct the complete history of an individual pig or group: from entry to exit, through every recorded event.",
+      "tips": [
+        "Use traceability for health audits, disease investigations, and certification requirements.",
+        "Every event (weight, medication, vaccination, transfer, insemination, farrowing) is included in the traceability trail."
+      ]
+    },
+    "reportsAudit": {
+      "description": "Audit Reports log every action taken in the system: record creation, edits, and deletions, with the responsible user and exact timestamp.",
+      "tips": [
+        "Audit logs are immutable — they cannot be altered by any user.",
+        "Use audit reports to investigate data discrepancies or verify process compliance."
+      ]
+    }
+  }
+}
