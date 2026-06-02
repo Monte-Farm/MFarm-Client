@@ -45,7 +45,7 @@ const formatValue = (value: any, type?: ColumnType) => {
     }
 };
 
-function SelectableCustomTable<T extends { id: string }>(props: SelectableCustomTableProps<T>) {
+function SelectableCustomTable<T extends { id?: string }>(props: SelectableCustomTableProps<T>) {
     const {
         columns,
         data,
@@ -63,6 +63,8 @@ function SelectableCustomTable<T extends { id: string }>(props: SelectableCustom
         selectionOnlyOnCheckbox = false,
         initialSelectedIds,
     } = props;
+
+    const getRowId = (row: T): string => (row as any)._id ?? row.id ?? "";
 
     const { t } = useTranslation();
     const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
@@ -86,11 +88,11 @@ function SelectableCustomTable<T extends { id: string }>(props: SelectableCustom
         if (!initialSelectedIds || initialSelectedIds.length === 0) return;
         if (data.length === 0) return;
         const validIds = new Set(
-            initialSelectedIds.filter(id => data.some((row: any) => row.id === id || row._id === id))
+            initialSelectedIds.filter(id => data.some((row) => getRowId(row) === id))
         );
         if (validIds.size === 0) return;
         setSelectedIds(validIds);
-        const selectedRows = data.filter((row: any) => validIds.has(row.id) || validIds.has(row._id));
+        const selectedRows = data.filter((row) => validIds.has(getRowId(row)));
         onSelect?.(selectedRows);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [data, initialSelectedIds?.join(",")]);
@@ -148,14 +150,14 @@ function SelectableCustomTable<T extends { id: string }>(props: SelectableCustom
 
             if (selectionMode === "single") {
                 newSelected.clear();
-                newSelected.add(row.id);
+                newSelected.add(getRowId(row));
             } else {
-                if (checked) newSelected.add(row.id);
-                else newSelected.delete(row.id);
+                if (checked) newSelected.add(getRowId(row));
+                else newSelected.delete(getRowId(row));
             }
 
             setSelectedIds(newSelected);
-            const selectedItems = data.filter((d) => newSelected.has(d.id));
+            const selectedItems = data.filter((d) => newSelected.has(getRowId(d)));
             onSelect?.(selectedItems);
         },
         [selectedIds, selectionMode, data, onSelect, disabled]
@@ -167,9 +169,9 @@ function SelectableCustomTable<T extends { id: string }>(props: SelectableCustom
             setSelectedIds(new Set());
             onSelect?.([]);
         } else {
-            const newSelected = new Set(paginatedData.map((d) => d.id));
+            const newSelected = new Set(paginatedData.map((d) => getRowId(d)));
             setSelectedIds(newSelected);
-            onSelect?.(data.filter((d) => newSelected.has(d.id)));
+            onSelect?.(data.filter((d) => newSelected.has(getRowId(d))));
         }
     }, [selectedIds, paginatedData, data, onSelect, disabled]);
 
@@ -178,10 +180,10 @@ function SelectableCustomTable<T extends { id: string }>(props: SelectableCustom
     // NUEVO: actualizar valores de inputs por fila
     const handleFieldChange = (id: string, field: keyof T, value: any) => {
         const updated = data.map((item) =>
-            item.id === id ? { ...item, [field]: value } : item
+            getRowId(item) === id ? { ...item, [field]: value } : item
         );
 
-        const updatedRow = updated.find((x) => x.id === id);
+        const updatedRow = updated.find((x) => getRowId(x) === id);
         if (updatedRow && onChangeRow) onChangeRow(updatedRow);
     };
 
@@ -237,10 +239,10 @@ function SelectableCustomTable<T extends { id: string }>(props: SelectableCustom
                     <tbody>
                         {paginatedData.length > 0 ? (
                             paginatedData.map((row) => {
-                                const isSelected = selectedIds.has(row.id);
+                                const isSelected = selectedIds.has(getRowId(row));
                                 return (
                                     <tr
-                                        key={row.id}
+                                        key={getRowId(row)}
                                         className={isSelected ? "table-primary" : ""}
                                         style={{ cursor: (rowClickable || !selectionOnlyOnCheckbox) ? "pointer" : "default" }}
                                         onClick={() => {
@@ -277,7 +279,7 @@ function SelectableCustomTable<T extends { id: string }>(props: SelectableCustom
                                                           row,
                                                           isSelected,
                                                           (field: keyof T, value: any) =>
-                                                              handleFieldChange(row.id, field, value)
+                                                              handleFieldChange(getRowId(row), field, value)
                                                       )
                                                     : formatValue(row[col.accessor], col.type)}
                                             </td>

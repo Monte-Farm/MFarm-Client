@@ -71,6 +71,7 @@ const LitterDetails = () => {
 
     const motherAttributes: Attribute[] = [
         { key: 'code', label: t('litter.motherAttr.code'), type: 'text' },
+        { key: 'earTag', label: t('litter.motherAttr.earTag'), type: 'text' },
         { key: 'birthdate', label: t('litter.motherAttr.birthdate'), type: 'date' },
         { key: 'breed', label: t('litter.motherAttr.breed'), type: 'text' },
     ]
