@@ -4,7 +4,7 @@ import { useFormik } from "formik";
 import { useTranslation } from "react-i18next";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { FEED_PREPARATION_URLS, FEEDING_PACKAGE_URLS } from "helpers/feeding_urls";
-import { useContext, useEffect, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { Badge, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Progress, Spinner } from "reactstrap";
 import * as Yup from "yup";
 import DatePicker from "react-flatpickr";
@@ -39,8 +39,6 @@ interface IngredientRow {
 }
 
 type RecipeSaveMode = 'none' | 'new' | 'update';
-
-const RAW_INGREDIENT_CATEGORIES = ['nutrition', 'vitamins', 'minerals'];
 
 const roundN = (n: number, decimals = 2) => {
     const f = Math.pow(10, decimals);
@@ -290,11 +288,10 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
         if (!configContext || !userLogged) return;
         try {
             setLoading(true);
-            const [recipesResponse, mainWhResponse, subwarehousesResponse, productsResponse] = await Promise.all([
+            const [recipesResponse, mainWhResponse, subwarehousesResponse] = await Promise.all([
                 configContext.axiosHelper.get(`${configContext.apiUrl}/${FEEDING_PACKAGE_URLS.findByFarm(userLogged.farm_assigned)}`),
                 configContext.axiosHelper.get(`${configContext.apiUrl}/farm/get_main_warehouse/${userLogged.farm_assigned}`),
                 configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_farm_subwarehouses/${userLogged.farm_assigned}`),
-                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/feeding_products/${userLogged.farm_assigned}`),
             ]);
             setRecipes((recipesResponse.data.data || []).filter((r: any) => r.is_active));
 
@@ -303,13 +300,33 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
             const feedSubwarehouses = allSubwarehouses.filter((s: any) => s.type === 'feed');
             const generalOption = { _id: mainWarehouseId, code: '', name: t('feeding.preparation.form.field.generalWarehouse', { defaultValue: 'Almacén general' }) };
             setSubwarehouses([generalOption, ...feedSubwarehouses]);
+        } catch (error) {
+            logger.error('Error fetching data:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: t('common.status.noData') });
+        } finally {
+            setLoading(false);
+        }
+    };
 
-            const allProducts = productsResponse.data.data || [];
-            const rawIngredients = allProducts.filter((p: any) => {
-                const isRaw = !p.type || p.type === PRODUCT_TYPES.RAW;
-                const isFeedCategory = RAW_INGREDIENT_CATEGORIES.includes(p.category);
-                return isRaw && isFeedCategory;
-            });
+    const FEED_INGREDIENT_CATEGORIES = ['nutrition', 'vitamins', 'minerals'];
+
+    const loadInventoryForWarehouse = async (warehouseId: string) => {
+        if (!configContext || !warehouseId) return;
+        try {
+            const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/get_inventory/${warehouseId}`);
+            const inventory: any[] = response.data.data || [];
+            const rawIngredients = inventory
+                .filter((item: any) =>
+                    item.product &&
+                    (!item.product.type || item.product.type === PRODUCT_TYPES.RAW) &&
+                    FEED_INGREDIENT_CATEGORIES.includes(item.product.category)
+                )
+                .map((item: any) => ({
+                    ...item.product,
+                    id: item.product._id || item.product.id,
+                    averagePrice: item.averagePrice ?? 0,
+                    quantity_in_stock: item.quantity,
+                }));
             setProducts(rawIngredients);
             const map: Record<string, any> = {};
             for (const p of rawIngredients) {
@@ -318,11 +335,17 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
             }
             setProductsMap(map);
         } catch (error) {
-            logger.error('Error fetching data:', error);
-            setAlertConfig({ visible: true, color: 'danger', message: t('common.status.noData') });
-        } finally {
-            setLoading(false);
+            logger.error('Error loading warehouse inventory:', error);
         }
+    };
+
+    const handleWarehouseChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        formik.handleChange(e);
+        setIngredients([]);
+        setPreselectedIds([]);
+        const warehouseId = e.target.value;
+        if (warehouseId) loadInventoryForWarehouse(warehouseId);
+        else { setProducts([]); setProductsMap({}); }
     };
 
     const fetchAveragePrices = async (productIds: string[]): Promise<Record<string, number>> => {
@@ -536,7 +559,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
                         type="select"
                         name="subwarehouseId"
                         value={formik.values.subwarehouseId}
-                        onChange={formik.handleChange}
+                        onChange={handleWarehouseChange}
                         onBlur={formik.handleBlur}
                         invalid={formik.touched.subwarehouseId && !!formik.errors.subwarehouseId}
                     >
