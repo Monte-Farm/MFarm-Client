@@ -499,9 +499,9 @@ const GroupDetails = () => {
                                     <KPI title={t('groups.kpi.activeTotal')} value={active?.total} icon={FaPiggyBank} bgColor="#F3F4F6" iconColor="#374151" />
                                     <KPI title={t('groups.kpi.males')} value={active?.male} icon={FaMars} bgColor="#E0F2FF" iconColor="#007BFF" />
                                     <KPI title={t('groups.kpi.females')} value={active?.female} icon={FaVenus} bgColor="#FFE0F0" iconColor="#FF007B" />
-                                    <KPI title={t('groups.kpi.mortality')} value={mortality.mortality} icon={FaSkullCrossbones} bgColor="#FDECEC" iconColor="#E74C3C" />
+                                    <KPI title={t('groups.kpi.mortality')} value={mortality?.mortality} icon={FaSkullCrossbones} bgColor="#FDECEC" iconColor="#E74C3C" />
                                     <KPI title={t('groups.kpi.avgAge')} value={averageAge ? `${averageAge.days} ${t('groups.metric.days')}` : "-"} icon={FaBirthdayCake} bgColor="#E8F6F3" iconColor="#1ABC9C" />
-                                    <KPI title={t('groups.kpi.avgWeightKpi')} value={`${lastWeighted?.weight?.toFixed(2) ?? groupData.avgWeight.toFixed(2)} kg`} icon={FaBalanceScale} bgColor="#E9F7EF" iconColor="#2ECC71" />
+                                    <KPI title={t('groups.kpi.avgWeightKpi')} value={`${(lastWeighted?.weight ?? groupData?.avgWeight ?? 0).toFixed(2)} kg`} icon={FaBalanceScale} bgColor="#E9F7EF" iconColor="#2ECC71" />
                                     <KPI title={t('groups.kpi.dailyGain')} value={`${growthRate.toFixed(2)} kg/día`} icon={FaChartLine} bgColor="#EEF2FF" iconColor="#4F46E5" />
                                     <KPI title={t('groups.kpi.lastWeigh')} value={`${daysSinceLastWeigh} ${t('groups.metric.days')}`} icon={FaCalendarDay} bgColor="#FFF4E5" iconColor="#F39C12" />
                                 </div>

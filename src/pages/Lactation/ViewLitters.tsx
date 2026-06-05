@@ -75,7 +75,7 @@ const ViewLitters = () => {
                         navigate(`/pigs/pig_details/${row.mother._id}`)
                     }}
                 >
-                    {row.mother.code} ↗
+                    {row.mother.earTag || row.mother.code} ↗
                 </Button>
             ) : <span className="text-muted">—</span>
         },

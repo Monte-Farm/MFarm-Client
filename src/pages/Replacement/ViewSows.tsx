@@ -70,7 +70,11 @@ const ViewSows = () => {
     };
 
     const pigColumns: Column<any>[] = [
-        { header: t('replacement.column.code'), accessor: 'code', type: 'text' },
+        {
+            header: t('replacement.column.earTag'),
+            accessor: 'earTag',
+            render: (value: string) => value || <span className="text-muted">—</span>,
+        },
         { header: t('replacement.column.breed'), accessor: 'breed', type: 'text' },
         { header: t('replacement.column.birthdate'), accessor: 'birthdate', type: 'date' },
         {
