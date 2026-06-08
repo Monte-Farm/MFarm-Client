@@ -2,11 +2,13 @@ import { getEffectiveUser } from "helpers/impersonation_helper";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 
 const Navdata = () => {
     const history = useNavigate();
     const { t } = useTranslation();
-    const userLogged = getEffectiveUser()
+    const userLogged = getEffectiveUser();
+    const subscriptionFeatures = useSelector((s: any) => s.Subscription.details?.plan?.features);
 
     //state data
     const [isHome, setIsHome] = useState<boolean>(false);
@@ -790,13 +792,13 @@ const Navdata = () => {
         },
 
         // ===================== REPORTES =====================
-        {
+        ...(subscriptionFeatures?.advancedReports !== false ? [{
             id: "header-reports",
             label: t('menu.reports'),
             isHeader: true,
             roles: ["Superadmin", 'farm_manager', 'warehouse_manager', 'finance_manager'],
-        },
-        {
+        }] : []),
+        ...(subscriptionFeatures?.advancedReports !== false ? [{
             id: 'reports',
             label: t('menu.reports'),
             icon: 'ri-bar-chart-box-line',
@@ -1018,7 +1020,7 @@ const Navdata = () => {
                     parentId: "reports",
                 },
             ]
-        },
+        }] : []),
 
     ];
     return <React.Fragment>{menuItems}</React.Fragment>;

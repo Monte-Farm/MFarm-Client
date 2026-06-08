@@ -29,6 +29,7 @@ import { createSelector } from 'reselect';
 const Layout = (props : any) => {
     const [headerClass, setHeaderClass] = useState("");
     const dispatch : any = useDispatch();
+    const aiEnabled = useSelector((s: any) => s.Subscription.details?.plan?.features?.aiEnabled);
 
     const selectLayoutState = (state : any) => state.Layout;
     const selectLayoutProperties = createSelector(
@@ -152,7 +153,7 @@ const Layout = (props : any) => {
                     {/*<Footer />*/}
                 </div>
             </div>
-            <AiChatWidget />
+            {aiEnabled !== false && <AiChatWidget />}
             {/* <RightSidebar /> */}
         </React.Fragment>
 
