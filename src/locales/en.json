@@ -95,6 +95,7 @@
     "lightMode": "Light Mode",
     "language": "Language",
     "userManual": "User Manual",
+    "subscription": "Subscription",
     "changePassword": "Change Password"
   },
   "auth": {

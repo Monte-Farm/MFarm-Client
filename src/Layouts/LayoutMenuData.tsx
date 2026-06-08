@@ -1020,25 +1020,6 @@ const Navdata = () => {
             ]
         },
 
-        // ===================== SUSCRIPCIÓN =====================
-        {
-            id: "header-subscription",
-            label: t('menu.subscription'),
-            isHeader: true,
-            roles: ["Superadmin", "farm_manager"],
-        },
-        {
-            id: "subscription",
-            label: t('menu.subscription'),
-            icon: "ri-vip-crown-2-line",
-            link: "/subscription",
-            roles: ["Superadmin", "farm_manager"],
-            click: function (e: any) {
-                e.preventDefault();
-                setIscurrentState('Subscription');
-            }
-        },
-
     ];
     return <React.Fragment>{menuItems}</React.Fragment>;
 };

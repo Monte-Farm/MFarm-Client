@@ -145,6 +145,14 @@ const ProfileDropdown = () => {
                                 <span>{t('profile.userManual')}</span>
                             </Link>
                         </DropdownItem>
+                        {(userLogged.role.includes('Superadmin') || userLogged.role.includes('farm_manager')) && (
+                            <DropdownItem className='p-0'>
+                                <Link to="/subscription" className="dropdown-item d-flex align-items-center py-2">
+                                    <i className="ri-vip-crown-2-line fs-18 me-2 text-primary"></i>
+                                    <span>{t('profile.subscription')}</span>
+                                </Link>
+                            </DropdownItem>
+                        )}
                     </div>
 
                     <div className="border-top py-1">
