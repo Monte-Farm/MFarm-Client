@@ -111,9 +111,13 @@ import AuditReport from "pages/Reports/Audit/AuditReport";
 import GlobalConfiguration from "pages/Configurations/GlobalConfiguration";
 import FarmConfiguration from "pages/Configurations/FarmConfiguration";
 import RoleProtected from "./RoleProtected";
+import ReadOnlyBoundary from "./ReadOnlyBoundary";
 
 //User Manual
 import UserManual from "pages/UserManual/UserManual";
+
+//Subscription
+import SubscriptionDetails from "pages/Subscription/SubscriptionDetails";
 
 
 const authProtectedRoutes = [
@@ -219,35 +223,35 @@ const authProtectedRoutes = [
   { path: '/sale/view_pig_sales', component: <ViewPigSales /> },
 
   //Reports - Production
-  { path: '/reports/production/inseminations-births', component: <InseminationsBirthsReport /> },
-  { path: '/reports/production/groups', component: <GroupsReport /> },
-  { path: '/reports/production/mortality', component: <MortalityReport /> },
-  { path: '/reports/production/feed-weight', component: <FeedWeightReport /> },
-  { path: '/reports/production/reproductive', component: <ReproductiveReport /> },
+  { path: '/reports/production/inseminations-births', component: <ReadOnlyBoundary><InseminationsBirthsReport /></ReadOnlyBoundary> },
+  { path: '/reports/production/groups', component: <ReadOnlyBoundary><GroupsReport /></ReadOnlyBoundary> },
+  { path: '/reports/production/mortality', component: <ReadOnlyBoundary><MortalityReport /></ReadOnlyBoundary> },
+  { path: '/reports/production/feed-weight', component: <ReadOnlyBoundary><FeedWeightReport /></ReadOnlyBoundary> },
+  { path: '/reports/production/reproductive', component: <ReadOnlyBoundary><ReproductiveReport /></ReadOnlyBoundary> },
 
   //Reports - Inventory
-  { path: '/reports/inventory/movements', component: <InventoryMovementsReport /> },
-  { path: '/reports/inventory/feed-consumption', component: <FeedConsumptionReport /> },
-  { path: '/reports/inventory/alerts', component: <InventoryAlertsReport /> },
-  { path: '/reports/inventory/valuation', component: <InventoryValuationReport /> },
+  { path: '/reports/inventory/movements', component: <ReadOnlyBoundary><InventoryMovementsReport /></ReadOnlyBoundary> },
+  { path: '/reports/inventory/feed-consumption', component: <ReadOnlyBoundary><FeedConsumptionReport /></ReadOnlyBoundary> },
+  { path: '/reports/inventory/alerts', component: <ReadOnlyBoundary><InventoryAlertsReport /></ReadOnlyBoundary> },
+  { path: '/reports/inventory/valuation', component: <ReadOnlyBoundary><InventoryValuationReport /></ReadOnlyBoundary> },
 
   //Reports - Finance
-  { path: '/reports/finance/purchases', component: <PurchasesReport /> },
-  { path: '/reports/finance/costs', component: <CostAnalysisReport /> },
-  { path: '/reports/finance/profitability', component: <ProfitabilityReport /> },
-  { path: '/reports/finance/operations-closing', component: <OperationsClosingReport /> },
-  { path: '/reports/finance/cash-flow', component: <CashFlowReport /> },
-  { path: '/reports/finance/supplier-statement', component: <SupplierStatementReport /> },
-  { path: '/reports/finance/expenses', component: <ExpensesReport /> },
+  { path: '/reports/finance/purchases', component: <ReadOnlyBoundary><PurchasesReport /></ReadOnlyBoundary> },
+  { path: '/reports/finance/costs', component: <ReadOnlyBoundary><CostAnalysisReport /></ReadOnlyBoundary> },
+  { path: '/reports/finance/profitability', component: <ReadOnlyBoundary><ProfitabilityReport /></ReadOnlyBoundary> },
+  { path: '/reports/finance/operations-closing', component: <ReadOnlyBoundary><OperationsClosingReport /></ReadOnlyBoundary> },
+  { path: '/reports/finance/cash-flow', component: <ReadOnlyBoundary><CashFlowReport /></ReadOnlyBoundary> },
+  { path: '/reports/finance/supplier-statement', component: <ReadOnlyBoundary><SupplierStatementReport /></ReadOnlyBoundary> },
+  { path: '/reports/finance/expenses', component: <ReadOnlyBoundary><ExpensesReport /></ReadOnlyBoundary> },
 
   //Reports - Sales
-  { path: '/reports/sales/overview', component: <SalesReport /> },
-  { path: '/reports/sales/clients', component: <ClientsReport /> },
+  { path: '/reports/sales/overview', component: <ReadOnlyBoundary><SalesReport /></ReadOnlyBoundary> },
+  { path: '/reports/sales/clients', component: <ReadOnlyBoundary><ClientsReport /></ReadOnlyBoundary> },
 
   //Reports - Catalogs, Traceability, Audit
-  { path: '/reports/catalogs', component: <CatalogsReport /> },
-  { path: '/reports/traceability', component: <GroupTraceabilityReport /> },
-  { path: '/reports/audit', component: <AuditReport /> },
+  { path: '/reports/catalogs', component: <ReadOnlyBoundary><CatalogsReport /></ReadOnlyBoundary> },
+  { path: '/reports/traceability', component: <ReadOnlyBoundary><GroupTraceabilityReport /></ReadOnlyBoundary> },
+  { path: '/reports/audit', component: <ReadOnlyBoundary><AuditReport /></ReadOnlyBoundary> },
 
   //Configurations
   {
@@ -270,6 +274,16 @@ const authProtectedRoutes = [
 
   // User Manual
   { path: "/user-manual", component: <UserManual /> },
+
+  // Subscription
+  {
+    path: "/subscription",
+    component: (
+      <RoleProtected allowedRoles={["Superadmin", "farm_manager"]}>
+        <SubscriptionDetails />
+      </RoleProtected>
+    ),
+  },
 
   // this route should be at the end of all other routes
   // eslint-disable-next-line react/display-name

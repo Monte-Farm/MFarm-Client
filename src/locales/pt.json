@@ -1737,7 +1737,8 @@
     "clientAnalysis": "Análise de compradores",
     "catalogs": "Cadastros",
     "traceability": "Rastreabilidade",
-    "audit": "Log de auditoria"
+    "audit": "Log de auditoria",
+    "subscription": "Assinatura"
   },
   "groups": {
     "column": {
@@ -7974,6 +7975,66 @@
       "totalWeight": "Peso total",
       "avgWeight": "Peso médio",
       "avgPrice": "Preço médio"
+    }
+  },
+  "subscription": {
+    "title": "Assinatura",
+    "planLabel": "Plano {{plan}}",
+    "unlimited": "Ilimitado",
+    "noExpiration": "Sem vencimento",
+    "daysRemaining": "dias restantes",
+    "expiresOn": "Vence em {{date}}",
+    "billing": {
+      "monthly": "mês",
+      "annual": "ano",
+      "lifetime": "Licença vitalícia"
+    },
+    "status": {
+      "active": "Ativa",
+      "trial": "Período de teste",
+      "expired": "Vencida",
+      "suspended": "Suspensa"
+    },
+    "section": {
+      "expiration": "Vencimento",
+      "usage": "Uso de recursos",
+      "features": "Recursos do plano"
+    },
+    "resource": {
+      "farms": "Granjas",
+      "sows": "Matrizes",
+      "users": "Usuários"
+    },
+    "feature": {
+      "ai": "Módulo de Inteligência Artificial",
+      "advancedReports": "Relatórios avançados",
+      "notIncluded": "Não incluso"
+    },
+    "error": {
+      "load": "Erro ao carregar as informações de assinatura"
+    },
+    "limitModal": {
+      "title": "Limite do plano atingido",
+      "alertTitle": "Não é possível concluir esta ação",
+      "hint": "Faça upgrade da sua assinatura para desbloquear mais capacidade e recursos.",
+      "upgrade": "Ver assinatura"
+    },
+    "banner": {
+      "expired": "Sua assinatura venceu. O sistema está em modo somente leitura.",
+      "viewPlan": "Ver plano"
+    },
+    "readOnly": {
+      "blockedTitle": "Ação não permitida",
+      "blockedMessage": "O sistema está em modo somente leitura.",
+      "blockedHint": "Sua assinatura venceu. Renove-a para voltar a registrar e editar dados.",
+      "reportsBlockedTitle": "Relatórios indisponíveis",
+      "reportsBlockedMessage": "A geração de relatórios não está disponível enquanto a assinatura estiver vencida. Renove seu plano para recuperar o acesso."
+    },
+    "suspended": {
+      "title": "Conta suspensa",
+      "message": "O acesso ao MFarm foi suspenso para esta conta.",
+      "contact": "Entre em contato com o administrador do sistema para reativar sua assinatura.",
+      "viewPlan": "Ver assinatura"
     }
   }
 }

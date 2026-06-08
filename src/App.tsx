@@ -7,6 +7,9 @@ import './assets/scss/themes.scss';
 import Route from './Routes';
 import { APIClient, getLoggedinUser } from 'helpers/api_helper';
 import PeriodClosedModal from 'Components/Common/Shared/PeriodClosedModal';
+import SubscriptionLimitModal from 'Components/Common/Shared/SubscriptionLimitModal';
+import SubscriptionBanner from 'Components/Common/Shared/SubscriptionBanner';
+import SubscriptionWriteBlockedModal from 'Components/Common/Shared/SubscriptionWriteBlockedModal';
 import { ImpersonationData, getEffectiveUser, getImpersonation, getSuperadminFarmId, setSuperadminFarmIdStorage } from 'helpers/impersonation_helper';
 
 // Define el contexto con una estructura para exponer tanto el estado como el setter
@@ -68,8 +71,11 @@ function App() {
   return (
     <ConfigContext.Provider value={{ apiUrl, axiosHelper, userLogged, setUserLogged, impersonation, setImpersonation, superadminFarmId, setSuperadminFarmId: setSuperadminFarmId }}>
       <React.Fragment>
+        <SubscriptionBanner />
         <Route />
         <PeriodClosedModal />
+        <SubscriptionLimitModal />
+        <SubscriptionWriteBlockedModal />
       </React.Fragment>
     </ConfigContext.Provider>
 

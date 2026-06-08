@@ -1737,7 +1737,8 @@
     "clientAnalysis": "Customer analysis",
     "catalogs": "Catalogs",
     "traceability": "Traceability",
-    "audit": "Audit log"
+    "audit": "Audit log",
+    "subscription": "Subscription"
   },
   "groups": {
     "column": {
@@ -7974,6 +7975,66 @@
       "totalWeight": "Total weight",
       "avgWeight": "Average weight",
       "avgPrice": "Average price"
+    }
+  },
+  "subscription": {
+    "title": "Subscription",
+    "planLabel": "{{plan}} Plan",
+    "unlimited": "Unlimited",
+    "noExpiration": "No expiration",
+    "daysRemaining": "days remaining",
+    "expiresOn": "Expires on {{date}}",
+    "billing": {
+      "monthly": "month",
+      "annual": "year",
+      "lifetime": "Lifetime license"
+    },
+    "status": {
+      "active": "Active",
+      "trial": "Trial",
+      "expired": "Expired",
+      "suspended": "Suspended"
+    },
+    "section": {
+      "expiration": "Expiration",
+      "usage": "Resource usage",
+      "features": "Plan features"
+    },
+    "resource": {
+      "farms": "Farms",
+      "sows": "Sows",
+      "users": "Users"
+    },
+    "feature": {
+      "ai": "AI Module",
+      "advancedReports": "Advanced reports",
+      "notIncluded": "Not included"
+    },
+    "error": {
+      "load": "Failed to load subscription information"
+    },
+    "limitModal": {
+      "title": "Plan limit reached",
+      "alertTitle": "This action cannot be completed",
+      "hint": "Upgrade your subscription to unlock more capacity and features.",
+      "upgrade": "View subscription"
+    },
+    "banner": {
+      "expired": "Your subscription has expired. The system is in read-only mode.",
+      "viewPlan": "View plan"
+    },
+    "readOnly": {
+      "blockedTitle": "Action not allowed",
+      "blockedMessage": "The system is in read-only mode.",
+      "blockedHint": "Your subscription has expired. Renew it to resume recording and editing data.",
+      "reportsBlockedTitle": "Reports unavailable",
+      "reportsBlockedMessage": "Report generation is unavailable while your subscription is expired. Renew your plan to regain access."
+    },
+    "suspended": {
+      "title": "Account suspended",
+      "message": "Access to MFarm has been suspended for this account.",
+      "contact": "Contact the system administrator to reactivate your subscription.",
+      "viewPlan": "View subscription"
     }
   }
 }

@@ -21,6 +21,9 @@ import ConfigurationsReducer from "./configurations/reducer";
 // Period Closing
 import PeriodClosingReducer from "./periodClosing/reducer";
 
+// Subscription
+import SubscriptionReducer from "./subscription/reducer";
+
 const rootReducer = combineReducers({
     Layout: LayoutReducer,
     Login: LoginReducer,
@@ -31,6 +34,7 @@ const rootReducer = combineReducers({
     Ai: AiReducer,
     Configurations: ConfigurationsReducer,
     PeriodClosing: PeriodClosingReducer,
+    Subscription: SubscriptionReducer,
 });
 
 export default rootReducer;

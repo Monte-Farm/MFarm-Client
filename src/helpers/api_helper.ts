@@ -1,6 +1,9 @@
 import axios, { AxiosResponse, AxiosRequestConfig } from 'axios';
 import config from "../config";
 import { emitPeriodClosed } from "../utils/periodClosedEvents";
+import { emitSubscriptionLimit } from "../utils/subscriptionLimitEvents";
+import { isSubscriptionReadOnly } from "../utils/subscriptionStore";
+import { emitSubscriptionWriteBlocked } from "../utils/subscriptionWriteBlockedEvents";
 
 const { api } = config;
 
@@ -23,6 +26,20 @@ const token = getInitialToken();
 if (token)
   axios.defaults.headers.common["Authorization"] = "Bearer " + token;
 
+// Request interceptor: block all mutations when subscription is expired (read-only mode)
+axios.interceptors.request.use(
+  (config) => {
+    const method = config.method?.toUpperCase();
+    const isMutation = method === "POST" || method === "PUT" || method === "PATCH" || method === "DELETE";
+    if (isMutation && isSubscriptionReadOnly()) {
+      emitSubscriptionWriteBlocked();
+      return Promise.reject({ __readOnlyBlocked: true });
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 // Response interceptor: catch 409 PERIOD_CLOSED and fire global event
 axios.interceptors.response.use(
   (response) => response,
@@ -41,6 +58,13 @@ axios.interceptors.response.use(
       // Mark the error so caller catches can skip showing their own generic error UI
       if (error) (error as any).__periodClosed = true;
     }
+    if (error?.response?.status === 403 && data?.error === "Subscription limit exceeded") {
+      emitSubscriptionLimit({
+        message: data.message || "Has alcanzado el límite de tu plan. Actualiza tu suscripción para continuar.",
+        error: data.error,
+      });
+      if (error) (error as any).__subscriptionLimit = true;
+    }
     return Promise.reject(error);
   }
 );
@@ -54,6 +78,13 @@ export const isPeriodClosedError = (err: any): boolean => {
   if (err.__periodClosed) return true;
   const data = err?.response?.data;
   return err?.response?.status === 409 && data?.error === "PERIOD_CLOSED";
+};
+
+export const isSubscriptionLimitError = (err: any): boolean => {
+  if (!err) return false;
+  if (err.__subscriptionLimit) return true;
+  const data = err?.response?.data;
+  return err?.response?.status === 403 && data?.error === "Subscription limit exceeded";
 };
 
 /**

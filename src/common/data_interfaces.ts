@@ -1209,3 +1209,64 @@ export interface PrecheckResponse {
     canForceClose: boolean;
     blockingErrors: string[];
 }
+
+// ─── Subscription Module ──────────────────────────────────────────────────────
+
+export type SubscriptionStatus = 'trial' | 'active' | 'expired' | 'suspended';
+export type SubscriptionBillingCycle = 'monthly' | 'annual' | 'lifetime';
+export type SubscriptionPlanSlug = 'starter' | 'pro' | 'enterprise' | 'lifetime';
+
+export interface SubscriptionPlan {
+    _id: string;
+    name: string;
+    slug: SubscriptionPlanSlug;
+    price: number;
+    billingCycle: SubscriptionBillingCycle;
+    maxFarms: number;
+    maxSows: number;
+    maxUsers: number;
+    features: {
+        aiEnabled: boolean;
+        advancedReports: boolean;
+    };
+}
+
+export interface SubscriptionData {
+    _id: string;
+    planId: SubscriptionPlan | string;
+    status: SubscriptionStatus;
+    type: 'recurring' | 'lifetime';
+    startDate: string;
+    endDate: string | null;
+    activatedBy: string;
+    notes: string;
+    createdAt: string;
+}
+
+export interface SubscriptionLimitUsage {
+    max: number;
+    current: number;
+}
+
+export interface SubscriptionDetails {
+    plan: {
+        name: string;
+        slug: SubscriptionPlanSlug;
+        price: number;
+        billingCycle: SubscriptionBillingCycle;
+        features: {
+            aiEnabled: boolean;
+            advancedReports: boolean;
+        };
+    };
+    status: SubscriptionStatus;
+    type: 'recurring' | 'lifetime';
+    startDate: string;
+    endDate: string | null;
+    daysRemaining: number | null;
+    limits: {
+        farms: SubscriptionLimitUsage;
+        sows: SubscriptionLimitUsage;
+        users: SubscriptionLimitUsage;
+    };
+}

@@ -1737,7 +1737,8 @@
     "clientAnalysis": "Análisis de Clientes",
     "catalogs": "Catálogos",
     "traceability": "Trazabilidad",
-    "audit": "Auditoría"
+    "audit": "Auditoría",
+    "subscription": "Suscripción"
   },
   "groups": {
     "column": {
@@ -7985,6 +7986,66 @@
       "totalWeight": "Peso Total",
       "avgWeight": "Peso Promedio",
       "avgPrice": "Precio Promedio"
+    }
+  },
+  "subscription": {
+    "title": "Suscripción",
+    "planLabel": "Plan {{plan}}",
+    "unlimited": "Ilimitado",
+    "noExpiration": "Sin vencimiento",
+    "daysRemaining": "días restantes",
+    "expiresOn": "Vence el {{date}}",
+    "billing": {
+      "monthly": "mes",
+      "annual": "año",
+      "lifetime": "Licencia vitalicia"
+    },
+    "status": {
+      "active": "Activa",
+      "trial": "En prueba",
+      "expired": "Vencida",
+      "suspended": "Suspendida"
+    },
+    "section": {
+      "expiration": "Vencimiento",
+      "usage": "Uso de recursos",
+      "features": "Funcionalidades del plan"
+    },
+    "resource": {
+      "farms": "Granjas",
+      "sows": "Cerdas madres",
+      "users": "Usuarios"
+    },
+    "feature": {
+      "ai": "Módulo de Inteligencia Artificial",
+      "advancedReports": "Reportes avanzados",
+      "notIncluded": "No incluido"
+    },
+    "error": {
+      "load": "Error al cargar la información de suscripción"
+    },
+    "limitModal": {
+      "title": "Límite del plan alcanzado",
+      "alertTitle": "No es posible completar esta acción",
+      "hint": "Actualiza tu suscripción para desbloquear más capacidad y funcionalidades.",
+      "upgrade": "Ver suscripción"
+    },
+    "banner": {
+      "expired": "Tu suscripción ha vencido. El sistema está en modo de solo lectura.",
+      "viewPlan": "Ver plan"
+    },
+    "readOnly": {
+      "blockedTitle": "Acción no permitida",
+      "blockedMessage": "El sistema está en modo de solo lectura.",
+      "blockedHint": "Tu suscripción ha vencido. Renuévala para volver a registrar y modificar datos.",
+      "reportsBlockedTitle": "Reportes no disponibles",
+      "reportsBlockedMessage": "La generación de reportes no está disponible mientras la suscripción esté vencida. Renueva tu plan para recuperar el acceso."
+    },
+    "suspended": {
+      "title": "Cuenta suspendida",
+      "message": "El acceso a MFarm ha sido suspendido para esta cuenta.",
+      "contact": "Contacta al administrador del sistema para reactivar tu suscripción.",
+      "viewPlan": "Ver suscripción"
     }
   }
 }
