@@ -25,6 +25,7 @@ import BasicPieChart from "Components/Common/Graphics/BasicPieChart"
 import PigFilters, { PigFiltersState } from "Components/Common/Filters/PigFilters"
 import { useTranslation } from "react-i18next"
 import AssignEarTagForm from "Components/Common/Forms/AssignEarTagForm"
+import PigEditForm from "Components/Common/Forms/PigEditForm"
 
 const STAGE_COLORS: Record<string, string> = {
     piglet: 'info', weaning: 'warning', fattening: 'primary', breeder: 'success',
@@ -367,6 +368,19 @@ const ViewBoars = () => {
                             pig={selectedPig}
                             onSave={() => { toggleModal('assignEarTag', false); fetchData(); }}
                             onCancel={() => toggleModal('assignEarTag', false)}
+                        />
+                    )}
+                </ModalBody>
+            </Modal>
+
+            <Modal size="lg" isOpen={modals.update} toggle={() => toggleModal("update")} centered>
+                <ModalHeader toggle={() => toggleModal("update")}>{t('replacement.modal.editPig')}</ModalHeader>
+                <ModalBody>
+                    {selectedPig && (
+                        <PigEditForm
+                            pigData={selectedPig}
+                            onSave={() => { toggleModal('update', false); fetchData(); }}
+                            onCancel={() => toggleModal('update', false)}
                         />
                     )}
                 </ModalBody>

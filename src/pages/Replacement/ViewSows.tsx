@@ -25,6 +25,7 @@ import BasicPieChart from "Components/Common/Graphics/BasicPieChart"
 import PigFilters, { PigFiltersState } from "Components/Common/Filters/PigFilters"
 import { useTranslation } from "react-i18next"
 import AssignEarTagForm from "Components/Common/Forms/AssignEarTagForm"
+import PigEditForm from "Components/Common/Forms/PigEditForm"
 
 const STAGE_COLORS: Record<string, string> = {
     piglet: 'info', weaning: 'warning', fattening: 'primary', breeder: 'success',
@@ -35,7 +36,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 const ViewSows = () => {
     const { t } = useTranslation();
-    const [modals, setModals] = useState({ viewPDF: false, assignEarTag: false, bulkMedication: false, bulkFeeding: false });
+    const [modals, setModals] = useState({ viewPDF: false, assignEarTag: false, update: false, bulkMedication: false, bulkFeeding: false });
     const [selectedPigs, setSelectedPigs] = useState<any[]>([]);
     const hasAlivePigs = selectedPigs.some(pig => pig.status === 'alive');
     const [selectedPig, setSelectedPig] = useState<PigData | null>(null)
@@ -121,6 +122,9 @@ const ViewSows = () => {
                             <i className="ri-price-tag-3-line align-middle"></i>
                         </Button>
                     )}
+                    <Button className="farm-secondary-button btn-icon" onClick={() => { setSelectedPig(row); toggleModal('update'); }} disabled={row.status !== 'alive'}>
+                        <i className="ri-pencil-fill align-middle"></i>
+                    </Button>
                     <Button className="farm-primary-button btn-icon" onClick={() => navigate(`/pigs/pig_details/${row._id}`)}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
@@ -364,6 +368,19 @@ const ViewSows = () => {
                             pig={selectedPig}
                             onSave={() => { toggleModal('assignEarTag', false); fetchData(); }}
                             onCancel={() => toggleModal('assignEarTag', false)}
+                        />
+                    )}
+                </ModalBody>
+            </Modal>
+
+            <Modal size="lg" isOpen={modals.update} toggle={() => toggleModal("update")} centered>
+                <ModalHeader toggle={() => toggleModal("update")}>{t('replacement.modal.editPig')}</ModalHeader>
+                <ModalBody>
+                    {selectedPig && (
+                        <PigEditForm
+                            pigData={selectedPig}
+                            onSave={() => { toggleModal('update', false); fetchData(); }}
+                            onCancel={() => toggleModal('update', false)}
                         />
                     )}
                 </ModalBody>

@@ -3237,7 +3237,8 @@
     },
     "modal": {
       "sowReport": "Breeding sow report",
-      "boarReport": "Boar report"
+      "boarReport": "Boar report",
+      "editPig": "Edit pig"
     },
     "empty": {
       "noSows": "No breeding sows on record",

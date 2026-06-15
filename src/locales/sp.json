@@ -3237,7 +3237,8 @@
     },
     "modal": {
       "sowReport": "Reporte de cerdas",
-      "boarReport": "Reporte de berracos"
+      "boarReport": "Reporte de berracos",
+      "editPig": "Editar cerdo"
     },
     "empty": {
       "noSows": "No hay cerdas registrados",
