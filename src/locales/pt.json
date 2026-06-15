@@ -3235,7 +3235,8 @@
     },
     "modal": {
       "sowReport": "Relatório de matrizes",
-      "boarReport": "Relatório de reprodutores"
+      "boarReport": "Relatório de reprodutores",
+      "editPig": "Editar suíno"
     },
     "empty": {
       "noSows": "Nenhuma matriz registrada",
