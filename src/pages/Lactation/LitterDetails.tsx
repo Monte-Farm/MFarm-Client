@@ -134,7 +134,7 @@ const LitterDetails = () => {
                     </div>
                 </div>
 
-                <div className="p-3 rounded border">
+                <div className="p-3 rounded border mb-3 bg-white">
                     <Nav tabs className="nav-tabs nav-justified">
                         <NavItem>
                             <NavLink
@@ -142,6 +142,7 @@ const LitterDetails = () => {
                                 className={classnames({ active: activeTab === "1" })}
                                 onClick={() => toggleTab("1")}
                             >
+                                <i className="ri-information-line me-1" />
                                 {t('litter.tab.info')}
                             </NavLink>
                         </NavItem>
@@ -151,6 +152,7 @@ const LitterDetails = () => {
                                 className={classnames({ active: activeTab === "2" })}
                                 onClick={() => toggleTab("2")}
                             >
+                                <i className="ri-medicine-bottle-line me-1" />
                                 {t('litter.tab.medical')}
                             </NavLink>
                         </NavItem>
@@ -160,6 +162,7 @@ const LitterDetails = () => {
                                 className={classnames({ active: activeTab === "3" })}
                                 onClick={() => toggleTab("3")}
                             >
+                                <i className="ri-restaurant-line me-1" />
                                 {t('litter.tab.feeding')}
                             </NavLink>
                         </NavItem>

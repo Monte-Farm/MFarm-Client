@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { FiInbox } from "react-icons/fi";
 import { useSelector } from "react-redux";
 import { Table, Input, Label } from "reactstrap";
 import SimpleBar from "simplebar-react";
@@ -187,6 +188,26 @@ function SelectableCustomTable<T extends { id?: string }>(props: SelectableCusto
         if (updatedRow && onChangeRow) onChangeRow(updatedRow);
     };
 
+    if (data.length === 0) {
+        return (
+            <div
+                style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    textAlign: "center",
+                    color: "#888",
+                    padding: "48px 0",
+                }}
+            >
+                <div>
+                    <FiInbox size={48} style={{ marginBottom: 10 }} />
+                    <div style={{ fontSize: 16 }}>{t("shared.table.noData")}</div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div style={{ pointerEvents: disabled ? "none" : "auto", opacity: disabled ? 0.5 : 1 }}>
             {showSearchAndFilter && (
@@ -206,7 +227,7 @@ function SelectableCustomTable<T extends { id?: string }>(props: SelectableCusto
                     <thead className="table-light sticky-top">
                         <tr>
                             <th style={{ width: selectionOnlyOnCheckbox ? 60 : 50 }}>
-                                {selectionMode === "multiple" && paginatedData.length > 0 && (
+                                {selectionMode === "multiple" && (
                                     <Input
                                         type="checkbox"
                                         checked={selectedIds.size === paginatedData.length}
@@ -237,63 +258,55 @@ function SelectableCustomTable<T extends { id?: string }>(props: SelectableCusto
                         </tr>
                     </thead>
                     <tbody>
-                        {paginatedData.length > 0 ? (
-                            paginatedData.map((row) => {
-                                const isSelected = selectedIds.has(getRowId(row));
-                                return (
-                                    <tr
-                                        key={getRowId(row)}
-                                        className={isSelected ? "table-primary" : ""}
-                                        style={{ cursor: (rowClickable || !selectionOnlyOnCheckbox) ? "pointer" : "default" }}
-                                        onClick={() => {
-                                            if (!disabled && !selectionOnlyOnCheckbox && (rowClickable || selectionMode))
-                                                handleSelectionChange(row, !isSelected);
-                                            if (!disabled && rowClickable && onRowClick)
-                                                onRowClick(row);
-                                        }}
-                                    >
-                                        <td>
-                                            <Label check className="d-block m-0 p-0">
-                                                <Input
-                                                    type={selectionMode === "single" ? "radio" : "checkbox"}
-                                                    name={selectionMode === "single" ? "selectRow" : undefined}
-                                                    checked={isSelected}
-                                                    onChange={(e) => {
-                                                        e.stopPropagation();
-                                                        handleSelectionChange(row, e.target.checked);
-                                                    }}
-                                                    disabled={disabled}
-                                                    style={selectionOnlyOnCheckbox ? { transform: 'scale(1.2)' } : {}}
-                                                />
-                                            </Label>
+                        {paginatedData.map((row) => {
+                            const isSelected = selectedIds.has(getRowId(row));
+                            return (
+                                <tr
+                                    key={getRowId(row)}
+                                    className={isSelected ? "table-primary" : ""}
+                                    style={{ cursor: (rowClickable || !selectionOnlyOnCheckbox) ? "pointer" : "default" }}
+                                    onClick={() => {
+                                        if (!disabled && !selectionOnlyOnCheckbox && (rowClickable || selectionMode))
+                                            handleSelectionChange(row, !isSelected);
+                                        if (!disabled && rowClickable && onRowClick)
+                                            onRowClick(row);
+                                    }}
+                                >
+                                    <td>
+                                        <Label check className="d-block m-0 p-0">
+                                            <Input
+                                                type={selectionMode === "single" ? "radio" : "checkbox"}
+                                                name={selectionMode === "single" ? "selectRow" : undefined}
+                                                checked={isSelected}
+                                                onChange={(e) => {
+                                                    e.stopPropagation();
+                                                    handleSelectionChange(row, e.target.checked);
+                                                }}
+                                                disabled={disabled}
+                                                style={selectionOnlyOnCheckbox ? { transform: 'scale(1.2)' } : {}}
+                                            />
+                                        </Label>
+                                    </td>
+                                    {columns.map((col, cIdx) => (
+                                        <td key={cIdx} style={{
+                                            backgroundColor: resolveBg(col.bgColor),
+                                            textAlign: col.type === "currency" ? "right" : "left",
+                                            ...(col.type === "currency" && { whiteSpace: "nowrap" })
+                                        }}>
+                                            {col.render
+                                                ? col.render(
+                                                      row[col.accessor],
+                                                      row,
+                                                      isSelected,
+                                                      (field: keyof T, value: any) =>
+                                                          handleFieldChange(getRowId(row), field, value)
+                                                  )
+                                                : formatValue(row[col.accessor], col.type)}
                                         </td>
-                                        {columns.map((col, cIdx) => (
-                                            <td key={cIdx} style={{
-                                                backgroundColor: resolveBg(col.bgColor),
-                                                textAlign: col.type === "currency" ? "right" : "left",
-                                                ...(col.type === "currency" && { whiteSpace: "nowrap" })
-                                            }}>
-                                                {col.render
-                                                    ? col.render(
-                                                          row[col.accessor],
-                                                          row,
-                                                          isSelected,
-                                                          (field: keyof T, value: any) =>
-                                                              handleFieldChange(getRowId(row), field, value)
-                                                      )
-                                                    : formatValue(row[col.accessor], col.type)}
-                                            </td>
-                                        ))}
-                                    </tr>
-                                );
-                            })
-                        ) : (
-                            <tr>
-                                <td colSpan={columns.length + 1} className="text-center">
-                                    {t("shared.table.noData")}
-                                </td>
-                            </tr>
-                        )}
+                                    ))}
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </Table>
             </SimpleBar>

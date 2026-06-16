@@ -3922,7 +3922,9 @@
         "ADMINISTRATIVE": "Administrative Expenses",
         "FUEL": "Fuel",
         "INFRASTRUCTURE": "Infrastructure & Works",
-        "OTHER": "Other"
+        "OTHER": "Other",
+        "FEED": "Feed",
+        "MEDICATION": "Medication"
       },
       "action": {
         "new": "New expense",

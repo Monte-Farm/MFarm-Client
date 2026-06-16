@@ -58,6 +58,7 @@ const ViewPregnancies = () => {
             header: t('pregnancy.column.sow'),
             accessor: "sow",
             type: "text",
+            bgColor: '#E8F5E9',
             render: (_, row) => (
                 <Button
                     className="text-underline"
@@ -72,12 +73,13 @@ const ViewPregnancies = () => {
                 </Button>
             )
         },
-        { header: t('pregnancy.column.inseminationDate'), accessor: "start_date", type: "date", isFilterable: false },
+        { header: t('pregnancy.column.inseminationDate'), accessor: "start_date", type: "date", isFilterable: false, bgColor: '#E3F2FD' },
         {
             header: t('pregnancy.column.status'),
             accessor: "farrowing_status",
             type: "text",
             isFilterable: true,
+            bgColor: '#F3E5F5',
             render: (_, row) => {
                 const color = STATUS_COLORS[row.farrowing_status] || 'secondary';
                 const text = t(`pregnancy.status.${row.farrowing_status}`, { defaultValue: t('pregnancy.status.pending') });
@@ -88,6 +90,7 @@ const ViewPregnancies = () => {
             header: t('pregnancy.column.estimatedFarrowing'),
             accessor: "estimated_farrowing_date",
             type: "date",
+            bgColor: '#FFF3E0',
             render: (_, row) => row.estimated_farrowing_date ? new Date(row.estimated_farrowing_date).toLocaleDateString() : "N/A",
         },
         {

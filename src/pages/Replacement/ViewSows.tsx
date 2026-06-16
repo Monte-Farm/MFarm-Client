@@ -74,16 +74,17 @@ const ViewSows = () => {
         {
             header: t('replacement.column.earTag'),
             accessor: 'earTag',
+            bgColor: '#E8F5E9',
             render: (value: string) => value || <span className="text-muted">—</span>,
         },
         { header: t('replacement.column.breed'), accessor: 'breed', type: 'text' },
-        { header: t('replacement.column.birthdate'), accessor: 'birthdate', type: 'date' },
+        { header: t('replacement.column.birthdate'), accessor: 'birthdate', type: 'date', bgColor: '#E3F2FD' },
         {
             header: t('replacement.column.sex'),
             accessor: 'sex',
             render: (value: string) => (
                 <Badge color={value === 'male' ? "info" : "danger"}>
-                    {value === 'male' ? "♂ " + t('common.sex.male') : "♀ " + t('common.sex.female')}
+                    {value === 'male' ? t('common.sex.male') : t('common.sex.female')}
                 </Badge>
             ),
         },
@@ -96,7 +97,7 @@ const ViewSows = () => {
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { header: t('replacement.column.weight'), accessor: 'weight', type: 'number' },
+        { header: t('replacement.column.weight'), accessor: 'weight', type: 'number', bgColor: '#FFF3E0' },
         {
             header: t('replacement.column.status'),
             accessor: 'status',

@@ -4,7 +4,7 @@ import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, Spinner } from "reactstrap";
+import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Spinner } from "reactstrap";
 import { Column } from "common/data/data_types";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
@@ -65,6 +65,7 @@ const ViewOutcomes = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' });
     const [mainWarehouseId, setMainWarehouseId] = useState<string>('')
     const [selectedOutcome, setSelectedOutcome] = useState<any>({});
+    const [activeTab, setActiveTab] = useState<'all' | 'manual' | 'consumption'>('manual');
     const [outcomeStatistics, setOutcomeStatistics] = useState({
         totalValue: 0,
         totalOutcomes: 0,
@@ -102,7 +103,7 @@ const ViewOutcomes = () => {
             type: 'text',
             render: (_, row) => <span>{row.warehouseDestiny?.name || "N/A"}</span>
         },
-        { header: t('finance.outcome.column.value'), accessor: 'totalPrice', isFilterable: true, type: 'currency' },
+        { header: t('finance.outcome.column.value'), accessor: 'totalPrice', isFilterable: true, type: 'currency', bgColor: '#FFF3E0' },
         {
             header: t('common.field.status', { defaultValue: 'Estado' }),
             accessor: 'cancelled',
@@ -375,21 +376,54 @@ const ViewOutcomes = () => {
                                 {t('finance.outcome.action.new')}
                             </Button>
                         </div>
+                        <Nav tabs className="mt-3">
+                            <NavItem>
+                                <NavLink active={activeTab === 'manual'} onClick={() => setActiveTab('manual')} style={{ cursor: 'pointer' }}>
+                                    {t('finance.outcome.tab.manual', { defaultValue: 'Manuales' })}
+                                    <Badge color="secondary" className="ms-2">
+                                        {outcomes.filter((o: any) => o.outcomeType !== 'consumption').length}
+                                    </Badge>
+                                </NavLink>
+                            </NavItem>
+                            <NavItem>
+                                <NavLink active={activeTab === 'consumption'} onClick={() => setActiveTab('consumption')} style={{ cursor: 'pointer' }}>
+                                    {t('finance.outcome.tab.consumption', { defaultValue: 'Consumo' })}
+                                    <Badge color="secondary" className="ms-2">
+                                        {outcomes.filter((o: any) => o.outcomeType === 'consumption').length}
+                                    </Badge>
+                                </NavLink>
+                            </NavItem>
+                            <NavItem>
+                                <NavLink active={activeTab === 'all'} onClick={() => setActiveTab('all')} style={{ cursor: 'pointer' }}>
+                                    {t('finance.outcome.tab.all', { defaultValue: 'Todas' })}
+                                    <Badge color="secondary" className="ms-2">
+                                        {outcomes.length}
+                                    </Badge>
+                                </NavLink>
+                            </NavItem>
+                        </Nav>
                     </CardHeader>
                     <CardBody className={outcomes.length === 0 ? "d-flex flex-column justify-content-center align-items-center text-center" : "d-flex flex-column flex-grow-1"}>
-                        {outcomes.length === 0 ? (
-                            <>
-                                <i className="ri-archive-line text-muted mb-2" style={{ fontSize: "2rem" }} />
-                                <span className="fs-5 text-muted">{t('finance.outcome.empty')}</span>
-                            </>
-                        ) : (
-                            <CustomTable
-                                columns={columns}
-                                data={outcomes}
-                                showSearchAndFilter={true}
-                                showPagination={false}
-                            />
-                        )}
+                        {(() => {
+                            const filtered = activeTab === 'all'
+                                ? outcomes
+                                : activeTab === 'manual'
+                                    ? outcomes.filter((o: any) => o.outcomeType !== 'consumption')
+                                    : outcomes.filter((o: any) => o.outcomeType === 'consumption');
+                            return filtered.length === 0 ? (
+                                <>
+                                    <i className="ri-archive-line text-muted mb-2" style={{ fontSize: "2rem" }} />
+                                    <span className="fs-5 text-muted">{t('finance.outcome.empty')}</span>
+                                </>
+                            ) : (
+                                <CustomTable
+                                    columns={columns}
+                                    data={filtered}
+                                    showSearchAndFilter={true}
+                                    showPagination={false}
+                                />
+                            );
+                        })()}
                     </CardBody>
                 </Card>
             </Container>

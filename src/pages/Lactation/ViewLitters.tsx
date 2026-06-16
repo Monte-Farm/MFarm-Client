@@ -66,6 +66,7 @@ const ViewLitters = () => {
             accessor: 'mother',
             type: 'text',
             isFilterable: true,
+            bgColor: '#E8F5E9',
             render: (_, row) => row.mother ? (
                 <Button
                     className="text-underline"
