@@ -125,25 +125,27 @@ const ViewUpcomingBirths = () => {
             accessor: 'sow',
             type: 'text',
             isFilterable: true,
+            bgColor: '#E8F5E9',
             render: (_, row) => (
                 <Button className="text-underline" color="link" onClick={(e) => { e.stopPropagation(); navigate(`/pigs/pig_details/${row.sow._id}`); }}>
                     {row.sow?.code} ↗
                 </Button>
             )
         },
-        { header: t('birth.column.inseminationDate'), accessor: 'start_date', type: 'date', isFilterable: true },
+        { header: t('birth.column.inseminationDate'), accessor: 'start_date', type: 'date', isFilterable: true, bgColor: '#E3F2FD' },
         {
             header: t('birth.column.status'),
             accessor: "farrowing_status",
             type: "text",
             isFilterable: true,
+            bgColor: '#F3E5F5',
             render: (_, row) => {
                 const color = PREGNANCY_STATUS_COLORS[row.farrowing_status] || 'secondary';
                 const text = t(`pregnancy.status.${row.farrowing_status}`, { defaultValue: t('pregnancy.status.pending') });
                 return <Badge color={color}>{text}</Badge>;
             },
         },
-        { header: t('birth.column.estimatedFarrowing'), accessor: 'estimated_farrowing_date', type: 'date', isFilterable: true },
+        { header: t('birth.column.estimatedFarrowing'), accessor: 'estimated_farrowing_date', type: 'date', isFilterable: true, bgColor: '#FFF3E0' },
         {
             header: t('birth.column.actions'),
             accessor: "action",

@@ -74,8 +74,14 @@ const Suppliers = () => {
             type: 'text',
             render: (value, row) => <span>{t(`warehouse.common.supplierType.${row.supplier_type}`, { defaultValue: row.supplier_type })}</span>
         },
-        { header: t('warehouse.suppliers.col.phone'), accessor: 'phone_number', type: 'text' },
-        { header: t('warehouse.suppliers.col.address'), accessor: 'address', type: 'text' },
+        {
+            header: t('warehouse.suppliers.col.phone'), accessor: 'phone_number', type: 'text',
+            render: (value: any) => <span>{value || <span className="text-muted">—</span>}</span>
+        },
+        {
+            header: t('warehouse.suppliers.col.address'), accessor: 'address', type: 'text',
+            render: (value: any) => <span>{value || <span className="text-muted">—</span>}</span>
+        },
         {
             header: t('common.field.status'), accessor: "status",
             render: (value: boolean) => (

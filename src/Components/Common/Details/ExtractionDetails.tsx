@@ -41,6 +41,7 @@ const ExtractionDetails: React.FC<ExtractionDetailsProps> = ({ extractionId }) =
     ];
 
     const BoarAttributes: Attribute[] = [
+        { key: "earTag", label: t('replacement.column.earTag', { defaultValue: 'Arete' }), type: "text" },
         { key: "code", label: t('common.field.code'), type: "text" },
         { key: "birthdate", label: t('common.field.birthDate'), type: "date" },
         { key: "breed", label: t('common.field.breed'), type: "text" },

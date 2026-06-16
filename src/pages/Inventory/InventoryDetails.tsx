@@ -234,32 +234,30 @@ const ProductDetails = () => {
                 </div>
 
                 {/* Tabs */}
-                <Card className="border-0 shadow-sm mb-3">
-                    <CardBody className="p-0">
-                        <Nav tabs className="nav-tabs-custom border-0 px-3 pt-2">
-                            <NavItem>
-                                <NavLink
-                                    style={{ cursor: "pointer" }}
-                                    className={classnames("fw-medium", { active: activeTab === "1" })}
-                                    onClick={() => toggleTab("1")}
-                                >
-                                    <RiInformationLine className="me-1" />
-                                    {t('warehouse.inventoryDetails.tab.general', { defaultValue: 'Información General' })}
-                                </NavLink>
-                            </NavItem>
-                            <NavItem>
-                                <NavLink
-                                    style={{ cursor: "pointer" }}
-                                    className={classnames("fw-medium", { active: activeTab === "2" })}
-                                    onClick={() => toggleTab("2")}
-                                >
-                                    <RiExchangeLine className="me-1" />
-                                    {t('warehouse.inventoryDetails.tab.movements', { defaultValue: 'Movimientos' })}
-                                </NavLink>
-                            </NavItem>
-                        </Nav>
-                    </CardBody>
-                </Card>
+                <div className="p-3 rounded border mb-3 bg-white">
+                    <Nav tabs className="nav-tabs nav-justified">
+                        <NavItem>
+                            <NavLink
+                                style={{ cursor: "pointer" }}
+                                className={classnames({ active: activeTab === "1" })}
+                                onClick={() => toggleTab("1")}
+                            >
+                                <RiInformationLine className="me-1" />
+                                {t('warehouse.inventoryDetails.tab.general', { defaultValue: 'Información General' })}
+                            </NavLink>
+                        </NavItem>
+                        <NavItem>
+                            <NavLink
+                                style={{ cursor: "pointer" }}
+                                className={classnames({ active: activeTab === "2" })}
+                                onClick={() => toggleTab("2")}
+                            >
+                                <RiExchangeLine className="me-1" />
+                                {t('warehouse.inventoryDetails.tab.movements', { defaultValue: 'Movimientos' })}
+                            </NavLink>
+                        </NavItem>
+                    </Nav>
+                </div>
 
                 <TabContent activeTab={activeTab}>
                     {/* ============ TAB 1: INFORMACIÓN ============ */}

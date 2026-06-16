@@ -25,6 +25,7 @@ import BasicPieChart from "Components/Common/Graphics/BasicPieChart"
 import PigFilters, { PigFiltersState } from "Components/Common/Filters/PigFilters"
 import { useTranslation } from "react-i18next"
 import AssignEarTagForm from "Components/Common/Forms/AssignEarTagForm"
+import PigEditForm from "Components/Common/Forms/PigEditForm"
 
 const STAGE_COLORS: Record<string, string> = {
     piglet: 'info', weaning: 'warning', fattening: 'primary', breeder: 'success',
@@ -73,16 +74,17 @@ const ViewBoars = () => {
         {
             header: t('replacement.column.earTag'),
             accessor: 'earTag',
+            bgColor: '#E8F5E9',
             render: (value: string) => value || <span className="text-muted">—</span>,
         },
         { header: t('replacement.column.breed'), accessor: 'breed', type: 'text' },
-        { header: t('replacement.column.birthdate'), accessor: 'birthdate', type: 'date' },
+        { header: t('replacement.column.birthdate'), accessor: 'birthdate', type: 'date', bgColor: '#E3F2FD' },
         {
             header: t('replacement.column.sex'),
             accessor: 'sex',
             render: (value: string) => (
                 <Badge color={value === 'male' ? "info" : "danger"}>
-                    {value === 'male' ? "♂ " + t('common.sex.male') : "♀ " + t('common.sex.female')}
+                    {value === 'male' ? t('common.sex.male') : t('common.sex.female')}
                 </Badge>
             ),
         },
@@ -95,7 +97,7 @@ const ViewBoars = () => {
                 return <Badge color={color}>{label}</Badge>;
             },
         },
-        { header: t('replacement.column.weight'), accessor: 'weight', type: 'number' },
+        { header: t('replacement.column.weight'), accessor: 'weight', type: 'number', bgColor: '#FFF3E0' },
         {
             header: t('replacement.column.status'),
             accessor: 'status',
@@ -367,6 +369,19 @@ const ViewBoars = () => {
                             pig={selectedPig}
                             onSave={() => { toggleModal('assignEarTag', false); fetchData(); }}
                             onCancel={() => toggleModal('assignEarTag', false)}
+                        />
+                    )}
+                </ModalBody>
+            </Modal>
+
+            <Modal size="lg" isOpen={modals.update} toggle={() => toggleModal("update")} centered>
+                <ModalHeader toggle={() => toggleModal("update")}>{t('replacement.modal.editPig')}</ModalHeader>
+                <ModalBody>
+                    {selectedPig && (
+                        <PigEditForm
+                            pigData={selectedPig}
+                            onSave={() => { toggleModal('update', false); fetchData(); }}
+                            onCancel={() => toggleModal('update', false)}
                         />
                     )}
                 </ModalBody>

@@ -57,6 +57,7 @@ const ViewBirths = () => {
             header: t('birth.column.sow'),
             accessor: "sow",
             type: "text",
+            bgColor: '#E8F5E9',
             render: (_, row) => (
                 <Button
                     className="text-underline fs-5"
@@ -70,12 +71,13 @@ const ViewBirths = () => {
                 </Button>
             )
         },
-        { header: t('birth.column.birthDate'), accessor: 'birth_date', type: 'date', isFilterable: true },
+        { header: t('birth.column.birthDate'), accessor: 'birth_date', type: 'date', isFilterable: true, bgColor: '#E3F2FD' },
         {
             header: t('birth.column.birthType'),
             accessor: 'birth_type',
             type: 'text',
             isFilterable: true,
+            bgColor: '#F3E5F5',
             render: (value: string) => {
                 const color = BIRTH_TYPE_COLORS[value] || 'secondary';
                 const label = t(`birth.type.${value}`, { defaultValue: t('birth.type.unspecified') });
@@ -87,6 +89,7 @@ const ViewBirths = () => {
             accessor: 'assisted',
             type: 'text',
             isFilterable: true,
+            bgColor: '#FFF3E0',
             render: (_, obj) => (
                 <Badge color={obj.assisted ? 'success' : 'warning'}>
                     {obj.assisted ? t('birth.assisted.yes') : t('birth.assisted.no')}

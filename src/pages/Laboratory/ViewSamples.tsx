@@ -83,6 +83,7 @@ const ViewSamples = () => {
             accessor: 'extraction_id',
             type: 'text',
             isFilterable: true,
+            bgColor: '#E8F5E9',
             render: (_, row) => {
                 if (row.origin === 'external') {
                     return row.supplier?.lot || t('laboratory.sample.noBatch');
@@ -93,6 +94,7 @@ const ViewSamples = () => {
         {
             header: t('laboratory.sample.column.boar'),
             accessor: 'boar',
+            bgColor: '#F3E5F5',
             render: (_, row) => {
                 if (row.origin === 'external') {
                     return <span className="text-muted">{row.supplier?.name || '-'}</span>;
@@ -122,8 +124,9 @@ const ViewSamples = () => {
             accessor: 'available_doses',
             type: 'number',
             isFilterable: true,
+            bgColor: '#E3F2FD',
         },
-        { header: t('laboratory.sample.column.expirationDate'), accessor: 'expiration_date', type: 'date', isFilterable: false },
+        { header: t('laboratory.sample.column.expirationDate'), accessor: 'expiration_date', type: 'date', isFilterable: false, bgColor: '#FFF3E0' },
         { header: t('laboratory.sample.column.conservationMethod'), accessor: 'conservation_method', type: 'text', isFilterable: true },
         {
             header: t('laboratory.sample.column.technician'),
@@ -137,6 +140,7 @@ const ViewSamples = () => {
             accessor: "lot_status",
             type: "text",
             isFilterable: true,
+            bgColor: '#FFEBEE',
             render: (_, row) => getLotStatusBadge(row.lot_status),
         },
         {

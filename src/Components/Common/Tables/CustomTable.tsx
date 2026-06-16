@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { FiInbox } from "react-icons/fi";
 import { Table, Input } from "reactstrap";
 import Pagination from "./Pagination";
 import SimpleBar from "simplebar-react";
@@ -101,6 +102,26 @@ const CustomTable = <T,>({
 
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
 
+  if (data.length === 0) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          textAlign: "center",
+          color: "#888",
+          padding: "48px 0",
+        }}
+      >
+        <div>
+          <FiInbox size={48} style={{ marginBottom: 10 }} />
+          <div style={{ fontSize: 16 }}>{t("shared.table.noData")}</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       {showSearchAndFilter && (
@@ -136,34 +157,26 @@ const CustomTable = <T,>({
             </tr>
           </thead>
           <tbody>
-            {paginatedData.length > 0 ? (
-              paginatedData.map((row, i) => (
-                <tr
-                  key={i}
-                  className={rowClickable ? "table-row-clickable" : ""}
-                  onClick={() => rowClickable && onRowClick?.(row)}
-                  style={{ cursor: rowClickable ? "pointer" : "default" }}
-                >
-                  {columns.map((col, j) => (
-                    <td key={j} style={{
-                      backgroundColor: col.bgColor ? (isDark ? darkenHex(col.bgColor) : col.bgColor) : undefined,
-                      textAlign: col.type === "currency" ? "right" : "left",
-                      ...(col.type === "currency" && { whiteSpace: "nowrap" })
-                    }}>
-                      {col.render
-                        ? col.render(row[col.accessor], row)
-                        : formatValue(row[col.accessor], col.type)}
-                    </td>
-                  ))}
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={columns.length} className="text-center">
-                  {t("shared.table.noData")}
-                </td>
+            {paginatedData.map((row, i) => (
+              <tr
+                key={i}
+                className={rowClickable ? "table-row-clickable" : ""}
+                onClick={() => rowClickable && onRowClick?.(row)}
+                style={{ cursor: rowClickable ? "pointer" : "default" }}
+              >
+                {columns.map((col, j) => (
+                  <td key={j} style={{
+                    backgroundColor: col.bgColor ? (isDark ? darkenHex(col.bgColor) : col.bgColor) : undefined,
+                    textAlign: col.type === "currency" ? "right" : "left",
+                    ...(col.type === "currency" && { whiteSpace: "nowrap" })
+                  }}>
+                    {col.render
+                      ? col.render(row[col.accessor], row)
+                      : formatValue(row[col.accessor], col.type)}
+                  </td>
+                ))}
               </tr>
-            )}
+            ))}
           </tbody>
         </Table>
       </SimpleBar>
