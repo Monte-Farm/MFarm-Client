@@ -63,9 +63,9 @@ const NotificationDropdown = () => {
         },
         stage_change: {
             icon: 'ri-arrow-right-circle-line',
-            color: '#405189',
-            bg: 'rgba(64, 81, 137, 0.12)',
-            gradient: 'linear-gradient(135deg, #405189 0%, #2f3e6f 100%)',
+            color: '#A87340',
+            bg: 'rgba(168, 115, 64, 0.12)',
+            gradient: 'linear-gradient(135deg, #A87340 0%, #8a5c2e 100%)',
             label: t('notification.type.stage_change'),
         },
         system: {
@@ -124,10 +124,23 @@ const NotificationDropdown = () => {
     const dispatch: any = useDispatch();
     const navigate = useNavigate();
     const { notifications, unreadCount, loading } = useSelector(selectNotificationsState);
+    const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === 'dark';
     const [isOpen, setIsOpen] = useState(false);
     const [panelLoaded, setPanelLoaded] = useState(false);
     const [activeTab, setActiveTab] = useState<TabKey>('all');
     const [hoveredId, setHoveredId] = useState<string | null>(null);
+
+    // Dark mode surface colors
+    const surface = isDark ? '#292e33' : '#fff';
+    const surfaceFooter = isDark ? '#212529' : '#f9f9fb';
+    const tabActiveBg = isDark ? '#2f343a' : '#fff';
+    const tabActiveColor = '#5C7A3A';
+    const itemHoverBg = isDark
+        ? 'linear-gradient(135deg, rgba(92, 122, 58, 0.10) 0%, rgba(168, 115, 64, 0.07) 100%)'
+        : 'linear-gradient(135deg, rgba(92, 122, 58, 0.06) 0%, rgba(168, 115, 64, 0.04) 100%)';
+    const itemUnreadBg = isDark ? 'rgba(92, 122, 58, 0.08)' : 'rgba(92, 122, 58, 0.04)';
+    const titleColor = isDark ? '#ced4da' : 'inherit';
+    const titleColorUnread = isDark ? '#fff' : 'inherit';
 
     const toggle = () => {
         if (!isOpen && !panelLoaded) {
@@ -166,11 +179,11 @@ const NotificationDropdown = () => {
                 type="button"
                 className="btn btn-icon btn-topbar rounded-circle position-relative border-0"
                 style={{
-                    background: 'rgba(64, 81, 137, 0.10)',
+                    background: 'rgba(92, 122, 58, 0.10)',
                     transition: 'all 0.2s ease',
                 }}
             >
-                <i className="ri-notification-3-line fs-20" style={{ color: '#405189' }} />
+                <i className="ri-notification-3-line fs-20" style={{ color: '#5C7A3A' }} />
                 {unreadCount > 0 && (
                     <span
                         className="position-absolute d-flex align-items-center justify-content-center rounded-pill border border-2 border-white"
@@ -199,15 +212,18 @@ const NotificationDropdown = () => {
                     width: '460px',
                     overflow: 'hidden',
                     borderRadius: '20px',
-                    boxShadow: '0 20px 60px rgba(30, 32, 37, 0.20), 0 4px 16px rgba(30, 32, 37, 0.08)',
+                    boxShadow: isDark
+                        ? '0 20px 60px rgba(0, 0, 0, 0.45), 0 4px 16px rgba(0, 0, 0, 0.25)'
+                        : '0 20px 60px rgba(30, 32, 37, 0.20), 0 4px 16px rgba(30, 32, 37, 0.08)',
                     marginTop: '12px',
-                    background: '#fff',
+                    background: surface,
                 }}
             >
+                {/* Header */}
                 <div
                     className="position-relative px-4 pt-4 pb-3"
                     style={{
-                        background: 'linear-gradient(135deg, #405189 0%, #3a4a7e 55%, #0ab39c 160%)',
+                        background: 'linear-gradient(135deg, #5C7A3A 0%, #4a6230 55%, #A87340 160%)',
                         overflow: 'hidden',
                     }}
                 >
@@ -227,7 +243,7 @@ const NotificationDropdown = () => {
                         style={{
                             width: '120px',
                             height: '120px',
-                            background: 'rgba(10, 179, 156, 0.22)',
+                            background: 'rgba(168, 115, 64, 0.22)',
                             bottom: '-60px',
                             left: '30px',
                             filter: 'blur(24px)',
@@ -294,8 +310,8 @@ const NotificationDropdown = () => {
                                         fontSize: '13px',
                                         fontWeight: 600,
                                         padding: '9px 16px',
-                                        background: active ? '#fff' : 'rgba(255,255,255,0.08)',
-                                        color: active ? '#405189' : 'rgba(255,255,255,0.9)',
+                                        background: active ? tabActiveBg : 'rgba(255,255,255,0.08)',
+                                        color: active ? tabActiveColor : 'rgba(255,255,255,0.9)',
                                         borderRadius: '12px 12px 0 0',
                                         transition: 'all 0.2s',
                                         boxShadow: active ? '0 -2px 12px rgba(0,0,0,0.06)' : 'none',
@@ -309,8 +325,8 @@ const NotificationDropdown = () => {
                                                 fontWeight: 700,
                                                 padding: '2px 8px',
                                                 borderRadius: '10px',
-                                                background: active ? 'rgba(64, 81, 137, 0.12)' : 'rgba(255,255,255,0.22)',
-                                                color: active ? '#405189' : '#fff',
+                                                background: active ? 'rgba(92, 122, 58, 0.12)' : 'rgba(255,255,255,0.22)',
+                                                color: active ? '#5C7A3A' : '#fff',
                                                 minWidth: '22px',
                                                 textAlign: 'center',
                                             }}
@@ -324,7 +340,8 @@ const NotificationDropdown = () => {
                     </div>
                 </div>
 
-                <div style={{ maxHeight: '500px', overflowY: 'auto', background: '#fff' }}>
+                {/* Body */}
+                <div style={{ maxHeight: '500px', overflowY: 'auto', background: surface }}>
                     {loading ? (
                         <div className="d-flex flex-column justify-content-center align-items-center py-5 gap-3">
                             <div
@@ -332,10 +349,10 @@ const NotificationDropdown = () => {
                                 style={{
                                     width: '48px',
                                     height: '48px',
-                                    background: 'rgba(64, 81, 137, 0.10)',
+                                    background: 'rgba(92, 122, 58, 0.10)',
                                 }}
                             >
-                                <Spinner size="sm" style={{ color: '#405189' }} />
+                                <Spinner size="sm" style={{ color: '#5C7A3A' }} />
                             </div>
                             <p className="mb-0" style={{ fontSize: '12.5px', color: '#878a99' }}>{t('notification.loading')}</p>
                         </div>
@@ -346,12 +363,12 @@ const NotificationDropdown = () => {
                                 style={{
                                     width: '80px',
                                     height: '80px',
-                                    background: 'linear-gradient(135deg, rgba(64, 81, 137, 0.10) 0%, rgba(10, 179, 156, 0.10) 100%)',
+                                    background: 'linear-gradient(135deg, rgba(92, 122, 58, 0.10) 0%, rgba(168, 115, 64, 0.10) 100%)',
                                 }}
                             >
-                                <i className="ri-notification-off-line" style={{ fontSize: '34px', color: '#405189', opacity: 0.8 }} />
+                                <i className="ri-notification-off-line" style={{ fontSize: '34px', color: '#5C7A3A', opacity: 0.8 }} />
                             </div>
-                            <h6 className="mb-1 fw-semibold" style={{ fontSize: '15px' }}>
+                            <h6 className="mb-1 fw-semibold" style={{ fontSize: '15px', color: titleColorUnread }}>
                                 {activeTab === 'unread' ? t('notification.empty.unread.title') : t('notification.empty.all.title')}
                             </h6>
                             <p className="mb-0" style={{ fontSize: '12.5px', maxWidth: '260px', color: '#878a99', lineHeight: '1.5' }}>
@@ -378,8 +395,8 @@ const NotificationDropdown = () => {
                                             transition: 'all 0.2s ease',
                                             borderRadius: '14px',
                                             background: isHovered
-                                                ? 'linear-gradient(135deg, rgba(64, 81, 137, 0.06) 0%, rgba(10, 179, 156, 0.04) 100%)'
-                                                : !n.read ? 'rgba(64, 81, 137, 0.04)' : 'transparent',
+                                                ? itemHoverBg
+                                                : !n.read ? itemUnreadBg : 'transparent',
                                             transform: isHovered ? 'translateX(2px)' : 'translateX(0)',
                                         }}
                                     >
@@ -420,6 +437,7 @@ const NotificationDropdown = () => {
                                                         fontSize: '14px',
                                                         fontWeight: !n.read ? 700 : 500,
                                                         letterSpacing: '-0.1px',
+                                                        color: !n.read ? titleColorUnread : titleColor,
                                                     }}
                                                 >
                                                     {n.title}
@@ -495,12 +513,13 @@ const NotificationDropdown = () => {
                     )}
                 </div>
 
+                {/* Footer */}
                 {filteredNotifications.length > 0 && !loading && (
                     <div
                         className="px-3 py-2 d-flex align-items-center justify-content-between"
                         style={{
-                            background: '#f9f9fb',
-                            borderTop: '1px solid rgba(64, 81, 137, 0.08)',
+                            background: surfaceFooter,
+                            borderTop: `1px solid ${isDark ? 'rgba(92, 122, 58, 0.15)' : 'rgba(92, 122, 58, 0.08)'}`,
                         }}
                     >
                         <span style={{ fontSize: '11.5px', color: '#adb5bd', fontWeight: 500 }}>
@@ -510,7 +529,7 @@ const NotificationDropdown = () => {
                             className="btn btn-sm d-flex align-items-center gap-1 border-0"
                             style={{
                                 fontSize: '12px',
-                                color: '#405189',
+                                color: '#5C7A3A',
                                 background: 'transparent',
                                 fontWeight: 600,
                                 padding: '4px 8px',
