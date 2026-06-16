@@ -48,6 +48,7 @@ const SaleDetails: React.FC<SaleDetailsProps> = ({ saleId }) => {
         individual: t('warehouse.inventoryDetails.saleType.individual', { defaultValue: 'Individual' }),
         group: t('warehouse.inventoryDetails.saleType.group', { defaultValue: 'Grupo' }),
         mixed: t('warehouse.inventoryDetails.saleType.mixed', { defaultValue: 'Mixta' }),
+        litter: t('warehouse.inventoryDetails.saleType.litter', { defaultValue: 'Camada' }),
     };
 
     const sexLabel: Record<string, string> = {
@@ -398,6 +399,38 @@ const SaleDetails: React.FC<SaleDetailsProps> = ({ saleId }) => {
                             rowsPerPage={10}
                             fontSize={14}
                         />
+
+                        {/* Sección de lechones (si aplica) */}
+                        {saleDetails?.litter && (
+                            <>
+                                <h6 className="text-muted text-uppercase mb-3 mt-4">
+                                    <i className="ri-seedling-line me-2 text-success" />
+                                    {t('warehouse.inventoryDetails.litterSection', { defaultValue: 'Lechones de camada' })}
+                                </h6>
+                                <Card className="border shadow-sm mb-3">
+                                    <CardBody className="p-0">
+                                        <Row className="g-0">
+                                            {[
+                                                { label: t('litter.field.code', { defaultValue: 'Camada' }), value: saleDetails.litter.litterId?.code || saleDetails.litter.litterId, icon: "ri-seedling-line" },
+                                                { label: t('sellPigs.litter.field.pigCount', { defaultValue: 'Cantidad' }), value: `${saleDetails.litter.pigCount} (${saleDetails.litter.male ?? "—"}M / ${saleDetails.litter.female ?? "—"}H)`, icon: "ri-group-line" },
+                                                { label: t('sellPigs.litter.totalWeight', { defaultValue: 'Peso total:' }).replace(":", ""), value: `${fmt(saleDetails.litter.totalWeight)} kg`, icon: "ri-scales-3-line" },
+                                                { label: t('common.field.totalPrice', { defaultValue: 'Total' }), value: fmtCurrency(saleDetails.litter.totalPrice), icon: "ri-money-dollar-circle-line", highlight: true },
+                                            ].map((item: any, i: number) => (
+                                                <Col xs={12} sm={6} lg={3} key={i} className={i < 3 ? "border-end" : ""}>
+                                                    <div className="p-3">
+                                                        <div className="d-flex align-items-center gap-2 mb-1">
+                                                            <i className={`${item.icon} text-muted`}></i>
+                                                            <span className="text-muted" style={{ fontSize: "13px" }}>{item.label}</span>
+                                                        </div>
+                                                        <span className={`fw-semibold ${item.highlight ? "text-success" : ""}`}>{item.value}</span>
+                                                    </div>
+                                                </Col>
+                                            ))}
+                                        </Row>
+                                    </CardBody>
+                                </Card>
+                            </>
+                        )}
                     </SimpleBar>
                 </TabPane>
             </TabContent>

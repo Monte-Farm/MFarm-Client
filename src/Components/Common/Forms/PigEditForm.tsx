@@ -89,12 +89,7 @@ const PigEditForm: React.FC<PigEditFormProps> = ({ pigData, onSave, onCancel }) 
                         <Label htmlFor="breed">{t('pigs.field.breed')}</Label>
                         <Input type="select" id="breed" name="breed" value={formik.values.breed} onChange={formik.handleChange} onBlur={formik.handleBlur} invalid={formik.touched.breed && !!formik.errors.breed}>
                             <option value="">{t('form.pig.placeholder.selectBreed')}</option>
-                            <option value="Yorkshire">Yorkshire</option>
-                            <option value="Landrace">Landrace</option>
-                            <option value="Duroc">Duroc</option>
-                            <option value="Hampshire">Hampshire</option>
-                            <option value="Pietrain">Pietrain</option>
-                            <option value="Berkshire">Berkshire</option>
+                            {["Yorkshire", "Landrace", "Duroc", "Hampshire", "Pietrain", "Berkshire", "Large White", "Chester White", "Poland China", "Tamworth"].map(b => <option key={b} value={b}>{b}</option>)}
                         </Input>
                         {formik.touched.breed && formik.errors.breed && <FormFeedback>{formik.errors.breed}</FormFeedback>}
                     </div>

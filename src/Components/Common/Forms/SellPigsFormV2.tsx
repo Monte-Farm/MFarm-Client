@@ -73,6 +73,54 @@ interface BuyerData {
     fiscalId?: string;
 }
 
+interface AvailableLitter {
+    _id: string;
+    code: string;
+    status: string;
+    currentMale: number;
+    currentFemale: number;
+    averageWeight: number;
+    mother?: { code?: string; earTag?: string };
+}
+
+interface LitterFormResponse {
+    litter: {
+        id: string;
+        code: string;
+        status: string;
+        birthDate: string;
+        mother: { _id: string; code: string; earTag?: string };
+        currentMale: number;
+        currentFemale: number;
+        currentTotal: number;
+        averageWeight: number;
+        estimatedTotalWeight: number;
+    };
+    productionCosts: {
+        feed: number;
+        medication: number;
+        vaccine: number;
+        other: number;
+        total: number;
+        costPerPig: number;
+        costPerKg: number;
+    };
+    suggestedPricePerKg: number;
+    nextSaleCode: string;
+}
+
+interface LitterSaleData {
+    litterId: string;
+    litterCode: string;
+    pigCount: number;
+    male?: number;
+    female?: number;
+    avgWeight: number;
+    totalWeight: number;
+    pricePerKg: number;
+    totalPrice: number;
+}
+
 interface SaleFormData {
     code: string;
     saleDate: string;
@@ -101,7 +149,7 @@ interface PreviewData {
     };
 }
 
-type SelectionMode = "group" | "individual";
+type SelectionMode = "group" | "individual" | "litter";
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -124,6 +172,251 @@ const getROIBadgeClass = (roi: number) => {
     if (roi >= 20) return "bg-info";
     if (roi >= 0) return "bg-warning";
     return "bg-danger";
+};
+
+// ─── LitterSelectionPanel ──────────────────────────────────────────────────────
+
+interface LitterSelectionPanelProps {
+    availableLitters: AvailableLitter[];
+    loadingLitters: boolean;
+    loadingLitterForm: boolean;
+    selectedLitter: LitterSaleData | null;
+    litterFormResponse: LitterFormResponse | null;
+    onSelectLitter: (litter: AvailableLitter) => void;
+    onClearLitter: () => void;
+    onFieldChange: (field: keyof LitterSaleData, value: number) => void;
+    t: (key: string, opts?: any) => string;
+}
+
+const litterStatusColor: Record<string, string> = {
+    active: "#2ab57d",
+    ready_to_wean: "#f1b44c",
+    wean_overdue: "#ff6f61",
+};
+
+const LitterSelectionPanel: React.FC<LitterSelectionPanelProps> = ({
+    availableLitters, loadingLitters, loadingLitterForm,
+    selectedLitter, litterFormResponse,
+    onSelectLitter, onClearLitter, onFieldChange, t,
+}) => {
+    if (loadingLitters) {
+        return (
+            <div className="text-center py-4">
+                <Spinner color="primary" />
+                <div className="text-muted small mt-2">{t("sellPigs.litter.loadingLitters", { defaultValue: "Cargando camadas..." })}</div>
+            </div>
+        );
+    }
+
+    if (!selectedLitter) {
+        if (availableLitters.length === 0) {
+            return (
+                <div className="text-center text-muted py-5">
+                    <i className="ri-seedling-line d-block mb-2" style={{ fontSize: 40, opacity: .2 }} />
+                    <span className="small">{t("sellPigs.litter.noActiveLitters", { defaultValue: "No hay camadas activas disponibles para venta" })}</span>
+                </div>
+            );
+        }
+        return (
+            <Row className="g-3">
+                {availableLitters.map(litter => {
+                    const currentTotal = litter.currentMale + litter.currentFemale;
+                    const statusColor = litterStatusColor[litter.status] || "#6c757d";
+                    return (
+                        <Col md={6} key={litter._id}>
+                            <Card
+                                className="mb-0 h-100 border"
+                                style={{ borderRadius: 12, cursor: "pointer", transition: "all .15s" }}
+                                onClick={() => onSelectLitter(litter)}
+                            >
+                                <CardBody className="p-3">
+                                    <div className="d-flex align-items-start justify-content-between mb-2">
+                                        <div className="d-flex align-items-center gap-2">
+                                            <div
+                                                className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0 bg-light text-muted"
+                                                style={{ width: 36, height: 36 }}
+                                            >
+                                                <i className="ri-seedling-line" style={{ fontSize: 18 }} />
+                                            </div>
+                                            <div>
+                                                <div className="fw-semibold" style={{ fontSize: 14 }}>{litter.code}</div>
+                                                {litter.mother?.code && (
+                                                    <span className="text-muted" style={{ fontSize: 12 }}>
+                                                        <i className="ri-heart-line me-1" />{litter.mother.code}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <span
+                                            className="badge rounded-pill px-2"
+                                            style={{ fontSize: 10, background: `${statusColor}20`, color: statusColor }}
+                                        >
+                                            {t(`litter.status.${litter.status}`, { defaultValue: litter.status })}
+                                        </span>
+                                    </div>
+                                    <div className="d-flex gap-3 flex-wrap" style={{ fontSize: 12 }}>
+                                        <span className="text-muted">
+                                            <i className="ri-group-line me-1" />{currentTotal} {t("sellPigs.litter.piglets", { defaultValue: "lechones" })}
+                                        </span>
+                                        <span className="text-muted">
+                                            <i className="ri-men-line me-1 text-info" />{litter.currentMale}
+                                        </span>
+                                        <span className="text-muted">
+                                            <i className="ri-women-line me-1 text-danger" />{litter.currentFemale}
+                                        </span>
+                                        {litter.averageWeight > 0 && (
+                                            <span className="text-muted">
+                                                <i className="ri-scales-3-line me-1" />{litter.averageWeight.toFixed(1)} kg {t("sellPigs.label.kgAvg", { defaultValue: "kg prom." })}
+                                            </span>
+                                        )}
+                                    </div>
+                                </CardBody>
+                            </Card>
+                        </Col>
+                    );
+                })}
+            </Row>
+        );
+    }
+
+    // Litter selected — show form fields
+    const maxPiglets = litterFormResponse
+        ? litterFormResponse.litter.currentTotal
+        : (selectedLitter.pigCount || 0);
+
+    return (
+        <Card className="border-0 shadow-sm" style={{ borderRadius: 12 }}>
+            <CardBody>
+                {loadingLitterForm ? (
+                    <div className="text-center py-3"><Spinner color="primary" size="sm" /></div>
+                ) : (
+                    <>
+                        {/* Header */}
+                        <div className="d-flex align-items-center justify-content-between mb-3">
+                            <div className="d-flex align-items-center gap-2">
+                                <i className="ri-seedling-line text-success" style={{ fontSize: 18 }} />
+                                <span className="fw-semibold">{selectedLitter.litterCode}</span>
+                                {litterFormResponse && (
+                                    <span className="text-muted small">
+                                        — {t("sellPigs.litter.mother", { defaultValue: "Madre:" })} {litterFormResponse.litter.mother?.code ?? "—"}
+                                    </span>
+                                )}
+                            </div>
+                            <button type="button" className="btn btn-sm text-muted px-2" onClick={onClearLitter}>
+                                <i className="ri-close-line" />
+                            </button>
+                        </div>
+
+                        {/* Cost info */}
+                        {litterFormResponse && (
+                            <div
+                                className="d-flex gap-4 mb-3 p-3 rounded-3"
+                                style={{ background: "#f8f9fa", fontSize: 12 }}
+                            >
+                                <div>
+                                    <div className="text-muted text-uppercase" style={{ fontSize: 10, letterSpacing: ".5px" }}>{t("sellPigs.litter.available", { defaultValue: "Disponibles" })}</div>
+                                    <div className="fw-bold" style={{ color: "#2ab57d" }}>{litterFormResponse.litter.currentTotal}</div>
+                                </div>
+                                <div>
+                                    <div className="text-muted text-uppercase" style={{ fontSize: 10, letterSpacing: ".5px" }}>{t("sellPigs.litter.avgWeight", { defaultValue: "Peso prom." })}</div>
+                                    <div className="fw-bold">{litterFormResponse.litter.averageWeight.toFixed(1)} kg</div>
+                                </div>
+                                <div>
+                                    <div className="text-muted text-uppercase" style={{ fontSize: 10, letterSpacing: ".5px" }}>{t("sellPigs.litter.costPerKg", { defaultValue: "Costo/kg" })}</div>
+                                    <div className="fw-bold text-danger">${litterFormResponse.productionCosts.costPerKg.toFixed(0)}</div>
+                                </div>
+                                <div>
+                                    <div className="text-muted text-uppercase" style={{ fontSize: 10, letterSpacing: ".5px" }}>{t("sellPigs.litter.suggested", { defaultValue: "Precio sug." })}</div>
+                                    <div className="fw-bold text-success">${litterFormResponse.suggestedPricePerKg.toFixed(0)}</div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Input fields */}
+                        <Row className="g-3">
+                            <Col md={3}>
+                                <Label className="form-label small mb-1">
+                                    {t("sellPigs.litter.field.pigCount", { defaultValue: "Cantidad" })}
+                                    {litterFormResponse && <span className="text-muted ms-1">(máx. {maxPiglets})</span>}
+                                </Label>
+                                <Input
+                                    type="number" min={1} max={maxPiglets}
+                                    value={selectedLitter.pigCount}
+                                    onChange={e => onFieldChange("pigCount", Math.min(Number(e.target.value), maxPiglets))}
+                                    style={{ borderRadius: 8 }}
+                                />
+                            </Col>
+                            <Col md={2}>
+                                <Label className="form-label small mb-1">{t("sellPigs.litter.field.male", { defaultValue: "Machos" })}</Label>
+                                <Input
+                                    type="number" min={0}
+                                    value={selectedLitter.male ?? ""}
+                                    onChange={e => onFieldChange("male", Number(e.target.value))}
+                                    placeholder="—"
+                                    style={{ borderRadius: 8 }}
+                                />
+                            </Col>
+                            <Col md={2}>
+                                <Label className="form-label small mb-1">{t("sellPigs.litter.field.female", { defaultValue: "Hembras" })}</Label>
+                                <Input
+                                    type="number" min={0}
+                                    value={selectedLitter.female ?? ""}
+                                    onChange={e => onFieldChange("female", Number(e.target.value))}
+                                    placeholder="—"
+                                    style={{ borderRadius: 8 }}
+                                />
+                            </Col>
+                            <Col md={2}>
+                                <Label className="form-label small mb-1">{t("sellPigs.litter.field.avgWeight", { defaultValue: "Peso prom. (kg)" })}</Label>
+                                <Input
+                                    type="number" step="0.01" min={0}
+                                    value={selectedLitter.avgWeight}
+                                    onChange={e => onFieldChange("avgWeight", Number(e.target.value))}
+                                    style={{ borderRadius: 8 }}
+                                />
+                            </Col>
+                            <Col md={3}>
+                                <Label className="form-label small mb-1">{t("sellPigs.label.pricePerKg", { defaultValue: "Precio / kg" })}</Label>
+                                <div className="input-group">
+                                    <span className="input-group-text bg-light border-end-0" style={{ borderRadius: "8px 0 0 8px" }}>$</span>
+                                    <Input
+                                        type="number" step="0.01" min={0}
+                                        value={selectedLitter.pricePerKg}
+                                        onChange={e => onFieldChange("pricePerKg", Number(e.target.value))}
+                                        className="border-start-0"
+                                        style={{ borderRadius: "0 8px 8px 0" }}
+                                    />
+                                </div>
+                                {litterFormResponse && (
+                                    <button
+                                        type="button"
+                                        className="btn btn-link btn-sm p-0 mt-1 text-decoration-none"
+                                        style={{ fontSize: 12 }}
+                                        onClick={() => onFieldChange("pricePerKg", litterFormResponse.suggestedPricePerKg)}
+                                    >
+                                        <i className="ri-magic-line me-1" />
+                                        {t("sellPigs.label.useSuggested", { defaultValue: "Usar sugerido:" })} <span className="fw-bold text-success">${litterFormResponse.suggestedPricePerKg}</span>
+                                    </button>
+                                )}
+                            </Col>
+                        </Row>
+
+                        {/* Auto-calculated totals */}
+                        <div className="mt-3 pt-2 border-top d-flex gap-4" style={{ fontSize: 12 }}>
+                            <div>
+                                <span className="text-muted">{t("sellPigs.litter.totalWeight", { defaultValue: "Peso total:" })}</span>{" "}
+                                <span className="fw-bold" style={{ color: "#50a5f1" }}>{selectedLitter.totalWeight.toFixed(1)} kg</span>
+                            </div>
+                            <div>
+                                <span className="text-muted">{t("sellPigs.litter.totalPrice", { defaultValue: "Total lechones:" })}</span>{" "}
+                                <span className="fw-bold text-success">${selectedLitter.totalPrice.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </>
+                )}
+            </CardBody>
+        </Card>
+    );
 };
 
 // ─── Component ─────────────────────────────────────────────────────────────────
@@ -164,6 +457,14 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
     const [focusedGroup, setFocusedGroup] = useState<AvailableGroup | null>(null);
     const [groupModalPigs, setGroupModalPigs] = useState<AvailablePig[]>([]);
     const [groupModalSelectedIds, setGroupModalSelectedIds] = useState<Set<string>>(new Set());
+
+    // ── Litter ──
+    const [availableLitters, setAvailableLitters] = useState<AvailableLitter[]>([]);
+    const [litterFormResponse, setLitterFormResponse] = useState<LitterFormResponse | null>(null);
+    const [selectedLitter, setSelectedLitter] = useState<LitterSaleData | null>(null);
+    const [loadingLitters, setLoadingLitters] = useState(false);
+    const [loadingLitterForm, setLoadingLitterForm] = useState(false);
+    const [includeLitter, setIncludeLitter] = useState(false);
 
     // ── Individual filters ──
     const [searchTerm, setSearchTerm] = useState("");
@@ -350,7 +651,97 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
         if (selectionMode === "individual" && availablePigs.length === 0) {
             fetchAvailablePigs();
         }
+        if (selectionMode === "litter" && availableLitters.length === 0) {
+            fetchAvailableLitters();
+        }
     }, [selectionMode]);
+
+    useEffect(() => {
+        if (includeLitter && availableLitters.length === 0) {
+            fetchAvailableLitters();
+        }
+    }, [includeLitter]);
+
+    // ─── Litter helpers ───────────────────────────────────────────────────────
+
+    const fetchAvailableLitters = async () => {
+        if (!configContext) return;
+        try {
+            setLoadingLitters(true);
+            const farmId = userLogged.farm_assigned;
+            const res = await configContext.axiosHelper.get(
+                `${configContext.apiUrl}/litter/found_by_farm/${farmId}`
+            );
+            const litters: AvailableLitter[] = (res.data.data || [])
+                .filter((l: any) => l.status !== "weaned")
+                .map((l: any) => ({
+                    _id: l._id,
+                    code: l.code,
+                    status: l.status,
+                    currentMale: l.currentMale || 0,
+                    currentFemale: l.currentFemale || 0,
+                    averageWeight: l.averageWeight || 0,
+                    mother: l.mother ? { code: l.mother.code, earTag: l.mother.earTag } : undefined,
+                }));
+            setAvailableLitters(litters);
+        } catch {
+            toggleModal("error");
+        } finally {
+            setLoadingLitters(false);
+        }
+    };
+
+    const fetchLitterFormData = async (litter: AvailableLitter) => {
+        if (!configContext) return;
+        try {
+            setLoadingLitterForm(true);
+            const res = await configContext.axiosHelper.get(
+                `${configContext.apiUrl}/finances/pig_sales/litter_form/${litter._id}`
+            );
+            const data: LitterFormResponse = res.data.data;
+            setLitterFormResponse(data);
+            const total = data.litter.currentTotal;
+            const avgW = data.litter.averageWeight;
+            const pricePerKg = data.suggestedPricePerKg;
+            setSelectedLitter({
+                litterId: litter._id,
+                litterCode: data.litter.code,
+                pigCount: total,
+                avgWeight: avgW,
+                totalWeight: parseFloat((total * avgW).toFixed(2)),
+                pricePerKg,
+                totalPrice: parseFloat((total * avgW * pricePerKg).toFixed(2)),
+            });
+        } catch {
+            toggleModal("error");
+        } finally {
+            setLoadingLitterForm(false);
+        }
+    };
+
+    const handleLitterFieldChange = (field: keyof LitterSaleData, value: number) => {
+        if (!selectedLitter) return;
+        setSelectedLitter(prev => {
+            if (!prev) return prev;
+            const updated = { ...prev, [field]: value };
+            if (field === "pigCount" || field === "avgWeight") {
+                updated.totalWeight = parseFloat((updated.pigCount * updated.avgWeight).toFixed(2));
+                updated.totalPrice = parseFloat((updated.totalWeight * updated.pricePerKg).toFixed(2));
+            }
+            if (field === "pricePerKg") {
+                updated.totalPrice = parseFloat((updated.totalWeight * value).toFixed(2));
+            }
+            if (field === "totalWeight") {
+                updated.totalPrice = parseFloat((value * updated.pricePerKg).toFixed(2));
+            }
+            return updated;
+        });
+    };
+
+    const clearLitter = () => {
+        setSelectedLitter(null);
+        setLitterFormResponse(null);
+    };
 
     // ─── Group modal actions ──────────────────────────────────────────────────
 
@@ -395,11 +786,16 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
 
     const calculateTotals = () => {
         const active = selectedPigs.filter(p => p.selected);
-        const subtotal = active.reduce((s, p) => s + p.total, 0);
-        const totalWeight = active.reduce((s, p) => s + p.weight, 0);
+        const pigSubtotal = active.reduce((s, p) => s + p.total, 0);
+        const pigWeight = active.reduce((s, p) => s + p.weight, 0);
+        const litterSubtotal = selectedLitter?.totalPrice || 0;
+        const litterWeight = selectedLitter?.totalWeight || 0;
+        const litterCount = selectedLitter?.pigCount || 0;
+        const subtotal = pigSubtotal + litterSubtotal;
+        const totalWeight = pigWeight + litterWeight;
         const totalAdditional = additionalCosts.reduce((s, c) => s + c.amount, 0);
         return {
-            totalPigs: active.length,
+            totalPigs: active.length + litterCount,
             totalWeight,
             subtotal,
             totalAdditional,
@@ -461,9 +857,23 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
     const validateStep1 = () => {
         const errs: Record<string, string> = {};
         const active = selectedPigs.filter(p => p.selected);
-        if (active.length === 0) errs.selection = t("sellPigs.validation.selectAtLeastOne", { defaultValue: "Debes seleccionar al menos un cerdo para vender" });
+        const hasLitter = !!selectedLitter;
+        if (active.length === 0 && !hasLitter) {
+            errs.selection = t("sellPigs.validation.selectAtLeastOne", { defaultValue: "Debes seleccionar al menos un cerdo para vender" });
+        }
         if (active.some(p => p.weight <= 0)) errs.weight = t("sellPigs.validation.weightPositive", { defaultValue: "Todos los pesos deben ser mayores a 0" });
         if (active.some(p => p.pricePerKg <= 0)) errs.price = t("sellPigs.validation.pricePositive", { defaultValue: "El precio por kg debe ser mayor a 0" });
+        if (hasLitter) {
+            if (!selectedLitter!.pigCount || selectedLitter!.pigCount <= 0) {
+                errs.litterCount = t("sellPigs.litter.validation.pigCountRequired", { defaultValue: "La cantidad de lechones debe ser mayor a 0" });
+            }
+            if (!selectedLitter!.avgWeight || selectedLitter!.avgWeight <= 0) {
+                errs.litterWeight = t("sellPigs.litter.validation.avgWeightRequired", { defaultValue: "El peso promedio de los lechones debe ser mayor a 0" });
+            }
+            if (!selectedLitter!.pricePerKg || selectedLitter!.pricePerKg <= 0) {
+                errs.litterPrice = t("sellPigs.litter.validation.priceRequired", { defaultValue: "El precio por kg de los lechones debe ser mayor a 0" });
+            }
+        }
         setErrors(errs);
         return Object.keys(errs).length === 0;
     };
@@ -490,14 +900,54 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
 
     const handleViewPreview = async () => {
         if (!validateStep2() || !configContext) return;
+        const active = selectedPigs.filter(p => p.selected);
+        const hasPigs = active.length > 0;
+        const hasLitter = !!selectedLitter;
+        const totalAdditional = additionalCosts.filter(c => c.concept.trim() && c.amount > 0).reduce((s, c) => s + c.amount, 0);
+
+        // Litter-only: build preview locally using production cost data from litter form
+        if (!hasPigs && hasLitter && litterFormResponse) {
+            const litterPrice = selectedLitter!.totalPrice;
+            const costs = litterFormResponse.productionCosts.total;
+            const profit = litterPrice - costs - totalAdditional;
+            const margin = litterPrice > 0 ? (profit / litterPrice) * 100 : 0;
+            const roi = costs > 0 ? (profit / costs) * 100 : 0;
+            setPreviewData({
+                summary: {
+                    totalPigs: selectedLitter!.pigCount,
+                    totalWeight: selectedLitter!.totalWeight,
+                    averageWeight: selectedLitter!.avgWeight,
+                    averagePricePerKg: selectedLitter!.pricePerKg,
+                    subtotal: litterPrice,
+                    additionalCosts: totalAdditional,
+                    totalAmount: litterPrice - totalAdditional,
+                },
+                profitability: {
+                    totalCosts: costs,
+                    estimatedProfit: profit,
+                    profitMargin: margin,
+                    roi,
+                },
+            });
+            setActiveStep(3);
+            return;
+        }
+
+        // Pigs (with or without litter): call calculate_preview
         try {
             setLoadingPreview(true);
-            const active = selectedPigs.filter(p => p.selected);
             const res = await configContext.axiosHelper.create(
                 `${configContext.apiUrl}/finances/pig_sales/calculate_preview`,
                 {
                     groupId: groupId || undefined,
                     pigs: active.map(p => ({ pigId: p.pigId, weight: p.weight, pricePerKg: p.pricePerKg })),
+                    litter: hasLitter ? {
+                        litterId: selectedLitter!.litterId,
+                        pigCount: selectedLitter!.pigCount,
+                        totalWeight: selectedLitter!.totalWeight,
+                        pricePerKg: selectedLitter!.pricePerKg,
+                        totalPrice: selectedLitter!.totalPrice,
+                    } : undefined,
                     additionalCosts: additionalCosts.filter(c => c.concept.trim() && c.amount > 0),
                 }
             );
@@ -516,13 +966,23 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
         try {
             setIsSubmitting(true);
             const active = selectedPigs.filter(p => p.selected);
+            const hasPigs = active.length > 0;
+            const hasLitter = !!selectedLitter;
+
+            // Determine saleType
+            let saleType = formData.saleType;
+            if (hasPigs && hasLitter) saleType = "mixed";
+            else if (!hasPigs && hasLitter) saleType = "litter";
+            else if (isClassicMode) saleType = "group";
+            else if (selectionMode === "individual") saleType = "individual";
+
             await configContext.axiosHelper.create(
                 `${configContext.apiUrl}/finances/pig_sales/create_sale`,
                 {
                     code: formData.code,
                     farm: userLogged.farm_assigned,
                     saleDate: new Date(formData.saleDate),
-                    saleType: formData.saleType,
+                    saleType,
                     group: groupId ? {
                         groupId,
                         pigCount: active.length,
@@ -530,14 +990,24 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                         pricePerKg: previewData.summary.averagePricePerKg,
                         totalPrice: previewData.summary.subtotal,
                     } : undefined,
-                    pigs: active.map(p => ({
+                    pigs: hasPigs ? active.map(p => ({
                         pig: p.pigId,
                         weight: p.weight,
                         pricePerKg: p.pricePerKg,
                         totalPrice: p.total,
                         age: p.age,
                         groupId: p.groupId,
-                    })),
+                    })) : undefined,
+                    litter: hasLitter ? {
+                        litterId: selectedLitter!.litterId,
+                        pigCount: selectedLitter!.pigCount,
+                        male: selectedLitter!.male,
+                        female: selectedLitter!.female,
+                        avgWeight: selectedLitter!.avgWeight,
+                        totalWeight: selectedLitter!.totalWeight,
+                        pricePerKg: selectedLitter!.pricePerKg,
+                        totalPrice: selectedLitter!.totalPrice,
+                    } : undefined,
                     buyer: {
                         name: formData.buyer.name,
                         type: formData.buyer.type,
@@ -669,6 +1139,7 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                                 {([
                                     { key: "group" as SelectionMode, icon: "ri-folder-line", label: t("sellPigs.mode.byGroup", { defaultValue: "Por grupo" }) },
                                     { key: "individual" as SelectionMode, icon: "ri-user-search-line", label: t("sellPigs.mode.individual", { defaultValue: "Individual" }) },
+                                    { key: "litter" as SelectionMode, icon: "ri-seedling-line", label: t("sellPigs.mode.litter", { defaultValue: "Camada" }) },
                                 ]).map(opt => (
                                     <button
                                         key={opt.key}
@@ -884,6 +1355,62 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                                         />
                                     )}
                                 </>
+                            )}
+
+                            {/* ── Litter sub-mode ── */}
+                            {selectionMode === "litter" && (
+                                <LitterSelectionPanel
+                                    availableLitters={availableLitters}
+                                    loadingLitters={loadingLitters}
+                                    loadingLitterForm={loadingLitterForm}
+                                    selectedLitter={selectedLitter}
+                                    litterFormResponse={litterFormResponse}
+                                    onSelectLitter={fetchLitterFormData}
+                                    onClearLitter={clearLitter}
+                                    onFieldChange={handleLitterFieldChange}
+                                    t={t}
+                                />
+                            )}
+
+                            {/* ── Include litter toggle (group / individual modes) ── */}
+                            {selectionMode !== "litter" && (
+                                <div className="mt-4">
+                                    <div
+                                        className="d-flex align-items-center justify-content-between p-3 rounded-3 border border-dashed"
+                                        style={{ borderColor: includeLitter ? "#556ee6" : "#dee2e6", background: includeLitter ? "rgba(85,110,230,.04)" : "#fafbfc", cursor: "pointer" }}
+                                        onClick={() => { setIncludeLitter(p => !p); if (includeLitter) clearLitter(); }}
+                                    >
+                                        <div className="d-flex align-items-center gap-2">
+                                            <i className="ri-seedling-line" style={{ fontSize: 18, color: includeLitter ? "#556ee6" : "#adb5bd" }} />
+                                            <span className="fw-semibold" style={{ fontSize: 13, color: includeLitter ? "#556ee6" : "#495057" }}>
+                                                {t("sellPigs.litter.includeToggle", { defaultValue: "Incluir lechones de camada" })}
+                                            </span>
+                                        </div>
+                                        <div
+                                            className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
+                                            style={{ width: 22, height: 22, background: includeLitter ? "#556ee6" : "#e9ecef", transition: "all .2s" }}
+                                        >
+                                            {includeLitter
+                                                ? <i className="ri-check-line text-white" style={{ fontSize: 13 }} />
+                                                : <i className="ri-add-line text-muted" style={{ fontSize: 13 }} />}
+                                        </div>
+                                    </div>
+                                    {includeLitter && (
+                                        <div className="mt-3">
+                                            <LitterSelectionPanel
+                                                availableLitters={availableLitters}
+                                                loadingLitters={loadingLitters}
+                                                loadingLitterForm={loadingLitterForm}
+                                                selectedLitter={selectedLitter}
+                                                litterFormResponse={litterFormResponse}
+                                                onSelectLitter={fetchLitterFormData}
+                                                onClearLitter={clearLitter}
+                                                onFieldChange={handleLitterFieldChange}
+                                                t={t}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
                             )}
                         </>
                     )}
