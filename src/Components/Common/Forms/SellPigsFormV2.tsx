@@ -334,37 +334,63 @@ const LitterSelectionPanel: React.FC<LitterSelectionPanelProps> = ({
 
                         {/* Input fields */}
                         <Row className="g-3">
-                            <Col md={3}>
+                            <Col md={2}>
                                 <Label className="form-label small mb-1">
-                                    {t("sellPigs.litter.field.pigCount", { defaultValue: "Cantidad" })}
-                                    {litterFormResponse && <span className="text-muted ms-1">(máx. {maxPiglets})</span>}
+                                    {t("sellPigs.litter.field.male", { defaultValue: "Machos" })}
+                                    {litterFormResponse && (
+                                        <span className="ms-1" style={{ fontSize: 11, color: "#50a5f1" }}>
+                                            <i className="ri-men-line me-1" />{litterFormResponse.litter.currentMale} disp.
+                                        </span>
+                                    )}
                                 </Label>
                                 <Input
-                                    type="number" min={1} max={maxPiglets}
-                                    value={selectedLitter.pigCount}
-                                    onChange={e => onFieldChange("pigCount", Math.min(Number(e.target.value), maxPiglets))}
-                                    style={{ borderRadius: 8 }}
-                                />
-                            </Col>
-                            <Col md={2}>
-                                <Label className="form-label small mb-1">{t("sellPigs.litter.field.male", { defaultValue: "Machos" })}</Label>
-                                <Input
                                     type="number" min={0}
+                                    max={litterFormResponse?.litter.currentMale ?? undefined}
                                     value={selectedLitter.male ?? ""}
-                                    onChange={e => onFieldChange("male", Number(e.target.value))}
+                                    onChange={e => {
+                                        const max = litterFormResponse?.litter.currentMale;
+                                        const val = Number(e.target.value);
+                                        onFieldChange("male", max !== undefined ? Math.min(val, max) : val);
+                                    }}
                                     placeholder="—"
                                     style={{ borderRadius: 8 }}
                                 />
                             </Col>
                             <Col md={2}>
-                                <Label className="form-label small mb-1">{t("sellPigs.litter.field.female", { defaultValue: "Hembras" })}</Label>
+                                <Label className="form-label small mb-1">
+                                    {t("sellPigs.litter.field.female", { defaultValue: "Hembras" })}
+                                    {litterFormResponse && (
+                                        <span className="ms-1" style={{ fontSize: 11, color: "#e83e8c" }}>
+                                            <i className="ri-women-line me-1" />{litterFormResponse.litter.currentFemale} disp.
+                                        </span>
+                                    )}
+                                </Label>
                                 <Input
                                     type="number" min={0}
+                                    max={litterFormResponse?.litter.currentFemale ?? undefined}
                                     value={selectedLitter.female ?? ""}
-                                    onChange={e => onFieldChange("female", Number(e.target.value))}
+                                    onChange={e => {
+                                        const max = litterFormResponse?.litter.currentFemale;
+                                        const val = Number(e.target.value);
+                                        onFieldChange("female", max !== undefined ? Math.min(val, max) : val);
+                                    }}
                                     placeholder="—"
                                     style={{ borderRadius: 8 }}
                                 />
+                            </Col>
+                            <Col md={2}>
+                                <Label className="form-label small mb-1">
+                                    {t("sellPigs.litter.field.pigCount", { defaultValue: "Total lechones" })}
+                                </Label>
+                                <div
+                                    className="d-flex align-items-center rounded px-3"
+                                    style={{ height: 38, background: "#f8f9fa", border: "1px solid #ced4da", borderRadius: 8, fontSize: 15, fontWeight: 600, color: "#343a40" }}
+                                >
+                                    {selectedLitter.pigCount}
+                                    <span className="text-muted ms-1" style={{ fontSize: 12, fontWeight: 400 }}>
+                                        {t("sellPigs.litter.piglets", { defaultValue: "lechones" })}
+                                    </span>
+                                </div>
                             </Col>
                             <Col md={2}>
                                 <Label className="form-label small mb-1">{t("sellPigs.litter.field.avgWeight", { defaultValue: "Peso prom. (kg)" })}</Label>
@@ -724,7 +750,16 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
         setSelectedLitter(prev => {
             if (!prev) return prev;
             const updated = { ...prev, [field]: value };
-            if (field === "pigCount" || field === "avgWeight") {
+            // Si se actualiza machos o hembras, el total se recalcula automáticamente
+            if (field === "male" || field === "female") {
+                const m = field === "male" ? value : (prev.male || 0);
+                const f = field === "female" ? value : (prev.female || 0);
+                if (m > 0 || f > 0) {
+                    updated.pigCount = m + f;
+                }
+            }
+            // Recalcular peso y precio cuando cambia cantidad o peso promedio
+            if (field === "pigCount" || field === "avgWeight" || field === "male" || field === "female") {
                 updated.totalWeight = parseFloat((updated.pigCount * updated.avgWeight).toFixed(2));
                 updated.totalPrice = parseFloat((updated.totalWeight * updated.pricePerKg).toFixed(2));
             }
@@ -961,7 +996,6 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
     };
 
     const handleConfirmSale = async () => {
-        toggleModal("confirmation", false);
         if (!configContext || !previewData) return;
         try {
             setIsSubmitting(true);
@@ -1024,8 +1058,10 @@ const SellPigsFormV2: React.FC<SellPigsFormV2Props> = ({ groupId, onSave }) => {
                     registeredBy: userLogged._id,
                 }
             );
+            toggleModal("confirmation", false);
             toggleModal("success");
         } catch {
+            toggleModal("confirmation", false);
             toggleModal("error");
         } finally {
             setIsSubmitting(false);
