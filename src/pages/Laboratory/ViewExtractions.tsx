@@ -42,24 +42,25 @@ const ViewExtractions = () => {
     const [selectedExtraction, setSelectedExtraction] = useState<any>({})
     const [pdfLoading, setPdfLoading] = useState(false);
     const [fileURL, setFileURL] = useState<string>('');
+    const navigate = useNavigate();
 
     const extractionsColumns: Column<any>[] = [
-        { header: t('laboratory.extraction.column.batch'), accessor: 'batch', type: 'text', isFilterable: true },
-        { header: t('laboratory.extraction.column.date'), accessor: 'date', type: 'date', isFilterable: false },
+        { header: t('laboratory.extraction.column.batch'), accessor: 'batch', type: 'text', isFilterable: true, bgColor: '#E8F5E9' },
+        { header: t('laboratory.extraction.column.date'), accessor: 'date', type: 'date', isFilterable: false, bgColor: '#E3F2FD' },
         {
             header: t('laboratory.extraction.column.boar'),
             accessor: 'boar',
+            bgColor: '#F3E5F5',
             render: (_, row) => (
                 <Button
                     className="text-underline fs-5"
                     color="link"
                     onClick={(e) => {
                         e.stopPropagation();
-                        setSelectedExtraction(row);
-                        toggleModal('extractionDetails')
+                        navigate(`/pigs/pig_details/${row.boar?._id}`);
                     }}
                 >
-                    {row.boar?.code} ↗
+                    {row.boar?.earTag || row.boar?.code} ↗
                 </Button>
             )
         },
@@ -76,6 +77,7 @@ const ViewExtractions = () => {
             accessor: 'is_sample_registered',
             type: 'text',
             isFilterable: true,
+            bgColor: '#FFF3E0',
             render: (_, obj) => (
                 <Badge color={obj.is_sample_registered ? 'success' : 'warning'}>{obj.is_sample_registered ? t('common.yes') : t('common.no')}</Badge>
             )

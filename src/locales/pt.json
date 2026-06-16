@@ -3239,7 +3239,8 @@
     },
     "modal": {
       "sowReport": "Relatório de matrizes",
-      "boarReport": "Relatório de reprodutores"
+      "boarReport": "Relatório de reprodutores",
+      "editPig": "Editar suíno"
     },
     "empty": {
       "noSows": "Nenhuma matriz registrada",
@@ -3923,7 +3924,9 @@
         "ADMINISTRATIVE": "Despesas Administrativas",
         "FUEL": "Combustível",
         "INFRASTRUCTURE": "Infraestrutura e Obras",
-        "OTHER": "Outro"
+        "OTHER": "Outro",
+        "FEED": "Alimentação",
+        "MEDICATION": "Medicação"
       },
       "action": {
         "new": "Nova despesa",

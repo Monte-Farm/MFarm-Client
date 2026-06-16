@@ -67,6 +67,7 @@ const ViewInseminations = () => {
             header: t('insemination.column.sow'),
             accessor: "sow",
             type: "text",
+            bgColor: '#E8F5E9',
             render: (_, row) => (
                 <Button
                     className="text-underline fs-5"
@@ -88,12 +89,13 @@ const ViewInseminations = () => {
             isFilterable: true,
             render: (_, row) => row.doses.length || 0,
         },
-        { header: t('insemination.column.date'), accessor: "date", type: "date", isFilterable: false },
+        { header: t('insemination.column.date'), accessor: "date", type: "date", isFilterable: false, bgColor: '#E3F2FD' },
         {
             header: t('insemination.column.estimatedFarrowing'),
             accessor: "date",
             type: "date",
             isFilterable: false,
+            bgColor: '#FFF3E0',
             render: (_, row) => {
                 const showDate =
                     row.status === "active" ||
@@ -134,6 +136,7 @@ const ViewInseminations = () => {
             accessor: "status",
             type: "text",
             isFilterable: true,
+            bgColor: '#F3E5F5',
             render: (_, row) => {
                 const color = STATUS_COLORS[row.status] || 'secondary';
                 const text = t(`insemination.status.${row.status}`, { defaultValue: t('insemination.status.unknown') });
@@ -145,6 +148,7 @@ const ViewInseminations = () => {
             accessor: "result",
             type: "text",
             isFilterable: true,
+            bgColor: '#FFEBEE',
             render: (_, row) => {
                 const color = RESULT_COLORS[row.result] || 'secondary';
                 const text = t(`insemination.result.${row.result}`, { defaultValue: t('insemination.result.pending') });

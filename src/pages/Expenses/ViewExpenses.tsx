@@ -3,7 +3,7 @@ import { appendLangParam } from 'helpers/reports_url_helper';
 import { ConfigContext } from "App";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import { useContext, useEffect, useState } from "react";
-import { Badge, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalHeader, Row, Spinner } from "reactstrap";
+import { Badge, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Row, Spinner } from "reactstrap";
 import { Column } from "common/data/data_types";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
@@ -24,6 +24,15 @@ const categoryBadgeColor: Record<string, string> = {
     LIVESTOCK_PURCHASE: "success",
     VETERINARY: "danger",
     OTHER: "dark",
+    REPAIR: "secondary",
+    PAYROLL: "primary",
+    INSURANCE: "info",
+    TAXES_FEES: "warning",
+    ADMINISTRATIVE: "secondary",
+    FUEL: "dark",
+    INFRASTRUCTURE: "secondary",
+    FEED: "success",
+    MEDICATION: "danger",
 };
 
 const categoryChartColor: Record<string, string> = {
@@ -52,6 +61,7 @@ const ViewExpenses = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [entries, setEntries] = useState<any[]>([]);
     const [modals, setModals] = useState({ createExpense: false, dateRange: false, viewPDF: false });
+    const [activeTab, setActiveTab] = useState<string>('all');
     const [pdfLoading, setPdfLoading] = useState(false);
     const [fileURL, setFileURL] = useState<string | null>(null);
     const [statistics, setStatistics] = useState({
@@ -244,16 +254,39 @@ const ViewExpenses = () => {
                                 {t('finance.expense.action.new')}
                             </Button>
                         </div>
+                        <Nav tabs className="mt-3">
+                            <NavItem>
+                                <NavLink active={activeTab === 'all'} onClick={() => setActiveTab('all')} style={{ cursor: 'pointer' }}>
+                                    {t('finance.expense.tab.all', { defaultValue: 'Todas' })}
+                                    <Badge color="secondary" className="ms-2">{entries.length}</Badge>
+                                </NavLink>
+                            </NavItem>
+                            {Array.from(new Set(entries.map((e: any) => e.category))).map((cat: any) => (
+                                <NavItem key={cat}>
+                                    <NavLink active={activeTab === cat} onClick={() => setActiveTab(cat)} style={{ cursor: 'pointer' }}>
+                                        {t(`finance.expense.category.${cat}`, { defaultValue: cat })}
+                                        <Badge color="secondary" className="ms-2">
+                                            {entries.filter((e: any) => e.category === cat).length}
+                                        </Badge>
+                                    </NavLink>
+                                </NavItem>
+                            ))}
+                        </Nav>
                     </CardHeader>
                     <CardBody className={entries.length === 0 ? "d-flex flex-column justify-content-center align-items-center text-center" : ""}>
-                        {entries.length === 0 ? (
-                            <>
-                                <i className="ri-wallet-3-line text-muted mb-2" style={{ fontSize: "2rem" }} />
-                                <span className="fs-5 text-muted">{t('finance.expense.empty')}</span>
-                            </>
-                        ) : (
-                            <CustomTable columns={columns} data={entries} showPagination rowsPerPage={10} />
-                        )}
+                        {(() => {
+                            const filtered = activeTab === 'all'
+                                ? entries
+                                : entries.filter((e: any) => e.category === activeTab);
+                            return filtered.length === 0 ? (
+                                <>
+                                    <i className="ri-wallet-3-line text-muted mb-2" style={{ fontSize: "2rem" }} />
+                                    <span className="fs-5 text-muted">{t('finance.expense.empty')}</span>
+                                </>
+                            ) : (
+                                <CustomTable columns={columns} data={filtered} showPagination rowsPerPage={10} />
+                            );
+                        })()}
                     </CardBody>
                 </Card>
             </Container>

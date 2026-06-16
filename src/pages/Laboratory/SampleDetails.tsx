@@ -149,7 +149,7 @@ const SampleDetails = () => {
     ];
 
     const dosesColumns: Column<any>[] = [
-        { header: t('laboratory.sample.detail.doseColumn.code'), accessor: 'code', type: 'text', isFilterable: true },
+        { header: t('laboratory.sample.detail.doseColumn.code'), accessor: 'code', type: 'text', isFilterable: true, bgColor: '#E8F5E9' },
         {
             header: t('laboratory.sample.detail.doseColumn.semen'),
             accessor: 'doses',
@@ -169,6 +169,7 @@ const SampleDetails = () => {
             accessor: 'doses',
             type: 'number',
             isFilterable: true,
+            bgColor: '#E3F2FD',
             render: (_, row) => `${row.total_volume} ${row.unit_measurement}` || 0
         },
         {
@@ -176,6 +177,7 @@ const SampleDetails = () => {
             accessor: 'status',
             type: 'text',
             isFilterable: false,
+            bgColor: '#FFF3E0',
             render: (_, row) => getDoseStatusBadge(row.status),
         },
         {

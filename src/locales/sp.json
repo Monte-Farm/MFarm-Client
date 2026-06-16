@@ -1690,7 +1690,7 @@
     "operation": "Operación",
     "replacement": "Cerdos gestación",
     "replacementSows": "Cerdas",
-    "replacementBoars": "Berracos",
+    "replacementBoars": "Verracos",
     "reproduction": "Reproducción",
     "laboratory": "Laboratorio",
     "labExtractions": "Extracciones",
@@ -3162,18 +3162,18 @@
     "breadcrumb": {
       "sowTitle": "Ver Cerdas",
       "sowParent": "Reemplazo",
-      "boarTitle": "Ver Berracos",
+      "boarTitle": "Ver Verracos",
       "boarParent": "Reemplazo"
     },
     "kpi": {
       "totalSows": "Cerdas totales",
       "avgFemaleWeight": "Peso promedio de hembras",
-      "totalBoars": "Berracos totales",
+      "totalBoars": "Verracos totales",
       "avgWeight": "Peso promedio"
     },
     "chart": {
-      "byBreed": "Berracos por raza",
-      "byOrigin": "Berracos por origen",
+      "byBreed": "Verracos por raza",
+      "byOrigin": "Verracos por origen",
       "born": "Nacidos",
       "purchased": "Comprados"
     },
@@ -3239,11 +3239,12 @@
     },
     "modal": {
       "sowReport": "Reporte de cerdas",
-      "boarReport": "Reporte de berracos"
+      "boarReport": "Reporte de verracos",
+      "editPig": "Editar cerdo"
     },
     "empty": {
       "noSows": "No hay cerdas registrados",
-      "noBoars": "No hay berracos registrados"
+      "noBoars": "No hay verracos registrados"
     },
     "error": {
       "load": "Ha ocurrido un error al obtener los datos, intentelo mas tarde",
@@ -3923,7 +3924,9 @@
         "ADMINISTRATIVE": "Gastos administrativos",
         "FUEL": "Combustible",
         "INFRASTRUCTURE": "Infraestructura y obras",
-        "OTHER": "Otro"
+        "OTHER": "Otro",
+        "FEED": "Alimentación",
+        "MEDICATION": "Medicación"
       },
       "action": {
         "new": "Nuevo gasto",

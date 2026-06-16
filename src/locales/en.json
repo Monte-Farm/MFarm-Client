@@ -3239,7 +3239,8 @@
     },
     "modal": {
       "sowReport": "Breeding sow report",
-      "boarReport": "Boar report"
+      "boarReport": "Boar report",
+      "editPig": "Edit pig"
     },
     "empty": {
       "noSows": "No breeding sows on record",
@@ -3923,7 +3924,9 @@
         "ADMINISTRATIVE": "Administrative Expenses",
         "FUEL": "Fuel",
         "INFRASTRUCTURE": "Infrastructure & Works",
-        "OTHER": "Other"
+        "OTHER": "Other",
+        "FEED": "Feed",
+        "MEDICATION": "Medication"
       },
       "action": {
         "new": "New expense",

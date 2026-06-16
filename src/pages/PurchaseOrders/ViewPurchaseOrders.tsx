@@ -55,6 +55,7 @@ const ViewPurchaseOrders = () => {
             accessor: 'products',
             isFilterable: true,
             type: 'text',
+            bgColor: '#E3F2FD',
             render: (value, row) => <span>{row.products.length}</span>
         },
         {
@@ -62,7 +63,19 @@ const ViewPurchaseOrders = () => {
             accessor: 'supplier',
             isFilterable: true,
             type: 'text',
+            bgColor: '#E8F5E9',
             render: (_, row) => <span className="text-black">{row.supplier.name}</span>
+        },
+        {
+            header: t('warehouse.purchaseOrders.col.totalPrice', { defaultValue: 'Precio Total' }),
+            accessor: 'totalPrice',
+            isFilterable: false,
+            type: 'currency',
+            bgColor: '#FFF3E0',
+            render: (_, row) => {
+                const total = row.products.reduce((sum: number, p: any) => sum + (p.totalPrice ?? 0), 0);
+                return <span>${total.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>;
+            }
         },
         {
             header: t('common.field.status', { defaultValue: 'Estado' }),
