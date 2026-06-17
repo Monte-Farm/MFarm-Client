@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { preventEnterSubmit } from 'utils/formUtils';
 import { Alert, Button, FormFeedback, Input, Label, Spinner } from "reactstrap";
 import { Formik, useFormik } from "formik";
 import * as Yup from "yup";
@@ -97,7 +98,7 @@ const AbortionForm = ({ pregnancy, onSave, onCancel }: AbortionFormProps) => {
 
     return (
         <>
-            <form onSubmit={formik.handleSubmit} className="">
+            <form onSubmit={formik.handleSubmit} className="" onKeyDown={preventEnterSubmit}>
 
                 <div className="mt-4">
                     <Label htmlFor="imageInput" className="form-label">{t('reproduction.form.abortion.attachmentsLabel', { defaultValue: 'Archivos de perdida' })}</Label>

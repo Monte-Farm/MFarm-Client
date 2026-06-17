@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { preventEnterSubmit } from 'utils/formUtils';
 import { Button, FormFeedback, Input, Label, Spinner } from "reactstrap";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -81,7 +82,7 @@ const InseminationEditForm = ({ inseminationData, onSave, onCancel }: Inseminati
 
     return (
         <>
-            <form onSubmit={formik.handleSubmit}>
+            <form onSubmit={formik.handleSubmit} onKeyDown={preventEnterSubmit}>
                 <div className="d-flex gap-3 mt-2">
                     <div className="flex-fill">
                         <Label htmlFor="edit-date" className="form-label">

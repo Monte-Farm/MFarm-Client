@@ -12,6 +12,7 @@ import { ClosingKpis, PeriodClosingByPeriod, PrecheckResponse } from "common/dat
 import { closePeriod } from "slices/periodClosing/thunk";
 import { darkenHex } from "utils/colorUtils";
 import { isTablet } from "./closingModalUtils";
+import { preventEnterSubmit } from 'utils/formUtils';
 import PrecheckSection from "./PrecheckSection";
 import KpiPreviewSection from "./KpiPreviewSection";
 import ForceCloseModal from "./ForceCloseModal";
@@ -156,7 +157,7 @@ const CloseYearModal = ({ isOpen, onClose, onSuccess, farmId }: CloseYearModalPr
                     <i className="ri-calendar-2-line me-2 text-primary" />
                     {t("finance.periodClosing.modal.closeYear.header")}
                 </ModalHeader>
-                <Form onSubmit={formik.handleSubmit}>
+                <Form onSubmit={formik.handleSubmit} onKeyDown={preventEnterSubmit}>
                     <ModalBody>
                         {!farmId && (
                             <Alert color="warning" className="d-flex align-items-center mb-3">

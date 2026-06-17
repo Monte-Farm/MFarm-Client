@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { preventEnterSubmit } from 'utils/formUtils';
 import { Alert, Button, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from "reactstrap";
 import { Formik, useFormik } from "formik";
 import * as Yup from "yup";
@@ -132,7 +133,7 @@ const DiagnosisForm = ({ insemination, onSave, onCancel }: DiagnosisFormProps) =
 
     return (
         <>
-            <form onSubmit={formik.handleSubmit} className="">
+            <form onSubmit={formik.handleSubmit} className="" onKeyDown={preventEnterSubmit}>
 
                 <div className="mt-4">
                     <Label htmlFor="imageInput" className="form-label">{t('medical.diagnose.field.attachments', { defaultValue: 'Archivos de diagnostico' })}</Label>

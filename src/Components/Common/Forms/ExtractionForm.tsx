@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { preventEnterSubmit } from 'utils/formUtils';
 import { ConfigContext } from "App";
 import { ExtractionData, PigData, UserData } from "common/data_interfaces";
 import { useFormik } from "formik";
@@ -252,6 +253,7 @@ const ExtractionForm: React.FC<ExtractionFormProps> = ({ initialData, onSave, on
                     e.preventDefault();
                     formik.handleSubmit();
                 }}
+                onKeyDown={preventEnterSubmit}
             >
                 <div className="step-arrow-nav mb-4">
                     <Nav className="nav-pills custom-nav nav-justified">

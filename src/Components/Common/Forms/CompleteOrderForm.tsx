@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { preventEnterSubmit } from 'utils/formUtils';
 import { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from 'reactstrap';
@@ -123,7 +124,7 @@ const CompleteOrderForm: React.FC<OrderFormProps> = ({ orderId, onSave, onCancel
 
     return (
         <>
-            <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }}>
+            <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }} onKeyDown={preventEnterSubmit}>
 
                 <div className='d-flex gap-3 mb-4'>
                     <div className="w-50">

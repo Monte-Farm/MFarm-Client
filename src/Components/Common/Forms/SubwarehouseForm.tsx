@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { preventEnterSubmit } from 'utils/formUtils';
 import { ConfigContext } from 'App';
 import { Attribute, SubwarehouseData } from 'common/data_interfaces';
 import { useFormik } from 'formik';
@@ -307,7 +308,7 @@ const SubwarehouseForm: React.FC<SubwarehouseFormProps> = ({ onSave, onCancel, i
 
     return (
         <>
-            <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }}>
+            <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }} onKeyDown={preventEnterSubmit}>
 
                 <div className="step-arrow-nav mb-4">
                     <Nav className="nav-pills custom-nav nav-justified">

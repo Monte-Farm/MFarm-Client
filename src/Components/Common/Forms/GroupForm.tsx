@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { preventEnterSubmit } from 'utils/formUtils';
 import { ConfigContext } from "App";
 import { Attribute, GroupData, PigData } from "common/data_interfaces";
 import { useFormik } from "formik";
@@ -300,7 +301,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialData, onSave, onCancel }) 
 
     return (
         <>
-            <form onSubmit={e => { e.preventDefault(); formik.handleSubmit(); }}>
+            <form onSubmit={e => { e.preventDefault(); formik.handleSubmit(); }} onKeyDown={preventEnterSubmit}>
                 <div className="step-arrow-nav mb-4">
                     <Nav className="nav-pills custom-nav nav-justified">
                         <NavItem>

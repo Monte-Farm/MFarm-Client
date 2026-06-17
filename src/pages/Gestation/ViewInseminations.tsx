@@ -28,6 +28,7 @@ import SelectableCustomTable from "Components/Common/Tables/SelectableTable";
 import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
 import { useTranslation } from "react-i18next";
+import { preventEnterSubmit } from 'utils/formUtils';
 
 const STATUS_COLORS: Record<string, string> = {
     completed: 'success', active: 'warning', failed: 'danger',
@@ -609,7 +610,7 @@ const ViewInseminations = () => {
                     {t('insemination.modal.bulkHeat', { count: selectedInseminations.filter(ins => ins.status !== 'completed' && ins.status !== 'failed').length })}
                 </ModalHeader>
                 <ModalBody>
-                    <form onSubmit={bulkHeatFormik.handleSubmit}>
+                    <form onSubmit={bulkHeatFormik.handleSubmit} onKeyDown={preventEnterSubmit}>
                         <div className="mb-3">
                             <small className="text-muted">
                                 {t('insemination.bulk.heatInfo')}
@@ -693,7 +694,7 @@ const ViewInseminations = () => {
                     {t('insemination.modal.bulkDiagnosis', { count: selectedInseminations.filter(ins => ins.status !== 'completed' && ins.status !== 'failed').length })}
                 </ModalHeader>
                 <ModalBody>
-                    <form onSubmit={bulkDiagnosisFormik.handleSubmit}>
+                    <form onSubmit={bulkDiagnosisFormik.handleSubmit} onKeyDown={preventEnterSubmit}>
                         <div className="mb-3">
                             <small className="text-muted">
                                 {t('insemination.bulk.diagnosisInfo')}

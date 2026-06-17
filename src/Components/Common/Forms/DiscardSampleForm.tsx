@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { preventEnterSubmit } from 'utils/formUtils';
 import { ConfigContext } from "App";
 import { HttpStatusCode } from "axios";
 import { useFormik } from "formik";
@@ -131,7 +132,7 @@ const DiscardSampleForm = ({ sample, onSave, onCancel }: DiscardSampleFormProps)
 
     return (
         <>
-            <form onSubmit={(e) => { e.preventDefault(); handleConfirm(); }}>
+            <form onSubmit={(e) => { e.preventDefault(); handleConfirm(); }} onKeyDown={preventEnterSubmit}>
                 <div className="mt-4">
                     <Label htmlFor="discardSemenProduct" className="form-label">
                         {t('laboratory.discard.semenProduct', { defaultValue: 'Producto de semen (descuento de inventario)' })}

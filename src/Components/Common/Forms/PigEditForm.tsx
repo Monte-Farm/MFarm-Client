@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { preventEnterSubmit } from 'utils/formUtils';
 import { ConfigContext } from "App";
 import { HttpStatusCode } from "axios";
 import { PigData } from "common/data_interfaces";
@@ -67,7 +68,7 @@ const PigEditForm: React.FC<PigEditFormProps> = ({ pigData, onSave, onCancel }) 
 
     return (
         <>
-            <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }}>
+            <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }} onKeyDown={preventEnterSubmit}>
                 <div className="mt-4">
                     <Label htmlFor="code">{t('pigs.field.code')}</Label>
                     <Input type="text" id="code" name="code" value={formik.values.code} disabled />

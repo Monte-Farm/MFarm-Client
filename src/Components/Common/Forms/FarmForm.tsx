@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { preventEnterSubmit } from 'utils/formUtils';
 import React, { useContext, useEffect, useState } from 'react';
 import { Button, Form, FormGroup, Label, Input, Spinner, FormFeedback, Row, Col, Card, CardBody, CardImg, CardText, Modal, ModalBody, ModalHeader, Alert } from 'reactstrap';
 import { FarmData, UserData } from 'common/data_interfaces';
@@ -173,7 +174,7 @@ const FarmForm: React.FC<FarmFormProps> = ({ data, onSave, onCancel }) => {
     const isSelected = (id: string) => formik.values.manager === id;
 
     return (
-        <Form onSubmit={formik.handleSubmit}>
+        <Form onSubmit={formik.handleSubmit} onKeyDown={preventEnterSubmit}>
 
             {/* — Sección 1: Info de la granja — */}
             <div className="farm-form-section mb-4">
