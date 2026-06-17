@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { preventEnterSubmit } from 'utils/formUtils';
 import { ConfigContext } from "App";
 import { GroupData } from "common/data_interfaces";
 import { useFormik } from "formik";
@@ -299,7 +300,7 @@ const CreateGroupLinkedForm: React.FC<CreateGroupLinkedFormProps> = ({ onSave, o
 
     return (
         <>
-            <form onSubmit={e => { e.preventDefault(); formik.handleSubmit(); }}>
+            <form onSubmit={e => { e.preventDefault(); formik.handleSubmit(); }} onKeyDown={preventEnterSubmit}>
                 <div className="step-arrow-nav mb-4">
                     <Nav className="nav-pills custom-nav nav-justified">
                         <NavItem>
@@ -484,12 +485,7 @@ const CreateGroupLinkedForm: React.FC<CreateGroupLinkedFormProps> = ({ onSave, o
                                     value={ps.breed} onChange={formik.handleChange} onBlur={formik.handleBlur}
                                     invalid={psTouched?.breed && !!psErrors?.breed}>
                                     <option value="">{t('form.pig.placeholder.selectBreed')}</option>
-                                    <option value="Yorkshire">Yorkshire</option>
-                                    <option value="Landrace">Landrace</option>
-                                    <option value="Duroc">Duroc</option>
-                                    <option value="Hampshire">Hampshire</option>
-                                    <option value="Pietrain">Pietrain</option>
-                                    <option value="Berkshire">Berkshire</option>
+                                    {["Yorkshire", "Landrace", "Duroc", "Hampshire", "Pietrain", "Berkshire", "Large White", "Chester White", "Poland China", "Tamworth"].map(b => <option key={b} value={b}>{b}</option>)}
                                 </Input>
                                 {psTouched?.breed && psErrors?.breed && <FormFeedback>{psErrors.breed}</FormFeedback>}
                             </Col>

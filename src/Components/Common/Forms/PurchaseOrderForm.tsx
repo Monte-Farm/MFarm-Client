@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { preventEnterSubmit } from 'utils/formUtils';
 import { Attribute, ProductData, PurchaseOrderData, SupplierData } from "common/data_interfaces";
 import { SUPPLIER_TYPES } from "common/enums/suppliers.enums";
 import classnames from "classnames";
@@ -458,7 +459,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ initialData, onSa
 
     return (
         <>
-            <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }} className="form-steps">
+            <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }} className="form-steps" onKeyDown={preventEnterSubmit}>
                 <div className="step-arrow-nav mb-4">
                     <Nav className="nav-pills custom-nav nav-justified">
                         <NavItem>

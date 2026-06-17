@@ -4031,6 +4031,11 @@
         "showCancelled": "Canceladas"
       },
       "empty": "Nenhuma entrada registrada",
+      "emptyPreparation": "Nenhuma entrada de preparo de ração registrada",
+      "tab": {
+        "regular": "Entradas",
+        "preparation": "Preparo de ração"
+      },
       "modal": {
         "create": "Nova entrada de estoque",
         "details": "Detalhes da entrada",
@@ -6628,7 +6633,16 @@
         "fetchMovements": "Erro ao obter as movimentações do produto",
         "generatePdf": "Erro ao gerar o PDF do estoque do produto",
         "load": "Erro ao carregar os dados"
-      }
+      },
+      "saleType": {
+        "label": "Tipo de venda",
+        "individual": "Individual",
+        "group": "Lote",
+        "mixed": "Mista",
+        "litter": "Leitegada"
+      },
+      "soldPigs": "Suínos vendidos",
+      "litterSection": "Leitões da leitegada"
     },
     "subwarehouse": {
       "pageTitle": "Ver Subarmazéns | Subarmazém",
@@ -7522,7 +7536,32 @@
     },
     "mode": {
       "byGroup": "Por lote",
-      "individual": "Individual"
+      "individual": "Individual",
+      "litter": "Leitegada"
+    },
+    "litter": {
+      "includeToggle": "Incluir leitões da leitegada",
+      "loadingLitters": "Carregando leitegadas...",
+      "noActiveLitters": "Nenhuma leitegada ativa disponível para venda",
+      "piglets": "leitões",
+      "mother": "Matriz:",
+      "available": "Disponíveis",
+      "avgWeight": "Peso méd.",
+      "costPerKg": "Custo/kg",
+      "suggested": "Preço sug.",
+      "totalWeight": "Peso total:",
+      "totalPrice": "Total leitegada:",
+      "field": {
+        "pigCount": "Qtd. de leitões",
+        "male": "Machos",
+        "female": "Fêmeas",
+        "avgWeight": "Peso méd. (kg)"
+      },
+      "validation": {
+        "pigCountRequired": "A quantidade de leitões deve ser maior que 0",
+        "avgWeightRequired": "O peso médio dos leitões deve ser maior que 0",
+        "priceRequired": "O preço por kg deve ser maior que 0"
+      }
     },
     "label": {
       "pricePerKg": "Preço / kg",

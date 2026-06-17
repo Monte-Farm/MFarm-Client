@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { preventEnterSubmit } from 'utils/formUtils';
 import React, { useContext, useState } from "react";
 import {
     Button,
@@ -129,7 +130,7 @@ const UserForm: React.FC<UserFormProps> = ({
 
     return (
         <>
-            <form onSubmit={(e) => { e.preventDefault(); e.stopPropagation(); formik.handleSubmit(); }}>
+            <form onSubmit={(e) => { e.preventDefault(); e.stopPropagation(); formik.handleSubmit(); }} onKeyDown={preventEnterSubmit}>
                 <div className="mt-4">
                     <Label htmlFor="imageInput" className="form-label">
                         {t("users.form.field.image")}

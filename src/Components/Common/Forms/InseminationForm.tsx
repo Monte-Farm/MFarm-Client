@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { preventEnterSubmit } from 'utils/formUtils';
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import { InseminationData, PigData } from "common/data_interfaces";
@@ -366,6 +367,7 @@ const InseminationForm: React.FC<InseminationFormProps> = ({ initialData, onSave
                     e.preventDefault();
                     formik.handleSubmit();
                 }}
+                onKeyDown={preventEnterSubmit}
             >
                 <div className="step-arrow-nav mb-4">
                     <Nav className="nav-pills custom-nav nav-justified">

@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { preventEnterSubmit } from 'utils/formUtils';
 import { ConfigContext } from "App";
 import { Column } from "common/data/data_types";
 import { getEffectiveUser } from "helpers/impersonation_helper";
@@ -364,7 +365,7 @@ const BulkPigMedicationAssignmentModal: React.FC<BulkPigMedicationAssignmentModa
 
                     {/* ── Package mode ── */}
                     {mode === 'package' && (
-                        <form onSubmit={formik.handleSubmit}>
+                        <form onSubmit={formik.handleSubmit} onKeyDown={preventEnterSubmit}>
                             <div className="d-flex justify-content-between align-items-center mb-3">
                                 <h6 className="text-muted mb-0">{t('medication.assign.mode.current.package')}</h6>
                                 <Button size="sm" onClick={resetMode}><i className="ri-arrow-go-back-line me-1" />{t('medication.assign.mode.change')}</Button>

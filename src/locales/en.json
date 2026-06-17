@@ -4031,6 +4031,11 @@
         "showCancelled": "Cancelled"
       },
       "empty": "No receipts recorded",
+      "emptyPreparation": "No feed preparation receipts recorded",
+      "tab": {
+        "regular": "Receipts",
+        "preparation": "Feed preparation"
+      },
       "modal": {
         "create": "New inventory receipt",
         "details": "Receipt details",
@@ -6628,7 +6633,16 @@
         "fetchMovements": "Error fetching product movements",
         "generatePdf": "Error generating product inventory PDF",
         "load": "Error loading data"
-      }
+      },
+      "saleType": {
+        "label": "Sale type",
+        "individual": "Individual",
+        "group": "Group",
+        "mixed": "Mixed",
+        "litter": "Litter"
+      },
+      "soldPigs": "Hogs sold",
+      "litterSection": "Litter piglets"
     },
     "subwarehouse": {
       "pageTitle": "View Subwarehouses | Subwarehouse",
@@ -7522,7 +7536,32 @@
     },
     "mode": {
       "byGroup": "By group",
-      "individual": "Individual"
+      "individual": "Individual",
+      "litter": "Litter"
+    },
+    "litter": {
+      "includeToggle": "Include litter piglets",
+      "loadingLitters": "Loading litters...",
+      "noActiveLitters": "No active litters available for sale",
+      "piglets": "piglets",
+      "mother": "Dam:",
+      "available": "Available",
+      "avgWeight": "Avg. weight",
+      "costPerKg": "Cost/kg",
+      "suggested": "Sug. price",
+      "totalWeight": "Total weight:",
+      "totalPrice": "Litter total:",
+      "field": {
+        "pigCount": "Piglet count",
+        "male": "Males",
+        "female": "Females",
+        "avgWeight": "Avg. weight (kg)"
+      },
+      "validation": {
+        "pigCountRequired": "Piglet count must be greater than 0",
+        "avgWeightRequired": "Average weight must be greater than 0",
+        "priceRequired": "Price per kg must be greater than 0"
+      }
     },
     "label": {
       "pricePerKg": "Price / kg",

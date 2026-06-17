@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { preventEnterSubmit } from 'utils/formUtils';
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { Button, Col, Row, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback, Nav, NavItem, NavLink, TabContent, TabPane, Card, CardBody, Spinner, Badge, CardHeader } from "reactstrap";
 import * as Yup from "yup";
@@ -51,7 +52,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
     const [suppliers, setSuppliers] = useState<any[]>([]);
     const [selectedSupplier, setSelectedSupplier] = useState<SupplierData | null>(null);
     const [modals, setModals] = useState({ success: false, createSupplier: false, createProduct: false, selectPurchaseOrder: false, createPurchaseOrder: false });
-    const [products, setProducts] = useState([])
+    const [products, setProducts] = useState<any[]>([])
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [missingStock, setMissingStock] = useState<Array<{ id: string; required: number; available: number }> | null>(null);
     const [fileToUpload, setFileToUpload] = useState<File | null>(null)
@@ -66,6 +67,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
     const [mainWarehouseId, setMainWarehouseId] = useState<string>('')
     const [entryMode, setEntryMode] = useState<"purchase_order" | "direct" | null>(null)
     const [poSearchText, setPoSearchText] = useState('')
+    const [directInitialSelected, setDirectInitialSelected] = useState<Array<{ id: string; quantity: number; price: number }> | undefined>(undefined)
 
     const incomeAttributes: Attribute[] = [
         { key: 'id', label: t('common.field.code', { defaultValue: 'Identificador de entrada' }) },
@@ -248,13 +250,15 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
     };
 
     const fetchCatalogProducts = async () => {
-        if (!configContext) return;
+        if (!configContext) return [];
         try {
             const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/product`);
             const rawProducts = response.data.data.filter((p: any) => p.type === 'raw');
             setProducts(rawProducts);
+            return rawProducts;
         } catch (error) {
             logger.error('Error obtaining products:', error);
+            return [];
         }
     };
 
@@ -457,12 +461,49 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
             setSelectecOrderProducts(orderProducts);
             loadPurchaseOrderForEdit(initialData.purchaseOrder);
         } else {
-            setEntryMode("direct");
-            fetchSuppliers();
-            fetchCatalogProducts();
+            const initDirectEntry = async () => {
+                if (!configContext) return;
+                setEntryMode("direct");
+                fetchSuppliers();
+
+                // Fetchar el income por ID garantiza datos completamente populados
+                // (el endpoint de lista no popula products[].id)
+                const response = await configContext.axiosHelper.get(`${configContext.apiUrl}/incomes/find_incomes_id/${initialData._id}`);
+                const populated = response.data.data;
+
+                // Normalizar origin.id
+                const originId = populated.origin?.id;
+                if (originId && typeof originId === 'object') {
+                    setSelectedSupplier(originId as any);
+                    formik.setFieldValue('origin.id', (originId as any)._id);
+                }
+
+                // Normalizar productos para formik y productsDelivered de PurchaseOrderProductsTable
+                const normalizedProducts = populated.products.map((p: any) => ({
+                    id: typeof p.id === 'object' ? p.id._id : p.id,
+                    quantity: p.quantity,
+                    price: p.price ?? 0,
+                    totalPrice: p.totalPrice ?? 0,
+                }));
+                formik.setFieldValue('products', normalizedProducts);
+                setSelectecOrderProducts(normalizedProducts);
+
+                // populated.products tiene { id: productObj, ... } — formato que espera PurchaseOrderProductsTable en `data`
+                setProducts(populated.products);
+
+                // Poblar selectedProducts para la tabla de resumen
+                const displayProducts = populated.products.map((p: any) => {
+                    const productObj = typeof p.id === 'object' ? p.id : null;
+                    return productObj
+                        ? { ...productObj, code: productObj.id, quantity: p.quantity, price: p.price ?? 0, totalPrice: p.totalPrice ?? 0 }
+                        : p;
+                });
+                setSelectedProducts(displayProducts);
+            };
+            initDirectEntry();
         }
-        setActiveStep(2);
-        setPassedarrowSteps([1, 2]);
+        setActiveStep(3);
+        setPassedarrowSteps([1, 2, 3]);
     }, [initialData?._id])
 
     const loadPurchaseOrderForEdit = async (purchaseOrder: any) => {
@@ -545,45 +586,49 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                     </ul>
                 </div>
             )}
-            <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }} className="form-steps" noValidate>
+            <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }} className="form-steps" noValidate onKeyDown={preventEnterSubmit}>
                 <div className="step-arrow-nav mb-4">
                     <Nav className="nav-pills custom-nav nav-justified">
-                        <NavItem>
-                            <NavLink
-                                href="#"
-                                id="step-selectPurchaseOrder-tab"
-                                className={classnames({
-                                    active: activeStep === 1,
-                                    done: activeStep > 1,
-                                })}
-                                onClick={() => toggleArrowTab(1)}
-                                aria-selected={activeStep === 1}
-                                aria-controls="step-selectPurchaseOrder-tab"
-                                disabled
-                            >
-                                {entryMode === "direct"
-                                    ? t('warehouse.incomeForm.step.directMode', { defaultValue: 'Modo de entrada' })
-                                    : entryMode === "purchase_order"
-                                        ? t('warehouse.incomeForm.step.purchaseOrder', { defaultValue: 'Orden de compra' })
-                                        : t('warehouse.incomeForm.step.selectMode', { defaultValue: 'Seleccionar modo' })}
-                            </NavLink>
-                        </NavItem>
-                        <NavItem>
-                            <NavLink
-                                href="#"
-                                id="step-incomeData-tab"
-                                className={classnames({
-                                    active: activeStep === 2,
-                                    done: activeStep > 2,
-                                })}
-                                onClick={() => toggleArrowTab(2)}
-                                aria-selected={activeStep === 2}
-                                aria-controls="step-incomeData-tab"
-                                disabled
-                            >
-                                {t('warehouse.incomeForm.step.incomeInfo', { defaultValue: 'Información de entrada' })}
-                            </NavLink>
-                        </NavItem>
+                        {!initialData && (
+                            <NavItem>
+                                <NavLink
+                                    href="#"
+                                    id="step-selectPurchaseOrder-tab"
+                                    className={classnames({
+                                        active: activeStep === 1,
+                                        done: activeStep > 1,
+                                    })}
+                                    onClick={() => toggleArrowTab(1)}
+                                    aria-selected={activeStep === 1}
+                                    aria-controls="step-selectPurchaseOrder-tab"
+                                    disabled
+                                >
+                                    {entryMode === "direct"
+                                        ? t('warehouse.incomeForm.step.directMode', { defaultValue: 'Modo de entrada' })
+                                        : entryMode === "purchase_order"
+                                            ? t('warehouse.incomeForm.step.purchaseOrder', { defaultValue: 'Orden de compra' })
+                                            : t('warehouse.incomeForm.step.selectMode', { defaultValue: 'Seleccionar modo' })}
+                                </NavLink>
+                            </NavItem>
+                        )}
+                        {!initialData && (
+                            <NavItem>
+                                <NavLink
+                                    href="#"
+                                    id="step-incomeData-tab"
+                                    className={classnames({
+                                        active: activeStep === 2,
+                                        done: activeStep > 2,
+                                    })}
+                                    onClick={() => toggleArrowTab(2)}
+                                    aria-selected={activeStep === 2}
+                                    aria-controls="step-incomeData-tab"
+                                    disabled
+                                >
+                                    {t('warehouse.incomeForm.step.incomeInfo', { defaultValue: 'Información de entrada' })}
+                                </NavLink>
+                            </NavItem>
+                        )}
 
                         <NavItem>
                             <NavLink
@@ -928,7 +973,7 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                             <Label className="">{t('warehouse.incomeForm.attr.productsToAdd', { defaultValue: 'Productos para ingresar' })}</Label>
                             {/* Tabla de productos */}
                             <div className="border border-0 d-flex flex-column flex-grow-1">
-                                {hasSelectedPurchaseOrder ? (
+                                {(hasSelectedPurchaseOrder || (!!initialData && entryMode === "direct")) ? (
                                     <PurchaseOrderProductsTable
                                         data={products}
                                         productsDelivered={selectedOrderProducts}
@@ -939,21 +984,23 @@ const IncomeForm: React.FC<IncomeFormProps> = ({ initialData, onSave, onCancel }
                                         data={products}
                                         onProductSelect={handleProductSelect}
                                         showPagination={false}
-                                        initialSelected={initialData ? formik.values.products.map(p => ({ id: p.id as string, quantity: p.quantity, price: p.price ?? 0 })) : undefined}
+                                        initialSelected={directInitialSelected}
                                     />
                                 )}
                             </div>
 
                             <div className="d-flex mt-4">
-                                <Button
-                                    className="btn btn-light btn-label previestab farm-secondary-button"
-                                    onClick={() => {
-                                        toggleArrowTab(activeStep - 1);
-                                    }}
-                                >
-                                    <i className="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i>{" "}
-                                    {t('common.button.back', { defaultValue: 'Atras' })}
-                                </Button>
+                                {!initialData && (
+                                    <Button
+                                        className="btn btn-light btn-label previestab farm-secondary-button"
+                                        onClick={() => {
+                                            toggleArrowTab(activeStep - 1);
+                                        }}
+                                    >
+                                        <i className="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i>{" "}
+                                        {t('common.button.back', { defaultValue: 'Atras' })}
+                                    </Button>
+                                )}
 
                                 <Button
                                     className="btn btn-success btn-label right ms-auto nexttab nexttab ms-auto farm-secondary-button"

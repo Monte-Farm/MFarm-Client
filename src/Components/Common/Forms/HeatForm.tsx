@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { preventEnterSubmit } from 'utils/formUtils';
 import { Alert, Button, FormFeedback, Input, Label, Spinner } from "reactstrap";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -81,7 +82,7 @@ const HeatForm = ({ insemination, onSave, onCancel }: HeatFormProps) => {
 
     return (
         <>
-            <form onSubmit={formik.handleSubmit}>
+            <form onSubmit={formik.handleSubmit} onKeyDown={preventEnterSubmit}>
                 <div className="mt-4">
                     <Label htmlFor="heatDetected" className="form-label">{t('reproduction.form.heat.heatDetected', { defaultValue: 'Celo detectado' })}</Label>
                     <Input

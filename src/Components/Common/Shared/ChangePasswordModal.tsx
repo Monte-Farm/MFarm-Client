@@ -16,6 +16,7 @@ import {
     Spinner,
 } from 'reactstrap';
 import { APIClient } from 'helpers/api_helper';
+import { preventEnterSubmit } from 'utils/formUtils';
 import SuccessModal from './SuccessModal';
 import ErrorModal from './ErrorModal';
 
@@ -86,7 +87,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
                     <i className="ri-lock-password-line me-2 text-primary"></i>
                     {t('auth.changePassword.title')}
                 </ModalHeader>
-                <Form onSubmit={formik.handleSubmit}>
+                <Form onSubmit={formik.handleSubmit} onKeyDown={preventEnterSubmit}>
                     <ModalBody>
                         <FormGroup>
                             <Label for="currentPassword">{t('auth.changePassword.field.currentPassword')}</Label>

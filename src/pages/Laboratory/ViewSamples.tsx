@@ -21,6 +21,7 @@ import SemenSampleForm from "Components/Common/Forms/SemenSampleForm";
 import SelectableCustomTable from "Components/Common/Tables/SelectableTable";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
 import { useTranslation } from "react-i18next";
+import { preventEnterSubmit } from 'utils/formUtils';
 
 const isTablet = () => {
   const w = document.documentElement.clientWidth;
@@ -478,7 +479,7 @@ const ViewSamples = () => {
                     {t('laboratory.sample.bulk.title', { count: discardableCount })}
                 </ModalHeader>
                 <ModalBody>
-                    <form onSubmit={bulkDiscardFormik.handleSubmit}>
+                    <form onSubmit={bulkDiscardFormik.handleSubmit} onKeyDown={preventEnterSubmit}>
                         <div className="mb-3">
                             <small className="text-muted">
                                 {t('laboratory.sample.bulk.warning')}

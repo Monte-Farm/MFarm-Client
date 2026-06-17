@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { preventEnterSubmit } from 'utils/formUtils';
 import { ConfigContext } from "App";
 import { useFormik } from "formik";
 import { getEffectiveUser } from "helpers/impersonation_helper";
@@ -97,7 +98,7 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel }) => {
 
     return (
         <>
-            <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }}>
+            <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }} onKeyDown={preventEnterSubmit}>
                 <div className="d-flex gap-3">
                     <div className="w-50">
                         <Label htmlFor="date" className="form-label">{t("finance.expense.form.date")}</Label>

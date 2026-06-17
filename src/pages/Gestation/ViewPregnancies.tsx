@@ -23,6 +23,7 @@ import AbortionForm from "Components/Common/Forms/AbortionForm";
 import SelectableCustomTable from "Components/Common/Tables/SelectableTable";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
 import { useTranslation } from "react-i18next";
+import { preventEnterSubmit } from 'utils/formUtils';
 
 const STATUS_COLORS: Record<string, string> = {
     pregnant: 'success', close_to_farrow: 'warning', farrowing_pending: 'info',
@@ -389,7 +390,7 @@ const ViewPregnancies = () => {
                     {t('pregnancy.modal.bulkLoss', { count: selectedPregnancies.filter(preg => preg.farrowing_status !== 'farrowed' && preg.abortions.length === 0).length })}
                 </ModalHeader>
                 <ModalBody>
-                    <form onSubmit={bulkAbortionFormik.handleSubmit}>
+                    <form onSubmit={bulkAbortionFormik.handleSubmit} onKeyDown={preventEnterSubmit}>
                         <div className="mb-3">
                             <small className="text-muted">
                                 {t('pregnancy.bulk.lossInfo')}
