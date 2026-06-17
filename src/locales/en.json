@@ -4029,6 +4029,11 @@
         "showCancelled": "Cancelled"
       },
       "empty": "No receipts recorded",
+      "emptyPreparation": "No feed preparation receipts recorded",
+      "tab": {
+        "regular": "Receipts",
+        "preparation": "Feed preparation"
+      },
       "modal": {
         "create": "New inventory receipt",
         "details": "Receipt details",

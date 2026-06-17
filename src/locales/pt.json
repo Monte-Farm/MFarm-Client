@@ -4029,6 +4029,11 @@
         "showCancelled": "Canceladas"
       },
       "empty": "Nenhuma entrada registrada",
+      "emptyPreparation": "Nenhuma entrada de preparo de ração registrada",
+      "tab": {
+        "regular": "Entradas",
+        "preparation": "Preparo de ração"
+      },
       "modal": {
         "create": "Nova entrada de estoque",
         "details": "Detalhes da entrada",

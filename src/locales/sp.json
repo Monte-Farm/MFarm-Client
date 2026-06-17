@@ -4029,6 +4029,11 @@
         "showCancelled": "Canceladas"
       },
       "empty": "No hay entradas registradas",
+      "emptyPreparation": "No hay entradas de preparación registradas",
+      "tab": {
+        "regular": "Entradas",
+        "preparation": "Preparación de alimento"
+      },
       "modal": {
         "create": "Nueva entrada de inventario",
         "details": "Detalle de entrada",
