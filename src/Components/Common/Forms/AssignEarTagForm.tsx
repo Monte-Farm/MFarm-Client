@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { preventEnterSubmit } from 'utils/formUtils';
 import { ConfigContext } from "App";
 import { PigData } from "common/data_interfaces";
 import { getEffectiveUser } from "helpers/impersonation_helper";
@@ -68,7 +69,7 @@ const AssignEarTagForm: React.FC<AssignEarTagFormProps> = ({ pig, onSave, onCanc
 
     return (
         <>
-            <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }}>
+            <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }} onKeyDown={preventEnterSubmit}>
 
                 {/* Tarjeta de información del cerdo */}
                 <div

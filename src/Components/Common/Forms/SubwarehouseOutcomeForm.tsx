@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { preventEnterSubmit } from 'utils/formUtils';
 import { appendLangParam } from 'helpers/reports_url_helper';
 import { useContext, useEffect, useState } from 'react';
 import { Alert, Button, Card, CardBody, CardHeader, FormFeedback, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from 'reactstrap';
@@ -322,7 +323,7 @@ const SubwarehouseOutcomeForm: React.FC<OutcomeFormProps> = ({ initialData, onSa
 
     return (
         <>
-            <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }} className='form-steps'>
+            <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }} className='form-steps' onKeyDown={preventEnterSubmit}>
 
                 <div className="step-arrow-nav mb-4">
                     <Nav className="nav-pills custom-nav nav-justified">

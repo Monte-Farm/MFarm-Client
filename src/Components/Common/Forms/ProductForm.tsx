@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { preventEnterSubmit } from 'utils/formUtils';
 import React, { useContext, useEffect, useState } from "react";
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter, Label, Input, FormFeedback, Row, Col } from "reactstrap";
 import * as Yup from "yup";
@@ -113,6 +114,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                     e.preventDefault();
                     formik.handleSubmit();
                 }}
+                onKeyDown={preventEnterSubmit}
             >
 
                 {/* Imagen */}

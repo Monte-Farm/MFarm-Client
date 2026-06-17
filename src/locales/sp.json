@@ -4036,6 +4036,11 @@
         "showCancelled": "Canceladas"
       },
       "empty": "No hay entradas registradas",
+      "emptyPreparation": "No hay entradas de preparación registradas",
+      "tab": {
+        "regular": "Entradas",
+        "preparation": "Preparación de alimento"
+      },
       "modal": {
         "create": "Nueva entrada de inventario",
         "details": "Detalle de entrada",
@@ -6634,7 +6639,16 @@
         "fetchMovements": "Error al obtener los movimientos del producto",
         "generatePdf": "Error al generar el PDF del inventario del producto",
         "load": "Error al cargar los datos"
-      }
+      },
+      "saleType": {
+        "label": "Tipo de venta",
+        "individual": "Individual",
+        "group": "Grupo",
+        "mixed": "Mixta",
+        "litter": "Camada"
+      },
+      "soldPigs": "Cerdos vendidos",
+      "litterSection": "Lechones de camada"
     },
     "subwarehouse": {
       "pageTitle": "Ver Subalmacénes | Subalmacén",
@@ -7538,7 +7552,32 @@
     },
     "mode": {
       "byGroup": "Por grupo",
-      "individual": "Individual"
+      "individual": "Individual",
+      "litter": "Camada"
+    },
+    "litter": {
+      "includeToggle": "Incluir lechones de camada",
+      "loadingLitters": "Cargando camadas...",
+      "noActiveLitters": "No hay camadas activas disponibles para venta",
+      "piglets": "lechones",
+      "mother": "Madre:",
+      "available": "Disponibles",
+      "avgWeight": "Peso prom.",
+      "costPerKg": "Costo/kg",
+      "suggested": "Precio sug.",
+      "totalWeight": "Peso total:",
+      "totalPrice": "Total lechones:",
+      "field": {
+        "pigCount": "Cantidad de lechones",
+        "male": "Machos",
+        "female": "Hembras",
+        "avgWeight": "Peso prom. (kg)"
+      },
+      "validation": {
+        "pigCountRequired": "La cantidad de lechones debe ser mayor a 0",
+        "avgWeightRequired": "El peso promedio de los lechones debe ser mayor a 0",
+        "priceRequired": "El precio por kg de los lechones debe ser mayor a 0"
+      }
     },
     "label": {
       "pricePerKg": "Precio / kg",

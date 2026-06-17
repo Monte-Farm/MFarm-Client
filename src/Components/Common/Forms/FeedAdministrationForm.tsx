@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { preventEnterSubmit } from 'utils/formUtils';
 import { ConfigContext } from "App";
 import { useFormik } from "formik";
 import { Trans, useTranslation } from "react-i18next";
@@ -207,7 +208,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
     if (loading) return <LoadingAnimation absolutePosition={false} />;
 
     return (
-        <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }}>
+        <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }} onKeyDown={preventEnterSubmit}>
             {isBulk && (
                 <div className="alert alert-info py-2 mb-3 small">
                     <i className="ri-information-line me-1" />

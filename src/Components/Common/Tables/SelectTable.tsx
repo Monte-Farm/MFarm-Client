@@ -47,6 +47,17 @@ const SelectTable: React.FC<SelectTableProps> = ({
       totalPrice: (p.quantity || 0) * (p.price || 0),
     }))
   );
+
+  // Re-sincroniza cuando initialSelected llega después del mount (fetch async)
+  useEffect(() => {
+    if (!initialSelected || initialSelected.length === 0) return;
+    setSelectedProducts(initialSelected.map(p => ({
+      ...p,
+      totalPrice: (p.quantity || 0) * (p.price || 0),
+    })));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(initialSelected)]);
+
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [filterText, setFilterText] = useState<string>("");
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
@@ -63,13 +74,13 @@ const SelectTable: React.FC<SelectTableProps> = ({
 
         if (field === "quantity") {
           const qty = showStock ? Math.min(safeValue, maxQuantity) : safeValue;
-          return { ...p, quantity: qty, totalPrice: qty * p.price };
+          return { ...p, quantity: qty, totalPrice: parseFloat((qty * p.price).toFixed(2)) };
         }
         if (field === "price") {
-          return { ...p, price: safeValue, totalPrice: p.quantity * safeValue };
+          return { ...p, price: safeValue, totalPrice: parseFloat((p.quantity * safeValue).toFixed(2)) };
         }
         if (field === "totalPrice") {
-          const derivedPrice = p.quantity > 0 ? safeValue / p.quantity : 0;
+          const derivedPrice = p.quantity > 0 ? parseFloat((safeValue / p.quantity).toFixed(2)) : 0;
           return { ...p, totalPrice: safeValue, price: derivedPrice };
         }
         return p;

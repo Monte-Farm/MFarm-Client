@@ -21,6 +21,7 @@ import SelectableCustomTable from "Components/Common/Tables/SelectableTable";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
 import ReportDateRangeSelector from "Components/Common/Shared/ReportDateRangeSelector";
 import { useTranslation } from "react-i18next";
+import { preventEnterSubmit } from 'utils/formUtils';
 
 const PREGNANCY_STATUS_COLORS: Record<string, string> = {
     pregnant: 'success', close_to_farrow: 'warning', farrowing_pending: 'info',
@@ -420,7 +421,7 @@ const ViewUpcomingBirths = () => {
                     {t('birth.bulk.lossModal', { count: selectedBirths.filter(preg => preg.farrowing_status !== 'farrowed').length })}
                 </ModalHeader>
                 <ModalBody>
-                    <form onSubmit={bulkAbortionFormik.handleSubmit}>
+                    <form onSubmit={bulkAbortionFormik.handleSubmit} onKeyDown={preventEnterSubmit}>
                         <div className="mb-3">
                             <small className="text-muted">
                                 {t('birth.bulk.lossInfo')}

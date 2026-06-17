@@ -4,7 +4,8 @@ import { ConfigContext } from "App"
 import BreadCrumb from "Components/Common/Shared/BreadCrumb"
 import { useContext, useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, Spinner } from "reactstrap"
+import { Alert, Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Spinner, TabContent, TabPane } from "reactstrap"
+import classnames from "classnames"
 import { Column } from "common/data/data_types"
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation"
 import AlertMessage from "Components/Common/Shared/AlertMesagge"
@@ -67,6 +68,7 @@ const ViewIncomes = () => {
     const [fileURL, setFileURL] = useState<string | null>(null);
     const [mainWarehouseId, setMainWarehouseId] = useState<string>('')
     const [selectedIncome, setSelectedIncome] = useState<any>({});
+    const [activeTab, setActiveTab] = useState<'regular' | 'preparation'>('regular');
     const [incomeStatistics, setIncomeStatistics] = useState({
         totalValue: 0,
         totalEntries: 0,
@@ -168,6 +170,31 @@ const ViewIncomes = () => {
             },
         },
     ]
+
+    const preparationColumns: Column<any>[] = [
+        { header: t('finance.income.column.id'), accessor: 'id', isFilterable: true, type: 'text' },
+        { header: t('finance.income.column.date'), accessor: 'date', isFilterable: true, type: 'date' },
+        { header: t('finance.income.column.totalPrice'), accessor: 'totalPrice', type: 'currency', bgColor: '#E8F5E9' },
+        {
+            header: t('finance.income.column.approvalStatus'),
+            accessor: 'approvalStatus',
+            type: 'text',
+            render: (_, row) => {
+                const status = row.approvalStatus ?? 'pending';
+                const color = approvalStatusColor[status] || 'secondary';
+                return <Badge color={color}>{t(`finance.income.approvalStatus.${status}`, { defaultValue: status })}</Badge>;
+            },
+        },
+        {
+            header: t('common.field.actions'),
+            accessor: 'action',
+            render: (_: any, row: any) => (
+                <Button className="farm-primary-button btn-icon" onClick={() => { setSelectedIncome(row); toggleModal('details'); }}>
+                    <i className="ri-eye-fill align-middle"></i>
+                </Button>
+            ),
+        },
+    ];
 
     const toggleModal = (modalName: keyof typeof modals, state?: boolean) => {
         setModals((prev) => ({ ...prev, [modalName]: state ?? !prev[modalName] }));
@@ -441,21 +468,63 @@ const ViewIncomes = () => {
                                     <><i className="ri-file-pdf-line me-2" />{t('common.button.exportPdf')}</>
                                 )}
                             </Button>
-                            <Button className="farm-primary-button" onClick={() => toggleModal('createIncome')}>
-                                <i className="ri-add-line me-3" />
-                                {t('finance.income.action.new')}
-                            </Button>
+                            {activeTab === 'regular' && (
+                                <Button className="farm-primary-button" onClick={() => toggleModal('createIncome')}>
+                                    <i className="ri-add-line me-3" />
+                                    {t('finance.income.action.new')}
+                                </Button>
+                            )}
                         </div>
+                        <Nav tabs className="mt-3">
+                            <NavItem>
+                                <NavLink
+                                    className={classnames({ active: activeTab === 'regular' })}
+                                    onClick={() => setActiveTab('regular')}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    {t('finance.income.tab.regular', { defaultValue: 'Entradas' })}
+                                </NavLink>
+                            </NavItem>
+                            <NavItem>
+                                <NavLink
+                                    className={classnames({ active: activeTab === 'preparation' })}
+                                    onClick={() => setActiveTab('preparation')}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    {t('finance.income.tab.preparation', { defaultValue: 'Preparación de alimento' })}
+                                </NavLink>
+                            </NavItem>
+                        </Nav>
                     </CardHeader>
-                    <CardBody className={incomes.length === 0 ? "d-flex flex-column justify-content-center align-items-center text-center" : "d-flex flex-column flex-grow-1"}>
-                        {incomes.length === 0 ? (
-                            <>
-                                <i className="ri-drop-line text-muted mb-2" style={{ fontSize: "2rem" }} />
-                                <span className="fs-5 text-muted">{t('finance.income.empty')}</span>
-                            </>
-                        ) : (
-                            <CustomTable columns={columns} data={incomes} showPagination={false} />
-                        )}
+                    <CardBody className="d-flex flex-column flex-grow-1">
+                        <TabContent activeTab={activeTab}>
+                            <TabPane tabId="regular">
+                                {(() => {
+                                    const regularIncomes = incomes.filter(i => i.incomeType !== 'preparation');
+                                    return regularIncomes.length === 0 ? (
+                                        <div className="d-flex flex-column justify-content-center align-items-center text-center py-4">
+                                            <i className="ri-drop-line text-muted mb-2" style={{ fontSize: "2rem" }} />
+                                            <span className="fs-5 text-muted">{t('finance.income.empty')}</span>
+                                        </div>
+                                    ) : (
+                                        <CustomTable columns={columns} data={regularIncomes} showPagination={false} />
+                                    );
+                                })()}
+                            </TabPane>
+                            <TabPane tabId="preparation">
+                                {(() => {
+                                    const preparationIncomes = incomes.filter(i => i.incomeType === 'preparation');
+                                    return preparationIncomes.length === 0 ? (
+                                        <div className="d-flex flex-column justify-content-center align-items-center text-center py-4">
+                                            <i className="ri-drop-line text-muted mb-2" style={{ fontSize: "2rem" }} />
+                                            <span className="fs-5 text-muted">{t('finance.income.emptyPreparation', { defaultValue: 'No hay entradas de preparación registradas' })}</span>
+                                        </div>
+                                    ) : (
+                                        <CustomTable columns={preparationColumns} data={preparationIncomes} showPagination={false} />
+                                    );
+                                })()}
+                            </TabPane>
+                        </TabContent>
                     </CardBody>
                 </Card>
             </Container>

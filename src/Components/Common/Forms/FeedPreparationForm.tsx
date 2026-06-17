@@ -1,4 +1,5 @@
 import { logger } from 'utils/logger';
+import { preventEnterSubmit } from 'utils/formUtils';
 import { ConfigContext } from "App";
 import { useFormik } from "formik";
 import { useTranslation } from "react-i18next";
@@ -515,7 +516,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
     if (loading) return <LoadingAnimation absolutePosition={false} />;
 
     return (
-        <form onSubmit={e => { e.preventDefault(); formik.handleSubmit(); }}>
+        <form onSubmit={e => { e.preventDefault(); formik.handleSubmit(); }} onKeyDown={preventEnterSubmit}>
             {/* Receta opcional + Subalmacén */}
             <div className="d-flex gap-3">
                 <div className="w-50">

@@ -6,6 +6,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { reopenPeriod } from "slices/periodClosing/thunk";
 import { isTablet } from "./closingModalUtils";
+import { preventEnterSubmit } from 'utils/formUtils';
 
 interface ReopenPeriodModalProps {
     isOpen: boolean;
@@ -59,7 +60,7 @@ const ReopenPeriodModal = ({ isOpen, onClose, onSuccess, closingId, periodLabel 
     return (
         <Modal isOpen={isOpen} toggle={handleClose} backdrop="static" keyboard={false} centered fullscreen={tabletMode}>
             <ModalHeader toggle={handleClose}>{t("finance.periodClosing.modal.reopen.header")}</ModalHeader>
-            <Form onSubmit={formik.handleSubmit}>
+            <Form onSubmit={formik.handleSubmit} onKeyDown={preventEnterSubmit}>
                 <ModalBody>
                     <Alert color="warning">
                         <i className="ri-alert-line me-2 text-warning" />

@@ -68,11 +68,16 @@ const ViewPigSales = () => {
             accessor: "pigs",
             type: "text",
             bgColor: "#e3f2fd",
-            render: (_, row) => (
-                <span className="fw-semibold text-primary">
-                    {row.pigs?.length ?? row.group?.pigCount ?? "—"}
-                </span>
-            ),
+            render: (_, row) => {
+                const pigCount = (row.pigs?.length ?? row.group?.pigCount ?? 0);
+                const litterCount = row.litter?.pigCount ?? 0;
+                const total = pigCount + litterCount;
+                return (
+                    <span className="fw-semibold text-primary">
+                        {total > 0 ? total : "—"}
+                    </span>
+                );
+            },
         },
         {
             header: t('finance.sale.column.totalWeight'),

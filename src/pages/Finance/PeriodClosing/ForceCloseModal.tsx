@@ -4,6 +4,7 @@ import { Alert, Button, Form, FormFeedback, FormGroup, Input, Label, Modal, Moda
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { isTablet } from "./closingModalUtils";
+import { preventEnterSubmit } from 'utils/formUtils';
 
 export interface ForceCloseModalProps {
     isOpen: boolean;
@@ -50,7 +51,7 @@ const ForceCloseModal = ({ isOpen, onClose, onForced, periodLabel, blockingLabel
                 <i className="ri-alert-line me-2 text-warning" />
                 {t("finance.periodClosing.modal.forceClose.header")}
             </ModalHeader>
-            <Form onSubmit={formik.handleSubmit}>
+            <Form onSubmit={formik.handleSubmit} onKeyDown={preventEnterSubmit}>
                 <ModalBody>
                     <Alert color="warning" className="d-flex align-items-start mb-3">
                         <i className="ri-error-warning-line me-2 fs-5 text-warning mt-1" />

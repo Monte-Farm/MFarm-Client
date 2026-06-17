@@ -26,8 +26,8 @@ const PurchaseOrderProductsTable: React.FC<PurchaseOrderProductsTableProps> = ({
                 id,
                 {
                     quantity: quantity.toString(),
-                    price: price.toString(),
-                    totalPrice: (totalPrice || 0).toString()
+                    price: (price || 0).toFixed(2),
+                    totalPrice: (totalPrice || 0).toFixed(2)
                 }
             ])
         );
@@ -63,9 +63,9 @@ const PurchaseOrderProductsTable: React.FC<PurchaseOrderProductsTableProps> = ({
         setEditingValues(prev => ({
             ...prev,
             [id]: {
-                quantity: updatedProduct.quantity?.toString() || "0",
-                price: updatedProduct.price?.toString() || "0",
-                totalPrice: updatedProduct.totalPrice?.toString() || "0"
+                quantity: field === "quantity" ? value : (updatedProduct.quantity?.toString() || "0"),
+                price: field === "price" ? value : (updatedProduct.price ?? 0).toFixed(2),
+                totalPrice: field === "totalPrice" ? value : (updatedProduct.totalPrice ?? 0).toFixed(2),
             }
         }));
 
