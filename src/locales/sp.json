@@ -3240,7 +3240,14 @@
     "modal": {
       "sowReport": "Reporte de cerdas",
       "boarReport": "Reporte de verracos",
-      "editPig": "Editar cerdo"
+      "editPig": "Editar cerdo",
+      "reportSelection": {
+        "title": "Seleccionar reporte",
+        "description": "Elige el tipo de reporte que deseas generar.",
+        "female": "Reporte de hembras",
+        "male": "Reporte de machos",
+        "all": "Reporte de todos los cerdos"
+      }
     },
     "empty": {
       "noSows": "No hay cerdas registrados",

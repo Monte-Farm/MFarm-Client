@@ -3240,7 +3240,14 @@
     "modal": {
       "sowReport": "Breeding sow report",
       "boarReport": "Boar report",
-      "editPig": "Edit pig"
+      "editPig": "Edit pig",
+      "reportSelection": {
+        "title": "Select report",
+        "description": "Choose the type of report you want to generate.",
+        "female": "Female report",
+        "male": "Male report",
+        "all": "All pigs report"
+      }
     },
     "empty": {
       "noSows": "No breeding sows on record",
