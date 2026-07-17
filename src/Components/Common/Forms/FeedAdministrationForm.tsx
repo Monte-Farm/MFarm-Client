@@ -61,6 +61,12 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
             .typeError(t('form.validation.mustBeNumber'))
             .positive(t('form.validation.positive'))
             .required(t('form.validation.required')),
+        totalQuantity: isBulk
+            ? Yup.number()
+                .typeError(t('form.validation.mustBeNumber'))
+                .positive(t('form.validation.positive'))
+                .required(t('form.validation.required'))
+            : Yup.number().notRequired(),
         date: Yup.date().required(t('form.validation.required')).nullable(),
     });
 
@@ -68,6 +74,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
         initialValues: {
             preparedProductId: '',
             quantity: 0,
+            totalQuantity: 0,
             date: new Date() as Date | null,
             observations: '',
         },
@@ -198,7 +205,22 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
     );
 
     const stockAvailable = selectedProduct?.stock ?? 0;
-    const exceedsStock = formik.values.quantity > 0 && stockAvailable > 0 && formik.values.quantity > stockAvailable;
+    const requiredQuantity = isBulk ? Number(formik.values.totalQuantity) : Number(formik.values.quantity);
+    const exceedsStock = !!selectedProduct && requiredQuantity > stockAvailable;
+
+    const roundQuantity = (value: number) => Math.round(value * 10000) / 10000;
+
+    const handleIndividualQuantityChange = (value: string) => {
+        formik.setFieldValue('quantity', value);
+        if (isBulk) {
+            formik.setFieldValue('totalQuantity', value === '' ? '' : roundQuantity(Number(value) * bulkTargets.length));
+        }
+    };
+
+    const handleTotalQuantityChange = (value: string) => {
+        formik.setFieldValue('totalQuantity', value);
+        formik.setFieldValue('quantity', value === '' ? '' : roundQuantity(Number(value) / bulkTargets.length));
+    };
 
     useEffect(() => {
         fetchWarehouses();
@@ -283,11 +305,11 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
                             type="number"
                             name="quantity"
                             min={0}
-                            step="0.01"
+                            step="0.0001"
                             value={formik.values.quantity || ''}
-                            onChange={formik.handleChange}
+                            onChange={(e) => handleIndividualQuantityChange(e.target.value)}
                             onBlur={formik.handleBlur}
-                            invalid={(formik.touched.quantity && !!formik.errors.quantity) || exceedsStock}
+                            invalid={formik.touched.quantity && !!formik.errors.quantity}
                             disabled={!formik.values.preparedProductId}
                         />
                         <span className="input-group-text">kg</span>
@@ -295,9 +317,31 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
                     {formik.touched.quantity && formik.errors.quantity && (
                         <div className="text-danger small mt-1">{formik.errors.quantity as string}</div>
                     )}
-                    {exceedsStock && selectedProduct && !isBulk && (
+                    {isBulk && (
+                        <div className="mt-3">
+                            <Label className="form-label">{t('feeding.administration.form.field.totalQuantity')}</Label>
+                            <div className="input-group">
+                                <Input
+                                    type="number"
+                                    name="totalQuantity"
+                                    min={0}
+                                    step="0.01"
+                                    value={formik.values.totalQuantity || ''}
+                                    onChange={(e) => handleTotalQuantityChange(e.target.value)}
+                                    onBlur={formik.handleBlur}
+                                    invalid={(formik.touched.totalQuantity && !!formik.errors.totalQuantity) || exceedsStock}
+                                    disabled={!formik.values.preparedProductId}
+                                />
+                                <span className="input-group-text">kg</span>
+                            </div>
+                            {formik.touched.totalQuantity && formik.errors.totalQuantity && (
+                                <div className="text-danger small mt-1">{formik.errors.totalQuantity as string}</div>
+                            )}
+                        </div>
+                    )}
+                    {exceedsStock && selectedProduct && (
                         <div className="text-danger small mt-1">
-                            {t('feeding.administration.form.warning.exceedsStock', { val: stockAvailable.toFixed(2) })}
+                            {t('feeding.administration.form.warning.exceedsStock', { val: stockAvailable.toFixed(2), required: requiredQuantity.toFixed(2) })}
                         </div>
                     )}
                 </div>
@@ -348,7 +392,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
                 <Button
                     color="success"
                     onClick={() => formik.handleSubmit()}
-                    disabled={formik.isSubmitting || !selectedWarehouseId || feedProducts.length === 0 || (exceedsStock && !isBulk)}
+                    disabled={formik.isSubmitting || !selectedWarehouseId || feedProducts.length === 0 || exceedsStock}
                 >
                     {formik.isSubmitting ? <Spinner size="sm" /> : (
                         <><i className="ri-check-line me-2" />{t('feeding.administration.form.action.register')}</>
