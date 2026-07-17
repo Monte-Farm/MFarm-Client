@@ -33,10 +33,11 @@ const STAGE_COLORS: Record<string, string> = {
 const STATUS_COLORS: Record<string, string> = {
     alive: 'success', discarded: 'warning', dead: 'danger',
 };
+type ReportSex = 'female' | 'male';
 
 const ViewSows = () => {
     const { t } = useTranslation();
-    const [modals, setModals] = useState({ viewPDF: false, assignEarTag: false, update: false, bulkMedication: false, bulkFeeding: false });
+    const [modals, setModals] = useState({ viewPDF: false, selectReport: false, assignEarTag: false, update: false, bulkMedication: false, bulkFeeding: false });
     const [selectedPigs, setSelectedPigs] = useState<any[]>([]);
     const hasAlivePigs = selectedPigs.some(pig => pig.status === 'alive');
     const [selectedPig, setSelectedPig] = useState<PigData | null>(null)
@@ -154,13 +155,15 @@ const ViewSows = () => {
         }
     }
 
-    const handleGeneratePDF = async () => {
+    const handleGeneratePDF = async (sex?: ReportSex) => {
         if (!configContext) return;
 
+        toggleModal('selectReport', false);
         setGeneratingReport(true);
         try {
+            const sexQuery = sex ? `?sex=${sex}` : '';
             const response = await configContext.axiosHelper.getBlob(
-                appendLangParam(`${configContext.apiUrl}/reports/breeder_pigs/${userLogged.farm_assigned}?sex=female`)
+                appendLangParam(`${configContext.apiUrl}/reports/breeder_pigs/${userLogged.farm_assigned}${sexQuery}`)
             );
 
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
@@ -319,7 +322,7 @@ const ViewSows = () => {
                             <Button
                                 color="secondary"
                                 className="ms-auto btn-pdf"
-                                onClick={handleGeneratePDF}
+                                onClick={() => toggleModal('selectReport')}
                                 disabled={generatingReport}
                             >
                                 {generatingReport ? (
@@ -360,6 +363,27 @@ const ViewSows = () => {
                     </CardBody>
                 </Card>
             </Container>
+
+            <Modal isOpen={modals.selectReport} toggle={() => toggleModal('selectReport')} centered>
+                <ModalHeader toggle={() => toggleModal('selectReport')}>{t('replacement.modal.reportSelection.title')}</ModalHeader>
+                <ModalBody>
+                    <p className="text-muted mb-3">{t('replacement.modal.reportSelection.description')}</p>
+                    <div className="d-grid gap-2">
+                        <Button color="secondary" onClick={() => handleGeneratePDF('female')}>
+                            <i className="ri-women-line me-2"></i>
+                            {t('replacement.modal.reportSelection.female')}
+                        </Button>
+                        <Button color="info" onClick={() => handleGeneratePDF('male')}>
+                            <i className="ri-men-line me-2"></i>
+                            {t('replacement.modal.reportSelection.male')}
+                        </Button>
+                        <Button className="farm-primary-button" onClick={() => handleGeneratePDF()}>
+                            <i className="ri-group-line me-2"></i>
+                            {t('replacement.modal.reportSelection.all')}
+                        </Button>
+                    </div>
+                </ModalBody>
+            </Modal>
 
             <Modal size="md" isOpen={modals.assignEarTag} toggle={() => toggleModal("assignEarTag")} centered>
                 <ModalHeader toggle={() => toggleModal("assignEarTag")}>{t('replacement.earTag.modalTitle')}</ModalHeader>
