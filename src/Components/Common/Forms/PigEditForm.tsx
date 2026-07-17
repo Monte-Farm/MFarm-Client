@@ -35,6 +35,7 @@ const PigEditForm: React.FC<PigEditFormProps> = ({ pigData, onSave, onCancel }) 
         code: Yup.string().required(t('pigs.field.code')),
         birthdate: Yup.date().max(new Date()).required(t('pigs.field.birthDate')),
         breed: Yup.string().required(t('pigs.field.breed')),
+        sex: Yup.mixed<'male' | 'female'>().oneOf(['male', 'female']).required(t('pigs.field.sex')),
         origin: Yup.mixed<'born' | 'purchased' | 'donated' | 'other'>().oneOf(["born", "purchased", "donated", "other"]).required(t('pigs.field.origin')),
         originDetail: Yup.string().when("origin", { is: "other", then: (schema) => schema.required(t('pigs.field.originDetail')), otherwise: (schema) => schema.notRequired() }),
         arrivalDate: Yup.date().when("origin", { is: (val: string) => val !== "born", then: (schema) => schema.max(new Date()).required(t('pigs.field.arrivalDate')), otherwise: (schema) => schema.notRequired() }),
@@ -94,6 +95,24 @@ const PigEditForm: React.FC<PigEditFormProps> = ({ pigData, onSave, onCancel }) 
                         </Input>
                         {formik.touched.breed && formik.errors.breed && <FormFeedback>{formik.errors.breed}</FormFeedback>}
                     </div>
+                </div>
+
+                <div className="mt-4">
+                    <Label htmlFor="sex">{t('pigs.field.sex')}</Label>
+                    <Input
+                        type="select"
+                        id="sex"
+                        name="sex"
+                        value={formik.values.sex}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        invalid={formik.touched.sex && !!formik.errors.sex}
+                    >
+                        <option value="">{t('form.pig.placeholder.selectOption')}</option>
+                        <option value="male">{t('common.sex.male')}</option>
+                        <option value="female">{t('common.sex.female')}</option>
+                    </Input>
+                    {formik.touched.sex && formik.errors.sex && <FormFeedback>{formik.errors.sex}</FormFeedback>}
                 </div>
 
                 <div className="mt-4">
