@@ -166,15 +166,20 @@ function SelectableCustomTable<T extends { id?: string }>(props: SelectableCusto
 
     const toggleSelectAll = useCallback(() => {
         if (disabled) return;
-        if (selectedIds.size === paginatedData.length) {
-            setSelectedIds(new Set());
-            onSelect?.([]);
+
+        const visibleIds = new Set(sortedData.map((row) => getRowId(row)));
+        const areAllVisibleRowsSelected = sortedData.length > 0 && sortedData.every((row) => selectedIds.has(getRowId(row)));
+        const newSelected = new Set(selectedIds);
+
+        if (areAllVisibleRowsSelected) {
+            visibleIds.forEach((id) => newSelected.delete(id));
         } else {
-            const newSelected = new Set(paginatedData.map((d) => getRowId(d)));
-            setSelectedIds(newSelected);
-            onSelect?.(data.filter((d) => newSelected.has(getRowId(d))));
+            visibleIds.forEach((id) => newSelected.add(id));
         }
-    }, [selectedIds, paginatedData, data, onSelect, disabled]);
+
+        setSelectedIds(newSelected);
+        onSelect?.(data.filter((row) => newSelected.has(getRowId(row))));
+    }, [selectedIds, sortedData, data, onSelect, disabled]);
 
     const handlePageChange = (page: number) => setCurrentPage(page);
 
@@ -230,7 +235,7 @@ function SelectableCustomTable<T extends { id?: string }>(props: SelectableCusto
                                 {selectionMode === "multiple" && (
                                     <Input
                                         type="checkbox"
-                                        checked={selectedIds.size === paginatedData.length}
+                                        checked={sortedData.length > 0 && sortedData.every((row) => selectedIds.has(getRowId(row)))}
                                         onChange={toggleSelectAll}
                                         disabled={disabled}
                                         style={selectionOnlyOnCheckbox ? { transform: 'scale(1.2)' } : {}}
