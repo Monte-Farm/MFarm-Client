@@ -353,7 +353,7 @@ const ViewSows = () => {
                                 columns={pigColumns}
                                 data={filteredPigs}
                                 showSearchAndFilter={false}
-                                rowsPerPage={7}
+                                rowsPerPage={20}
                                 showPagination={true}
                                 selectionMode="multiple"
                                 selectionOnlyOnCheckbox={true}
