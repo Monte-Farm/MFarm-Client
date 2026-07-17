@@ -3245,7 +3245,14 @@
     "modal": {
       "sowReport": "Relatório de matrizes",
       "boarReport": "Relatório de reprodutores",
-      "editPig": "Editar suíno"
+      "editPig": "Editar suíno",
+      "reportSelection": {
+        "title": "Selecionar relatório",
+        "description": "Escolha o tipo de relatório que deseja gerar.",
+        "female": "Relatório de fêmeas",
+        "male": "Relatório de machos",
+        "all": "Relatório de todos os suínos"
+      }
     },
     "empty": {
       "noSows": "Nenhuma matriz registrada",
