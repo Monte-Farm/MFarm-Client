@@ -304,27 +304,20 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
         if (!configContext || !userLogged) return;
         try {
             setLoading(true);
-            const [recipesResponse, mainWhResponse, subwarehousesResponse, feedingProductsResponse] = await Promise.all([
+            const [recipesResponse, mainWhResponse, allSubwarehouses] = await Promise.all([
                 configContext.axiosHelper.get(`${configContext.apiUrl}/${FEEDING_PACKAGE_URLS.findByFarm(userLogged.farm_assigned)}`),
                 configContext.axiosHelper.get(`${configContext.apiUrl}/farm/get_main_warehouse/${userLogged.farm_assigned}`),
-                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_farm_subwarehouses/${userLogged.farm_assigned}`),
-                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/feeding_products/${userLogged.farm_assigned}`),
+                configContext.axiosHelper
+                    .get(`${configContext.apiUrl}/warehouse/find_farm_subwarehouses/${userLogged.farm_assigned}`)
+                    .then((response: any) => response.data.data || [])
+                    .catch((error: any) => {
+                        if (error?.response?.status === HttpStatusCode.NotFound) return [];
+                        throw error;
+                    }),
             ]);
             setRecipes((recipesResponse.data.data || []).filter((r: any) => r.is_active));
 
-            // Las recetas pueden traer solo el id del ingrediente. Conservamos
-            // este catálogo independiente del almacén para resolver sus datos.
-            const recipeProductMap: Record<string, any> = {};
-            for (const product of feedingProductsResponse.data.data || []) {
-                const productId = product._id || product.id;
-                if (productId) recipeProductMap[productId] = product;
-                if (product._id) recipeProductMap[product._id] = product;
-                if (product.id) recipeProductMap[product.id] = product;
-            }
-            setRecipeProductsMap(recipeProductMap);
-
             const mainWarehouseId: string = mainWhResponse.data.data;
-            const allSubwarehouses: any[] = subwarehousesResponse.data.data || [];
             const feedSubwarehouses = allSubwarehouses.filter((s: any) => s.type === 'feed');
             const generalOption = { _id: mainWarehouseId, code: '', name: t('feeding.preparation.form.field.generalWarehouse', { defaultValue: 'Almacén general' }) };
             setSubwarehouses([generalOption, ...feedSubwarehouses]);
@@ -362,6 +355,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
                 if (p._id) map[p._id] = p;
             }
             setProductsMap(map);
+            setRecipeProductsMap(map);
         } catch (error) {
             logger.error('Error loading warehouse inventory:', error);
         }
@@ -369,15 +363,15 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
 
     const handleWarehouseChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         formik.handleChange(e);
-        // Los ingredientes de una receta no dependen del almacén origen. Al
-        // elegirlo después de la receta, conservarlos para poder preparar el lote.
-        if (!selectedRecipe) {
-            setIngredients([]);
-            setPreselectedIds([]);
-        }
+        formik.setFieldValue('recipeId', '');
+        setSelectedRecipe(null);
+        setOriginalRecipePercentages({});
+        setIngredients([]);
+        setPreselectedIds([]);
+        setTargetBatchInput('');
         const warehouseId = e.target.value;
         if (warehouseId) loadInventoryForWarehouse(warehouseId);
-        else { setProducts([]); setProductsMap({}); }
+        else { setProducts([]); setProductsMap({}); setRecipeProductsMap({}); }
     };
 
     const fetchAveragePrices = async (productIds: string[]): Promise<Record<string, number>> => {
@@ -564,12 +558,30 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
             {/* Receta opcional + Subalmacén */}
             <div className="d-flex gap-3">
                 <div className="w-50">
+                    <Label className="form-label">{t('feeding.preparation.form.field.subwarehouse')}</Label>
+                    <Input
+                        type="select"
+                        name="subwarehouseId"
+                        value={formik.values.subwarehouseId}
+                        onChange={handleWarehouseChange}
+                        onBlur={formik.handleBlur}
+                        invalid={formik.touched.subwarehouseId && !!formik.errors.subwarehouseId}
+                    >
+                        <option value="">{t('feeding.preparation.form.field.subwarehouseSelect')}</option>
+                        {subwarehouses.map(s => (
+                            <option key={s._id} value={s._id}>{s.code ? `${s.code} — ${s.name}` : s.name}</option>
+                        ))}
+                    </Input>
+                    {formik.touched.subwarehouseId && formik.errors.subwarehouseId && (<FormFeedback>{formik.errors.subwarehouseId}</FormFeedback>)}
+                </div>
+                <div className="w-50">
                     <Label className="form-label">{t('feeding.preparation.form.field.recipeOptional')}</Label>
                     <Input
                         type="select"
                         name="recipeId"
                         value={formik.values.recipeId}
                         onChange={e => handleRecipeChange(e.target.value)}
+                        disabled={!formik.values.subwarehouseId}
                     >
                         <option value="">{t('feeding.preparation.form.field.recipeNone')}</option>
                         {recipes.map(r => (
@@ -597,23 +609,6 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
                             <small className="text-muted">{t('feeding.preparation.form.field.targetBatchHint')}</small>
                         </div>
                     )}
-                </div>
-                <div className="w-50">
-                    <Label className="form-label">{t('feeding.preparation.form.field.subwarehouse')}</Label>
-                    <Input
-                        type="select"
-                        name="subwarehouseId"
-                        value={formik.values.subwarehouseId}
-                        onChange={handleWarehouseChange}
-                        onBlur={formik.handleBlur}
-                        invalid={formik.touched.subwarehouseId && !!formik.errors.subwarehouseId}
-                    >
-                        <option value="">{t('feeding.preparation.form.field.subwarehouseSelect')}</option>
-                        {subwarehouses.map(s => (
-                            <option key={s._id} value={s._id}>{s.code ? `${s.code} — ${s.name}` : s.name}</option>
-                        ))}
-                    </Input>
-                    {formik.touched.subwarehouseId && formik.errors.subwarehouseId && (<FormFeedback>{formik.errors.subwarehouseId}</FormFeedback>)}
                 </div>
             </div>
 

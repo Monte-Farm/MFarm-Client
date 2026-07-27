@@ -143,12 +143,17 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
         if (!configContext || !userLogged) return;
         try {
             setLoading(true);
-            const [mainWhRes, subWhRes] = await Promise.all([
+            const [mainWhRes, allSubs] = await Promise.all([
                 configContext.axiosHelper.get(`${configContext.apiUrl}/farm/get_main_warehouse/${userLogged.farm_assigned}`),
-                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_farm_subwarehouses/${userLogged.farm_assigned}`),
+                configContext.axiosHelper
+                    .get(`${configContext.apiUrl}/warehouse/find_farm_subwarehouses/${userLogged.farm_assigned}`)
+                    .then((response: any) => response.data.data || [])
+                    .catch((error: any) => {
+                        if (error?.response?.status === HttpStatusCode.NotFound) return [];
+                        throw error;
+                    }),
             ]);
             const mainWarehouseId: string = mainWhRes.data.data;
-            const allSubs: any[] = subWhRes.data.data || [];
             const feedSubs = allSubs.filter((s: any) => s.type === 'feed');
             const generalOption = {
                 _id: mainWarehouseId,
