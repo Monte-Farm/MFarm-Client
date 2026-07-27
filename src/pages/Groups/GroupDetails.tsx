@@ -45,6 +45,7 @@ import DiscardPigInGroupForm from "Components/Common/Forms/DiscardPigInGroupForm
 import GrowthStatusProgress from "Components/Common/Shared/GrowthStatusProgress";
 import ProcessPigReplacementForm from "Components/Common/Forms/ProcessPigReplacementForm";
 import SellPigsForm from "Components/Common/Forms/SellPigsForm";
+import GroupBasicEditForm from "Components/Common/Forms/GroupBasicEditForm";
 import { useTranslation } from "react-i18next";
 
 const AREA_COLORS: Record<string, string> = {
@@ -59,6 +60,15 @@ const STATUS_COLORS: Record<string, string> = {
     growing: 'success', replacement: 'secondary', ready_for_sale: 'success',
     sale: 'success', sold: 'success',
 };
+
+const formatGroupDate = (value: string | Date | null | undefined) => value
+    ? new Date(value).toLocaleDateString("es-MX", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        timeZone: "UTC",
+    })
+    : "-";
 
 const isTablet = () => {
   const w = document.documentElement.clientWidth;
@@ -78,7 +88,7 @@ const GroupDetails = () => {
     const [tabletMode, setTabletMode] = useState(isTablet);
     const [groupData, setGroupData] = useState<any>({});
     const [activeTab, setActiveTab] = useState("0");
-    const [modals, setModals] = useState({ changeStage: false, registerDeath: false, discard: false, transfer: false, processSale: false, processReplacement: false, sellPigs: false, weighGroup: false });
+    const [modals, setModals] = useState({ changeStage: false, registerDeath: false, discard: false, transfer: false, processSale: false, processReplacement: false, sellPigs: false, weighGroup: false, editBasic: false });
     const [lastWeighted, setLastWeigthed] = useState<any>({})
     const [growthRate, setGrowthRate] = useState<number>(0);
     const [averageAge, setAverageaAge] = useState<any>()
@@ -119,14 +129,22 @@ const GroupDetails = () => {
                 return <Badge color={color}>{text}</Badge>;
             },
         },
-        { key: "creationDate", label: t('groups.column.creationDate'), type: "date" },
+        {
+            key: "creationDate",
+            label: t('groups.column.creationDate'),
+            type: "date",
+            // Las fechas básicas del grupo se almacenan a las 00:00 UTC.
+            // Se muestran en UTC para conservar el día de calendario elegido.
+            render: (value) => formatGroupDate(value),
+        },
+        { key: "birthdate", label: t('groups.column.birthDate'), type: "date", render: (value) => formatGroupDate(value) },
         { key: "observations", label: t('groups.column.observations'), type: "text" },
     ];
 
     const pigColumns: Column<any>[] = [
         { header: t('groups.column.code'), accessor: "code", type: "text" },
         { header: t('groups.column.breed'), accessor: "breed", type: "text" },
-        { header: t('groups.column.birthDate'), accessor: "birthdate", type: "date" },
+        { header: t('groups.column.birthDate'), accessor: "birthdate", type: "date", render: (value) => formatGroupDate(value) },
         {
             header: t('common.field.sex'),
             accessor: "sex",
@@ -208,6 +226,10 @@ const GroupDetails = () => {
                     </Button>
 
                     <div className="d-flex gap-2 flex-wrap">
+                        <Button color="secondary" onClick={() => toggleModal('editBasic')}>
+                            <i className="ri-edit-line me-2" />
+                            {t('common.button.edit')}
+                        </Button>
                         {['weaning', 'ready_to_grow', 'grow_overdue'].includes(groupData.status) && (
                             <Button color="success" disabled={groupData.status === 'sold' || !['ready_to_grow', 'grow_overdue'].includes(groupData.status)} onClick={() => toggleModal('changeStage')}>
                                 <i className="mdi mdi-chart-line-variant me-2" />
@@ -609,6 +631,13 @@ const GroupDetails = () => {
                 <ModalHeader toggle={() => toggleModal("weighGroup")}>{t('groups.modal.weighGroup')}</ModalHeader>
                 <ModalBody>
                     <WeighGroupForm groupId={group_id ?? ''} onSave={() => { toggleModal('weighGroup'); fetchData(); setRefreshKey(prev => prev + 1); }} />
+                </ModalBody>
+            </Modal>
+
+            <Modal size="lg" isOpen={modals.editBasic} toggle={() => toggleModal("editBasic")} centered backdrop="static" keyboard={false} fullscreen={tabletMode}>
+                <ModalHeader toggle={() => toggleModal("editBasic")}>{t('common.button.edit')} {t('groups.tab.information').toLowerCase()}</ModalHeader>
+                <ModalBody>
+                    <GroupBasicEditForm group={groupData} onSave={() => { toggleModal('editBasic', false); fetchData(); }} onCancel={() => toggleModal('editBasic', false)} />
                 </ModalBody>
             </Modal>
 

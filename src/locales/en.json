@@ -399,6 +399,9 @@
       "dailyAvg": "Avg. daily intake",
       "feedConversion": "Feed conversion ratio",
       "cumulativeConsumption": "Cumulative intake",
+      "weightPerDay": "{{unit}}/day",
+      "weightRatio": "{{unit}}/{{unit}}",
+      "cumulativeWeightAxis": "Cumulative {{unit}}",
       "medications": "Medications",
       "diseases": "Health events",
       "daysSinceLastApp": "Days since last treatment",
@@ -1277,12 +1280,12 @@
         "field": {
           "recipeOptional": "Base formula (optional)",
           "recipeNone": "No formula — custom mix",
-          "targetBatch": "Batch size (kg)",
-          "targetBatchHint": "Enter the total kg and each ingredient's amount will be calculated automatically.",
+          "targetBatch": "Batch size ({{unit}})",
+          "targetBatchHint": "Enter the total and each ingredient's amount will be calculated automatically.",
           "subwarehouse": "Source warehouse *",
           "subwarehouseSelect": "Select a warehouse",
           "generalWarehouse": "General warehouse",
-          "producedAmount": "Actual quantity produced (kg) *",
+          "producedAmount": "Actual quantity produced ({{unit}}) *",
           "producedHint": "What actually came out of the mixer (may be less than the mix due to shrinkage).",
           "date": "Preparation date *",
           "responsible": "Prepared by",
@@ -1311,7 +1314,7 @@
         "estimatedCost": "Estimated cost: ${{val}}",
         "costNote": "Estimated cost based on current average prices. Actual cost is calculated by the system at the time of registration based on the selected store.",
         "waste": "Shrinkage",
-        "costPerKgProduced": "Cost / kg produced",
+        "costPerKgProduced": "Cost / {{unit}} produced",
         "realYield": "Actual yield",
         "success": "Feed batch recorded successfully",
         "error": {
@@ -1385,7 +1388,12 @@
           "generalWarehouse": "General warehouse",
           "preparedFeed": "Feed to administer *",
           "preparedFeedSelect": "Select a feed",
-          "quantity": "Quantity per pig *",
+          "quantity": "Quantity *",
+          "quantityPerPig": "Quantity per pig *",
+          "quantityPerGroup": "Quantity per group *",
+          "quantityTotalGroup": "Total group quantity *",
+          "quantityPerLitter": "Quantity per litter *",
+          "quantityTotalLitter": "Total litter quantity *",
           "totalQuantity": "Total quantity to administer *",
           "date": "Date *",
           "responsible": "Administered by",
@@ -1528,13 +1536,15 @@
         "consumed": "Feed consumed",
         "dailyAvg": "Avg. daily intake",
         "avgPerPig": "Avg. per pig",
-        "fcr": "Feed conversion ratio"
+        "fcr": "Feed conversion ratio",
+        "weightPerDay": "{{unit}}/day",
+        "weightRatio": "{{unit}}/{{unit}}"
       },
       "chart": {
         "cumulativeTitle": "Cumulative group intake",
         "distributionTitle": "Breakdown by type",
-        "feedLegend": "Feed (kg)",
-        "yLabel": "Cumulative kg"
+        "feedLegend": "Feed ({{unit}})",
+        "yLabel": "Cumulative {{unit}}"
       }
     },
     "litterFeeding": {
@@ -5134,6 +5144,7 @@
         "restoreDefaults": "Restore defaults"
       },
       "section": {
+        "weightUnit": "Weight unit",
         "gestation": "Gestation",
         "gestationHelper": "Days since insemination",
         "lactation": "Lactation",
@@ -5148,6 +5159,8 @@
         "notificationsHelper": "Advance days for visual alerts"
       },
       "field": {
+        "defaultWeightUnit": "Default weight unit",
+        "defaultWeightUnitHelper": "It will be shown by default in this farm's text.",
         "closeToFarrowDays": "Close to farrowing (days)",
         "closeToFarrowDaysHelper": "Default value: 107",
         "farrowingPendingDays": "Farrowing pending (days)",
@@ -5176,7 +5189,8 @@
         "stageChangeAdvanceNotificationDaysHelper": "Default value: 3"
       },
       "validation": {
-        "required": "Required"
+        "required": "Required",
+        "invalidWeightUnit": "Select a valid weight unit"
       },
       "success": "Farm configuration updated successfully",
       "error": {

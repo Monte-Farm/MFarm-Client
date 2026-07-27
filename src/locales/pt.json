@@ -399,6 +399,9 @@
       "dailyAvg": "Consumo médio diário",
       "feedConversion": "Conversão alimentar",
       "cumulativeConsumption": "Consumo acumulado",
+      "weightPerDay": "{{unit}}/dia",
+      "weightRatio": "{{unit}}/{{unit}}",
+      "cumulativeWeightAxis": "{{unit}} acumulados",
       "medications": "Medicamentos",
       "diseases": "Ocorrências sanitárias",
       "daysSinceLastApp": "Dias desde última aplicação",
@@ -1277,12 +1280,12 @@
         "field": {
           "recipeOptional": "Dieta base (opcional)",
           "recipeNone": "Sem dieta — mistura personalizada",
-          "targetBatch": "Quantidade a preparar (kg)",
-          "targetBatchHint": "Informe o total em kg e as quantidades de cada ingrediente serão calculadas automaticamente.",
+          "targetBatch": "Quantidade a preparar ({{unit}})",
+          "targetBatchHint": "Informe o total e as quantidades de cada ingrediente serão calculadas automaticamente.",
           "subwarehouse": "Almoxarifado de origem *",
           "subwarehouseSelect": "Selecione um almoxarifado",
           "generalWarehouse": "Almoxarifado geral",
-          "producedAmount": "Quantidade real produzida (kg) *",
+          "producedAmount": "Quantidade real produzida ({{unit}}) *",
           "producedHint": "O que realmente saiu do misturador (pode ser menor que a mistura por perda).",
           "date": "Data do arraçoamento *",
           "responsible": "Responsável",
@@ -1311,7 +1314,7 @@
         "estimatedCost": "Custo estimado: R$ {{val}}",
         "costNote": "Custo estimado com base nos preços médios atuais. O custo real é calculado pelo sistema no momento do registro conforme o almoxarifado selecionado.",
         "waste": "Perda",
-        "costPerKgProduced": "Custo / kg produzido",
+        "costPerKgProduced": "Custo / {{unit}} produzido",
         "realYield": "Rendimento real",
         "success": "Arraçoamento registrado com sucesso",
         "error": {
@@ -1385,7 +1388,12 @@
           "generalWarehouse": "Almoxarifado geral",
           "preparedFeed": "Alimento a fornecer *",
           "preparedFeedSelect": "Selecione um alimento",
-          "quantity": "Quantidade por animal *",
+          "quantity": "Quantidade *",
+          "quantityPerPig": "Quantidade por animal *",
+          "quantityPerGroup": "Quantidade por grupo *",
+          "quantityTotalGroup": "Quantidade total do grupo *",
+          "quantityPerLitter": "Quantidade por leitegada *",
+          "quantityTotalLitter": "Quantidade total da leitegada *",
           "totalQuantity": "Quantidade total a fornecer *",
           "date": "Data *",
           "responsible": "Responsável",
@@ -1528,13 +1536,15 @@
         "consumed": "Ração consumida",
         "dailyAvg": "Consumo médio diário",
         "avgPerPig": "Médio por animal",
-        "fcr": "Conversão alimentar"
+        "fcr": "Conversão alimentar",
+        "weightPerDay": "{{unit}}/dia",
+        "weightRatio": "{{unit}}/{{unit}}"
       },
       "chart": {
         "cumulativeTitle": "Consumo acumulado do lote",
         "distributionTitle": "Distribuição por tipo",
-        "feedLegend": "Ração (kg)",
-        "yLabel": "kg acumulados"
+        "feedLegend": "Ração ({{unit}})",
+        "yLabel": "{{unit}} acumulados"
       }
     },
     "litterFeeding": {
@@ -5134,6 +5144,7 @@
         "restoreDefaults": "Restaurar valores padrão"
       },
       "section": {
+        "weightUnit": "Unidade de peso",
         "gestation": "Gestação",
         "gestationHelper": "Dias desde a inseminação",
         "lactation": "Lactação",
@@ -5148,6 +5159,8 @@
         "notificationsHelper": "Dias de antecipação para alertas visuais"
       },
       "field": {
+        "defaultWeightUnit": "Unidade de peso padrão",
+        "defaultWeightUnitHelper": "Será exibida por padrão nos textos desta granja.",
         "closeToFarrowDays": "Próximo ao parto (dias)",
         "closeToFarrowDaysHelper": "Valor padrão: 107",
         "farrowingPendingDays": "Parto pendente (dias)",
@@ -5176,7 +5189,8 @@
         "stageChangeAdvanceNotificationDaysHelper": "Valor padrão: 3"
       },
       "validation": {
-        "required": "Obrigatório"
+        "required": "Obrigatório",
+        "invalidWeightUnit": "Selecione uma unidade de peso válida"
       },
       "success": "Configuração da granja atualizada com sucesso",
       "error": {

@@ -14,6 +14,7 @@ import { Badge, Button, Card, CardBody, Container, Modal, ModalBody, ModalHeader
 import GroupWithDrawForm from "Components/Common/Forms/GroupWithdrawForm";
 import GroupInsertForm from "Components/Common/Forms/GroupInsertForm";
 import GroupTransferForm from "Components/Common/Forms/GroupTransferForm";
+import GroupBasicEditModal from "Components/Common/Forms/GroupBasicEditModal";
 import KPI from "Components/Common/Graphics/Kpi";
 import { FaArrowDown, FaArrowUp, FaBalanceScale, FaLayerGroup, FaMars, FaPiggyBank, FaVenus, FaWeight } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
@@ -44,7 +45,7 @@ const ViewExitGroups = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [tabletMode, setTabletMode] = useState(isTablet);
-    const [modals, setModals] = useState({ create: false, move: false, asign: false, withdraw: false });
+    const [modals, setModals] = useState({ create: false, move: false, asign: false, withdraw: false, edit: false });
     const [exitGroups, setExitGroups] = useState<GroupData[]>([])
     const [stats, setStats] = useState<any>({})
     const [selectedGroup, setSelectedGroup] = useState<any>({})
@@ -105,6 +106,11 @@ const ViewExitGroups = () => {
             accessor: "action",
             render: (_: any, row: any) => (
                 <div className="d-flex gap-1">
+                    <Button id={`edit-button-${row._id}`} className="btn-icon btn-secondary" onClick={() => { setSelectedGroup(row); toggleModal('edit'); }}>
+                        <i className="ri-edit-line align-middle"></i>
+                    </Button>
+                    <UncontrolledTooltip target={`edit-button-${row._id}`}>{t('common.button.edit')}</UncontrolledTooltip>
+
                     <Button id={`move-button-${row._id}`} className="btn-icon btn-warning" onClick={() => { setSelectedGroup(row); toggleModal('move'); }}>
                         <i className="ri-arrow-left-right-line align-middle"></i>
                     </Button>
@@ -221,6 +227,8 @@ const ViewExitGroups = () => {
                     <GroupWithDrawForm groupId={selectedGroup?._id} onSave={() => { fetchData(); toggleModal('withdraw') }} />
                 </ModalBody>
             </Modal>
+
+            <GroupBasicEditModal isOpen={modals.edit} group={selectedGroup} fullscreen={tabletMode} onClose={() => toggleModal('edit', false)} onSave={() => { fetchData(); toggleModal('edit', false); }} />
         </div>
     )
 }

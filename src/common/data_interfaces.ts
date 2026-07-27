@@ -749,9 +749,12 @@ export interface NotificationsConfig {
     stageChangeAdvanceNotificationDays: number;
 }
 
+export type WeightUnit = 'kg' | 'lb';
+
 export interface FarmConfiguration {
     _id?: string;
     farmId: string;
+    defaultWeightUnit: WeightUnit;
     productionCycles: ProductionCycles;
     notifications: NotificationsConfig;
     createdAt?: string;
@@ -1209,7 +1212,6 @@ export interface PrecheckResponse {
     canForceClose: boolean;
     blockingErrors: string[];
 }
-
 // ─── Subscription Module ──────────────────────────────────────────────────────
 
 export type SubscriptionStatus = 'trial' | 'active' | 'expired' | 'suspended';
