@@ -398,6 +398,9 @@
       "dailyAvg": "Consumo Diario Promedio",
       "feedConversion": "Conversión Alimenticia",
       "cumulativeConsumption": "Consumo Acumulado",
+      "weightPerDay": "{{unit}}/día",
+      "weightRatio": "{{unit}}/{{unit}}",
+      "cumulativeWeightAxis": "{{unit}} acumulados",
       "medications": "Medicamentos",
       "diseases": "Enfermedades",
       "daysSinceLastApp": "Días desde Última Aplicación",
@@ -1276,12 +1279,12 @@
         "field": {
           "recipeOptional": "Receta base (opcional)",
           "recipeNone": "Sin receta — mezcla personalizada",
-          "targetBatch": "Cantidad a preparar (kg)",
-          "targetBatchHint": "Ingresa los kg totales y se calcularán las cantidades de cada ingrediente.",
+          "targetBatch": "Cantidad a preparar ({{unit}})",
+          "targetBatchHint": "Ingresa el total y se calcularán las cantidades de cada ingrediente.",
           "subwarehouse": "Almacén origen *",
           "subwarehouseSelect": "Seleccione un almacén",
           "generalWarehouse": "Almacén general",
-          "producedAmount": "Cantidad real producida (kg) *",
+          "producedAmount": "Cantidad real producida ({{unit}}) *",
           "producedHint": "Lo que realmente salió del mezclador (puede ser menor a la mezcla por merma).",
           "date": "Fecha de preparación *",
           "responsible": "Responsable",
@@ -1310,7 +1313,7 @@
         "estimatedCost": "Costo estimado: ${{val}}",
         "costNote": "Costo estimado con precios promedio actuales. El costo real lo calcula el sistema al momento del registro según el subalmacén seleccionado.",
         "waste": "Merma",
-        "costPerKgProduced": "Costo / kg producido",
+        "costPerKgProduced": "Costo / {{unit}} producido",
         "realYield": "Rendimiento real",
         "success": "Preparación registrada con éxito",
         "error": {
@@ -1384,7 +1387,12 @@
           "generalWarehouse": "Almacén general",
           "preparedFeed": "Alimento a administrar *",
           "preparedFeedSelect": "Seleccione un alimento",
-          "quantity": "Cantidad por cerdo *",
+          "quantity": "Cantidad *",
+          "quantityPerPig": "Cantidad por cerdo *",
+          "quantityPerGroup": "Cantidad por grupo *",
+          "quantityTotalGroup": "Cantidad total del grupo *",
+          "quantityPerLitter": "Cantidad por camada *",
+          "quantityTotalLitter": "Cantidad total de la camada *",
           "totalQuantity": "Cantidad total a administrar *",
           "date": "Fecha *",
           "responsible": "Responsable",
@@ -1527,13 +1535,15 @@
         "consumed": "Alimento Consumido",
         "dailyAvg": "Consumo Diario Promedio",
         "avgPerPig": "Promedio por Cerdo",
-        "fcr": "Conversión Alimenticia"
+        "fcr": "Conversión Alimenticia",
+        "weightPerDay": "{{unit}}/día",
+        "weightRatio": "{{unit}}/{{unit}}"
       },
       "chart": {
         "cumulativeTitle": "Consumo Acumulado del Grupo",
         "distributionTitle": "Distribución por Tipo",
-        "feedLegend": "Alimento (kg)",
-        "yLabel": "Kg acumulados"
+        "feedLegend": "Alimento ({{unit}})",
+        "yLabel": "{{unit}} acumulados"
       }
     },
     "litterFeeding": {
@@ -5133,6 +5143,7 @@
         "restoreDefaults": "Restaurar valores por defecto"
       },
       "section": {
+        "weightUnit": "Unidad de peso",
         "gestation": "Gestación",
         "gestationHelper": "Días desde la inseminación",
         "lactation": "Lactancia",
@@ -5147,6 +5158,8 @@
         "notificationsHelper": "Días de anticipación para avisos visuales"
       },
       "field": {
+        "defaultWeightUnit": "Unidad de peso predeterminada",
+        "defaultWeightUnitHelper": "Se mostrará por defecto en los textos de esta granja.",
         "closeToFarrowDays": "Cerca de parir (días)",
         "closeToFarrowDaysHelper": "Valor por defecto: 107",
         "farrowingPendingDays": "Parto pendiente (días)",
@@ -5175,7 +5188,8 @@
         "stageChangeAdvanceNotificationDaysHelper": "Valor por defecto: 3"
       },
       "validation": {
-        "required": "Requerido"
+        "required": "Requerido",
+        "invalidWeightUnit": "Selecciona una unidad de peso válida"
       },
       "success": "Configuración de granja actualizada correctamente",
       "error": {

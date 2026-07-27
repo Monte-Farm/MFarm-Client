@@ -26,6 +26,7 @@ interface FeedAdministrationFormProps {
     bulkTargets?: string[];       // requerido si bulk
     isBulk?: boolean;
     targetStage?: Stage;          // etapa del target (para filtrar preparados); litter siempre 'piglet'
+    defaultWeightUnit?: 'kg' | 'lb';
     onSave: () => void;
     onCancel: () => void;
 }
@@ -36,6 +37,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
     bulkTargets = [],
     isBulk = false,
     targetStage,
+    defaultWeightUnit = 'kg',
     onSave,
     onCancel,
 }) => {
@@ -178,7 +180,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
                     _id: item.product._id || item.product.id,
                     name: item.product.name,
                     category: item.product.category,
-                    unit_measurement: item.product.unit_measurement || 'kg',
+                    unit_measurement: item.product.unit_measurement,
                     stock: item.quantity,
                 }));
             setFeedProducts(filtered);
@@ -205,8 +207,14 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
     );
 
     const stockAvailable = selectedProduct?.stock ?? 0;
+    const selectedUnit = selectedProduct?.unit_measurement ?? '';
     const requiredQuantity = isBulk ? Number(formik.values.totalQuantity) : Number(formik.values.quantity);
     const exceedsStock = !!selectedProduct && requiredQuantity > stockAvailable;
+    const quantityLabelKey = targetType === 'pig'
+        ? 'feeding.administration.form.field.quantityPerPig'
+        : targetType === 'group'
+            ? (isBulk ? 'feeding.administration.form.field.quantityPerGroup' : 'feeding.administration.form.field.quantityTotalGroup')
+            : (isBulk ? 'feeding.administration.form.field.quantityPerLitter' : 'feeding.administration.form.field.quantityTotalLitter');
 
     const roundQuantity = (value: number) => Math.round(value * 10000) / 10000;
 
@@ -299,7 +307,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
                 </div>
 
                 <div className="w-50">
-                    <Label className="form-label">{t('feeding.administration.form.field.quantity')}</Label>
+                    <Label className="form-label">{t(quantityLabelKey)}</Label>
                     <div className="input-group">
                         <Input
                             type="number"
@@ -312,7 +320,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
                             invalid={formik.touched.quantity && !!formik.errors.quantity}
                             disabled={!formik.values.preparedProductId}
                         />
-                        <span className="input-group-text">kg</span>
+                        <span className="input-group-text">{selectedUnit}</span>
                     </div>
                     {formik.touched.quantity && formik.errors.quantity && (
                         <div className="text-danger small mt-1">{formik.errors.quantity as string}</div>
@@ -332,7 +340,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
                                     invalid={(formik.touched.totalQuantity && !!formik.errors.totalQuantity) || exceedsStock}
                                     disabled={!formik.values.preparedProductId}
                                 />
-                                <span className="input-group-text">kg</span>
+                                <span className="input-group-text">{selectedUnit}</span>
                             </div>
                             {formik.touched.totalQuantity && formik.errors.totalQuantity && (
                                 <div className="text-danger small mt-1">{formik.errors.totalQuantity as string}</div>
@@ -352,7 +360,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
                     <div className="bg-light rounded p-3 d-flex justify-content-between align-items-center">
                         <div>
                             <small className="text-muted">{t('feeding.administration.form.field.stockAvailable')}</small>
-                            <div className="fs-5 fw-bold">{stockAvailable.toFixed(2)} kg</div>
+                            <div className="fs-5 fw-bold">{stockAvailable.toFixed(2)} {selectedUnit}</div>
                         </div>
                         <i className="ri-archive-line fs-3 text-muted opacity-75" />
                     </div>

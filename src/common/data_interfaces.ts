@@ -749,9 +749,12 @@ export interface NotificationsConfig {
     stageChangeAdvanceNotificationDays: number;
 }
 
+export type WeightUnit = 'kg' | 'lb';
+
 export interface FarmConfiguration {
     _id?: string;
     farmId: string;
+    defaultWeightUnit: WeightUnit;
     productionCycles: ProductionCycles;
     notifications: NotificationsConfig;
     createdAt?: string;

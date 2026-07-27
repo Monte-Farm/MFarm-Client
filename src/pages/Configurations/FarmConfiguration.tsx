@@ -63,11 +63,17 @@ const FarmConfiguration = () => {
     };
 
     const initialValues = useMemo(() => ({
+        defaultWeightUnit: farmConfig?.defaultWeightUnit ?? DEFAULT_FARM_CONFIG.defaultWeightUnit,
         productionCycles: farmConfig?.productionCycles ?? DEFAULT_FARM_CONFIG.productionCycles,
         notifications: farmConfig?.notifications ?? DEFAULT_FARM_CONFIG.notifications,
     }), [farmConfig]);
 
+    const weightUnitOptions = ['kg', 'lb'] as const;
+
     const validationSchema = Yup.object({
+        defaultWeightUnit: Yup.string()
+            .oneOf(weightUnitOptions, t('config.farm.validation.invalidWeightUnit'))
+            .required(t('config.farm.validation.required')),
         productionCycles: Yup.object({
             gestation: Yup.object({
                 closeToFarrowDays: Yup.number().integer().min(1).required(t('config.farm.validation.required')),
@@ -132,6 +138,7 @@ const FarmConfiguration = () => {
 
     const restoreDefaults = () => {
         formik.setValues({
+            defaultWeightUnit: DEFAULT_FARM_CONFIG.defaultWeightUnit,
             productionCycles: DEFAULT_FARM_CONFIG.productionCycles,
             notifications: DEFAULT_FARM_CONFIG.notifications,
         });
@@ -261,6 +268,38 @@ const FarmConfiguration = () => {
                                     {loading ? t('common.button.saving') : t('common.button.save')}
                                 </Button>
                             </div>
+                        </CardBody>
+                    </Card>
+
+                    <Card className="mb-3">
+                        <CardHeader>
+                            <h6 className="mb-0">{t('config.farm.section.weightUnit')}</h6>
+                        </CardHeader>
+                        <CardBody>
+                            <Row className="g-3">
+                                <Col md={6} lg={4}>
+                                    <Label htmlFor="defaultWeightUnit" className="form-label">
+                                        {t('config.farm.field.defaultWeightUnit')}
+                                    </Label>
+                                    <Input
+                                        id="defaultWeightUnit"
+                                        name="defaultWeightUnit"
+                                        type="select"
+                                        value={formik.values.defaultWeightUnit}
+                                        onChange={formik.handleChange}
+                                        onBlur={formik.handleBlur}
+                                        invalid={!!(formik.touched.defaultWeightUnit && formik.errors.defaultWeightUnit)}
+                                    >
+                                        {weightUnitOptions.map((unit) => (
+                                            <option key={unit} value={unit}>{unit}</option>
+                                        ))}
+                                    </Input>
+                                    <small className="text-muted">{t('config.farm.field.defaultWeightUnitHelper')}</small>
+                                    {formik.touched.defaultWeightUnit && formik.errors.defaultWeightUnit && (
+                                        <FormFeedback>{formik.errors.defaultWeightUnit}</FormFeedback>
+                                    )}
+                                </Col>
+                            </Row>
                         </CardBody>
                     </Card>
 
