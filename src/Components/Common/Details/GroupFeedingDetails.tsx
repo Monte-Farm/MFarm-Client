@@ -13,6 +13,10 @@ import BasicLineChartCard from "../Graphics/BasicLineChartCard";
 import DonutChartCard from "../Graphics/DonutChartCard";
 import FeedAdministrationsCard from "../Shared/FeedAdministrationsCard";
 import { useTranslation } from "react-i18next";
+import { useDispatch, useSelector } from "react-redux";
+import { DEFAULT_FARM_CONFIG } from "common/configuration_defaults";
+import { FarmConfiguration } from "common/data_interfaces";
+import { fetchFarmConfig } from "slices/configurations/thunk";
 
 type Stage = 'piglet' | 'sow' | 'nursery' | 'grower' | 'finisher' | 'general';
 
@@ -36,10 +40,20 @@ const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId, onUp
     const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
+    const farmId = userLogged?.farm_assigned;
+    const dispatch: any = useDispatch();
+    const farmConfig: FarmConfiguration | null = useSelector((s: any) => s.Configurations.farmConfig);
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [administrations, setAdministrations] = useState<FeedAdministrationHistoryEntry[]>([]);
     const [feedingStats, setFeedingStats] = useState<any | null>(null);
+    const weightUnit = farmConfig?.defaultWeightUnit ?? DEFAULT_FARM_CONFIG.defaultWeightUnit;
+
+    useEffect(() => {
+        if (farmId && !farmConfig) {
+            dispatch(fetchFarmConfig(farmId));
+        }
+    }, [dispatch, farmConfig, farmId]);
 
     const getCategoryLabel = (key: string) =>
         t(`feeding.productCategory.${API_CATEGORY_KEY_MAP[key] ?? key}`, { defaultValue: key });
@@ -89,7 +103,7 @@ const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId, onUp
                             <StatKpiCard
                                 title={t('feeding.groupFeeding.kpi.consumed')}
                                 value={feedingStats.kpis?.totalConsumed || 0}
-                                suffix="kg"
+                                suffix={weightUnit}
                                 icon={<RiRestaurantLine size={20} style={{ color: '#f59e0b' }} />}
                                 animateValue={true}
                                 decimals={1}
@@ -99,7 +113,7 @@ const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId, onUp
                             <StatKpiCard
                                 title={t('feeding.groupFeeding.kpi.dailyAvg')}
                                 value={feedingStats.kpis?.avgPerDay || 0}
-                                suffix="kg/día"
+                                suffix={t('feeding.groupFeeding.kpi.weightPerDay', { unit: weightUnit })}
                                 icon={<RiScales3Line size={20} style={{ color: '#0ea5e9' }} />}
                                 animateValue={true}
                                 decimals={2}
@@ -109,7 +123,7 @@ const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId, onUp
                             <StatKpiCard
                                 title={t('feeding.groupFeeding.kpi.avgPerPig')}
                                 value={feedingStats.kpis?.avgPerPig || 0}
-                                suffix="kg/día"
+                                suffix={t('feeding.groupFeeding.kpi.weightPerDay', { unit: weightUnit })}
                                 icon={<RiGroupLine size={20} style={{ color: '#8b5cf6' }} />}
                                 animateValue={true}
                                 decimals={2}
@@ -119,7 +133,7 @@ const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId, onUp
                             <StatKpiCard
                                 title={t('feeding.groupFeeding.kpi.fcr')}
                                 value={feedingStats.kpis?.fcr || feedingStats.kpis?.feedConversionRatio || 0}
-                                suffix="kg/kg"
+                                suffix={t('feeding.groupFeeding.kpi.weightRatio', { unit: weightUnit })}
                                 icon={<RiExchangeLine size={20} style={{ color: '#ef4444' }} />}
                                 animateValue={true}
                                 decimals={2}
@@ -132,11 +146,11 @@ const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId, onUp
                             <BasicLineChartCard
                                 title={t('feeding.groupFeeding.chart.cumulativeTitle')}
                                 data={[{
-                                    id: t('feeding.groupFeeding.chart.feedLegend'),
+                                    id: t('feeding.groupFeeding.chart.feedLegend', { unit: weightUnit }),
                                     color: '#f59e0b',
                                     data: (feedingStats.cumulativeConsumption || []).map((p: any) => ({ x: p.date, y: p.value })),
                                 }]}
-                                yLabel={t('feeding.groupFeeding.chart.yLabel')}
+                                yLabel={t('feeding.groupFeeding.chart.yLabel', { unit: weightUnit })}
                                 xLabel={t('common.field.date')}
                                 height={280}
                                 curve="natural"
@@ -156,7 +170,7 @@ const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId, onUp
                                 data={translatedDist}
                                 legendItems={translatedDist.map((d: any) => ({
                                     label: d.label,
-                                    value: `${d.value} kg`,
+                                    value: `${d.value} ${weightUnit}`,
                                     percentage: feedingStats.kpis?.totalConsumed
                                         ? `${((d.value / feedingStats.kpis.totalConsumed) * 100).toFixed(1)}%`
                                         : '0%',
@@ -175,6 +189,7 @@ const GroupFeedingDetails: React.FC<GroupFeedingDetailsProps> = ({ groupId, onUp
                     targetType="group"
                     targetId={groupId}
                     targetStage={groupStage}
+                    defaultWeightUnit={weightUnit}
                     onAdministered={handleAdministered}
                     disabled={isGroupSold}
                 />
