@@ -13,7 +13,7 @@ export const useGroupsByStage = ({ stage, statsEndpoint = 'group_alive_stats' }:
     const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [modals, setModals] = useState({ create: false, move: false, asign: false, withdraw: false });
+    const [modals, setModals] = useState({ create: false, move: false, asign: false, withdraw: false, edit: false });
     const [groups, setGroups] = useState<any[]>([]);
     const [stats, setStats] = useState<any>({});
     const [selectedGroup, setSelectedGroup] = useState<any>({});

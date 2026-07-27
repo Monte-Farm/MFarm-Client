@@ -12,6 +12,7 @@ export const DEFAULT_GLOBAL_CONFIG: Omit<GlobalConfiguration, '_id' | 'createdAt
 };
 
 export const DEFAULT_FARM_CONFIG: Omit<FarmConfiguration, '_id' | 'farmId' | 'createdAt' | 'updatedAt'> = {
+    defaultWeightUnit: 'kg',
     productionCycles: {
         gestation: {
             closeToFarrowDays: 107,

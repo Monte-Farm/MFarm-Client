@@ -15,6 +15,7 @@ import BulkGroupMedicationAssignmentModal from "Components/Common/Forms/BulkGrou
 import BulkGroupStageChangeModal from "Components/Common/Forms/BulkGroupStageChangeModal";
 import BulkFeedAdministrationModal from "Components/Common/Forms/BulkFeedAdministrationModal";
 import BulkGroupHealthEventModal from "Components/Common/Forms/BulkGroupHealthEventModal";
+import GroupBasicEditModal from "Components/Common/Forms/GroupBasicEditModal";
 import KPI from "Components/Common/Graphics/Kpi";
 import { FaArrowDown, FaArrowUp, FaBalanceScale, FaLayerGroup, FaMars, FaPiggyBank, FaVenus, FaWeight } from "react-icons/fa";
 import { getActionsColumn } from "config/groupColumnsConfig";
@@ -235,6 +236,8 @@ const GroupsView: React.FC<GroupsViewProps> = ({
                     <GroupWithDrawForm groupId={selectedGroup?._id} onSave={() => { fetchData(); toggleModal('withdraw') }} />
                 </ModalBody>
             </Modal>
+
+            <GroupBasicEditModal isOpen={modals.edit} group={selectedGroup} fullscreen={tabletMode} onClose={() => toggleModal('edit', false)} onSave={() => { fetchData(); toggleModal('edit', false); }} />
 
             <BulkGroupMedicationAssignmentModal
                 isOpen={bulkMedicationModalOpen}

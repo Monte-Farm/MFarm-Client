@@ -19,6 +19,10 @@ import { Column } from "common/data/data_types";
 import { PRODUCT_TYPES } from "common/enums/products.enums";
 import { HttpStatusCode } from "axios";
 import noImageUrl from '../../../assets/images/no-image.png';
+import { useDispatch, useSelector } from 'react-redux';
+import { DEFAULT_FARM_CONFIG } from 'common/configuration_defaults';
+import { FarmConfiguration } from 'common/data_interfaces';
+import { fetchFarmConfig } from 'slices/configurations/thunk';
 
 interface FeedPreparationFormProps {
     onSave: () => void;
@@ -49,13 +53,17 @@ const roundN = (n: number, decimals = 2) => {
 const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCancel }) => {
     const { t } = useTranslation();
     const userLogged = getEffectiveUser();
+    const farmId = userLogged?.farm_assigned;
     const configContext = useContext(ConfigContext);
+    const dispatch: any = useDispatch();
+    const farmConfig: FarmConfiguration | null = useSelector((s: any) => s.Configurations.farmConfig);
 
     const [loading, setLoading] = useState<boolean>(true);
     const [recipes, setRecipes] = useState<any[]>([]);
     const [subwarehouses, setSubwarehouses] = useState<any[]>([]);
     const [products, setProducts] = useState<any[]>([]);
     const [productsMap, setProductsMap] = useState<Record<string, any>>({});
+    const [recipeProductsMap, setRecipeProductsMap] = useState<Record<string, any>>({});
     const [selectedRecipe, setSelectedRecipe] = useState<any | null>(null);
     const [originalRecipePercentages, setOriginalRecipePercentages] = useState<Record<string, number>>({});
 
@@ -76,6 +84,13 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
     const [newRecipeStage, setNewRecipeStage] = useState<string>('general');
     const [savingRecipe, setSavingRecipe] = useState<boolean>(false);
     const [fetchingNextCode, setFetchingNextCode] = useState<boolean>(false);
+    const weightUnit = farmConfig?.defaultWeightUnit ?? DEFAULT_FARM_CONFIG.defaultWeightUnit;
+
+    useEffect(() => {
+        if (farmId && !farmConfig) {
+            dispatch(fetchFarmConfig(farmId));
+        }
+    }, [dispatch, farmConfig, farmId]);
 
     const handleSelectNewRecipeMode = async () => {
         setRecipeSaveMode('new');
@@ -289,12 +304,24 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
         if (!configContext || !userLogged) return;
         try {
             setLoading(true);
-            const [recipesResponse, mainWhResponse, subwarehousesResponse] = await Promise.all([
+            const [recipesResponse, mainWhResponse, subwarehousesResponse, feedingProductsResponse] = await Promise.all([
                 configContext.axiosHelper.get(`${configContext.apiUrl}/${FEEDING_PACKAGE_URLS.findByFarm(userLogged.farm_assigned)}`),
                 configContext.axiosHelper.get(`${configContext.apiUrl}/farm/get_main_warehouse/${userLogged.farm_assigned}`),
                 configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/find_farm_subwarehouses/${userLogged.farm_assigned}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/warehouse/feeding_products/${userLogged.farm_assigned}`),
             ]);
             setRecipes((recipesResponse.data.data || []).filter((r: any) => r.is_active));
+
+            // Las recetas pueden traer solo el id del ingrediente. Conservamos
+            // este catálogo independiente del almacén para resolver sus datos.
+            const recipeProductMap: Record<string, any> = {};
+            for (const product of feedingProductsResponse.data.data || []) {
+                const productId = product._id || product.id;
+                if (productId) recipeProductMap[productId] = product;
+                if (product._id) recipeProductMap[product._id] = product;
+                if (product.id) recipeProductMap[product.id] = product;
+            }
+            setRecipeProductsMap(recipeProductMap);
 
             const mainWarehouseId: string = mainWhResponse.data.data;
             const allSubwarehouses: any[] = subwarehousesResponse.data.data || [];
@@ -342,8 +369,12 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
 
     const handleWarehouseChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         formik.handleChange(e);
-        setIngredients([]);
-        setPreselectedIds([]);
+        // Los ingredientes de una receta no dependen del almacén origen. Al
+        // elegirlo después de la receta, conservarlos para poder preparar el lote.
+        if (!selectedRecipe) {
+            setIngredients([]);
+            setPreselectedIds([]);
+        }
         const warehouseId = e.target.value;
         if (warehouseId) loadInventoryForWarehouse(warehouseId);
         else { setProducts([]); setProductsMap({}); }
@@ -366,7 +397,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
     };
 
     const buildIngredientRow = (product: any, quantity: number, averagePrice?: number): IngredientRow => {
-        const pid = product.id || product._id;
+        const pid = product._id || product.id;
         return {
             productId: pid,
             code: product.code || '',
@@ -393,8 +424,20 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
             setPreselectedIds([]);
             return;
         }
-        const recipe = recipes.find(r => r._id === recipeId);
-        if (!recipe) return;
+        const listedRecipe = recipes.find(r => r._id === recipeId);
+        if (!listedRecipe || !configContext) return;
+
+        // El listado de recetas puede incluir `feeding` únicamente como id.
+        // El detalle entrega el producto poblado (nombre, código e imagen).
+        let recipe = listedRecipe;
+        try {
+            const response = await configContext.axiosHelper.get(
+                `${configContext.apiUrl}/${FEEDING_PACKAGE_URLS.findById(recipeId)}`
+            );
+            recipe = response.data.data || listedRecipe;
+        } catch (error) {
+            logger.error('Error loading recipe details:', error);
+        }
         setSelectedRecipe(recipe);
 
         const recipeFeedings = recipe.feedings || [];
@@ -409,9 +452,10 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
         const rows: IngredientRow[] = recipeFeedings
             .map((f: any) => {
                 const rawRef = f.feeding?._id || f.feeding?.id || f.feeding;
-                const product = productsMap[rawRef] || f.feeding;
+                const populatedProduct = typeof f.feeding === 'object' ? f.feeding : undefined;
+                const product = productsMap[rawRef] || recipeProductsMap[rawRef] || populatedProduct;
                 if (!product) return null;
-                const pid = product.id || product._id;
+                const pid = product._id || product.id || rawRef;
                 const pct = f.percentage ?? 0;
                 const qty = roundN((baseBatch * pct) / 100, 4);
                 return {
@@ -440,18 +484,18 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
     const openSelectIngredients = () => setSelectIngredientsOpen(true);
 
     const handleIngredientsSelection = async (selectedRows: any[]) => {
-        const selectedIds = selectedRows.map(r => r.id || r._id);
+        const selectedIds = selectedRows.map(r => r._id || r.id);
 
         // Mantener filas existentes que sigan seleccionadas, agregar nuevas
         const existing = ingredients.filter(i => selectedIds.includes(i.productId));
         const existingIds = new Set(existing.map(i => i.productId));
-        const newRowsRaw = selectedRows.filter(r => !existingIds.has(r.id || r._id));
+        const newRowsRaw = selectedRows.filter(r => !existingIds.has(r._id || r.id));
 
         let newRows: IngredientRow[] = [];
         if (newRowsRaw.length > 0) {
-            const newIds = newRowsRaw.map(r => r.id || r._id);
+            const newIds = newRowsRaw.map(r => r._id || r.id);
             const prices = await fetchAveragePrices(newIds);
-            newRows = newRowsRaw.map(r => buildIngredientRow(r, 0, prices[r.id || r._id]));
+            newRows = newRowsRaw.map(r => buildIngredientRow(r, 0, prices[r._id || r.id]));
         }
 
         const merged = [...existing, ...newRows];
@@ -539,7 +583,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
                     )}
                     {selectedRecipe && (
                         <div className="mt-2">
-                            <Label className="form-label">{t('feeding.preparation.form.field.targetBatch')}</Label>
+                    <Label className="form-label">{t('feeding.preparation.form.field.targetBatch', { unit: weightUnit })}</Label>
                             <div className="input-group">
                                 <Input
                                     type="text"
@@ -548,7 +592,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
                                     onChange={e => handleTargetBatchChange(e.target.value)}
                                     placeholder="0.00"
                                 />
-                                <span className="input-group-text">kg</span>
+                                <span className="input-group-text">{weightUnit}</span>
                             </div>
                             <small className="text-muted">{t('feeding.preparation.form.field.targetBatchHint')}</small>
                         </div>
@@ -582,7 +626,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
                     </div>
                     <div className="d-flex align-items-center gap-3">
                         <span className="small text-muted">
-                            {t('feeding.preparation.form.batchTotal')}: <strong>{batchSize.toFixed(2)} kg</strong>
+                            {t('feeding.preparation.form.batchTotal')}: <strong>{batchSize.toFixed(2)} {weightUnit}</strong>
                         </span>
                         <Button color="primary" size="sm" type="button" onClick={openSelectIngredients}>
                             <i className="ri-add-line me-1" />{t('feeding.preparation.form.selectIngredients')}
@@ -718,7 +762,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
             {/* Producido + fecha + responsable */}
             <div className="d-flex gap-3 mt-3">
                 <div className="w-50">
-                    <Label className="form-label">{t('feeding.preparation.form.field.producedAmount')}</Label>
+                    <Label className="form-label">{t('feeding.preparation.form.field.producedAmount', { unit: weightUnit })}</Label>
                     <div className="input-group">
                         <Input
                             type="number"
@@ -730,7 +774,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
                             onBlur={formik.handleBlur}
                             invalid={formik.touched.actualYield && !!formik.errors.actualYield}
                         />
-                        <span className="input-group-text">kg</span>
+                        <span className="input-group-text">{weightUnit}</span>
                     </div>
                     {formik.touched.actualYield && formik.errors.actualYield && (
                         <div className="text-danger small mt-1">{formik.errors.actualYield as string}</div>
@@ -773,12 +817,12 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
                             <div className="col">
                                 <div className="text-muted small">{t('feeding.preparation.form.waste')}</div>
                                 <div className="fs-5 fw-bold text-warning">
-                                    {shrinkage.toFixed(2)} kg
+                                    {shrinkage.toFixed(2)} {weightUnit}
                                     <span className="ms-2 small">({shrinkagePercentage.toFixed(2)}%)</span>
                                 </div>
                             </div>
                             <div className="col border-start">
-                                <div className="text-muted small">{t('feeding.preparation.form.costPerKgProduced')}</div>
+                                <div className="text-muted small">{t('feeding.preparation.form.costPerKgProduced', { unit: weightUnit })}</div>
                                 <div className="fs-5 fw-bold text-success">${costPerKgEstimated.toFixed(2)}</div>
                             </div>
                             <div className="col border-start">

@@ -14,6 +14,7 @@ import { Badge, Button, Card, CardBody, CardHeader, Container, Modal, ModalBody,
 import GroupWithDrawForm from "Components/Common/Forms/GroupWithdrawForm";
 import GroupInsertForm from "Components/Common/Forms/GroupInsertForm";
 import GroupTransferForm from "Components/Common/Forms/GroupTransferForm";
+import GroupBasicEditModal from "Components/Common/Forms/GroupBasicEditModal";
 import { useTranslation } from "react-i18next";
 
 const isTablet = () => {
@@ -29,7 +30,7 @@ const ViewGroups = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [tabletMode, setTabletMode] = useState(isTablet);
-    const [modals, setModals] = useState({ create: false, move: false, asign: false, withdraw: false });
+    const [modals, setModals] = useState({ create: false, move: false, asign: false, withdraw: false, edit: false });
     const [groups, setGroups] = useState<GroupData[]>([])
     const [selectedGroup, setSelectedGroup] = useState<any>({})
 
@@ -85,6 +86,11 @@ const ViewGroups = () => {
             accessor: "action",
             render: (_: any, row: any) => (
                 <div className="d-flex gap-1">
+                    <Button id={`edit-button-${row._id}`} className="btn-icon btn-secondary" onClick={() => { setSelectedGroup(row); toggleModal('edit'); }}>
+                        <i className="ri-edit-line align-middle"></i>
+                    </Button>
+                    <UncontrolledTooltip target={`edit-button-${row._id}`}>{t('common.button.edit')}</UncontrolledTooltip>
+
                     <Button id={`move-button-${row._id}`} className="btn-icon btn-warning" onClick={() => { setSelectedGroup(row); toggleModal('move'); }}>
                         <i className="ri-arrow-left-right-line align-middle"></i>
                     </Button>
@@ -201,6 +207,8 @@ const ViewGroups = () => {
                     {/* <GroupWithDrawForm groupId={selectedGroup?._id} onSave={() => { fetchData(); toggleModal('withdraw') }} /> */}
                 </ModalBody>
             </Modal>
+
+            <GroupBasicEditModal isOpen={modals.edit} group={selectedGroup} fullscreen={tabletMode} onClose={() => toggleModal('edit', false)} onSave={() => { fetchData(); toggleModal('edit', false); }} />
         </div>
     )
 }
