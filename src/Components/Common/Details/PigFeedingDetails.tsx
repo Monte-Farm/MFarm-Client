@@ -12,6 +12,10 @@ import BasicLineChartCard from "../Graphics/BasicLineChartCard";
 import DonutChartCard from "../Graphics/DonutChartCard";
 import FeedAdministrationsCard from "../Shared/FeedAdministrationsCard";
 import { useTranslation } from "react-i18next";
+import { useDispatch, useSelector } from "react-redux";
+import { DEFAULT_FARM_CONFIG } from "common/configuration_defaults";
+import { FarmConfiguration } from "common/data_interfaces";
+import { fetchFarmConfig } from "slices/configurations/thunk";
 
 type Stage = 'piglet' | 'sow' | 'nursery' | 'grower' | 'finisher' | 'general';
 
@@ -24,10 +28,20 @@ const PigFeedingDetails: React.FC<PigFeedingDetailsProps> = ({ pigId, pigStage }
     const { t } = useTranslation();
     const configContext = useContext(ConfigContext);
     const userLogged = getEffectiveUser();
+    const farmId = userLogged?.farm_assigned;
+    const dispatch: any = useDispatch();
+    const farmConfig: FarmConfiguration | null = useSelector((s: any) => s.Configurations.farmConfig);
     const [loading, setLoading] = useState<boolean>(true);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [administrations, setAdministrations] = useState<FeedAdministrationHistoryEntry[]>([]);
     const [feedingStats, setFeedingStats] = useState<any | null>(null);
+    const weightUnit = farmConfig?.defaultWeightUnit ?? DEFAULT_FARM_CONFIG.defaultWeightUnit;
+
+    useEffect(() => {
+        if (farmId && !farmConfig) {
+            dispatch(fetchFarmConfig(farmId));
+        }
+    }, [dispatch, farmConfig, farmId]);
 
     const fetchFeedingInfo = async () => {
         if (!configContext || !userLogged) return;
@@ -59,13 +73,13 @@ const PigFeedingDetails: React.FC<PigFeedingDetailsProps> = ({ pigId, pigStage }
                 <>
                     <Row className="g-3 mb-3">
                         <Col md={6} lg>
-                            <StatKpiCard title={t('pigs.kpi.foodConsumed')} value={feedingStats.kpis?.totalConsumed || 0} suffix="kg" icon={<RiRestaurantLine size={20} style={{ color: '#f59e0b' }} />} animateValue decimals={1} />
+                            <StatKpiCard title={t('pigs.kpi.foodConsumed')} value={feedingStats.kpis?.totalConsumed || 0} suffix={weightUnit} icon={<RiRestaurantLine size={20} style={{ color: '#f59e0b' }} />} animateValue decimals={1} />
                         </Col>
                         <Col md={6} lg>
-                            <StatKpiCard title={t('pigs.kpi.dailyAvg')} value={feedingStats.kpis?.avgPerDay || 0} suffix="kg/día" icon={<RiScales3Line size={20} style={{ color: '#0ea5e9' }} />} animateValue decimals={2} />
+                            <StatKpiCard title={t('pigs.kpi.dailyAvg')} value={feedingStats.kpis?.avgPerDay || 0} suffix={t('pigs.kpi.weightPerDay', { unit: weightUnit })} icon={<RiScales3Line size={20} style={{ color: '#0ea5e9' }} />} animateValue decimals={2} />
                         </Col>
                         <Col md={6} lg>
-                            <StatKpiCard title={t('pigs.kpi.feedConversion')} value={feedingStats.kpis?.fcr || feedingStats.kpis?.feedConversionRatio || 0} suffix="kg/kg" icon={<RiExchangeLine size={20} style={{ color: '#ef4444' }} />} animateValue decimals={2} />
+                            <StatKpiCard title={t('pigs.kpi.feedConversion')} value={feedingStats.kpis?.fcr || feedingStats.kpis?.feedConversionRatio || 0} suffix={t('pigs.kpi.weightRatio', { unit: weightUnit })} icon={<RiExchangeLine size={20} style={{ color: '#ef4444' }} />} animateValue decimals={2} />
                         </Col>
                     </Row>
                     <Row className="g-3 mb-3">
@@ -73,7 +87,7 @@ const PigFeedingDetails: React.FC<PigFeedingDetailsProps> = ({ pigId, pigStage }
                             <BasicLineChartCard
                                 title={t('pigs.kpi.cumulativeConsumption')}
                                 data={[{ id: t('pigs.kpi.foodConsumed'), color: '#f59e0b', data: (feedingStats.cumulativeConsumption || []).map((p: any) => ({ x: p.date, y: p.value })) }]}
-                                yLabel="Kg acumulados"
+                                yLabel={t('pigs.kpi.cumulativeWeightAxis', { unit: weightUnit })}
                                 xLabel={t('common.field.date')}
                                 height={280} curve="natural" pointSize={5} strokeWidth={2}
                                 enableGrid enablePoints enableArea showLegend={false}
@@ -86,7 +100,7 @@ const PigFeedingDetails: React.FC<PigFeedingDetailsProps> = ({ pigId, pigStage }
                                 data={feedingStats.distributionByType || []}
                                 legendItems={(feedingStats.distributionByType || []).map((d: any) => ({
                                     label: d.label,
-                                    value: `${d.value} kg`,
+                                    value: `${d.value} ${weightUnit}`,
                                     percentage: feedingStats.kpis?.totalConsumed ? `${((d.value / feedingStats.kpis.totalConsumed) * 100).toFixed(1)}%` : '0%',
                                 }))}
                                 className="h-100 border-0 shadow-sm" headerBgColor="#ffffff"
@@ -96,7 +110,7 @@ const PigFeedingDetails: React.FC<PigFeedingDetailsProps> = ({ pigId, pigStage }
                 </>
             )}
             <div style={{ minHeight: "400px" }}>
-                <FeedAdministrationsCard administrations={administrations} targetType="pig" targetId={pigId} targetStage={pigStage} onAdministered={fetchFeedingInfo} />
+                <FeedAdministrationsCard administrations={administrations} targetType="pig" targetId={pigId} targetStage={pigStage} defaultWeightUnit={weightUnit} onAdministered={fetchFeedingInfo} />
             </div>
             <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
         </>

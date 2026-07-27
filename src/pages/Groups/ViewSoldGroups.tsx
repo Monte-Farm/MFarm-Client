@@ -13,6 +13,7 @@ import { Badge, Button, Card, CardBody, Container, UncontrolledTooltip } from "r
 import KPI from "Components/Common/Graphics/Kpi";
 import { FaArrowDown, FaArrowUp, FaBalanceScale, FaLayerGroup, FaMars, FaPiggyBank, FaVenus, FaWeight } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
+import GroupBasicEditModal from "Components/Common/Forms/GroupBasicEditModal";
 
 const AREA_COLORS: Record<string, string> = {
     gestation: 'info', farrowing: 'primary', maternity: 'primary',
@@ -36,6 +37,8 @@ const ViewSoldGroups = () => {
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
     const [soldGroups, setSoldGroups] = useState<GroupData[]>([])
     const [stats, setStats] = useState<any>({})
+    const [selectedGroup, setSelectedGroup] = useState<any>({})
+    const [editModalOpen, setEditModalOpen] = useState(false)
 
     const groupsColumns: Column<any>[] = [
         { header: t('groups.column.code'), accessor: 'code', type: 'text', isFilterable: true },
@@ -89,6 +92,11 @@ const ViewSoldGroups = () => {
             accessor: "action",
             render: (_: any, row: any) => (
                 <div className="d-flex gap-1">
+                    <Button id={`edit-button-${row._id}`} className="btn-icon btn-secondary" onClick={() => { setSelectedGroup(row); setEditModalOpen(true); }}>
+                        <i className="ri-edit-line align-middle"></i>
+                    </Button>
+                    <UncontrolledTooltip target={`edit-button-${row._id}`}>{t('common.button.edit')}</UncontrolledTooltip>
+
                     <Button id={`details-button-${row._id}`} className="btn-icon btn-success" onClick={() => navigate(`/groups/group_details/${row._id}`)}>
                         <i className="ri-eye-fill align-middle"></i>
                     </Button>
@@ -160,6 +168,7 @@ const ViewSoldGroups = () => {
                     </CardBody>
                 </Card>
             </Container>
+            <GroupBasicEditModal isOpen={editModalOpen} group={selectedGroup} onClose={() => setEditModalOpen(false)} onSave={() => { fetchData(); setEditModalOpen(false); }} />
         </div>
     )
 }

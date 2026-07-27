@@ -93,13 +93,20 @@ export const getGeneralStatusColumn = (t: TFunc): Column<any> => ({
 export const getActionsColumn = (
     navigate: (path: string) => void,
     setSelectedGroup: (group: any) => void,
-    toggleModal: (modalName: 'create' | 'move' | 'asign' | 'withdraw', state?: boolean) => void,
+    toggleModal: (modalName: 'create' | 'move' | 'asign' | 'withdraw' | 'edit', state?: boolean) => void,
     t: TFunc
 ): Column<any> => ({
     header: t('groups.column.actions'),
     accessor: "action",
     render: (_: any, row: any) => (
         <div className="d-flex gap-1">
+            <Button id={`edit-button-${row._id}`} className="btn-icon btn-secondary" onClick={() => { setSelectedGroup(row); toggleModal('edit'); }}>
+                <i className="ri-edit-line align-middle"></i>
+            </Button>
+            <UncontrolledTooltip target={`edit-button-${row._id}`}>
+                {t('common.button.edit')}
+            </UncontrolledTooltip>
+
             <Button id={`move-button-${row._id}`} className="btn-icon btn-warning" onClick={() => { setSelectedGroup(row); toggleModal('move'); }}>
                 <i className="ri-arrow-left-right-line align-middle"></i>
             </Button>

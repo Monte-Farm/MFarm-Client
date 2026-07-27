@@ -14,6 +14,7 @@ interface Props {
     targetType: 'group' | 'litter' | 'pig';
     targetId: string;
     targetStage?: Stage;
+    defaultWeightUnit?: 'kg' | 'lb';
     onAdministered: () => void;
     disabled?: boolean;
 }
@@ -23,6 +24,7 @@ const FeedAdministrationsCard = ({
     targetType,
     targetId,
     targetStage,
+    defaultWeightUnit = 'kg',
     onAdministered,
     disabled = false,
 }: Props) => {
@@ -70,7 +72,7 @@ const FeedAdministrationsCard = ({
             type: 'currency',
             bgColor: '#e3f2fd',
             render: (_, row) => (
-                <span className="fw-semibold">{row.quantity.toFixed(2)} {row.preparedProduct?.unit_measurement || 'kg'}</span>
+                <span className="fw-semibold">{row.quantity.toFixed(2)} {row.preparedProduct?.unit_measurement || defaultWeightUnit}</span>
             ),
         },
         {
@@ -135,6 +137,7 @@ const FeedAdministrationsCard = ({
                         targetType={targetType}
                         targetId={targetId}
                         targetStage={targetStage}
+                        defaultWeightUnit={defaultWeightUnit}
                         isBulk={false}
                         onSave={() => {
                             setIsModalOpen(false);
