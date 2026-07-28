@@ -3243,6 +3243,12 @@
       "sexFemale": "Fêmea",
       "breedAll": "Todas"
     },
+    "tab": {
+      "all": "Todas",
+      "inseminated": "Inseminadas",
+      "pregnant": "Prenhes",
+      "active": "Ativas"
+    },
     "action": {
       "exportData": "Exportar dados",
       "exportPdf": "Exportar PDF",
