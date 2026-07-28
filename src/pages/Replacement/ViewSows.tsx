@@ -6,7 +6,7 @@ import BreadCrumb from "Components/Common/Shared/BreadCrumb"
 import { useContext, useEffect, useState } from "react"
 import {
     Button, Card, CardBody, CardHeader, Container,
-    Modal, ModalBody, ModalHeader, Spinner, Badge
+    Modal, ModalBody, ModalHeader, Spinner, Badge, Nav, NavItem, NavLink
 } from "reactstrap"
 import { getEffectiveUser } from "helpers/impersonation_helper"
 import { FiCheckCircle, FiAlertCircle } from "react-icons/fi"
@@ -34,6 +34,7 @@ const STATUS_COLORS: Record<string, string> = {
     alive: 'success', discarded: 'warning', dead: 'danger',
 };
 type ReportSex = 'female' | 'male';
+type SowTab = 'all' | 'inseminated' | 'pregnant' | 'active';
 
 const ViewSows = () => {
     const { t } = useTranslation();
@@ -45,7 +46,13 @@ const ViewSows = () => {
     const userLogged = getEffectiveUser();
     const [loading, setLoading] = useState<boolean>(true)
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
-    const [pigs, setPigs] = useState<PigData[]>([])
+    const [sowsByTab, setSowsByTab] = useState<Record<SowTab, PigData[]>>({
+        all: [],
+        inseminated: [],
+        pregnant: [],
+        active: [],
+    });
+    const [activeTab, setActiveTab] = useState<SowTab>('all');
     const [stats, setStats] = useState<any>()
     const [filteredPigs, setFilteredPigs] = useState<PigData[]>([])
     const [fileURL, setFileURL] = useState<string>('')
@@ -139,13 +146,21 @@ const ViewSows = () => {
         if (!configContext) return
         try {
             setLoading(true)
-            const [pigsResponse, statsResponse] = await Promise.all([
+            const [pigsResponse, pregnantResponse, inseminatedResponse, activeResponse, statsResponse] = await Promise.all([
                 configContext.axiosHelper.get(`${configContext.apiUrl}/pig/find_sows/${userLogged.farm_assigned}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/pig/find_pregnant_sows/${userLogged.farm_assigned}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/pig/find_sows_with_active_insemination/${userLogged.farm_assigned}`),
+                configContext.axiosHelper.get(`${configContext.apiUrl}/pig/find_available_sows_for_insemination/${userLogged.farm_assigned}`),
                 configContext.axiosHelper.get(`${configContext.apiUrl}/pig/get_breeder_stats/${userLogged.farm_assigned}?sex=female`),
             ])
 
-            setPigs(pigsResponse.data.data)
-            setFilteredPigs(pigsResponse.data.data)
+            const allSows = pigsResponse.data.data ?? [];
+            setSowsByTab({
+                all: allSows,
+                pregnant: pregnantResponse.data.data ?? [],
+                inseminated: inseminatedResponse.data.data ?? [],
+                active: activeResponse.data.data ?? [],
+            });
             setStats(statsResponse.data.data)
         } catch (error) {
             logger.error('Error fetching pigs: ', { error });
@@ -183,18 +198,20 @@ const ViewSows = () => {
         fetchData()
     }, [])
 
+    const activeSows = sowsByTab[activeTab];
+
     useEffect(() => {
         applyFilters()
-    }, [searchTerm, filters, pigs])
+    }, [searchTerm, filters, activeSows])
 
     const applyFilters = () => {
-        let result = [...pigs]
+        let result = [...activeSows]
 
         if (searchTerm) {
             const term = searchTerm.toLowerCase()
             result = result.filter(pig =>
-                pig.code.toLowerCase().includes(term) ||
-                pig.breed.toLowerCase().includes(term) ||
+                pig.code?.toLowerCase().includes(term) ||
+                pig.breed?.toLowerCase().includes(term) ||
                 (pig.observations && pig.observations.toLowerCase().includes(term))
             )
         }
@@ -229,6 +246,12 @@ const ViewSows = () => {
         setFilters({ status: "", currentStage: "", origin: "", sex: "", breed: "", weightRange: [0, 500] })
         setPopoverOpen(false)
     }
+
+    const handleTabChange = (tab: SowTab) => {
+        if (tab === activeTab) return;
+        setActiveTab(tab);
+        setSelectedPigs([]);
+    };
 
     if (loading) {
         return (
@@ -338,10 +361,29 @@ const ViewSows = () => {
                                 )}
                             </Button>
                         </div>
+                        <Nav tabs className="mt-3">
+                            {([
+                                ['all', 'replacement.tab.all'],
+                                ['inseminated', 'replacement.tab.inseminated'],
+                                ['pregnant', 'replacement.tab.pregnant'],
+                                ['active', 'replacement.tab.active'],
+                            ] as [SowTab, string][]).map(([tab, label]) => (
+                                <NavItem key={tab}>
+                                    <NavLink
+                                        active={activeTab === tab}
+                                        onClick={() => handleTabChange(tab)}
+                                        style={{ cursor: 'pointer' }}
+                                    >
+                                        {t(label)}
+                                        <Badge color="secondary" className="ms-2">{sowsByTab[tab].length}</Badge>
+                                    </NavLink>
+                                </NavItem>
+                            ))}
+                        </Nav>
                     </CardHeader>
 
-                    <CardBody className={pigs.length === 0 ? 'd-flex justify-content-center align-items-center' : ''}>
-                        {pigs.length === 0 ? (
+                    <CardBody className={activeSows.length === 0 ? 'd-flex justify-content-center align-items-center' : ''}>
+                        {activeSows.length === 0 ? (
                             <>
                                 <FiAlertCircle className="text-muted" size={22} />
                                 <span className="fs-5 text-black text-muted text-center rounded-5 ms-2">
@@ -350,6 +392,7 @@ const ViewSows = () => {
                             </>
                         ) : (
                             <SelectableCustomTable
+                                key={activeTab}
                                 columns={pigColumns}
                                 data={filteredPigs}
                                 showSearchAndFilter={false}
@@ -358,6 +401,7 @@ const ViewSows = () => {
                                 selectionMode="multiple"
                                 selectionOnlyOnCheckbox={true}
                                 onSelect={setSelectedPigs}
+                                resetSelectionTrigger={activeTab}
                             />
                         )}
                     </CardBody>
