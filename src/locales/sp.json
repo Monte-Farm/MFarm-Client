@@ -3248,6 +3248,12 @@
       "sexFemale": "Hembra",
       "breedAll": "Todas"
     },
+    "tab": {
+      "all": "Todas",
+      "inseminated": "Inseminadas",
+      "pregnant": "Embarazadas",
+      "active": "Activas"
+    },
     "action": {
       "exportData": "Exportar datos",
       "exportPdf": "Exportar PDF",
