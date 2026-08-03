@@ -23,6 +23,7 @@ import HealthTab from "./tabs/HealthTab";
 import ReproductionTab from "./tabs/ReproductionTab";
 import WorkforceTab from "./tabs/WorkforceTab";
 import ComparisonsTab from "./tabs/ComparisonsTab";
+import CapitalAssetsTab from "./tabs/CapitalAssetsTab";
 import PDFViewer from "Components/Common/Shared/PDFViewer";
 
 const formatDateTime = (iso: string | null | undefined): string => {
@@ -40,6 +41,7 @@ const TAB_IDS = {
     reproduction: "6",
     workforce: "7",
     comparisons: "8",
+    capitalAssets: "9",
 };
 
 const PeriodClosingDetail = () => {
@@ -160,7 +162,7 @@ const PeriodClosingDetail = () => {
 
     const hasExtended = !!(snapshot.inventory || snapshot.production || snapshot.salesDetail
         || snapshot.feeding || snapshot.health || snapshot.reproduction
-        || snapshot.workforce || snapshot.comparisons);
+        || snapshot.workforce || snapshot.comparisons || snapshot.capitalAssets);
 
     return (
         <div className="page-content">
@@ -292,6 +294,11 @@ const PeriodClosingDetail = () => {
                                         <i className="ri-bar-chart-box-line me-1" />{t("finance.periodClosing.detail.tab.comparisons")}
                                     </NavLink>
                                 </NavItem>
+                                <NavItem>
+                                    <NavLink className={classnames({ active: activeTab === TAB_IDS.capitalAssets })} onClick={() => toggleTab(TAB_IDS.capitalAssets)} style={{ cursor: "pointer" }}>
+                                        <i className="ri-building-2-line me-1" />{t("finance.periodClosing.detail.tab.capitalAssets")}
+                                    </NavLink>
+                                </NavItem>
                             </>
                         )}
                     </Nav>
@@ -323,6 +330,9 @@ const PeriodClosingDetail = () => {
                             </TabPane>
                             <TabPane tabId={TAB_IDS.comparisons}>
                                 <ComparisonsTab snapshot={snapshot} isAnnual={isAnnual} />
+                            </TabPane>
+                            <TabPane tabId={TAB_IDS.capitalAssets}>
+                                <CapitalAssetsTab snapshot={snapshot} />
                             </TabPane>
                         </>
                     )}

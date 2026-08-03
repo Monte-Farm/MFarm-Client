@@ -98,6 +98,9 @@ import ViewExpenses from "pages/Expenses/ViewExpenses";
 import PeriodClosingList from "pages/Finance/PeriodClosing/PeriodClosingList";
 import PeriodClosingDetail from "pages/Finance/PeriodClosing/PeriodClosingDetail";
 
+//Finance - Capital Assets
+import ViewCapitalAssets from "pages/CapitalAssets/ViewCapitalAssets";
+
 //Reports - Sales
 import SalesReport from "pages/Reports/Sales/SalesReport";
 import ClientsReport from "pages/Reports/Sales/ClientsReport";
@@ -162,6 +165,9 @@ const authProtectedRoutes = [
   //Finance - Period Closing
   { path: '/finance/period-closing', component: <PeriodClosingList /> },
   { path: '/finance/period-closing/:closingId', component: <PeriodClosingDetail /> },
+
+  //Finance - Capital Assets
+  { path: '/finance/capital-assets', component: <ViewCapitalAssets /> },
 
   //Pigs
   { path: '/pigs/view_pigs', component: <ViewPigs /> },
