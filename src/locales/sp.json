@@ -3394,7 +3394,8 @@
         "error": "No se pudo cargar el cierre.",
         "button": {
           "back": "Regresar",
-          "reopen": "Reabrir"
+          "reopen": "Reabrir",
+          "downloadPdf": "Descargar PDF"
         },
         "badge": {
           "annual": "Cierre anual",
@@ -3416,6 +3417,12 @@
         },
         "success": {
           "reopened": "Cierre reabierto correctamente."
+        },
+        "pdfModal": {
+          "title": "Reporte de cierre de periodo"
+        },
+        "error": {
+          "pdf": "No se pudo generar el PDF del cierre."
         },
         "tab": {
           "summary": "Resumen",
