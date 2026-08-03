@@ -1112,6 +1112,7 @@ export interface ClosingSnapshot {
     workforce?: WorkforceSection;
     comparisons?: ComparisonsSection;
     monthlyEvolution?: MonthlyEvolutionItem[];
+    capitalAssets?: CapitalAssetsSection;
 }
 
 export interface PeriodClosing {
@@ -1211,4 +1212,74 @@ export interface PrecheckResponse {
     canClose: boolean;
     canForceClose: boolean;
     blockingErrors: string[];
+}
+
+// ─── Capital Assets ──────────────────────────────────────────────────────────
+
+export type AssetCategory = 'construction' | 'machinery' | 'vehicle' | 'equipment' | 'technology' | 'land' | 'other';
+
+export interface AdjustmentHistoryEntry {
+    adjustedAt: string;
+    previousMonthlyAmount: number;
+    previousRemainingMonths: number;
+    newRemainingMonths: number;
+    newMonthlyAmount: number;
+    remainingBalance: number;
+    reason?: string;
+}
+
+export interface CapitalAsset {
+    _id: string;
+    farm: string;
+    name: string;
+    description?: string;
+    category: AssetCategory;
+    acquisitionDate: string;
+    acquisitionCost: number;
+    amortizationStartDate: string;
+    totalMonths: number;
+    monthsCharged: number;
+    currentMonthlyAmount: number;
+    status: 'active' | 'amortized';
+    adjustmentHistory: AdjustmentHistoryEntry[];
+    createdBy?: string;
+    createdAt: string;
+    updatedAt: string;
+    // Computed fields returned by the detail endpoint
+    remainingBalance?: number;
+    remainingMonths?: number;
+    progressPercentage?: number;
+    totalCharged?: number;
+}
+
+export interface CapitalAssetsSummary {
+    activeAssets: number;
+    amortizedAssets: number;
+    totalMonthlyBurden: number;
+    totalAcquisitionCost: number;
+    byCategory: {
+        category: AssetCategory;
+        count: number;
+        totalAcquisitionCost: number;
+        totalMonthlyBurden: number;
+    }[];
+}
+
+// Period Closing snapshot section for capital assets
+export interface CapitalAssetsSnapshotAsset {
+    assetId: string;
+    name: string;
+    category: AssetCategory;
+    acquisitionCost: number;
+    monthlyAmount: number;
+    monthsCharged: number;
+    totalMonths: number;
+    progressPercentage: number;
+    remainingBalance: number;
+}
+
+export interface CapitalAssetsSection {
+    totalMonthlyAmortization: number;
+    activeAssetCount: number;
+    assets: CapitalAssetsSnapshotAsset[];
 }

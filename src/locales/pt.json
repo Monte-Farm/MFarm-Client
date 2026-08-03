@@ -1700,6 +1700,7 @@
     "sales": "Comercialização",
     "salesRegistered": "Histórico de vendas",
     "expenses": "Custos",
+    "capitalAssets": "Ativos de Capital",
     "periodClosure": "Fechamento de caixa",
     "pigs": "Plantel",
     "pigsInventory": "Estoque de animais",
@@ -3432,7 +3433,8 @@
           "health": "Saúde",
           "reproduction": "Reprodução",
           "workforce": "Pessoal",
-          "comparisons": "Comparações"
+          "comparisons": "Comparações",
+          "capitalAssets": "Ativos de Capital"
         },
         "audit": {
           "header": "Auditoria",
@@ -3901,6 +3903,21 @@
             "margin": "Margem média",
             "pigs": "Suínos médios",
             "kg": "Kg médios"
+          }
+        },
+        "capitalAssets": {
+          "empty": "Este fechamento não inclui dados de ativos de capital.",
+          "kpi": {
+            "totalAmortization": "Amortização do período",
+            "activeAssets": "Ativos ativos"
+          },
+          "col": {
+            "name": "Ativo",
+            "category": "Categoria",
+            "acquisitionCost": "Custo de aquisição",
+            "monthlyAmount": "Parcela mensal",
+            "progress": "Progresso",
+            "remainingBalance": "Saldo restante"
           }
         }
       },
@@ -8059,5 +8076,137 @@
       "avgWeight": "Peso médio",
       "avgPrice": "Preço médio"
     }
+  },
+  "capitalAssets": {
+    "pageTitle": "Ativos de Capital",
+    "breadcrumb": "Ativos de Capital",
+    "noData": "Nenhum ativo de capital registrado.",
+    "summary": {
+      "activeAssets": "Ativos ativos",
+      "monthlyBurden": "Encargo mensal total",
+      "totalInvestment": "Investimento total"
+    },
+    "status": {
+      "active": "Ativo",
+      "amortized": "Totalmente amortizado"
+    },
+    "category": {
+      "construction": "Construção",
+      "machinery": "Maquinário",
+      "vehicle": "Veículo",
+      "equipment": "Equipamento / Ferramentas",
+      "technology": "Tecnologia",
+      "land": "Terreno / Infraestrutura",
+      "other": "Outro"
+    },
+    "column": {
+      "name": "Nome",
+      "category": "Categoria",
+      "acquisitionCost": "Custo de aquisição",
+      "monthlyAmount": "Parcela mensal",
+      "progress": "Progresso",
+      "status": "Status",
+      "actions": "Ações"
+    },
+    "filter": {
+      "status": "Status",
+      "statusAll": "Todos os status",
+      "category": "Categoria",
+      "categoryAll": "Todas as categorias"
+    },
+    "action": {
+      "newAsset": "Novo ativo",
+      "runBackfill": "Executar backfill",
+      "backfillConfirm": "Deseja executar o backfill de amortização para todos os ativos pendentes?",
+      "backfillSuccess": "Backfill concluído: {{charged}} ativos processados.",
+      "backfillError": "Erro ao executar o backfill.",
+      "deleteConfirm": "Tem certeza que deseja excluir este ativo?",
+      "deleteBlocked": "Não é possível excluir: este ativo já possui meses cobrados."
+    },
+    "form": {
+      "createTitle": "Novo Ativo de Capital",
+      "field": {
+        "name": "Nome do ativo",
+        "description": "Descrição",
+        "category": "Categoria",
+        "acquisitionDate": "Data de aquisição",
+        "acquisitionCost": "Custo de aquisição",
+        "amortizationStartDate": "Data de início da amortização",
+        "totalMonths": "Meses totais de amortização",
+        "monthlyPreview": "Parcela mensal calculada"
+      },
+      "validation": {
+        "nameRequired": "O nome é obrigatório.",
+        "categoryRequired": "A categoria é obrigatória.",
+        "acquisitionDateRequired": "A data de aquisição é obrigatória.",
+        "acquisitionCostRequired": "O custo de aquisição é obrigatório.",
+        "acquisitionCostPositive": "O custo deve ser maior que 0.",
+        "amortizationStartDateRequired": "A data de início da amortização é obrigatória.",
+        "totalMonthsRequired": "Os meses totais são obrigatórios.",
+        "totalMonthsMin": "Deve ser pelo menos 1 mês."
+      },
+      "success": "Ativo de capital criado com sucesso.",
+      "error": "Erro ao criar ativo de capital."
+    },
+    "edit": {
+      "title": "Editar Ativo",
+      "success": "Ativo atualizado com sucesso.",
+      "error": "Erro ao atualizar ativo."
+    },
+    "detail": {
+      "breadcrumb": "Detalhe do Ativo",
+      "kpi": {
+        "acquisitionCost": "Custo de aquisição",
+        "monthlyAmount": "Parcela mensal",
+        "progress": "Progresso de amortização",
+        "remainingBalance": "Saldo restante",
+        "monthsRemaining": "Meses restantes",
+        "monthsCharged": "Meses cobrados"
+      },
+      "history": {
+        "header": "Histórico de ajustes",
+        "empty": "Nenhum ajuste registrado.",
+        "col": {
+          "date": "Data",
+          "prevMonthly": "Parcela anterior",
+          "newMonthly": "Nova parcela",
+          "prevMonths": "Meses anteriores",
+          "newMonths": "Novos meses",
+          "balance": "Saldo no ajuste",
+          "reason": "Motivo"
+        },
+        "noReason": "Sem motivo registrado"
+      }
+    },
+    "adjust": {
+      "title": "Ajustar meses de amortização",
+      "currentState": {
+        "header": "Estado atual",
+        "remainingBalance": "Saldo restante",
+        "currentMonthly": "Parcela mensal atual",
+        "monthsRemaining": "Meses restantes"
+      },
+      "field": {
+        "newMonths": "Novos meses restantes",
+        "reason": "Motivo do ajuste (opcional)"
+      },
+      "preview": {
+        "label": "Nova parcela mensal calculada"
+      },
+      "validation": {
+        "newMonthsRequired": "Os meses restantes são obrigatórios.",
+        "newMonthsMin": "Deve ser pelo menos 1 mês."
+      },
+      "success": "Ajuste registrado com sucesso.",
+      "error": "Erro ao registrar ajuste."
+    },
+    "delete": {
+      "success": "Ativo excluído com sucesso.",
+      "error": "Erro ao excluir ativo."
+    },
+    "loading": "Carregando ativos de capital...",
+    "loadingDetail": "Carregando detalhe do ativo...",
+    "errorLoad": "Erro ao carregar ativos de capital.",
+    "errorDetail": "Erro ao carregar detalhe do ativo."
   }
 }

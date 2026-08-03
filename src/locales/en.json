@@ -1700,6 +1700,7 @@
     "sales": "Sales",
     "salesRegistered": "Sales history",
     "expenses": "Expenses",
+    "capitalAssets": "Capital Assets",
     "periodClosure": "Period close",
     "pigs": "Herd",
     "pigsInventory": "Inventory",
@@ -3432,7 +3433,8 @@
           "health": "Health",
           "reproduction": "Reproduction",
           "workforce": "Workforce",
-          "comparisons": "Comparisons"
+          "comparisons": "Comparisons",
+          "capitalAssets": "Capital Assets"
         },
         "audit": {
           "header": "Audit",
@@ -3901,6 +3903,21 @@
             "margin": "Avg. margin",
             "pigs": "Avg. pigs",
             "kg": "Avg. kg"
+          }
+        },
+        "capitalAssets": {
+          "empty": "This closing does not include capital asset data.",
+          "kpi": {
+            "totalAmortization": "Period amortization",
+            "activeAssets": "Active assets"
+          },
+          "col": {
+            "name": "Asset",
+            "category": "Category",
+            "acquisitionCost": "Acquisition cost",
+            "monthlyAmount": "Monthly charge",
+            "progress": "Progress",
+            "remainingBalance": "Remaining balance"
           }
         }
       },
@@ -8059,5 +8076,137 @@
       "avgWeight": "Average weight",
       "avgPrice": "Average price"
     }
+  },
+  "capitalAssets": {
+    "pageTitle": "Capital Assets",
+    "breadcrumb": "Capital Assets",
+    "noData": "No capital assets registered.",
+    "summary": {
+      "activeAssets": "Active assets",
+      "monthlyBurden": "Total monthly burden",
+      "totalInvestment": "Total investment"
+    },
+    "status": {
+      "active": "Active",
+      "amortized": "Fully amortized"
+    },
+    "category": {
+      "construction": "Construction",
+      "machinery": "Machinery",
+      "vehicle": "Vehicle",
+      "equipment": "Equipment / Tools",
+      "technology": "Technology",
+      "land": "Land / Infrastructure",
+      "other": "Other"
+    },
+    "column": {
+      "name": "Name",
+      "category": "Category",
+      "acquisitionCost": "Acquisition cost",
+      "monthlyAmount": "Monthly charge",
+      "progress": "Progress",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "filter": {
+      "status": "Status",
+      "statusAll": "All statuses",
+      "category": "Category",
+      "categoryAll": "All categories"
+    },
+    "action": {
+      "newAsset": "New asset",
+      "runBackfill": "Run backfill",
+      "backfillConfirm": "Run the amortization backfill for all pending assets?",
+      "backfillSuccess": "Backfill complete: {{charged}} assets processed.",
+      "backfillError": "Error running the backfill.",
+      "deleteConfirm": "Are you sure you want to delete this asset?",
+      "deleteBlocked": "Cannot delete: this asset already has months charged."
+    },
+    "form": {
+      "createTitle": "New Capital Asset",
+      "field": {
+        "name": "Asset name",
+        "description": "Description",
+        "category": "Category",
+        "acquisitionDate": "Acquisition date",
+        "acquisitionCost": "Acquisition cost",
+        "amortizationStartDate": "Amortization start date",
+        "totalMonths": "Total amortization months",
+        "monthlyPreview": "Calculated monthly charge"
+      },
+      "validation": {
+        "nameRequired": "Name is required.",
+        "categoryRequired": "Category is required.",
+        "acquisitionDateRequired": "Acquisition date is required.",
+        "acquisitionCostRequired": "Acquisition cost is required.",
+        "acquisitionCostPositive": "Cost must be greater than 0.",
+        "amortizationStartDateRequired": "Amortization start date is required.",
+        "totalMonthsRequired": "Total months is required.",
+        "totalMonthsMin": "Must be at least 1 month."
+      },
+      "success": "Capital asset created successfully.",
+      "error": "Error creating capital asset."
+    },
+    "edit": {
+      "title": "Edit Asset",
+      "success": "Asset updated successfully.",
+      "error": "Error updating asset."
+    },
+    "detail": {
+      "breadcrumb": "Asset Detail",
+      "kpi": {
+        "acquisitionCost": "Acquisition cost",
+        "monthlyAmount": "Monthly charge",
+        "progress": "Amortization progress",
+        "remainingBalance": "Remaining balance",
+        "monthsRemaining": "Months remaining",
+        "monthsCharged": "Months charged"
+      },
+      "history": {
+        "header": "Adjustment history",
+        "empty": "No adjustments recorded.",
+        "col": {
+          "date": "Date",
+          "prevMonthly": "Previous charge",
+          "newMonthly": "New charge",
+          "prevMonths": "Previous months",
+          "newMonths": "New months",
+          "balance": "Balance at adjustment",
+          "reason": "Reason"
+        },
+        "noReason": "No reason recorded"
+      }
+    },
+    "adjust": {
+      "title": "Adjust amortization months",
+      "currentState": {
+        "header": "Current state",
+        "remainingBalance": "Remaining balance",
+        "currentMonthly": "Current monthly charge",
+        "monthsRemaining": "Months remaining"
+      },
+      "field": {
+        "newMonths": "New remaining months",
+        "reason": "Reason for adjustment (optional)"
+      },
+      "preview": {
+        "label": "Calculated new monthly charge"
+      },
+      "validation": {
+        "newMonthsRequired": "Remaining months is required.",
+        "newMonthsMin": "Must be at least 1 month."
+      },
+      "success": "Adjustment recorded successfully.",
+      "error": "Error recording adjustment."
+    },
+    "delete": {
+      "success": "Asset deleted successfully.",
+      "error": "Error deleting asset."
+    },
+    "loading": "Loading capital assets...",
+    "loadingDetail": "Loading asset detail...",
+    "errorLoad": "Error loading capital assets.",
+    "errorDetail": "Error loading asset detail."
   }
 }
