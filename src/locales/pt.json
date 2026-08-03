@@ -3387,7 +3387,8 @@
         "error": "Não foi possível carregar o fechamento.",
         "button": {
           "back": "Voltar",
-          "reopen": "Reabrir"
+          "reopen": "Reabrir",
+          "downloadPdf": "Baixar PDF"
         },
         "badge": {
           "annual": "Fechamento anual",
@@ -3409,6 +3410,12 @@
         },
         "success": {
           "reopened": "Fechamento reaberto com sucesso."
+        },
+        "pdfModal": {
+          "title": "Relatório de fechamento de período"
+        },
+        "error": {
+          "pdf": "Não foi possível gerar o relatório PDF do fechamento."
         },
         "tab": {
           "summary": "Resumo",
