@@ -76,6 +76,9 @@ const Navdata = () => {
     //Expenses
     const [isExpenses, setIsExpenses] = useState<boolean>(false);
 
+    //Capital Assets
+    const [isCapitalAssets, setIsCapitalAssets] = useState<boolean>(false);
+
     //Period Closing
     const [isPeriodClosing, setIsPeriodClosing] = useState<boolean>(false);
 
@@ -163,6 +166,9 @@ const Navdata = () => {
         if (iscurrentState !== 'Sale') {
             setIsSale(false)
         }
+        if (iscurrentState !== 'CapitalAssets') {
+            setIsCapitalAssets(false)
+        }
         if (iscurrentState !== 'Reports') {
             setIsReports(false)
         }
@@ -185,6 +191,7 @@ const Navdata = () => {
         isGrowing,
         isReplacement,
         isSale,
+        isCapitalAssets,
         isReports,
     ]);
 
@@ -427,6 +434,20 @@ const Navdata = () => {
                 e.preventDefault();
                 setIsExpenses(!isExpenses);
                 setIscurrentState('Expenses');
+                updateIconSidebar(e);
+            },
+        },
+        {
+            id: 'capitalAssets',
+            label: t('menu.capitalAssets'),
+            icon: 'ri-building-2-line',
+            link: '/finance/capital-assets',
+            roles: ['Superadmin', 'farm_manager', 'finance_manager'],
+            stateVariables: isCapitalAssets,
+            click: function (e: any) {
+                e.preventDefault();
+                setIsCapitalAssets(!isCapitalAssets);
+                setIscurrentState('CapitalAssets');
                 updateIconSidebar(e);
             },
         },
