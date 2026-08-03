@@ -3,9 +3,11 @@ import classnames from "classnames";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import { Alert, Badge, Button, Card, CardBody, CardHeader, Col, Container, Nav, NavItem, NavLink, Row, Table, TabContent, TabPane } from "reactstrap";
+import { Alert, Badge, Button, Card, CardBody, CardHeader, Col, Container, Modal, ModalBody, ModalHeader, Nav, NavItem, NavLink, Row, Spinner, Table, TabContent, TabPane } from "reactstrap";
 import { ConfigContext } from "App";
 import { getEffectiveUser } from "helpers/impersonation_helper";
+import { PERIOD_CLOSING_URLS } from "helpers/period_closing_urls";
+import { appendLangParam } from "helpers/reports_url_helper";
 import BreadCrumb from "Components/Common/Shared/BreadCrumb";
 import LoadingAnimation from "Components/Common/Shared/LoadingAnimation";
 import AlertMessage from "Components/Common/Shared/AlertMesagge";
@@ -21,6 +23,7 @@ import HealthTab from "./tabs/HealthTab";
 import ReproductionTab from "./tabs/ReproductionTab";
 import WorkforceTab from "./tabs/WorkforceTab";
 import ComparisonsTab from "./tabs/ComparisonsTab";
+import PDFViewer from "Components/Common/Shared/PDFViewer";
 
 const formatDateTime = (iso: string | null | undefined): string => {
     if (!iso) return "-";
@@ -55,6 +58,9 @@ const PeriodClosingDetail = () => {
 
     const [activeTab, setActiveTab] = useState<string>(TAB_IDS.summary);
     const [showReopenModal, setShowReopenModal] = useState(false);
+    const [pdfLoading, setPdfLoading] = useState(false);
+    const [showPdfModal, setShowPdfModal] = useState(false);
+    const [fileURL, setFileURL] = useState<string | null>(null);
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: "", message: "" });
 
     const MONTHS = t("finance.periodClosing.months", { returnObjects: true }) as string[];
@@ -112,6 +118,24 @@ const PeriodClosingDetail = () => {
         setShowReopenModal(false);
         setAlertConfig({ visible: true, color: "success", message: t("finance.periodClosing.detail.success.reopened") });
         loadDetail();
+    };
+
+    const handleViewPdf = async () => {
+        if (!configContext || !closingId) return;
+        try {
+            setPdfLoading(true);
+            const url = appendLangParam(
+                `${configContext.apiUrl}${PERIOD_CLOSING_URLS.pdf(closingId)}?orientation=portrait&format=A4`
+            );
+            const response = await configContext.axiosHelper.getBlob(url);
+            const pdfBlob = new Blob([response.data], { type: "application/pdf" });
+            setFileURL(window.URL.createObjectURL(pdfBlob));
+            setShowPdfModal(true);
+        } catch {
+            setAlertConfig({ visible: true, color: "danger", message: t("finance.periodClosing.detail.error.pdf") });
+        } finally {
+            setPdfLoading(false);
+        }
     };
 
     if (loadingDetail || !configContext) return <LoadingAnimation />;
@@ -196,7 +220,14 @@ const PeriodClosingDetail = () => {
                                     )}
                                 </div>
                             </Col>
-                            <Col md={4} className="text-end">
+                            <Col md={4} className="text-end d-flex justify-content-end gap-2">
+                                <Button className="farm-secondary-button" onClick={handleViewPdf} disabled={pdfLoading}>
+                                    {pdfLoading
+                                        ? <Spinner size="sm" className="me-1" />
+                                        : <i className="ri-file-pdf-2-line me-1" />
+                                    }
+                                    {t("finance.periodClosing.detail.button.downloadPdf")}
+                                </Button>
                                 {isSuperadmin && current.status === "closed" && (
                                     <Button color="warning" onClick={() => setShowReopenModal(true)}>
                                         <i className="ri-lock-unlock-line me-1" />{t("finance.periodClosing.detail.button.reopen")}
@@ -344,6 +375,15 @@ const PeriodClosingDetail = () => {
                     periodLabel={formatPeriod(current)}
                 />
             )}
+
+            <Modal size="xl" isOpen={showPdfModal} toggle={() => setShowPdfModal(false)} backdrop="static" keyboard={false} centered>
+                <ModalHeader toggle={() => setShowPdfModal(false)}>
+                    {t("finance.periodClosing.detail.pdfModal.title")}
+                </ModalHeader>
+                <ModalBody>
+                    {fileURL && <PDFViewer fileUrl={fileURL} />}
+                </ModalBody>
+            </Modal>
 
             <AlertMessage
                 color={alertConfig.color}
