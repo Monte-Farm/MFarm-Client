@@ -3387,7 +3387,8 @@
         "error": "Could not load the closing.",
         "button": {
           "back": "Back",
-          "reopen": "Reopen"
+          "reopen": "Reopen",
+          "downloadPdf": "Download PDF"
         },
         "badge": {
           "annual": "Annual closing",
@@ -3409,6 +3410,12 @@
         },
         "success": {
           "reopened": "Closing reopened successfully."
+        },
+        "pdfModal": {
+          "title": "Period closing report"
+        },
+        "error": {
+          "pdf": "Could not generate the closing PDF report."
         },
         "tab": {
           "summary": "Summary",

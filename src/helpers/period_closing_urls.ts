@@ -8,4 +8,5 @@ export const PERIOD_CLOSING_URLS = {
     reopen: (closingId: string) => `/period-closings/reopen/${closingId}`,
     precheck: (farmId: string) => `/period-closings/precheck/${farmId}`,
     closingPreview: (farmId: string) => `/reports/finance/operations-closing/${farmId}`,
+    pdf: (closingId: string) => `/period-closings/detail/${closingId}/pdf`,
 };
