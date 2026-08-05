@@ -220,7 +220,7 @@ const FeedPreparationForm: React.FC<FeedPreparationFormProps> = ({ onSave, onCan
                 setAlertConfig({ visible: true, color: 'danger', message: t('feeding.preparation.form.error.noIngredients') });
                 return;
             }
-            if (formik.values.actualYield > batchSize) {
+            if (roundN(formik.values.actualYield, 2) > roundN(batchSize, 2)) {
                 setAlertConfig({ visible: true, color: 'danger', message: t('feeding.preparation.form.error.yieldExceedsBatch') });
                 return;
             }
