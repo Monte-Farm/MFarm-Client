@@ -27,6 +27,9 @@ import SubscriptionReducer from "./subscription/reducer";
 // Capital Assets
 import CapitalAssetsReducer from "./capitalAssets/reducer";
 
+// Inventory Adjustments
+import InventoryAdjustmentsReducer from "./inventoryAdjustments/reducer";
+
 const rootReducer = combineReducers({
     Layout: LayoutReducer,
     Login: LoginReducer,
@@ -39,6 +42,7 @@ const rootReducer = combineReducers({
     PeriodClosing: PeriodClosingReducer,
     Subscription: SubscriptionReducer,
     CapitalAssets: CapitalAssetsReducer,
+    InventoryAdjustments: InventoryAdjustmentsReducer,
 });
 
 export default rootReducer;

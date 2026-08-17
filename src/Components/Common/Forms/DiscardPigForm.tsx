@@ -81,6 +81,7 @@ const DiscardPigForm: React.FC<DiscardPigFormProps> = ({ pig, onSave, onCancel }
                 </Button>
             )
         },
+        { header: t('pigs.field.earTag'), accessor: 'earTag', render: (value: string) => value || '-' },
         { header: t('pigs.field.breed'), accessor: 'breed', type: 'text', isFilterable: true },
         {
             header: t('pigs.field.sex'), accessor: 'sex',
@@ -102,6 +103,7 @@ const DiscardPigForm: React.FC<DiscardPigFormProps> = ({ pig, onSave, onCancel }
 
     const pigsAttributes: Attribute[] = [
         { key: "code", label: t('pigs.field.code'), type: "text" },
+        { key: "earTag", label: t('pigs.field.earTag'), type: "text" },
         { key: "birthdate", label: t('pigs.field.birthDate'), type: "date" },
         { key: "breed", label: t('pigs.field.breed'), type: "text" },
         {

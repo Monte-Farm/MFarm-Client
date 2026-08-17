@@ -1316,6 +1316,9 @@
         "waste": "Shrinkage",
         "costPerKgProduced": "Cost / {{unit}} produced",
         "realYield": "Actual yield",
+        "action": {
+          "register": "Record batch"
+        },
         "success": "Feed batch recorded successfully",
         "error": {
           "generic": "An error occurred while recording the batch",
@@ -1371,7 +1374,9 @@
         "title": "Feed administrations",
         "button": "Administer feed",
         "noRecords": "No feed administrations recorded",
-        "registerModal": "Record feed administration"
+        "registerModal": "Record feed administration",
+        "editModal": "Edit feed administration",
+        "revertModal": "Revert feed administration"
       },
       "column": {
         "date": "Date",
@@ -1379,7 +1384,33 @@
         "sourceRecipe": "Source formula",
         "quantity": "Quantity",
         "responsible": "Administered by",
-        "observations": "Notes"
+        "observations": "Notes",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "status": {
+        "active": "Active",
+        "reverted": "Reverted"
+      },
+      "revert": {
+        "title": "Revert administration",
+        "message": "This will restore warehouse stock and remove all associated costs. The record will remain visible in the history as reverted.",
+        "reasonLabel": "Reason for reverting (optional)",
+        "reasonPlaceholder": "e.g. Incorrect quantity recorded",
+        "confirm": "Revert",
+        "success": "Administration successfully reverted",
+        "error": "An error occurred while reverting the administration"
+      },
+      "edit": {
+        "title": "Edit feed administration",
+        "reasonLabel": "Reason for editing (optional)",
+        "reasonPlaceholder": "e.g. Quantity correction",
+        "action": {
+          "save": "Save changes",
+          "cancel": "Cancel"
+        },
+        "success": "Administration successfully updated",
+        "error": "An error occurred while updating the administration"
       },
       "form": {
         "field": {
@@ -1418,7 +1449,9 @@
       },
       "bulk": {
         "title": "Administer feed to {{count}} {{target}}",
-        "noTargets": "No {{target}} selected."
+        "noTargets": "No {{target}} selected.",
+        "errorRollback": "Operation failed. All previously created records were automatically rolled back.",
+        "errorPartialRollback": "Operation failed with a partial rollback. Data may be inconsistent — please contact an administrator."
       },
       "target": {
         "groups": "groups",
@@ -1751,7 +1784,8 @@
     "catalogs": "Catalogs",
     "traceability": "Traceability",
     "audit": "Audit log",
-    "subscription": "Subscription"
+    "subscription": "Subscription",
+    "inventoryAdjustments": "Inventory Adjustments"
   },
   "groups": {
     "column": {
@@ -3387,7 +3421,9 @@
       },
       "detail": {
         "breadcrumb": "Closing detail",
-        "error": "Could not load the closing.",
+        "error": {
+          "pdf": "Could not generate the closing PDF report."
+        },
         "button": {
           "back": "Back",
           "reopen": "Reopen",
@@ -3416,9 +3452,6 @@
         },
         "pdfModal": {
           "title": "Period closing report"
-        },
-        "error": {
-          "pdf": "Could not generate the closing PDF report."
         },
         "tab": {
           "summary": "Summary",
@@ -3583,7 +3616,8 @@
             "operatingResult": "Operating Result",
             "operatingMargin": "Operating Margin",
             "pigsSold": "Pigs Sold",
-            "kgSold": "Kg Sold"
+            "kgSold": "Kg Sold",
+            "avgPricePerKg": "Avg Price / {{unit}}"
           },
           "evolution": {
             "header": "Monthly evolution",
@@ -3594,7 +3628,8 @@
               "result": "Result",
               "margin": "Margin",
               "pigs": "Pigs",
-              "kg": "Kg"
+              "kg": "{{unit}}",
+              "avgPrice": "Price / {{unit}}"
             },
             "totalRow": "YEAR TOTAL"
           },
@@ -3604,8 +3639,8 @@
             "col": {
               "type": "Type",
               "pigs": "Pigs",
-              "totalWeight": "Total Weight (kg)",
-              "avgPrice": "Avg. Price / kg",
+              "totalWeight": "Total Weight ({{unit}})",
+              "avgPrice": "Avg Price / {{unit}}",
               "totalAmount": "Total Amount"
             },
             "totalRow": "TOTAL INCOME"
@@ -3615,7 +3650,8 @@
             "empty": "No costs recorded in the period.",
             "col": {
               "description": "Description",
-              "amount": "Amount"
+              "amount": "Amount",
+              "date": "Date"
             },
             "totalRow": "TOTAL COSTS"
           },
@@ -3624,7 +3660,10 @@
             "totalIncome": "Total Income",
             "totalCosts": "Total Costs",
             "operatingResult": "Operating Result",
-            "operatingMargin": "Operating Margin"
+            "operatingMargin": "Operating Margin",
+            "resultBeforeTaxes": "Result before taxes",
+            "taxes": "Taxes",
+            "netResult": "Net Result"
           }
         },
         "inventory": {
@@ -3889,7 +3928,8 @@
             "operatingResult": "Operating result",
             "operatingMargin": "Operating margin",
             "pigsSold": "Pigs sold",
-            "kgSold": "Kg sold"
+            "kgSold": "{{unit}} sold",
+            "avgPricePerKg": "Price / {{unit}}"
           },
           "trailingKpi": {
             "income": "Avg. income",
@@ -3897,7 +3937,8 @@
             "result": "Avg. result",
             "margin": "Avg. margin",
             "pigs": "Avg. pigs",
-            "kg": "Avg. kg"
+            "kg": "Avg {{unit}}",
+            "avgPricePerKg": "Avg price / {{unit}}"
           }
         },
         "capitalAssets": {
@@ -8263,5 +8304,129 @@
     "loadingDetail": "Loading asset detail...",
     "errorLoad": "Error loading capital assets.",
     "errorDetail": "Error loading asset detail."
+  },
+  "inventoryAdjustments": {
+    "pageTitle": "Inventory Adjustments",
+    "breadcrumb": "Inventory Adjustments",
+    "noRecords": "No inventory adjustments recorded",
+    "direction": {
+      "decrease": "Decrease",
+      "increase": "Increase",
+      "decreaseHint": "Shrinkage, breakage or expiration",
+      "increaseHint": "Count correction"
+    },
+    "adjustmentType": {
+      "shrinkage": "Shrinkage",
+      "breakage": "Breakage",
+      "expiration": "Expiration",
+      "count_correction": "Count Correction",
+      "other": "Other"
+    },
+    "status": {
+      "active": "Active",
+      "reverted": "Reverted"
+    },
+    "action": {
+      "create": "New Adjustment",
+      "revert": "Revert",
+      "confirmRevert": "Confirm Revert"
+    },
+    "filter": {
+      "warehouse": "Warehouse",
+      "allWarehouses": "All warehouses",
+      "startDate": "Start date",
+      "endDate": "End date"
+    },
+    "table": {
+      "col": {
+        "date": "Date",
+        "warehouse": "Warehouse",
+        "direction": "Direction",
+        "adjustmentType": "Adjustment Type",
+        "products": "Products",
+        "financialImpact": "Financial Impact",
+        "status": "Status",
+        "actions": "Actions"
+      }
+    },
+    "modal": {
+      "createTitle": "Record Inventory Adjustment",
+      "revertTitle": "Revert Inventory Adjustment"
+    },
+    "form": {
+      "submit": "Record Adjustment",
+      "success": "Inventory adjustment recorded successfully.",
+      "error": "Error recording the inventory adjustment.",
+      "field": {
+        "warehouse": "Warehouse",
+        "warehouseSelect": "Select a warehouse",
+        "generalWarehouse": "General Warehouse",
+        "date": "Adjustment Date",
+        "direction": "Adjustment Direction",
+        "adjustmentType": "Adjustment Type",
+        "adjustmentTypeSelect": "Select a type",
+        "reason": "Reason",
+        "reasonPlaceholder": "Describe the reason for this adjustment...",
+        "notes": "Additional Notes (optional)",
+        "notesPlaceholder": "Internal notes..."
+      },
+      "products": {
+        "title": "Adjusted Products",
+        "addLine": "Add Product",
+        "selectWarehouseFirst": "Select a warehouse to see available products.",
+        "selectProduct": "Select a product",
+        "col": {
+          "product": "Product",
+          "stock": "Current Stock",
+          "quantity": "Quantity to Adjust",
+          "estimatedStock": "Estimated Stock"
+        },
+        "insufficientStock": "Insufficient stock",
+        "selected": "selected",
+        "noInventory": "This warehouse has no products in inventory",
+        "noResults": "No products found",
+        "search": "Search product..."
+      },
+      "validation": {
+        "noProducts": "You must add at least one product with a quantity greater than zero.",
+        "insufficientStock": "One or more products exceed the available stock"
+      }
+    },
+    "revert": {
+      "consequenceDecrease": "Reverting this adjustment will restore the deducted stock and remove the recorded financial cost.",
+      "consequenceIncrease": "Reverting this adjustment will reduce the added stock and remove the recorded financial income.",
+      "reasonLabel": "Reason for Reverting",
+      "reasonPlaceholder": "Explain why this adjustment is being reverted...",
+      "error": "Error reverting the adjustment."
+    },
+    "detail": {
+      "title": "Adjustment Detail",
+      "financialImpact": "Total Financial Impact",
+      "impactHintDecrease": "Reduces period profit",
+      "impactHintIncrease": "Increases period profit",
+      "productsTitle": "Adjusted Products",
+      "revertSection": "This adjustment has been reverted",
+      "field": {
+        "date": "Adjustment Date",
+        "warehouse": "Warehouse",
+        "createdBy": "Recorded by",
+        "createdAt": "Record Date",
+        "products": "Products",
+        "productsCount": "product(s)",
+        "totalQty": "Total Quantity",
+        "reason": "Reason",
+        "notes": "Notes",
+        "revertedAt": "Reverted on",
+        "revertedBy": "Reverted by",
+        "revertReason": "Revert Reason"
+      },
+      "col": {
+        "product": "Product",
+        "quantity": "Quantity",
+        "unitCost": "Unit Cost",
+        "totalCost": "Total Cost",
+        "total": "Total"
+      }
+    }
   }
 }

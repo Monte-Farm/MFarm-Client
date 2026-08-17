@@ -43,6 +43,8 @@ export const FEED_ADMINISTRATION_URLS = {
     bulkGroups: 'feed_administration/bulk/groups',
     bulkLitters: 'feed_administration/bulk/litters',
     bulkPigs: 'feed_administration/bulk/pigs',
+    revert: (id: string) => `feed_administration/${id}/revert`,
+    update: (id: string) => `feed_administration/${id}`,
 };
 
 // ───────── Lecturas de feeding en pig/group/litter ─────────

@@ -1316,6 +1316,9 @@
         "waste": "Perda",
         "costPerKgProduced": "Custo / {{unit}} produzido",
         "realYield": "Rendimento real",
+        "action": {
+          "register": "Registrar arraçoamento"
+        },
         "success": "Arraçoamento registrado com sucesso",
         "error": {
           "generic": "Ocorreu um erro ao registrar o arraçoamento",
@@ -1371,7 +1374,9 @@
         "title": "Fornecimentos de ração",
         "button": "Fornecer ração",
         "noRecords": "Nenhum fornecimento registrado",
-        "registerModal": "Registrar fornecimento de ração"
+        "registerModal": "Registrar fornecimento de ração",
+        "editModal": "Editar fornecimento de ração",
+        "revertModal": "Estornar fornecimento de ração"
       },
       "column": {
         "date": "Data",
@@ -1379,7 +1384,33 @@
         "sourceRecipe": "Dieta de origem",
         "quantity": "Quantidade",
         "responsible": "Responsável",
-        "observations": "Observações"
+        "observations": "Observações",
+        "status": "Situação",
+        "actions": "Ações"
+      },
+      "status": {
+        "active": "Ativo",
+        "reverted": "Estornado"
+      },
+      "revert": {
+        "title": "Estornar fornecimento",
+        "message": "Esta ação irá restaurar o estoque do almoxarifado e remover todos os custos associados. O registro permanecerá visível no histórico como estornado.",
+        "reasonLabel": "Motivo do estorno (opcional)",
+        "reasonPlaceholder": "Ex: Quantidade registrada incorretamente",
+        "confirm": "Estornar",
+        "success": "Fornecimento estornado com sucesso",
+        "error": "Ocorreu um erro ao estornar o fornecimento"
+      },
+      "edit": {
+        "title": "Editar fornecimento de ração",
+        "reasonLabel": "Motivo da edição (opcional)",
+        "reasonPlaceholder": "Ex: Correção de quantidade",
+        "action": {
+          "save": "Salvar alterações",
+          "cancel": "Cancelar"
+        },
+        "success": "Fornecimento atualizado com sucesso",
+        "error": "Ocorreu um erro ao atualizar o fornecimento"
       },
       "form": {
         "field": {
@@ -1418,7 +1449,9 @@
       },
       "bulk": {
         "title": "Fornecer ração a {{count}} {{target}}",
-        "noTargets": "Nenhum {{target}} selecionado."
+        "noTargets": "Nenhum {{target}} selecionado.",
+        "errorRollback": "Operação falhou. Todos os registros criados foram revertidos automaticamente.",
+        "errorPartialRollback": "Operação falhou com rollback parcial. Pode haver inconsistência de dados — entre em contato com um administrador."
       },
       "target": {
         "groups": "lotes",
@@ -1751,7 +1784,8 @@
     "catalogs": "Cadastros",
     "traceability": "Rastreabilidade",
     "audit": "Log de auditoria",
-    "subscription": "Assinatura"
+    "subscription": "Assinatura",
+    "inventoryAdjustments": "Ajustes de inventário"
   },
   "groups": {
     "column": {
@@ -3387,7 +3421,9 @@
       },
       "detail": {
         "breadcrumb": "Detalhe do fechamento",
-        "error": "Não foi possível carregar o fechamento.",
+        "error": {
+          "pdf": "Não foi possível gerar o relatório PDF do fechamento."
+        },
         "button": {
           "back": "Voltar",
           "reopen": "Reabrir",
@@ -3416,9 +3452,6 @@
         },
         "pdfModal": {
           "title": "Relatório de fechamento de período"
-        },
-        "error": {
-          "pdf": "Não foi possível gerar o relatório PDF do fechamento."
         },
         "tab": {
           "summary": "Resumo",
@@ -3583,7 +3616,8 @@
             "operatingResult": "Resultado Operacional",
             "operatingMargin": "Margem Operacional",
             "pigsSold": "Suínos Vendidos",
-            "kgSold": "Kg Vendidos"
+            "kgSold": "Kg Vendidos",
+            "avgPricePerKg": "Preço Médio / {{unit}}"
           },
           "evolution": {
             "header": "Evolução mensal",
@@ -3594,7 +3628,8 @@
               "result": "Resultado",
               "margin": "Margem",
               "pigs": "Suínos",
-              "kg": "Kg"
+              "kg": "{{unit}}",
+              "avgPrice": "Preço / {{unit}}"
             },
             "totalRow": "TOTAL ANO"
           },
@@ -3604,8 +3639,8 @@
             "col": {
               "type": "Tipo",
               "pigs": "Suínos",
-              "totalWeight": "Peso Total (kg)",
-              "avgPrice": "Preço Médio / kg",
+              "totalWeight": "Peso Total ({{unit}})",
+              "avgPrice": "Preço Médio / {{unit}}",
               "totalAmount": "Valor Total"
             },
             "totalRow": "TOTAL RECEITA"
@@ -3615,7 +3650,8 @@
             "empty": "Nenhum custo registrado no período.",
             "col": {
               "description": "Descrição",
-              "amount": "Valor"
+              "amount": "Valor",
+              "date": "Data"
             },
             "totalRow": "TOTAL CUSTOS"
           },
@@ -3624,7 +3660,10 @@
             "totalIncome": "Total Receita",
             "totalCosts": "Total Custos",
             "operatingResult": "Resultado Operacional",
-            "operatingMargin": "Margem Operacional"
+            "operatingMargin": "Margem Operacional",
+            "resultBeforeTaxes": "Resultado antes dos impostos",
+            "taxes": "Impostos",
+            "netResult": "Resultado Líquido"
           }
         },
         "inventory": {
@@ -3889,7 +3928,8 @@
             "operatingResult": "Resultado operacional",
             "operatingMargin": "Margem operacional",
             "pigsSold": "Suínos vendidos",
-            "kgSold": "Kg vendidos"
+            "kgSold": "{{unit}} vendidos",
+            "avgPricePerKg": "Preço / {{unit}}"
           },
           "trailingKpi": {
             "income": "Receita média",
@@ -3897,7 +3937,8 @@
             "result": "Resultado médio",
             "margin": "Margem média",
             "pigs": "Suínos médios",
-            "kg": "Kg médios"
+            "kg": "{{unit}} méd.",
+            "avgPricePerKg": "Preço méd. / {{unit}}"
           }
         },
         "capitalAssets": {
@@ -8263,5 +8304,129 @@
     "loadingDetail": "Carregando detalhe do ativo...",
     "errorLoad": "Erro ao carregar ativos de capital.",
     "errorDetail": "Erro ao carregar detalhe do ativo."
+  },
+  "inventoryAdjustments": {
+    "pageTitle": "Ajustes de Inventário",
+    "breadcrumb": "Ajustes de Inventário",
+    "noRecords": "Nenhum ajuste de inventário registrado",
+    "direction": {
+      "decrease": "Baixa",
+      "increase": "Entrada de correção",
+      "decreaseHint": "Quebra, avaria ou vencimento",
+      "increaseHint": "Correção de contagem"
+    },
+    "adjustmentType": {
+      "shrinkage": "Quebra",
+      "breakage": "Avaria",
+      "expiration": "Vencimento",
+      "count_correction": "Correção de contagem",
+      "other": "Outro"
+    },
+    "status": {
+      "active": "Ativo",
+      "reverted": "Estornado"
+    },
+    "action": {
+      "create": "Novo ajuste",
+      "revert": "Estornar",
+      "confirmRevert": "Confirmar estorno"
+    },
+    "filter": {
+      "warehouse": "Armazém",
+      "allWarehouses": "Todos os armazéns",
+      "startDate": "Data inicial",
+      "endDate": "Data final"
+    },
+    "table": {
+      "col": {
+        "date": "Data",
+        "warehouse": "Armazém",
+        "direction": "Direção",
+        "adjustmentType": "Tipo de ajuste",
+        "products": "Produtos",
+        "financialImpact": "Impacto financeiro",
+        "status": "Status",
+        "actions": "Ações"
+      }
+    },
+    "modal": {
+      "createTitle": "Registrar ajuste de inventário",
+      "revertTitle": "Estornar ajuste de inventário"
+    },
+    "form": {
+      "submit": "Registrar ajuste",
+      "success": "Ajuste de inventário registrado com sucesso.",
+      "error": "Erro ao registrar o ajuste de inventário.",
+      "field": {
+        "warehouse": "Armazém",
+        "warehouseSelect": "Selecione um armazém",
+        "generalWarehouse": "Armazém geral",
+        "date": "Data do ajuste",
+        "direction": "Direção do ajuste",
+        "adjustmentType": "Tipo de ajuste",
+        "adjustmentTypeSelect": "Selecione um tipo",
+        "reason": "Motivo do ajuste",
+        "reasonPlaceholder": "Descreva o motivo do ajuste...",
+        "notes": "Notas adicionais (opcional)",
+        "notesPlaceholder": "Notas internas..."
+      },
+      "products": {
+        "title": "Produtos ajustados",
+        "addLine": "Adicionar produto",
+        "selectWarehouseFirst": "Selecione um armazém para ver os produtos disponíveis.",
+        "selectProduct": "Selecione um produto",
+        "col": {
+          "product": "Produto",
+          "stock": "Estoque atual",
+          "quantity": "Quantidade a ajustar",
+          "estimatedStock": "Estoque estimado"
+        },
+        "insufficientStock": "Estoque insuficiente",
+        "selected": "selecionados",
+        "noInventory": "Este armazém não tem produtos no inventário",
+        "noResults": "Nenhum produto encontrado",
+        "search": "Buscar produto..."
+      },
+      "validation": {
+        "noProducts": "É necessário adicionar pelo menos um produto com quantidade maior que zero.",
+        "insufficientStock": "Um ou mais produtos excedem o estoque disponível"
+      }
+    },
+    "revert": {
+      "consequenceDecrease": "Ao estornar este ajuste, o estoque baixado será restaurado e o impacto financeiro registrado será removido.",
+      "consequenceIncrease": "Ao estornar este ajuste, o estoque adicionado será reduzido e a receita financeira registrada será removida.",
+      "reasonLabel": "Motivo do estorno",
+      "reasonPlaceholder": "Explique por que este ajuste está sendo estornado...",
+      "error": "Erro ao estornar o ajuste."
+    },
+    "detail": {
+      "title": "Detalhe do ajuste",
+      "financialImpact": "Impacto financeiro total",
+      "impactHintDecrease": "Reduz o lucro do período",
+      "impactHintIncrease": "Aumenta o lucro do período",
+      "productsTitle": "Produtos ajustados",
+      "revertSection": "Este ajuste foi estornado",
+      "field": {
+        "date": "Data do ajuste",
+        "warehouse": "Armazém",
+        "createdBy": "Registrado por",
+        "createdAt": "Data de registro",
+        "products": "Produtos",
+        "productsCount": "produto(s)",
+        "totalQty": "Quantidade total",
+        "reason": "Motivo",
+        "notes": "Notas",
+        "revertedAt": "Estornado em",
+        "revertedBy": "Estornado por",
+        "revertReason": "Motivo do estorno"
+      },
+      "col": {
+        "product": "Produto",
+        "quantity": "Quantidade",
+        "unitCost": "Custo unitário",
+        "totalCost": "Custo total",
+        "total": "Total"
+      }
+    }
   }
 }
