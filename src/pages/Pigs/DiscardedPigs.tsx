@@ -55,6 +55,7 @@ const DiscardedPigs = () => {
 
     const pigColumns: Column<any>[] = [
         { header: t('pigs.field.code'), accessor: 'code', type: 'text' },
+        { header: t('pigs.field.earTag'), accessor: 'earTag', render: (value: string) => value || '-' },
         { header: t('pigs.field.breed'), accessor: 'breed', type: 'text' },
         { header: t('pigs.field.birthDateShort'), accessor: 'birthdate', type: 'date' },
         {

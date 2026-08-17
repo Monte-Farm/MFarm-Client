@@ -6,6 +6,44 @@ const CURRENCY_LOCALE_MAP: Record<string, string> = {
     EUR: "es-ES",
 };
 
+export type WeightUnit = 'kg' | 'lb';
+export const KG_TO_LB = 2.20462;
+
+/** Convert a value stored in kg to the display unit. */
+export const convertWeightFromKg = (value: number | null | undefined, unit: WeightUnit): number | null => {
+    if (value === null || value === undefined || Number.isNaN(value)) return null;
+    return unit === 'lb' ? value * KG_TO_LB : value;
+};
+
+/** Format a weight value (stored in kg) into the display unit with its label. */
+export const formatWeight = (value: number | null | undefined, unit: WeightUnit = 'kg', fractionDigits = 1): string => {
+    if (value === null || value === undefined || Number.isNaN(value)) return "Sin datos";
+    const converted = unit === 'lb' ? value * KG_TO_LB : value;
+    return `${converted.toLocaleString("es-MX", { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits })} ${unit}`;
+};
+
+/**
+ * Format a price-per-kg value into the display unit.
+ * price/kg → price/lb means dividing by 2.20462.
+ */
+export const formatPricePerWeight = (
+    value: number | null | undefined,
+    unit: WeightUnit = 'kg',
+    meta?: Partial<ClosingSnapshotMeta>
+): string => {
+    if (value === null || value === undefined || Number.isNaN(value)) return "Sin datos";
+    const converted = unit === 'lb' ? value / KG_TO_LB : value;
+    const currency = meta?.currency || "MXN";
+    const locale = CURRENCY_LOCALE_MAP[currency] || "es-MX";
+    const symbol = meta?.currencySymbol || "$";
+    try {
+        const formatted = new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(converted);
+        return `${symbol}${formatted}/${unit}`;
+    } catch {
+        return `${symbol}${converted.toFixed(2)}/${unit}`;
+    }
+};
+
 export const formatCurrency = (value: number | null | undefined, meta?: Partial<ClosingSnapshotMeta>): string => {
     if (value === null || value === undefined || Number.isNaN(value)) return "Sin datos";
     const currency = meta?.currency || "MXN";

@@ -1315,6 +1315,9 @@
         "waste": "Merma",
         "costPerKgProduced": "Costo / {{unit}} producido",
         "realYield": "Rendimiento real",
+        "action": {
+          "register": "Registrar preparación"
+        },
         "success": "Preparación registrada con éxito",
         "error": {
           "generic": "Ha ocurrido un error al registrar la preparación",
@@ -1370,7 +1373,9 @@
         "title": "Administraciones de alimento",
         "button": "Administrar alimento",
         "noRecords": "No hay administraciones registradas",
-        "registerModal": "Registrar administración de alimento"
+        "registerModal": "Registrar administración de alimento",
+        "editModal": "Editar administración de alimento",
+        "revertModal": "Revertir administración de alimento"
       },
       "column": {
         "date": "Fecha",
@@ -1378,7 +1383,33 @@
         "sourceRecipe": "Receta origen",
         "quantity": "Cantidad",
         "responsible": "Responsable",
-        "observations": "Observaciones"
+        "observations": "Observaciones",
+        "status": "Estado",
+        "actions": "Acciones"
+      },
+      "status": {
+        "active": "Vigente",
+        "reverted": "Revertida"
+      },
+      "revert": {
+        "title": "Revertir administración",
+        "message": "Esta acción restaurará el stock del almacén y eliminará los costos asociados. El registro permanecerá visible en el historial como revertido.",
+        "reasonLabel": "Motivo de la reversión (opcional)",
+        "reasonPlaceholder": "Ej: Error en la cantidad registrada",
+        "confirm": "Revertir",
+        "success": "Administración revertida con éxito",
+        "error": "Ha ocurrido un error al revertir la administración"
+      },
+      "edit": {
+        "title": "Editar administración de alimento",
+        "reasonLabel": "Motivo de la edición (opcional)",
+        "reasonPlaceholder": "Ej: Corrección de cantidad",
+        "action": {
+          "save": "Guardar cambios",
+          "cancel": "Cancelar"
+        },
+        "success": "Administración actualizada con éxito",
+        "error": "Ha ocurrido un error al actualizar la administración"
       },
       "form": {
         "field": {
@@ -1417,7 +1448,9 @@
       },
       "bulk": {
         "title": "Administrar alimento a {{count}} {{target}}",
-        "noTargets": "No hay {{target}} seleccionados."
+        "noTargets": "No hay {{target}} seleccionados.",
+        "errorRollback": "La operación falló. Todos los registros creados fueron revertidos automáticamente.",
+        "errorPartialRollback": "La operación falló y el rollback fue parcial. Puede haber inconsistencia de datos — contacte a un administrador."
       },
       "target": {
         "groups": "grupos",
@@ -1749,7 +1782,8 @@
     "clientAnalysis": "Análisis de Clientes",
     "catalogs": "Catálogos",
     "traceability": "Trazabilidad",
-    "audit": "Auditoría"
+    "audit": "Auditoría",
+    "inventoryAdjustments": "Ajustes de inventario"
   },
   "groups": {
     "column": {
@@ -3385,7 +3419,9 @@
       },
       "detail": {
         "breadcrumb": "Detalle de cierre",
-        "error": "No se pudo cargar el cierre.",
+        "error": {
+          "pdf": "No se pudo generar el PDF del cierre."
+        },
         "button": {
           "back": "Regresar",
           "reopen": "Reabrir",
@@ -3414,9 +3450,6 @@
         },
         "pdfModal": {
           "title": "Reporte de cierre de periodo"
-        },
-        "error": {
-          "pdf": "No se pudo generar el PDF del cierre."
         },
         "tab": {
           "summary": "Resumen",
@@ -3581,7 +3614,8 @@
             "operatingResult": "Resultado Operativo",
             "operatingMargin": "Margen Operativo",
             "pigsSold": "Cerdos Vendidos",
-            "kgSold": "Kilos Vendidos"
+            "kgSold": "Kilos Vendidos",
+            "avgPricePerKg": "Precio Prom. / {{unit}}"
           },
           "evolution": {
             "header": "Evolución mensual",
@@ -3592,7 +3626,8 @@
               "result": "Resultado",
               "margin": "Margen",
               "pigs": "Cerdos",
-              "kg": "Kg"
+              "kg": "{{unit}}",
+              "avgPrice": "Precio / {{unit}}"
             },
             "totalRow": "TOTAL AÑO"
           },
@@ -3602,8 +3637,8 @@
             "col": {
               "type": "Tipo",
               "pigs": "Cerdos",
-              "totalWeight": "Peso Total (kg)",
-              "avgPrice": "Precio Prom. / kg",
+              "totalWeight": "Peso Total ({{unit}})",
+              "avgPrice": "Precio Prom. / {{unit}}",
               "totalAmount": "Monto Total"
             },
             "totalRow": "TOTAL INGRESOS"
@@ -3613,7 +3648,8 @@
             "empty": "Sin costos registrados en el periodo.",
             "col": {
               "description": "Descripción",
-              "amount": "Monto"
+              "amount": "Monto",
+              "date": "Fecha"
             },
             "totalRow": "TOTAL COSTOS"
           },
@@ -3622,7 +3658,10 @@
             "totalIncome": "Total Ingresos",
             "totalCosts": "Total Costos",
             "operatingResult": "Resultado Operativo",
-            "operatingMargin": "Margen Operativo"
+            "operatingMargin": "Margen Operativo",
+            "resultBeforeTaxes": "Resultado antes de impuestos",
+            "taxes": "Impuestos",
+            "netResult": "Resultado Neto"
           }
         },
         "inventory": {
@@ -3887,7 +3926,8 @@
             "operatingResult": "Resultado operativo",
             "operatingMargin": "Margen operativo",
             "pigsSold": "Cerdos vendidos",
-            "kgSold": "Kg vendidos"
+            "kgSold": "{{unit}} vendidos",
+            "avgPricePerKg": "Precio / {{unit}}"
           },
           "trailingKpi": {
             "income": "Ingresos prom.",
@@ -3895,7 +3935,8 @@
             "result": "Resultado prom.",
             "margin": "Margen prom.",
             "pigs": "Cerdos prom.",
-            "kg": "Kg prom."
+            "kg": "{{unit}} prom.",
+            "avgPricePerKg": "Precio prom. / {{unit}}"
           }
         },
         "capitalAssets": {
@@ -8212,5 +8253,129 @@
     "loadingDetail": "Cargando detalle del activo...",
     "errorLoad": "Error al cargar los activos de capital.",
     "errorDetail": "Error al cargar el detalle del activo."
+  },
+  "inventoryAdjustments": {
+    "pageTitle": "Ajustes de Inventario",
+    "breadcrumb": "Ajustes de Inventario",
+    "noRecords": "No hay ajustes de inventario registrados",
+    "direction": {
+      "decrease": "Disminución",
+      "increase": "Incremento",
+      "decreaseHint": "Merma, rotura o vencimiento",
+      "increaseHint": "Corrección de conteo"
+    },
+    "adjustmentType": {
+      "shrinkage": "Merma",
+      "breakage": "Rotura",
+      "expiration": "Vencimiento",
+      "count_correction": "Corrección de conteo",
+      "other": "Otro"
+    },
+    "status": {
+      "active": "Activo",
+      "reverted": "Revertido"
+    },
+    "action": {
+      "create": "Nuevo ajuste",
+      "revert": "Revertir",
+      "confirmRevert": "Confirmar reversión"
+    },
+    "filter": {
+      "warehouse": "Almacén",
+      "allWarehouses": "Todos los almacenes",
+      "startDate": "Fecha inicio",
+      "endDate": "Fecha fin"
+    },
+    "table": {
+      "col": {
+        "date": "Fecha",
+        "warehouse": "Almacén",
+        "direction": "Dirección",
+        "adjustmentType": "Tipo de ajuste",
+        "products": "Productos",
+        "financialImpact": "Impacto financiero",
+        "status": "Estado",
+        "actions": "Acciones"
+      }
+    },
+    "modal": {
+      "createTitle": "Registrar ajuste de inventario",
+      "revertTitle": "Revertir ajuste de inventario"
+    },
+    "form": {
+      "submit": "Registrar ajuste",
+      "success": "Ajuste de inventario registrado correctamente.",
+      "error": "Error al registrar el ajuste de inventario.",
+      "field": {
+        "warehouse": "Almacén",
+        "warehouseSelect": "Seleccione un almacén",
+        "generalWarehouse": "Almacén general",
+        "date": "Fecha del ajuste",
+        "direction": "Dirección del ajuste",
+        "adjustmentType": "Tipo de ajuste",
+        "adjustmentTypeSelect": "Seleccione un tipo",
+        "reason": "Motivo del ajuste",
+        "reasonPlaceholder": "Describa el motivo del ajuste...",
+        "notes": "Notas adicionales (opcional)",
+        "notesPlaceholder": "Notas internas..."
+      },
+      "products": {
+        "title": "Productos ajustados",
+        "addLine": "Agregar producto",
+        "selectWarehouseFirst": "Seleccione un almacén para ver los productos disponibles.",
+        "selectProduct": "Seleccione un producto",
+        "col": {
+          "product": "Producto",
+          "stock": "Stock actual",
+          "quantity": "Cantidad a ajustar",
+          "estimatedStock": "Stock estimado"
+        },
+        "insufficientStock": "Stock insuficiente",
+        "selected": "seleccionados",
+        "noInventory": "Este almacén no tiene productos en inventario",
+        "noResults": "No se encontraron productos",
+        "search": "Buscar producto..."
+      },
+      "validation": {
+        "noProducts": "Debe agregar al menos un producto con cantidad mayor a cero.",
+        "insufficientStock": "Uno o más productos superan el stock disponible"
+      }
+    },
+    "revert": {
+      "consequenceDecrease": "Al revertir este ajuste se restaurará el stock descontado y se eliminará el impacto financiero registrado.",
+      "consequenceIncrease": "Al revertir este ajuste se reducirá el stock agregado y se eliminará el ingreso financiero registrado.",
+      "reasonLabel": "Motivo de la reversión",
+      "reasonPlaceholder": "Explique por qué se revierte este ajuste...",
+      "error": "Error al revertir el ajuste."
+    },
+    "detail": {
+      "title": "Detalle del ajuste",
+      "financialImpact": "Impacto financiero total",
+      "impactHintDecrease": "Reduce la utilidad del periodo",
+      "impactHintIncrease": "Aumenta la utilidad del periodo",
+      "productsTitle": "Productos ajustados",
+      "revertSection": "Este ajuste fue revertido",
+      "field": {
+        "date": "Fecha del ajuste",
+        "warehouse": "Almacén",
+        "createdBy": "Registrado por",
+        "createdAt": "Fecha de registro",
+        "products": "Productos",
+        "productsCount": "producto(s)",
+        "totalQty": "Cantidad total",
+        "reason": "Motivo",
+        "notes": "Notas",
+        "revertedAt": "Revertido el",
+        "revertedBy": "Revertido por",
+        "revertReason": "Motivo de reversión"
+      },
+      "col": {
+        "product": "Producto",
+        "quantity": "Cantidad",
+        "unitCost": "Costo unitario",
+        "totalCost": "Costo total",
+        "total": "Total"
+      }
+    }
   }
 }
