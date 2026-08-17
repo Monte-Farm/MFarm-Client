@@ -1,14 +1,15 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 import { Alert, Card, CardBody, CardHeader, Col, Row, Table } from "reactstrap";
 import { ClosingSnapshot, ClosingSnapshotMeta, ComparisonBlock, ComparisonSource, TrailingBlock } from "common/data_interfaces";
-import { formatCurrency, formatNumber, formatPercent, formatPercentDecimal, formatWeightKg } from "utils/closingFormatters";
+import { formatCurrency, formatNumber, formatPercent, formatPercentDecimal, formatPricePerWeight, formatWeight, WeightUnit } from "utils/closingFormatters";
 
 interface Props {
     snapshot: ClosingSnapshot;
 }
 
-const variationCell = (value: number | null | undefined) => {
+const variationCell = (value: number | null | undefined, negate = false) => {
     if (value === null || value === undefined) return <span className="text-muted">—</span>;
     const color = value >= 0 ? "text-success" : "text-danger";
     const sign = value >= 0 ? "+" : "";
@@ -20,7 +21,8 @@ const ComparisonTable: React.FC<{
     block: ComparisonBlock;
     currentKpis: ClosingSnapshot["kpis"];
     meta: ClosingSnapshotMeta;
-}> = ({ title, block, currentKpis, meta }) => {
+    weightUnit: WeightUnit;
+}> = ({ title, block, currentKpis, meta, weightUnit }) => {
     const { t } = useTranslation();
 
     const sourceBadge = (source: ComparisonSource) => {
@@ -85,11 +87,19 @@ const ComparisonTable: React.FC<{
                                 <td className="text-end fw-semibold">{variationCell(block.variation?.totalPigsSold)}</td>
                             </tr>
                             <tr>
-                                <td>{t("finance.periodClosing.tabs.comparisons.kpi.kgSold")}</td>
-                                <td className="text-end">{formatWeightKg(currentKpis.totalKgSold, 0)}</td>
-                                <td className="text-end text-muted">{formatWeightKg(block.kpis.totalKgSold, 0)}</td>
+                                <td>{t("finance.periodClosing.tabs.comparisons.kpi.kgSold", { unit: weightUnit })}</td>
+                                <td className="text-end">{formatWeight(currentKpis.totalKgSold, weightUnit, 0)}</td>
+                                <td className="text-end text-muted">{formatWeight(block.kpis.totalKgSold, weightUnit, 0)}</td>
                                 <td className="text-end fw-semibold">{variationCell(block.variation?.totalKgSold)}</td>
                             </tr>
+                            {currentKpis.avgPricePerKg !== undefined && (
+                                <tr>
+                                    <td>{t("finance.periodClosing.tabs.comparisons.kpi.avgPricePerKg", { unit: weightUnit })}</td>
+                                    <td className="text-end">{formatPricePerWeight(currentKpis.avgPricePerKg, weightUnit, meta)}</td>
+                                    <td className="text-end text-muted">{block.kpis?.avgPricePerKg !== undefined ? formatPricePerWeight(block.kpis.avgPricePerKg, weightUnit, meta) : <span className="text-muted">—</span>}</td>
+                                    <td className="text-end fw-semibold">{variationCell(block.variation?.avgPricePerKg)}</td>
+                                </tr>
+                            )}
                         </tbody>
                     </Table>
                 )}
@@ -101,7 +111,8 @@ const ComparisonTable: React.FC<{
 const TrailingSection: React.FC<{
     block: TrailingBlock;
     meta: ClosingSnapshotMeta;
-}> = ({ block, meta }) => {
+    weightUnit: WeightUnit;
+}> = ({ block, meta, weightUnit }) => {
     const { t } = useTranslation();
 
     const sourceBadge = (source: ComparisonSource) => {
@@ -131,7 +142,10 @@ const TrailingSection: React.FC<{
                         <Col md={4}><div className="border rounded p-3 bg-light"><div className="text-muted small">{t("finance.periodClosing.tabs.comparisons.trailingKpi.result")}</div><div className={`fw-bold fs-5 ${block.avgKpis.operatingResult >= 0 ? "text-success" : "text-danger"}`}>{formatCurrency(block.avgKpis.operatingResult, meta)}</div></div></Col>
                         <Col md={4}><div className="border rounded p-3 bg-light"><div className="text-muted small">{t("finance.periodClosing.tabs.comparisons.trailingKpi.margin")}</div><div className="fw-bold fs-5">{formatPercent(block.avgKpis.operatingMargin)}</div></div></Col>
                         <Col md={4}><div className="border rounded p-3 bg-light"><div className="text-muted small">{t("finance.periodClosing.tabs.comparisons.trailingKpi.pigs")}</div><div className="fw-bold fs-5">{formatNumber(block.avgKpis.totalPigsSold, 0)}</div></div></Col>
-                        <Col md={4}><div className="border rounded p-3 bg-light"><div className="text-muted small">{t("finance.periodClosing.tabs.comparisons.trailingKpi.kg")}</div><div className="fw-bold fs-5">{formatWeightKg(block.avgKpis.totalKgSold, 0)}</div></div></Col>
+                        <Col md={4}><div className="border rounded p-3 bg-light"><div className="text-muted small">{t("finance.periodClosing.tabs.comparisons.trailingKpi.kg", { unit: weightUnit })}</div><div className="fw-bold fs-5">{formatWeight(block.avgKpis.totalKgSold, weightUnit, 0)}</div></div></Col>
+                        {block.avgKpis.avgPricePerKg !== undefined && (
+                            <Col md={4}><div className="border rounded p-3 bg-light"><div className="text-muted small">{t("finance.periodClosing.tabs.comparisons.trailingKpi.avgPricePerKg", { unit: weightUnit })}</div><div className="fw-bold fs-5">{formatPricePerWeight(block.avgKpis.avgPricePerKg, weightUnit, meta)}</div></div></Col>
+                        )}
                     </Row>
                 )}
             </CardBody>
@@ -145,6 +159,7 @@ interface AnnualProps extends Props {
 
 const ComparisonsTab: React.FC<AnnualProps> = ({ snapshot, isAnnual }) => {
     const { t } = useTranslation();
+    const weightUnit: WeightUnit = useSelector((state: any) => state.Configurations?.farmConfig?.defaultWeightUnit) || 'kg';
     const { comparisons, kpis, meta } = snapshot;
 
     if (!comparisons) {
@@ -155,7 +170,7 @@ const ComparisonsTab: React.FC<AnnualProps> = ({ snapshot, isAnnual }) => {
         return (
             <>
                 {comparisons.previousYear ? (
-                    <ComparisonTable title={t("finance.periodClosing.tabs.comparisons.prevYear")} block={comparisons.previousYear} currentKpis={kpis} meta={meta} />
+                    <ComparisonTable title={t("finance.periodClosing.tabs.comparisons.prevYear")} block={comparisons.previousYear} currentKpis={kpis} meta={meta} weightUnit={weightUnit} />
                 ) : (
                     <Alert color="secondary">{t("finance.periodClosing.tabs.comparisons.noPreviousYear")}</Alert>
                 )}
@@ -169,9 +184,9 @@ const ComparisonsTab: React.FC<AnnualProps> = ({ snapshot, isAnnual }) => {
 
     return (
         <>
-            <ComparisonTable title={t("finance.periodClosing.tabs.comparisons.prevMonth")} block={comparisons.previousMonth} currentKpis={kpis} meta={meta} />
-            <ComparisonTable title={t("finance.periodClosing.tabs.comparisons.sameMonthLastYear")} block={comparisons.sameMonthLastYear} currentKpis={kpis} meta={meta} />
-            <TrailingSection block={comparisons.trailingThreeMonths} meta={meta} />
+            <ComparisonTable title={t("finance.periodClosing.tabs.comparisons.prevMonth")} block={comparisons.previousMonth} currentKpis={kpis} meta={meta} weightUnit={weightUnit} />
+            <ComparisonTable title={t("finance.periodClosing.tabs.comparisons.sameMonthLastYear")} block={comparisons.sameMonthLastYear} currentKpis={kpis} meta={meta} weightUnit={weightUnit} />
+            <TrailingSection block={comparisons.trailingThreeMonths} meta={meta} weightUnit={weightUnit} />
             <div className="text-muted small">
                 <i className="ri-information-line me-1 text-muted" />
                 {t("finance.periodClosing.tabs.comparisons.variationNote", { val: formatPercentDecimal(0.136) })}

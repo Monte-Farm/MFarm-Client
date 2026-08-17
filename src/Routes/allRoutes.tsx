@@ -7,6 +7,7 @@ import Home from "pages/Home/Index";
 
 import ViewInventory from "pages/Inventory/ViewInventory";
 import ProductDetails from "pages/Inventory/InventoryDetails";
+import ViewInventoryAdjustments from "pages/Inventory/ViewInventoryAdjustments";
 import Suppliers from "pages/Suppliers/Suppliers";
 import ViewIncome from "pages/Incomes/ViewIncomes"
 import ViewProducts from "pages/Products/ViewProducts";
@@ -131,6 +132,7 @@ const authProtectedRoutes = [
   //Warehouse - Inventory
   { path: '/warehouse/inventory/view_inventory', component: <ViewInventory /> },
   { path: '/warehouse/inventory/product_details', component: <ProductDetails /> },
+  { path: '/warehouse/inventory/adjustments', component: <ViewInventoryAdjustments /> },
 
   //Warehouse - Suppliers
   { path: '/warehouse/suppliers/view_suppliers', component: <Suppliers /> },

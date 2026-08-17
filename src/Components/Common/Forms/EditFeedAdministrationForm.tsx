@@ -2,7 +2,7 @@ import { logger } from 'utils/logger';
 import { preventEnterSubmit } from 'utils/formUtils';
 import { ConfigContext } from "App";
 import { useFormik } from "formik";
-import { Trans, useTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import { getEffectiveUser } from "helpers/impersonation_helper";
 import { FEED_ADMINISTRATION_URLS } from "helpers/feeding_urls";
 import { useContext, useEffect, useMemo, useState } from "react";
@@ -14,30 +14,18 @@ import SuccessModal from "../Shared/SuccessModal";
 import ErrorModal from "../Shared/ErrorModal";
 import LoadingAnimation from "../Shared/LoadingAnimation";
 import { HttpStatusCode } from "axios";
+import { FeedAdministration } from "common/data_interfaces";
 
 const FEED_PRODUCT_CATEGORIES = ['nutrition', 'prepared_feed'];
 
-type TargetType = 'group' | 'litter' | 'pig';
-type Stage = 'piglet' | 'sow' | 'nursery' | 'grower' | 'finisher' | 'general';
-
-interface FeedAdministrationFormProps {
-    targetType: TargetType;
-    targetId?: string;            // requerido si NO es bulk
-    bulkTargets?: string[];       // requerido si bulk
-    isBulk?: boolean;
-    targetStage?: Stage;          // etapa del target (para filtrar preparados); litter siempre 'piglet'
-    defaultWeightUnit?: 'kg' | 'lb';
+interface EditFeedAdministrationFormProps {
+    administrationId: string;
     onSave: () => void;
     onCancel: () => void;
 }
 
-const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
-    targetType,
-    targetId,
-    bulkTargets = [],
-    isBulk = false,
-    targetStage,
-    defaultWeightUnit = 'kg',
+const EditFeedAdministrationForm: React.FC<EditFeedAdministrationFormProps> = ({
+    administrationId,
     onSave,
     onCancel,
 }) => {
@@ -46,6 +34,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
     const configContext = useContext(ConfigContext);
 
     const [loading, setLoading] = useState<boolean>(true);
+    const [original, setOriginal] = useState<FeedAdministration | null>(null);
     const [warehouses, setWarehouses] = useState<any[]>([]);
     const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>('');
     const [feedProducts, setFeedProducts] = useState<any[]>([]);
@@ -53,32 +42,24 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
     const [alertConfig, setAlertConfig] = useState({ visible: false, color: '', message: '' });
     const [modals, setModals] = useState({ success: false, error: false });
 
-    const toggleModal = (m: keyof typeof modals, state?: boolean) => {
+    const toggleModal = (m: keyof typeof modals, state?: boolean) =>
         setModals((prev) => ({ ...prev, [m]: state ?? !prev[m] }));
-    };
 
     const validationSchema = Yup.object({
-        preparedProductId: Yup.string().required(t('form.validation.required')),
         quantity: Yup.number()
             .typeError(t('form.validation.mustBeNumber'))
             .positive(t('form.validation.positive'))
             .required(t('form.validation.required')),
-        totalQuantity: isBulk
-            ? Yup.number()
-                .typeError(t('form.validation.mustBeNumber'))
-                .positive(t('form.validation.positive'))
-                .required(t('form.validation.required'))
-            : Yup.number().notRequired(),
         date: Yup.date().required(t('form.validation.required')).nullable(),
     });
 
     const formik = useFormik({
         initialValues: {
-            preparedProductId: '',
             quantity: 0,
-            totalQuantity: 0,
             date: new Date() as Date | null,
+            preparedProductId: '',
             observations: '',
+            editReason: '',
         },
         validationSchema,
         validateOnChange: false,
@@ -86,77 +67,43 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
         onSubmit: async (values) => {
             if (!configContext) return;
 
-            const basePayload = {
-                farmId: userLogged.farm_assigned,
-                warehouseId: selectedWarehouseId,
-                preparedProductId: values.preparedProductId,
+            const payload: Record<string, any> = {
+                editedBy: userLogged._id,
+                editReason: values.editReason || undefined,
                 quantity: values.quantity,
                 date: values.date,
-                responsibleId: userLogged._id,
                 observations: values.observations,
             };
 
+            if (selectedWarehouseId) payload.warehouseId = selectedWarehouseId;
+            if (values.preparedProductId) payload.preparedProductId = values.preparedProductId;
+
             try {
-                let url: string;
-                let payload: any = basePayload;
-
-                if (isBulk) {
-                    if (targetType === 'group') {
-                        url = `${configContext.apiUrl}/${FEED_ADMINISTRATION_URLS.bulkGroups}`;
-                    } else if (targetType === 'litter') {
-                        url = `${configContext.apiUrl}/${FEED_ADMINISTRATION_URLS.bulkLitters}`;
-                    } else {
-                        url = `${configContext.apiUrl}/${FEED_ADMINISTRATION_URLS.bulkPigs}`;
-                    }
-                    payload = { ...basePayload, targets: bulkTargets };
-                } else {
-                    if (!targetId) throw new Error('targetId requerido en modo individual');
-                    if (targetType === 'group') {
-                        url = `${configContext.apiUrl}/${FEED_ADMINISTRATION_URLS.createForGroup(targetId)}`;
-                    } else if (targetType === 'litter') {
-                        url = `${configContext.apiUrl}/${FEED_ADMINISTRATION_URLS.createForLitter(targetId)}`;
-                    } else {
-                        url = `${configContext.apiUrl}/${FEED_ADMINISTRATION_URLS.createForPig(targetId)}`;
-                    }
-                }
-
-                const response = await configContext.axiosHelper.create(url, payload);
-                if (response.status === HttpStatusCode.Created || response.status === HttpStatusCode.Ok) {
-                    const targetLabel = isBulk
-                        ? `${bulkTargets.length} ${targetType === 'group' ? t('feeding.administration.target.groups') : targetType === 'litter' ? t('feeding.administration.target.litters') : t('feeding.administration.target.pigs')}`
-                        : `1 ${targetType}`;
-                    await configContext.axiosHelper.create(`${configContext.apiUrl}/user/add_user_history/${userLogged._id}`, {
-                        event: `Administración de alimento registrada (${targetLabel})`,
-                    });
+                const url = `${configContext.apiUrl}/${FEED_ADMINISTRATION_URLS.update(administrationId)}`;
+                const response = await configContext.axiosHelper.update(url, payload);
+                if (response.status === HttpStatusCode.Ok) {
                     toggleModal('success', true);
                 }
             } catch (error: any) {
-                logger.error('Error creating administration:', error);
-                const serverMsg: string = error?.response?.data?.message || '';
-                const isPartialRollback = serverMsg.toLowerCase().includes('warning: rollback partially failed');
-                const displayMsg = isPartialRollback
-                    ? t('feeding.administration.bulk.errorPartialRollback')
-                    : serverMsg.toLowerCase().includes('rolled back')
-                        ? t('feeding.administration.bulk.errorRollback')
-                        : serverMsg || t('feeding.administration.form.error');
-                setAlertConfig({ visible: true, color: isPartialRollback ? 'warning' : 'danger', message: displayMsg });
+                logger.error('Error updating administration:', error);
+                const msg = error?.response?.data?.message || t('feeding.administration.edit.error');
+                setAlertConfig({ visible: true, color: 'danger', message: msg });
                 toggleModal('error', true);
             }
-        }
+        },
     });
 
     const fetchWarehouses = async () => {
         if (!configContext || !userLogged) return;
         try {
-            setLoading(true);
             const [mainWhRes, allSubs] = await Promise.all([
                 configContext.axiosHelper.get(`${configContext.apiUrl}/farm/get_main_warehouse/${userLogged.farm_assigned}`),
                 configContext.axiosHelper
                     .get(`${configContext.apiUrl}/warehouse/find_farm_subwarehouses/${userLogged.farm_assigned}`)
-                    .then((response: any) => response.data.data || [])
-                    .catch((error: any) => {
-                        if (error?.response?.status === HttpStatusCode.NotFound) return [];
-                        throw error;
+                    .then((res: any) => res.data.data || [])
+                    .catch((err: any) => {
+                        if (err?.response?.status === HttpStatusCode.NotFound) return [];
+                        throw err;
                     }),
             ]);
             const mainWarehouseId: string = mainWhRes.data.data;
@@ -170,8 +117,6 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
         } catch (error) {
             logger.error('Error fetching warehouses:', error);
             setAlertConfig({ visible: true, color: 'danger', message: t('common.status.noData') });
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -179,7 +124,6 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
         if (!configContext || !warehouseId) return;
         try {
             setLoadingProducts(true);
-            formik.setFieldValue('preparedProductId', '');
             setFeedProducts([]);
             const response = await configContext.axiosHelper.get(
                 `${configContext.apiUrl}/warehouse/get_inventory/${warehouseId}`
@@ -197,19 +141,54 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
             setFeedProducts(filtered);
         } catch (error) {
             logger.error('Error fetching inventory:', error);
-            setAlertConfig({ visible: true, color: 'danger', message: t('common.status.noData') });
         } finally {
             setLoadingProducts(false);
         }
     };
 
+    const fetchAdministration = async () => {
+        if (!configContext) return;
+        try {
+            setLoading(true);
+            const response = await configContext.axiosHelper.get(
+                `${configContext.apiUrl}/${FEED_ADMINISTRATION_URLS.findById(administrationId)}`
+            );
+            const record: FeedAdministration = response.data.data;
+            setOriginal(record);
+
+            const productId = typeof record.preparedProduct === 'object'
+                ? record.preparedProduct._id
+                : record.preparedProduct;
+
+            const warehouseId = record.subwarehouse
+                ? (typeof record.subwarehouse === 'object' ? record.subwarehouse._id : record.subwarehouse)
+                : '';
+
+            formik.setValues({
+                quantity: record.quantity,
+                date: record.date ? new Date(record.date) : new Date(),
+                preparedProductId: productId || '',
+                observations: record.observations || '',
+                editReason: '',
+            });
+
+            if (warehouseId) {
+                setSelectedWarehouseId(warehouseId);
+                await fetchInventory(warehouseId);
+            }
+        } catch (error) {
+            logger.error('Error fetching administration:', error);
+            setAlertConfig({ visible: true, color: 'danger', message: t('common.status.noData') });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleWarehouseChange = (warehouseId: string) => {
         setSelectedWarehouseId(warehouseId);
+        formik.setFieldValue('preparedProductId', '');
         if (warehouseId) fetchInventory(warehouseId);
-        else {
-            setFeedProducts([]);
-            formik.setFieldValue('preparedProductId', '');
-        }
+        else setFeedProducts([]);
     };
 
     const selectedProduct = useMemo(
@@ -218,31 +197,15 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
     );
 
     const stockAvailable = selectedProduct?.stock ?? 0;
-    const selectedUnit = selectedProduct?.unit_measurement ?? '';
-    const requiredQuantity = isBulk ? Number(formik.values.totalQuantity) : Number(formik.values.quantity);
-    const exceedsStock = !!selectedProduct && requiredQuantity > stockAvailable;
-    const quantityLabelKey = targetType === 'pig'
-        ? 'feeding.administration.form.field.quantityPerPig'
-        : targetType === 'group'
-            ? (isBulk ? 'feeding.administration.form.field.quantityPerGroup' : 'feeding.administration.form.field.quantityTotalGroup')
-            : (isBulk ? 'feeding.administration.form.field.quantityPerLitter' : 'feeding.administration.form.field.quantityTotalLitter');
-
-    const roundQuantity = (value: number) => Math.round(value * 10000) / 10000;
-
-    const handleIndividualQuantityChange = (value: string) => {
-        formik.setFieldValue('quantity', value);
-        if (isBulk) {
-            formik.setFieldValue('totalQuantity', value === '' ? '' : roundQuantity(Number(value) * bulkTargets.length));
-        }
-    };
-
-    const handleTotalQuantityChange = (value: string) => {
-        formik.setFieldValue('totalQuantity', value);
-        formik.setFieldValue('quantity', value === '' ? '' : roundQuantity(Number(value) / bulkTargets.length));
-    };
+    const selectedUnit = selectedProduct?.unit_measurement ?? (
+        original && typeof original.preparedProduct === 'object'
+            ? (original.preparedProduct as any).unit_measurement
+            : ''
+    );
+    const exceedsStock = !!selectedProduct && Number(formik.values.quantity) > stockAvailable;
 
     useEffect(() => {
-        fetchWarehouses();
+        Promise.all([fetchWarehouses(), fetchAdministration()]);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -250,16 +213,17 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
 
     return (
         <form onSubmit={(e) => { e.preventDefault(); formik.handleSubmit(); }} onKeyDown={preventEnterSubmit}>
-            {isBulk && (
-                <div className="alert alert-info py-2 mb-3 small">
-                    <i className="ri-information-line me-1" />
-                    <Trans
-                        i18nKey="feeding.administration.form.bulkInfo"
-                        values={{ count: bulkTargets.length, target: targetType === 'group' ? t('feeding.administration.target.groups') : targetType === 'litter' ? t('feeding.administration.target.litters') : t('feeding.administration.target.pigs') }}
-                        components={{ 1: <strong /> }}
-                    />
-                </div>
-            )}
+            {/* Motivo de edición */}
+            <div className="mb-3">
+                <Label className="form-label">{t('feeding.administration.edit.reasonLabel')}</Label>
+                <Input
+                    type="text"
+                    name="editReason"
+                    value={formik.values.editReason}
+                    onChange={formik.handleChange}
+                    placeholder={t('feeding.administration.edit.reasonPlaceholder')}
+                />
+            </div>
 
             {/* Selector de almacén */}
             <div className="mb-3">
@@ -318,7 +282,7 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
                 </div>
 
                 <div className="w-50">
-                    <Label className="form-label">{t(quantityLabelKey)}</Label>
+                    <Label className="form-label">{t('feeding.administration.form.field.quantity')}</Label>
                     <div className="input-group">
                         <Input
                             type="number"
@@ -326,41 +290,21 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
                             min={0}
                             step="0.0001"
                             value={formik.values.quantity || ''}
-                            onChange={(e) => handleIndividualQuantityChange(e.target.value)}
+                            onChange={formik.handleChange}
                             onBlur={formik.handleBlur}
-                            invalid={formik.touched.quantity && !!formik.errors.quantity}
-                            disabled={!formik.values.preparedProductId}
+                            invalid={(formik.touched.quantity && !!formik.errors.quantity) || exceedsStock}
                         />
                         <span className="input-group-text">{selectedUnit}</span>
                     </div>
                     {formik.touched.quantity && formik.errors.quantity && (
                         <div className="text-danger small mt-1">{formik.errors.quantity as string}</div>
                     )}
-                    {isBulk && (
-                        <div className="mt-3">
-                            <Label className="form-label">{t('feeding.administration.form.field.totalQuantity')}</Label>
-                            <div className="input-group">
-                                <Input
-                                    type="number"
-                                    name="totalQuantity"
-                                    min={0}
-                                    step="0.01"
-                                    value={formik.values.totalQuantity || ''}
-                                    onChange={(e) => handleTotalQuantityChange(e.target.value)}
-                                    onBlur={formik.handleBlur}
-                                    invalid={(formik.touched.totalQuantity && !!formik.errors.totalQuantity) || exceedsStock}
-                                    disabled={!formik.values.preparedProductId}
-                                />
-                                <span className="input-group-text">{selectedUnit}</span>
-                            </div>
-                            {formik.touched.totalQuantity && formik.errors.totalQuantity && (
-                                <div className="text-danger small mt-1">{formik.errors.totalQuantity as string}</div>
-                            )}
-                        </div>
-                    )}
                     {exceedsStock && selectedProduct && (
                         <div className="text-danger small mt-1">
-                            {t('feeding.administration.form.warning.exceedsStock', { val: stockAvailable.toFixed(2), required: requiredQuantity.toFixed(2) })}
+                            {t('feeding.administration.form.warning.exceedsStock', {
+                                val: stockAvailable.toFixed(2),
+                                required: Number(formik.values.quantity).toFixed(2),
+                            })}
                         </div>
                     )}
                 </div>
@@ -407,14 +351,16 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
             </div>
 
             <div className="d-flex justify-content-end gap-2 mt-4">
-                <Button color="secondary" className="btn-cancel" outline onClick={onCancel}>{t('feeding.administration.form.action.cancel')}</Button>
+                <Button color="secondary" outline onClick={onCancel}>
+                    {t('feeding.administration.edit.action.cancel')}
+                </Button>
                 <Button
-                    color="success"
+                    color="primary"
                     onClick={() => formik.handleSubmit()}
-                    disabled={formik.isSubmitting || !selectedWarehouseId || feedProducts.length === 0 || exceedsStock}
+                    disabled={formik.isSubmitting || exceedsStock}
                 >
                     {formik.isSubmitting ? <Spinner size="sm" /> : (
-                        <><i className="ri-check-line me-2" />{t('feeding.administration.form.action.register')}</>
+                        <><i className="ri-save-line me-2" />{t('feeding.administration.edit.action.save')}</>
                     )}
                 </Button>
             </div>
@@ -422,14 +368,23 @@ const FeedAdministrationForm: React.FC<FeedAdministrationFormProps> = ({
             <SuccessModal
                 isOpen={modals.success}
                 onClose={onSave}
-                message={isBulk
-                    ? t('feeding.administration.form.success.bulk', { count: bulkTargets.length, target: targetType === 'group' ? t('feeding.administration.target.groups') : targetType === 'litter' ? t('feeding.administration.target.litters') : t('feeding.administration.target.pigs') })
-                    : t('feeding.administration.form.success.single')}
+                message={t('feeding.administration.edit.success')}
             />
-            <ErrorModal isOpen={modals.error} onClose={() => toggleModal('error', false)} message={t('feeding.administration.form.error')} />
-            <AlertMessage color={alertConfig.color} message={alertConfig.message} visible={alertConfig.visible} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} absolutePosition={false} autoClose={4000} />
+            <ErrorModal
+                isOpen={modals.error}
+                onClose={() => toggleModal('error', false)}
+                message={t('feeding.administration.edit.error')}
+            />
+            <AlertMessage
+                color={alertConfig.color}
+                message={alertConfig.message}
+                visible={alertConfig.visible}
+                onClose={() => setAlertConfig({ ...alertConfig, visible: false })}
+                absolutePosition={false}
+                autoClose={4000}
+            />
         </form>
     );
 };
 
-export default FeedAdministrationForm;
+export default EditFeedAdministrationForm;

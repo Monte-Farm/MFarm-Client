@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { Alert, Card, CardBody, CardHeader, Col, Row, Table } from "reactstrap";
 import { ClosingSnapshot } from "common/data_interfaces";
-import { formatCurrency, formatWeightKg } from "utils/closingFormatters";
+import { formatCurrency, formatWeight, WeightUnit } from "utils/closingFormatters";
 import { darkenHex } from "utils/colorUtils";
 
 interface Props {
@@ -13,6 +13,7 @@ interface Props {
 const FeedingTab: React.FC<Props> = ({ snapshot }) => {
     const { t } = useTranslation();
     const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const weightUnit: WeightUnit = useSelector((state: any) => state.Configurations?.farmConfig?.defaultWeightUnit) || 'kg';
     const bg = (color: string) => isDark ? darkenHex(color) : color;
     const { feeding, meta } = snapshot;
 
@@ -33,7 +34,7 @@ const FeedingTab: React.FC<Props> = ({ snapshot }) => {
                         <Col md={4}>
                             <div className="border rounded p-3 bg-light">
                                 <div className="text-muted small">{t("finance.periodClosing.tabs.feeding.summary.totalConsumed")}</div>
-                                <div className="fw-bold fs-5">{formatWeightKg(feeding.totalConsumedKg, 0)}</div>
+                                <div className="fw-bold fs-5">{formatWeight(feeding.totalConsumedKg, weightUnit, 0)}</div>
                             </div>
                         </Col>
                         <Col md={4}>
@@ -75,7 +76,7 @@ const FeedingTab: React.FC<Props> = ({ snapshot }) => {
                                     return (
                                         <tr key={p.phase}>
                                             <td className="fw-semibold">{p.label}</td>
-                                            <td className="text-end">{formatWeightKg(p.consumedKg, 0)}</td>
+                                            <td className="text-end">{formatWeight(p.consumedKg, weightUnit, 0)}</td>
                                             <td className="text-end fw-semibold" style={{ backgroundColor: bg("#FFEBEE") }}>{formatCurrency(p.cost, meta)}</td>
                                             <td className="text-end text-muted">{pct.toFixed(1)}%</td>
                                         </tr>
@@ -96,7 +97,7 @@ const FeedingTab: React.FC<Props> = ({ snapshot }) => {
                         <Col md={4}>
                             <div className="border rounded p-3">
                                 <div className="text-muted small">{t("finance.periodClosing.tabs.feeding.perAnimal.avgDaily")}</div>
-                                <div className="fw-bold fs-5">{formatWeightKg(feeding.perAnimal.avgDailyConsumptionKg, 2)}</div>
+                                <div className="fw-bold fs-5">{formatWeight(feeding.perAnimal.avgDailyConsumptionKg, weightUnit, 2)}</div>
                             </div>
                         </Col>
                         <Col md={4}>
