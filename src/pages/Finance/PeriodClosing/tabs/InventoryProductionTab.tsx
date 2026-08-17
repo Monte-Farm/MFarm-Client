@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { Alert, Card, CardBody, CardHeader, Col, Row, Table } from "reactstrap";
 import { ClosingSnapshot } from "common/data_interfaces";
-import { formatCurrency, formatNumber, formatPercentDecimal, formatWeightKg, stageLabel } from "utils/closingFormatters";
+import { formatCurrency, formatNumber, formatPercentDecimal, formatWeight, stageLabel, WeightUnit } from "utils/closingFormatters";
 import { darkenHex } from "utils/colorUtils";
 
 interface Props {
@@ -13,6 +13,7 @@ interface Props {
 const InventoryProductionTab: React.FC<Props> = ({ snapshot }) => {
     const { t } = useTranslation();
     const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const weightUnit: WeightUnit = useSelector((state: any) => state.Configurations?.farmConfig?.defaultWeightUnit) || 'kg';
     const bg = (color: string) => isDark ? darkenHex(color) : color;
     const { inventory, production, meta } = snapshot;
 
@@ -34,7 +35,7 @@ const InventoryProductionTab: React.FC<Props> = ({ snapshot }) => {
                                     <div className="border rounded p-3 h-100 bg-light">
                                         <div className="text-muted small mb-1">{t("finance.periodClosing.tabs.inventory.flow.initial")} ({inventory.initial.date})</div>
                                         <div className="fw-bold fs-3">{formatNumber(inventory.initial.totalPigs)}</div>
-                                        <div className="text-muted small">{formatWeightKg(inventory.initial.totalWeightKg, 0)}</div>
+                                        <div className="text-muted small">{formatWeight(inventory.initial.totalWeightKg, weightUnit, 0)}</div>
                                     </div>
                                 </Col>
                                 <Col md={4}>
@@ -59,7 +60,7 @@ const InventoryProductionTab: React.FC<Props> = ({ snapshot }) => {
                                     <div className="border rounded p-3 h-100 bg-light">
                                         <div className="text-muted small mb-1">{t("finance.periodClosing.tabs.inventory.flow.final")} ({inventory.final.date})</div>
                                         <div className="fw-bold fs-3">{formatNumber(inventory.final.totalPigs)}</div>
-                                        <div className="text-muted small">{formatWeightKg(inventory.final.totalWeightKg, 0)}</div>
+                                        <div className="text-muted small">{formatWeight(inventory.final.totalWeightKg, weightUnit, 0)}</div>
                                     </div>
                                 </Col>
                             </Row>
@@ -116,10 +117,10 @@ const InventoryProductionTab: React.FC<Props> = ({ snapshot }) => {
                                             <tr key={finalItem.stage}>
                                                 <td className="fw-semibold">{stageLabel(finalItem.stage)}</td>
                                                 <td className="text-end">{formatNumber(initialItem?.count || 0)}</td>
-                                                <td className="text-end">{formatWeightKg(initialItem?.totalWeightKg || 0, 0)}</td>
+                                                <td className="text-end">{formatWeight(initialItem?.totalWeightKg || 0, weightUnit, 0)}</td>
                                                 <td className="text-end fw-semibold">{formatNumber(finalItem.count)}</td>
-                                                <td className="text-end">{formatWeightKg(finalItem.totalWeightKg, 0)}</td>
-                                                <td className="text-end text-muted">{formatWeightKg(finalItem.avgWeightKg, 1)}</td>
+                                                <td className="text-end">{formatWeight(finalItem.totalWeightKg, weightUnit, 0)}</td>
+                                                <td className="text-end text-muted">{formatWeight(finalItem.avgWeightKg, weightUnit, 1)}</td>
                                             </tr>
                                         );
                                     })}
@@ -148,7 +149,7 @@ const InventoryProductionTab: React.FC<Props> = ({ snapshot }) => {
                                         <Col md={4}>
                                             <div className="border rounded p-3 bg-light">
                                                 <div className="text-muted small">{t("finance.periodClosing.tabs.inventory.valuation.totalWeight")}</div>
-                                                <div className="fw-bold fs-5">{formatWeightKg(inventory.final.totalWeightKg, 0)}</div>
+                                                <div className="fw-bold fs-5">{formatWeight(inventory.final.totalWeightKg, weightUnit, 0)}</div>
                                             </div>
                                         </Col>
                                         <Col md={4}>
@@ -170,7 +171,7 @@ const InventoryProductionTab: React.FC<Props> = ({ snapshot }) => {
                                             {inventory.valuation.byStage.map((v) => (
                                                 <tr key={v.stage}>
                                                     <td>{stageLabel(v.stage)}</td>
-                                                    <td className="text-end">{formatWeightKg(v.totalWeightKg, 0)}</td>
+                                                    <td className="text-end">{formatWeight(v.totalWeightKg, weightUnit, 0)}</td>
                                                     <td className="text-end fw-semibold">{formatCurrency(v.value, meta)}</td>
                                                 </tr>
                                             ))}
@@ -199,7 +200,7 @@ const InventoryProductionTab: React.FC<Props> = ({ snapshot }) => {
                                             <Col xs={6}>{t("finance.periodClosing.tabs.inventory.production.births.alive")}<div className="fw-bold text-success">{formatNumber(production.births.pigletsBornAlive)}</div></Col>
                                             <Col xs={6}>{t("finance.periodClosing.tabs.inventory.production.births.dead")}<div className="fw-bold text-danger">{formatNumber(production.births.pigletsBornDead)}</div></Col>
                                             <Col xs={6}>{t("finance.periodClosing.tabs.inventory.production.births.avgLitter")}<div className="fw-bold">{formatNumber(production.births.avgLitterSize, 1)}</div></Col>
-                                            <Col xs={12}>{t("finance.periodClosing.tabs.inventory.production.births.avgWeight")}<div className="fw-bold">{formatWeightKg(production.births.avgPigletBirthWeightKg, 2)}</div></Col>
+                                            <Col xs={12}>{t("finance.periodClosing.tabs.inventory.production.births.avgWeight")}<div className="fw-bold">{formatWeight(production.births.avgPigletBirthWeightKg, weightUnit, 2)}</div></Col>
                                         </Row>
                                     </div>
                                 </Col>
