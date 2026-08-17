@@ -604,6 +604,18 @@ export interface FeedAdministrationHistoryEntry {
         username?: string;
     };
     observations?: string;
+    isReverted?: boolean;
+}
+
+export interface FeedAdministrationEditHistoryEntry {
+    editedAt: Date | string;
+    editedBy: string | { _id: string; name: string; lastname: string };
+    reason?: string;
+    previousValues: {
+        quantity?: number;
+        unitCost?: number;
+        totalCost?: number;
+    };
 }
 
 export interface FeedAdministration {
@@ -619,7 +631,13 @@ export interface FeedAdministration {
     totalCost: number;
     date: Date | string | null;
     responsible: string | { _id: string; name: string; lastname: string };
+    subwarehouse?: string | { _id: string; name: string };
     observations?: string;
+    status?: 'active' | 'reverted';
+    revertedAt?: Date | string;
+    revertedBy?: string | { _id: string; name: string; lastname: string };
+    revertReason?: string;
+    editHistory?: FeedAdministrationEditHistoryEntry[];
 }
 
 export interface PigletSnapshot {
@@ -779,12 +797,22 @@ export interface ClosingKpis {
     operatingMargin: number;
     totalKgSold: number;
     totalPigsSold: number;
+    avgPricePerKg?: number;
+    resultBeforeTaxes?: number;
+    taxes?: number;
+    netResult?: number;
+}
+
+export interface ClosingCostLineItem {
+    description: string;
+    amount: number;
+    date: string;
 }
 
 export interface ClosingCostItem {
     category: string;
-    description: string;
     amount: number;
+    items: ClosingCostLineItem[];
 }
 
 export interface ClosingSalesSummary {
@@ -1066,6 +1094,10 @@ export interface ComparisonVariation {
     operatingMargin: number | null;
     totalKgSold: number | null;
     totalPigsSold: number | null;
+    avgPricePerKg?: number | null;
+    resultBeforeTaxes?: number | null;
+    taxes?: number | null;
+    netResult?: number | null;
 }
 
 export interface ComparisonBlock {
@@ -1282,4 +1314,39 @@ export interface CapitalAssetsSection {
     totalMonthlyAmortization: number;
     activeAssetCount: number;
     assets: CapitalAssetsSnapshotAsset[];
+}
+
+// ─── Inventory Adjustments ───────────────────────────────────────────────────
+
+export type AdjustmentDirection = 'increase' | 'decrease';
+export type AdjustmentType = 'shrinkage' | 'breakage' | 'expiration' | 'count_correction' | 'other';
+export type AdjustmentStatus = 'active' | 'reverted';
+
+export interface AdjustmentProduct {
+    productId: string | { _id: string; name: string; unit: string };
+    adjustedQuantity: number;
+    unitCost?: number;
+    totalCost?: number;
+}
+
+export interface InventoryAdjustment {
+    _id: string;
+    farmId: string;
+    warehouseId: string | { _id: string; code: string; name: string };
+    date: string;
+    direction: AdjustmentDirection;
+    adjustmentType: AdjustmentType;
+    reason: string;
+    products: AdjustmentProduct[];
+    totalFinancialImpact: number;
+    outcomeId: string | null;
+    financialEntryId: string | null;
+    createdBy?: string | { _id: string; name: string; email: string };
+    notes: string | null;
+    status: AdjustmentStatus;
+    revertedAt: string | null;
+    revertedBy: string | null;
+    revertReason: string | null;
+    createdAt: string;
+    updatedAt: string;
 }

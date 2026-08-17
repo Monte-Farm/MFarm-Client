@@ -75,6 +75,11 @@ const PigEditForm: React.FC<PigEditFormProps> = ({ pigData, onSave, onCancel }) 
                     <Input type="text" id="code" name="code" value={formik.values.code} disabled />
                 </div>
 
+                <div className="mt-4">
+                    <Label htmlFor="earTag">{t('pigs.field.earTag')}</Label>
+                    <Input type="text" id="earTag" name="earTag" value={formik.values.earTag ?? ''} onChange={formik.handleChange} onBlur={formik.handleBlur} placeholder={t('pigs.field.earTagPlaceholder')} />
+                </div>
+
                 <div className="d-flex gap-3">
                     <div className="mt-4 w-50">
                         <Label htmlFor="birthdate">{t('pigs.field.birthDate')}</Label>

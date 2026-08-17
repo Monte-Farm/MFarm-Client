@@ -24,6 +24,7 @@ const Navdata = () => {
     const [isIncomes, setIsIncomes] = useState<boolean>(false)
     const [isOutcomes, setIsOutcomes] = useState<boolean>(false)
     const [isInventory, setIsInventory] = useState<boolean>(false)
+    const [isInventoryAdjustments, setIsInventoryAdjustments] = useState<boolean>(false)
     const [isProducts, setIsProducts] = useState<boolean>(false)
     const [isPurchaseOrders, setIsPurchaseOrders] = useState<boolean>(false)
 
@@ -251,6 +252,18 @@ const Navdata = () => {
                         setIsInventory(!isInventory)
                     },
                     stateVariables: isInventory,
+                },
+                {
+                    id: 'inventoryAdjustments',
+                    label: t('menu.inventoryAdjustments'),
+                    link: '/warehouse/inventory/adjustments',
+                    roles: ['farm_manager', 'warehouse_manager', 'finance_manager'],
+                    parentId: "warehouse",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsInventoryAdjustments(!isInventoryAdjustments);
+                    },
+                    stateVariables: isInventoryAdjustments,
                 },
                 {
                     id: 'purchaseOrders',

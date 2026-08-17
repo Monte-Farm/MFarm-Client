@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { Alert, Card, CardBody, CardHeader, Col, Row, Table } from "reactstrap";
 import { ClosingSnapshot } from "common/data_interfaces";
-import { formatCurrency, formatNumber, formatWeightKg } from "utils/closingFormatters";
+import { formatCurrency, formatNumber, formatWeight, WeightUnit } from "utils/closingFormatters";
 import { darkenHex } from "utils/colorUtils";
 
 interface Props {
@@ -13,6 +13,7 @@ interface Props {
 const SalesDetailTab: React.FC<Props> = ({ snapshot }) => {
     const { t } = useTranslation();
     const isDark = useSelector((state: any) => state.Layout?.layoutModeType) === "dark";
+    const weightUnit: WeightUnit = useSelector((state: any) => state.Configurations?.farmConfig?.defaultWeightUnit) || 'kg';
     const bg = (color: string) => isDark ? darkenHex(color) : color;
     const { salesDetail, meta } = snapshot;
 
@@ -33,7 +34,7 @@ const SalesDetailTab: React.FC<Props> = ({ snapshot }) => {
                         <Col md={3} sm={6}>
                             <div className="border rounded p-3 bg-light">
                                 <div className="text-muted small">{t("finance.periodClosing.tabs.sales.averages.avgWeight")}</div>
-                                <div className="fw-bold fs-5">{formatWeightKg(salesDetail.averages.avgWeightAtSaleKg, 1)}</div>
+                                <div className="fw-bold fs-5">{formatWeight(salesDetail.averages.avgWeightAtSaleKg, weightUnit, 1)}</div>
                             </div>
                         </Col>
                         <Col md={3} sm={6}>
@@ -86,8 +87,8 @@ const SalesDetailTab: React.FC<Props> = ({ snapshot }) => {
                                     <tr key={t_.type}>
                                         <td className="fw-semibold">{t_.label}</td>
                                         <td className="text-end">{formatNumber(t_.pigCount)}</td>
-                                        <td className="text-end">{formatWeightKg(t_.totalWeightKg, 1)}</td>
-                                        <td className="text-end">{formatWeightKg(t_.avgWeightPerPig, 1)}</td>
+                                        <td className="text-end">{formatWeight(t_.totalWeightKg, weightUnit, 1)}</td>
+                                        <td className="text-end">{formatWeight(t_.avgWeightPerPig, weightUnit, 1)}</td>
                                         <td className="text-end">{formatCurrency(t_.avgPricePerKg, meta)}</td>
                                         <td className="text-end fw-semibold" style={{ backgroundColor: bg("#E8F5E9") }}>{formatCurrency(t_.totalAmount, meta)}</td>
                                     </tr>
@@ -125,7 +126,7 @@ const SalesDetailTab: React.FC<Props> = ({ snapshot }) => {
                                         <td className="text-muted small">{c.clientId || "—"}</td>
                                         <td className="text-end">{formatNumber(c.saleCount)}</td>
                                         <td className="text-end">{formatNumber(c.pigCount)}</td>
-                                        <td className="text-end">{formatWeightKg(c.totalWeightKg, 1)}</td>
+                                        <td className="text-end">{formatWeight(c.totalWeightKg, weightUnit, 1)}</td>
                                         <td className="text-end">{formatCurrency(c.avgPricePerKg, meta)}</td>
                                         <td className="text-end fw-semibold" style={{ backgroundColor: bg("#E8F5E9") }}>{formatCurrency(c.totalAmount, meta)}</td>
                                     </tr>
