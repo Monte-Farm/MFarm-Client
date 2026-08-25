@@ -4,7 +4,6 @@ import { useState, useContext } from "react";
 import { FeedAdministrationHistoryEntry } from "common/data_interfaces";
 import { Column } from "common/data/data_types";
 import FeedAdministrationForm from "../Forms/FeedAdministrationForm";
-import EditFeedAdministrationForm from "../Forms/EditFeedAdministrationForm";
 import CustomTable from "../Tables/CustomTable";
 import { useTranslation } from "react-i18next";
 import { ConfigContext } from "App";
@@ -41,11 +40,7 @@ const FeedAdministrationsCard = ({
     const userLogged = getEffectiveUser();
 
     const [isRegisterOpen, setIsRegisterOpen] = useState(false);
-    const [editModal, setEditModal] = useState<{ open: boolean; administrationId: string | null }>({
-        open: false,
-        administrationId: null,
-    });
-    const [revertModal, setRevertModal] = useState<{
+const [revertModal, setRevertModal] = useState<{
         open: boolean;
         entry: FeedAdministrationHistoryEntry | null;
         reason: string;
@@ -170,16 +165,6 @@ const FeedAdministrationsCard = ({
                 <div className="d-flex gap-1">
                     <Button
                         size="sm"
-                        color="primary"
-                        outline
-                        disabled={disabled || !!row.isReverted}
-                        title={t('feeding.administration.card.editModal')}
-                        onClick={() => setEditModal({ open: true, administrationId: row.administrationId })}
-                    >
-                        <i className="ri-edit-line" />
-                    </Button>
-                    <Button
-                        size="sm"
                         color="danger"
                         outline
                         disabled={disabled || !!row.isReverted}
@@ -252,32 +237,6 @@ const FeedAdministrationsCard = ({
                         }}
                         onCancel={() => setIsRegisterOpen(false)}
                     />
-                </ModalBody>
-            </Modal>
-
-            {/* Modal: Editar administración */}
-            <Modal
-                size="xl"
-                isOpen={editModal.open}
-                toggle={() => setEditModal({ open: false, administrationId: null })}
-                backdrop="static"
-                keyboard={false}
-                centered
-            >
-                <ModalHeader toggle={() => setEditModal({ open: false, administrationId: null })}>
-                    {t('feeding.administration.card.editModal')}
-                </ModalHeader>
-                <ModalBody>
-                    {editModal.administrationId && (
-                        <EditFeedAdministrationForm
-                            administrationId={editModal.administrationId}
-                            onSave={() => {
-                                setEditModal({ open: false, administrationId: null });
-                                onAdministered();
-                            }}
-                            onCancel={() => setEditModal({ open: false, administrationId: null })}
-                        />
-                    )}
                 </ModalBody>
             </Modal>
 

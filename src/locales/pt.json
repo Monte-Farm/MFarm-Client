@@ -8131,6 +8131,7 @@
       "equipment": "Equipamento / Ferramentas",
       "technology": "Tecnologia",
       "land": "Terreno / Infraestrutura",
+      "building": "Edificação",
       "other": "Outro"
     },
     "column": {
@@ -8317,7 +8318,8 @@
           "product": "Produto",
           "stock": "Estoque atual",
           "quantity": "Quantidade a ajustar",
-          "estimatedStock": "Estoque estimado"
+          "estimatedStock": "Estoque estimado",
+          "quantityHint": "Use negativo para baixa, positivo para entrada de correção"
         },
         "insufficientStock": "Estoque insuficiente",
         "selected": "selecionados",
@@ -8333,6 +8335,7 @@
     "revert": {
       "consequenceDecrease": "Ao estornar este ajuste, o estoque baixado será restaurado e o impacto financeiro registrado será removido.",
       "consequenceIncrease": "Ao estornar este ajuste, o estoque adicionado será reduzido e a receita financeira registrada será removida.",
+      "consequence": "Ao estornar este ajuste, todas as alterações de estoque serão restauradas e os impactos financeiros registrados serão removidos.",
       "reasonLabel": "Motivo do estorno",
       "reasonPlaceholder": "Explique por que este ajuste está sendo estornado...",
       "error": "Erro ao estornar o ajuste."
@@ -8360,6 +8363,7 @@
       },
       "col": {
         "product": "Produto",
+        "direction": "Dir.",
         "quantity": "Quantidade",
         "unitCost": "Custo unitário",
         "totalCost": "Custo total",

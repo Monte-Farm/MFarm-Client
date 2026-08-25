@@ -8131,6 +8131,7 @@
       "equipment": "Equipment / Tools",
       "technology": "Technology",
       "land": "Land / Infrastructure",
+      "building": "Building",
       "other": "Other"
     },
     "column": {
@@ -8317,7 +8318,8 @@
           "product": "Product",
           "stock": "Current Stock",
           "quantity": "Quantity to Adjust",
-          "estimatedStock": "Estimated Stock"
+          "estimatedStock": "Estimated Stock",
+          "quantityHint": "Use negative for decrease, positive for increase"
         },
         "insufficientStock": "Insufficient stock",
         "selected": "selected",
@@ -8333,6 +8335,7 @@
     "revert": {
       "consequenceDecrease": "Reverting this adjustment will restore the deducted stock and remove the recorded financial cost.",
       "consequenceIncrease": "Reverting this adjustment will reduce the added stock and remove the recorded financial income.",
+      "consequence": "Reverting this adjustment will restore all stock changes and remove the recorded financial impacts.",
       "reasonLabel": "Reason for Reverting",
       "reasonPlaceholder": "Explain why this adjustment is being reverted...",
       "error": "Error reverting the adjustment."
@@ -8360,6 +8363,7 @@
       },
       "col": {
         "product": "Product",
+        "direction": "Dir.",
         "quantity": "Quantity",
         "unitCost": "Unit Cost",
         "totalCost": "Total Cost",
