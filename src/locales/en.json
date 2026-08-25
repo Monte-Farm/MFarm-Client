@@ -8056,7 +8056,9 @@
       "closeAssistant": "Close AI assistant",
       "thinkingClose": "Assistant thinking — close",
       "respondingClose": "Assistant responding — close",
-      "cancel": "Stop response"
+      "cancel": "Stop response",
+      "switchToStatic": "Switch to fixed button",
+      "switchToAnimated": "Switch to animated pig"
     },
     "panel": {
       "title": "PorcySys Assistant",
