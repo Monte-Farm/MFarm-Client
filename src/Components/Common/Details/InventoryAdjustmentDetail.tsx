@@ -89,9 +89,8 @@ const InventoryAdjustmentDetail: React.FC<InventoryAdjustmentDetailProps> = ({
 
     if (!adjustment) return null;
 
-    const sign = adjustment.direction === 'decrease' ? '-' : '+';
-    const impactColor = adjustment.direction === 'decrease' ? '#dc3545' : '#198754';
-    const dirIcon = directionIcon[adjustment.direction];
+    const impactColor = adjustment.totalFinancialImpact < 0 ? '#dc3545' : '#198754';
+    const dirIcon = adjustment.direction ? directionIcon[adjustment.direction] : null;
 
     const totalProducts = adjustment.products.reduce(
         (acc, p) => acc + p.adjustedQuantity,
@@ -102,17 +101,21 @@ const InventoryAdjustmentDetail: React.FC<InventoryAdjustmentDetailProps> = ({
         <Modal size="lg" isOpen={isOpen} toggle={onClose} backdrop="static" keyboard={false} centered>
             <ModalHeader toggle={onClose}>
                 <div className="d-flex align-items-center gap-2">
-                    <i className={`${dirIcon} fs-5`} style={{ color: adjustment.direction === 'decrease' ? '#dc3545' : '#198754' }} />
+                    {dirIcon && (
+                        <i className={`${dirIcon} fs-5`} style={{ color: adjustment.direction === 'decrease' ? '#dc3545' : '#198754' }} />
+                    )}
                     {t('inventoryAdjustments.detail.title')}
                 </div>
             </ModalHeader>
             <ModalBody>
                 {/* ── Badges de estado ── */}
                 <div className="d-flex flex-wrap gap-2 mb-4">
-                    <Badge color={directionColor[adjustment.direction]} className="px-3 py-2 fs-6">
-                        <i className={`${dirIcon} me-1`} />
-                        {t(`inventoryAdjustments.direction.${adjustment.direction}`)}
-                    </Badge>
+                    {adjustment.direction && (
+                        <Badge color={directionColor[adjustment.direction]} className="px-3 py-2 fs-6">
+                            <i className={`${directionIcon[adjustment.direction]} me-1`} />
+                            {t(`inventoryAdjustments.direction.${adjustment.direction}`)}
+                        </Badge>
+                    )}
                     <Badge color={statusColor[adjustment.status]} className="px-3 py-2 fs-6">
                         {t(`inventoryAdjustments.status.${adjustment.status}`)}
                     </Badge>
@@ -125,7 +128,7 @@ const InventoryAdjustmentDetail: React.FC<InventoryAdjustmentDetailProps> = ({
                 <div
                     className="rounded-3 p-3 mb-4 text-center"
                     style={{
-                        background: adjustment.direction === 'decrease' ? '#fff5f5' : '#f0fff4',
+                        background: adjustment.totalFinancialImpact < 0 ? '#fff5f5' : '#f0fff4',
                         border: `1.5px solid ${impactColor}`,
                     }}
                 >
@@ -133,13 +136,13 @@ const InventoryAdjustmentDetail: React.FC<InventoryAdjustmentDetailProps> = ({
                         {t('inventoryAdjustments.detail.financialImpact')}
                     </div>
                     <div className="fw-bold" style={{ fontSize: '2rem', color: impactColor }}>
-                        {sign}${Math.abs(adjustment.totalFinancialImpact).toLocaleString('es-ES', {
+                        {adjustment.totalFinancialImpact < 0 ? '-' : '+'}${Math.abs(adjustment.totalFinancialImpact).toLocaleString('es-ES', {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
                         })}
                     </div>
                     <div className="text-muted small mt-1">
-                        {adjustment.direction === 'decrease'
+                        {adjustment.totalFinancialImpact < 0
                             ? t('inventoryAdjustments.detail.impactHintDecrease')
                             : t('inventoryAdjustments.detail.impactHintIncrease')}
                     </div>
@@ -188,38 +191,53 @@ const InventoryAdjustmentDetail: React.FC<InventoryAdjustmentDetailProps> = ({
                         <thead className="table-light">
                             <tr>
                                 <th>{t('inventoryAdjustments.detail.col.product')}</th>
+                                <th>{t('inventoryAdjustments.detail.col.direction')}</th>
                                 <th className="text-end">{t('inventoryAdjustments.detail.col.quantity')}</th>
                                 <th className="text-end">{t('inventoryAdjustments.detail.col.unitCost')}</th>
                                 <th className="text-end">{t('inventoryAdjustments.detail.col.totalCost')}</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {adjustment.products.map((p, idx) => (
-                                <tr key={idx}>
-                                    <td>{getProductName(p.productId)}</td>
-                                    <td className="text-end">
-                                        {p.adjustedQuantity.toFixed(2)} {getProductUnit(p.productId)}
-                                    </td>
-                                    <td className="text-end">
-                                        {p.unitCost != null
-                                            ? `$${p.unitCost.toFixed(2)}`
-                                            : '—'}
-                                    </td>
-                                    <td className="text-end fw-semibold">
-                                        {p.totalCost != null
-                                            ? `$${p.totalCost.toFixed(2)}`
-                                            : '—'}
-                                    </td>
-                                </tr>
-                            ))}
+                            {adjustment.products.map((p, idx) => {
+                                const productDir: AdjustmentDirection | undefined =
+                                    p.direction
+                                        ? p.direction
+                                        : adjustment.direction
+                                            ? adjustment.direction
+                                            : p.adjustedQuantity < 0 ? 'decrease' : 'increase';
+                                const dirIconClass = productDir === 'decrease'
+                                    ? 'ri-arrow-down-line text-danger'
+                                    : 'ri-arrow-up-line text-success';
+                                return (
+                                    <tr key={idx}>
+                                        <td>{getProductName(p.productId)}</td>
+                                        <td>
+                                            <i className={dirIconClass} />
+                                        </td>
+                                        <td className="text-end">
+                                            {p.adjustedQuantity.toFixed(2)} {getProductUnit(p.productId)}
+                                        </td>
+                                        <td className="text-end">
+                                            {p.unitCost != null
+                                                ? `$${p.unitCost.toFixed(2)}`
+                                                : '—'}
+                                        </td>
+                                        <td className="text-end fw-semibold">
+                                            {p.totalCost != null
+                                                ? `$${p.totalCost.toFixed(2)}`
+                                                : '—'}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                         <tfoot className="table-light">
                             <tr>
-                                <td colSpan={3} className="text-end fw-bold">
+                                <td colSpan={4} className="text-end fw-bold">
                                     {t('inventoryAdjustments.detail.col.total')}
                                 </td>
                                 <td className="text-end fw-bold" style={{ color: impactColor }}>
-                                    {sign}${Math.abs(adjustment.totalFinancialImpact).toFixed(2)}
+                                    {adjustment.totalFinancialImpact < 0 ? '-' : '+'}${Math.abs(adjustment.totalFinancialImpact).toFixed(2)}
                                 </td>
                             </tr>
                         </tfoot>
