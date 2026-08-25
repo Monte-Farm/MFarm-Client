@@ -6,8 +6,11 @@ import { cancelStream, sendMessage, startNewConversation } from 'slices/ai/thunk
 import AiChatHeader from './AiChatHeader';
 import AiChatMessages from './AiChatMessages';
 import AiChatInput from './AiChatInput';
+import { LauncherMode } from './AiChatLauncher';
 
 interface AiChatPanelProps {
+    launcherMode: LauncherMode;
+    onToggleLauncherMode: () => void;
     onClose: () => void;
 }
 
@@ -28,7 +31,7 @@ const selectAi = createSelector(
     })
 );
 
-const AiChatPanel: React.FC<AiChatPanelProps> = ({ onClose }) => {
+const AiChatPanel: React.FC<AiChatPanelProps> = ({ launcherMode, onToggleLauncherMode, onClose }) => {
     const dispatch = useDispatch<any>();
     const { messages, sending, isStreaming, loadingHistory, error } = useSelector(selectAi);
     const [pendingText, setPendingText] = useState<string>('');
@@ -51,7 +54,12 @@ const AiChatPanel: React.FC<AiChatPanelProps> = ({ onClose }) => {
 
     return (
         <div className="ai-chat-panel" role="dialog" aria-label="Asistente PorcySys">
-            <AiChatHeader onNewConversation={handleNew} onClose={onClose} />
+            <AiChatHeader
+                launcherMode={launcherMode}
+                onToggleLauncherMode={onToggleLauncherMode}
+                onNewConversation={handleNew}
+                onClose={onClose}
+            />
             <div className="ai-chat-panel__body">
                 <AiChatMessages
                     messages={messages}

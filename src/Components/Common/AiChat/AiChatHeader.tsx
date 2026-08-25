@@ -1,13 +1,28 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { LauncherMode } from './AiChatLauncher';
 
 interface AiChatHeaderProps {
+    launcherMode: LauncherMode;
+    onToggleLauncherMode: () => void;
     onNewConversation: () => void;
     onClose: () => void;
 }
 
-const AiChatHeader: React.FC<AiChatHeaderProps> = ({ onNewConversation, onClose }) => {
+const AiChatHeader: React.FC<AiChatHeaderProps> = ({
+    launcherMode,
+    onToggleLauncherMode,
+    onNewConversation,
+    onClose,
+}) => {
     const { t } = useTranslation();
+
+    const toggleTitle = launcherMode === 'animated'
+        ? t('ai.action.switchToStatic')
+        : t('ai.action.switchToAnimated');
+
+    const toggleIcon = launcherMode === 'animated' ? 'ri-layout-bottom-2-line' : 'ri-bear-smile-line';
+
     return (
         <div className="ai-chat-header">
             <div className="ai-chat-header__titles">
@@ -23,6 +38,15 @@ const AiChatHeader: React.FC<AiChatHeaderProps> = ({ onNewConversation, onClose 
                 </div>
             </div>
             <div className="ai-chat-header__actions">
+                <button
+                    type="button"
+                    className="ai-chat-header__btn"
+                    onClick={onToggleLauncherMode}
+                    title={toggleTitle}
+                    aria-label={toggleTitle}
+                >
+                    <i className={toggleIcon}></i>
+                </button>
                 <button
                     type="button"
                     className="ai-chat-header__btn"
