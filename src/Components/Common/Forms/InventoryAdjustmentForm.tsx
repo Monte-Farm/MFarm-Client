@@ -14,6 +14,7 @@ import {
     Label,
     Row,
     Spinner,
+    Table,
 } from 'reactstrap';
 import * as Yup from 'yup';
 import DatePicker from 'react-flatpickr';
@@ -21,7 +22,7 @@ import AlertMessage from '../Shared/AlertMesagge';
 import SuccessModal from '../Shared/SuccessModal';
 import ErrorModal from '../Shared/ErrorModal';
 import LoadingAnimation from '../Shared/LoadingAnimation';
-import { AdjustmentDirection, AdjustmentType } from 'common/data_interfaces';
+import { AdjustmentType } from 'common/data_interfaces';
 import { APIClient } from 'helpers/api_helper';
 
 const api = new APIClient();
@@ -49,23 +50,7 @@ interface SelectedProduct {
     adjustedQuantity: number | '';
 }
 
-const DECREASE_TYPES: AdjustmentType[] = ['shrinkage', 'breakage', 'expiration', 'count_correction', 'other'];
-const INCREASE_TYPES: AdjustmentType[] = ['count_correction', 'other'];
-
-const DIRECTION_META: Record<AdjustmentDirection, { icon: string; color: string; borderColor: string; bg: string }> = {
-    decrease: {
-        icon: 'ri-arrow-down-circle-fill',
-        color: '#dc3545',
-        borderColor: '#dc3545',
-        bg: '#fff5f5',
-    },
-    increase: {
-        icon: 'ri-arrow-up-circle-fill',
-        color: '#198754',
-        borderColor: '#198754',
-        bg: '#f0fff4',
-    },
-};
+const ALL_TYPES: AdjustmentType[] = ['shrinkage', 'breakage', 'expiration', 'count_correction', 'other'];
 
 const InventoryAdjustmentForm: React.FC<InventoryAdjustmentFormProps> = ({ onSave, onCancel }) => {
     const { t } = useTranslation();
@@ -88,7 +73,6 @@ const InventoryAdjustmentForm: React.FC<InventoryAdjustmentFormProps> = ({ onSav
     const validationSchema = Yup.object({
         warehouseId: Yup.string().required(t('form.validation.required')),
         date: Yup.date().required(t('form.validation.required')).nullable(),
-        direction: Yup.string().required(t('form.validation.required')),
         adjustmentType: Yup.string().required(t('form.validation.required')),
         reason: Yup.string().trim().required(t('form.validation.required')),
     });
@@ -97,7 +81,6 @@ const InventoryAdjustmentForm: React.FC<InventoryAdjustmentFormProps> = ({ onSav
         initialValues: {
             warehouseId: '',
             date: new Date() as Date | null,
-            direction: 'decrease' as AdjustmentDirection,
             adjustmentType: '' as AdjustmentType | '',
             reason: '',
             notes: '',
@@ -107,7 +90,7 @@ const InventoryAdjustmentForm: React.FC<InventoryAdjustmentFormProps> = ({ onSav
             if (!userLogged || !configContext) return;
 
             const validLines = selectedProducts.filter(
-                l => l.adjustedQuantity !== '' && Number(l.adjustedQuantity) > 0
+                l => l.adjustedQuantity !== '' && Number(l.adjustedQuantity) !== 0
             );
             if (validLines.length === 0) {
                 setAlertConfig({
@@ -118,21 +101,19 @@ const InventoryAdjustmentForm: React.FC<InventoryAdjustmentFormProps> = ({ onSav
                 return;
             }
 
-            // Front-end stock validation for decrease
-            if (values.direction === 'decrease') {
-                const overStock = validLines.filter(l => {
-                    const product = inventoryProducts.find(p => p._id === l.productId);
-                    return product && Number(l.adjustedQuantity) > product.stock;
+            const overStock = validLines.filter(l => {
+                const product = inventoryProducts.find(p => p._id === l.productId);
+                const qty = Number(l.adjustedQuantity);
+                return product && qty < 0 && Math.abs(qty) > product.stock;
+            });
+            if (overStock.length > 0) {
+                setInsufficientIds(overStock.map(l => l.productId));
+                setAlertConfig({
+                    visible: true,
+                    color: 'danger',
+                    message: t('inventoryAdjustments.form.validation.insufficientStock'),
                 });
-                if (overStock.length > 0) {
-                    setInsufficientIds(overStock.map(l => l.productId));
-                    setAlertConfig({
-                        visible: true,
-                        color: 'danger',
-                        message: t('inventoryAdjustments.form.validation.insufficientStock'),
-                    });
-                    return;
-                }
+                return;
             }
 
             const payload = {
@@ -141,7 +122,6 @@ const InventoryAdjustmentForm: React.FC<InventoryAdjustmentFormProps> = ({ onSav
                 date: values.date
                     ? new Date(values.date).toISOString().split('T')[0]
                     : new Date().toISOString().split('T')[0],
-                direction: values.direction,
                 adjustmentType: values.adjustmentType as AdjustmentType,
                 reason: values.reason.trim(),
                 products: validLines.map(l => ({
@@ -233,12 +213,6 @@ const InventoryAdjustmentForm: React.FC<InventoryAdjustmentFormProps> = ({ onSav
         else { setInventoryProducts([]); setSelectedProducts([]); }
     };
 
-    const handleDirectionChange = (direction: AdjustmentDirection) => {
-        formik.setFieldValue('direction', direction);
-        formik.setFieldValue('adjustmentType', '');
-        setInsufficientIds([]);
-    };
-
     const toggleProduct = (productId: string) => {
         setInsufficientIds(prev => prev.filter(id => id !== productId));
         setSelectedProducts(prev => {
@@ -259,8 +233,6 @@ const InventoryAdjustmentForm: React.FC<InventoryAdjustmentFormProps> = ({ onSav
         );
     };
 
-    const availableTypes = formik.values.direction === 'decrease' ? DECREASE_TYPES : INCREASE_TYPES;
-
     const filteredProducts = useMemo(() => {
         const q = productSearch.trim().toLowerCase();
         return q
@@ -275,7 +247,7 @@ const InventoryAdjustmentForm: React.FC<InventoryAdjustmentFormProps> = ({ onSav
         if (!product) return false;
         const qty = Number(sp.adjustedQuantity);
         return insufficientIds.includes(sp.productId) ||
-            (formik.values.direction === 'decrease' && qty > product.stock);
+            (qty < 0 && Math.abs(qty) > product.stock);
     });
 
     if (loading) return <LoadingAnimation />;
@@ -317,7 +289,7 @@ const InventoryAdjustmentForm: React.FC<InventoryAdjustmentFormProps> = ({ onSav
                             <Label className="fw-semibold">{t('inventoryAdjustments.form.field.date')} *</Label>
                             <DatePicker
                                 className={`form-control${formik.touched.date && formik.errors.date ? ' is-invalid' : ''}`}
-                                value={formik.values.date ? formik.values.date.toString() : ''}
+                                value={formik.values.date || undefined}
                                 options={{ dateFormat: 'Y-m-d', maxDate: 'today' }}
                                 onChange={([date]: Date[]) => formik.setFieldValue('date', date)}
                             />
@@ -328,53 +300,11 @@ const InventoryAdjustmentForm: React.FC<InventoryAdjustmentFormProps> = ({ onSav
                     </Col>
                 </Row>
 
-                {/* ── Dirección: cards visuales ── */}
-                <div className="mb-3">
-                    <Label className="fw-semibold d-block mb-2">{t('inventoryAdjustments.form.field.direction')} *</Label>
-                    <Row className="g-2">
-                        {(['decrease', 'increase'] as AdjustmentDirection[]).map(dir => {
-                            const meta = DIRECTION_META[dir];
-                            const isSelected = formik.values.direction === dir;
-                            return (
-                                <Col xs={6} key={dir}>
-                                    <div
-                                        onClick={() => handleDirectionChange(dir)}
-                                        style={{
-                                            cursor: 'pointer',
-                                            border: `2px solid ${isSelected ? meta.borderColor : '#dee2e6'}`,
-                                            borderRadius: '10px',
-                                            padding: '14px 16px',
-                                            background: isSelected ? meta.bg : '#fff',
-                                            transition: 'all 0.15s ease',
-                                            userSelect: 'none',
-                                        }}
-                                    >
-                                        <div className="d-flex align-items-center gap-2">
-                                            <i
-                                                className={`${meta.icon} fs-3`}
-                                                style={{ color: meta.color }}
-                                            />
-                                            <div>
-                                                <div className="fw-semibold" style={{ color: meta.color }}>
-                                                    {t(`inventoryAdjustments.direction.${dir}`)}
-                                                </div>
-                                                <div className="text-muted small">
-                                                    {t(`inventoryAdjustments.direction.${dir}Hint`)}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </Col>
-                            );
-                        })}
-                    </Row>
-                </div>
-
                 {/* ── Tipo de ajuste: chips ── */}
                 <div className="mb-3">
                     <Label className="fw-semibold d-block mb-2">{t('inventoryAdjustments.form.field.adjustmentType')} *</Label>
                     <div className="d-flex flex-wrap gap-2">
-                        {availableTypes.map(type => {
+                        {ALL_TYPES.map(type => {
                             const isSelected = formik.values.adjustmentType === type;
                             return (
                                 <button
@@ -456,114 +386,129 @@ const InventoryAdjustmentForm: React.FC<InventoryAdjustmentFormProps> = ({ onSav
                                 />
                             </div>
 
-                            {/* Lista de productos */}
-                            <div
-                                style={{
-                                    maxHeight: '320px',
-                                    overflowY: 'auto',
-                                    border: '1px solid #dee2e6',
-                                    borderRadius: '8px',
-                                }}
-                            >
-                                {filteredProducts.length === 0 ? (
-                                    <div className="text-center text-muted py-3 small">
-                                        {t('inventoryAdjustments.form.products.noResults')}
-                                    </div>
-                                ) : (
-                                    filteredProducts.map((product, idx) => {
-                                        const isSelected = selectedIds.has(product._id);
-                                        const sel = selectedProducts.find(s => s.productId === product._id);
-                                        const qty = sel ? Number(sel.adjustedQuantity) : 0;
-                                        const isInsufficient = insufficientIds.includes(product._id);
-                                        const isOver =
-                                            formik.values.direction === 'decrease' &&
-                                            qty > 0 &&
-                                            qty > product.stock;
-                                        const hasError = isInsufficient || isOver;
-                                        const remaining = isSelected && qty > 0
-                                            ? formik.values.direction === 'decrease'
-                                                ? product.stock - qty
-                                                : product.stock + qty
-                                            : null;
+                            {/* Tabla de productos */}
+                            <div style={{ maxHeight: '340px', overflowY: 'auto', border: '1px solid #dee2e6', borderRadius: '8px' }}>
+                                <Table className="table-hover align-middle mb-0 table-bordered" size="sm">
+                                    <thead className="table-light sticky-top">
+                                        <tr>
+                                            <th style={{ width: '40px' }} />
+                                            <th>{t('inventoryAdjustments.form.products.col.product')}</th>
+                                            <th className="text-end" style={{ width: '120px' }}>{t('inventoryAdjustments.form.products.col.stock')}</th>
+                                            <th style={{ width: '110px' }}>{t('inventoryAdjustments.form.products.col.quantity')}</th>
+                                            <th style={{ width: '110px' }}>{t('inventoryAdjustments.detail.col.direction')}</th>
+                                            <th className="text-end" style={{ width: '120px' }}>{t('inventoryAdjustments.form.products.col.estimatedStock')}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredProducts.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={6} className="text-center text-muted py-3 small">
+                                                    {t('inventoryAdjustments.form.products.noResults')}
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            filteredProducts.map(product => {
+                                                const isSelected = selectedIds.has(product._id);
+                                                const sel = selectedProducts.find(s => s.productId === product._id);
+                                                const qty = sel ? Number(sel.adjustedQuantity) : 0;
+                                                const isInsufficient = insufficientIds.includes(product._id);
+                                                const isOver = qty < 0 && Math.abs(qty) > product.stock;
+                                                const hasError = isInsufficient || isOver;
 
-                                        return (
-                                            <div
-                                                key={product._id}
-                                                style={{
-                                                    borderBottom: idx < filteredProducts.length - 1 ? '1px solid #f0f0f0' : 'none',
-                                                    background: isSelected
-                                                        ? (hasError ? '#fff5f5' : '#f0fff4')
-                                                        : '#fff',
-                                                    transition: 'background 0.15s ease',
-                                                }}
-                                            >
-                                                <div className="d-flex align-items-center px-3 py-2 gap-2">
-                                                    {/* Toggle checkbox */}
-                                                    <div
-                                                        onClick={() => toggleProduct(product._id)}
-                                                        style={{ cursor: 'pointer', flexShrink: 0 }}
+                                                const remaining = isSelected && sel?.adjustedQuantity !== '' && qty !== 0
+                                                    ? product.stock + qty
+                                                    : null;
+
+                                                const rowBg = isSelected
+                                                    ? hasError ? '#fff5f5'
+                                                        : qty > 0 ? '#f0fff4'
+                                                        : qty < 0 ? '#fff5f5'
+                                                        : undefined
+                                                    : undefined;
+
+                                                const directionMeta = qty > 0
+                                                    ? { icon: 'ri-arrow-up-line', color: '#198754', text: t('inventoryAdjustments.direction.increase') }
+                                                    : qty < 0
+                                                        ? { icon: 'ri-arrow-down-line', color: '#dc3545', text: t('inventoryAdjustments.direction.decrease') }
+                                                        : null;
+
+                                                return (
+                                                    <tr
+                                                        key={product._id}
+                                                        style={{ background: rowBg, transition: 'background 0.15s ease' }}
                                                     >
-                                                        <i
-                                                            className={isSelected
+                                                        <td
+                                                            className="text-center"
+                                                            onClick={() => toggleProduct(product._id)}
+                                                            style={{ cursor: 'pointer' }}
+                                                        >
+                                                            <i className={isSelected
                                                                 ? 'ri-checkbox-circle-fill text-success fs-5'
                                                                 : 'ri-checkbox-blank-circle-line text-muted fs-5'
-                                                            }
-                                                        />
-                                                    </div>
-
-                                                    {/* Nombre y stock */}
-                                                    <div
-                                                        className="flex-grow-1"
-                                                        onClick={() => toggleProduct(product._id)}
-                                                        style={{ cursor: 'pointer' }}
-                                                    >
-                                                        <div className="fw-semibold small">{product.name}</div>
-                                                        <div className="text-muted" style={{ fontSize: '0.78rem' }}>
-                                                            {t('inventoryAdjustments.form.products.col.stock')}: {product.stock} {product.unit}
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Cantidad + stock resultante */}
-                                                    {isSelected && (
-                                                        <div className="d-flex align-items-center gap-2 flex-shrink-0">
-                                                            <div>
-                                                                <Input
-                                                                    type="number"
-                                                                    bsSize="sm"
-                                                                    min={0}
-                                                                    step="any"
-                                                                    value={sel?.adjustedQuantity ?? ''}
-                                                                    onChange={e => updateQuantity(product._id, e.target.value)}
-                                                                    onClick={e => e.stopPropagation()}
-                                                                    invalid={hasError}
-                                                                    style={{ width: '90px' }}
-                                                                    placeholder="0"
-                                                                />
-                                                                {hasError && (
-                                                                    <div className="text-danger" style={{ fontSize: '0.72rem' }}>
-                                                                        {t('inventoryAdjustments.form.products.insufficientStock')}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-
-                                                            {remaining !== null && !hasError && (
-                                                                <div
-                                                                    className="text-center"
-                                                                    style={{ minWidth: '70px', fontSize: '0.78rem' }}
-                                                                >
-                                                                    <div className="text-muted">{t('inventoryAdjustments.form.products.col.estimatedStock')}</div>
-                                                                    <div className={`fw-semibold ${remaining < 0 ? 'text-danger' : 'text-success'}`}>
-                                                                        {remaining.toFixed(2)} {product.unit}
-                                                                    </div>
-                                                                </div>
+                                                            } />
+                                                        </td>
+                                                        <td
+                                                            onClick={() => toggleProduct(product._id)}
+                                                            style={{ cursor: 'pointer' }}
+                                                        >
+                                                            <div className="fw-semibold">{product.name}</div>
+                                                            <div className="text-muted" style={{ fontSize: '0.78rem' }}>{product.unit}</div>
+                                                        </td>
+                                                        <td className="text-end">
+                                                            {product.stock} {product.unit}
+                                                        </td>
+                                                        <td onClick={e => e.stopPropagation()}>
+                                                            {isSelected ? (
+                                                                <>
+                                                                    <Input
+                                                                        type="number"
+                                                                        bsSize="sm"
+                                                                        step="any"
+                                                                        value={sel?.adjustedQuantity ?? ''}
+                                                                        onChange={e => updateQuantity(product._id, e.target.value)}
+                                                                        invalid={hasError}
+                                                                        placeholder="ej. -10 / 5"
+                                                                    />
+                                                                    {hasError && (
+                                                                        <div className="text-danger" style={{ fontSize: '0.72rem' }}>
+                                                                            {t('inventoryAdjustments.form.products.insufficientStock')}
+                                                                        </div>
+                                                                    )}
+                                                                    {!hasError && sel?.adjustedQuantity === '' && (
+                                                                        <div className="text-muted" style={{ fontSize: '0.72rem' }}>
+                                                                            {t('inventoryAdjustments.form.products.col.quantityHint')}
+                                                                        </div>
+                                                                    )}
+                                                                </>
+                                                            ) : (
+                                                                <span className="text-muted">—</span>
                                                             )}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        );
-                                    })
-                                )}
+                                                        </td>
+                                                        <td>
+                                                            {isSelected && directionMeta ? (
+                                                                <span style={{ color: directionMeta.color, fontSize: '0.82rem', fontWeight: 600 }}>
+                                                                    <i className={`${directionMeta.icon} me-1`} />
+                                                                    {directionMeta.text}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-muted">—</span>
+                                                            )}
+                                                        </td>
+                                                        <td className="text-end">
+                                                            {remaining !== null && !hasError ? (
+                                                                <span className={`fw-semibold ${remaining < 0 ? 'text-danger' : 'text-success'}`}>
+                                                                    {remaining.toFixed(2)} {product.unit}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-muted">—</span>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })
+                                        )}
+                                    </tbody>
+                                </Table>
                             </div>
                         </>
                     )}
