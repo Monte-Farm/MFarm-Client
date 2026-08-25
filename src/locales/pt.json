@@ -8063,7 +8063,9 @@
       "closeAssistant": "Fechar assistente IA",
       "thinkingClose": "Assistente pensando — fechar",
       "respondingClose": "Assistente respondendo — fechar",
-      "cancel": "Parar resposta"
+      "cancel": "Parar resposta",
+      "switchToStatic": "Mudar para botão fixo",
+      "switchToAnimated": "Mudar para porco animado"
     },
     "panel": {
       "title": "Assistente PorcySys",
