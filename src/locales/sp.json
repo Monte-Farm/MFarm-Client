@@ -8204,6 +8204,7 @@
       "equipment": "Equipo / Herramientas",
       "technology": "Tecnología",
       "land": "Terreno / Infraestructura",
+      "building": "Edificio",
       "other": "Otro"
     },
     "column": {
@@ -8390,7 +8391,8 @@
           "product": "Producto",
           "stock": "Stock actual",
           "quantity": "Cantidad a ajustar",
-          "estimatedStock": "Stock estimado"
+          "estimatedStock": "Stock estimado",
+          "quantityHint": "Use negativo para disminución, positivo para incremento"
         },
         "insufficientStock": "Stock insuficiente",
         "selected": "seleccionados",
@@ -8406,6 +8408,7 @@
     "revert": {
       "consequenceDecrease": "Al revertir este ajuste se restaurará el stock descontado y se eliminará el impacto financiero registrado.",
       "consequenceIncrease": "Al revertir este ajuste se reducirá el stock agregado y se eliminará el ingreso financiero registrado.",
+      "consequence": "Al revertir este ajuste se restaurarán todos los cambios de stock y se eliminarán los impactos financieros registrados.",
       "reasonLabel": "Motivo de la reversión",
       "reasonPlaceholder": "Explique por qué se revierte este ajuste...",
       "error": "Error al revertir el ajuste."
@@ -8433,6 +8436,7 @@
       },
       "col": {
         "product": "Producto",
+        "direction": "Dir.",
         "quantity": "Cantidad",
         "unitCost": "Costo unitario",
         "totalCost": "Costo total",

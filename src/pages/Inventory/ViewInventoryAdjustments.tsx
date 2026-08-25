@@ -163,8 +163,8 @@ const ViewInventoryAdjustments = () => {
         return productId || '—';
     };
 
-    const formatFinancialImpact = (amount: number, direction: AdjustmentDirection): string => {
-        const sign = direction === 'decrease' ? '-' : '+';
+    const formatFinancialImpact = (amount: number): string => {
+        const sign = amount < 0 ? '-' : '+';
         return `${sign}${Math.abs(amount).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     };
 
@@ -186,11 +186,27 @@ const ViewInventoryAdjustments = () => {
             header: t('inventoryAdjustments.table.col.direction'),
             accessor: 'direction',
             type: 'text',
-            render: (value: AdjustmentDirection) => (
-                <Badge color={directionBadgeColor[value]}>
-                    {t(`inventoryAdjustments.direction.${value}`)}
-                </Badge>
-            ),
+            render: (value: AdjustmentDirection | undefined, row: InventoryAdjustment) => {
+                if (value) {
+                    return (
+                        <Badge color={directionBadgeColor[value]}>
+                            {t(`inventoryAdjustments.direction.${value}`)}
+                        </Badge>
+                    );
+                }
+                const decreaseCount = row.products.filter(p => p.adjustedQuantity < 0).length;
+                const increaseCount = row.products.filter(p => p.adjustedQuantity > 0).length;
+                return (
+                    <span className="small">
+                        {decreaseCount > 0 && (
+                            <span className="text-danger me-1">↓{decreaseCount}</span>
+                        )}
+                        {increaseCount > 0 && (
+                            <span className="text-success">↑{increaseCount}</span>
+                        )}
+                    </span>
+                );
+            },
         },
         {
             header: t('inventoryAdjustments.table.col.adjustmentType'),
@@ -214,11 +230,11 @@ const ViewInventoryAdjustments = () => {
             header: t('inventoryAdjustments.table.col.financialImpact'),
             accessor: 'totalFinancialImpact',
             type: 'text',
-            render: (value: number, row: InventoryAdjustment) => (
+            render: (value: number) => (
                 <span
-                    className={`fw-semibold ${row.direction === 'decrease' ? 'text-danger' : 'text-success'}`}
+                    className={`fw-semibold ${value < 0 ? 'text-danger' : 'text-success'}`}
                 >
-                    {formatFinancialImpact(value, row.direction)}
+                    {formatFinancialImpact(value)}
                 </span>
             ),
         },
@@ -401,9 +417,7 @@ const ViewInventoryAdjustments = () => {
                 </ModalHeader>
                 <ModalBody>
                     <p className="text-muted small mb-3">
-                        {selectedAdjustment?.direction === 'decrease'
-                            ? t('inventoryAdjustments.revert.consequenceDecrease')
-                            : t('inventoryAdjustments.revert.consequenceIncrease')}
+                        {t('inventoryAdjustments.revert.consequence')}
                     </p>
 
                     {revertError && (

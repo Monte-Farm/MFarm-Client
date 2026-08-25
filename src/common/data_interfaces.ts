@@ -1306,7 +1306,7 @@ export interface SubscriptionDetails {
     };
 // ─── Capital Assets ──────────────────────────────────────────────────────────
 
-export type AssetCategory = 'construction' | 'machinery' | 'vehicle' | 'equipment' | 'technology' | 'land' | 'other';
+export type AssetCategory = 'construction' | 'machinery' | 'vehicle' | 'equipment' | 'technology' | 'land' | 'building' | 'other';
 
 export interface AdjustmentHistoryEntry {
     adjustedAt: string;
@@ -1383,6 +1383,7 @@ export type AdjustmentStatus = 'active' | 'reverted';
 export interface AdjustmentProduct {
     productId: string | { _id: string; name: string; unit: string };
     adjustedQuantity: number;
+    direction?: AdjustmentDirection;
     unitCost?: number;
     totalCost?: number;
 }
@@ -1392,7 +1393,7 @@ export interface InventoryAdjustment {
     farmId: string;
     warehouseId: string | { _id: string; code: string; name: string };
     date: string;
-    direction: AdjustmentDirection;
+    direction?: AdjustmentDirection;
     adjustmentType: AdjustmentType;
     reason: string;
     products: AdjustmentProduct[];

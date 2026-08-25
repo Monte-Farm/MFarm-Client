@@ -11,7 +11,7 @@ import SuccessModal from "../Shared/SuccessModal";
 import ErrorModal from "../Shared/ErrorModal";
 
 const CATEGORIES: AssetCategory[] = [
-    'construction', 'machinery', 'vehicle', 'equipment', 'technology', 'land', 'other'
+    'construction', 'machinery', 'vehicle', 'equipment', 'technology', 'land', 'building', 'other'
 ];
 
 interface CapitalAssetEditModalProps {

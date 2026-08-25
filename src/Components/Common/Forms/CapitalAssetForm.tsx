@@ -19,7 +19,7 @@ interface CapitalAssetFormProps {
 }
 
 const CATEGORIES: AssetCategory[] = [
-    'construction', 'machinery', 'vehicle', 'equipment', 'technology', 'land', 'other'
+    'construction', 'machinery', 'vehicle', 'equipment', 'technology', 'land', 'building', 'other'
 ];
 
 const CapitalAssetForm: React.FC<CapitalAssetFormProps> = ({ onSave, onCancel }) => {
